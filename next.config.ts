@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
+const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
+
 const nextConfig: NextConfig = {
+  distDir,
   output: "standalone",
   trailingSlash: false,
   reactStrictMode: true,
