@@ -1,6 +1,8 @@
 import { Carousel } from "@/components/cells"
 import { CategoryCard } from "@/components/organisms"
 
+type HomeCategory = { name: string; handle: string; id?: number }
+
 export const categories: { id: number; name: string; handle: string }[] = [
   {
     id: 1,
@@ -29,15 +31,28 @@ export const categories: { id: number; name: string; handle: string }[] = [
   },
 ]
 
-export const HomeCategories = async ({ heading }: { heading: string }) => {
+export const HomeCategories = async ({
+  heading,
+  categories: sectionCategories,
+}: {
+  heading: string
+  categories?: HomeCategory[]
+}) => {
+  const categoriesToRender = sectionCategories?.length
+    ? sectionCategories
+    : categories
+
   return (
     <section className="bg-primary py-8 w-full">
       <div className="mb-6">
         <h2 className="heading-lg text-primary uppercase">{heading}</h2>
       </div>
       <Carousel
-        items={categories?.map((category) => (
-          <CategoryCard key={category.id} category={category} />
+        items={categoriesToRender.map((category, index) => (
+          <CategoryCard
+            key={`${category.id ?? category.handle}-${index}`}
+            category={category}
+          />
         ))}
       />
     </section>

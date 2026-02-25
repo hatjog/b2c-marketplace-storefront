@@ -1,17 +1,13 @@
-import {
-  BannerSection,
-  BlogSection,
-  Hero,
-  HomeCategories,
-  HomeProductSection,
-  ShopByStyleSection,
-} from "@/components/sections"
+import { HomepageRenderer } from "@/components/blocks/HomepageRenderer"
+import { resolveMarketConfig } from "@/lib/portal"
 
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import Script from "next/script"
 import { listRegions } from "@/lib/data/regions"
 import { toHreflang } from "@/lib/helpers/hreflang"
+
+export const revalidate = 300
 
 export async function generateMetadata({
   params,
@@ -112,6 +108,13 @@ export default async function Home({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || ""
+  const { marketConfig } = await resolveMarketConfig(marketId)
+  const homepageSections =
+    Array.isArray(marketConfig.homepage_sections) &&
+    marketConfig.homepage_sections.length > 0
+      ? marketConfig.homepage_sections
+      : null
 
   const headersList = await headers()
   const host = headersList.get("host")
@@ -124,13 +127,6 @@ export default async function Home({
 
   return (
     <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
-      <link
-        rel="preload"
-        as="image"
-        href="/images/hero/Image.jpg"
-        imageSrcSet="/images/hero/Image.jpg 700w"
-        imageSizes="(min-width: 1024px) 50vw, 100vw"
-      />
       {/* Organization JSON-LD */}
       <Script
         id="ld-org"
@@ -159,30 +155,7 @@ export default async function Home({
           }),
         }}
       />
-
-      <Hero
-        image="/images/hero/Image.jpg"
-        heading="Snag your style in a flash"
-        paragraph="Buy, sell, and discover pre-loved gems from the trendiest brands."
-        buttons={[
-          { label: "Buy now", path: "/categories" },
-          {
-            label: "Sell now",
-            path:
-              process.env.NEXT_PUBLIC_VENDOR_URL ||
-              "https://vendor.mercurjs.com",
-          },
-        ]}
-      />
-      <div className="px-4 lg:px-8 w-full">
-        <HomeProductSection heading="trending listings" locale={locale} home />
-      </div>
-      <div className="px-4 lg:px-8 w-full">
-        <HomeCategories heading="SHOP BY CATEGORY" />
-      </div>
-      <BannerSection />
-      <ShopByStyleSection />
-      <BlogSection />
+      <HomepageRenderer sections={homepageSections} locale={locale} />
     </main>
   )
 }
