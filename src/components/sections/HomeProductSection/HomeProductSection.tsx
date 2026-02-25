@@ -1,4 +1,5 @@
 import { HomeProductsCarousel } from "@/components/organisms"
+import { HttpTypes } from "@medusajs/types"
 import { Product } from "@/types/product"
 
 export const HomeProductSection = async ({
@@ -6,12 +7,16 @@ export const HomeProductSection = async ({
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || "pl",
   products = [],
   home = false,
+  maxItems = 4,
 }: {
   heading: string
   locale?: string
-  products?: Product[]
+  products?: (Product | HttpTypes.StoreProduct)[]
   home?: boolean
+  maxItems?: number
 }) => {
+  const resolvedMaxItems = Math.max(1, maxItems)
+
   return (
     <section className="py-8 w-full">
       <h2 className="mb-6 heading-lg font-bold tracking-tight uppercase">
@@ -19,7 +24,7 @@ export const HomeProductSection = async ({
       </h2>
       <HomeProductsCarousel
         locale={locale}
-        sellerProducts={products.slice(0, 4)}
+        sellerProducts={products.slice(0, resolvedMaxItems)}
         home={home}
       />
     </section>
