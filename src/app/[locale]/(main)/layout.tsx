@@ -1,4 +1,5 @@
 import { Footer, Header } from "@/components/organisms"
+import { fetchMarketConfig } from "@/lib/portal"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { checkRegion } from "@/lib/helpers/check-region"
 import { Session } from "@talkjs/react"
@@ -13,6 +14,10 @@ export default async function RootLayout({
 }>) {
   const APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID
   const { locale } = await params
+  const marketConfig = await fetchMarketConfig(
+    process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID!
+  )
+  void marketConfig
 
   const user = await retrieveCustomer()
   const regionCheck = await checkRegion(locale)

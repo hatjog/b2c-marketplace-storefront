@@ -34,9 +34,10 @@
     ".next*/dev/types/**/*.ts",
     ".next*/types/**/*.ts",
     ".next-bonbeauty/types/**/*.ts",
+    ".next-bonevent/types/**/*.ts",
     ".next-mercur/types/**/*.ts",
     "next-env.d.ts",
-    ".next-bonevent/types/**/*.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
