@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Funnel_Display } from 'next/font/google';
+import type { CSSProperties } from 'react';
 
 import './globals.css';
 
@@ -8,6 +9,7 @@ import Head from 'next/head';
 
 import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
+import { resolveMarketConfig } from '@/lib/portal';
 
 import { Providers } from './providers';
 
@@ -17,22 +19,32 @@ const funnelDisplay = Funnel_Display({
   weight: ['300', '400', '500', '600']
 });
 
-export const metadata: Metadata = {
-  title: {
-    template: `%s | ${
-      process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
-    }`,
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
-  },
-  description:
-    process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
-  alternates: {
-    languages: {
-      'x-default': process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+export async function generateMetadata(): Promise<Metadata> {
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const { marketConfig } = await resolveMarketConfig(marketId);
+  const siteName =
+    marketConfig.name || process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront';
+  const titlePattern = marketConfig.seo_defaults?.title_pattern;
+  const titleTemplate =
+    typeof titlePattern === 'string' && titlePattern.includes('%s')
+      ? titlePattern
+      : `%s | ${siteName}`;
+
+  return {
+    title: {
+      template: titleTemplate,
+      default: titleTemplate.replace('%s', siteName)
+    },
+    description:
+      process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
+    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+    alternates: {
+      languages: {
+        'x-default': process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+      }
     }
-  }
-};
+  };
+}
 
 export default async function RootLayout({
   children
@@ -40,8 +52,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cart = await retrieveCart();
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const { marketConfig } = await resolveMarketConfig(marketId);
 
   const ALGOLIA_APP = process.env.NEXT_PUBLIC_ALGOLIA_ID;
+  const htmlStyle: CSSProperties | undefined = marketConfig.primary_color
+    ? ({ '--color-primary': marketConfig.primary_color } as CSSProperties)
+    : undefined;
+  const themeStylesheet = marketConfig.theme ? `/themes/${marketConfig.theme}.css` : null;
   // default lang updated by HtmlLangSetter
   const htmlLang = 'en';
 
@@ -49,6 +67,7 @@ export default async function RootLayout({
     <html
       lang={htmlLang}
       className=""
+      style={htmlStyle}
     >
       <Head>
         <link
@@ -137,6 +156,12 @@ export default async function RootLayout({
           rel="dns-prefetch"
           href="https://api.mercurjs.com"
         />
+        {themeStylesheet && (
+          <link
+            rel="stylesheet"
+            href={themeStylesheet}
+          />
+        )}
       </Head>
       <body className={`${funnelDisplay.className} relative bg-primary text-secondary antialiased`}>
         <HtmlLangSetter />

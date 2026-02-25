@@ -12,14 +12,20 @@ import { MessageButton } from "@/components/molecules/MessageButton/MessageButto
 import { listCategories } from "@/lib/data/categories"
 import { listRegions } from "@/lib/data/regions"
 import { getUserWishlists } from "@/lib/data/wishlist"
+import { getMarketLogoUrl, type MarketConfig } from "@/lib/portal"
 import { retrieveCustomer } from "@/lib/data/customer"
 import { ParentCategoryLinks } from "@/components/molecules/ParentCategoryLinks/ParentCategoryLinks"
 
-export const Header = async ({ locale } : {
+export const Header = async ({ locale, marketConfig } : {
   locale: string
+  marketConfig?: MarketConfig | null
 }) => {
   const user = await retrieveCustomer().catch(() => null)
   const isLoggedIn = Boolean(user)
+  const marketLogoUrl = getMarketLogoUrl(marketConfig)
+  const logoSrc = marketLogoUrl || "/Logo.svg"
+  const isExternalLogo =
+    logoSrc.startsWith("http://") || logoSrc.startsWith("https://")
 
   let wishlist: Wishlist = {products: []}
   if (user) {
@@ -49,13 +55,23 @@ export const Header = async ({ locale } : {
         </div>
         <div className="flex lg:justify-center lg:w-1/3 items-center pl-4 lg:pl-0">
           <LocalizedClientLink href="/" className="text-2xl font-bold" data-testid="header-logo-link">
-            <Image
-              src="/Logo.svg"
-              width={126}
-              height={40}
-              alt="Logo"
-              priority
-            />
+            {isExternalLogo ? (
+              <img
+                src={logoSrc}
+                width={126}
+                height={40}
+                alt="Logo"
+                loading="eager"
+              />
+            ) : (
+              <Image
+                src={logoSrc}
+                width={126}
+                height={40}
+                alt="Logo"
+                priority
+              />
+            )}
           </LocalizedClientLink>
         </div>
         <div className="flex items-center justify-end gap-2 lg:gap-4 w-full lg:w-1/3 py-2" data-testid="header-actions">

@@ -1,11 +1,21 @@
 import { cache } from "react"
 
+type MarketConfigLogo = {
+  url?: string | null
+}
+
+type MarketConfigSeoDefaults = {
+  title_pattern?: string | null
+}
+
 export type MarketConfig = {
   id?: string
   market_id?: string
   name?: string | null
-  logo?: string | null
+  logo?: MarketConfigLogo | string | null
   primary_color?: string | null
+  theme?: string | null
+  seo_defaults?: MarketConfigSeoDefaults | null
   [key: string]: unknown
 }
 
@@ -54,6 +64,9 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
       })
 
       if (!response.ok) {
+        console.error(
+          `[market-config] fetch failed for market ${marketId}: ${response.status} ${response.statusText}`
+        )
         return null
       }
 
@@ -61,7 +74,11 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
         (await response.json()) as PayloadCollectionResponse<MarketConfig>
 
       return data.docs?.[0] ?? null
-    } catch {
+    } catch (error) {
+      console.error(
+        `[market-config] request error for market ${marketId}`,
+        error
+      )
       return null
     } finally {
       inFlightRequests.delete(marketId)
@@ -71,4 +88,53 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
   inFlightRequests.set(marketId, request)
 
   return request
+})
+
+export function getMarketLogoUrl(marketConfig: MarketConfig | null | undefined) {
+  const logo = marketConfig?.logo
+
+  if (!logo) {
+    return null
+  }
+
+  if (typeof logo === "string") {
+    return logo
+  }
+
+  return logo.url ?? null
+}
+
+export function getFallbackMarketConfig(marketId: string): MarketConfig {
+  const fallbackMarketName = marketId || "market"
+
+  return {
+    market_id: marketId,
+    name: fallbackMarketName,
+    logo: null,
+    primary_color: null,
+    theme: null,
+    seo_defaults: {
+      title_pattern: `%s | ${fallbackMarketName}`,
+    },
+  }
+}
+
+export const resolveMarketConfig = cache(async (marketId: string) => {
+  try {
+    const marketConfig = await fetchMarketConfig(marketId)
+
+    if (marketConfig) {
+      return {
+        marketConfig,
+        usedFallback: false,
+      }
+    }
+  } catch (error) {
+    console.error(`[market-config] resolve failed for market ${marketId}`, error)
+  }
+
+  return {
+    marketConfig: getFallbackMarketConfig(marketId),
+    usedFallback: true,
+  }
 })
