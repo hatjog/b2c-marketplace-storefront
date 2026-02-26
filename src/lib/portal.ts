@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/nextjs"
-import { cache } from "react"
 
 type MarketConfigLogo = {
   url?: string | null
@@ -54,7 +53,7 @@ function buildMarketConfigUrl(marketId: string) {
   return url
 }
 
-export const fetchMarketConfig = cache(async (marketId: string) => {
+export async function fetchMarketConfig(marketId: string) {
   if (!marketId) {
     return null
   }
@@ -68,10 +67,8 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
     try {
       const response = await fetch(buildMarketConfigUrl(marketId), {
         method: "GET",
-        next: {
-          revalidate: 300,
-          tags: ["market-config", `market-config:${marketId}`],
-        },
+        signal: AbortSignal.timeout(2500),
+        cache: "no-store",
       })
 
       if (!response.ok) {
@@ -100,7 +97,7 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
   inFlightRequests.set(marketId, request)
 
   return request
-})
+}
 
 export function getMarketLogoUrl(marketConfig: MarketConfig | null | undefined) {
   const logo = marketConfig?.logo
@@ -131,7 +128,7 @@ export function getFallbackMarketConfig(marketId: string): MarketConfig {
   }
 }
 
-export const resolveMarketConfig = cache(async (marketId: string) => {
+export async function resolveMarketConfig(marketId: string) {
   try {
     const marketConfig = await fetchMarketConfig(marketId)
 
@@ -152,4 +149,4 @@ export const resolveMarketConfig = cache(async (marketId: string) => {
     marketConfig: getFallbackMarketConfig(marketId),
     usedFallback: true,
   }
-})
+}
