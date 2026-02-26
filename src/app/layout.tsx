@@ -5,7 +5,6 @@ import type { CSSProperties } from 'react';
 import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
-import Head from 'next/head';
 
 import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
@@ -30,6 +29,9 @@ export async function generateMetadata(): Promise<Metadata> {
       ? titlePattern
       : `%s | ${siteName}`;
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const metadataBase = baseUrl ? new URL(baseUrl) : undefined;
+
   return {
     title: {
       template: titleTemplate,
@@ -37,12 +39,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description:
       process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
-    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
-    alternates: {
-      languages: {
-        'x-default': process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-      }
-    }
+    metadataBase,
+    alternates: baseUrl
+      ? {
+          languages: {
+            'x-default': baseUrl
+          }
+        }
+      : undefined
   };
 }
 
@@ -53,7 +57,9 @@ export default async function RootLayout({
 }>) {
   const cart = await retrieveCart();
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig } = await resolveMarketConfig(marketId);
+  const { marketConfig, usedFallback } = await resolveMarketConfig(marketId);
+  const showFallbackBanner =
+    usedFallback && process.env.NODE_ENV === 'development';
 
   const ALGOLIA_APP = process.env.NEXT_PUBLIC_ALGOLIA_ID;
   const htmlStyle: CSSProperties | undefined = marketConfig.primary_color
@@ -69,7 +75,7 @@ export default async function RootLayout({
       className=""
       style={htmlStyle}
     >
-      <Head>
+      <head>
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
@@ -162,8 +168,13 @@ export default async function RootLayout({
             href={themeStylesheet}
           />
         )}
-      </Head>
+      </head>
       <body className={`${funnelDisplay.className} relative bg-primary text-secondary antialiased`}>
+        {showFallbackBanner && (
+          <div className="bg-yellow-100 px-4 py-2 text-sm text-yellow-900">
+            Korzystasz z fallback MarketConfig. Payload API jest niedostepne.
+          </div>
+        )}
         <HtmlLangSetter />
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />

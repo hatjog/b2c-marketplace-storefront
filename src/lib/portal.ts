@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs"
 import { cache } from "react"
 
 type MarketConfigLogo = {
@@ -24,6 +25,16 @@ type PayloadCollectionResponse<T> = {
 }
 
 const inFlightRequests = new Map<string, Promise<MarketConfig | null>>()
+
+function logMarketConfigError(message: string, error?: unknown) {
+  if (error instanceof Error) {
+    Sentry.captureException(error)
+  } else {
+    Sentry.captureMessage(message)
+  }
+
+  console.error(message, error)
+}
 
 function buildMarketConfigUrl(marketId: string) {
   const payloadApiUrl = process.env.PAYLOAD_API_URL
@@ -64,9 +75,10 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
       })
 
       if (!response.ok) {
-        console.error(
+        const error = new Error(
           `[market-config] fetch failed for market ${marketId}: ${response.status} ${response.statusText}`
         )
+        logMarketConfigError(error.message, error)
         return null
       }
 
@@ -75,7 +87,7 @@ export const fetchMarketConfig = cache(async (marketId: string) => {
 
       return data.docs?.[0] ?? null
     } catch (error) {
-      console.error(
+      logMarketConfigError(
         `[market-config] request error for market ${marketId}`,
         error
       )
@@ -130,7 +142,10 @@ export const resolveMarketConfig = cache(async (marketId: string) => {
       }
     }
   } catch (error) {
-    console.error(`[market-config] resolve failed for market ${marketId}`, error)
+    logMarketConfigError(
+      `[market-config] resolve failed for market ${marketId}`,
+      error
+    )
   }
 
   return {
