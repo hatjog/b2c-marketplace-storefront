@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
 
@@ -58,4 +59,7 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI
+});
