@@ -23,6 +23,21 @@ type PayloadCollectionResponse<T> = {
   docs?: T[];
 };
 
+function getMarketId(): string {
+  return process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+}
+
+function filterByMarket<T extends { metadata?: Record<string, unknown> }>(
+  items: T[],
+  marketId: string
+): T[] {
+  if (!marketId) return items;
+  return items.filter(item => {
+    const gpMeta = item.metadata?.gp as Record<string, unknown> | undefined;
+    return gpMeta?.market_id === marketId;
+  });
+}
+
 function getMedusaBackendUrl() {
   return process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000';
 }
@@ -161,7 +176,8 @@ export async function fetchHomepageProducts({
       }
     }
 
-    const sorted = sortProducts(products, resolvedSort);
+    const marketFiltered = filterByMarket(products, getMarketId());
+    const sorted = sortProducts(marketFiltered, resolvedSort);
     return sorted.slice(0, resolvedLimit);
   } catch (error) {
     console.error('[homepage][products] request error', error);
@@ -207,7 +223,8 @@ export async function fetchHomepageCategories({
     };
 
     const allCategories = data.product_categories || [];
-    const rootCategories = allCategories.filter(cat => !cat.parent_category_id);
+    const marketFiltered = filterByMarket(allCategories, getMarketId());
+    const rootCategories = marketFiltered.filter(cat => !cat.parent_category_id);
     const mapped = rootCategories
       .map(cat => ({
         name: cat.name,

@@ -25,6 +25,8 @@ export const listCollections = async (
     ...(await getCacheOptions('collections'))
   };
 
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+
   queryParams.limit = queryParams.limit || '100';
   queryParams.offset = queryParams.offset || '0';
 
@@ -34,7 +36,14 @@ export const listCollections = async (
       next,
       cache: 'force-cache'
     })
-    .then(({ collections }) => ({ collections, count: collections.length }));
+    .then(({ collections }) => {
+      const filtered = marketId
+        ? collections.filter(
+            c => ((c as any).metadata?.gp as Record<string, unknown>)?.market_id === marketId
+          )
+        : collections;
+      return { collections: filtered, count: filtered.length };
+    });
 };
 
 export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.StoreCollection> => {

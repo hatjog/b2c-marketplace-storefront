@@ -9,6 +9,8 @@ interface CategoriesProps {
 export const listCategories = async ({ query }: Partial<CategoriesProps> = {}) => {
   const limit = query?.limit || 100;
 
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+
   const allCategories = await sdk.client
     .fetch<{
       product_categories: HttpTypes.StoreProductCategory[];
@@ -25,12 +27,16 @@ export const listCategories = async ({ query }: Partial<CategoriesProps> = {}) =
     })
     .then(({ product_categories }) => product_categories);
 
-  const parentCategories = allCategories.filter(cat => !cat.parent_category_id);
+  const filtered = marketId
+    ? allCategories.filter(c => (c.metadata?.gp as Record<string, unknown>)?.market_id === marketId)
+    : allCategories;
+
+  const parentCategories = filtered.filter(cat => !cat.parent_category_id);
 
   const mainCategories = parentCategories.flatMap(parent => parent.category_children || []);
 
   const mainCategoriesWithChildren = mainCategories.map(mainCat => {
-    const children = allCategories.filter(cat => cat.parent_category_id === mainCat.id);
+    const children = filtered.filter(cat => cat.parent_category_id === mainCat.id);
 
     if (children.length > 0) {
       return {
