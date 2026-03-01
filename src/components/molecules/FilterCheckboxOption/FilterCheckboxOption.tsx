@@ -18,14 +18,14 @@ export const FilterCheckboxOption = ({
 }) => {
   return (
     <label
-      className={cn(
-        'flex gap-4 items-center cursor-pointer',
-        disabled && '!cursor-default'
-      )}
+      className={cn('flex cursor-pointer items-center gap-4', disabled && '!cursor-default')}
       onClick={() => (disabled ? null : onCheck(label))}
       {...props}
     >
-      <Checkbox checked={checked} disabled={disabled} />
+      <Checkbox
+        checked={checked}
+        disabled={disabled}
+      />
       <p
         className={cn(
           'label-md !font-normal',
@@ -33,12 +33,7 @@ export const FilterCheckboxOption = ({
           disabled && 'text-disabled'
         )}
       >
-        {label}{' '}
-        {amount && (
-          <span className='label-sm !font-light'>
-            ({amount})
-          </span>
-        )}
+        {label} {amount && <span className="label-sm !font-light">({amount})</span>}
       </p>
     </label>
   );

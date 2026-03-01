@@ -1,10 +1,10 @@
-import { BannerSection } from "@/components/sections"
+import { BannerSection } from '@/components/sections';
 
 export type BannerSectionBlock = {
-  heading?: string | null
-  subheading?: string | null
-}
+  heading?: string | null;
+  subheading?: string | null;
+};
 
 export function BannerBlock({ section }: { section: BannerSectionBlock }) {
-  return <BannerSection key={section.heading ?? section.subheading ?? "banner"} />
+  return <BannerSection key={section.heading ?? section.subheading ?? 'banner'} />;
 }

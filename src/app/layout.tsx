@@ -1,6 +1,7 @@
+import type { CSSProperties } from 'react';
+
 import type { Metadata } from 'next';
 import { Funnel_Display } from 'next/font/google';
-import type { CSSProperties } from 'react';
 
 import './globals.css';
 
@@ -22,7 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const { marketConfig } = await resolveMarketConfig(marketId);
   const siteName =
-    marketConfig.name || process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront';
+    marketConfig.name ||
+    process.env.NEXT_PUBLIC_SITE_NAME ||
+    'Mercur B2C Demo - Marketplace Storefront';
   const titlePattern = marketConfig.seo_defaults?.title_pattern;
   const titleTemplate =
     typeof titlePattern === 'string' && titlePattern.includes('%s')
@@ -58,8 +61,7 @@ export default async function RootLayout({
   const cart = await retrieveCart();
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const { marketConfig, usedFallback } = await resolveMarketConfig(marketId);
-  const showFallbackBanner =
-    usedFallback && process.env.NODE_ENV === 'development';
+  const showFallbackBanner = usedFallback && process.env.NODE_ENV === 'development';
 
   const ALGOLIA_APP = process.env.NEXT_PUBLIC_ALGOLIA_ID;
   const htmlStyle: CSSProperties | undefined = marketConfig.primary_color

@@ -1,108 +1,112 @@
-"use client"
+'use client';
 
-import { Button, Card } from "@/components/atoms"
-import { LabeledInput } from "@/components/cells"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckCircle } from "@medusajs/icons"
+import { useState } from 'react';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Heading, toast } from '@medusajs/ui';
 import {
-  FieldError,
-  FieldValues,
   FormProvider,
   useForm,
   useFormContext,
-  UseFormReturn,
-} from "react-hook-form"
-import { ProfilePasswordFormData, profilePasswordSchema } from "./schema"
-import { useEffect, useState } from "react"
-import { updateCustomerPassword } from "@/lib/data/customer"
-import { Heading, toast } from "@medusajs/ui"
-import LocalizedClientLink from "../LocalizedLink/LocalizedLink"
-import { PasswordValidator } from "@/components/cells/PasswordValidator/PasswordValidator"
+  type FieldError,
+  type FieldValues,
+  type UseFormReturn
+} from 'react-hook-form';
+
+import { Button } from '@/components/atoms';
+import { LabeledInput } from '@/components/cells';
+import { PasswordValidator } from '@/components/cells/PasswordValidator/PasswordValidator';
+import { updateCustomerPassword } from '@/lib/data/customer';
+
+import LocalizedClientLink from '../LocalizedLink/LocalizedLink';
+import { profilePasswordSchema, type ProfilePasswordFormData } from './schema';
 
 export const ProfilePasswordForm = ({ token }: { token?: string }) => {
   const form = useForm<ProfilePasswordFormData>({
     resolver: zodResolver(profilePasswordSchema),
     defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  })
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
+  });
 
   return (
     <FormProvider {...form}>
-      <Form form={form} token={token} />
+      <Form
+        form={form}
+        token={token}
+      />
     </FormProvider>
-  )
-}
+  );
+};
 
 const Form = ({
   form,
-  token,
+  token
 }: {
-  form: UseFormReturn<ProfilePasswordFormData>
-  token?: string
+  form: UseFormReturn<ProfilePasswordFormData>;
+  token?: string;
 }) => {
-  const [success, setSuccess] = useState(false)
-  const [confirmPasswordError, setConfirmPasswordError] = useState<
-    FieldError | undefined
-  >(undefined)
+  const [success, setSuccess] = useState(false);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<FieldError | undefined>(
+    undefined
+  );
   const [newPasswordError, setNewPasswordError] = useState({
     isValid: false,
     lower: false,
     upper: false,
-    "8chars": false,
-    symbolOrDigit: false,
-  })
+    '8chars': false,
+    symbolOrDigit: false
+  });
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useFormContext()
+    formState: { errors }
+  } = useFormContext();
 
   const updatePassword = async (data: FieldValues) => {
-    if (form.getValues("confirmPassword") !== form.getValues("newPassword")) {
+    if (form.getValues('confirmPassword') !== form.getValues('newPassword')) {
       setConfirmPasswordError({
-        message: "New password and old password cannot be identical",
-        type: "custom",
-      } as FieldError)
-      return
+        message: 'New password and old password cannot be identical',
+        type: 'custom'
+      } as FieldError);
+      return;
     }
 
-    setConfirmPasswordError(undefined)
+    setConfirmPasswordError(undefined);
 
     if (newPasswordError.isValid) {
       try {
-        const res = await updateCustomerPassword(data.newPassword, token!)
+        const res = await updateCustomerPassword(data.newPassword, token!);
         if (res.success) {
-          toast.success("Password updated")
-          setSuccess(true)
+          toast.success('Password updated');
+          setSuccess(true);
         } else {
-          toast.error(res.error || "Something went wrong")
+          toast.error(res.error || 'Something went wrong');
         }
       } catch (err) {
-        console.log(err)
-        return
+        console.log(err);
+        return;
       }
     }
-  }
+  };
 
   return success ? (
     <div className="p-4">
       <Heading
         level="h1"
-        className="uppercase heading-md text-primary text-center"
+        className="heading-md text-center uppercase text-primary"
       >
         Password updated
       </Heading>
-      <p className="text-center my-8">
-        Your password has been updated. You can now login with your new
-        password.
+      <p className="my-8 text-center">
+        Your password has been updated. You can now login with your new password.
       </p>
       <LocalizedClientLink href="/user">
         <Button
-          className="uppercase py-3 px-6 !font-semibold w-full"
+          className="w-full px-6 py-3 !font-semibold uppercase"
           size="large"
         >
           Go to user page
@@ -118,25 +122,25 @@ const Form = ({
         label="Current password"
         type="password"
         error={errors.currentPassword as FieldError}
-        {...register("currentPassword")}
+        {...register('currentPassword')}
       />
       <LabeledInput
         label="New password"
         type="password"
         error={errors.newPassword as FieldError}
-        {...register("newPassword")}
+        {...register('newPassword')}
       />
       <PasswordValidator
-        password={form.watch("newPassword")}
+        password={form.watch('newPassword')}
         setError={setNewPasswordError}
       />
       <LabeledInput
         label="Confirm new password"
         type="password"
         error={confirmPasswordError as FieldError}
-        {...register("confirmPassword")}
+        {...register('confirmPassword')}
       />
-      <Button className="w-full my-4">Change password</Button>
+      <Button className="my-4 w-full">Change password</Button>
     </form>
-  )
-}
+  );
+};

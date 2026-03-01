@@ -1,8 +1,9 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { useParams, usePathname } from "next/navigation"
-import React, { MouseEventHandler } from "react"
+import React, { type MouseEventHandler } from 'react';
+
+import Link from 'next/link';
+import { useParams, usePathname } from 'next/navigation';
 
 /**
  * Use this component to create a Next.js `<LocalizedClientLink />` that persists the current country code in the url,
@@ -13,23 +14,26 @@ const LocalizedClientLink = ({
   href,
   ...props
 }: {
-  children?: React.ReactNode
-  href: string
-  className?: string
-  onClick?: MouseEventHandler<HTMLAnchorElement> | undefined
-  passHref?: true
-  [x: string]: any
+  children?: React.ReactNode;
+  href: string;
+  className?: string;
+  onClick?: MouseEventHandler<HTMLAnchorElement> | undefined;
+  passHref?: true;
+  [x: string]: any;
 }) => {
-  const params = useParams()
-  const pathname = usePathname()
-  
-  const locale = params?.locale || pathname?.split('/')[1] || 'en'
+  const params = useParams();
+  const pathname = usePathname();
+
+  const locale = params?.locale || pathname?.split('/')[1] || 'en';
 
   return (
-    <Link href={`/${locale}${href}`} {...props}>
+    <Link
+      href={`/${locale}${href}`}
+      {...props}
+    >
       {children}
     </Link>
-  )
-}
+  );
+};
 
-export default LocalizedClientLink
+export default LocalizedClientLink;

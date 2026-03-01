@@ -3,7 +3,7 @@ export const cart = {
     currency: '$',
     product_price: 4542,
     delivery_price: 20,
-    total_price: 4562,
+    total_price: 4562
   },
   items: [
     {
@@ -13,7 +13,7 @@ export const cart = {
         name: 'Jason',
         avatar: '/images/product/seller-avatar.jpg',
         parcel: 'Parcel 1',
-        date: '08.01.24 - 18.01.24',
+        date: '08.01.24 - 18.01.24'
       },
       products: [
         {
@@ -25,7 +25,7 @@ export const cart = {
           color: 'Blue',
           price: 588,
           originalPrice: 799,
-          currency: '$',
+          currency: '$'
         },
         {
           id: 'product-2',
@@ -36,11 +36,11 @@ export const cart = {
           color: 'Red',
           price: 588,
           originalPrice: 799,
-          currency: '$',
-        },
+          currency: '$'
+        }
       ],
       delivery_price: 10,
-      currency: '$',
+      currency: '$'
     },
     {
       id: 'item-2',
@@ -49,7 +49,7 @@ export const cart = {
         name: 'Emily',
         avatar: '/images/product/seller-avatar.jpg',
         parcel: 'Parcel 2',
-        date: '11.01.24 - 20.01.24',
+        date: '11.01.24 - 20.01.24'
       },
       products: [
         {
@@ -61,11 +61,11 @@ export const cart = {
           color: 'Brown',
           price: 588,
           originalPrice: 799,
-          currency: '$',
-        },
+          currency: '$'
+        }
       ],
       delivery_price: 10,
-      currency: '$',
-    },
-  ],
+      currency: '$'
+    }
+  ]
 };

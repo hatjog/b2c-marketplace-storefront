@@ -2,9 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { SelectField } from '@/components/molecules';
-
-const selectOptions = [
+const _selectOptions = [
   { label: 'Newest', value: 'created_at' },
   { label: 'Price: Low to High', value: 'price_asc' },
   { label: 'Price: High to Low', value: 'price_desc' }
@@ -14,7 +12,7 @@ export const ProductListingHeader = ({ total }: { total: number }) => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const selectOptionHandler = (value: string) => {
+  const _selectOptionHandler = (value: string) => {
     router.push(`${pathname}?sortBy=${value}`);
   };
 

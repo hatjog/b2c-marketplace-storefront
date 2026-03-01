@@ -1,26 +1,30 @@
-import { SellerInfo } from "@/components/molecules"
-import { SellerProps } from "@/types/seller"
-import { Chat } from "../Chat/Chat"
-import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import type { HttpTypes } from '@medusajs/types';
+
+import { SellerInfo } from '@/components/molecules';
+import type { SellerProps } from '@/types/seller';
+
+import { Chat } from '../Chat/Chat';
 
 export const SellerHeading = ({
   seller,
   user,
-  header,
+  header
 }: {
-  header: boolean
-  seller: SellerProps
-  user: HttpTypes.StoreCustomer | null
+  header: boolean;
+  seller: SellerProps;
+  user: HttpTypes.StoreCustomer | null;
 }) => {
   return (
     <div className="border-b">
-      <div className="flex flex-col md:flex-row justify-between">
+      <div className="flex flex-col justify-between md:flex-row">
         <div>
-          <SellerInfo header={header} seller={seller} />
+          <SellerInfo
+            header={header}
+            seller={seller}
+          />
         </div>
         {user && (
-          <div className="flex gap-2 md:mt-0 p-5 md:ml-auto">
+          <div className="flex gap-2 p-5 md:ml-auto md:mt-0">
             <Chat
               user={user}
               seller={seller}
@@ -34,11 +38,11 @@ export const SellerHeading = ({
       <div className="px-5 pb-5">
         <p
           dangerouslySetInnerHTML={{
-            __html: seller.description,
+            __html: seller.description
           }}
           className="label-md"
         />
       </div>
     </div>
-  )
-}
+  );
+};

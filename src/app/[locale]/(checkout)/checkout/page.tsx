@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
@@ -21,7 +21,14 @@ export const metadata: Metadata = {
 export default async function CheckoutPage({}) {
   return (
     <Suspense
-      fallback={<div className="container flex items-center justify-center" data-testid="checkout-page-loading">Loading...</div>}
+      fallback={
+        <div
+          className="container flex items-center justify-center"
+          data-testid="checkout-page-loading"
+        >
+          Loading...
+        </div>
+      }
     >
       <CheckoutPageContent />
     </Suspense>
@@ -41,9 +48,15 @@ async function CheckoutPageContent({}) {
 
   return (
     <PaymentWrapper cart={cart}>
-      <main className="container" data-testid="checkout-page">
+      <main
+        className="container"
+        data-testid="checkout-page"
+      >
         <div className="grid gap-8 lg:grid-cols-11">
-          <div className="flex flex-col gap-4 lg:col-span-6" data-testid="checkout-steps-container">
+          <div
+            className="flex flex-col gap-4 lg:col-span-6"
+            data-testid="checkout-steps-container"
+          >
             <CartAddressSection
               cart={cart}
               customer={customer}
@@ -58,7 +71,10 @@ async function CheckoutPageContent({}) {
             />
           </div>
 
-          <div className="lg:col-span-5" data-testid="checkout-review-container">
+          <div
+            className="lg:col-span-5"
+            data-testid="checkout-review-container"
+          >
             <CartReview cart={cart} />
           </div>
         </div>

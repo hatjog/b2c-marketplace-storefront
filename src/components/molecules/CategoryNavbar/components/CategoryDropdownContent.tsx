@@ -1,32 +1,32 @@
-'use client'
+'use client';
 
-import { type ReactNode, useRef, useEffect } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react';
 
 interface CategoryDropdownContentProps {
-  children: ReactNode
-  maxHeight?: string
+  children: ReactNode;
+  maxHeight?: string;
 }
 
 export const CategoryDropdownContent = ({
   children,
-  maxHeight = '25rem',
+  maxHeight = '25rem'
 }: CategoryDropdownContentProps) => {
-  const contentRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const element = contentRef.current
-    if (!element) return
+    const element = contentRef.current;
+    if (!element) return;
 
     const handleScroll = (e: Event) => {
-      e.stopPropagation()
-    }
+      e.stopPropagation();
+    };
 
-    element.addEventListener('scroll', handleScroll, { passive: true })
+    element.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      element.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
+      element.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <div
@@ -36,5 +36,5 @@ export const CategoryDropdownContent = ({
     >
       {children}
     </div>
-  )
-}
+  );
+};

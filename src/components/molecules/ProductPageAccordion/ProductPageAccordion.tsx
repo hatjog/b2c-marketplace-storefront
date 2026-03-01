@@ -1,30 +1,27 @@
 'use client';
+
+import { useEffect, useRef, useState } from 'react';
+
 import { Card } from '@/components/atoms';
 import { MinusThinIcon } from '@/icons';
 import { cn } from '@/lib/utils';
-import { useEffect, useRef, useState } from 'react';
 
 export const ProductPageAccordion = ({
   children,
   heading,
-  defaultOpen = true,
+  defaultOpen = true
 }: {
   children: React.ReactNode;
   heading: string;
   defaultOpen?: boolean;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
-  const [contentHeight, setContentHeight] = useState(
-    defaultOpen ? '100%' : 0
-  );
+  const [contentHeight, setContentHeight] = useState(defaultOpen ? '100%' : 0);
 
   const accordionRef = useRef(null);
 
   useEffect(() => {
-    if (accordionRef.current)
-      setContentHeight(
-        accordionRef.current['scrollHeight'] || 0
-      );
+    if (accordionRef.current) setContentHeight(accordionRef.current['scrollHeight'] || 0);
   }, []);
 
   const openHandler = () => {
@@ -34,13 +31,13 @@ export const ProductPageAccordion = ({
     <Card>
       <div
         onClick={openHandler}
-        className='flex justify-between items-center cursor-pointer px-2 py-4'
+        className="flex cursor-pointer items-center justify-between px-2 py-4"
       >
-        <h4 className='label-lg uppercase'>{heading}</h4>
-        <div className='relative'>
+        <h4 className="label-lg uppercase">{heading}</h4>
+        <div className="relative">
           <MinusThinIcon
             className={cn(
-              'absolute top-0 left-0 transition-all duration-300',
+              'absolute left-0 top-0 transition-all duration-300',
               !open && 'rotate-90'
             )}
           />
@@ -49,12 +46,10 @@ export const ProductPageAccordion = ({
       </div>
       <div
         ref={accordionRef}
-        className={cn(
-          'transition-all duration-300 h-full overflow-hidden px-2'
-        )}
+        className={cn('h-full overflow-hidden px-2 transition-all duration-300')}
         style={{ maxHeight: open ? contentHeight : 0 }}
       >
-        <div className='py-2'>{children}</div>
+        <div className="py-2">{children}</div>
       </div>
     </Card>
   );

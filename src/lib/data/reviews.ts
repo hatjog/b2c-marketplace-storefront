@@ -1,6 +1,6 @@
 'use server';
 
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 import { revalidatePath } from 'next/cache';
 
 import { fetchQuery } from '../config';

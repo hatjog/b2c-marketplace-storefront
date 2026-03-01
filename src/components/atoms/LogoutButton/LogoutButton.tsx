@@ -1,32 +1,30 @@
-"use client"
-import { signout } from "@/lib/data/customer"
-import { cn } from "@/lib/utils"
+'use client';
+
+import { signout } from '@/lib/data/customer';
+import { cn } from '@/lib/utils';
 
 type LogoutButtonProps = {
-  unstyled?: boolean
-  "data-testid"?: string
-} & React.ButtonHTMLAttributes<HTMLButtonElement>
+  unstyled?: boolean;
+  'data-testid'?: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const LogoutButton: React.FC<LogoutButtonProps> = ({
   unstyled,
   className,
   children,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId
 }) => {
   const handleLogout = async () => {
-    await signout()
-  }
+    await signout();
+  };
 
   return (
     <button
       onClick={handleLogout}
-      className={cn(
-        !unstyled && "label-md uppercase px-4 py-3 my-3 md:my-0",
-        className
-      )}
+      className={cn(!unstyled && 'label-md my-3 px-4 py-3 uppercase md:my-0', className)}
       data-testid={dataTestId}
     >
-      {children || "Logout"}
+      {children || 'Logout'}
     </button>
-  )
-}
+  );
+};

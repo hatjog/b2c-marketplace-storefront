@@ -1,7 +1,9 @@
 'use client';
 
-import { Button } from '@/components/atoms';
 import { useState } from 'react';
+
+import { Button } from '@/components/atoms';
+
 import { Modal } from '../Modal/Modal';
 import { ReportListingForm } from '../ReportListingForm/ReportListingForm';
 
@@ -10,20 +12,18 @@ export const ProductReportButton = () => {
   return (
     <>
       <Button
-        className='uppercase label-md'
-        variant='tonal'
+        className="label-md uppercase"
+        variant="tonal"
         onClick={() => setOpenModal(true)}
       >
         Report listing
       </Button>
       {openModal && (
         <Modal
-          heading='Report listing'
+          heading="Report listing"
           onClose={() => setOpenModal(false)}
         >
-          <ReportListingForm
-            onClose={() => setOpenModal(false)}
-          />
+          <ReportListingForm onClose={() => setOpenModal(false)} />
         </Modal>
       )}
     </>

@@ -1,5 +1,5 @@
-import { Card } from "@/components/atoms"
+import { Card } from '@/components/atoms';
 
 export const OrderAddresses = () => {
-  return <Card>OrderAddresses</Card>
-}
+  return <Card>OrderAddresses</Card>;
+};

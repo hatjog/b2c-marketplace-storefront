@@ -5,13 +5,12 @@
  */
 export function parseVariantIdsFromError(errorMessage: string): string[] {
   if (!errorMessage) {
-    return []
+    return [];
   }
 
   // Match all occurrences of variant_XXXXXXXXXX pattern
-  const variantIdPattern = /variant_[A-Z0-9]+/g
-  const matches = errorMessage.match(variantIdPattern)
+  const variantIdPattern = /variant_[A-Z0-9]+/g;
+  const matches = errorMessage.match(variantIdPattern);
 
-  return matches || []
+  return matches || [];
 }
-

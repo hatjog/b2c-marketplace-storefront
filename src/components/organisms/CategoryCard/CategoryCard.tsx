@@ -1,17 +1,14 @@
-import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
-import Image from "next/image"
+import Image from 'next/image';
 
-export function CategoryCard({
-  category,
-}: {
-  category: { name: string; handle: string }
-}) {
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+
+export function CategoryCard({ category }: { category: { name: string; handle: string } }) {
   return (
     <LocalizedClientLink
       href={`/categories/${category.handle}`}
-      className="relative flex flex-col items-center border rounded-sm bg-component transition-all hover:rounded-full w-[233px] aspect-square"
+      className="relative flex aspect-square w-[233px] flex-col items-center rounded-sm border bg-component transition-all hover:rounded-full"
     >
-      <div className="flex relative aspect-square overflow-hidden w-[200px]">
+      <div className="relative flex aspect-square w-[200px] overflow-hidden">
         <Image
           loading="lazy"
           src={`/images/categories/${category.handle}.png`}
@@ -19,12 +16,10 @@ export function CategoryCard({
           width={200}
           height={200}
           sizes="(min-width: 1024px) 200px, 40vw"
-          className="object-contain scale-90 rounded-full"
+          className="scale-90 rounded-full object-contain"
         />
       </div>
-      <h3 className="w-full text-center label-lg text-primary">
-        {category.name}
-      </h3>
+      <h3 className="label-lg w-full text-center text-primary">{category.name}</h3>
     </LocalizedClientLink>
-  )
+  );
 }

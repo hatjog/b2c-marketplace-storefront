@@ -1,68 +1,65 @@
-import { PropsWithChildren, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, type PropsWithChildren } from 'react';
 
-import { CartContext } from "./context"
-import { Cart, StoreCartLineItemOptimisticUpdate } from "@/types/cart"
-import { 
+import {
   addToCart as apiAddToCart,
   deleteLineItem as apiDeleteLineItem,
   updateLineItem as apiUpdateLineItem,
-  retrieveCart 
-} from "@/lib/data/cart"
+  retrieveCart
+} from '@/lib/data/cart';
+import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
+
+import { CartContext } from './context';
 
 interface CartProviderProps extends PropsWithChildren {
-  cart: Cart | null
+  cart: Cart | null;
 }
 
 export function CartProvider({ cart, children }: CartProviderProps) {
-  const [cartState, setCartState] = useState(cart)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [isAddingItem, setIsAddingItem] = useState(false)
-  const [isUpdatingItem, setIsUpdatingItem] = useState(false)
-  const [isRemovingItem, setIsRemovingItem] = useState(false)
+  const [cartState, setCartState] = useState(cart);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isUpdatingItem, setIsUpdatingItem] = useState(false);
+  const [isRemovingItem, setIsRemovingItem] = useState(false);
 
   useEffect(() => {
-    setCartState(cart)
-  }, [cart])
+    setCartState(cart);
+  }, [cart]);
 
   const refreshCart = useCallback(async () => {
     try {
-      const cartData = await retrieveCart()
-      setCartState(cartData)
-      return cartData
+      const cartData = await retrieveCart();
+      setCartState(cartData);
+      return cartData;
     } catch (error) {
-      console.error("Error fetching cart:", error)
-      return null
+      console.error('Error fetching cart:', error);
+      return null;
     }
-  }, [])
+  }, []);
 
-  function handleAddToCart(
-    newItem: StoreCartLineItemOptimisticUpdate,
-    currency_code: string
-  ) {
-    setCartState((prev) => {
-      const currentItems = prev?.items || []
+  function handleAddToCart(newItem: StoreCartLineItemOptimisticUpdate, currency_code: string) {
+    setCartState(prev => {
+      const currentItems = prev?.items || [];
       const isNewItemInCart = currentItems.find(
         ({ variant_id }) => variant_id === newItem.variant_id
-      )
+      );
 
       if (isNewItemInCart) {
-        const updatedItems = currentItems.map((currentItem) => {
+        const updatedItems = currentItems.map(currentItem => {
           if (currentItem.variant_id !== newItem.variant_id) {
-            return currentItem
+            return currentItem;
           }
 
-          const newQuantity = currentItem.quantity + (newItem?.quantity || 0)
+          const newQuantity = currentItem.quantity + (newItem?.quantity || 0);
           return {
             ...currentItem,
             quantity: newQuantity,
             subtotal: newQuantity * (newItem?.subtotal || 0),
             total: newQuantity * (newItem?.total || 0),
-            tax_total: newQuantity * (newItem?.tax_total || 0),
-          }
-        }) as StoreCartLineItemOptimisticUpdate[]
+            tax_total: newQuantity * (newItem?.tax_total || 0)
+          };
+        }) as StoreCartLineItemOptimisticUpdate[];
 
-        const { item_subtotal, total, tax_total } =
-          getItemsSummaryValues(updatedItems)
+        const { item_subtotal, total, tax_total } = getItemsSummaryValues(updatedItems);
 
         return {
           ...prev,
@@ -70,17 +67,13 @@ export function CartProvider({ cart, children }: CartProviderProps) {
           item_subtotal,
           total,
           tax_total,
-          currency_code,
-        } as Cart
+          currency_code
+        } as Cart;
       }
 
-      const updatedItems = [
-        ...currentItems,
-        newItem,
-      ] as StoreCartLineItemOptimisticUpdate[]
+      const updatedItems = [...currentItems, newItem] as StoreCartLineItemOptimisticUpdate[];
 
-      const { item_subtotal, total, tax_total } =
-        getItemsSummaryValues(updatedItems)
+      const { item_subtotal, total, tax_total } = getItemsSummaryValues(updatedItems);
 
       return {
         ...prev,
@@ -88,101 +81,99 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         item_subtotal,
         total,
         tax_total,
-        currency_code,
-      } as Cart
-    })
+        currency_code
+      } as Cart;
+    });
   }
 
   const updateCartItem = async (lineId: string, quantity: number) => {
-    if (!cartState?.items) return
+    if (!cartState?.items) return;
 
-    setIsUpdatingItem(true)
-    setIsUpdating(true)
+    setIsUpdatingItem(true);
+    setIsUpdating(true);
 
     const optimisticCart = {
       ...cartState,
-      items: cartState.items.map((item) => 
-        item.id === lineId ? { ...item, quantity } : item
-      )
-    }
+      items: cartState.items.map(item => (item.id === lineId ? { ...item, quantity } : item))
+    };
 
-    setCartState(optimisticCart)
+    setCartState(optimisticCart);
 
     try {
-      await apiUpdateLineItem({ lineId, quantity })
-      await refreshCart()
+      await apiUpdateLineItem({ lineId, quantity });
+      await refreshCart();
     } catch (error) {
-      console.error("Error updating item quantity:", error)
-      await refreshCart()
+      console.error('Error updating item quantity:', error);
+      await refreshCart();
     } finally {
-      setIsUpdatingItem(false)
-      setIsUpdating(false)
+      setIsUpdatingItem(false);
+      setIsUpdating(false);
     }
-  }
+  };
 
   const addToCart = async ({
     variantId,
     quantity,
-    countryCode,
+    countryCode
   }: {
-    variantId: string
-    quantity: number
-    countryCode: string
+    variantId: string;
+    quantity: number;
+    countryCode: string;
   }) => {
-    setIsAddingItem(true)
-    setIsUpdating(true)
+    setIsAddingItem(true);
+    setIsUpdating(true);
 
     try {
       await apiAddToCart({
         variantId,
         quantity,
-        countryCode,
-      })
-      await refreshCart()
+        countryCode
+      });
+      await refreshCart();
     } catch (error) {
-      console.error("Error adding product to cart:", error)
-      await refreshCart()
-      throw error
+      console.error('Error adding product to cart:', error);
+      await refreshCart();
+      throw error;
     } finally {
-      setIsAddingItem(false)
-      setIsUpdating(false)
+      setIsAddingItem(false);
+      setIsUpdating(false);
     }
-  }
+  };
 
   const removeCartItem = async (lineId: string) => {
-    if (!cartState?.items) return
+    if (!cartState?.items) return;
 
-    setIsRemovingItem(true)
-    setIsUpdating(true)
+    setIsRemovingItem(true);
+    setIsUpdating(true);
 
     const optimisticCart = {
       ...cartState,
-      items: cartState.items.filter((item) => item.id !== lineId)
-    }
+      items: cartState.items.filter(item => item.id !== lineId)
+    };
 
-    setCartState(optimisticCart)
+    setCartState(optimisticCart);
 
     try {
-      await apiDeleteLineItem(lineId)
-      await refreshCart()
+      await apiDeleteLineItem(lineId);
+      await refreshCart();
     } catch (error) {
-      console.error("Error removing item from cart:", error)
-      await refreshCart()
+      console.error('Error removing item from cart:', error);
+      await refreshCart();
     } finally {
-      setIsRemovingItem(false)
-      setIsUpdating(false)
+      setIsRemovingItem(false);
+      setIsUpdating(false);
     }
-  }
+  };
 
   function getItemsSummaryValues(items: StoreCartLineItemOptimisticUpdate[]) {
     return items.reduce(
       (acc, item) => ({
         item_subtotal: (acc.item_subtotal || 0) + (item.subtotal || 0),
         total: (acc.total || 0) + (item.total || 0),
-        tax_total: (acc.tax_total || 0) + (item.tax_total || 0),
+        tax_total: (acc.tax_total || 0) + (item.tax_total || 0)
       }),
       { item_subtotal: 0, total: 0, tax_total: 0 }
-    )
+    );
   }
 
   return (
@@ -197,10 +188,10 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         isUpdating,
         isAddingItem,
         isUpdatingItem,
-        isRemovingItem,
+        isRemovingItem
       }}
     >
       {children}
     </CartContext.Provider>
-  )
+  );
 }

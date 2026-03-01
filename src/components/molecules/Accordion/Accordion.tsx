@@ -1,58 +1,63 @@
-"use client"
-import { Card } from "@/components/atoms"
-import { CollapseIcon } from "@/icons"
-import { cn } from "@/lib/utils"
-import { useEffect, useRef, useState } from "react"
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+
+import { Card } from '@/components/atoms';
+import { CollapseIcon } from '@/icons';
+import { cn } from '@/lib/utils';
 
 export const Accordion = ({
   children,
   heading,
-  defaultOpen = true,
+  defaultOpen = true
 }: {
-  children: React.ReactNode
-  heading: string
-  defaultOpen?: boolean
+  children: React.ReactNode;
+  heading: string;
+  defaultOpen?: boolean;
 }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-  const [height, setHeight] = useState(0)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [height, setHeight] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTimeout(() => {
       if (contentRef.current) {
-        setHeight(contentRef.current.scrollHeight)
+        setHeight(contentRef.current.scrollHeight);
       }
-    }, 100)
-  }, [children])
+    }, 100);
+  }, [children]);
 
   const openHandler = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
 
   return (
     <Card>
       <div
         onClick={openHandler}
-        className="flex justify-between items-center cursor-pointer px-2"
+        className="flex cursor-pointer items-center justify-between px-2"
       >
         <h4 className="label-lg uppercase">{heading}</h4>
         <CollapseIcon
           size={20}
-          className={cn("transition-all duration-300", isOpen && "rotate-180")}
+          className={cn('transition-all duration-300', isOpen && 'rotate-180')}
         />
       </div>
       <div
-        className={cn("transition-all duration-300 overflow-hidden")}
+        className={cn('overflow-hidden transition-all duration-300')}
         style={{
-          maxHeight: isOpen ? `${height}px` : "0px",
+          maxHeight: isOpen ? `${height}px` : '0px',
           opacity: isOpen ? 1 : 0,
-          transition: "max-height 0.3s ease-in-out, opacity 0.2s ease-in-out",
+          transition: 'max-height 0.3s ease-in-out, opacity 0.2s ease-in-out'
         }}
       >
-        <div ref={contentRef} className="pt-4">
+        <div
+          ref={contentRef}
+          className="pt-4"
+        >
           {children}
         </div>
       </div>
     </Card>
-  )
-}
+  );
+};

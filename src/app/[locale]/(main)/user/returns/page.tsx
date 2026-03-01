@@ -20,7 +20,12 @@ export default async function ReturnsPage({
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3">
-          <h1 className="heading-md uppercase" data-testid="returns-heading">Returns</h1>
+          <h1
+            className="heading-md uppercase"
+            data-testid="returns-heading"
+          >
+            Returns
+          </h1>
           <OrderReturnRequests
             returns={order_return_requests.sort(
               (a, b) =>

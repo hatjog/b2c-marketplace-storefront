@@ -1,30 +1,31 @@
-import { Radio, Radio as RadioGroupOption } from "@headlessui/react"
-import { Text, clx } from "@medusajs/ui"
-import React, { useContext, useMemo, type JSX } from "react"
+import React, { useContext, useMemo, type JSX } from 'react';
 
-import { isManual } from "../../../lib/constants"
-import SkeletonCardDetails from "./SkeletonCardDetails"
-import { CardElement } from "@stripe/react-stripe-js"
-import { StripeCardElementOptions } from "@stripe/stripe-js"
-import PaymentTest from "./PaymentTest"
-import { StripeContext } from "./StripeWrapper"
+import { Radio, Radio as RadioGroupOption } from '@headlessui/react';
+import { clx, Text } from '@medusajs/ui';
+import { CardElement } from '@stripe/react-stripe-js';
+import type { StripeCardElementOptions } from '@stripe/stripe-js';
+
+import { isManual } from '../../../lib/constants';
+import PaymentTest from './PaymentTest';
+import SkeletonCardDetails from './SkeletonCardDetails';
+import { StripeContext } from './StripeWrapper';
 
 type PaymentContainerProps = {
-  paymentProviderId: string
-  selectedPaymentOptionId: string | null
-  disabled?: boolean
-  paymentInfoMap: Record<string, { title: string; icon: JSX.Element }>
-  children?: React.ReactNode
-}
+  paymentProviderId: string;
+  selectedPaymentOptionId: string | null;
+  disabled?: boolean;
+  paymentInfoMap: Record<string, { title: string; icon: JSX.Element }>;
+  children?: React.ReactNode;
+};
 
 const PaymentContainer: React.FC<PaymentContainerProps> = ({
   paymentProviderId,
   selectedPaymentOptionId,
   paymentInfoMap,
   disabled = false,
-  children,
+  children
 }) => {
-  const isDevelopment = process.env.NODE_ENV === "development"
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   return (
     <RadioGroupOption
@@ -32,23 +33,23 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
       value={paymentProviderId}
       disabled={disabled}
       className={clx(
-        "rounded-sm flex flex-col gap-y-2 text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+        'text-small-regular rounded-rounded hover:shadow-borders-interactive-with-active mb-2 flex cursor-pointer flex-col gap-y-2 rounded-sm border px-8 py-4',
         {
-          "border-primary/20": selectedPaymentOptionId === paymentProviderId,
+          'border-primary/20': selectedPaymentOptionId === paymentProviderId
         }
       )}
     >
-      <div className="flex items-center justify-between ">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-4">
           <Radio value={selectedPaymentOptionId === paymentProviderId} />
           <Text className="text-base-regular">
             {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
           </Text>
           {isManual(paymentProviderId) && isDevelopment && (
-            <PaymentTest className="hidden small:block" />
+            <PaymentTest className="small:block hidden" />
           )}
         </div>
-        <span className="justify-self-end text-ui-fg-base">
+        <span className="text-ui-fg-base justify-self-end">
           {paymentInfoMap[paymentProviderId]?.icon}
         </span>
       </div>
@@ -57,10 +58,10 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
       )}
       {children}
     </RadioGroupOption>
-  )
-}
+  );
+};
 
-export default PaymentContainer
+export default PaymentContainer;
 
 export const StripeCardContainer = ({
   paymentProviderId,
@@ -69,30 +70,30 @@ export const StripeCardContainer = ({
   disabled = false,
   setCardBrand,
   setError,
-  setCardComplete,
-}: Omit<PaymentContainerProps, "children"> & {
-  setCardBrand: (brand: string) => void
-  setError: (error: string | null) => void
-  setCardComplete: (complete: boolean) => void
+  setCardComplete
+}: Omit<PaymentContainerProps, 'children'> & {
+  setCardBrand: (brand: string) => void;
+  setError: (error: string | null) => void;
+  setCardComplete: (complete: boolean) => void;
 }) => {
-  const stripeReady = useContext(StripeContext)
+  const stripeReady = useContext(StripeContext);
 
   const useOptions: StripeCardElementOptions = useMemo(() => {
     return {
       style: {
         base: {
-          fontFamily: "Inter, sans-serif",
-          color: "#424270",
-          "::placeholder": {
-            color: "rgb(107 114 128)",
-          },
-        },
+          fontFamily: 'Inter, sans-serif',
+          color: '#424270',
+          '::placeholder': {
+            color: 'rgb(107 114 128)'
+          }
+        }
       },
       classes: {
-        base: "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-ui-bg-field border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-ui-border-base hover:bg-ui-bg-field-hover transition-all duration-300 ease-in-out",
-      },
-    }
-  }, [])
+        base: 'pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-ui-bg-field border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-ui-border-base hover:bg-ui-bg-field-hover transition-all duration-300 ease-in-out'
+      }
+    };
+  }, []);
 
   return (
     <PaymentContainer
@@ -104,17 +105,13 @@ export const StripeCardContainer = ({
       {selectedPaymentOptionId === paymentProviderId &&
         (stripeReady ? (
           <div className="my-4 transition-all duration-150 ease-in-out">
-            <Text className="txt-medium-plus text-ui-fg-base mb-1">
-              Enter your card details:
-            </Text>
+            <Text className="txt-medium-plus text-ui-fg-base mb-1">Enter your card details:</Text>
             <CardElement
               options={useOptions as StripeCardElementOptions}
-              onChange={(e) => {
-                setCardBrand(
-                  e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1)
-                )
-                setError(e.error?.message || null)
-                setCardComplete(e.complete)
+              onChange={e => {
+                setCardBrand(e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1));
+                setError(e.error?.message || null);
+                setCardComplete(e.complete);
               }}
             />
           </div>
@@ -122,5 +119,5 @@ export const StripeCardContainer = ({
           <SkeletonCardDetails />
         ))}
     </PaymentContainer>
-  )
-}
+  );
+};

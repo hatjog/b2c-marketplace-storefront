@@ -1,6 +1,5 @@
-import { OrderAddresses } from "@/components/organisms/OrderAddresses/OrderAddresses"
-import { OrderParcels } from "@/components/organisms/OrderParcels/OrderParcels"
-import { OrderTotals } from "@/components/organisms/OrderTotals/OrderTotals"
+import { OrderParcels } from '@/components/organisms/OrderParcels/OrderParcels';
+import { OrderTotals } from '@/components/organisms/OrderTotals/OrderTotals';
 
 export const OrderDetailsSection = ({ orderSet }: { orderSet: any }) => {
   return (
@@ -9,5 +8,5 @@ export const OrderDetailsSection = ({ orderSet }: { orderSet: any }) => {
       <OrderTotals orderSet={orderSet} />
       {/* <OrderAddresses /> */}
     </div>
-  )
-}
+  );
+};

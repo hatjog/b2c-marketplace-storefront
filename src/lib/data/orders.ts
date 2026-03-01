@@ -1,8 +1,8 @@
 'use server';
 
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 
-import { SellerProps } from '@/types/seller';
+import type { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
 import medusaError from '../helpers/medusa-error';

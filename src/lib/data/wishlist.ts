@@ -2,13 +2,19 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { Wishlist } from '@/types/wishlist';
+import { getRegion } from '@/lib/data/regions';
+import type { Wishlist } from '@/types/wishlist';
 
 import { fetchQuery, sdk } from '../config';
 import { getAuthHeaders } from './cookies';
-import { getRegion } from "@/lib/data/regions"
 
-export const getUserWishlists = async ({regionId, countryCode} : {regionId?: string, countryCode?: string}) => {
+export const getUserWishlists = async ({
+  regionId,
+  countryCode
+}: {
+  regionId?: string;
+  countryCode?: string;
+}) => {
   const headers = {
     ...(await getAuthHeaders()),
     'Content-Type': 'application/json',
@@ -68,7 +74,7 @@ export const addWishlistItem = async ({
       reference,
       reference_id
     }
-  })
+  });
 
   revalidatePath('/wishlist');
 
@@ -79,11 +85,7 @@ export const addWishlistItem = async ({
   return response;
 };
 
-export const removeWishlistItem = async ({
-  product_id
-}: {
-  product_id: string;
-}) => {
+export const removeWishlistItem = async ({ product_id }: { product_id: string }) => {
   const headers = {
     ...(await getAuthHeaders())
   };
@@ -91,7 +93,7 @@ export const removeWishlistItem = async ({
   const response = await fetchQuery(`/store/wishlist/product/${product_id}`, {
     headers,
     method: 'DELETE'
-  })
+  });
 
   revalidatePath('/wishlist');
 

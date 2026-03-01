@@ -1,28 +1,29 @@
 import { Button } from '@/components/atoms';
 import { SellerReview } from '@/components/molecules';
-import { SingleProductReview } from '@/types/product';
+import type { SingleProductReview } from '@/types/product';
 
-export const ProductDetailsSellerReviews = ({
-  reviews,
-}: {
-  reviews: SingleProductReview[];
-}) => {
+export const ProductDetailsSellerReviews = ({ reviews }: { reviews: SingleProductReview[] }) => {
   return (
-    <div className='p-4 border rounded-sm' data-testid="product-seller-reviews-section">
-      <div className='flex justify-between items-center mb-5'>
-        <h4 className='uppercase heading-sm'>
-          Seller reviews
-        </h4>
+    <div
+      className="rounded-sm border p-4"
+      data-testid="product-seller-reviews-section"
+    >
+      <div className="mb-5 flex items-center justify-between">
+        <h4 className="heading-sm uppercase">Seller reviews</h4>
         <Button
-          variant='tonal'
-          className='uppercase label-md font-400'
+          variant="tonal"
+          className="label-md font-400 uppercase"
           data-testid="product-seller-reviews-see-more"
         >
           See more
         </Button>
       </div>
-      {reviews.map((review) => (
-        <SellerReview key={review.id} review={review} data-testid={`product-seller-review-${review.id}`} />
+      {reviews.map(review => (
+        <SellerReview
+          key={review.id}
+          review={review}
+          data-testid={`product-seller-review-${review.id}`}
+        />
       ))}
     </div>
   );

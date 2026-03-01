@@ -1,45 +1,45 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react';
 
 export const useCategoryDropdown = () => {
-  const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null)
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false)
-  const [shouldRenderDropdown, setShouldRenderDropdown] = useState(false)
+  const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [shouldRenderDropdown, setShouldRenderDropdown] = useState(false);
 
   const openDropdown = useCallback((categoryId: string) => {
-    setHoveredCategoryId(categoryId)
-    setShouldRenderDropdown(true)
-    const timer = setTimeout(() => setIsDropdownVisible(true), 20)
-    return () => clearTimeout(timer)
-  }, [])
+    setHoveredCategoryId(categoryId);
+    setShouldRenderDropdown(true);
+    const timer = setTimeout(() => setIsDropdownVisible(true), 20);
+    return () => clearTimeout(timer);
+  }, []);
 
   const closeDropdown = useCallback(() => {
-    setIsDropdownVisible(false)
+    setIsDropdownVisible(false);
     const timer = setTimeout(() => {
-      setShouldRenderDropdown(false)
-      setHoveredCategoryId(null)
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [])
+      setShouldRenderDropdown(false);
+      setHoveredCategoryId(null);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!hoveredCategoryId) {
-      closeDropdown()
+      closeDropdown();
     }
-  }, [hoveredCategoryId, closeDropdown])
+  }, [hoveredCategoryId, closeDropdown]);
 
   useEffect(() => {
-    if (!shouldRenderDropdown) return
+    if (!shouldRenderDropdown) return;
 
     const handlePageScroll = () => {
-      closeDropdown()
-    }
+      closeDropdown();
+    };
 
-    window.addEventListener('scroll', handlePageScroll, { passive: true })
+    window.addEventListener('scroll', handlePageScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handlePageScroll)
-    }
-  }, [shouldRenderDropdown, closeDropdown])
+      window.removeEventListener('scroll', handlePageScroll);
+    };
+  }, [shouldRenderDropdown, closeDropdown]);
 
   return {
     hoveredCategoryId,
@@ -47,6 +47,6 @@ export const useCategoryDropdown = () => {
     shouldRenderDropdown,
     openDropdown,
     closeDropdown,
-    setHoveredCategoryId,
-  }
-}
+    setHoveredCategoryId
+  };
+};

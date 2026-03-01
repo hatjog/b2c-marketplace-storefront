@@ -1,13 +1,13 @@
 'use server';
 
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 
-import { StoreCardShippingMethod } from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
+import type { StoreCardShippingMethod } from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
 import { sdk } from '@/lib/config';
 
 import { getAuthHeaders, getCacheOptions } from './cookies';
 
-export const listCartShippingMethods = async (cartId: string, is_return: boolean = false) => {
+export const listCartShippingMethods = async (cartId: string, _is_return: boolean = false) => {
   const headers = {
     ...(await getAuthHeaders())
   };
@@ -63,7 +63,7 @@ export const calculatePriceForShippingOption = async (
       }
     )
     .then(({ shipping_option }) => shipping_option)
-    .catch(e => {
+    .catch(() => {
       return null;
     });
 };

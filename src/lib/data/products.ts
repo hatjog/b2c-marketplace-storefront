@@ -1,10 +1,10 @@
 'use server';
 
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 
 import { sortProducts } from '@/lib/helpers/sort-products';
-import { SortOptions } from '@/types/product';
-import { SellerProps } from '@/types/seller';
+import type { SortOptions } from '@/types/product';
+import type { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
 import { getAuthHeaders } from './cookies';
@@ -250,11 +250,11 @@ export const searchProducts = async (params: {
 
   let facets = params.facets;
 
-  if(!facets) {
-    facets = ["variants.condition", "variants.color", "variants.size"];
+  if (!facets) {
+    facets = ['variants.condition', 'variants.color', 'variants.size'];
   }
 
-  const { countryCode, ...bodyParams } = params;
+  const { countryCode: _countryCode, ...bodyParams } = params;
 
   return sdk.client
     .fetch<{
@@ -272,12 +272,12 @@ export const searchProducts = async (params: {
         region_id,
         customer_id,
         facets,
-        maxValuesPerFacet: 100,
+        maxValuesPerFacet: 100
       },
       headers,
       cache: 'no-cache'
     })
-    .then((response) => {
+    .then(response => {
       return response;
     })
     .catch(() => {

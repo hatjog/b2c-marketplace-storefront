@@ -1,34 +1,37 @@
-import { CloseIcon } from "@/icons"
+import { CloseIcon } from '@/icons';
 
 export const Modal = ({
   children,
   heading,
   onClose,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId
 }: {
-  children: React.ReactNode
-  heading: string
-  onClose: () => void
-  "data-testid"?: string
+  children: React.ReactNode;
+  heading: string;
+  onClose: () => void;
+  'data-testid'?: string;
 }) => {
   return (
     <div
-      className="fixed top-0 left-0 w-full h-full flex justify-center z-30"
+      className="fixed left-0 top-0 z-30 flex h-full w-full justify-center"
       data-testid={dataTestId ?? 'modal'}
     >
       <div
-        className="bg-tertiary/60 w-full h-full absolute backdrop-blur-sm"
+        className="absolute h-full w-full bg-tertiary/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="absolute bg-primary z-20 my-20 py-5 rounded-sm max-w-[600px] w-full max-h-[80vh] overflow-y-auto shadow-lg">
-        <div className="uppercase flex justify-between items-center heading-md border-b px-4 pb-5">
+      <div className="absolute z-20 my-20 max-h-[80vh] w-full max-w-[600px] overflow-y-auto rounded-sm bg-primary py-5 shadow-lg">
+        <div className="heading-md flex items-center justify-between border-b px-4 pb-5 uppercase">
           {heading}
-          <div onClick={onClose} className="cursor-pointer">
+          <div
+            onClick={onClose}
+            className="cursor-pointer"
+          >
             <CloseIcon size={20} />
           </div>
         </div>
         <div className="pt-5">{children}</div>
       </div>
     </div>
-  )
-}
+  );
+};

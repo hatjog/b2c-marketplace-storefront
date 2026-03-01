@@ -3,14 +3,14 @@ import { cn } from '@/lib/utils';
 interface BadgeProps {
   children: React.ReactNode;
   className?: string;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }
 
-export function Badge({ children, className, "data-testid":dataTestId }: BadgeProps) {
+export function Badge({ children, className, 'data-testid': dataTestId }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center justify-center px-2 py-1 label-sm leading-none text-action-on-primary bg-action rounded-xs',
+        'label-sm inline-flex items-center justify-center rounded-xs bg-action px-2 py-1 leading-none text-action-on-primary',
         className
       )}
       data-testid={dataTestId ?? 'badge'}

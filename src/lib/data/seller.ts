@@ -1,4 +1,4 @@
-import { SellerProps } from '@/types/seller';
+import type { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
 

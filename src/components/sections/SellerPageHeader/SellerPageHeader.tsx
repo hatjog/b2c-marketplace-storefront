@@ -1,19 +1,24 @@
-import { SellerFooter, SellerHeading } from "@/components/organisms"
-import { HttpTypes } from "@medusajs/types"
+import type { HttpTypes } from '@medusajs/types';
+
+import { SellerFooter, SellerHeading } from '@/components/organisms';
 
 export const SellerPageHeader = ({
-  header = false,
+  header: _header = false,
   seller,
-  user,
+  user
 }: {
-  header?: boolean
-  seller: any
-  user: HttpTypes.StoreCustomer | null
+  header?: boolean;
+  seller: any;
+  user: HttpTypes.StoreCustomer | null;
 }) => {
   return (
-    <div className="border rounded-sm">
-      <SellerHeading header seller={seller} user={user} />
+    <div className="rounded-sm border">
+      <SellerHeading
+        header
+        seller={seller}
+        user={user}
+      />
       <SellerFooter seller={seller} />
     </div>
-  )
-}
+  );
+};

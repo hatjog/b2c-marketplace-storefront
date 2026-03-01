@@ -1,19 +1,18 @@
-import { Button } from "@/components/atoms"
-import { ArrowRightIcon } from "@/icons"
-import Link from "next/link"
+import Link from 'next/link';
+
+import { Button } from '@/components/atoms';
+import { ArrowRightIcon } from '@/icons';
 
 export const SellNowButton = () => {
   return (
-    <Link
-      href={process.env.NEXT_PUBLIC_VENDOR_URL || "https://vendor.mercurjs.com"}
-    >
-      <Button className="group uppercase !font-bold pl-12 gap-1 flex items-center">
+    <Link href={process.env.NEXT_PUBLIC_VENDOR_URL || 'https://vendor.mercurjs.com'}>
+      <Button className="group flex items-center gap-1 pl-12 !font-bold uppercase">
         Sell now
         <ArrowRightIcon
           color="white"
-          className="w-5 h-5 group-hover:opacity-100 opacity-0 transition-all duration-300"
+          className="h-5 w-5 opacity-0 transition-all duration-300 group-hover:opacity-100"
         />
       </Button>
     </Link>
-  )
-}
+  );
+};

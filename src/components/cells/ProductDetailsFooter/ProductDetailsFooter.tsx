@@ -1,22 +1,19 @@
-import {
-  ProductPostedDate,
-  ProductReportButton,
-  ProductTags,
-} from '@/components/molecules';
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
+
+import { ProductPostedDate, ProductReportButton, ProductTags } from '@/components/molecules';
 
 export const ProductDetailsFooter = ({
   tags = [],
-  posted,
+  posted
 }: {
   tags?: HttpTypes.StoreProductTag[];
   posted: HttpTypes.StoreProduct['created_at'];
 }) => {
   return (
     <>
-      <div className='p-4 border rounded-sm'>
+      <div className="rounded-sm border p-4">
         <ProductTags tags={tags} />
-        <div className='flex justify-between items-center mt-4'>
+        <div className="mt-4 flex items-center justify-between">
           <ProductPostedDate posted={posted} />
           <ProductReportButton />
         </div>

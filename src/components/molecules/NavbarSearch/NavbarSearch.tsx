@@ -1,36 +1,41 @@
-"use client"
+'use client';
 
-import { Input } from "@/components/atoms"
-import { SearchIcon } from "@/icons"
-import { useSearchParams } from "next/navigation"
-import { useState } from "react"
-import { redirect } from "next/navigation"
-import clsx from "clsx"
+import { useState } from 'react';
+
+import clsx from 'clsx';
+import { redirect, useSearchParams } from 'next/navigation';
+
+import { Input } from '@/components/atoms';
+import { SearchIcon } from '@/icons';
 
 interface Props {
-  className?: string
+  className?: string;
 }
 
 export const NavbarSearch = ({ className }: Props) => {
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams();
 
-  const [search, setSearch] = useState(searchParams.get("query") || "")
+  const [search, setSearch] = useState(searchParams.get('query') || '');
 
   const handleSearch = () => {
     if (search) {
-      redirect(`/categories?query=${search}`)
+      redirect(`/categories?query=${search}`);
     } else {
-      redirect(`/categories`)
+      redirect(`/categories`);
     }
-  }
+  };
 
   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    handleSearch()
-  }
+    e.preventDefault();
+    handleSearch();
+  };
 
   return (
-    <form className={clsx("w-full", className)} method="POST" onSubmit={submitHandler}>
+    <form
+      className={clsx('w-full', className)}
+      method="POST"
+      onSubmit={submitHandler}
+    >
       <Input
         icon={<SearchIcon />}
         onIconClick={handleSearch}
@@ -40,7 +45,10 @@ export const NavbarSearch = ({ className }: Props) => {
         changeValue={setSearch}
         type="search"
       />
-      <input type="submit" className="hidden" />
+      <input
+        type="submit"
+        className="hidden"
+      />
     </form>
-  )
-}
+  );
+};

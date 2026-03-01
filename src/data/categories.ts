@@ -1,6 +1,6 @@
 export const primeCategories = {
   menswear: 'Menswear',
-  womenswear: 'Womenswear',
+  womenswear: 'Womenswear'
 };
 
 export const categories = {
@@ -10,5 +10,5 @@ export const categories = {
   accessories: 'Accessories',
   brands: 'Brands',
   'new-in': 'New in',
-  sale: 'Sale',
+  sale: 'Sale'
 };

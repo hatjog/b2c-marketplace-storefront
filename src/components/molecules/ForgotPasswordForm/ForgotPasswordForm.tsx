@@ -1,18 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FetchError } from '@medusajs/js-sdk';
 import Link from 'next/link';
-import { FieldError, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { FormProvider, useForm, useFormContext, type FieldError } from 'react-hook-form';
 
 import { Button } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { sendResetPasswordEmail } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
-import { ForgotPasswordFormData, forgotPasswordSchema } from './schema';
+import { forgotPasswordSchema, type ForgotPasswordFormData } from './schema';
 
 export const ForgotPasswordForm = () => {
   const methods = useForm<ForgotPasswordFormData>({

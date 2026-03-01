@@ -1,11 +1,8 @@
-import { SingleProductImage } from "@/types/product"
-import Image from "next/image"
+import Image from 'next/image';
 
-export const GalleryCarouselItem = ({
-  image,
-}: {
-  image: SingleProductImage
-}) => {
+import type { SingleProductImage } from '@/types/product';
+
+export const GalleryCarouselItem = ({ image }: { image: SingleProductImage }) => {
   return (
     <Image
       key={image.id}
@@ -14,5 +11,5 @@ export const GalleryCarouselItem = ({
       width={700}
       height={700}
     />
-  )
-}
+  );
+};

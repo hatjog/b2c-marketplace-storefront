@@ -1,51 +1,52 @@
-import Image from "next/image"
+import Image from 'next/image';
+import Link from 'next/link';
 
-import tailwindConfig from "../../../../tailwind.config"
-import { ArrowRightIcon } from "@/icons"
-import Link from "next/link"
+import { ArrowRightIcon } from '@/icons';
+
+import tailwindConfig from '../../../../tailwind.config';
 
 type HeroProps = {
-  image: string
-  heading: string
-  paragraph: string
-  buttons: { label: string; path: string }[]
-}
+  image: string;
+  heading: string;
+  paragraph: string;
+  buttons: { label: string; path: string }[];
+};
 
 export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
   return (
-    <section className="w-full flex container mt-5 flex-col lg:flex-row text-primary">
+    <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
       <Image
         src={decodeURIComponent(image)}
         width={700}
         height={600}
         alt={`Hero banner - ${heading}`}
-        className="w-full order-2 lg:order-1"
+        className="order-2 w-full lg:order-1"
         priority
         fetchPriority="high"
         quality={50}
         sizes="(min-width: 1024px) 50vw, 100vw"
       />
       <div className="w-full lg:order-2">
-        <div className="border rounded-sm w-full px-6 flex items-end h-[calc(100%-144px)]">
+        <div className="flex h-[calc(100%-144px)] w-full items-end rounded-sm border px-6">
           <div>
-            <h2 className="font-bold mb-6 uppercase display-md max-w-[652px] text-4xl md:text-5xl leading-tight">
+            <h2 className="display-md mb-6 max-w-[652px] text-4xl font-bold uppercase leading-tight md:text-5xl">
               {heading}
             </h2>
-            <p className="text-lg mb-8">{paragraph}</p>
+            <p className="mb-8 text-lg">{paragraph}</p>
           </div>
         </div>
         {buttons.length && (
-          <div className="h-[72px] lg:h-[144px] flex font-bold uppercase">
+          <div className="flex h-[72px] font-bold uppercase lg:h-[144px]">
             {buttons.map(({ label, path }) => (
               <Link
                 key={path}
                 href={path}
-                className="group flex border rounded-sm h-full w-1/2 bg-content hover:bg-action hover:text-tertiary transition-all duration-300 p-6 justify-between items-end"
+                className="bg-content group flex h-full w-1/2 items-end justify-between rounded-sm border p-6 transition-all duration-300 hover:bg-action hover:text-tertiary"
                 aria-label={label}
                 title={label}
               >
                 <span>
-                  <span className="group-hover:inline-flex hidden">#</span>
+                  <span className="hidden group-hover:inline-flex">#</span>
                   {label}
                 </span>
 
@@ -59,5 +60,5 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
         )}
       </div>
     </section>
-  )
-}
+  );
+};

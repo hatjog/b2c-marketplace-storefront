@@ -1,5 +1,5 @@
-import { HttpTypes } from '@medusajs/types';
-import { NextRequest, NextResponse } from 'next/server';
+import type { HttpTypes } from '@medusajs/types';
+import { NextResponse, type NextRequest } from 'next/server';
 
 import { PROTECTED_ROUTES } from './lib/constants';
 import { isTokenExpired } from './lib/helpers/token';
@@ -100,7 +100,7 @@ async function getCountryCode(
     }
 
     return countryCode;
-  } catch (error) {
+  } catch {
     if (process.env.NODE_ENV === 'development') {
       console.error(
         'Middleware.ts: Error getting the country code. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL.'

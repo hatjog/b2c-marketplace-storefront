@@ -5,7 +5,13 @@ import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FieldError, FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import {
+  FormProvider,
+  useForm,
+  useFormContext,
+  type FieldError,
+  type FieldValues
+} from 'react-hook-form';
 
 import { Button } from '@/components/atoms';
 import { Alert } from '@/components/atoms/Alert/Alert';
@@ -13,7 +19,7 @@ import { LabeledInput } from '@/components/cells';
 import { login } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
-import { LoginFormData, loginFormSchema } from './schema';
+import { loginFormSchema, type LoginFormData } from './schema';
 
 export const LoginForm = () => {
   const methods = useForm<LoginFormData>({
@@ -85,7 +91,10 @@ const Form = () => {
   const authMessage = getAuthMessage();
 
   return (
-    <main className="container" data-testid="login-page">
+    <main
+      className="container"
+      data-testid="login-page"
+    >
       <div className="mx-auto mt-6 w-full max-w-xl space-y-4">
         {authMessage && (
           <Alert
@@ -95,9 +104,15 @@ const Form = () => {
             data-testid="login-auth-alert"
           />
         )}
-        <div className="rounded-sm border p-4" data-testid="login-form-container">
+        <div
+          className="rounded-sm border p-4"
+          data-testid="login-form-container"
+        >
           <h1 className="heading-md mb-8 uppercase text-primary">Log in</h1>
-          <form onSubmit={handleSubmit(submit)} data-testid="login-form">
+          <form
+            onSubmit={handleSubmit(submit)}
+            data-testid="login-form"
+          >
             <div className="space-y-4">
               <LabeledInput
                 label="E-mail"
@@ -126,7 +141,11 @@ const Form = () => {
               />
             </div>
 
-            <Link href="/forgot-password" className="block text-right label-md uppercase text-action-on-secondary mt-4" data-testid="login-forgot-password-link">
+            <Link
+              href="/forgot-password"
+              className="label-md mt-4 block text-right uppercase text-action-on-secondary"
+              data-testid="login-forgot-password-link"
+            >
               Forgot your password?
             </Link>
 
@@ -144,7 +163,10 @@ const Form = () => {
           <h2 className="heading-md mb-4 uppercase text-primary">
             Don&apos;t have an account yet?
           </h2>
-          <Link href="/register" data-testid="login-register-link">
+          <Link
+            href="/register"
+            data-testid="login-register-link"
+          >
             <Button
               variant="tonal"
               className="mt-8 flex w-full justify-center uppercase"

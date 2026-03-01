@@ -1,22 +1,24 @@
-"use client"
-import { Button } from "@/components/atoms"
-import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+'use client';
+
+import { useRouter } from 'next/navigation';
+
+import { Button } from '@/components/atoms';
+import { cn } from '@/lib/utils';
 
 interface RefreshButtonProps {
-  label: string | React.ReactNode
-  className?: string
+  label: string | React.ReactNode;
+  className?: string;
 }
 
 export function RefreshButton({ label, className }: RefreshButtonProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <Button
       onClick={() => router.refresh()}
-      className={cn("max-w-fit", className)}
+      className={cn('max-w-fit', className)}
     >
       {label}
     </Button>
-  )
+  );
 }

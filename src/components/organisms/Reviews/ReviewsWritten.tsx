@@ -1,65 +1,67 @@
-"use client"
-import { navigation } from "./navigation"
-import { Card, NavigationItem } from "@/components/atoms"
-import { Order, Review } from "@/lib/data/reviews"
-import { isEmpty } from "lodash"
-import { usePathname } from "next/navigation"
-import { OrderCard } from "./OrderCard"
-import { RefreshButton } from "@/components/cells/RefreshButton/RefreshButton"
+'use client';
+
+import { isEmpty } from 'lodash';
+import { usePathname } from 'next/navigation';
+
+import { Card, NavigationItem } from '@/components/atoms';
+import { RefreshButton } from '@/components/cells/RefreshButton/RefreshButton';
+import type { Order, Review } from '@/lib/data/reviews';
+
+import { navigation } from './navigation';
+import { OrderCard } from './OrderCard';
 
 export const ReviewsWritten = ({
   reviews,
   orders,
-  isError,
+  isError
 }: {
-  reviews: Review[]
-  orders: Order[]
-  isError: boolean
+  reviews: Review[];
+  orders: Order[];
+  isError: boolean;
 }) => {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   function renderReviews() {
     if (isError) {
       return (
         <div className="flex flex-col gap-2">
-          <p className="text-negative">
-            Something went wrong while fetching reviews
-          </p>
+          <p className="text-negative">Something went wrong while fetching reviews</p>
           <RefreshButton label="Refresh" />
         </div>
-      )
+      );
     }
 
     if (isEmpty(reviews)) {
       return (
         <Card>
-          <div className="text-center py-6">
-            <h3 className="heading-lg text-primary uppercase">
-              No written reviews
-            </h3>
-            <p className="text-lg text-secondary mt-2">
-              You haven&apos;t written any reviews yet. Once you write a review,
-              it will appear here.
+          <div className="py-6 text-center">
+            <h3 className="heading-lg uppercase text-primary">No written reviews</h3>
+            <p className="mt-2 text-lg text-secondary">
+              You haven&apos;t written any reviews yet. Once you write a review, it will appear
+              here.
             </p>
           </div>
         </Card>
-      )
+      );
     }
 
     return (
       <div className="space-y-2">
-        {orders.map((order) => (
-          <OrderCard key={order.id} order={order} />
+        {orders.map(order => (
+          <OrderCard
+            key={order.id}
+            order={order}
+          />
         ))}
       </div>
-    )
+    );
   }
 
   return (
-    <div className="md:col-span-3 space-y-8">
+    <div className="space-y-8 md:col-span-3">
       <h1 className="heading-md uppercase">Reviews</h1>
       <div className="flex gap-4">
-        {navigation.map((item) => (
+        {navigation.map(item => (
           <NavigationItem
             key={item.label}
             href={item.href}
@@ -72,5 +74,5 @@ export const ReviewsWritten = ({
       </div>
       {renderReviews()}
     </div>
-  )
-}
+  );
+};

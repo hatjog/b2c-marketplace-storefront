@@ -1,13 +1,13 @@
 export const Label = ({
   children,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId
 }: {
   children: React.ReactNode;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }) => {
   return (
     <span
-      className='border rounded-sm py-2 px-3 label-sm'
+      className="label-sm rounded-sm border px-3 py-2"
       data-testid={dataTestId ?? 'label'}
     >
       {children}

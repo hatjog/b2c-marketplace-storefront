@@ -1,3 +1,2 @@
-export { MobileCategoryNavbar } from './MobileCategoryNavbar'
-export { MobileCategoryDrawer } from './MobileCategoryDrawer'
-
+export { MobileCategoryNavbar } from './MobileCategoryNavbar';
+export { MobileCategoryDrawer } from './MobileCategoryDrawer';

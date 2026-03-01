@@ -1,13 +1,12 @@
-import { Card } from "@/components/atoms"
-import { ProfilePasswordForm } from "@/components/molecules/ProfilePasswordForm/ProfilePasswordForm"
-import { retrieveCustomer } from "@/lib/data/customer"
+import { Card } from '@/components/atoms';
+import { ProfilePasswordForm } from '@/components/molecules/ProfilePasswordForm/ProfilePasswordForm';
 
 export default async function ResetPasswordPage({
-  searchParams,
+  searchParams
 }: {
-  searchParams: Promise<{ token: string }>
+  searchParams: Promise<{ token: string }>;
 }) {
-  const { token } = await searchParams
+  const { token } = await searchParams;
 
   return (
     <main className="container flex justify-center">
@@ -15,5 +14,5 @@ export default async function ResetPasswordPage({
         <ProfilePasswordForm token={token} />
       </Card>
     </main>
-  )
+  );
 }

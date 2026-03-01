@@ -10,7 +10,7 @@ interface AlertProps {
   icon?: React.ReactNode | boolean;
   title?: string;
   className?: string;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }
 
 const variantStyles: Record<AlertVariant, { container: string; text: string; icon: string }> = {
@@ -31,18 +31,24 @@ const variantStyles: Record<AlertVariant, { container: string; text: string; ico
   }
 };
 
-export const Alert = ({ variant = 'base', icon, title, className, "data-testid": dataTestId }: AlertProps) => {
+export const Alert = ({
+  variant = 'base',
+  icon,
+  title,
+  className,
+  'data-testid': dataTestId
+}: AlertProps) => {
   const styles = variantStyles[variant];
-  const iconOnly = icon && !title 
+  const iconOnly = icon && !title;
 
   return (
     <div
       role="status"
       className={cn(
-        'inline-flex items-center justify-center gap-1 px-3 py-2 rounded-sm',
+        'inline-flex items-center justify-center gap-1 rounded-sm px-3 py-2',
         styles.container,
         className,
-        iconOnly && "p-2.5"
+        iconOnly && 'p-2.5'
       )}
       data-testid={dataTestId ?? 'alert'}
     >

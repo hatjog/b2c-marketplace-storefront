@@ -1,16 +1,22 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { HttpTypes } from '@medusajs/types';
-import { FieldError, FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import type { HttpTypes } from '@medusajs/types';
+import {
+  FormProvider,
+  useForm,
+  useFormContext,
+  type FieldError,
+  type FieldValues
+} from 'react-hook-form';
 
 import { Button } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { updateCustomer } from '@/lib/data/customer';
 
-import { ProfileDetailsFormData, profileDetailsSchema } from './schema';
+import { profileDetailsSchema, type ProfileDetailsFormData } from './schema';
 
 interface Props {
   defaultValues?: ProfileDetailsFormData;
@@ -61,7 +67,10 @@ const Form: React.FC<Props> = ({ handleClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(submit)} data-testid="profile-details-form">
+    <form
+      onSubmit={handleSubmit(submit)}
+      data-testid="profile-details-form"
+    >
       <div className="space-y-4 px-4">
         <div className="items-top mb-4 grid max-w-full grid-cols-2 gap-4">
           <LabeledInput
@@ -92,8 +101,20 @@ const Form: React.FC<Props> = ({ handleClose }) => {
             {...register('email')}
           />
         </div>
-        {error && <p className="label-md text-negative" data-testid="profile-details-form-error">{error}</p>}
-        <Button className="w-full" data-testid="profile-details-form-submit-button">Save</Button>
+        {error && (
+          <p
+            className="label-md text-negative"
+            data-testid="profile-details-form-error"
+          >
+            {error}
+          </p>
+        )}
+        <Button
+          className="w-full"
+          data-testid="profile-details-form-submit-button"
+        >
+          Save
+        </Button>
       </div>
     </form>
   );

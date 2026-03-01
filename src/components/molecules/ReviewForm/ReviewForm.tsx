@@ -1,16 +1,22 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FieldError, FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import {
+  FormProvider,
+  useForm,
+  useFormContext,
+  type FieldError,
+  type FieldValues
+} from 'react-hook-form';
 
 import { Button } from '@/components/atoms';
 import { InteractiveStarRating } from '@/components/atoms/InteractiveStarRating/InteractiveStarRating';
-import { createReview, Order } from '@/lib/data/reviews';
+import { createReview, type Order } from '@/lib/data/reviews';
 import { cn } from '@/lib/utils';
 
-import { ReviewFormData, reviewSchema } from './schema';
+import { reviewSchema, type ReviewFormData } from './schema';
 
 interface Props {
   handleClose?: () => void;

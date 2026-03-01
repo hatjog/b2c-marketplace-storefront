@@ -1,5 +1,6 @@
-import { HttpTypes } from '@medusajs/types';
-import { SortOptions } from '@/types/product';
+import type { HttpTypes } from '@medusajs/types';
+
+import type { SortOptions } from '@/types/product';
 
 interface MinPricedProduct extends HttpTypes.StoreProduct {
   _minPrice?: number;
@@ -19,14 +20,10 @@ export function sortProducts(
 
   if (['price_asc', 'price_desc'].includes(sortBy)) {
     // Precompute the minimum price for each product
-    sortedProducts.forEach((product) => {
+    sortedProducts.forEach(product => {
       if (product.variants && product.variants.length > 0) {
         product._minPrice = Math.min(
-          ...product.variants.map(
-            (variant) =>
-              variant?.calculated_price
-                ?.calculated_amount || 0
-          )
+          ...product.variants.map(variant => variant?.calculated_price?.calculated_amount || 0)
         );
       } else {
         product._minPrice = Infinity;
@@ -42,10 +39,7 @@ export function sortProducts(
 
   if (sortBy === 'created_at') {
     sortedProducts.sort((a, b) => {
-      return (
-        new Date(b.created_at!).getTime() -
-        new Date(a.created_at!).getTime()
-      );
+      return new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime();
     });
   }
 

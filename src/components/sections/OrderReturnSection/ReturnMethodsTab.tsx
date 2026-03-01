@@ -1,17 +1,17 @@
-import { Card, Checkbox } from "@/components/atoms"
+import { Card, Checkbox } from '@/components/atoms';
 
 export const ReturnMethodsTab = ({
   shippingMethods,
   handleSetReturnMethod,
   returnMethod,
-  seller,
+  seller
 }: {
-  shippingMethods: any
-  handleSetReturnMethod: (method: any) => void
-  returnMethod: string
-  seller: any
+  shippingMethods: any;
+  handleSetReturnMethod: (method: any) => void;
+  returnMethod: string;
+  seller: any;
 }) => {
-  const noShippingMethods = !shippingMethods?.length || false
+  const noShippingMethods = !shippingMethods?.length || false;
 
   return (
     <>
@@ -21,7 +21,7 @@ export const ReturnMethodsTab = ({
         </Card>
         <Card className="flex items-center justify-between p-4">
           {noShippingMethods ? (
-            <div className="py-4 text-center font-bold heading-md w-full">
+            <div className="heading-md w-full py-4 text-center font-bold">
               No shipping methods available
             </div>
           ) : (
@@ -30,7 +30,7 @@ export const ReturnMethodsTab = ({
                 <li
                   key={method.id}
                   onClick={() => handleSetReturnMethod(method.id)}
-                  className="flex items-center gap-4 my-2 cursor-pointer"
+                  className="my-2 flex cursor-pointer items-center gap-4"
                 >
                   <Checkbox checked={returnMethod === method.id} />
                   <span className="label-lg">{method.name}</span>
@@ -59,5 +59,5 @@ export const ReturnMethodsTab = ({
         </Card>
       </div>
     </>
-  )
-}
+  );
+};

@@ -1,69 +1,69 @@
-import { convertToLocale } from "@/lib/helpers/money"
-import { HttpTypes } from "@medusajs/types"
-import Image from "next/image"
+import type { HttpTypes } from '@medusajs/types';
+import Image from 'next/image';
+
+import { convertToLocale } from '@/lib/helpers/money';
+
 export const Item = ({
   item,
-  currencyCode,
+  currencyCode
 }: {
-  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
-  currencyCode: string
+  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem;
+  currencyCode: string;
 }) => {
   const original_total = convertToLocale({
     amount: item.original_total,
-    currency_code: currencyCode,
-  })
+    currency_code: currencyCode
+  });
 
   const total = convertToLocale({
     amount: item.total,
-    currency_code: currencyCode,
-  })
+    currency_code: currencyCode
+  });
 
   return (
-    <div className="border rounded-sm p-1 flex gap-2">
-      <div className="w-[100px] h-[132px] flex items-center justify-center">
+    <div className="flex gap-2 rounded-sm border p-1">
+      <div className="flex h-[132px] w-[100px] items-center justify-center">
         {item.thumbnail ? (
           <Image
             src={decodeURIComponent(item.thumbnail)}
             alt="Product thumbnail"
             width={100}
             height={132}
-            className="rounded-xs w-[100px] h-[132px] object-contain"
+            className="h-[132px] w-[100px] rounded-xs object-contain"
           />
         ) : (
           <Image
-            src={"/images/placeholder.svg"}
+            src={'/images/placeholder.svg'}
             alt="Product thumbnail"
             width={50}
             height={66}
-            className="rounded-xs w-[50px] h-[66px] object-contain opacity-30"
+            className="h-[66px] w-[50px] rounded-xs object-contain opacity-30"
           />
         )}
       </div>
 
       <div className="w-full p-2">
         <div className="flex justify-between lg:mb-4">
-          <div className="w-[150px] md:w-[200px] lg:w-[300px] xl:w-[calc(100%-120px)] mb-6">
-            <h3 className="heading-xs uppercase truncate">
+          <div className="mb-6 w-[150px] md:w-[200px] lg:w-[300px] xl:w-[calc(100%-120px)]">
+            <h3 className="heading-xs truncate uppercase">
               {item.subtitle} {item.title}
             </h3>
           </div>
         </div>
-        <div className="lg:flex justify-between -mt-4 lg:mt-0">
+        <div className="-mt-4 justify-between lg:mt-0 lg:flex">
           <div className="label-md text-secondary">
             <p>
               Quantity: <span className="text-primary">{item.quantity}</span>
             </p>
           </div>
-          <div className="lg:text-right flex lg:block items-center gap-2 mt-4 lg:mt-0">
+          <div className="mt-4 flex items-center gap-2 lg:mt-0 lg:block lg:text-right">
             {total !== original_total && (
-              <p className="line-through text-secondary label-md">
-                {original_total}
-              </p>
+              <p className="label-md text-secondary line-through">{original_total}</p>
             )}
             <p className="label-lg">{total}</p>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

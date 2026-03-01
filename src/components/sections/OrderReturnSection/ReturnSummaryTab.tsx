@@ -1,6 +1,7 @@
-import { Button, Card } from "@/components/atoms"
-import { convertToLocale } from "@/lib/helpers/money"
-import Image from "next/image"
+import Image from 'next/image';
+
+import { Button, Card } from '@/components/atoms';
+import { convertToLocale } from '@/lib/helpers/money';
 
 export const ReturnSummaryTab = ({
   selectedItems,
@@ -9,33 +10,31 @@ export const ReturnSummaryTab = ({
   handleTabChange,
   tab,
   returnMethod,
-  handleSubmit,
+  handleSubmit
 }: {
-  selectedItems: any[]
-  items: any[]
-  currency_code: string
-  handleTabChange: (tab: number) => void
-  tab: number
-  returnMethod: any
-  handleSubmit: () => void
+  selectedItems: any[];
+  items: any[];
+  currency_code: string;
+  handleTabChange: (tab: number) => void;
+  tab: number;
+  returnMethod: any;
+  handleSubmit: () => void;
 }) => {
-  const selected = items.filter((item) =>
-    selectedItems.some((i) => i.line_item_id === item.id)
-  )
+  const selected = items.filter(item => selectedItems.some(i => i.line_item_id === item.id));
 
   const subtotal = selected.reduce((acc, item) => {
-    return acc + item.subtotal
-  }, 0)
+    return acc + item.subtotal;
+  }, 0);
 
   return (
     <div className="sm:mt-20">
       {selected.length ? (
         <Card className="p-4">
           <ul>
-            {selected.map((item) => (
+            {selected.map(item => (
               <li
                 key={item.id}
-                className="flex items-center gap-2 mb-4 justify-between w-full"
+                className="mb-4 flex w-full items-center justify-between gap-2"
               >
                 <div className="flex items-center gap-2 font-semibold">
                   <div className="w-16 rounded-sm border">
@@ -49,19 +48,17 @@ export const ReturnSummaryTab = ({
                       />
                     ) : (
                       <Image
-                        src={"/images/placeholder.svg"}
+                        src={'/images/placeholder.svg'}
                         alt={item.subtitle}
                         width={64}
                         height={64}
-                        className="opacity-25 scale-75"
+                        className="scale-75 opacity-25"
                       />
                     )}
                   </div>
                   {item.subtitle}
                 </div>
-                <div>
-                  {convertToLocale({ amount: item.subtotal, currency_code })}
-                </div>
+                <div>{convertToLocale({ amount: item.subtotal, currency_code })}</div>
               </li>
             ))}
           </ul>
@@ -69,31 +66,29 @@ export const ReturnSummaryTab = ({
       ) : null}
 
       <Card className="p-4">
-        <p className="label-md flex justify-between mb-4">
+        <p className="label-md mb-4 flex justify-between">
           Subtotal refund:
           <span className="label-md !font-bold text-primary">
             {convertToLocale({
               amount: subtotal,
-              currency_code,
+              currency_code
             })}
           </span>
         </p>
         <Button
           className="label-md w-full uppercase"
-          disabled={
-            (tab === 0 && !selected.length) || (tab === 1 && !returnMethod)
-          }
+          disabled={(tab === 0 && !selected.length) || (tab === 1 && !returnMethod)}
           onClick={tab === 0 ? () => handleTabChange(1) : () => handleSubmit()}
         >
           {tab === 0
             ? selected.length
-              ? "Continue"
-              : "Select Items"
+              ? 'Continue'
+              : 'Select Items'
             : !returnMethod
-            ? "Select return method"
-            : "Request return"}
+              ? 'Select return method'
+              : 'Request return'}
         </Button>
       </Card>
     </div>
-  )
-}
+  );
+};

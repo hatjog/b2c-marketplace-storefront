@@ -1,69 +1,97 @@
-import { BannerBlock } from "./BannerBlock"
-import { BlogSectionBlock } from "./BlogSectionBlock"
-import { CategoriesGridBlock } from "./CategoriesGridBlock"
-import { HeroBlock } from "./HeroBlock"
-import { ProductsCarouselBlock } from "./ProductsCarouselBlock"
-import { StyleSectionBlock } from "./StyleSectionBlock"
+import { BannerBlock } from './BannerBlock';
+import { BlogSectionBlock } from './BlogSectionBlock';
+import { CategoriesGridBlock } from './CategoriesGridBlock';
+import { HeroBlock } from './HeroBlock';
+import { ProductsCarouselBlock } from './ProductsCarouselBlock';
+import { StyleSectionBlock } from './StyleSectionBlock';
 
 type RawSection = {
-  id?: string | number
-  blockType?: string
-  enabled?: boolean | null
-  [key: string]: unknown
-}
+  id?: string | number;
+  blockType?: string;
+  enabled?: boolean | null;
+  [key: string]: unknown;
+};
 
 function isSectionObject(section: unknown): section is RawSection {
-  return typeof section === "object" && section !== null
+  return typeof section === 'object' && section !== null;
 }
 
 export function HomepageRenderer({
   sections,
-  locale,
+  locale
 }: {
-  sections?: unknown[] | null
-  locale: string
+  sections?: unknown[] | null;
+  locale: string;
 }) {
   if (!Array.isArray(sections) || sections.length === 0) {
-    return null
+    return null;
   }
 
   const enabledSections = sections.filter(
-    (section): section is RawSection =>
-      isSectionObject(section) && section.enabled === true
-  )
+    (section): section is RawSection => isSectionObject(section) && section.enabled === true
+  );
 
   if (enabledSections.length === 0) {
-    return null
+    return null;
   }
 
   return (
     <>
       {enabledSections.map((section, index) => {
-        const key = section.id ?? `${section.blockType ?? "unknown"}-${index}`
+        const key = section.id ?? `${section.blockType ?? 'unknown'}-${index}`;
 
         switch (section.blockType) {
-          case "hero":
-            return <HeroBlock key={key} section={section} />
-          case "products_carousel":
+          case 'hero':
             return (
-              <ProductsCarouselBlock key={key} section={section} locale={locale} />
-            )
-          case "categories_grid":
-            return <CategoriesGridBlock key={key} section={section} />
-          case "banner":
-            return <BannerBlock key={key} section={section} />
-          case "style_section":
-            return <StyleSectionBlock key={key} section={section} />
-          case "blog_section":
-            return <BlogSectionBlock key={key} section={section} />
+              <HeroBlock
+                key={key}
+                section={section}
+              />
+            );
+          case 'products_carousel':
+            return (
+              <ProductsCarouselBlock
+                key={key}
+                section={section}
+                locale={locale}
+              />
+            );
+          case 'categories_grid':
+            return (
+              <CategoriesGridBlock
+                key={key}
+                section={section}
+              />
+            );
+          case 'banner':
+            return (
+              <BannerBlock
+                key={key}
+                section={section}
+              />
+            );
+          case 'style_section':
+            return (
+              <StyleSectionBlock
+                key={key}
+                section={section}
+              />
+            );
+          case 'blog_section':
+            return (
+              <BlogSectionBlock
+                key={key}
+                section={section}
+              />
+            );
           default:
             console.error(
-              `[homepage] unknown blockType "${section.blockType ?? "undefined"}"`,
+              `[homepage] unknown blockType "${section.blockType ?? 'undefined'}"`,
               section
-            )
-            return null
+            );
+            return null;
         }
       })}
     </>
-  )
+  );
 }

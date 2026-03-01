@@ -1,54 +1,54 @@
-import { HomepageRenderer } from "@/components/blocks/HomepageRenderer"
-import { resolveMarketConfig } from "@/lib/portal"
+import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import Script from 'next/script';
 
-import type { Metadata } from "next"
-import { headers } from "next/headers"
-import Script from "next/script"
-import { listRegions } from "@/lib/data/regions"
-import { toHreflang } from "@/lib/helpers/hreflang"
+import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
+import { listRegions } from '@/lib/data/regions';
+import { toHreflang } from '@/lib/helpers/hreflang';
+import { resolveMarketConfig } from '@/lib/portal';
 
-export const revalidate = 300
+export const revalidate = 300;
 
 export async function generateMetadata({
-  params,
+  params
 }: {
-  params: Promise<{ locale: string }>
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params
+  const { locale } = await params;
 
-  const headersList = await headers()
-  const host = headersList.get("host")
-  const protocol = headersList.get("x-forwarded-proto") || "https"
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
+  const headersList = await headers();
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
   // Build alternates based on available regions (locales)
-  let languages: Record<string, string> = {}
+  let languages: Record<string, string> = {};
   try {
-    const regions = await listRegions()
+    const regions = await listRegions();
     const locales = Array.from(
       new Set(
         (regions || [])
-          .map((r) => r.countries?.map((c) => c.iso_2) || [])
+          .map(r => r.countries?.map(c => c.iso_2) || [])
           .flat()
           .filter(Boolean)
       )
-    ) as string[]
+    ) as string[];
 
     languages = locales.reduce<Record<string, string>>((acc, code) => {
-      const hrefLang = toHreflang(code)
-      acc[hrefLang] = `${baseUrl}/${code}`
-      return acc
-    }, {})
+      const hrefLang = toHreflang(code);
+      acc[hrefLang] = `${baseUrl}/${code}`;
+      return acc;
+    }, {});
   } catch {
     // Fallback: only current locale
-    languages = { [toHreflang(locale)]: `${baseUrl}/${locale}` }
+    languages = { [toHreflang(locale)]: `${baseUrl}/${locale}` };
   }
 
-  const title = "Home"
+  const title = 'Home';
   const description =
-    "Welcome to Mercur B2C Demo! Create a modern marketplace that you own and customize in every aspect with high-performance, fully customizable storefront."
-  const ogImage = "/B2C_Storefront_Open_Graph.png"
-  const canonical = `${baseUrl}/${locale}`
+    'Welcome to Mercur B2C Demo! Create a modern marketplace that you own and customize in every aspect with high-performance, fully customizable storefront.';
+  const ogImage = '/B2C_Storefront_Open_Graph.png';
+  const canonical = `${baseUrl}/${locale}`;
 
   return {
     title,
@@ -59,86 +59,74 @@ export async function generateMetadata({
       googleBot: {
         index: true,
         follow: true,
-        "max-image-preview": "large",
-        "max-video-preview": -1,
-        "max-snippet": -1,
-      },
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
+        'max-snippet': -1
+      }
     },
     alternates: {
       canonical,
       languages: {
         ...languages,
-        "x-default": baseUrl,
-      },
+        'x-default': baseUrl
+      }
     },
     openGraph: {
       title: `${title} | ${
-        process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Mercur B2C Demo - Marketplace Storefront"
+        process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
       }`,
       description,
       url: canonical,
-      siteName:
-        process.env.NEXT_PUBLIC_SITE_NAME ||
-        "Mercur B2C Demo - Marketplace Storefront",
-      type: "website",
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront',
+      type: 'website',
       images: [
         {
-          url: ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`,
+          url: ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`,
           width: 1200,
           height: 630,
-          alt:
-            process.env.NEXT_PUBLIC_SITE_NAME ||
-            "Mercur B2C Demo - Marketplace Storefront",
-        },
-      ],
+          alt: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
+        }
+      ]
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title,
       description,
-      images: [ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`],
-    },
-  }
+      images: [ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`]
+    }
+  };
 }
 
-export default async function Home({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}) {
-  const { locale } = await params
-  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || ""
-  const { marketConfig } = await resolveMarketConfig(marketId)
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const { marketConfig } = await resolveMarketConfig(marketId);
   const homepageSections =
-    Array.isArray(marketConfig.homepage_sections) &&
-    marketConfig.homepage_sections.length > 0
+    Array.isArray(marketConfig.homepage_sections) && marketConfig.homepage_sections.length > 0
       ? marketConfig.homepage_sections
-      : null
+      : null;
 
-  const headersList = await headers()
-  const host = headersList.get("host")
-  const protocol = headersList.get("x-forwarded-proto") || "https"
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
+  const headersList = await headers();
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
-  const siteName =
-    process.env.NEXT_PUBLIC_SITE_NAME ||
-    "Mercur B2C Demo - Marketplace Storefront"
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront';
 
   return (
-    <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
+    <main className="row-start-2 flex flex-col items-center gap-8 text-primary sm:items-start">
       {/* Organization JSON-LD */}
       <Script
         id="ld-org"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
             name: siteName,
             url: `${baseUrl}/${locale}`,
-            logo: `${baseUrl}/favicon.ico`,
-          }),
+            logo: `${baseUrl}/favicon.ico`
+          })
         }}
       />
       {/* WebSite JSON-LD */}
@@ -147,15 +135,18 @@ export default async function Home({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
             name: siteName,
             url: `${baseUrl}/${locale}`,
-            inLanguage: toHreflang(locale),
-          }),
+            inLanguage: toHreflang(locale)
+          })
         }}
       />
-      <HomepageRenderer sections={homepageSections} locale={locale} />
+      <HomepageRenderer
+        sections={homepageSections}
+        locale={locale}
+      />
     </main>
-  )
+  );
 }

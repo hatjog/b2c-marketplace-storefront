@@ -1,6 +1,6 @@
 'use server';
 
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -264,7 +264,7 @@ export async function applyPromotions(codes: string[]) {
   const cartId = await getCartId();
 
   if (!cartId) {
-    return { success: false, error: "No existing cart found" }
+    return { success: false, error: 'No existing cart found' };
   }
 
   const headers = {
@@ -272,25 +272,16 @@ export async function applyPromotions(codes: string[]) {
   };
 
   try {
-    const { cart } = await sdk.store.cart.update(
-      cartId,
-      { promo_codes: codes },
-      {},
-      headers
-    )
-    const cartCacheTag = await getCacheTag("carts")
-    revalidateTag(cartCacheTag)
+    const { cart } = await sdk.store.cart.update(cartId, { promo_codes: codes }, {}, headers);
+    const cartCacheTag = await getCacheTag('carts');
+    revalidateTag(cartCacheTag);
     // @ts-ignore
-    const applied = cart.promotions?.some((promotion: any) =>
-      codes.includes(promotion.code)
-    )
-    return { success: true, applied }
+    const applied = cart.promotions?.some((promotion: any) => codes.includes(promotion.code));
+    return { success: true, applied };
   } catch (error: any) {
     const errorMessage =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to apply promotion code"
-    return { success: false, error: errorMessage }
+      error?.response?.data?.message || error?.message || 'Failed to apply promotion code';
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -521,7 +512,7 @@ export async function updateRegionWithValidation(
             try {
               await sdk.store.cart.deleteLineItem(cart.id, item.id, {}, headers);
               removedItems.push(item.product_title || 'Unknown product');
-            } catch (deleteError) {
+            } catch {
               // Silent failure - item removal failed but continue
             }
           }
@@ -531,7 +522,7 @@ export async function updateRegionWithValidation(
         if (removedItems.length > 0) {
           await updateCart({ region_id: region.id });
         }
-      } catch (fetchError) {
+      } catch {
         throw new Error('Failed to handle incompatible cart items');
       }
     }

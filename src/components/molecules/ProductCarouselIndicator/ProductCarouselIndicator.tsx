@@ -1,52 +1,55 @@
-"use client"
-import Image from "next/image"
-import { HttpTypes } from "@medusajs/types"
-import { EmblaCarouselType } from "embla-carousel"
-import { useCallback, useEffect, useState } from "react"
-import { cn } from "@/lib/utils"
-import { Indicator } from "@/components/atoms"
-import useEmblaCarousel from "embla-carousel-react"
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+
+import type { HttpTypes } from '@medusajs/types';
+import type { EmblaCarouselType } from 'embla-carousel';
+import useEmblaCarousel from 'embla-carousel-react';
+import Image from 'next/image';
+
+import { Indicator } from '@/components/atoms';
+import { cn } from '@/lib/utils';
 
 export const ProductCarouselIndicator = ({
   slides = [],
-  embla: parentEmbla,
+  embla: parentEmbla
 }: {
-  slides: HttpTypes.StoreProduct["images"]
-  embla?: EmblaCarouselType
+  slides: HttpTypes.StoreProduct['images'];
+  embla?: EmblaCarouselType;
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    axis: "y",
+    axis: 'y',
     loop: true,
-    align: "start",
-  })
+    align: 'start'
+  });
 
   const changeSlideHandler = useCallback(
     (index: number) => {
-      if (!parentEmbla) return
-      parentEmbla.scrollTo(index)
+      if (!parentEmbla) return;
+      parentEmbla.scrollTo(index);
 
-      if (!emblaApi) return
-      emblaApi.scrollTo(index)
+      if (!emblaApi) return;
+      emblaApi.scrollTo(index);
     },
     [parentEmbla, emblaApi]
-  )
+  );
 
   const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
-    setSelectedIndex(emblaApi.selectedScrollSnap())
-  }, [])
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, []);
 
   useEffect(() => {
-    if (!parentEmbla) return
+    if (!parentEmbla) return;
 
-    onSelect(parentEmbla)
-    parentEmbla.on("reInit", onSelect).on("select", onSelect)
-  }, [parentEmbla, onSelect])
+    onSelect(parentEmbla);
+    parentEmbla.on('reInit', onSelect).on('select', onSelect);
+  }, [parentEmbla, onSelect]);
 
   return (
-    <div className="embla__dots absolute lg:top-3 bottom-3 lg:bottom-auto left-3 w-[calc(100%-24px)] h-[2px] pointer-events-none">
-      <div className="lg:hidden pointer-events-auto">
+    <div className="embla__dots pointer-events-none absolute bottom-3 left-3 h-[2px] w-[calc(100%-24px)] lg:bottom-auto lg:top-3">
+      <div className="pointer-events-auto lg:hidden">
         <Indicator
           step={selectedIndex + 1}
           size="large"
@@ -54,16 +57,16 @@ export const ProductCarouselIndicator = ({
         />
       </div>
 
-      <div className="embla relative hidden lg:block pointer-events-auto">
+      <div className="embla pointer-events-auto relative hidden lg:block">
         <div
           className="embla__viewport overflow-hidden rounded-xs"
           ref={emblaRef}
         >
-          <div className="embla__container h-[350px] lg:h-[680px] flex lg:block">
+          <div className="embla__container flex h-[350px] lg:block lg:h-[680px]">
             {(slides || []).map((slide, index) => (
               <div
                 key={slide.id}
-                className="mb-3 rounded-sm cursor-pointer w-16 h-16 bg-primary hidden lg:block"
+                className="mb-3 hidden h-16 w-16 cursor-pointer rounded-sm bg-primary lg:block"
                 onClick={() => changeSlideHandler(index)}
               >
                 <Image
@@ -72,10 +75,8 @@ export const ProductCarouselIndicator = ({
                   width={64}
                   height={64}
                   className={cn(
-                    "rounded-sm border-2 transition-color duration-300 hidden lg:block w-16 h-16 object-cover",
-                    selectedIndex === index
-                      ? "border-primary"
-                      : "border-tertiary"
+                    'transition-color hidden h-16 w-16 rounded-sm border-2 object-cover duration-300 lg:block',
+                    selectedIndex === index ? 'border-primary' : 'border-tertiary'
                   )}
                 />
               </div>
@@ -84,5 +85,5 @@ export const ProductCarouselIndicator = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

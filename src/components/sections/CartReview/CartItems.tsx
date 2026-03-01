@@ -1,4 +1,4 @@
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 
 import { CartItemsHeader, CartItemsProducts } from '@/components/cells';
 

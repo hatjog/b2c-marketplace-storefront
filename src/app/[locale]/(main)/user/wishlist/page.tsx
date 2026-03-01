@@ -1,4 +1,4 @@
-import { HttpTypes } from '@medusajs/types';
+import type { HttpTypes } from '@medusajs/types';
 import { isEmpty } from 'lodash';
 import { redirect } from 'next/navigation';
 
@@ -8,7 +8,7 @@ import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
-import { Wishlist as WishlistType } from '@/types/wishlist';
+import type { Wishlist as WishlistType } from '@/types/wishlist';
 
 export default async function Wishlist({ params }: { params: Promise<{ locale: string }> }) {
   const user = await retrieveCustomer();
@@ -26,28 +26,60 @@ export default async function Wishlist({ params }: { params: Promise<{ locale: s
   }
 
   return (
-    <main className="container" data-testid="wishlist-page">
+    <main
+      className="container"
+      data-testid="wishlist-page"
+    >
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
-        <div className="space-y-8 md:col-span-3" data-testid="wishlist-container">
+        <div
+          className="space-y-8 md:col-span-3"
+          data-testid="wishlist-container"
+        >
           {isEmpty(wishlist?.products) ? (
-            <div className="mx-auto flex w-96 flex-col items-center justify-center" data-testid="wishlist-empty-state">
-              <h2 className="heading-lg mb-2 uppercase text-primary" data-testid="wishlist-empty-heading">Wishlist</h2>
-              <p className="mb-6 text-lg text-secondary" data-testid="wishlist-empty-description">Your wishlist is currently empty.</p>
+            <div
+              className="mx-auto flex w-96 flex-col items-center justify-center"
+              data-testid="wishlist-empty-state"
+            >
+              <h2
+                className="heading-lg mb-2 uppercase text-primary"
+                data-testid="wishlist-empty-heading"
+              >
+                Wishlist
+              </h2>
+              <p
+                className="mb-6 text-lg text-secondary"
+                data-testid="wishlist-empty-description"
+              >
+                Your wishlist is currently empty.
+              </p>
               <LocalizedClientLink
                 href="/categories"
                 className="w-full"
               >
-                <Button className="w-full" data-testid="wishlist-explore-button">Explore</Button>
+                <Button
+                  className="w-full"
+                  data-testid="wishlist-explore-button"
+                >
+                  Explore
+                </Button>
               </LocalizedClientLink>
             </div>
           ) : (
             <div className="flex flex-col gap-6">
-              <h2 className="heading-lg uppercase text-primary" data-testid="wishlist-heading">Wishlist</h2>
+              <h2
+                className="heading-lg uppercase text-primary"
+                data-testid="wishlist-heading"
+              >
+                Wishlist
+              </h2>
               <div className="flex items-center justify-between">
                 <p data-testid="wishlist-count">{count} listings</p>
               </div>
-              <div className="flex flex-wrap gap-4 max-md:justify-center" data-testid="wishlist-products-list">
+              <div
+                className="flex flex-wrap gap-4 max-md:justify-center"
+                data-testid="wishlist-products-list"
+              >
                 {wishlist?.products?.map(product => (
                   <WishlistItem
                     key={product.id}

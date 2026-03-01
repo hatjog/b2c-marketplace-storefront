@@ -1,17 +1,17 @@
-"use client"
+'use client';
 
-import { HttpTypes } from "@medusajs/types"
-import { CategoryDropdownContainer } from "./CategoryDropdownContainer"
-import { CategoryDropdownContent } from "./CategoryDropdownContent"
-import { ChildCategories } from "./ChildCategories"
-import { FeaturedCategory } from "./FeaturedCategory"
+import type { HttpTypes } from '@medusajs/types';
+
+import { CategoryDropdownContainer } from './CategoryDropdownContainer';
+import { CategoryDropdownContent } from './CategoryDropdownContent';
+import { ChildCategories } from './ChildCategories';
 
 interface CategoryDropdownMenuProps {
-  category: HttpTypes.StoreProductCategory
-  isVisible: boolean
-  onMouseEnter?: () => void
-  onMouseLeave?: () => void
-  onLinkClick?: () => void
+  category: HttpTypes.StoreProductCategory;
+  isVisible: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  onLinkClick?: () => void;
 }
 
 export const CategoryDropdownMenu = ({
@@ -19,12 +19,12 @@ export const CategoryDropdownMenu = ({
   isVisible,
   onMouseEnter,
   onMouseLeave,
-  onLinkClick,
+  onLinkClick
 }: CategoryDropdownMenuProps) => {
-  const childCategories = category.category_children || []
+  const childCategories = category.category_children || [];
 
   if (childCategories.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -34,8 +34,8 @@ export const CategoryDropdownMenu = ({
       onMouseLeave={onMouseLeave}
     >
       <CategoryDropdownContent>
-        <div className="grid grid-cols-1 max-h-[22.5rem] h-full overflow-y-auto">
-          <section className="border rounded-sm p-6">
+        <div className="grid h-full max-h-[22.5rem] grid-cols-1 overflow-y-auto">
+          <section className="rounded-sm border p-6">
             <ChildCategories
               title={category.name}
               categories={childCategories}
@@ -45,5 +45,5 @@ export const CategoryDropdownMenu = ({
         </div>
       </CategoryDropdownContent>
     </CategoryDropdownContainer>
-  )
-}
+  );
+};

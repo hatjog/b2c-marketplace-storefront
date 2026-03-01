@@ -1,16 +1,25 @@
-import { StarRating } from "@/components/atoms"
-import { SingleProductReview } from "@/types/product"
-import { Divider } from "@medusajs/ui"
-import clsx from "clsx"
-import { formatDistanceToNow } from "date-fns"
+import { Divider } from '@medusajs/ui';
+import clsx from 'clsx';
+import { formatDistanceToNow } from 'date-fns';
+
+import { StarRating } from '@/components/atoms';
+import type { SingleProductReview } from '@/types/product';
 
 export const SellerReview = ({ review }: { review: SingleProductReview }) => {
   return (
-    <div className={clsx("gap-2 flex flex-col justify-center", review.seller_note && "border-b pb-4 mb-4")}>
-      <div className="items-center flex gap-3">
-        <StarRating starSize={14} rate={Number(review.rating.toFixed(1))} />
-        <div className="flex gap-2 items-center">
-          <p className="label-md text-primary truncate">
+    <div
+      className={clsx(
+        'flex flex-col justify-center gap-2',
+        review.seller_note && 'mb-4 border-b pb-4'
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <StarRating
+          starSize={14}
+          rate={Number(review.rating.toFixed(1))}
+        />
+        <div className="flex items-center gap-2">
+          <p className="label-md truncate text-primary">
             {review.customer.first_name} {review.customer.last_name}
           </p>
           <Divider
@@ -19,7 +28,7 @@ export const SellerReview = ({ review }: { review: SingleProductReview }) => {
           />
           <p className="label-md text-secondary">
             {formatDistanceToNow(new Date(review.created_at), {
-              addSuffix: true,
+              addSuffix: true
             })}
           </p>
         </div>
@@ -30,12 +39,13 @@ export const SellerReview = ({ review }: { review: SingleProductReview }) => {
         </p>
         {review.seller_note && (
           <div className="mt-4 flex gap-4">
-            <Divider orientation="vertical" className="h-auto" />
+            <Divider
+              orientation="vertical"
+              className="h-auto"
+            />
             <div className="flex flex-col gap-2">
-              <div className="flex gap-2 items-center">
-                <p className="label-md text-primary">
-                  Reply from {review.seller.name}
-                </p>
+              <div className="flex items-center gap-2">
+                <p className="label-md text-primary">Reply from {review.seller.name}</p>
                 <Divider
                   orientation="vertical"
                   className="h-[10px] border-disabled"
@@ -43,7 +53,7 @@ export const SellerReview = ({ review }: { review: SingleProductReview }) => {
 
                 <p className="label-md text-secondary">
                   {formatDistanceToNow(new Date(review.updated_at), {
-                    addSuffix: true,
+                    addSuffix: true
                   })}
                 </p>
               </div>
@@ -53,5 +63,5 @@ export const SellerReview = ({ review }: { review: SingleProductReview }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};

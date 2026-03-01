@@ -1,13 +1,14 @@
-"use client"
-import { Pagination } from "@/components/cells"
-import { usePagination } from "@/hooks/usePagination"
+'use client';
+
+import { Pagination } from '@/components/cells';
+import { usePagination } from '@/hooks/usePagination';
 
 export const OrdersPagination = ({ pages }: { pages: number }) => {
-  const { currentPage, setPage } = usePagination()
+  const { currentPage, setPage } = usePagination();
 
   const setPageHandler = (page: number) => {
-    setPage(`${page}`)
-  }
+    setPage(`${page}`);
+  };
   return (
     <div className="mt-6 flex justify-center">
       <Pagination
@@ -16,5 +17,5 @@ export const OrdersPagination = ({ pages }: { pages: number }) => {
         currentPage={currentPage}
       />
     </div>
-  )
-}
+  );
+};
