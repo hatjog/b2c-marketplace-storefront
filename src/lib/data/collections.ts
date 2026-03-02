@@ -3,6 +3,7 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { sdk } from '../config';
+import { filterByMarket, getMarketId } from '../helpers/market-filter';
 import { getCacheOptions } from './cookies';
 
 export const retrieveCollection = async (id: string) => {
@@ -25,7 +26,7 @@ export const listCollections = async (
     ...(await getCacheOptions('collections'))
   };
 
-  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const marketId = getMarketId();
 
   queryParams.limit = queryParams.limit || '100';
   queryParams.offset = queryParams.offset || '0';
@@ -37,11 +38,9 @@ export const listCollections = async (
       cache: 'force-cache'
     })
     .then(({ collections }) => {
-      const filtered = marketId
-        ? collections.filter(
-            c => ((c as any).metadata?.gp as Record<string, unknown>)?.market_id === marketId
-          )
-        : collections;
+      const filtered = filterByMarket(collections, marketId);
+      // NOTE: count reflects client-filtered length, not server total.
+      // This was already the case before this guard (original used collections.length).
       return { collections: filtered, count: filtered.length };
     });
 };

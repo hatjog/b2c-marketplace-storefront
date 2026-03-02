@@ -1,6 +1,7 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { sdk } from '@/lib/config';
+import { filterByMarket, getMarketId } from '@/lib/helpers/market-filter';
 
 interface CategoriesProps {
   query?: Record<string, unknown>;
@@ -8,8 +9,7 @@ interface CategoriesProps {
 
 export const listCategories = async ({ query }: Partial<CategoriesProps> = {}) => {
   const limit = query?.limit || 100;
-
-  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const marketId = getMarketId();
 
   const allCategories = await sdk.client
     .fetch<{
@@ -27,13 +27,15 @@ export const listCategories = async ({ query }: Partial<CategoriesProps> = {}) =
     })
     .then(({ product_categories }) => product_categories);
 
-  const filtered = marketId
-    ? allCategories.filter(c => (c.metadata?.gp as Record<string, unknown>)?.market_id === marketId)
-    : allCategories;
-
+  const filtered = filterByMarket(allCategories, marketId);
   const parentCategories = filtered.filter(cat => !cat.parent_category_id);
 
-  const mainCategories = parentCategories.flatMap(parent => parent.category_children || []);
+  // F3 fix: also filter category_children from the API tree — nested children
+  // may lack metadata if Medusa doesn't populate it in the descendants tree.
+  const mainCategories = filterByMarket(
+    parentCategories.flatMap(parent => parent.category_children || []),
+    marketId
+  );
 
   const mainCategoriesWithChildren = mainCategories.map(mainCat => {
     const children = filtered.filter(cat => cat.parent_category_id === mainCat.id);

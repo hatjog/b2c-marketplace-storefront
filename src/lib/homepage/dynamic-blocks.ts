@@ -23,20 +23,7 @@ type PayloadCollectionResponse<T> = {
   docs?: T[];
 };
 
-function getMarketId(): string {
-  return process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-}
-
-function filterByMarket<T extends { metadata?: Record<string, unknown> }>(
-  items: T[],
-  marketId: string
-): T[] {
-  if (!marketId) return items;
-  return items.filter(item => {
-    const gpMeta = item.metadata?.gp as Record<string, unknown> | undefined;
-    return gpMeta?.market_id === marketId;
-  });
-}
+import { filterByMarket, getMarketId } from '@/lib/helpers/market-filter';
 
 function getMedusaBackendUrl() {
   return process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000';
