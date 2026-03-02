@@ -2,19 +2,9 @@ import { BannerBlock } from './BannerBlock';
 import { BlogSectionBlock } from './BlogSectionBlock';
 import { CategoriesGridBlock } from './CategoriesGridBlock';
 import { HeroBlock } from './HeroBlock';
+import { isSectionObject, type RawSection } from './homepage-utils';
 import { ProductsCarouselBlock } from './ProductsCarouselBlock';
 import { StyleSectionBlock } from './StyleSectionBlock';
-
-type RawSection = {
-  id?: string | number;
-  blockType?: string;
-  enabled?: boolean | null;
-  [key: string]: unknown;
-};
-
-function isSectionObject(section: unknown): section is RawSection {
-  return typeof section === 'object' && section !== null;
-}
 
 export function HomepageRenderer({
   sections,
