@@ -2,6 +2,10 @@
  * BonBeauty Brand Theme Override
  * Loaded dynamically by layout.tsx via: marketConfig.theme → /themes/${theme}.css
  *
+ * Primary brand color: #C5A059 (warm gold) — extracted from BonBeauty-design-v1 Figma.
+ * Palette: 11 shades generated from HSL(39.4°, 48.2%, 56.1%).
+ * brand-900 matched to design's action color #1A1A1A for button consistency.
+ *
  * OVERRIDES: 11 brand palette values (--brand-25 … --brand-900)
  *
  * What inherits automatically (via CSS var() chain, no extra rules needed):
@@ -10,31 +14,10 @@
  *   --content-action-on-primary               → var(--brand-25) ✓
  *   --border-action                           → var(--brand-900) ✓
  *
- * What does NOT change with brand-* override (uses neutral-1000, not brand-*):
- *   --bg-action-secondary[-hover/-pressed]    → rgba(var(--neutral-1000), 0.05/0.1/0.2)
- *   --bg-action-tertiary[-hover/-pressed]     → rgba(var(--neutral-1000), 0.05/0.1/0.2)
- * These 6 tokens are intentionally neutral-based (ghost/outline style buttons).
- *
  * VALUE FORMAT: RGB tuples only (e.g. "220, 130, 150")
  * NOT hex. Required by rgba(var(--...)) wrappers in tailwind.config.ts.
  *
- * ──────────────────────────────────────────────────────────────────────────
- * ⚠  PLACEHOLDER — VALUES NOT YET FINALISED
- * ──────────────────────────────────────────────────────────────────────────
- * Current values = grayscale placeholder (same as default colors.css brand-*).
- * Replace after completing Task 0b (pick BonBeauty primary color from Figma).
- *
- * HOW TO UPDATE:
- *   1. Open BonBeauty-design-v1 in Figma, pick the primary brand color (hex).
- *   2. Generate 11-shade palette (25→900) using a tool such as:
- *        https://www.tailwindshades.com/  or  https://uicolors.app/
- *   3. Convert each hex shade to RGB tuple: R, G, B
- *   4. Paste the 11 values below, replacing the placeholder numbers.
- *   5. Run visual check: `pnpm dev` in GP/storefront/, verify action buttons
- *      show the brand color (not gray).
- *
- * WCAG requirement: ensure brand-900 on brand-25 background ≥ 4.5:1 (WCAG AA).
- * ──────────────────────────────────────────────────────────────────────────
+ * WCAG AA verified: brand-900 on brand-25 = 16.42:1 (PASS).
  */
 
 :root {
@@ -42,15 +25,15 @@
    * Naming mirrors Core Token naming in colors.css.
    * Only brand-* is brand-specific; neutral-*, red-*, green-*, yellow-*, blue-* are shared. */
 
-  --brand-25:  247, 247, 247;  /* TODO: replace with actual BonBeauty shade-25  */
-  --brand-50:  238, 238, 238;  /* TODO: replace with actual BonBeauty shade-50  */
-  --brand-100: 226, 226, 226;  /* TODO: replace with actual BonBeauty shade-100 */
-  --brand-200: 198, 198, 198;  /* TODO: replace with actual BonBeauty shade-200 */
-  --brand-300: 163, 163, 163;  /* TODO: replace with actual BonBeauty shade-300 */
-  --brand-400: 115, 115, 115;  /* TODO: replace with actual BonBeauty shade-400 */
-  --brand-500:  82,  82,  82;  /* TODO: replace with actual BonBeauty shade-500 */
-  --brand-600:  64,  64,  64;  /* TODO: replace with actual BonBeauty shade-600 */
-  --brand-700:  27,  27,  27;  /* TODO: replace with actual BonBeauty shade-700 */
-  --brand-800:  22,  22,  22;  /* TODO: replace with actual BonBeauty shade-800 */
-  --brand-900:   9,   9,   9;  /* TODO: replace with actual BonBeauty shade-900 */
+  --brand-25:  250, 248, 245;  /* #FAF8F5 — warm cream, close to design bg #F9F7F2 */
+  --brand-50:  244, 241, 235;  /* #F4F1EB */
+  --brand-100: 239, 229, 210;  /* #EFE5D2 */
+  --brand-200: 226, 207, 172;  /* #E2CFAC */
+  --brand-300: 213, 186, 134;  /* #D5BA86 */
+  --brand-400: 197, 160,  89;  /* #C5A059 — primary brand gold */
+  --brand-500: 174, 135,  61;  /* #AE873D */
+  --brand-600: 144, 112,  50;  /* #907032 */
+  --brand-700: 113,  88,  40;  /* #715828 */
+  --brand-800:  83,  65,  29;  /* #53411D */
+  --brand-900:  26,  26,  26;  /* #1A1A1A — matched to design's action dark */
 }
