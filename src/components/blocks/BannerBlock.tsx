@@ -1,10 +1,18 @@
-import { BannerSection } from '@/components/sections';
+import React from 'react';
 
-export type BannerSectionBlock = {
-  heading?: string | null;
-  subheading?: string | null;
-};
+import { BannerSection } from '@/components/sections/BannerSection/BannerSection';
+
+import {
+  getBannerSectionData,
+  type BannerSectionBlock,
+} from './homepage-utils';
 
 export function BannerBlock({ section }: { section: BannerSectionBlock }) {
-  return <BannerSection key={section.heading ?? section.subheading ?? 'banner'} />;
+  const data = getBannerSectionData(section);
+
+  if (!data) {
+    return null;
+  }
+
+  return <BannerSection {...data} />;
 }

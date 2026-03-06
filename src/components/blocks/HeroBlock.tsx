@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { Hero } from '@/components/sections';
+import { Hero } from '@/components/sections/Hero/Hero';
 
 import {
   type HeroSectionBlock,
@@ -15,6 +15,10 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
   const paragraph = section.paragraph ?? '';
   const imageUrl = getImageUrl(section.image);
   const buttons = mapButtons(section.buttons);
+
+  if (!heading && !paragraph && !imageUrl && buttons.length === 0) {
+    return null;
+  }
 
   if (imageUrl) {
     return (

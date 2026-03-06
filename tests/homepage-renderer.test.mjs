@@ -4,13 +4,64 @@ import fs from "node:fs";
 import path from "node:path";
 
 // Dynamic import required: static ESM linking runs before tsx transforms .ts files (Node 22)
-const { getImageUrl, isSectionObject, mapButtons } = await import("../src/components/blocks/homepage-utils.ts");
+const {
+  getImageUrl,
+  getBannerSectionData,
+  getStyleSectionData,
+  isSectionObject,
+  mapButtons,
+  normalizeStyleSectionItems,
+} = await import("../src/components/blocks/homepage-utils.ts");
+const { BannerBlock } = await import("../src/components/blocks/BannerBlock.tsx");
+const { HeroBlock } = await import("../src/components/blocks/HeroBlock.tsx");
+const { StyleSectionBlock } = await import("../src/components/blocks/StyleSectionBlock.tsx");
+const { BannerSection } = await import("../src/components/sections/BannerSection/BannerSection.tsx");
+const { ShopByStyleSection } = await import("../src/components/sections/ShopByStyle/ShopByStyleSection.tsx");
 
 const root = process.cwd();
 
 const read = (relativePath) => {
   const absolutePath = path.join(root, relativePath);
   return fs.readFileSync(absolutePath, "utf8");
+};
+
+const isElement = value => Boolean(value && typeof value === "object" && "props" in value);
+
+const flattenChildren = children => {
+  if (Array.isArray(children)) {
+    return children.flatMap(flattenChildren);
+  }
+
+  return children == null ? [] : [children];
+};
+
+const collectPropValues = (node, propName) => {
+  if (Array.isArray(node)) {
+    return node.flatMap(item => collectPropValues(item, propName));
+  }
+
+  if (!isElement(node)) {
+    return [];
+  }
+
+  const ownValue = node.props?.[propName] == null ? [] : [node.props[propName]];
+  return ownValue.concat(collectPropValues(flattenChildren(node.props?.children), propName));
+};
+
+const collectText = node => {
+  if (Array.isArray(node)) {
+    return node.flatMap(collectText);
+  }
+
+  if (typeof node === "string") {
+    return [node];
+  }
+
+  if (!isElement(node)) {
+    return [];
+  }
+
+  return collectText(flattenChildren(node.props?.children));
 };
 
 // SOURCE-BASED: wiring/config check — intentional per tech-spec
@@ -75,7 +126,7 @@ test("HeroBlock: when image available, renders Hero section (which uses next/ima
   const heroBlock = read("src/components/blocks/HeroBlock.tsx");
   const heroSection = read("src/components/sections/Hero/Hero.tsx");
 
-  assert.match(heroBlock, /import \{ Hero \} from ['"]@\/components\/sections['"]/);
+  assert.match(heroBlock, /import \{ Hero \} from ['"]@\/components\/sections\/Hero\/Hero['"]/);
   assert.match(heroBlock, /if \(imageUrl\) \{/);
   assert.match(heroBlock, /<Hero[\s\S]*image=\{imageUrl\}/);
 
@@ -92,6 +143,159 @@ test("HeroBlock: missing image does not crash and logs error", () => {
   // Defensive: HeroBlock does not directly render next/image in fallback.
   assert.doesNotMatch(source, /from ['"]next\/image['"]/);
   assert.doesNotMatch(source, /<Image/);
+});
+
+// Task 3 — data-driven blocks and null guards
+
+test("BannerBlock: maps payload data to BannerSection props at runtime", () => {
+  const element = BannerBlock({
+    section: {
+      heading: "Featured collection",
+      subheading: "Curated picks for spring",
+      label: "Explore collection",
+      cta_link: "/collections/spring",
+      image: { url: "https://cdn.example.com/banner.jpg" },
+    },
+  });
+
+  assert.ok(element);
+  assert.equal(element.type, BannerSection);
+  assert.equal(element.props.heading, "Featured collection");
+  assert.equal(element.props.subheading, "Curated picks for spring");
+  assert.equal(element.props.label, "Explore collection");
+  assert.equal(element.props.ctaLink, "/collections/spring");
+  assert.equal(element.props.imageUrl, "https://cdn.example.com/banner.jpg");
+});
+
+test("BannerBlock: returns null when CTA data is missing", () => {
+  const element = BannerBlock({
+    section: {
+      heading: "Featured collection",
+      subheading: "Curated picks for spring",
+      label: "",
+      cta_link: "/collections/spring",
+    },
+  });
+
+  assert.equal(element, null);
+});
+
+test("StyleSectionBlock: maps payload items to ShopByStyleSection props at runtime", () => {
+  const element = StyleSectionBlock({
+    section: {
+      heading: "Shop by style",
+      items: [
+        { label: "Minimal edit", link: "/collections?style=minimal" },
+        {
+          label: "Weekend layers",
+          link: "/collections?style=weekend",
+          image: { url: "https://cdn.example.com/style.jpg" },
+        },
+      ],
+    },
+  });
+
+  assert.ok(element);
+  assert.equal(element.type, ShopByStyleSection);
+  assert.equal(element.props.heading, "Shop by style");
+  assert.equal(element.props.items.length, 2);
+  assert.deepStrictEqual(element.props.items[0], {
+    href: "/collections?style=minimal",
+    imageUrl: null,
+    label: "Minimal edit",
+  });
+  assert.deepStrictEqual(element.props.items[1], {
+    href: "/collections?style=weekend",
+    imageUrl: "https://cdn.example.com/style.jpg",
+    label: "Weekend layers",
+  });
+});
+
+test("StyleSectionBlock: returns null when there are no valid items", () => {
+  const element = StyleSectionBlock({
+    section: {
+      heading: "Shop by style",
+      items: [{ label: "Missing link" }],
+    },
+  });
+
+  assert.equal(element, null);
+});
+
+test("HeroBlock: returns null when all content fields are empty", () => {
+  const element = HeroBlock({
+    section: {
+      heading: "",
+      paragraph: "",
+      image: null,
+      buttons: [],
+    },
+  });
+
+  assert.equal(element, null);
+});
+
+test("BannerSection: renders payload label, href and image props", () => {
+  const element = BannerSection({
+    heading: "Featured collection",
+    subheading: "Curated picks for spring",
+    imageUrl: "https://cdn.example.com/banner.jpg",
+    label: "Explore collection",
+    ctaLink: "/collections/spring",
+  });
+
+  const texts = collectText(element);
+  const hrefs = collectPropValues(element, "href");
+  const srcs = collectPropValues(element, "src");
+
+  assert.ok(texts.includes("Featured collection"));
+  assert.ok(texts.includes("Curated picks for spring"));
+  assert.ok(texts.includes("Explore collection"));
+  assert.ok(hrefs.includes("/collections/spring"));
+  assert.ok(srcs.includes("https://cdn.example.com/banner.jpg"));
+});
+
+test("ShopByStyleSection: renders runtime items instead of hardcoded styles", () => {
+  const element = ShopByStyleSection({
+    heading: "Shop by style",
+    items: [
+      { href: "/collections?style=minimal", imageUrl: null, label: "Minimal edit" },
+      {
+        href: "/collections?style=weekend",
+        imageUrl: "https://cdn.example.com/style.jpg",
+        label: "Weekend layers",
+      },
+    ],
+  });
+
+  const texts = collectText(element);
+  const hrefs = collectPropValues(element, "href");
+  const srcs = collectPropValues(element, "src");
+
+  assert.ok(texts.includes("Shop by style"));
+  assert.ok(texts.includes("Minimal edit"));
+  assert.ok(texts.includes("Weekend layers"));
+  assert.ok(hrefs.includes("/collections?style=minimal"));
+  assert.ok(hrefs.includes("/collections?style=weekend"));
+  assert.ok(srcs.includes("https://cdn.example.com/style.jpg"));
+  assert.ok(!texts.includes("LUXURY"));
+});
+
+// Task 4 — regression: dynamic blocks return null on empty data
+
+test("ProductsCarouselBlock: returns null when products array is empty", () => {
+  const source = read("src/components/blocks/ProductsCarouselBlock.tsx");
+  assert.match(source, /if\s*\(products\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
+});
+
+test("CategoriesGridBlock: returns null when categories array is empty", () => {
+  const source = read("src/components/blocks/CategoriesGridBlock.tsx");
+  assert.match(source, /if\s*\(categories\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
+});
+
+test("BlogSectionBlock: returns null when posts array is empty", () => {
+  const source = read("src/components/blocks/BlogSectionBlock.tsx");
+  assert.match(source, /if\s*\(posts\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
 });
 
 // RUNTIME: business logic tests — pure functions from homepage-utils.ts
@@ -141,6 +345,73 @@ describe("homepage-utils runtime", () => {
       { label: null, url: "/invalid" },
     ];
     assert.deepStrictEqual(mapButtons(buttons), [{ label: "Valid", path: "/valid" }]);
+  });
+
+  test("getBannerSectionData: returns null when CTA metadata is incomplete", () => {
+    assert.equal(
+      getBannerSectionData({
+        heading: "Featured collection",
+        subheading: "Curated picks",
+        label: "",
+        cta_link: "/collections",
+      }),
+      null,
+    );
+  });
+
+  test("getBannerSectionData: maps image, text and CTA from payload", () => {
+    assert.deepStrictEqual(
+      getBannerSectionData({
+        heading: "Featured collection",
+        subheading: "Curated picks",
+        image: { url: "https://cdn.example.com/banner.jpg" },
+        label: "Explore collection",
+        cta_link: "/collections",
+      }),
+      {
+        heading: "Featured collection",
+        subheading: "Curated picks",
+        imageUrl: "https://cdn.example.com/banner.jpg",
+        label: "Explore collection",
+        ctaLink: "/collections",
+      },
+    );
+  });
+
+  test("normalizeStyleSectionItems: filters invalid items and keeps payload image urls", () => {
+    assert.deepStrictEqual(
+      normalizeStyleSectionItems([
+        { label: "Minimal edit", link: "/collections?style=minimal" },
+        { label: "", link: "/collections?style=broken" },
+        {
+          label: "Weekend layers",
+          link: "/collections?style=weekend",
+          image: { url: "https://cdn.example.com/style.jpg" },
+        },
+      ]),
+      [
+        {
+          href: "/collections?style=minimal",
+          imageUrl: null,
+          label: "Minimal edit",
+        },
+        {
+          href: "/collections?style=weekend",
+          imageUrl: "https://cdn.example.com/style.jpg",
+          label: "Weekend layers",
+        },
+      ],
+    );
+  });
+
+  test("getStyleSectionData: returns null when no valid runtime items remain", () => {
+    assert.equal(
+      getStyleSectionData({
+        heading: "Shop by style",
+        items: [{ label: "Broken item", link: null }],
+      }),
+      null,
+    );
   });
 
   // isSectionObject

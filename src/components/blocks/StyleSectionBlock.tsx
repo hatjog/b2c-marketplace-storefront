@@ -1,9 +1,18 @@
-import { ShopByStyleSection } from '@/components/sections';
+import React from 'react';
 
-export type StyleSectionSectionBlock = {
-  heading?: string | null;
-};
+import { ShopByStyleSection } from '@/components/sections/ShopByStyle/ShopByStyleSection';
 
-export function StyleSectionBlock({ section }: { section: StyleSectionSectionBlock }) {
-  return <ShopByStyleSection key={section.heading ?? 'style-section'} />;
+import {
+  getStyleSectionData,
+  type StyleSectionBlock as StyleSectionPayloadBlock,
+} from './homepage-utils';
+
+export function StyleSectionBlock({ section }: { section: StyleSectionPayloadBlock }) {
+  const data = getStyleSectionData(section);
+
+  if (!data) {
+    return null;
+  }
+
+  return <ShopByStyleSection {...data} />;
 }

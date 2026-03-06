@@ -1,65 +1,54 @@
+import React from 'react';
 import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowRightIcon } from '@/icons';
-import type { Style } from '@/types/styles';
 
-export const styles: Style[] = [
-  {
-    id: 1,
-    name: 'LUXURY',
-    href: '/collections/luxury'
-  },
-  {
-    id: 2,
-    name: 'VINTAGE',
-    href: '/collections/vintage'
-  },
-  {
-    id: 3,
-    name: 'CASUAL',
-    href: '/collections/casual'
-  },
-  {
-    id: 4,
-    name: 'STREETWEAR',
-    href: '/collections/streetwear'
-  },
-  {
-    id: 5,
-    name: 'Y2K',
-    href: '/collections/y2k'
-  }
-];
+type StyleSectionItemProps = {
+  imageUrl: string | null;
+  href: string;
+  label: string;
+};
 
-export function ShopByStyleSection() {
+type ShopByStyleSectionProps = {
+  heading: string;
+  items: StyleSectionItemProps[];
+};
+
+export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) {
   return (
     <section className="container bg-primary">
-      <h2 className="heading-lg mb-12 text-primary">SHOP BY STYLE</h2>
-      <div className="grid grid-cols-1 items-center lg:grid-cols-2">
-        <div className="h-full rounded-sm border px-[58px] py-[52px]">
-          {styles.map(style => (
+      <h2 className="heading-lg mb-12 text-primary">{heading}</h2>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {items.map(item => (
+          <div
+            key={`${item.href}-${item.label}`}
+            className="h-full rounded-sm border"
+          >
             <LocalizedClientLink
-              key={style.id}
-              href={style.href}
-              className="group mb-8 flex w-fit items-center gap-4 border-b border-transparent pb-2 text-primary transition-colors hover:border-primary hover:text-action"
+              href={item.href}
+              className="group flex h-full flex-col gap-4 p-6 text-primary transition-colors hover:text-action"
             >
-              <span className="heading-lg">{style.name}</span>
-              <ArrowRightIcon className="-translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+              {item.imageUrl && (
+                <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-action-secondary">
+                  <Image
+                    loading="lazy"
+                    fetchPriority="high"
+                    src={decodeURIComponent(item.imageUrl)}
+                    alt={item.label}
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                  />
+                </div>
+              )}
+              <div className="mt-auto flex items-center justify-between gap-4 border-b border-transparent pb-2 group-hover:border-primary">
+                <span className="heading-lg">{item.label}</span>
+                <ArrowRightIcon className="-translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+              </div>
             </LocalizedClientLink>
-          ))}
-        </div>
-        <div className="relative hidden lg:block">
-          <Image
-            loading="lazy"
-            fetchPriority="high"
-            src="/images/shop-by-styles/Image.jpg"
-            alt="Models showcasing luxury fashion styles"
-            width={700}
-            height={600}
-            className="h-auto w-full rounded-sm object-cover"
-          />
-        </div>
+          </div>
+        ))}
       </div>
     </section>
   );
