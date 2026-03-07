@@ -1,7 +1,7 @@
 import Medusa from '@medusajs/js-sdk';
 
-// Defaults to standard port for Medusa server
-const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000';
+// Local GP uses backend on 9002; 9000 is reserved for MinIO in the standard dev stack.
+const MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9002';
 
 export const sdk = new Medusa({
   baseUrl: MEDUSA_BACKEND_URL,

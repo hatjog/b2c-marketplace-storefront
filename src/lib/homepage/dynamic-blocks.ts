@@ -13,7 +13,7 @@ import type { SortOptions } from '@/types/product';
 type HomepageProductsSort = 'newest' | 'price_asc' | 'price_desc';
 
 function getMedusaBackendUrl() {
-  return process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000';
+  return process.env.MEDUSA_BACKEND_URL || 'http://localhost:9002';
 }
 
 function buildMedusaUrl(pathname: string) {

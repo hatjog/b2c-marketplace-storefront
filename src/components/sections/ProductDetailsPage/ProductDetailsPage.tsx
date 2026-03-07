@@ -17,11 +17,13 @@ export const ProductDetailsPage = async ({
     forceCache: true
   }).then(({ response }) => response.products[0]);
 
-  if (!prod) return null;
+  if (!prod) return NotFound();
 
   if (prod.seller?.store_status === 'SUSPENDED') {
     return NotFound();
   }
+
+  const relatedSellerProducts = prod.seller?.products?.length ? prod.seller.products : null;
 
   return (
     <>
@@ -45,14 +47,16 @@ export const ProductDetailsPage = async ({
           />
         </div>
       </div>
-      <div className="my-8">
-        <HomeProductSection
-          heading="More from this seller"
-          products={prod.seller?.products}
-          // seller_handle={prod.seller?.handle}
-          locale={locale}
-        />
-      </div>
+      {relatedSellerProducts && (
+        <div className="my-8">
+          <HomeProductSection
+            heading="More from this seller"
+            products={relatedSellerProducts}
+            // seller_handle={prod.seller?.handle}
+            locale={locale}
+          />
+        </div>
+      )}
     </>
   );
 };

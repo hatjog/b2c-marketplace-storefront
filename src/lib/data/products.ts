@@ -2,6 +2,8 @@
 
 import type { HttpTypes } from '@medusajs/types';
 
+import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
+import { normalizeListedProducts } from '@/lib/helpers/normalize-listed-products';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import type { SortOptions } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
@@ -32,7 +34,7 @@ export const listProducts = async ({
   forceCache?: boolean;
 }): Promise<{
   response: {
-    products: (HttpTypes.StoreProduct & { seller?: SellerProps })[];
+    products: ListedProduct[];
     count: number;
   };
   nextPage: number | null;
@@ -69,7 +71,7 @@ export const listProducts = async ({
 
   return sdk.client
     .fetch<{
-      products: (HttpTypes.StoreProduct & { seller?: SellerProps })[];
+      products: ListedProduct[];
       count: number;
     }>(`/store/products`, {
       method: 'GET',
@@ -90,29 +92,13 @@ export const listProducts = async ({
       cache: useCached ? 'force-cache' : 'no-cache'
     })
     .then(({ products: productsRaw, count }) => {
-      const products = productsRaw.filter(product => product.seller?.store_status !== 'SUSPENDED');
+      const products = normalizeListedProducts(productsRaw);
 
       const nextPage = count > offset + limit ? pageParam + 1 : null;
 
-      const response = products.filter(prod => {
-        // @ts-ignore Property 'seller' exists but TypeScript doesn't recognize it
-        const reviews = prod.seller?.reviews.filter(item => !!item) ?? [];
-        return (
-          // @ts-ignore Property 'seller' exists but TypeScript doesn't recognize it
-          prod?.seller && {
-            ...prod,
-            seller: {
-              // @ts-ignore Property 'seller' exists but TypeScript doesn't recognize it
-              ...prod.seller,
-              reviews
-            }
-          }
-        );
-      });
-
       return {
         response: {
-          products: response,
+          products,
           count
         },
         nextPage: nextPage,
