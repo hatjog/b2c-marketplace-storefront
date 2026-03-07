@@ -32,7 +32,7 @@ const FALLBACK_IMAGES = [
   '/images/blog/post-3.jpg'
 ];
 
-function getPayloadApiUrl() {
+export function getPayloadApiUrl() {
   return process.env.PAYLOAD_API_URL;
 }
 
