@@ -101,6 +101,7 @@ export default async function BlogArticlePage({
         <Breadcrumbs
           items={[
             { path: '/', label: 'Home' },
+            { path: '/blog', label: 'Blog' },
             { path: `/blog/${page.slug || slug}`, label: title }
           ]}
         />
@@ -150,10 +151,10 @@ export default async function BlogArticlePage({
 
         <div className="border-t border-secondary pt-6">
           <LocalizedClientLink
-            href="/"
+            href="/blog"
             className="label-md inline-flex items-center uppercase text-primary transition-opacity hover:opacity-70"
           >
-            Back to homepage
+            Back to blog
           </LocalizedClientLink>
         </div>
       </article>
