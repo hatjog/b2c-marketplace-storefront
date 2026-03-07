@@ -1,6 +1,7 @@
 export type HeroButton = {
   label?: string | null;
   url?: string | null;
+  path?: string | null;
   variant?: string | null;
 };
 
@@ -78,13 +79,15 @@ export function getImageUrl(image: HeroImage): string | null {
 export function mapButtons(buttons: HeroButton[] | null | undefined) {
   return (buttons ?? [])
     .map(button => {
-      if (!button?.label || !button.url) {
+      const href = button?.url ?? button?.path;
+
+      if (!button?.label || !href) {
         return null;
       }
 
       return {
         label: button.label,
-        path: button.url
+        path: href
       };
     })
     .filter((button): button is { label: string; path: string } => Boolean(button));

@@ -2,7 +2,20 @@ import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
+const CATEGORY_IMAGE_HANDLES = new Set([
+  'accessories',
+  'boots',
+  'sandals',
+  'shirt',
+  'sneakers',
+  'sport',
+]);
+
 export function CategoryCard({ category }: { category: { name: string; handle: string } }) {
+  const imageSrc = CATEGORY_IMAGE_HANDLES.has(category.handle)
+    ? `/images/categories/${category.handle}.png`
+    : '/images/placeholder.svg';
+
   return (
     <LocalizedClientLink
       href={`/categories/${category.handle}`}
@@ -11,7 +24,7 @@ export function CategoryCard({ category }: { category: { name: string; handle: s
       <div className="relative flex aspect-square w-[200px] overflow-hidden">
         <Image
           loading="lazy"
-          src={`/images/categories/${category.handle}.png`}
+          src={imageSrc}
           alt={`category - ${category.name}`}
           width={200}
           height={200}

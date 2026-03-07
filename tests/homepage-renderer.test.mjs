@@ -105,12 +105,13 @@ test("HomepageRenderer: supports expected blockType mapping", () => {
   }
 });
 
-test("HeroBlock: maps buttons url -> path and filters invalid entries", () => {
+test("HeroBlock: maps buttons url/path -> path and filters invalid entries", () => {
   // SOURCE-BASED: wiring/config check — mapButtons extracted to homepage-utils.ts per tech-spec
   const source = read("src/components/blocks/homepage-utils.ts");
 
-  assert.match(source, /if\s*\(!button\?\.label\s*\|\|\s*!button\.url\)/);
-  assert.match(source, /path:\s*button\.url/);
+  assert.match(source, /const href = button\?\.url \?\? button\?\.path/);
+  assert.match(source, /if \(!button\?\.label \|\| !href\)/);
+  assert.match(source, /path:\s*href/);
 });
 
 test("HeroBlock: uses section data (heading/paragraph/image/buttons)", () => {
@@ -288,14 +289,16 @@ test("ProductsCarouselBlock: returns null when products array is empty", () => {
   assert.match(source, /if\s*\(products\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
 });
 
-test("CategoriesGridBlock: returns null when categories array is empty", () => {
+test("CategoriesGridBlock: renders HomeCategories even when fetched categories array is empty", () => {
   const source = read("src/components/blocks/CategoriesGridBlock.tsx");
-  assert.match(source, /if\s*\(categories\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
+  assert.match(source, /<HomeCategories/);
+  assert.doesNotMatch(source, /if\s*\(categories\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
 });
 
-test("BlogSectionBlock: returns null when posts array is empty", () => {
+test("BlogSectionBlock: renders BlogSection even when fetched posts array is empty", () => {
   const source = read("src/components/blocks/BlogSectionBlock.tsx");
-  assert.match(source, /if\s*\(posts\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
+  assert.match(source, /<BlogSection/);
+  assert.doesNotMatch(source, /if\s*\(posts\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
 });
 
 // RUNTIME: business logic tests — pure functions from homepage-utils.ts
@@ -331,6 +334,11 @@ describe("homepage-utils runtime", () => {
 
   test("mapButtons: valid entries -> mapped to {label, path}", () => {
     const result = mapButtons([{ label: "Shop", url: "/shop", variant: "primary" }]);
+    assert.deepStrictEqual(result, [{ label: "Shop", path: "/shop" }]);
+  });
+
+  test("mapButtons: legacy path field is accepted for backward compatibility", () => {
+    const result = mapButtons([{ label: "Shop", path: "/shop" }]);
     assert.deepStrictEqual(result, [{ label: "Shop", path: "/shop" }]);
   });
 

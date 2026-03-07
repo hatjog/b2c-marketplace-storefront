@@ -76,6 +76,7 @@ export default async function RootLayout({
       lang={htmlLang}
       className=""
       style={htmlStyle}
+      suppressHydrationWarning
     >
       <head>
         <link
@@ -171,7 +172,10 @@ export default async function RootLayout({
           />
         )}
       </head>
-      <body className={`${funnelDisplay.className} relative bg-primary text-secondary antialiased`}>
+      <body
+        className={`${funnelDisplay.className} relative bg-primary text-secondary antialiased`}
+        suppressHydrationWarning
+      >
         {showFallbackBanner && (
           <div className="bg-yellow-100 px-4 py-2 text-sm text-yellow-900">
             Korzystasz z fallback MarketConfig. Payload API jest niedostepne.

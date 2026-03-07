@@ -11,10 +11,6 @@ export async function BlogSectionBlock({ section }: { section: BlogSectionSectio
     limit: section.limit
   });
 
-  if (posts.length === 0) {
-    return null;
-  }
-
   return (
     <BlogSection
       key={`${section.heading ?? 'blog-section'}-${section.limit ?? 3}`}

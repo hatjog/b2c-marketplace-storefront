@@ -11,10 +11,6 @@ export async function CategoriesGridBlock({ section }: { section: CategoriesGrid
     limit: section.limit
   });
 
-  if (categories.length === 0) {
-    return null;
-  }
-
   return (
     <div className="w-full px-4 lg:px-8">
       <HomeCategories

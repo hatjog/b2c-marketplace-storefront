@@ -1,0 +1,7 @@
+/*
+ * Default storefront theme.
+ *
+ * The core tokens already live in globals.css/colors.css, so the default
+ * theme only needs to exist as a stable asset target for market configs that
+ * set theme="default".
+ */

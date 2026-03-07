@@ -13,6 +13,18 @@ export function getMarketId(): string {
   return process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
 }
 
+function readGpMarketId(item: unknown): string | null {
+  if (!item || typeof item !== 'object') {
+    return null
+  }
+
+  const anyItem = item as { metadata?: Record<string, unknown> }
+  const gpMeta = anyItem.metadata?.gp as Record<string, unknown> | undefined
+  const marketId = gpMeta?.market_id
+
+  return typeof marketId === 'string' && marketId.length > 0 ? marketId : null
+}
+
 /**
  * Filter Medusa API items by metadata.gp.market_id.
  * Works with any item type — accesses metadata via runtime optional chaining.
@@ -22,9 +34,7 @@ export function filterByMarket<T>(items: T[], marketId: string): T[] {
   if (!marketId) return items; // dev fallback: no market_id = no filtering
 
   const filtered = items.filter(item => {
-    const anyItem = item as { metadata?: Record<string, unknown> };
-    const gpMeta = anyItem.metadata?.gp as Record<string, unknown> | undefined;
-    return gpMeta?.market_id === marketId;
+    return readGpMarketId(item) === marketId
   });
 
   if (filtered.length < items.length) {
@@ -34,4 +44,18 @@ export function filterByMarket<T>(items: T[], marketId: string): T[] {
   }
 
   return filtered;
+}
+
+export function filterByMarketOrKeepUntagged<T>(items: T[], marketId: string): T[] {
+  if (!marketId) {
+    return items
+  }
+
+  const filtered = filterByMarket(items, marketId)
+  if (filtered.length > 0) {
+    return filtered
+  }
+
+  const hasTaggedItems = items.some(item => readGpMarketId(item) !== null)
+  return hasTaggedItems ? filtered : items
 }

@@ -2,7 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 // Dynamic import required: static ESM linking runs before tsx transforms .ts files (Node 22)
-const { filterByMarket, getMarketId } = await import('../src/lib/helpers/market-filter.ts');
+const { filterByMarket, filterByMarketOrKeepUntagged, getMarketId } = await import('../src/lib/helpers/market-filter.ts');
 
 describe('market-filter utility', () => {
   test('filterByMarket: passes all items when marketId is empty (dev fallback)', () => {
@@ -40,6 +40,36 @@ describe('market-filter utility', () => {
     const items = [{ metadata: { gp: { market_id: 'bonevent' } } }];
     const result = filterByMarket(items, 'bonbeauty');
     assert.equal(result.length, 0);
+  });
+
+  test('filterByMarketOrKeepUntagged: returns original items when no gp market metadata exists', () => {
+    const items = [
+      { id: 1, metadata: {} },
+      { id: 2 },
+    ];
+    const result = filterByMarketOrKeepUntagged(items, 'mercur');
+    assert.equal(result.length, 2);
+    assert.deepEqual(result.map(i => i.id), [1, 2]);
+  });
+
+  test('filterByMarketOrKeepUntagged: keeps strict filtering when tagged items exist', () => {
+    const items = [
+      { id: 1, metadata: { gp: { market_id: 'bonevent' } } },
+      { id: 2, metadata: { gp: { market_id: 'bonbeauty' } } },
+    ];
+    const result = filterByMarketOrKeepUntagged(items, 'mercur');
+    assert.deepEqual(result, []);
+  });
+
+  test('filterByMarketOrKeepUntagged: returns matching tagged items when available', () => {
+    const items = [
+      { id: 1, metadata: { gp: { market_id: 'bonevent' } } },
+      { id: 2, metadata: { gp: { market_id: 'mercur' } } },
+      { id: 3 },
+    ];
+    const result = filterByMarketOrKeepUntagged(items, 'mercur');
+    assert.equal(result.length, 1);
+    assert.equal(result[0].id, 2);
   });
 
   test('filterByMarket: handles empty input array', () => {
