@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import Script from 'next/script';
 
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
-import { listRegions } from '@/lib/data/regions';
+import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveMarketConfig } from '@/lib/portal';
 
@@ -21,28 +21,11 @@ export async function generateMetadata({
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
-  // Build alternates based on available regions (locales)
-  let languages: Record<string, string> = {};
-  try {
-    const regions = await listRegions();
-    const locales = Array.from(
-      new Set(
-        (regions || [])
-          .map(r => r.countries?.map(c => c.iso_2) || [])
-          .flat()
-          .filter(Boolean)
-      )
-    ) as string[];
-
-    languages = locales.reduce<Record<string, string>>((acc, code) => {
-      const hrefLang = toHreflang(code);
-      acc[hrefLang] = `${baseUrl}/${code}`;
-      return acc;
-    }, {});
-  } catch {
-    // Fallback: only current locale
-    languages = { [toHreflang(locale)]: `${baseUrl}/${locale}` };
-  }
+  // Build alternates based on supported languages (ADR-046: URL = language, not country)
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, lang) => {
+    acc[toHreflang(lang)] = `${baseUrl}/${lang}`;
+    return acc;
+  }, {});
 
   const title = 'Home';
   const description =

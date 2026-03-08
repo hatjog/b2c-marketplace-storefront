@@ -151,7 +151,7 @@ export const listProductsWithSort = async ({
   const {
     response: { products, count }
   } = await listProducts({
-    pageParam: 0,
+    pageParam: 1,
     queryParams: {
       ...queryParams,
       limit: 100
@@ -173,7 +173,7 @@ export const listProductsWithSort = async ({
 
   const pageParam = (page - 1) * limit;
 
-  const nextPage = count > pageParam + limit ? page + 1 : null;
+  const nextPage = sortedProducts.length > pageParam + limit ? page + 1 : null;
 
   const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit);
 

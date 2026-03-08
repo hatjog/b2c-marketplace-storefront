@@ -68,8 +68,8 @@ export default async function RootLayout({
     ? ({ '--color-primary': marketConfig.primary_color } as CSSProperties)
     : undefined;
   const themeStylesheet = marketConfig.theme ? `/themes/${marketConfig.theme}.css` : null;
-  // default lang updated by HtmlLangSetter
-  const htmlLang = 'en';
+  // default lang updated dynamically by HtmlLangSetter per locale
+  const htmlLang = 'pl';
 
   return (
     <html

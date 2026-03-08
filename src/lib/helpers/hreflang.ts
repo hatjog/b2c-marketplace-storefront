@@ -1,32 +1,41 @@
+/**
+ * Map a language code (URL segment) to a BCP-47 hreflang tag.
+ * Since ADR-046, the URL segment represents language, not country.
+ * Supported languages: pl, en. Legacy country codes kept for backward compat.
+ */
 export const toHreflang = (code: string): string => {
   const map: Record<string, string> = {
-    us: 'en-US',
-    gb: 'en-GB',
-    au: 'en-AU',
-    ca: 'en-CA',
-    ie: 'en-IE',
-    pl: 'pl-PL',
-    de: 'de-DE',
-    fr: 'fr-FR',
-    es: 'es-ES',
-    it: 'it-IT',
-    nl: 'nl-NL',
-    se: 'sv-SE',
-    no: 'nb-NO',
-    dk: 'da-DK',
-    cz: 'cs-CZ',
-    sk: 'sk-SK',
-    pt: 'pt-PT',
-    br: 'pt-BR',
-    at: 'de-AT',
-    ch: 'de-CH',
-    cn: 'zh-CN',
-    jp: 'ja-JP',
-    kr: 'ko-KR',
-    tw: 'zh-TW',
-    hk: 'zh-HK',
-    sg: 'en-SG',
-    my: 'ms-MY'
+    // Supported language codes (primary)
+    pl: 'pl',
+    en: 'en',
+    uk: 'uk',
+    de: 'de',
+    // Legacy country codes (backward compat — same 'pl' code still works)
+    us: 'en',
+    gb: 'en',
+    au: 'en',
+    ca: 'en',
+    ie: 'en',
+    fr: 'fr',
+    es: 'es',
+    it: 'it',
+    nl: 'nl',
+    se: 'sv',
+    no: 'nb',
+    dk: 'da',
+    cz: 'cs',
+    sk: 'sk',
+    pt: 'pt',
+    br: 'pt',
+    at: 'de',
+    ch: 'de',
+    cn: 'zh',
+    jp: 'ja',
+    kr: 'ko',
+    tw: 'zh',
+    hk: 'zh',
+    sg: 'en',
+    my: 'ms'
   };
-  return map[code] || code;
+  return map[code] ?? code;
 };

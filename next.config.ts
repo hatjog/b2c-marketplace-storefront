@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
 
@@ -59,7 +60,9 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default withSentryConfig(nextConfig, {
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
+
+export default withSentryConfig(withNextIntl(nextConfig), {
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI
 });

@@ -12,7 +12,7 @@ export function HtmlLangSetter() {
   useEffect(() => {
     // get locale from the path
     const localeMatch = pathname?.match(/^\/([a-z]{2})(?:\/|$)/i);
-    const locale = localeMatch?.[1] || 'en';
+    const locale = localeMatch?.[1] || 'pl';
     const htmlLang = toHreflang(locale);
 
     // set lang on the html element

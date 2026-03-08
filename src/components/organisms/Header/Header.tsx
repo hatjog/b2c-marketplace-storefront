@@ -5,6 +5,7 @@ import { Badge } from '@/components/atoms';
 import { CartDropdown, MobileNavbar, Navbar } from '@/components/cells';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
 import CountrySelector from '@/components/molecules/CountrySelector/CountrySelector';
+import { LanguageSwitcher } from '@/components/molecules/LanguageSwitcher/LanguageSwitcher';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { MessageButton } from '@/components/molecules/MessageButton/MessageButton';
 import { ParentCategoryLinks } from '@/components/molecules/ParentCategoryLinks/ParentCategoryLinks';
@@ -13,6 +14,7 @@ import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listRegions } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketLogoUrl, type MarketConfig } from '@/lib/portal';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -28,9 +30,10 @@ export const Header = async ({
   const marketLogoUrl = getMarketLogoUrl(marketConfig);
   const logoSrc = marketLogoUrl || '/Logo.svg';
 
+  const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
   if (user) {
-    wishlist = await getUserWishlists({ countryCode: locale });
+    wishlist = await getUserWishlists({ countryCode });
   }
 
   const regions = await listRegions();
@@ -79,6 +82,7 @@ export const Header = async ({
           data-testid="header-actions"
         >
           <CountrySelector regions={regions} />
+          <LanguageSwitcher currentLocale={locale} />
           {isLoggedIn && <MessageButton />}
           <UserDropdown isLoggedIn={isLoggedIn} />
           {isLoggedIn && (

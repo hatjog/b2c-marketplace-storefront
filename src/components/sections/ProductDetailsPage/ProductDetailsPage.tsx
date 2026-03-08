@@ -24,7 +24,7 @@ export const ProductDetailsPage = async ({
   }
 
   const relatedSellerProducts = prod.seller?.products?.length ? prod.seller.products : null;
-  const relatedHeading = locale === 'pl' ? 'Więcej od tego sprzedawcy' : 'More from this seller';
+  const relatedHeading = locale.startsWith('pl') ? 'Więcej od tego sprzedawcy' : 'More from this seller';
 
   return (
     <>

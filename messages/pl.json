@@ -1,0 +1,61 @@
+{
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Wystąpił błąd",
+    "retry": "Spróbuj ponownie",
+    "back": "Wróć",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "close": "Zamknij",
+    "search": "Szukaj",
+    "all": "Wszystkie",
+    "none": "Brak",
+    "yes": "Tak",
+    "no": "Nie"
+  },
+  "header": {
+    "logo_alt": "Logo",
+    "shipping_to": "Dostawa do",
+    "language_switcher_label": "Wybierz język",
+    "search_placeholder": "Szukaj produktów...",
+    "cart": "Koszyk",
+    "wishlist": "Lista życzeń",
+    "messages": "Wiadomości",
+    "login": "Zaloguj się",
+    "logout": "Wyloguj się",
+    "account": "Moje konto"
+  },
+  "footer": {
+    "rights_reserved": "Wszelkie prawa zastrzeżone",
+    "privacy_policy": "Polityka prywatności",
+    "terms_of_service": "Regulamin",
+    "contact": "Kontakt"
+  },
+  "filters": {
+    "filter_by": "Filtruj według",
+    "sort_by": "Sortuj według",
+    "price_range": "Przedział cenowy",
+    "category": "Kategoria",
+    "brand": "Marka",
+    "rating": "Ocena",
+    "in_stock": "Dostępne",
+    "apply": "Zastosuj",
+    "clear": "Wyczyść",
+    "results": "wyników"
+  },
+  "products": {
+    "add_to_cart": "Dodaj do koszyka",
+    "add_to_wishlist": "Dodaj do listy życzeń",
+    "out_of_stock": "Brak w magazynie",
+    "price_from": "od",
+    "view_details": "Zobacz szczegóły",
+    "related_products": "Podobne produkty",
+    "reviews": "Opinie",
+    "description": "Opis",
+    "specifications": "Specyfikacje",
+    "quantity": "Ilość",
+    "in_stock": "Dostępny",
+    "sold_by": "Sprzedawca"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "all": "All",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "header": {
+    "logo_alt": "Logo",
+    "shipping_to": "Shipping to",
+    "language_switcher_label": "Select language",
+    "search_placeholder": "Search products...",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "messages": "Messages",
+    "login": "Log in",
+    "logout": "Log out",
+    "account": "My account"
+  },
+  "footer": {
+    "rights_reserved": "All rights reserved",
+    "privacy_policy": "Privacy policy",
+    "terms_of_service": "Terms of service",
+    "contact": "Contact"
+  },
+  "filters": {
+    "filter_by": "Filter by",
+    "sort_by": "Sort by",
+    "price_range": "Price range",
+    "category": "Category",
+    "brand": "Brand",
+    "rating": "Rating",
+    "in_stock": "In stock",
+    "apply": "Apply",
+    "clear": "Clear",
+    "results": "results"
+  },
+  "products": {
+    "add_to_cart": "Add to cart",
+    "add_to_wishlist": "Add to wishlist",
+    "out_of_stock": "Out of stock",
+    "price_from": "from",
+    "view_details": "View details",
+    "related_products": "Related products",
+    "reviews": "Reviews",
+    "description": "Description",
+    "specifications": "Specifications",
+    "quantity": "Quantity",
+    "in_stock": "In stock",
+    "sold_by": "Sold by"
+  }
+}
