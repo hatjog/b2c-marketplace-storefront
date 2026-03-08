@@ -16,6 +16,7 @@ import { listRegions } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketLogoUrl, type MarketConfig } from '@/lib/portal';
+import { getTranslations } from 'next-intl/server';
 import type { Wishlist } from '@/types/wishlist';
 
 export const Header = async ({
@@ -25,10 +26,11 @@ export const Header = async ({
   locale: string;
   marketConfig?: MarketConfig | null;
 }) => {
+  const tHeader = await getTranslations('header');
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
   const marketLogoUrl = getMarketLogoUrl(marketConfig);
-  const logoSrc = marketLogoUrl || '/Logo.svg';
+  const marketName = marketConfig?.name ?? null;
 
   const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
@@ -65,16 +67,23 @@ export const Header = async ({
         <div className="flex items-center pl-4 lg:w-1/3 lg:justify-center lg:pl-0">
           <LocalizedClientLink
             href="/"
-            className="text-2xl font-bold"
+            className="flex items-center gap-2"
             data-testid="header-logo-link"
           >
-            <Image
-              src={logoSrc}
-              width={126}
-              height={40}
-              alt="Logo"
-              priority
-            />
+            {marketLogoUrl && (
+              <Image
+                src={marketLogoUrl}
+                width={126}
+                height={40}
+                alt={marketName ?? 'Logo'}
+                priority
+              />
+            )}
+            {marketName ? (
+              <span className="font-bold text-xl">{marketName}</span>
+            ) : !marketLogoUrl ? (
+              <span className="font-bold text-xl">{tHeader('home_fallback')}</span>
+            ) : null}
           </LocalizedClientLink>
         </div>
         <div
