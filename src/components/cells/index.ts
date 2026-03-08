@@ -1,14 +1,15 @@
 import { ActiveFilterElement } from './ActiveFilterElement/ActiveFilterElement';
-import { BrandFilter } from './BrandFilter/BrandFilter';
 import { CustomCarousel as Carousel } from './Carousel/Carousel';
 import { CartDropdown } from './CartDropdown/CartDropdown';
 import { CartItemsFooter } from './CartItemsFooter/CartItemsFooter';
 import { CartItemsHeader } from './CartItemsHeader/CartItemsHeader';
 import { CartItemsProducts } from './CartItemsProducts/CartItemsProducts';
-import { ColorFilter } from './ColorFilter/ColorFilter';
-import { ConditionFilter } from './ConditionFilter/ConditionFilter';
+import { CategoryFilter } from './CategoryFilter/CategoryFilter';
+import { DurationFilter } from './DurationFilter/DurationFilter';
+import { DynamicFilterSidebar } from './DynamicFilterSidebar/DynamicFilterSidebar';
 import { HeadingCategories } from './HeadingCategories/HeadingCategories';
 import { LabeledInput } from './LabeledInput/LabeledInput';
+import { LocationFilter } from './LocationFilter/LocationFilter';
 import { MobileNavbar } from './MobileNavbar/MobileNavbar';
 import { Navbar } from './Navbar/Navbar';
 import { OrderAddresses } from './OrderAddresses/OrderAddresses';
@@ -24,24 +25,23 @@ import { ProductDetailsMeasurements } from './ProductDetailsMeasurements/Product
 import { ProductDetailsSeller } from './ProductDetailsSeller/ProductDetailsSeller';
 import { ProductDetailsSellerReviews } from './ProductDetailsSellerReviews/ProductDetailsSellerReviews';
 import { ProductDetailsShipping } from './ProductDetailsShipping/ProductDetailsShipping';
-import { ProductFilter } from './ProductFilter/ProductFilter';
 import { ProductPageDetails } from './ProductPageDetails/ProductPageDetails';
 import { SellerRatingFilter } from './SellerRatingFilter/SellerRatingFilter';
 import { SellerReviewTab } from './SellerReviewTab/SellerReviewTab';
-import { SizeFilter } from './SizeFilter/SizeFilter';
+import { TagFilter } from './TagFilter/TagFilter';
 import { WishlistItem } from './WishlistItem/WishlistItem';
 
 export {
   Navbar,
   Carousel,
   Pagination,
-  ProductFilter,
-  BrandFilter,
+  CategoryFilter,
+  TagFilter,
+  DurationFilter,
+  LocationFilter,
   PriceFilter,
-  SizeFilter,
-  ConditionFilter,
-  ColorFilter,
   SellerRatingFilter,
+  DynamicFilterSidebar,
   ActiveFilterElement,
   MobileNavbar,
   ProductDetailsHeader,

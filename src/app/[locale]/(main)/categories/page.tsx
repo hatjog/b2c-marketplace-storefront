@@ -64,8 +64,15 @@ export async function generateMetadata({
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
-async function AllCategories({ params }: { params: Promise<{ locale: string }> }) {
+async function AllCategories({
+  params,
+  searchParams
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { locale } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
 
   const ua = (await headers()).get('user-agent') || '';
   const bot = isBot(ua);
@@ -146,6 +153,7 @@ async function AllCategories({ params }: { params: Promise<{ locale: string }> }
           <ProductListing
             showSidebar
             locale={locale}
+            searchParams={resolvedSearchParams}
           />
         ) : (
           <AlgoliaProductsListing

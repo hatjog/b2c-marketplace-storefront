@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Button, Chip, Input } from '@/components/atoms';
 import { Accordion, FilterCheckboxOption, Modal } from '@/components/molecules';
@@ -20,6 +21,7 @@ export type FacetModel = {
 };
 
 export const AlgoliaProductSidebar = ({ facets }: { facets: Record<string, FacetModel[]> }) => {
+  const t = useTranslations('filters');
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,11 +41,11 @@ export const AlgoliaProductSidebar = ({ facets }: { facets: Record<string, Facet
         onClick={() => setIsOpen(true)}
         className="mb-4 w-full uppercase"
       >
-        Filters
+        {t('filters')}
       </Button>
       {isOpen && (
         <Modal
-          heading="Filters"
+          heading={t('filters')}
           onClose={() => setIsOpen(false)}
         >
           <div className="px-4">
@@ -85,6 +87,7 @@ function ConditionFilter({
   defaultOpen?: boolean;
   items: FacetModel[];
 }) {
+  const t = useTranslations('filters');
   const { updateFilters, isFilterActive } = useFilters('condition');
 
   const selectHandler = (option: string) => {
@@ -92,7 +95,7 @@ function ConditionFilter({
   };
   return (
     <Accordion
-      heading="Condition"
+      heading={t('condition')}
       defaultOpen={defaultOpen}
     >
       <ul className="px-4">
@@ -122,6 +125,7 @@ function ColorFilter({
   defaultOpen?: boolean;
   items: FacetModel[];
 }) {
+  const t = useTranslations('filters');
   const { updateFilters, isFilterActive } = useFilters('color');
 
   const selectHandler = (option: string) => {
@@ -129,7 +133,7 @@ function ColorFilter({
   };
   return (
     <Accordion
-      heading="Color"
+      heading={t('color')}
       defaultOpen={defaultOpen}
     >
       <ul className="px-4">
@@ -160,6 +164,7 @@ function ColorFilter({
 }
 
 function SizeFilter({ defaultOpen = true, items }: { defaultOpen?: boolean; items: FacetModel[] }) {
+  const t = useTranslations('filters');
   const { updateFilters, isFilterActive } = useFilters('size');
 
   const selectSizeHandler = (size: string) => {
@@ -168,7 +173,7 @@ function SizeFilter({ defaultOpen = true, items }: { defaultOpen?: boolean; item
 
   return (
     <Accordion
-      heading="Size"
+      heading={t('size')}
       defaultOpen={defaultOpen}
     >
       <ul className="mt-2 grid grid-cols-4 gap-2">
@@ -192,6 +197,7 @@ function SizeFilter({ defaultOpen = true, items }: { defaultOpen?: boolean; item
 }
 
 function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
+  const t = useTranslations('filters');
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
 
@@ -218,7 +224,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
   };
   return (
     <Accordion
-      heading="Price"
+      heading={t('price')}
       defaultOpen={defaultOpen}
     >
       <div className="mb-4 flex gap-2">
@@ -227,7 +233,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
           onSubmit={updateMinPriceHandler}
         >
           <Input
-            placeholder="Min"
+            placeholder={t('min')}
             onChange={e => setMin(e.target.value)}
             value={min}
             onBlur={e => {
@@ -248,7 +254,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
           onSubmit={updateMaxPriceHandler}
         >
           <Input
-            placeholder="Max"
+            placeholder={t('max')}
             onChange={e => setMax(e.target.value)}
             onBlur={e => {
               setTimeout(() => {

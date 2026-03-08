@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
 import { Input } from '@/components/atoms';
@@ -11,6 +12,7 @@ import useUpdateSearchParams from '@/hooks/useUpdateSearchParams';
 import { DollarIcon } from '@/icons';
 
 export const PriceFilter = () => {
+  const t = useTranslations('filters');
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
 
@@ -41,7 +43,7 @@ export const PriceFilter = () => {
 
   return (
     <Accordion
-      heading="Price"
+      heading={t('price')}
       data-testid="filter-price"
     >
       <div
@@ -53,7 +55,7 @@ export const PriceFilter = () => {
           onSubmit={updateMinPriceHandler}
         >
           <Input
-            placeholder="Min"
+            placeholder={t('min')}
             icon={<DollarIcon size={16} />}
             onChange={e => setMin(e.target.value)}
             value={min}
@@ -71,7 +73,7 @@ export const PriceFilter = () => {
           onSubmit={updateMaxPriceHandler}
         >
           <Input
-            placeholder="Max"
+            placeholder={t('max')}
             icon={<DollarIcon size={16} />}
             onChange={e => setMax(e.target.value)}
             type="number"
