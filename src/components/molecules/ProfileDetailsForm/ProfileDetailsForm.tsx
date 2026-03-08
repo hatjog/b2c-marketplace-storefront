@@ -3,6 +3,7 @@
 import { useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import type { HttpTypes } from '@medusajs/types';
 import {
   FormProvider,
@@ -42,6 +43,8 @@ export const ProfileDetailsForm: FC<Props> = ({ defaultValues, ...props }) => {
 };
 
 const Form: React.FC<Props> = ({ handleClose }) => {
+  const tAuth = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const [error, setError] = useState<string>();
   const {
     handleSubmit,
@@ -74,28 +77,28 @@ const Form: React.FC<Props> = ({ handleClose }) => {
       <div className="space-y-4 px-4">
         <div className="items-top mb-4 grid max-w-full grid-cols-2 gap-4">
           <LabeledInput
-            label="First name"
-            placeholder="Type first name"
+            label={tAuth('first_name_label')}
+            placeholder={tAuth('profile_first_name_placeholder')}
             error={errors.firstName as FieldError}
             data-testid="profile-details-form-first-name-input"
             {...register('firstName')}
           />
           <LabeledInput
-            label="Last name"
-            placeholder="Type last name"
+            label={tAuth('last_name_label')}
+            placeholder={tAuth('profile_last_name_placeholder')}
             error={errors.lastName as FieldError}
             data-testid="profile-details-form-last-name-input"
             {...register('lastName')}
           />
           <LabeledInput
-            label="Phone"
-            placeholder="Type phone number"
+            label={tAuth('phone_label')}
+            placeholder={tAuth('profile_phone_placeholder')}
             error={errors.phone as FieldError}
             data-testid="profile-details-form-phone-input"
             {...register('phone')}
           />
           <LabeledInput
-            label="Email"
+            label={tAuth('email_label')}
             disabled
             data-testid="profile-details-form-email-input"
             {...register('email')}
@@ -113,7 +116,7 @@ const Form: React.FC<Props> = ({ handleClose }) => {
           className="w-full"
           data-testid="profile-details-form-submit-button"
         >
-          Save
+          {tCommon('save')}
         </Button>
       </div>
     </form>

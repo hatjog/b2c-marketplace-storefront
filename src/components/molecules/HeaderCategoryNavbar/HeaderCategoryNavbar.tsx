@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getActiveParentHandle } from '@/lib/helpers/category-utils';
@@ -18,6 +19,7 @@ export const HeaderCategoryNavbar = ({
   categories: HttpTypes.StoreProductCategory[];
   onClose?: (state: boolean) => void;
 }) => {
+  const t = useTranslations('navigation');
   const { category } = useParams<{ category?: string }>();
 
   const activeParentHandle = useMemo(
@@ -28,7 +30,7 @@ export const HeaderCategoryNavbar = ({
   return (
     <nav
       className="flex items-center gap-2 overflow-x-auto p-4 scrollbar-hide"
-      aria-label="Parent categories"
+      aria-label={t('parent_categories_aria')}
     >
       {parentCategories?.map(({ id, handle, name }) => {
         const isActive = handle === activeParentHandle;

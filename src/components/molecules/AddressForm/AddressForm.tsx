@@ -3,6 +3,7 @@
 import { useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import type { HttpTypes } from '@medusajs/types';
 import {
   FormProvider,
@@ -54,6 +55,7 @@ export const AddressForm: FC<Props> = ({ defaultValues, ...props }) => {
 };
 
 const Form: FC<Props> = ({ regions, handleClose }) => {
+  const t = useTranslations('forms');
   const [error, setError] = useState<string>();
   const {
     handleSubmit,
@@ -102,58 +104,58 @@ const Form: FC<Props> = ({ regions, handleClose }) => {
       <div className="space-y-4 px-4">
         <div className="items-top mb-4 grid max-w-full grid-cols-2 gap-4">
           <LabeledInput
-            label="Address name"
-            placeholder="Type address name"
+            label={t('address_name_label')}
+            placeholder={t('address_name_placeholder')}
             className="col-span-2"
             error={errors.firstName as FieldError}
             data-testid="address-form-address-name-input"
             {...register('addressName')}
           />
           <LabeledInput
-            label="First name"
-            placeholder="Type first name"
+            label={t('first_name_label')}
+            placeholder={t('first_name_placeholder')}
             error={errors.firstName as FieldError}
             data-testid="address-form-first-name-input"
             {...register('firstName')}
           />
           <LabeledInput
-            label="Last name"
-            placeholder="Type last name"
+            label={t('last_name_label')}
+            placeholder={t('last_name_placeholder')}
             error={errors.firstName as FieldError}
             data-testid="address-form-last-name-input"
             {...register('lastName')}
           />
           <LabeledInput
-            label="Company (optional)"
-            placeholder="Type company"
+            label={t('company_label')}
+            placeholder={t('company_placeholder')}
             error={errors.company as FieldError}
             data-testid="address-form-company-input"
             {...register('company')}
           />
           <LabeledInput
-            label="Address"
-            placeholder="Type address"
+            label={t('address_label')}
+            placeholder={t('address_placeholder')}
             error={errors.address as FieldError}
             data-testid="address-form-address-input"
             {...register('address')}
           />
           <LabeledInput
-            label="City"
-            placeholder="Type city"
+            label={t('city_label')}
+            placeholder={t('city_placeholder')}
             error={errors.city as FieldError}
             data-testid="address-form-city-input"
             {...register('city')}
           />
           <LabeledInput
-            label="Postal code"
-            placeholder="Type postal code"
+            label={t('postal_code_label')}
+            placeholder={t('postal_code_placeholder')}
             error={errors.postalCode as FieldError}
             data-testid="address-form-postal-code-input"
             {...register('postalCode')}
           />
           <LabeledInput
-            label="State / Province"
-            placeholder="Type state / province"
+            label={t('state_province_label')}
+            placeholder={t('state_province_placeholder')}
             error={errors.province as FieldError}
             data-testid="address-form-province-input"
             {...register('province')}
@@ -177,8 +179,8 @@ const Form: FC<Props> = ({ regions, handleClose }) => {
           </div>
 
           <LabeledInput
-            label="Phone"
-            placeholder="Type phone number"
+            label={t('phone_label')}
+            placeholder={t('phone_placeholder')}
             error={errors.phone as FieldError}
             data-testid="address-form-phone-input"
             {...register('phone')}
@@ -196,7 +198,7 @@ const Form: FC<Props> = ({ regions, handleClose }) => {
           className="w-full"
           data-testid="address-form-submit-button"
         >
-          Save address
+          {t('save_address_button')}
         </Button>
       </div>
     </form>

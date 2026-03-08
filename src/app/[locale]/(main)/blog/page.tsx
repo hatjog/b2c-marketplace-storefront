@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import {
@@ -30,16 +31,17 @@ export async function generateMetadata({
   const { locale } = await params;
   const baseUrl = await getBaseUrl();
   const canonical = new URL(`/${locale}/blog`, `${baseUrl}/`).toString();
+  const t = await getTranslations('blog');
 
   return {
-    title: 'Blog',
-    description: 'Latest editorial updates and market-specific stories from the storefront.',
+    title: t('title'),
+    description: t('description'),
     alternates: {
       canonical
     },
     openGraph: {
-      title: 'Blog',
-      description: 'Latest editorial updates and market-specific stories from the storefront.',
+      title: t('title'),
+      description: t('description'),
       type: 'website',
       url: canonical
     }
@@ -52,6 +54,7 @@ export default async function BlogIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations('blog');
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const pages = await fetchHomepageBlogPageDocs({
     marketId,
@@ -62,17 +65,17 @@ export default async function BlogIndexPage({
     <main className="container py-8 md:py-12">
       <section className="mx-auto flex max-w-6xl flex-col gap-8" data-testid="blog-index">
         <header className="flex max-w-3xl flex-col gap-4">
-          <p className="text-xs font-medium uppercase tracking-[0.24em] text-secondary">Journal</p>
-          <h1 className="heading-xl" data-testid="blog-index-title">Blog</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.24em] text-secondary">{t('journal')}</p>
+          <h1 className="heading-xl" data-testid="blog-index-title">{t('title')}</h1>
           <p className="text-lg leading-8 text-secondary">
-            Market-scoped stories, launch notes and editorial selections published from Payload.
+            {t('subtitle')}
           </p>
         </header>
 
         {pages.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {pages.map((page, index) => {
-              const title = page.title || page.name || 'Untitled post';
+              const title = page.title || page.name || t('untitled_post');
               const description = getBlogDescription(page);
               const href = getBlogHref(page);
               const publishedDate = formatBlogPublishedDate(page.publishedAt, locale);
@@ -101,7 +104,7 @@ export default async function BlogIndexPage({
 
                     <h2 className="heading-sm">{title}</h2>
                     <p className="line-clamp-3 text-base leading-7 text-secondary">{description}</p>
-                    <span className="label-md mt-auto uppercase text-primary">Read article</span>
+                    <span className="label-md mt-auto uppercase text-primary">{t('read_article')}</span>
                   </div>
                 </LocalizedClientLink>
               );
@@ -109,7 +112,7 @@ export default async function BlogIndexPage({
           </div>
         ) : (
           <div className="rounded-sm border border-secondary p-6 text-secondary">
-            No published blog posts are available for this market yet.
+            {t('no_posts')}
           </div>
         )}
       </section>

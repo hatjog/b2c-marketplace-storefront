@@ -1,11 +1,14 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { Button } from '@/components/atoms';
 import { useCartContext } from '@/components/providers';
 import { BinIcon } from '@/icons';
 import { toast } from '@/lib/helpers/toast';
 
 export const DeleteCartItemButton = ({ id, disabled }: { id: string; disabled?: boolean }) => {
+  const t = useTranslations('cart');
   const { removeCartItem, isRemovingItem } = useCartContext();
 
   const handleDelete = async (id: string) => {
@@ -14,7 +17,7 @@ export const DeleteCartItemButton = ({ id, disabled }: { id: string; disabled?: 
     } catch (error) {
       console.error('Error deleting cart item:', error);
       toast.error({
-        title: 'Failed to remove item from cart'
+        title: t('remove_item_failed')
       });
     }
   };
@@ -28,7 +31,7 @@ export const DeleteCartItemButton = ({ id, disabled }: { id: string; disabled?: 
       onClick={() => handleDelete(id)}
       loading={isRemovingItem}
       disabled={isBtnDisabled}
-      aria-label="Remove item from cart"
+      aria-label={t('remove_item_aria')}
     >
       <BinIcon size={20} />
     </Button>

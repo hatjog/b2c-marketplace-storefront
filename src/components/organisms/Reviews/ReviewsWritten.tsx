@@ -1,6 +1,7 @@
 'use client';
 
 import { isEmpty } from 'lodash';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 
 import { Card, NavigationItem } from '@/components/atoms';
@@ -19,14 +20,16 @@ export const ReviewsWritten = ({
   orders: Order[];
   isError: boolean;
 }) => {
+  const t = useTranslations('products');
+  const tCommon = useTranslations('common');
   const pathname = usePathname();
 
   function renderReviews() {
     if (isError) {
       return (
         <div className="flex flex-col gap-2">
-          <p className="text-negative">Something went wrong while fetching reviews</p>
-          <RefreshButton label="Refresh" />
+          <p className="text-negative">{t('reviews_error')}</p>
+          <RefreshButton label={tCommon('refresh')} />
         </div>
       );
     }
@@ -35,10 +38,9 @@ export const ReviewsWritten = ({
       return (
         <Card>
           <div className="py-6 text-center">
-            <h3 className="heading-lg uppercase text-primary">No written reviews</h3>
+            <h3 className="heading-lg uppercase text-primary">{t('no_reviews')}</h3>
             <p className="mt-2 text-lg text-secondary">
-              You haven&apos;t written any reviews yet. Once you write a review, it will appear
-              here.
+              {t('no_reviews_message')}
             </p>
           </div>
         </Card>
@@ -59,16 +61,16 @@ export const ReviewsWritten = ({
 
   return (
     <div className="space-y-8 md:col-span-3">
-      <h1 className="heading-md uppercase">Reviews</h1>
+      <h1 className="heading-md uppercase">{t('reviews')}</h1>
       <div className="flex gap-4">
         {navigation.map(item => (
           <NavigationItem
-            key={item.label}
+            key={item.key}
             href={item.href}
             active={pathname === item.href}
             className="px-0"
           >
-            {item.label}
+            {t(item.key)}
           </NavigationItem>
         ))}
       </div>

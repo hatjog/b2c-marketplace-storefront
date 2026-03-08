@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -38,6 +39,7 @@ export const LoginForm = () => {
 };
 
 const Form = () => {
+  const t = useTranslations('auth');
   const [isAuthError, setIsAuthError] = useState(false);
   const {
     handleSubmit,
@@ -65,9 +67,9 @@ const Form = () => {
 
       setIsAuthError(isCredentialsError);
 
-      const errorMessage = isCredentialsError ? 'Incorrect email or password' : res;
+      const errorMessage = isCredentialsError ? t('error_incorrect_credentials') : res;
 
-      toast.error({ title: errorMessage || 'An error occurred. Please try again.' });
+      toast.error({ title: errorMessage || t('error_generic') });
       return;
     }
     setIsAuthError(false);
@@ -80,10 +82,10 @@ const Form = () => {
 
   const getAuthMessage = () => {
     if (isSessionExpired) {
-      return 'Your session has expired. Please log in to continue.';
+      return t('session_expired');
     }
     if (isSessionRequired) {
-      return 'Please log in to continue.';
+      return t('session_required');
     }
     return null;
   };
@@ -108,15 +110,15 @@ const Form = () => {
           className="rounded-sm border p-4"
           data-testid="login-form-container"
         >
-          <h1 className="heading-md mb-8 uppercase text-primary">Log in</h1>
+          <h1 className="heading-md mb-8 uppercase text-primary">{t('login_heading')}</h1>
           <form
             onSubmit={handleSubmit(submit)}
             data-testid="login-form"
           >
             <div className="space-y-4">
               <LabeledInput
-                label="E-mail"
-                placeholder="Your e-mail address"
+                label={t('email_label')}
+                placeholder={t('email_placeholder')}
                 error={
                   (errors.email as FieldError) ||
                   (isAuthError ? ({ message: '' } as FieldError) : undefined)
@@ -127,8 +129,8 @@ const Form = () => {
                 })}
               />
               <LabeledInput
-                label="Password"
-                placeholder="Your password"
+                label={t('password_label')}
+                placeholder={t('password_placeholder')}
                 type="password"
                 error={
                   (errors.password as FieldError) ||
@@ -146,7 +148,7 @@ const Form = () => {
               className="label-md mt-4 block text-right uppercase text-action-on-secondary"
               data-testid="login-forgot-password-link"
             >
-              Forgot your password?
+              {t('forgot_password')}
             </Link>
 
             <Button
@@ -154,14 +156,14 @@ const Form = () => {
               disabled={isSubmitting}
               data-testid="login-submit-button"
             >
-              Log in
+              {t('login_button')}
             </Button>
           </form>
         </div>
 
         <div className="rounded-sm border p-4">
           <h2 className="heading-md mb-4 uppercase text-primary">
-            Don&apos;t have an account yet?
+            {t('no_account')}
           </h2>
           <Link
             href="/register"
@@ -171,7 +173,7 @@ const Form = () => {
               variant="tonal"
               className="mt-8 flex w-full justify-center uppercase"
             >
-              Create account
+              {t('create_account')}
             </Button>
           </Link>
         </div>

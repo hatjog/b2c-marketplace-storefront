@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import clsx from 'clsx';
 import { redirect, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Input } from '@/components/atoms';
 import { SearchIcon } from '@/icons';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const NavbarSearch = ({ className }: Props) => {
+  const t = useTranslations('navigation');
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState(searchParams.get('query') || '');
@@ -39,8 +41,8 @@ export const NavbarSearch = ({ className }: Props) => {
       <Input
         icon={<SearchIcon />}
         onIconClick={handleSearch}
-        iconAriaLabel="Search"
-        placeholder="Search product"
+        iconAriaLabel={t('search_aria')}
+        placeholder={t('search_placeholder')}
         value={search}
         changeValue={setSearch}
         type="search"

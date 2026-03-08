@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { Heading, toast } from '@medusajs/ui';
 import {
   FormProvider,
@@ -48,6 +49,7 @@ const Form = ({
   form: UseFormReturn<ProfilePasswordFormData>;
   token?: string;
 }) => {
+  const t = useTranslations('auth');
   const [success, setSuccess] = useState(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState<FieldError | undefined>(
     undefined
@@ -69,7 +71,7 @@ const Form = ({
   const updatePassword = async (data: FieldValues) => {
     if (form.getValues('confirmPassword') !== form.getValues('newPassword')) {
       setConfirmPasswordError({
-        message: 'New password and old password cannot be identical',
+        message: t('error_passwords_mismatch'),
         type: 'custom'
       } as FieldError);
       return;
@@ -81,10 +83,10 @@ const Form = ({
       try {
         const res = await updateCustomerPassword(data.newPassword, token!);
         if (res.success) {
-          toast.success('Password updated');
+          toast.success(t('password_changed'));
           setSuccess(true);
         } else {
-          toast.error(res.error || 'Something went wrong');
+          toast.error(res.error || t('error_password_change'));
         }
       } catch (err) {
         console.log(err);
@@ -99,17 +101,17 @@ const Form = ({
         level="h1"
         className="heading-md text-center uppercase text-primary"
       >
-        Password updated
+        {t('password_updated_title')}
       </Heading>
       <p className="my-8 text-center">
-        Your password has been updated. You can now login with your new password.
+        {t('password_updated_message')}
       </p>
       <LocalizedClientLink href="/user">
         <Button
           className="w-full px-6 py-3 !font-semibold uppercase"
           size="large"
         >
-          Go to user page
+          {t('go_to_user_page')}
         </Button>
       </LocalizedClientLink>
     </div>
@@ -119,13 +121,13 @@ const Form = ({
       onSubmit={handleSubmit(updatePassword)}
     >
       <LabeledInput
-        label="Current password"
+        label={t('current_password_label')}
         type="password"
         error={errors.currentPassword as FieldError}
         {...register('currentPassword')}
       />
       <LabeledInput
-        label="New password"
+        label={t('new_password_label')}
         type="password"
         error={errors.newPassword as FieldError}
         {...register('newPassword')}
@@ -135,12 +137,12 @@ const Form = ({
         setError={setNewPasswordError}
       />
       <LabeledInput
-        label="Confirm new password"
+        label={t('confirm_new_password_label')}
         type="password"
         error={confirmPasswordError as FieldError}
         {...register('confirmPassword')}
       />
-      <Button className="my-4 w-full">Change password</Button>
+      <Button className="my-4 w-full">{t('change_password_button')}</Button>
     </form>
   );
 };

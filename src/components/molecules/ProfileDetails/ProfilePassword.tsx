@@ -5,6 +5,7 @@ import { useState } from 'react';
 // import { ProfilePasswordForm } from "../ProfilePasswordForm/ProfilePasswordForm"
 import type { HttpTypes } from '@medusajs/types';
 import { Divider, Heading } from '@medusajs/ui';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { Card } from '@/components/atoms/Card/Card';
@@ -14,6 +15,7 @@ import { sendResetPasswordEmail } from '@/lib/data/customer';
 import { Modal } from '../Modal/Modal';
 
 export const ProfilePassword = ({ user }: { user: HttpTypes.StoreCustomer }) => {
+  const t = useTranslations('auth');
   const [showForm, setShowForm] = useState(false);
 
   const handleSendResetPasswordEmail = async () => {
@@ -30,19 +32,19 @@ export const ProfilePassword = ({ user }: { user: HttpTypes.StoreCustomer }) => 
           level="h2"
           className="heading-sm uppercase"
         >
-          Password
+          {t('password_heading')}
         </Heading>
         <Button
           variant="tonal"
           className="flex items-center gap-2 font-semibold uppercase"
           onClick={() => setShowForm(true)}
         >
-          Change password
+          {t('change_password_button')}
         </Button>
       </Card>
       <Card className="p-0">
         <div className="p-4">
-          <p className="label-md text-secondary">Current password</p>
+          <p className="label-md text-secondary">{t('current_password_label')}</p>
           <p className="label-lg text-primary">****************</p>
         </div>
         <Divider />
@@ -52,13 +54,13 @@ export const ProfilePassword = ({ user }: { user: HttpTypes.StoreCustomer }) => 
               size={18}
               className="text-secondary"
             />
-            Always remember to choose a unique password to protect your account.
+            {t('password_security_tip')}
           </p>
         </div>
       </Card>
       {showForm && (
         <Modal
-          heading="Change password"
+          heading={t('change_password_button')}
           onClose={() => setShowForm(false)}
         >
           <div className="flex justify-center p-4">
@@ -66,7 +68,7 @@ export const ProfilePassword = ({ user }: { user: HttpTypes.StoreCustomer }) => 
               className="px-6 py-3 !font-semibold uppercase"
               onClick={handleSendResetPasswordEmail}
             >
-              Send reset password email
+              {t('send_reset_email_button')}
             </Button>
           </div>
           {/* <ProfilePasswordForm user={user} /> */}

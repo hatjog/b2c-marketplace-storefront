@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Badge, Button } from '@/components/atoms';
 import { CartDropdownItem, Dropdown } from '@/components/molecules';
@@ -21,6 +22,7 @@ const getItemCount = (cart: HttpTypes.StoreCart | null) => {
 export const CartDropdown = () => {
   const { cart } = useCartContext();
   const [open, setOpen] = useState(false);
+  const t = useTranslations('cart');
 
   const previousItemCount = usePrevious(getItemCount(cart));
   const cartItemsCount = (cart && getItemCount(cart)) || 0;
@@ -78,7 +80,7 @@ export const CartDropdown = () => {
       <LocalizedClientLink
         href="/cart"
         className="relative"
-        aria-label="Go to cart"
+        aria-label={t('go_to_cart_aria')}
       >
         <CartIcon size={20} />
         {Boolean(cartItemsCount) && (
@@ -87,7 +89,7 @@ export const CartDropdown = () => {
       </LocalizedClientLink>
       <Dropdown show={open}>
         <div className="shadow-lg lg:w-[460px]">
-          <h3 className="heading-md border-b p-4 uppercase">Shopping cart</h3>
+          <h3 className="heading-md border-b p-4 uppercase">{t('shopping_cart')}</h3>
           <div className="p-4">
             {Boolean(cartItemsCount) ? (
               <div>
@@ -102,28 +104,28 @@ export const CartDropdown = () => {
                 </div>
                 <div className="pt-4">
                   <div className="flex items-center justify-between text-secondary">
-                    Items <p className="label-md text-primary">{items}</p>
+                    {t('items')} <p className="label-md text-primary">{items}</p>
                   </div>
                   <div className="flex items-center justify-between text-secondary">
-                    Delivery <p className="label-md text-primary">{delivery}</p>
+                    {t('delivery')} <p className="label-md text-primary">{delivery}</p>
                   </div>
                   <div className="flex items-center justify-between text-secondary">
-                    Tax <p className="label-md text-primary">{tax}</p>
+                    {t('tax')} <p className="label-md text-primary">{tax}</p>
                   </div>
                   <div className="flex items-center justify-between text-secondary">
-                    Total <p className="label-xl text-primary">{total}</p>
+                    {t('total')} <p className="label-xl text-primary">{total}</p>
                   </div>
                   <LocalizedClientLink href="/cart">
-                    <Button className="mt-4 w-full py-3">Go to cart</Button>
+                    <Button className="mt-4 w-full py-3">{t('go_to_cart')}</Button>
                   </LocalizedClientLink>
                 </div>
               </div>
             ) : (
               <div className="px-8">
-                <h4 className="heading-md text-center uppercase">Your shopping cart is empty</h4>
-                <p className="py-4 text-center text-lg">Are you looging for inspiration?</p>
+                <h4 className="heading-md text-center uppercase">{t('empty_heading')}</h4>
+                <p className="py-4 text-center text-lg">{t('empty_inspiration')}</p>
                 <LocalizedClientLink href="/categories">
-                  <Button className="w-full py-3">Explore Home Page</Button>
+                  <Button className="w-full py-3">{t('explore_home')}</Button>
                 </LocalizedClientLink>
               </div>
             )}

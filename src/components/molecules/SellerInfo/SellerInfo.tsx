@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 import type { SellerProps } from '@/types/seller';
 
 import LocalizedClientLink from '../LocalizedLink/LocalizedLink';
@@ -15,6 +19,7 @@ export const SellerInfo = ({
   showArrow?: boolean;
   bottomBorder?: boolean;
 }) => {
+  const t = useTranslations('products');
   const { photo, name, reviews } = seller;
 
   const reviewCount = reviews ? reviews?.filter(rev => rev !== null).length : 0;
@@ -30,7 +35,7 @@ export const SellerInfo = ({
       {showArrow ? (
         <LocalizedClientLink
           href={`/sellers/${seller.handle}`}
-          aria-label={`View ${name} seller`}
+          aria-label={t('seller_aria', { name: name })}
         >
           <SellerInfoHeader
             photo={photo}
@@ -53,7 +58,7 @@ export const SellerInfo = ({
       )}
       {!header && (
         <div className="flex flex-col gap-5 p-4">
-          <h3 className="heading-sm uppercase">Seller reviews</h3>
+          <h3 className="heading-sm uppercase">{t('seller_reviews')}</h3>
           {reviews
             ?.filter(rev => rev !== null)
             .slice(-3)

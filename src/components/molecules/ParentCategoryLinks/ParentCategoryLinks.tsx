@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getActiveParentHandle } from '@/lib/helpers/category-utils';
@@ -15,6 +16,7 @@ interface ParentCategoryLinksProps {
 }
 
 export const ParentCategoryLinks = ({ parentCategories, categories }: ParentCategoryLinksProps) => {
+  const t = useTranslations('navigation');
   const { category } = useParams<{ category?: string }>();
 
   const activeParentHandle = useMemo(
@@ -25,7 +27,7 @@ export const ParentCategoryLinks = ({ parentCategories, categories }: ParentCate
   return (
     <nav
       className="hidden items-center gap-4 lg:flex"
-      aria-label="Parent categories"
+      aria-label={t('parent_categories_aria')}
     >
       {parentCategories.map(({ id, handle, name }) => {
         const isActive = handle === activeParentHandle;

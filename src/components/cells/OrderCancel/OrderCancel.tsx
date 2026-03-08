@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import { Button, Checkbox, Divider } from '@/components/atoms';
 import { Modal } from '@/components/molecules';
@@ -10,6 +11,7 @@ import { convertToLocale } from '@/lib/helpers/money';
 import { cn } from '@/lib/utils';
 
 export const OrderCancel = ({ order }: { order: any }) => {
+  const t = useTranslations('orders');
   const [open, setOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
@@ -37,10 +39,9 @@ export const OrderCancel = ({ order }: { order: any }) => {
     <>
       <div className="items-center justify-between md:flex">
         <div className="mb-4 md:mb-0">
-          <h2 className="label-lg uppercase text-primary">Cancel Order</h2>
+          <h2 className="label-lg uppercase text-primary">{t('cancel_heading')}</h2>
           <p className="label-md max-w-sm text-secondary">
-            Once you place your order, you can cancel it until the seller begins preparation for
-            shipment.
+            {t('cancel_description')}
           </p>
         </div>
         <Button
@@ -48,12 +49,12 @@ export const OrderCancel = ({ order }: { order: any }) => {
           className="uppercase"
           onClick={() => setOpen(true)}
         >
-          Cancel
+          {t('cancel_button')}
         </Button>
       </div>
       {open && (
         <Modal
-          heading="Select items you want to cancel"
+          heading={t('select_items')}
           onClose={() => setOpen(false)}
         >
           <div>
@@ -144,7 +145,7 @@ export const OrderCancel = ({ order }: { order: any }) => {
                 className="w-full uppercase"
                 onClick={handleCancel}
               >
-                Request cancelation
+                {t('request_cancellation')}
               </Button>
             </div>
           </div>

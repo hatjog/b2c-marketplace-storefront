@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { FormProvider, useForm, useFormContext, type FieldError } from 'react-hook-form';
 
 import { Button } from '@/components/atoms';
@@ -27,6 +28,7 @@ export const ForgotPasswordForm = () => {
 };
 
 const Form = () => {
+  const t = useTranslations('auth');
   const {
     handleSubmit,
     register,
@@ -40,14 +42,14 @@ const Form = () => {
     const result = await sendResetPasswordEmail(data.email);
 
     if (!result.success) {
-      toast.error({ title: result.error || 'An error occurred. Please try again.' });
+      toast.error({ title: result.error || t('error_generic') });
       return;
     }
 
     reset({ email: '' });
 
     toast.success({
-      title: `Password reset was requested. If an account exists for ${data.email}, you’ll receive an email with a reset link. Check your inbox and spam folder - the link is valid for one hour.`
+      title: t('password_reset_success', { email: data.email })
     });
   };
 
@@ -56,9 +58,9 @@ const Form = () => {
       className="mx-auto mt-6 w-full max-w-xl space-y-4 rounded-sm border p-4"
       data-testid="forgot-password-form-container"
     >
-      <h1 className="heading-md my-0 mb-2 uppercase text-primary">Forgot your password?</h1>
+      <h1 className="heading-md my-0 mb-2 uppercase text-primary">{t('forgot_password_heading')}</h1>
       <p className="text-md">
-        Enter the email you used to sign up and we&#39;ll send you a password reset email. email.
+        {t('forgot_password_description')}
       </p>
       <form
         onSubmit={handleSubmit(submit)}
@@ -66,8 +68,8 @@ const Form = () => {
       >
         <div className="space-y-4">
           <LabeledInput
-            label="E-mail"
-            placeholder="Your e-mail address"
+            label={t('email_label')}
+            placeholder={t('email_placeholder')}
             error={errors.email as FieldError}
             data-testid="forgot-password-email-input"
             {...register('email')}
@@ -80,7 +82,7 @@ const Form = () => {
             disabled={isSubmitting}
             data-testid="forgot-password-submit-button"
           >
-            Reset Password
+            {t('reset_password_button')}
           </Button>
 
           <Link
@@ -92,7 +94,7 @@ const Form = () => {
               variant="tonal"
               className="flex w-full justify-center uppercase"
             >
-              Back to log in
+              {t('back_to_login')}
             </Button>
           </Link>
         </div>

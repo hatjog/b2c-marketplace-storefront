@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -13,12 +14,13 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className, 'data-testid': dataTestId }: BreadcrumbsProps) {
+  const t = useTranslations('accessibility');
   const pathname = usePathname();
 
   return (
     <nav
       className={cn('flex', className)}
-      aria-label="Breadcrumb"
+      aria-label={t('breadcrumb')}
       data-testid="breadcrumbs"
     >
       <ol className="inline-flex items-center gap-2">

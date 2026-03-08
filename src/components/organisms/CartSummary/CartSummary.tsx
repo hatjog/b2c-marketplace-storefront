@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { convertToLocale } from '@/lib/helpers/money';
 
 export const CartSummary = ({
@@ -17,6 +19,8 @@ export const CartSummary = ({
   tax: number;
   discount_total: number;
 }) => {
+  const t = useTranslations('cart');
+
   return (
     <div data-testid="cart-summary">
       <div className="label-md mb-4 space-y-4 text-secondary">
@@ -24,7 +28,7 @@ export const CartSummary = ({
           className="flex justify-between"
           data-testid="cart-summary-items"
         >
-          <span>Items:</span>
+          <span>{t('items')}</span>
           <span className="text-primary">
             {convertToLocale({
               amount: item_total,
@@ -36,7 +40,7 @@ export const CartSummary = ({
           className="flex justify-between"
           data-testid="cart-summary-delivery"
         >
-          <span>Delivery:</span>
+          <span>{t('delivery')}</span>
           <span className="text-primary">
             {convertToLocale({
               amount: shipping_total,
@@ -48,7 +52,7 @@ export const CartSummary = ({
           className="flex justify-between"
           data-testid="cart-summary-tax"
         >
-          <span>Tax:</span>
+          <span>{t('tax')}</span>
           <span className="text-primary">
             {convertToLocale({
               amount: tax,
@@ -60,7 +64,7 @@ export const CartSummary = ({
           className="flex justify-between"
           data-testid="cart-summary-discount"
         >
-          <span>Discount:</span>
+          <span>{t('discount')}</span>
           <span className="text-primary">
             {convertToLocale({
               amount: discount_total,
@@ -72,7 +76,7 @@ export const CartSummary = ({
           className="flex items-center justify-between border-t pt-4"
           data-testid="cart-summary-total"
         >
-          <span>Total:</span>
+          <span>{t('total')}</span>
           <span className="label-xl text-primary">
             {convertToLocale({
               amount: total,

@@ -1,8 +1,11 @@
+import { getTranslations } from 'next-intl/server';
+
 import { LoginForm, ProfileDetails, UserNavigation } from '@/components/molecules';
 import { ProfilePassword } from '@/components/molecules/ProfileDetails/ProfilePassword';
 import { retrieveCustomer } from '@/lib/data/customer';
 
 export default async function ReviewsPage() {
+  const t = await getTranslations('user');
   const user = await retrieveCustomer();
 
   if (!user) return <LoginForm />;
@@ -18,7 +21,7 @@ export default async function ReviewsPage() {
           className="md:col-span-3"
           data-testid="profile-settings-container"
         >
-          <h1 className="heading-md mb-8 uppercase">Settings</h1>
+          <h1 className="heading-md mb-8 uppercase">{t('settings')}</h1>
           <ProfileDetails user={user} />
           <ProfilePassword user={user} />
         </div>

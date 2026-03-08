@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { IconButton } from '@/components/atoms';
 import { HeaderCategoryNavbar } from '@/components/molecules';
@@ -17,6 +18,7 @@ export const MobileNavbar = ({
   categories: HttpTypes.StoreProductCategory[];
   parentCategories: HttpTypes.StoreProductCategory[];
 }) => {
+  const t = useTranslations('navigation');
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenuHandler = () => {
@@ -55,7 +57,7 @@ export const MobileNavbar = ({
             className="flex items-center justify-between border-b p-4"
             data-testid="mobile-menu-header"
           >
-            <h2 className="heading-md uppercase text-primary">Menu</h2>
+            <h2 className="heading-md uppercase text-primary">{t('menu')}</h2>
             <IconButton
               icon={<CloseIcon size={20} />}
               onClick={() => closeMenuHandler()}

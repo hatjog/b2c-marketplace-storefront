@@ -3,6 +3,7 @@
 import { useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import {
   FormProvider,
   useForm,
@@ -41,6 +42,7 @@ export const ReviewForm: React.FC<Props> = ({ ...props }) => {
 };
 
 const Form: FC<Props> = ({ handleClose, seller }) => {
+  const t = useTranslations('reviews');
   const [error, setError] = useState<string>();
   const {
     watch,
@@ -62,7 +64,7 @@ const Form: FC<Props> = ({ handleClose, seller }) => {
     const response = await createReview(body);
 
     if (response.error) {
-      setError('error');
+      setError(t('generic_error'));
       return;
     }
 
@@ -85,7 +87,7 @@ const Form: FC<Props> = ({ handleClose, seller }) => {
               className="label-sm mb-2 block"
               data-testid="review-form-rating-label"
             >
-              Rating
+              {t('rating_label')}
             </label>
             <InteractiveStarRating
               value={rating}
@@ -108,14 +110,14 @@ const Form: FC<Props> = ({ handleClose, seller }) => {
               className={cn(error && 'text-negative')}
               data-testid="review-form-opinion-label"
             >
-              Your opinion
+              {t('opinion_label')}
             </p>
             <textarea
               className={cn(
                 'relative h-32 w-full rounded-sm border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0',
                 error && 'border-negative focus:border-negative'
               )}
-              placeholder="Write your opinion about this seller..."
+              placeholder={t('opinion_placeholder')}
               data-testid="review-form-opinion-input"
               {...register('opinion')}
             />
@@ -126,7 +128,7 @@ const Form: FC<Props> = ({ handleClose, seller }) => {
               )}
               data-testid="review-form-character-count"
             >
-              {`${lettersCount} / 300`}
+              {t('char_count', { count: lettersCount })}
             </div>
             {errors.opinion?.message && (
               <p
@@ -150,7 +152,7 @@ const Form: FC<Props> = ({ handleClose, seller }) => {
           className="w-full"
           data-testid="review-form-submit-button"
         >
-          SUBMIT REVIEW
+          {t('submit_button')}
         </Button>
       </div>
     </form>

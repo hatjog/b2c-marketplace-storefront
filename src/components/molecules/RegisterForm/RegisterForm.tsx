@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { Container } from '@medusajs/ui';
 import Link from 'next/link';
 import { FormProvider, useForm, useFormContext, type FieldError } from 'react-hook-form';
@@ -35,6 +36,7 @@ export const RegisterForm = () => {
 };
 
 const Form = () => {
+  const t = useTranslations('auth');
   const [passwordError, setPasswordError] = useState({
     isValid: false,
     lower: false,
@@ -67,7 +69,7 @@ const Form = () => {
     if (res && !res?.id) {
       // Temporary solution. Check also for status code when it's fixed by backend
       const errorMessage = res.toLowerCase().includes('error: identity with email already exists')
-        ? 'It seems the email you entered is already associated with another account. Please log in instead.'
+        ? t('error_email_exists')
         : res;
       toast.error({ title: errorMessage });
     }
@@ -82,7 +84,7 @@ const Form = () => {
         className="mx-auto mt-8 max-w-xl border p-4"
         data-testid="register-form-container"
       >
-        <h1 className="heading-md mb-8 uppercase text-primary">Create account</h1>
+        <h1 className="heading-md mb-8 uppercase text-primary">{t('create_account_heading')}</h1>
         <form
           onSubmit={handleSubmit(submit)}
           data-testid="register-form"
@@ -90,16 +92,16 @@ const Form = () => {
           <div className="mb-4 flex flex-col gap-4 md:flex-row">
             <LabeledInput
               className="md:w-1/2"
-              label="First name"
-              placeholder="Your first name"
+              label={t('first_name_label')}
+              placeholder={t('first_name_placeholder')}
               error={errors.firstName as FieldError}
               data-testid="register-first-name-input"
               {...register('firstName')}
             />
             <LabeledInput
               className="md:w-1/2"
-              label="Last name"
-              placeholder="Your last name"
+              label={t('last_name_label')}
+              placeholder={t('last_name_placeholder')}
               error={errors.lastName as FieldError}
               data-testid="register-last-name-input"
               {...register('lastName')}
@@ -108,16 +110,16 @@ const Form = () => {
           <div className="mb-4 flex flex-col gap-4 md:flex-row">
             <LabeledInput
               className="md:w-1/2"
-              label="E-mail"
-              placeholder="Your e-mail address"
+              label={t('email_label')}
+              placeholder={t('email_placeholder')}
               error={errors.email as FieldError}
               data-testid="register-email-input"
               {...register('email')}
             />
             <LabeledInput
               className="md:w-1/2"
-              label="Phone"
-              placeholder="Your phone number"
+              label={t('phone_label')}
+              placeholder={t('phone_placeholder')}
               error={errors.phone as FieldError}
               data-testid="register-phone-input"
               {...register('phone')}
@@ -126,8 +128,8 @@ const Form = () => {
           <div>
             <LabeledInput
               className="mb-4"
-              label="Password"
-              placeholder="Your password"
+              label={t('password_label')}
+              placeholder={t('password_placeholder')}
               type="password"
               error={errors.password as FieldError}
               data-testid="register-password-input"
@@ -145,12 +147,12 @@ const Form = () => {
             loading={isSubmitting}
             data-testid="register-submit-button"
           >
-            Create account
+            {t('create_account')}
           </Button>
         </form>
       </Container>
       <Container className="mx-auto mt-8 max-w-xl border p-4">
-        <h2 className="heading-md mb-8 uppercase text-primary">Already have an account?</h2>
+        <h2 className="heading-md mb-8 uppercase text-primary">{t('already_have_account')}</h2>
         <Link
           href="/login"
           data-testid="register-login-link"
@@ -159,7 +161,7 @@ const Form = () => {
             variant="tonal"
             className="mt-8 flex w-full justify-center uppercase"
           >
-            Log in
+            {t('login_link')}
           </Button>
         </Link>
       </Container>

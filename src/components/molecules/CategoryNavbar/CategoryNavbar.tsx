@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CollapseIcon } from '@/icons';
@@ -28,6 +29,7 @@ export const CategoryNavbar = ({
   parentCategories = [],
   onClose
 }: CategoryNavbarProps) => {
+  const t = useTranslations('navigation');
   const { category } = useParams<{ category?: string }>();
 
   const {
@@ -88,7 +90,7 @@ export const CategoryNavbar = ({
     <>
       <nav
         className="flex flex-col gap-2 md:max-w-full md:flex-row md:items-center md:overflow-x-auto md:scrollbar-hide"
-        aria-label="Category navigation"
+        aria-label={t('category_nav_aria')}
         data-testid="category-navbar"
       >
         <LocalizedClientLink
@@ -99,7 +101,7 @@ export const CategoryNavbar = ({
           )}
           data-testid="category-link-all-products"
         >
-          All Products
+          {t('all_products')}
         </LocalizedClientLink>
 
         {filteredCategories.map(({ id, handle, name, category_children }) => {

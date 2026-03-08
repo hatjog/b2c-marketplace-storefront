@@ -1,4 +1,5 @@
 import { isEmpty } from 'lodash';
+import { getTranslations } from 'next-intl/server';
 
 import { LoginForm, ParcelAccordion, UserNavigation } from '@/components/molecules';
 import { OrdersPagination } from '@/components/sections';
@@ -12,6 +13,7 @@ export default async function UserPage({
 }: {
   searchParams: Promise<{ page: string }>;
 }) {
+  const t = await getTranslations('user');
   const user = await retrieveCustomer();
 
   if (!user) return <LoginForm />;
@@ -63,7 +65,7 @@ export default async function UserPage({
           className="space-y-8 md:col-span-3"
           data-testid="orders-container"
         >
-          <h1 className="heading-md uppercase">Orders</h1>
+          <h1 className="heading-md uppercase">{t('orders')}</h1>
           {isEmpty(orders) ? (
             <div
               className="text-center"
@@ -73,13 +75,13 @@ export default async function UserPage({
                 className="heading-lg uppercase text-primary"
                 data-testid="no-orders-heading"
               >
-                No orders
+                {t('no_orders')}
               </h3>
               <p
                 className="mt-2 text-lg text-secondary"
                 data-testid="no-orders-description"
               >
-                You haven&apos;t placed any order yet. Once you place an order, it will appear here.
+                {t('no_orders_message')}
               </p>
             </div>
           ) : (

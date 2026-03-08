@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { CheckCircle } from '@medusajs/icons';
+import { useTranslations } from 'next-intl';
 
 import { Card } from '@/components/atoms';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ export const PasswordValidator = ({
   password: string;
   setError: (error: any) => void;
 }) => {
+  const t = useTranslations('auth');
   const [newPasswordError, setNewPasswordError] = useState({
     isValid: false,
     lower: false,
@@ -62,7 +64,7 @@ export const PasswordValidator = ({
           newPasswordError['8chars'] ? 'text-red-700' : 'text-green-700'
         )}
       >
-        <CheckCircle /> At least 8 characters
+        <CheckCircle /> {t('password_req_8chars')}
       </p>
       <p
         className={cn(
@@ -70,7 +72,7 @@ export const PasswordValidator = ({
           newPasswordError['lower'] ? 'text-red-700' : 'text-green-700'
         )}
       >
-        <CheckCircle /> One lowercase letter
+        <CheckCircle /> {t('password_req_lowercase')}
       </p>
       <p
         className={cn(
@@ -78,7 +80,7 @@ export const PasswordValidator = ({
           newPasswordError['upper'] ? 'text-red-700' : 'text-green-700'
         )}
       >
-        <CheckCircle /> One uppercase letter
+        <CheckCircle /> {t('password_req_uppercase')}
       </p>
       <p
         className={cn(
@@ -86,7 +88,7 @@ export const PasswordValidator = ({
           newPasswordError['symbolOrDigit'] ? 'text-red-700' : 'text-green-700'
         )}
       >
-        <CheckCircle /> One number or symbol
+        <CheckCircle /> {t('password_req_symbol')}
       </p>
     </Card>
   );
