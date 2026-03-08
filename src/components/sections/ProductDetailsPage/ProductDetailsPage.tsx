@@ -24,6 +24,7 @@ export const ProductDetailsPage = async ({
   }
 
   const relatedSellerProducts = prod.seller?.products?.length ? prod.seller.products : null;
+  const relatedHeading = locale === 'pl' ? 'Więcej od tego sprzedawcy' : 'More from this seller';
 
   return (
     <>
@@ -50,9 +51,8 @@ export const ProductDetailsPage = async ({
       {relatedSellerProducts && (
         <div className="my-8">
           <HomeProductSection
-            heading="More from this seller"
+            heading={relatedHeading}
             products={relatedSellerProducts}
-            // seller_handle={prod.seller?.handle}
             locale={locale}
           />
         </div>

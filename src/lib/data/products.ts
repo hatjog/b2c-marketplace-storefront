@@ -105,13 +105,14 @@ export const listProducts = async ({
         queryParams
       };
     })
-    .catch(() => {
+    .catch((error) => {
+      console.error('[products] listProducts failed:', error?.message || error);
       return {
         response: {
           products: [],
           count: 0
         },
-        nextPage: 0,
+        nextPage: null,
         queryParams
       };
     });
@@ -172,7 +173,7 @@ export const listProductsWithSort = async ({
 
   const pageParam = (page - 1) * limit;
 
-  const nextPage = count > pageParam + limit ? pageParam + limit : null;
+  const nextPage = count > pageParam + limit ? page + 1 : null;
 
   const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit);
 
@@ -263,10 +264,8 @@ export const searchProducts = async (params: {
       headers,
       cache: 'no-cache'
     })
-    .then(response => {
-      return response;
-    })
-    .catch(() => {
+    .catch((error) => {
+      console.error('[products] searchProducts failed:', error?.message || error);
       return {
         products: [],
         nbHits: 0,
