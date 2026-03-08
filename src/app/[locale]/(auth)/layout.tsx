@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { Footer, Header } from '@/components/organisms';
+import { Footer } from '@/components/organisms';
+import { Header } from '@/components/organisms/Header/Header';
 import { checkRegion } from '@/lib/helpers/check-region';
 import { resolveMarketConfig } from '@/lib/portal';
 

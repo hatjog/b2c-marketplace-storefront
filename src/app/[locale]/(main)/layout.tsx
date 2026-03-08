@@ -1,7 +1,8 @@
 import { Session } from '@talkjs/react';
 import { redirect } from 'next/navigation';
 
-import { Footer, Header } from '@/components/organisms';
+import { Footer } from '@/components/organisms';
+import { Header } from '@/components/organisms/Header/Header';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { checkRegion } from '@/lib/helpers/check-region';
 import { resolveMarketConfig } from '@/lib/portal';

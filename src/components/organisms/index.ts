@@ -7,7 +7,6 @@ import { CartSummary } from './CartSummary/CartSummary';
 import { CategoryCard } from './CategoryCard/CategoryCard';
 import { Footer } from './Footer/Footer';
 import { GalleryCarousel } from './GalleryCarousel/GalleryCarousel';
-import { Header } from './Header/Header';
 import { HomeProductsCarousel } from './HomeProductsCarousel/HomeProductsCarousel';
 import { ProductCard } from './ProductCard/ProductCard';
 import { ProductDetails } from './ProductDetails/ProductDetails';
@@ -35,7 +34,6 @@ export {
   ProductsPagination,
   ProductSidebar,
   ProductListingActiveFilters,
-  Header,
   Footer,
   GalleryCarousel,
   SellerHeading,
