@@ -3,8 +3,11 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { sdk } from '../config';
-import { filterByMarket, getMarketId } from '../helpers/market-filter';
+import { filterByMarket, getMarketId, selectMarketScopedItem } from '../helpers/market-filter';
 import { getCacheOptions } from './cookies';
+
+const COLLECTION_LIST_FIELDS = 'id,handle,title,metadata';
+const COLLECTION_DETAIL_FIELDS = 'id,handle,title,metadata,*products';
 
 export const retrieveCollection = async (id: string) => {
   const next = {
@@ -13,6 +16,9 @@ export const retrieveCollection = async (id: string) => {
 
   return sdk.client
     .fetch<{ collection: HttpTypes.StoreCollection }>(`/store/collections/${id}`, {
+      query: {
+        fields: COLLECTION_DETAIL_FIELDS
+      },
       next,
       cache: 'force-cache'
     })
@@ -28,6 +34,7 @@ export const listCollections = async (
 
   const marketId = getMarketId();
 
+  queryParams.fields = queryParams.fields || COLLECTION_LIST_FIELDS;
   queryParams.limit = queryParams.limit || '100';
   queryParams.offset = queryParams.offset || '0';
 
@@ -45,16 +52,17 @@ export const listCollections = async (
     });
 };
 
-export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.StoreCollection> => {
+export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.StoreCollection | undefined> => {
   const next = {
     ...(await getCacheOptions('collections'))
   };
+  const marketId = getMarketId();
 
   return sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
-      query: { handle, fields: '*products' },
+      query: { handle, fields: COLLECTION_DETAIL_FIELDS },
       next,
       cache: 'force-cache'
     })
-    .then(({ collections }) => collections[0]);
+    .then(({ collections }) => selectMarketScopedItem(collections, marketId));
 };

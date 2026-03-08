@@ -129,24 +129,30 @@ function collectText(node: unknown): string {
   return `${ownText}${childrenText}`;
 }
 
-export function getPageImageUrl(page: PayloadPage, index: number) {
-  const image = page.image;
-  const heroImage = page.hero_image;
-
+function resolvePayloadImageUrl(image: PayloadPage['image'] | PayloadPage['hero_image']) {
   if (typeof image === 'string') {
     return image;
   }
 
-  if (typeof heroImage === 'string') {
-    return heroImage;
+  return image?.url ?? null;
+}
+
+export function getPageImageUrl(
+  page: PayloadPage,
+  index: number,
+  options: { preferHeroImage?: boolean } = {}
+) {
+  const primaryImage = options.preferHeroImage ? page.hero_image : page.image;
+  const secondaryImage = options.preferHeroImage ? page.image : page.hero_image;
+  const primaryUrl = resolvePayloadImageUrl(primaryImage);
+
+  if (primaryUrl) {
+    return primaryUrl;
   }
 
-  if (image?.url) {
-    return image.url;
-  }
-
-  if (heroImage?.url) {
-    return heroImage.url;
+  const secondaryUrl = resolvePayloadImageUrl(secondaryImage);
+  if (secondaryUrl) {
+    return secondaryUrl;
   }
 
   return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];

@@ -1,11 +1,28 @@
 import * as Sentry from '@sentry/nextjs';
 
+import { resolveRuntimeSocialLinks, type MarketSocialLinks } from '@/lib/runtime-market-config';
+
 type MarketConfigLogo = {
   url?: string | null;
 };
 
 type MarketConfigSeoDefaults = {
   title_pattern?: string | null;
+};
+
+type MarketConfigFooterLink = {
+  label?: string | null;
+  href?: string | null;
+  enabled?: boolean | null;
+};
+
+type MarketConfigFooter = {
+  copyright?: string | null;
+  social?: MarketConfigFooterLink[] | null;
+};
+
+type MarketConfigPublicProfile = {
+  social_links?: MarketSocialLinks | null;
 };
 
 export type MarketConfig = {
@@ -16,6 +33,8 @@ export type MarketConfig = {
   primary_color?: string | null;
   theme?: string | null;
   seo_defaults?: MarketConfigSeoDefaults | null;
+  footer?: MarketConfigFooter | null;
+  public_profile?: MarketConfigPublicProfile | null;
   [key: string]: unknown;
 };
 
@@ -49,6 +68,23 @@ function buildMarketConfigUrl(marketId: string) {
   url.searchParams.set('depth', '2');
 
   return url;
+}
+
+function withRuntimeSocialLinks(
+  marketConfig: MarketConfig,
+  runtimeSocialLinks: MarketSocialLinks | null
+) {
+  if (!runtimeSocialLinks) {
+    return marketConfig;
+  }
+
+  return {
+    ...marketConfig,
+    public_profile: {
+      ...(marketConfig.public_profile ?? {}),
+      social_links: runtimeSocialLinks
+    }
+  } satisfies MarketConfig;
 }
 
 export async function fetchMarketConfig(marketId: string) {
@@ -116,6 +152,8 @@ export function getFallbackMarketConfig(marketId: string): MarketConfig {
     logo: null,
     primary_color: null,
     theme: null,
+    footer: null,
+    public_profile: null,
     seo_defaults: {
       title_pattern: `%s | ${fallbackMarketName}`
     }
@@ -123,12 +161,14 @@ export function getFallbackMarketConfig(marketId: string): MarketConfig {
 }
 
 export async function resolveMarketConfig(marketId: string) {
+  const runtimeSocialLinks = await resolveRuntimeSocialLinks(marketId);
+
   try {
     const marketConfig = await fetchMarketConfig(marketId);
 
     if (marketConfig) {
       return {
-        marketConfig,
+        marketConfig: withRuntimeSocialLinks(marketConfig, runtimeSocialLinks),
         usedFallback: false
       };
     }
@@ -137,7 +177,7 @@ export async function resolveMarketConfig(marketId: string) {
   }
 
   return {
-    marketConfig: getFallbackMarketConfig(marketId),
+    marketConfig: withRuntimeSocialLinks(getFallbackMarketConfig(marketId), runtimeSocialLinks),
     usedFallback: true
   };
 }

@@ -33,7 +33,7 @@ export default async function RootLayout({
           marketConfig={marketConfig}
         />
         {children}
-        <Footer />
+        <Footer marketConfig={marketConfig} />
       </>
     );
 
@@ -48,7 +48,7 @@ export default async function RootLayout({
           marketConfig={marketConfig}
         />
         {children}
-        <Footer />
+        <Footer marketConfig={marketConfig} />
       </Session>
     </>
   );

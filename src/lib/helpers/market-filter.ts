@@ -59,3 +59,7 @@ export function filterByMarketOrKeepUntagged<T>(items: T[], marketId: string): T
   const hasTaggedItems = items.some(item => readGpMarketId(item) !== null)
   return hasTaggedItems ? filtered : items
 }
+
+export function selectMarketScopedItem<T>(items: T[], marketId: string): T | undefined {
+  return filterByMarketOrKeepUntagged(items, marketId)[0]
+}

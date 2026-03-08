@@ -1,7 +1,12 @@
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import footerLinks from '@/data/footerLinks';
+import { resolveFooterConnectLinks, resolveFooterCopyright } from '@/lib/footer';
+import type { MarketConfig } from '@/lib/portal';
 
-export function Footer() {
+export function Footer({ marketConfig }: { marketConfig?: MarketConfig | null } = {}) {
+  const connectLinks = resolveFooterConnectLinks(marketConfig);
+  const copyright = resolveFooterCopyright(marketConfig);
+
   return (
     <footer
       className="container bg-primary"
@@ -64,12 +69,12 @@ export function Footer() {
             className="space-y-3"
             aria-label="Social media navigation"
           >
-            {footerLinks.connect.map(({ label, path }) => (
+            {connectLinks.map(({ label, href }) => (
               <a
                 aria-label={`Go to ${label} page`}
                 title={`Go to ${label} page`}
                 key={label}
-                href={path}
+                href={href}
                 className="label-md block"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -86,7 +91,7 @@ export function Footer() {
         className="rounded-sm border py-6"
         data-testid="footer-copyright"
       >
-        <p className="text-md text-center text-secondary">© 2024 Fleek</p>
+        <p className="text-md text-center text-secondary">{copyright}</p>
       </div>
     </footer>
   );

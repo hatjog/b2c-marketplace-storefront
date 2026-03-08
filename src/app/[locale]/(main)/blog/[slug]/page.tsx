@@ -51,7 +51,7 @@ export async function generateMetadata({
   const description = getBlogDescription(page);
   const blogPath = getBlogHref(page);
   const canonical = new URL(`/${locale}${blogPath}`, `${baseUrl}/`).toString();
-  const imageUrl = getPageImageUrl(page, 0);
+  const imageUrl = getPageImageUrl(page, 0, { preferHeroImage: true });
   const openGraphImage = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
 
   return {
@@ -91,7 +91,7 @@ export default async function BlogArticlePage({
   const description = getBlogDescription(page);
   const category = getBlogCategory(page);
   const publishedDate = formatBlogPublishedDate(page.publishedAt, locale);
-  const imageUrl = getPageImageUrl(page, 0);
+  const imageUrl = getPageImageUrl(page, 0, { preferHeroImage: true });
   const paragraphs = extractLexicalParagraphs(page.content);
   const bodyParagraphs = paragraphs.length > 0 ? paragraphs : [];
 

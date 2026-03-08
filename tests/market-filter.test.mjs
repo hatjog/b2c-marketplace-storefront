@@ -2,7 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 // Dynamic import required: static ESM linking runs before tsx transforms .ts files (Node 22)
-const { filterByMarket, filterByMarketOrKeepUntagged, getMarketId } = await import('../src/lib/helpers/market-filter.ts');
+const { filterByMarket, filterByMarketOrKeepUntagged, getMarketId, selectMarketScopedItem } = await import('../src/lib/helpers/market-filter.ts');
 
 describe('market-filter utility', () => {
   test('filterByMarket: passes all items when marketId is empty (dev fallback)', () => {
@@ -75,6 +75,42 @@ describe('market-filter utility', () => {
   test('filterByMarket: handles empty input array', () => {
     const result = filterByMarket([], 'bonbeauty');
     assert.deepEqual(result, []);
+  });
+
+  test('selectMarketScopedItem: prefers the item tagged for the active market', () => {
+    const result = selectMarketScopedItem(
+      [
+        { id: 'foreign', metadata: { gp: { market_id: 'mercur' } } },
+        { id: 'current', metadata: { gp: { market_id: 'bonbeauty' } } }
+      ],
+      'bonbeauty'
+    );
+
+    assert.equal(result?.id, 'current');
+  });
+
+  test('selectMarketScopedItem: falls back to an untagged item only when no tagged candidates exist', () => {
+    const result = selectMarketScopedItem(
+      [
+        { id: 'untagged-1', metadata: {} },
+        { id: 'untagged-2' }
+      ],
+      'bonbeauty'
+    );
+
+    assert.equal(result?.id, 'untagged-1');
+  });
+
+  test('selectMarketScopedItem: returns undefined when only foreign tagged items exist', () => {
+    const result = selectMarketScopedItem(
+      [
+        { id: 'foreign-1', metadata: { gp: { market_id: 'mercur' } } },
+        { id: 'foreign-2', metadata: { gp: { market_id: 'bonevent' } } }
+      ],
+      'bonbeauty'
+    );
+
+    assert.equal(result, undefined);
   });
 
   test('getMarketId: returns empty string when env var unset', () => {

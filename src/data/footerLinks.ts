@@ -15,7 +15,7 @@ const links = {
   connect: [
     { label: 'Facebook', path: 'https://facebook.com' },
     { label: 'Instagram', path: 'https://instagram.com' },
-    { label: 'LinekdIn', path: 'https://linkedin.com' }
+    { label: 'LinkedIn', path: 'https://linkedin.com' }
   ]
 };
 
