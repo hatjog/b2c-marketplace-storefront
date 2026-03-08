@@ -1,11 +1,25 @@
+import { getTranslations } from 'next-intl/server';
+
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import footerLinks from '@/data/footerLinks';
-import { resolveFooterConnectLinks, resolveFooterCopyright } from '@/lib/footer';
+import { resolveFooterConnectLinks, resolveFooterCopyright, resolveFooterNavLinks } from '@/lib/footer';
 import type { MarketConfig } from '@/lib/portal';
 
-export function Footer({ marketConfig }: { marketConfig?: MarketConfig | null } = {}) {
+const SECTION_I18N_KEYS: Record<string, string> = {
+  customer_services: 'section_customer_services',
+  about: 'section_about',
+  connect: 'section_connect'
+};
+
+export async function Footer({ marketConfig }: { marketConfig?: MarketConfig | null } = {}) {
+  const t = await getTranslations('footer');
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);
+  const navSections = resolveFooterNavLinks(marketConfig).filter(s => s.section !== 'connect');
+
+  const sectionLabel = (section: string) => {
+    const key = SECTION_I18N_KEYS[section];
+    return key ? t(key as 'section_customer_services' | 'section_about' | 'section_connect') : section;
+  };
 
   return (
     <footer
@@ -13,78 +27,60 @@ export function Footer({ marketConfig }: { marketConfig?: MarketConfig | null } 
       data-testid="footer"
     >
       <div className="grid grid-cols-1 lg:grid-cols-3">
-        {/* Customer Services Column */}
-        <div
-          className="rounded-sm border p-6"
-          data-testid="footer-customer-services"
-        >
-          <h2 className="heading-sm mb-3 uppercase text-primary">Customer services</h2>
-          <nav
-            className="space-y-3"
-            aria-label="Customer services navigation"
+        {navSections.map(({ section, links }) => (
+          <div
+            key={section}
+            className="rounded-sm border p-6"
+            data-testid={`footer-section-${section}`}
           >
-            {footerLinks.customerServices.map(({ label, path }) => (
-              <LocalizedClientLink
-                key={label}
-                href={path}
-                className="label-md block"
-                data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                {label}
-              </LocalizedClientLink>
-            ))}
-          </nav>
-        </div>
+            <h2 className="heading-sm mb-3 uppercase text-primary">
+              {sectionLabel(section)}
+            </h2>
+            <nav
+              className="space-y-3"
+              aria-label={sectionLabel(section)}
+            >
+              {links.map(({ label, path }) => (
+                <LocalizedClientLink
+                  key={label}
+                  href={path}
+                  className="label-md block"
+                  data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {label}
+                </LocalizedClientLink>
+              ))}
+            </nav>
+          </div>
+        ))}
 
-        {/* About Column */}
-        <div
-          className="rounded-sm border p-6"
-          data-testid="footer-about"
-        >
-          <h2 className="heading-sm mb-3 uppercase text-primary">About</h2>
-          <nav
-            className="space-y-3"
-            aria-label="About navigation"
+        {connectLinks.length > 0 && (
+          <div
+            className="rounded-sm border p-6"
+            data-testid="footer-connect"
           >
-            {footerLinks.about.map(({ label, path }) => (
-              <LocalizedClientLink
-                key={label}
-                href={path}
-                className="label-md block"
-                data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                {label}
-              </LocalizedClientLink>
-            ))}
-          </nav>
-        </div>
-
-        {/* Connect Column */}
-        <div
-          className="rounded-sm border p-6"
-          data-testid="footer-connect"
-        >
-          <h2 className="heading-sm mb-3 uppercase text-primary">connect</h2>
-          <nav
-            className="space-y-3"
-            aria-label="Social media navigation"
-          >
-            {connectLinks.map(({ label, href }) => (
-              <a
-                aria-label={`Go to ${label} page`}
-                title={`Go to ${label} page`}
-                key={label}
-                href={href}
-                className="label-md block"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
-        </div>
+            <h2 className="heading-sm mb-3 uppercase text-primary">{t('section_connect')}</h2>
+            <nav
+              className="space-y-3"
+              aria-label={t('section_connect')}
+            >
+              {connectLinks.map(({ label, href }) => (
+                <a
+                  aria-label={t('go_to_social', { name: label })}
+                  title={t('go_to_social', { name: label })}
+                  key={label}
+                  href={href}
+                  className="label-md block"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
 
       <div

@@ -16,9 +16,20 @@ type MarketConfigFooterLink = {
   enabled?: boolean | null;
 };
 
+type MarketConfigNavLink = {
+  label?: string | null;
+  path?: string | null;
+};
+
+type MarketConfigNavSection = {
+  section?: string | null;
+  links?: MarketConfigNavLink[] | null;
+};
+
 type MarketConfigFooter = {
   copyright?: string | null;
   social?: MarketConfigFooterLink[] | null;
+  nav_links?: MarketConfigNavSection[] | null;
 };
 
 type MarketConfigPublicProfile = {

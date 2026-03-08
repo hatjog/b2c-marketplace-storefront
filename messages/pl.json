@@ -27,6 +27,10 @@
     "account": "Moje konto"
   },
   "footer": {
+    "section_customer_services": "Obsługa klienta",
+    "section_about": "O nas",
+    "section_connect": "Media społecznościowe",
+    "go_to_social": "Przejdź do strony {name}",
     "rights_reserved": "Wszelkie prawa zastrzeżone",
     "privacy_policy": "Polityka prywatności",
     "terms_of_service": "Regulamin",

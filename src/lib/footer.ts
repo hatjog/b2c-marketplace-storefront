@@ -1,4 +1,3 @@
-import footerLinks from '@/data/footerLinks';
 import type { MarketConfig } from '@/lib/portal';
 
 type FooterConnectLink = {
@@ -22,6 +21,19 @@ function normalizeString(value: unknown) {
 
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizeRelativePath(value: unknown) {
+  const candidate = normalizeString(value);
+  if (!candidate) {
+    return null;
+  }
+
+  if (!candidate.startsWith('/')) {
+    return null;
+  }
+
+  return candidate;
 }
 
 function normalizeHttpUrl(value: unknown) {
@@ -94,7 +106,48 @@ export function resolveFooterConnectLinks(marketConfig?: MarketConfig | null) {
     return runtimeSocialLinks;
   }
 
-  return footerLinks.connect.map(({ label, path }) => ({ label, href: path }));
+  return [];
+}
+
+type FooterNavLink = {
+  label: string;
+  path: string;
+};
+
+type FooterNavSection = {
+  section: string;
+  links: FooterNavLink[];
+};
+
+export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): FooterNavSection[] {
+  const navLinks = marketConfig?.footer?.nav_links;
+
+  if (!Array.isArray(navLinks)) {
+    return [];
+  }
+
+  return navLinks.flatMap(item => {
+    if (!item || typeof item !== 'object') {
+      return [];
+    }
+
+    const section = normalizeString(item.section);
+    if (!section) {
+      return [];
+    }
+
+    const links = Array.isArray(item.links)
+      ? item.links.flatMap(link => {
+          if (!link || typeof link !== 'object') return [];
+          const label = normalizeString(link.label);
+          const path = normalizeRelativePath(link.path);
+          if (!label || !path) return [];
+          return [{ label, path }];
+        })
+      : [];
+
+    return [{ section, links }];
+  });
 }
 
 export function resolveFooterCopyright(marketConfig?: MarketConfig | null) {
