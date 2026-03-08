@@ -64,16 +64,21 @@ function normalizeText(value: string | null | undefined): string {
   return value?.trim() ?? '';
 }
 
-export function getImageUrl(image: HeroImage): string | null {
-  if (!image) {
-    return null;
-  }
+export function getImageUrl(image: HeroImage, fallback?: string): string | null {
+  // !image catches null/undefined; || null normalizes empty strings to null
+  const resolved =
+    !image ? null
+    : typeof image === 'string' ? (image || null)
+    : image.url || null;
 
-  if (typeof image === 'string') {
-    return image;
-  }
+  if (resolved) return resolved;
 
-  return image.url ?? null;
+  if (fallback) {
+    // TODO(Faza 2): replace with structured logging (Sentry/Portal API) — warn masks upstream seed/backfill issues
+    console.warn('[homepage] image missing, using fallback:', fallback);
+    return fallback;
+  }
+  return null;
 }
 
 export function mapButtons(buttons: HeroButton[] | null | undefined) {
@@ -95,12 +100,13 @@ export function mapButtons(buttons: HeroButton[] | null | undefined) {
 
 export function getBannerSectionData(
   section: BannerSectionBlock,
+  fallback?: string,
 ): ResolvedBannerSection | null {
   const heading = normalizeText(section.heading);
   const subheading = normalizeText(section.subheading);
   const label = normalizeText(section.label);
   const ctaLink = normalizeText(section.cta_link);
-  const imageUrl = getImageUrl(section.image);
+  const imageUrl = getImageUrl(section.image, fallback);
 
   if ((!heading && !subheading) || !label || !ctaLink) {
     return null;
@@ -117,6 +123,7 @@ export function getBannerSectionData(
 
 export function normalizeStyleSectionItems(
   items: StyleSectionItem[] | null | undefined,
+  fallback?: string,
 ): ResolvedStyleSectionItem[] {
   return (items ?? [])
     .map(item => {
@@ -128,7 +135,7 @@ export function normalizeStyleSectionItems(
       }
 
       return {
-        imageUrl: getImageUrl(item?.image),
+        imageUrl: getImageUrl(item?.image, fallback),
         href,
         label,
       };
@@ -138,9 +145,10 @@ export function normalizeStyleSectionItems(
 
 export function getStyleSectionData(
   section: StyleSectionBlock,
+  fallback?: string,
 ): { heading: string; items: ResolvedStyleSectionItem[] } | null {
   const heading = normalizeText(section.heading);
-  const items = normalizeStyleSectionItems(section.items);
+  const items = normalizeStyleSectionItems(section.items, fallback);
 
   if (!heading || items.length === 0) {
     return null;

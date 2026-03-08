@@ -13,7 +13,7 @@ export type { HeroSectionBlock };
 export function HeroBlock({ section }: { section: HeroSectionBlock }) {
   const heading = section.heading ?? '';
   const paragraph = section.paragraph ?? '';
-  const imageUrl = getImageUrl(section.image);
+  const imageUrl = getImageUrl(section.image, '/images/hero/Image.jpg');
   const buttons = mapButtons(section.buttons);
 
   if (!heading && !paragraph && !imageUrl && buttons.length === 0) {
@@ -31,10 +31,7 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
     );
   }
 
-  if (section.image == null) {
-    console.error('[homepage] hero image is missing or invalid', section);
-  }
-
+  // Last-resort: unreachable when fallback is provided; kept as defensive safety net
   return (
     <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
       <div className="w-full">

@@ -8,7 +8,7 @@ import {
 } from './homepage-utils';
 
 export function BannerBlock({ section }: { section: BannerSectionBlock }) {
-  const data = getBannerSectionData(section);
+  const data = getBannerSectionData(section, '/images/banner-section/Image.jpg');
 
   if (!data) {
     return null;
