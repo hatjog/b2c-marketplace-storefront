@@ -60,6 +60,45 @@ describe('getImageUrl', () => {
     expect(getImageUrl({ url: null }, '/fallback.jpg')).toBe('/fallback.jpg');
     expect(console.warn).toHaveBeenCalledWith('[homepage] image missing, using fallback:', '/fallback.jpg');
   });
+
+  it('prefixes relative path with portalBaseUrl when provided', () => {
+    expect(getImageUrl('/api/media/file/x.jpg', undefined, 'http://localhost:9003')).toBe(
+      'http://localhost:9003/api/media/file/x.jpg',
+    );
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('returns relative path unchanged when portalBaseUrl is not provided', () => {
+    expect(getImageUrl('/api/media/file/x.jpg')).toBe('/api/media/file/x.jpg');
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('does not transform absolute http URL even when portalBaseUrl is provided', () => {
+    expect(getImageUrl('http://localhost:9003/api/media/file/x.jpg', undefined, 'http://localhost:9003')).toBe(
+      'http://localhost:9003/api/media/file/x.jpg',
+    );
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('does not transform external https URL when portalBaseUrl is provided', () => {
+    expect(getImageUrl('https://cdn.example.com/img.jpg', undefined, 'http://localhost:9003')).toBe(
+      'https://cdn.example.com/img.jpg',
+    );
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('does not transform data URI when portalBaseUrl is provided', () => {
+    const dataUri = 'data:image/svg+xml;base64,PHN2Zy8+';
+    expect(getImageUrl(dataUri, undefined, 'http://localhost:9003')).toBe(dataUri);
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('does not transform protocol-relative URL when portalBaseUrl is provided', () => {
+    expect(getImageUrl('//cdn.example.com/img.jpg', undefined, 'http://localhost:9003')).toBe(
+      '//cdn.example.com/img.jpg',
+    );
+    expect(console.warn).not.toHaveBeenCalled();
+  });
 });
 
 describe('getBannerSectionData — fallback propagation', () => {

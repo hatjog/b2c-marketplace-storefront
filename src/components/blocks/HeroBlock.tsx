@@ -13,7 +13,7 @@ export type { HeroSectionBlock };
 export function HeroBlock({ section }: { section: HeroSectionBlock }) {
   const heading = section.heading ?? '';
   const paragraph = section.paragraph ?? '';
-  const imageUrl = getImageUrl(section.image, '/images/hero/Image.jpg');
+  const imageUrl = getImageUrl(section.image, '/images/hero/Image.jpg', process.env.PAYLOAD_API_URL);
   const buttons = mapButtons(section.buttons);
 
   if (!heading && !paragraph && !imageUrl && buttons.length === 0) {

@@ -64,14 +64,22 @@ function normalizeText(value: string | null | undefined): string {
   return value?.trim() ?? '';
 }
 
-export function getImageUrl(image: HeroImage, fallback?: string): string | null {
+export function getImageUrl(image: HeroImage, fallback?: string, portalBaseUrl?: string): string | null {
   // !image catches null/undefined; || null normalizes empty strings to null
   const resolved =
     !image ? null
     : typeof image === 'string' ? (image || null)
     : image.url || null;
 
-  if (resolved) return resolved;
+  if (resolved) {
+    // Prefix relative paths (e.g. /api/media/...) with portal base URL so
+    // storefront server components resolve images against Portal, not their own origin.
+    // Only applied when portalBaseUrl is provided and the path is root-relative.
+    if (portalBaseUrl && resolved.startsWith('/') && !resolved.startsWith('//')) {
+      return `${portalBaseUrl}${resolved}`;
+    }
+    return resolved;
+  }
 
   if (fallback) {
     // TODO(Faza 2): replace with structured logging (Sentry/Portal API) — warn masks upstream seed/backfill issues
@@ -101,12 +109,13 @@ export function mapButtons(buttons: HeroButton[] | null | undefined) {
 export function getBannerSectionData(
   section: BannerSectionBlock,
   fallback?: string,
+  portalBaseUrl?: string,
 ): ResolvedBannerSection | null {
   const heading = normalizeText(section.heading);
   const subheading = normalizeText(section.subheading);
   const label = normalizeText(section.label);
   const ctaLink = normalizeText(section.cta_link);
-  const imageUrl = getImageUrl(section.image, fallback);
+  const imageUrl = getImageUrl(section.image, fallback, portalBaseUrl);
 
   if ((!heading && !subheading) || !label || !ctaLink) {
     return null;
@@ -124,6 +133,7 @@ export function getBannerSectionData(
 export function normalizeStyleSectionItems(
   items: StyleSectionItem[] | null | undefined,
   fallback?: string,
+  portalBaseUrl?: string,
 ): ResolvedStyleSectionItem[] {
   return (items ?? [])
     .map(item => {
@@ -135,7 +145,7 @@ export function normalizeStyleSectionItems(
       }
 
       return {
-        imageUrl: getImageUrl(item?.image, fallback),
+        imageUrl: getImageUrl(item?.image, fallback, portalBaseUrl),
         href,
         label,
       };
@@ -146,9 +156,10 @@ export function normalizeStyleSectionItems(
 export function getStyleSectionData(
   section: StyleSectionBlock,
   fallback?: string,
+  portalBaseUrl?: string,
 ): { heading: string; items: ResolvedStyleSectionItem[] } | null {
   const heading = normalizeText(section.heading);
-  const items = normalizeStyleSectionItems(section.items, fallback);
+  const items = normalizeStyleSectionItems(section.items, fallback, portalBaseUrl);
 
   if (!heading || items.length === 0) {
     return null;
