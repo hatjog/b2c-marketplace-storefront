@@ -78,7 +78,7 @@ export const ProductListing = async ({
   if (showSidebar && marketId) {
     try {
       const { marketConfig } = await resolveMarketConfig(marketId);
-      const rawFilters = normalizeFilters((marketConfig as Record<string, unknown>)?.storefront_filters);
+      const rawFilters = normalizeFilters(marketConfig.storefront_filters);
       storefrontFilters.push(...rawFilters);
 
       const needsCategories = rawFilters.some(f => f.type === 'category_group');

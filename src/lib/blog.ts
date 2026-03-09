@@ -48,15 +48,14 @@ function buildPayloadUrl(pathname: string) {
 }
 
 function getTenantIdFromMarketConfig(marketConfig: Awaited<ReturnType<typeof fetchMarketConfig>>) {
-  const rawTenant = (marketConfig as { tenant?: unknown } | null)?.tenant;
+  const rawTenant = marketConfig?.tenant;
 
   if (rawTenant == null) {
     return null;
   }
 
   if (typeof rawTenant === 'object') {
-    const tenantId = (rawTenant as { id?: string | number }).id;
-    return tenantId == null ? null : String(tenantId);
+    return rawTenant.id == null ? null : String(rawTenant.id);
   }
 
   return String(rawTenant);

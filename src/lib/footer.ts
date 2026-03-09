@@ -55,7 +55,7 @@ function normalizeHttpUrl(value: unknown) {
   }
 }
 
-function normalizeFooterConnectLinks(value: MarketConfig['footer'] extends { social?: infer T } ? T : never) {
+function normalizeFooterConnectLinks(value: NonNullable<NonNullable<MarketConfig['footer']>['social']> | null | undefined) {
   if (!Array.isArray(value)) {
     return [] satisfies FooterConnectLink[];
   }
@@ -126,28 +126,33 @@ export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): Foote
     return [];
   }
 
-  return navLinks.flatMap(item => {
+  // Payload stores nav_links as flat array: { label, href, enabled }
+  const links = navLinks.flatMap(item => {
     if (!item || typeof item !== 'object') {
       return [];
     }
 
-    const section = normalizeString(item.section);
-    if (!section) {
+    if (item.enabled === false) {
       return [];
     }
 
-    const links = Array.isArray(item.links)
-      ? item.links.flatMap(link => {
-          if (!link || typeof link !== 'object') return [];
-          const label = normalizeString(link.label);
-          const path = normalizeRelativePath(link.path);
-          if (!label || !path) return [];
-          return [{ label, path }];
-        })
-      : [];
+    const label = normalizeString(item.label);
+    const path = normalizeRelativePath(item.href);
 
-    return [{ section, links }];
-  }).filter(section => section.links.length > 0);
+    if (!label || !path) {
+      return [];
+    }
+
+    return [{ label, path }];
+  });
+
+  if (links.length === 0) {
+    return [];
+  }
+
+  // Payload stores flat nav_links without section grouping.
+  // Default to 'about' section — maps to i18n key 'section_about' in Footer.
+  return [{ section: 'about', links }];
 }
 
 export function resolveFooterCopyright(marketConfig?: MarketConfig | null) {

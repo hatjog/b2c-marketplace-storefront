@@ -1,4 +1,8 @@
+// Source: portal/src/collections/MarketConfig.ts
 import type { MarketSocialLinks } from '@/lib/runtime-market-config';
+
+import type { StorefrontFilterConfig } from '@/components/cells/DynamicFilterSidebar/DynamicFilterSidebar';
+export type { StorefrontFilterConfig };
 
 type MarketConfigLogo = {
   url?: string | null;
@@ -14,20 +18,10 @@ type MarketConfigFooterLink = {
   enabled?: boolean | null;
 };
 
-type MarketConfigNavLink = {
-  label?: string | null;
-  path?: string | null;
-};
-
-type MarketConfigNavSection = {
-  section?: string | null;
-  links?: MarketConfigNavLink[] | null;
-};
-
 type MarketConfigFooter = {
   copyright?: string | null;
   social?: MarketConfigFooterLink[] | null;
-  nav_links?: MarketConfigNavSection[] | null;
+  nav_links?: MarketConfigFooterLink[] | null;
 };
 
 type MarketConfigPublicProfile = {
@@ -44,7 +38,11 @@ export type MarketConfig = {
   seo_defaults?: MarketConfigSeoDefaults | null;
   footer?: MarketConfigFooter | null;
   public_profile?: MarketConfigPublicProfile | null;
-  [key: string]: unknown;
+  storefront_filters?: StorefrontFilterConfig[] | null;
+  homepage_sections?: unknown[] | null;
+  tenant?: string | { id?: string | number } | null;
+  favicon?: MarketConfigLogo | string | null;
+  vendor_panel_url?: string | null;
 };
 
 export function getMarketLogoUrl(marketConfig: MarketConfig | null | undefined) {
@@ -74,6 +72,11 @@ export function getFallbackMarketConfig(marketId: string): MarketConfig {
     public_profile: null,
     seo_defaults: {
       title_pattern: `%s | ${fallbackMarketName}`
-    }
+    },
+    storefront_filters: null,
+    homepage_sections: null,
+    tenant: null,
+    favicon: null,
+    vendor_panel_url: null
   };
 }
