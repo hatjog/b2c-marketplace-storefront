@@ -23,7 +23,6 @@ export const SellerRatingFilter = ({ heading }: SellerRatingFilterProps) => {
           <li
             key={rating}
             className="mb-4 flex cursor-pointer items-center gap-2"
-            onClick={() => updateFilters(rating)}
           >
             <FilterCheckboxOption
               checked={isFilterActive(rating)}

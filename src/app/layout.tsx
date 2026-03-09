@@ -68,7 +68,11 @@ export default async function RootLayout({
     ? ({ '--color-primary': marketConfig.primary_color } as CSSProperties)
     : undefined;
   const themeStylesheet = marketConfig.theme ? `/themes/${marketConfig.theme}.css` : null;
-  // default lang updated dynamically by HtmlLangSetter per locale
+  // KNOWN LIMITATION: Root layout sits outside the [locale] segment so
+  // params.locale is unavailable here. The static default is corrected
+  // client-side by <HtmlLangSetter /> (uses next-intl useLocale()).
+  // Crawlers that execute JS will see the correct lang; those that don't
+  // will see 'pl'. A future middleware-based approach could inject a header.
   const htmlLang = 'pl';
 
   return (

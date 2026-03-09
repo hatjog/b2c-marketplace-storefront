@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -20,11 +20,13 @@ import { LabeledInput } from '@/components/cells';
 import { login } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
-import { loginFormSchema, type LoginFormData } from './schema';
+import { createLoginFormSchema, type LoginFormData } from './schema';
 
 export const LoginForm = () => {
+  const tValidation = useTranslations('validation');
+  const schema = useMemo(() => createLoginFormSchema(tValidation), [tValidation]);
   const methods = useForm<LoginFormData>({
-    resolver: zodResolver(loginFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       email: '',
       password: ''

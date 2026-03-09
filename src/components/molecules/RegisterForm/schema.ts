@@ -1,32 +1,33 @@
 import { z } from 'zod';
 
-export const registerFormSchema = z.object({
-  firstName: z
-    .string()
-    .nonempty('Please enter first name')
-    .max(50, 'First name must contain up to 50 characters'),
-  lastName: z
-    .string()
-    .nonempty('Please enter last name')
-    .max(50, 'Last name must contain up to 50 characters'),
-  email: z
-    .string()
-    .nonempty('Please enter email')
-    .email('Invalid email')
-    .max(60, 'Email must contain up to 60 characters'),
-  password: z
-    .string()
-    .nonempty('Please enter password')
-    .min(8, 'Password must be at least 8 characters long')
-    .regex(/^(?=.*[A-Z])(?=.*[!@#$%^&*])/, {
-      message: 'Password must contain at least one uppercase letter and one special character'
-    })
-    .max(64, 'Password must contain up to 64 characters'),
-  phone: z
-    .string()
-    .min(6, 'Please enter phone number')
-    .regex(/^\+?\d+$/, { message: 'Mobile phone must contain digits only' })
-    .max(20, 'Phone number must contain up to 20 characters')
-});
+export const createRegisterFormSchema = (t: (key: string) => string) =>
+  z.object({
+    firstName: z
+      .string()
+      .nonempty(t('first_name_required'))
+      .max(50, t('first_name_max')),
+    lastName: z
+      .string()
+      .nonempty(t('last_name_required'))
+      .max(50, t('last_name_max')),
+    email: z
+      .string()
+      .nonempty(t('email_required'))
+      .email(t('email_invalid'))
+      .max(60, t('email_max')),
+    password: z
+      .string()
+      .nonempty(t('password_required'))
+      .min(8, t('password_min_length'))
+      .regex(/^(?=.*[A-Z])(?=.*[!@#$%^&*])/, {
+        message: t('password_complexity')
+      })
+      .max(64, t('password_max')),
+    phone: z
+      .string()
+      .min(6, t('phone_required'))
+      .regex(/^\+?\d+$/, { message: t('phone_digits_only') })
+      .max(20, t('phone_max'))
+  });
 
-export type RegisterFormData = z.infer<typeof registerFormSchema>;
+export type RegisterFormData = z.infer<ReturnType<typeof createRegisterFormSchema>>;

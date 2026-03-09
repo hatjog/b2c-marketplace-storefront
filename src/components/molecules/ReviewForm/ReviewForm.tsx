@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FC } from 'react';
+import { useMemo, useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -17,7 +17,7 @@ import { InteractiveStarRating } from '@/components/atoms/InteractiveStarRating/
 import { createReview, type Order } from '@/lib/data/reviews';
 import { cn } from '@/lib/utils';
 
-import { reviewSchema, type ReviewFormData } from './schema';
+import { createReviewSchema, type ReviewFormData } from './schema';
 
 interface Props {
   handleClose?: () => void;
@@ -25,8 +25,10 @@ interface Props {
 }
 
 export const ReviewForm: React.FC<Props> = ({ ...props }) => {
+  const tValidation = useTranslations('validation');
+  const schema = useMemo(() => createReviewSchema(tValidation), [tValidation]);
   const methods = useForm<ReviewFormData>({
-    resolver: zodResolver(reviewSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       sellerId: '',
       rating: 0,

@@ -246,6 +246,30 @@
     "char_count": "{count} znaków",
     "generic_error": "Wystąpił błąd podczas wysyłania opinii"
   },
+  "validation": {
+    "email_required": "Podaj adres e-mail",
+    "email_invalid": "Podaj prawidłowy adres e-mail",
+    "email_max": "E-mail może zawierać maksymalnie 60 znaków",
+    "password_required": "Podaj hasło",
+    "password_min_length": "Hasło musi mieć co najmniej 8 znaków",
+    "password_complexity": "Hasło musi zawierać co najmniej jedną wielką literę i jeden znak specjalny",
+    "password_max": "Hasło może zawierać maksymalnie 64 znaki",
+    "first_name_required": "Imię jest wymagane",
+    "first_name_max": "Imię może zawierać maksymalnie 50 znaków",
+    "last_name_required": "Nazwisko jest wymagane",
+    "last_name_max": "Nazwisko może zawierać maksymalnie 50 znaków",
+    "phone_required": "Numer telefonu jest wymagany",
+    "phone_digits_only": "Numer telefonu może zawierać tylko cyfry",
+    "phone_max": "Numer telefonu może zawierać maksymalnie 20 znaków",
+    "phone_invalid_format": "Nieprawidłowy format numeru telefonu",
+    "address_name_required": "Nazwa adresu jest wymagana",
+    "address_required": "Adres jest wymagany",
+    "city_required": "Miasto jest wymagane",
+    "country_required": "Kraj jest wymagany",
+    "postal_code_required": "Kod pocztowy jest wymagany",
+    "rating_required": "Oceń tego sprzedawcę",
+    "opinion_max": "Opinia może zawierać maksymalnie 300 znaków"
+  },
   "accessibility": {
     "breadcrumb": "Okruszki nawigacyjne"
   },

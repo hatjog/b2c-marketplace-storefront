@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -10,11 +12,13 @@ import { LabeledInput } from '@/components/cells';
 import { sendResetPasswordEmail } from '@/lib/data/customer';
 import { toast } from '@/lib/helpers/toast';
 
-import { forgotPasswordSchema, type ForgotPasswordFormData } from './schema';
+import { createForgotPasswordSchema, type ForgotPasswordFormData } from './schema';
 
 export const ForgotPasswordForm = () => {
+  const tValidation = useTranslations('validation');
+  const schema = useMemo(() => createForgotPasswordSchema(tValidation), [tValidation]);
   const methods = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       email: ''
     }

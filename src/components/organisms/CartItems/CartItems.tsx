@@ -44,18 +44,18 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
       }
       groupedBySeller[seller.id].items.push(item);
     } else {
-      if (!groupedBySeller['fleek']) {
-        groupedBySeller['fleek'] = {
+      if (!groupedBySeller['unknown']) {
+        groupedBySeller['unknown'] = {
           seller: {
-            name: 'Fleek',
-            id: 'fleek',
-            photo: '/Logo.svg',
+            name: 'Seller',
+            id: 'unknown',
+            photo: null,
             created_at: new Date()
           },
           items: []
         };
       }
-      groupedBySeller['fleek'].items.push(item);
+      groupedBySeller['unknown'].items.push(item);
     }
   });
 

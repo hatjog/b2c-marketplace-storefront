@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
-export const profileDetailsSchema = z.object({
-  firstName: z.string().nonempty('First name is required'),
-  lastName: z.string().nonempty('Last name is required'),
-  phone: z.string().nonempty('Phone number is required'),
-  email: z.string().nonempty('Email is required')
-});
+export const createProfileDetailsSchema = (t: (key: string) => string) =>
+  z.object({
+    firstName: z.string().nonempty(t('first_name_required')),
+    lastName: z.string().nonempty(t('last_name_required')),
+    phone: z.string().nonempty(t('phone_required')),
+    email: z.string().nonempty(t('email_required'))
+  });
 
-export type ProfileDetailsFormData = z.infer<typeof profileDetailsSchema>;
+export type ProfileDetailsFormData = z.infer<ReturnType<typeof createProfileDetailsSchema>>;

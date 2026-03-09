@@ -36,6 +36,14 @@ export const ProductSidebar = ({
       className="relative w-full"
       data-testid="sidebar"
     >
+      <Button
+        className="label-sm mb-4 w-full uppercase block md:hidden"
+        variant="tonal"
+        onClick={() => setFilterModal(true)}
+        data-testid="sidebar-open-filters-button"
+      >
+        {t('filters')}
+      </Button>
       <div
         className={cn(
           'pointer-events-none left-0 top-0 h-full w-full bg-primary blur-sm transition-opacity duration-100 md:relative',

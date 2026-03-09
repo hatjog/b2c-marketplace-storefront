@@ -147,7 +147,7 @@ export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): Foote
       : [];
 
     return [{ section, links }];
-  });
+  }).filter(section => section.links.length > 0);
 }
 
 export function resolveFooterCopyright(marketConfig?: MarketConfig | null) {

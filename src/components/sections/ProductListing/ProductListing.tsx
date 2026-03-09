@@ -1,3 +1,5 @@
+import type { HttpTypes } from '@medusajs/types';
+
 import {
   ProductListingActiveFilters,
   ProductListingHeader,
@@ -14,6 +16,31 @@ import { resolveMarketConfig } from '@/lib/portal';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ALPHANUMERIC_RE = /^[a-z0-9]+$/i;
+const HANDLE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
+
+/** Sanitize URL search params to prevent injection / malformed API calls. */
+function sanitizeSearchParams(searchParams: Record<string, string | string[] | undefined>) {
+  const raw = (key: string): string | undefined =>
+    typeof searchParams[key] === 'string' ? searchParams[key] : undefined;
+
+  const rawMin = raw('min_price');
+  const rawMax = raw('max_price');
+  const rawTagId = raw('tag_id');
+  const rawCategoryHandle = raw('category_handle');
+
+  const parsedMin = rawMin != null ? Number(rawMin) : NaN;
+  const parsedMax = rawMax != null ? Number(rawMax) : NaN;
+
+  return {
+    minPrice: !Number.isNaN(parsedMin) && parsedMin >= 0 ? String(parsedMin) : undefined,
+    maxPrice: !Number.isNaN(parsedMax) && parsedMax >= 0 ? String(parsedMax) : undefined,
+    tagId: rawTagId && (UUID_RE.test(rawTagId) || ALPHANUMERIC_RE.test(rawTagId)) ? rawTagId : undefined,
+    categoryHandle: rawCategoryHandle && HANDLE_RE.test(rawCategoryHandle) ? rawCategoryHandle : undefined
+  };
+}
 
 function normalizeFilters(raw: unknown): StorefrontFilterConfig[] {
   if (!Array.isArray(raw)) return [];
@@ -38,11 +65,8 @@ export const ProductListing = async ({
   locale?: string;
   searchParams?: Record<string, string | string[] | undefined>;
 }) => {
-  // Resolve filter params from URL search params
-  const categoryHandle = typeof searchParams.category_handle === 'string' ? searchParams.category_handle : undefined;
-  const minPrice = typeof searchParams.min_price === 'string' ? searchParams.min_price : undefined;
-  const maxPrice = typeof searchParams.max_price === 'string' ? searchParams.max_price : undefined;
-  const tagId = typeof searchParams.tag_id === 'string' ? searchParams.tag_id : undefined;
+  // Resolve & sanitize filter params from URL search params
+  const { categoryHandle, minPrice, maxPrice, tagId } = sanitizeSearchParams(searchParams);
 
   // Fetch market config for storefront filters
   const marketId = getMarketId();
@@ -77,10 +101,12 @@ export const ProductListing = async ({
     if (matched) resolvedCategoryId = matched.id;
   }
 
-  const queryParams: Record<string, unknown> = { limit: PRODUCT_LIMIT };
-  if (minPrice) queryParams.min_price = minPrice;
-  if (maxPrice) queryParams.max_price = maxPrice;
-  if (tagId) queryParams.tag_id = [tagId];
+  const queryParams: HttpTypes.FindParams & HttpTypes.StoreProductParams = {
+    limit: PRODUCT_LIMIT,
+    ...(minPrice ? { min_price: minPrice } : {}),
+    ...(maxPrice ? { max_price: maxPrice } : {}),
+    ...(tagId ? { tag_id: [tagId] } : {})
+  };
 
   const { response } = await listProductsWithSort({
     seller_id,
@@ -88,7 +114,7 @@ export const ProductListing = async ({
     collection_id,
     countryCode: locale,
     sortBy: 'created_at',
-    queryParams: queryParams as Parameters<typeof listProductsWithSort>[0]['queryParams']
+    queryParams
   });
 
   const { products } = await response;

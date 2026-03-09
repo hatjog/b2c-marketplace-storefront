@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FC } from 'react';
+import { useMemo, useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -17,7 +17,7 @@ import { Button } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { updateCustomer } from '@/lib/data/customer';
 
-import { profileDetailsSchema, type ProfileDetailsFormData } from './schema';
+import { createProfileDetailsSchema, type ProfileDetailsFormData } from './schema';
 
 interface Props {
   defaultValues?: ProfileDetailsFormData;
@@ -25,8 +25,10 @@ interface Props {
 }
 
 export const ProfileDetailsForm: FC<Props> = ({ defaultValues, ...props }) => {
+  const tValidation = useTranslations('validation');
+  const schema = useMemo(() => createProfileDetailsSchema(tValidation), [tValidation]);
   const methods = useForm<ProfileDetailsFormData>({
-    resolver: zodResolver(profileDetailsSchema),
+    resolver: zodResolver(schema),
     defaultValues: defaultValues || {
       firstName: '',
       lastName: '',

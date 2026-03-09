@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FC } from 'react';
+import { useMemo, useState, type FC } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -18,7 +18,7 @@ import { LabeledInput } from '@/components/cells';
 import CountrySelect from '@/components/cells/CountrySelect/CountrySelect';
 import { addCustomerAddress, updateCustomerAddress } from '@/lib/data/customer';
 
-import { addressSchema, type AddressFormData } from './schema';
+import { createAddressSchema, type AddressFormData } from './schema';
 
 interface Props {
   defaultValues?: AddressFormData;
@@ -42,8 +42,10 @@ export const emptyDefaultAddressValues = {
 };
 
 export const AddressForm: FC<Props> = ({ defaultValues, ...props }) => {
+  const tValidation = useTranslations('validation');
+  const schema = useMemo(() => createAddressSchema(tValidation), [tValidation]);
   const methods = useForm<AddressFormData>({
-    resolver: zodResolver(addressSchema),
+    resolver: zodResolver(schema),
     defaultValues: defaultValues || emptyDefaultAddressValues
   });
 

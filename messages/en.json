@@ -246,6 +246,30 @@
     "char_count": "{count} characters",
     "generic_error": "An error occurred while submitting your review"
   },
+  "validation": {
+    "email_required": "Please enter email",
+    "email_invalid": "Please enter a valid email",
+    "email_max": "Email must contain up to 60 characters",
+    "password_required": "Please enter password",
+    "password_min_length": "Password must be at least 8 characters long",
+    "password_complexity": "Password must contain at least one uppercase letter and one special character",
+    "password_max": "Password must contain up to 64 characters",
+    "first_name_required": "First name is required",
+    "first_name_max": "First name must contain up to 50 characters",
+    "last_name_required": "Last name is required",
+    "last_name_max": "Last name must contain up to 50 characters",
+    "phone_required": "Phone number is required",
+    "phone_digits_only": "Mobile phone must contain digits only",
+    "phone_max": "Phone number must contain up to 20 characters",
+    "phone_invalid_format": "Invalid phone number format",
+    "address_name_required": "Address name is required",
+    "address_required": "Address is required",
+    "city_required": "City is required",
+    "country_required": "Country is required",
+    "postal_code_required": "Postal code is required",
+    "rating_required": "Please rate this seller",
+    "opinion_max": "Opinion must be less than 300 characters"
+  },
   "accessibility": {
     "breadcrumb": "Breadcrumb"
   },
