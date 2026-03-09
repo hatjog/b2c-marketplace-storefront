@@ -5,7 +5,7 @@ import Script from 'next/script';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
-import { resolveMarketConfig } from '@/lib/portal';
+import { resolveMarketConfig } from '@/lib/portal.server';
 
 export const revalidate = 300;
 

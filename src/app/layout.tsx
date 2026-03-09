@@ -9,7 +9,7 @@ import { Toaster } from '@medusajs/ui';
 
 import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
-import { resolveMarketConfig } from '@/lib/portal';
+import { resolveMarketConfig } from '@/lib/portal.server';
 
 import { Providers } from './providers';
 

@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CollapseIcon } from '@/icons';
-import { getMarketLogoUrl, resolveMarketConfig } from '@/lib/portal';
+import { getMarketLogoUrl } from '@/lib/portal';
+import { resolveMarketConfig } from '@/lib/portal.server';
 
 export default async function RootLayout({
   children

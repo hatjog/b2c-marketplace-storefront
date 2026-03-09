@@ -12,7 +12,7 @@ import { PRODUCT_LIMIT } from '@/const';
 import { listCategories } from '@/lib/data/categories';
 import { listProductsWithSort } from '@/lib/data/products';
 import { getMarketId } from '@/lib/helpers/market-filter';
-import { resolveMarketConfig } from '@/lib/portal';
+import { resolveMarketConfig } from '@/lib/portal.server';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };

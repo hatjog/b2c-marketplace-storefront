@@ -1,4 +1,4 @@
-import { fetchMarketConfig } from '@/lib/portal';
+import { fetchMarketConfig } from '@/lib/portal.server';
 import type { BlogPost } from '@/types/blog';
 
 export type PayloadStructuredData = {

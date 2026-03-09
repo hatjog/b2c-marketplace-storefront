@@ -1,4 +1,4 @@
-import { SellerTabs } from '@/components/organisms';
+import { SellerTabs } from '@/components/organisms/SellerTabs/SellerTabs';
 import { SellerPageHeader } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';

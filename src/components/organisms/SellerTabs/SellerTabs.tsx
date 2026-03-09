@@ -2,7 +2,8 @@ import { Suspense } from 'react';
 
 import { SellerReviewTab } from '@/components/cells';
 import { TabsContent, TabsList } from '@/components/molecules';
-import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
+import { AlgoliaProductsListing } from '@/components/sections/ProductListing/AlgoliaProductsListing';
+import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 
 import { ProductListingSkeleton } from '../ProductListingSkeleton/ProductListingSkeleton';
 

@@ -1,5 +1,3 @@
-import 'server-only';
-
 import * as Sentry from '@sentry/nextjs';
 
 import { resolveRuntimeSocialLinks, type MarketSocialLinks } from '@/lib/runtime-market-config';

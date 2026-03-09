@@ -6,7 +6,8 @@ import Script from 'next/script';
 
 import { Breadcrumbs } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
-import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
+import { AlgoliaProductsListing } from '@/components/sections/ProductListing/AlgoliaProductsListing';
+import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 import { listProducts } from '@/lib/data/products';
 import { getRegion, listRegions } from '@/lib/data/regions';
 import { toHreflang } from '@/lib/helpers/hreflang';

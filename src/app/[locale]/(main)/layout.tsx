@@ -5,7 +5,7 @@ import { Footer } from '@/components/organisms';
 import { Header } from '@/components/organisms/Header/Header';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { checkRegion } from '@/lib/helpers/check-region';
-import { resolveMarketConfig } from '@/lib/portal';
+import { resolveMarketConfig } from '@/lib/portal.server';
 
 export default async function RootLayout({
   children,

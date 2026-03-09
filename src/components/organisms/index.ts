@@ -21,7 +21,6 @@ import { ReviewsToWrite } from './Reviews/ReviewsToWrite';
 import { ReviewsWritten } from './Reviews/ReviewsWritten';
 import { SellerFooter } from './SellerFooter/SellerFooter';
 import { SellerHeading } from './SellerHeading/SellerHeading';
-import { SellerTabs } from './SellerTabs/SellerTabs';
 import { WishlistTabs } from './WishlistTabs/WishlistTabs';
 
 export {
@@ -38,7 +37,6 @@ export {
   GalleryCarousel,
   SellerHeading,
   SellerFooter,
-  SellerTabs,
   CartSummary,
   CartItems,
   WishlistTabs,

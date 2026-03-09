@@ -1,7 +1,8 @@
 import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { getMarketLogoUrl, resolveMarketConfig } from '@/lib/portal';
+import { getMarketLogoUrl } from '@/lib/portal';
+import { resolveMarketConfig } from '@/lib/portal.server';
 
 export default async function ResetPasswordLayout({ children }: { children: React.ReactNode }) {
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';

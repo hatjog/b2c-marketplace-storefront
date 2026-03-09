@@ -6,8 +6,6 @@ import { Hero } from './Hero/Hero';
 import { HomeCategories } from './HomeCategories/HomeCategories';
 import { HomeProductSection } from './HomeProductSection/HomeProductSection';
 import { ProductDetailsPage } from './ProductDetailsPage/ProductDetailsPage';
-import { AlgoliaProductsListing } from './ProductListing/AlgoliaProductsListing';
-import { ProductListing } from './ProductListing/ProductListing';
 import { SellerPageHeader } from './SellerPageHeader/SellerPageHeader';
 import { ShopByStyleSection } from './ShopByStyle/ShopByStyleSection';
 import { WishlistPage } from './WishlistPage/WishlistPage';
@@ -19,11 +17,9 @@ export {
   BannerSection,
   ShopByStyleSection,
   BlogSection,
-  ProductListing,
   SellerPageHeader,
   Cart,
   WishlistPage,
   ProductDetailsPage,
-  AlgoliaProductsListing,
   OrdersPagination
 };
