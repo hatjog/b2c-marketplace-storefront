@@ -19,6 +19,8 @@
     "logo_alt": "Logo",
     "shipping_to": "Dostawa do",
     "language_switcher_label": "Wybierz język",
+    "language_polish": "Polski",
+    "language_english": "Angielski",
     "search_placeholder": "Szukaj produktów...",
     "cart": "Koszyk",
     "wishlist": "Lista życzeń",
@@ -62,7 +64,8 @@
     "in_stock": "Dostępne",
     "apply": "Zastosuj",
     "clear": "Wyczyść",
-    "results": "wyników"
+    "results": "wyników",
+    "client_filter_hint": "Filtrowanie działa na pierwszych 100 wynikach strony"
   },
   "products": {
     "add_to_cart": "Dodaj do koszyka",

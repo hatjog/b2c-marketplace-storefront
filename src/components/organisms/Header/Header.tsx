@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Badge } from '@/components/atoms';
 import { CartDropdown, MobileNavbar, Navbar } from '@/components/cells';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
-import CountrySelector from '@/components/molecules/CountrySelector/CountrySelector';
 import { LanguageSwitcher } from '@/components/molecules/LanguageSwitcher/LanguageSwitcher';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { MessageButton } from '@/components/molecules/MessageButton/MessageButton';
@@ -12,7 +11,6 @@ import { ParentCategoryLinks } from '@/components/molecules/ParentCategoryLinks/
 import { HeartIcon } from '@/icons';
 import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { listRegions } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketLogoUrl, type MarketConfig } from '@/lib/portal';
@@ -37,8 +35,6 @@ export const Header = async ({
   if (user) {
     wishlist = await getUserWishlists({ countryCode });
   }
-
-  const regions = await listRegions();
 
   const wishlistCount = wishlist?.products.length || 0;
 
@@ -90,7 +86,6 @@ export const Header = async ({
           className="flex w-full items-center justify-end gap-2 py-2 lg:w-1/3 lg:gap-4"
           data-testid="header-actions"
         >
-          <CountrySelector regions={regions} />
           <LanguageSwitcher currentLocale={locale} />
           {isLoggedIn && <MessageButton />}
           <UserDropdown isLoggedIn={isLoggedIn} />

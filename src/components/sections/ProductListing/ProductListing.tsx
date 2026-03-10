@@ -10,9 +10,11 @@ import {
 import type { StorefrontFilterConfig } from '@/components/cells/DynamicFilterSidebar/DynamicFilterSidebar';
 import { PRODUCT_LIMIT } from '@/const';
 import { listCategories } from '@/lib/data/categories';
-import { listProductsWithSort } from '@/lib/data/products';
+import { listProductsWithSort, listProductTags, listSellerCities } from '@/lib/data/products';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveMarketConfig } from '@/lib/portal.server';
+import { getTranslations } from 'next-intl/server';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
@@ -20,6 +22,8 @@ type Tag = { id: string; value: string };
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ALPHANUMERIC_RE = /^[a-z0-9]+$/i;
 const HANDLE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
+const CITY_ALLOWED_CHARS_RE = /[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]/g;
+const ALLOWED_DURATIONS = [30, 45, 60, 90] as const;
 
 /** Sanitize URL search params to prevent injection / malformed API calls. */
 function sanitizeSearchParams(searchParams: Record<string, string | string[] | undefined>) {
@@ -30,15 +34,46 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
   const rawMax = raw('max_price');
   const rawTagId = raw('tag_id');
   const rawCategoryHandle = raw('category_handle');
+  const rawCity = raw('city');
+  const rawDuration = raw('duration');
+  const rawSellerRating = raw('seller_rating');
 
   const parsedMin = rawMin != null ? Number(rawMin) : NaN;
   const parsedMax = rawMax != null ? Number(rawMax) : NaN;
 
+  // city: max length 100, then strip non-allowed chars
+  let city: string | undefined;
+  if (rawCity && rawCity.length <= 100) {
+    const cleaned = rawCity.replace(CITY_ALLOWED_CHARS_RE, '').trim();
+    city = cleaned || undefined;
+  }
+
+  // duration: must be in allowlist
+  let duration: number | undefined;
+  if (rawDuration) {
+    const parsed = parseInt(rawDuration, 10);
+    if (!isNaN(parsed) && (ALLOWED_DURATIONS as readonly number[]).includes(parsed)) {
+      duration = parsed;
+    }
+  }
+
+  // seller_rating: integer in range [1, 5]
+  let sellerRating: number | undefined;
+  if (rawSellerRating) {
+    const parsed = parseInt(rawSellerRating, 10);
+    if (!isNaN(parsed) && parsed >= 1 && parsed <= 5) {
+      sellerRating = parsed;
+    }
+  }
+
   return {
     minPrice: !Number.isNaN(parsedMin) && parsedMin >= 0 ? String(parsedMin) : undefined,
     maxPrice: !Number.isNaN(parsedMax) && parsedMax >= 0 ? String(parsedMax) : undefined,
-    tagId: rawTagId && (UUID_RE.test(rawTagId) || ALPHANUMERIC_RE.test(rawTagId)) ? rawTagId : undefined,
-    categoryHandle: rawCategoryHandle && HANDLE_RE.test(rawCategoryHandle) ? rawCategoryHandle : undefined
+    tagId: rawTagId && rawTagId.length <= 100 && (UUID_RE.test(rawTagId) || ALPHANUMERIC_RE.test(rawTagId)) ? rawTagId : undefined,
+    categoryHandle: rawCategoryHandle && HANDLE_RE.test(rawCategoryHandle) ? rawCategoryHandle : undefined,
+    city,
+    duration,
+    sellerRating
   };
 }
 
@@ -66,14 +101,18 @@ export const ProductListing = async ({
   searchParams?: Record<string, string | string[] | undefined>;
 }) => {
   // Resolve & sanitize filter params from URL search params
-  const { categoryHandle, minPrice, maxPrice, tagId } = sanitizeSearchParams(searchParams);
+  const { categoryHandle, minPrice, maxPrice, tagId, city, duration, sellerRating } = sanitizeSearchParams(searchParams);
+
+  // ADR-046: resolve country code from cookie, not from locale URL segment
+  const countryCode = await getCountryCode(locale);
+  const t = await getTranslations('filters');
 
   // Fetch market config for storefront filters
   const marketId = getMarketId();
   const storefrontFilters: StorefrontFilterConfig[] = [];
   let categories: Category[] = [];
-  const tags: Tag[] = [];
-  const cities: string[] = [];
+  let tags: Tag[] = [];
+  let cities: string[] = [];
 
   if (showSidebar && marketId) {
     try {
@@ -87,8 +126,16 @@ export const ProductListing = async ({
         categories = cats.map(c => ({ id: c.id, name: c.name, handle: c.handle }));
       }
 
-      // TODO(v1.2.0): fetch tags from /store/product-tags when tag_group filter is configured
-      // TODO(v1.2.0): fetch vendor cities from /store/sellers when location filter is configured
+      const needsTags = rawFilters.some(f => f.type === 'tag_group');
+      if (needsTags) {
+        const tagGroupFilter = rawFilters.find(f => f.type === 'tag_group');
+        tags = await listProductTags(tagGroupFilter?.tag_group);
+      }
+
+      const needsCities = rawFilters.some(f => f.type === 'location');
+      if (needsCities) {
+        cities = await listSellerCities();
+      }
     } catch {
       // Sidebar filters not critical — listing still works without them
     }
@@ -112,12 +159,33 @@ export const ProductListing = async ({
     seller_id,
     category_id: resolvedCategoryId,
     collection_id,
-    countryCode: locale,
+    countryCode,
     sortBy: 'created_at',
-    queryParams
+    queryParams,
+    city
   });
 
-  const { products } = await response;
+  let { products } = await response;
+
+  // v1.1.0 client-side filtering for duration and seller_rating.
+  // TODO(v1.2.0): move to server-side query once Medusa custom query extensions are ready.
+  const clientFiltersActive = duration !== undefined || sellerRating !== undefined;
+
+  if (duration !== undefined) {
+    products = products.filter(product =>
+      product.variants?.some(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (variant: any) => Number(variant.metadata?.duration) === duration
+      )
+    );
+  }
+
+  if (sellerRating !== undefined) {
+    products = products.filter(product => {
+      const avgRating = (product as any).seller?.avg_rating;
+      return avgRating !== undefined ? Number(avgRating) >= sellerRating : false;
+    });
+  }
 
   const count = products.length;
 
@@ -132,6 +200,11 @@ export const ProductListing = async ({
       <div className="hidden md:block">
         <ProductListingActiveFilters />
       </div>
+      {clientFiltersActive && (
+        <p className="text-sm text-secondary mt-2 px-1" data-testid="client-filter-hint">
+          {t('client_filter_hint')}
+        </p>
+      )}
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
         {showSidebar && (
           <ProductSidebar
@@ -151,7 +224,7 @@ export const ProductListing = async ({
           >
             <ProductsList products={products} />
           </div>
-          <ProductsPagination pages={pages} />
+          {!clientFiltersActive && <ProductsPagination pages={pages} />}
         </section>
       </div>
     </div>

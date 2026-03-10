@@ -8,15 +8,17 @@ import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import type { Wishlist as WishlistType } from '@/types/wishlist';
 
 export default async function Wishlist({ params }: { params: Promise<{ locale: string }> }) {
   const user = await retrieveCustomer();
   const { locale } = await params;
 
+  const countryCode = await getCountryCode(locale);
   let wishlist: WishlistType = { products: [] };
   if (user) {
-    wishlist = await getUserWishlists({ countryCode: locale });
+    wishlist = await getUserWishlists({ countryCode });
   }
 
   const count = wishlist?.products?.length || 0;

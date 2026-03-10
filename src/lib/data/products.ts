@@ -129,7 +129,8 @@ export const listProductsWithSort = async ({
   countryCode,
   category_id,
   seller_id,
-  collection_id
+  collection_id,
+  city
 }: {
   page?: number;
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
@@ -138,6 +139,7 @@ export const listProductsWithSort = async ({
   category_id?: string;
   seller_id?: string;
   collection_id?: string;
+  city?: string;
 }): Promise<{
   response: {
     products: HttpTypes.StoreProduct[];
@@ -161,9 +163,22 @@ export const listProductsWithSort = async ({
     countryCode
   });
 
-  const filteredProducts = seller_id
-    ? products.filter(product => product.seller?.id === seller_id)
+  // Filter by seller_id if provided (e.g. seller storefront page)
+  let filteredBySeller = seller_id
+    ? products.filter(product => (product as any).seller?.id === seller_id)
     : products;
+
+  // v1.1.0: city filter — client-side by seller city (case/unicode-insensitive)
+  // TODO(v1.2.0): move to server-side via /store/sellers?city= → seller_ids query
+  const normalizedCity = city?.trim().toLowerCase().normalize('NFC');
+  const filteredProducts = normalizedCity
+    ? filteredBySeller.filter(product => {
+        const sellerCity = (product as any).seller?.city;
+        return typeof sellerCity === 'string'
+          ? sellerCity.trim().toLowerCase().normalize('NFC') === normalizedCity
+          : false;
+      })
+    : filteredBySeller;
 
   const pricedProducts = filteredProducts.filter(prod =>
     prod.variants?.some(variant => variant.calculated_price !== null)
@@ -180,11 +195,53 @@ export const listProductsWithSort = async ({
   return {
     response: {
       products: paginatedProducts,
-      count
+      // Use post-filter count (seller_id + city applied above), not backend total
+      count: sortedProducts.length
     },
     nextPage,
     queryParams
   };
+};
+
+/**
+ * Fetches product tags scoped to the current sales channel.
+ * Optional `tagGroup` parameter for future server-side group filtering.
+ */
+export const listProductTags = async (tagGroup?: string): Promise<Array<{ id: string; value: string; label: string }>> => {
+  const query = tagGroup ? `?tag_group=${encodeURIComponent(tagGroup)}` : '';
+  return sdk.client
+    .fetch<{ tags: Array<{ id: string; value: string; label: string }> }>(
+      `/store/product-tags${query}`,
+      {
+        method: 'GET',
+        cache: 'no-cache'
+      }
+    )
+    .then(({ tags }) => tags ?? [])
+    .catch((error) => {
+      console.error('[products] listProductTags failed:', error?.message || error);
+      return [];
+    });
+};
+
+/**
+ * Fetches distinct seller cities scoped to the current sales channel.
+ * Used by LocationFilter to populate city dropdown options.
+ */
+export const listSellerCities = async (): Promise<string[]> => {
+  return sdk.client
+    .fetch<{ cities: string[] }>(
+      `/store/sellers/cities`,
+      {
+        method: 'GET',
+        cache: 'no-cache'
+      }
+    )
+    .then(({ cities }) => cities ?? [])
+    .catch((error) => {
+      console.error('[products] listSellerCities failed:', error?.message || error);
+      return [];
+    });
 };
 
 export const searchProducts = async (params: {

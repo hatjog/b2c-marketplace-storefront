@@ -12,6 +12,7 @@ import { ProductListing } from '@/components/sections/ProductListing/ProductList
 import { getCategoryByHandle } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
 import { getRegion, listRegions } from '@/lib/data/regions';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import isBot from '@/lib/helpers/isBot';
 
@@ -92,7 +93,8 @@ async function Category({
   if (!category) {
     return notFound();
   }
-  const currency_code = (await getRegion(locale))?.currency_code || 'usd';
+  const countryCode = await getCountryCode(locale);
+  const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
   const ua = (await headers()).get('user-agent') || '';
   const bot = isBot(ua);
 
@@ -111,7 +113,7 @@ async function Category({
   const {
     response: { products: jsonLdProducts }
   } = await listProducts({
-    countryCode: locale,
+    countryCode,
     queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' },
     category_id: category.id
   });
@@ -177,6 +179,7 @@ async function Category({
           <AlgoliaProductsListing
             category_id={category.id}
             locale={locale}
+            countryCode={countryCode}
             currency_code={currency_code}
           />
         )}

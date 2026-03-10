@@ -28,11 +28,13 @@ const optionsAsKeymap = (variantOptions: HttpTypes.StoreProductVariant['options'
 export const ProductDetailsHeader = ({
   product,
   locale,
+  countryCode,
   user,
   wishlist
 }: {
   product: HttpTypes.StoreProduct & { seller?: SellerProps };
   locale: string;
+  countryCode: string;
   user: HttpTypes.StoreCustomer | null;
   wishlist?: Wishlist;
 }) => {
@@ -102,7 +104,7 @@ export const ProductDetailsHeader = ({
       await addToCart({
         variantId: variantId,
         quantity: 1,
-        countryCode: locale
+        countryCode
       });
     } catch {
       toast.error({

@@ -1,6 +1,7 @@
 import NotFound from '@/app/not-found';
 import { ProductDetails, ProductGallery } from '@/components/organisms';
 import { listProducts } from '@/lib/data/products';
+import { getCountryCode } from '@/lib/helpers/country-code';
 
 import { HomeProductSection } from '../HomeProductSection/HomeProductSection';
 
@@ -11,8 +12,9 @@ export const ProductDetailsPage = async ({
   handle: string;
   locale: string;
 }) => {
+  const countryCode = await getCountryCode(locale);
   const prod = await listProducts({
-    countryCode: locale,
+    countryCode,
     queryParams: { handle: [handle], limit: 1 },
     forceCache: true
   }).then(({ response }) => response.products[0]);

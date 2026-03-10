@@ -1,17 +1,33 @@
 'use client';
 
+import { Fragment } from 'react';
+
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+  Transition
+} from '@headlessui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import ReactCountryFlag from 'react-country-flag';
 
-import { SUPPORTED_LOCALES, isSupportedLocale } from '@/i18n/routing';
+import { isSupportedLocale } from '@/i18n/routing';
+
+type LanguageOption = {
+  code: string;
+  label: string;
+  flagCode: string;
+};
+
+const LANGUAGE_OPTIONS: LanguageOption[] = [
+  { code: 'pl', label: 'Polski', flagCode: 'PL' },
+  { code: 'en', label: 'English', flagCode: 'GB' }
+];
 
 type LanguageSwitcherProps = {
   currentLocale: string;
-};
-
-const LANG_LABELS: Record<string, string> = {
-  pl: 'PL',
-  en: 'EN'
 };
 
 export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
@@ -19,42 +35,79 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   const router = useRouter();
   const t = useTranslations('header');
 
-  const switchToLocale = (newLocale: string) => {
-    if (newLocale === currentLocale) return;
+  const currentOption =
+    LANGUAGE_OPTIONS.find(o => o.code === currentLocale) ?? LANGUAGE_OPTIONS[0];
 
-    // Replace current locale segment in path with new locale
+  const switchToLocale = (option: LanguageOption) => {
+    if (!isSupportedLocale(option.code)) return;
+    if (option.code === currentLocale) return;
+
     const segments = pathname.split('/');
     if (segments[1] && isSupportedLocale(segments[1])) {
-      segments[1] = newLocale;
+      segments[1] = option.code;
     } else {
-      segments.splice(1, 0, newLocale);
+      segments.splice(1, 0, option.code);
     }
-    const newPath = segments.join('/') || `/${newLocale}`;
+    const newPath = segments.join('/') || `/${option.code}`;
     router.push(newPath);
     router.refresh();
   };
 
   return (
     <div
-      className="flex items-center gap-1"
+      className="relative"
       data-testid="language-switcher"
-      aria-label={t('language_switcher_label')}
     >
-      {SUPPORTED_LOCALES.map(lang => (
-        <button
-          key={lang}
-          onClick={() => switchToLocale(lang)}
-          aria-pressed={lang === currentLocale}
-          data-testid={`lang-btn-${lang}`}
-          className={`text-sm font-medium px-1 py-0.5 rounded transition-colors ${
-            lang === currentLocale
-              ? 'text-primary font-bold underline'
-              : 'text-secondary hover:text-primary'
-          }`}
+      <Listbox
+        value={currentOption}
+        onChange={switchToLocale}
+      >
+        <ListboxButton
+          className="text-base-regular relative flex h-10 w-16 cursor-default items-center justify-between rounded-lg border bg-component-secondary text-left focus:outline-none focus-visible:border-gray-300 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-300"
+          aria-label={t('language_switcher_label')}
         >
-          {LANG_LABELS[lang] ?? lang.toUpperCase()}
-        </button>
-      ))}
+          <span className="txt-compact-small mx-auto flex items-center gap-x-2">
+            {/* @ts-ignore */}
+            <ReactCountryFlag
+              alt={`${currentOption.flagCode} flag`}
+              svg
+              style={{ width: '16px', height: '16px' }}
+              countryCode={currentOption.flagCode}
+            />
+            {currentOption.code.toUpperCase()}
+          </span>
+        </ListboxButton>
+
+        <div className="relative flex w-16">
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <ListboxOptions className="no-scrollbar text-small-regular border-top-0 absolute z-20 max-h-60 overflow-auto rounded-lg border bg-white focus:outline-none sm:text-sm">
+              {LANGUAGE_OPTIONS.map(option => (
+                <ListboxOption
+                  key={option.code}
+                  value={option}
+                  className="relative w-16 cursor-pointer select-none border-b py-2 hover:bg-gray-50"
+                  data-testid={`lang-option-${option.code}`}
+                >
+                  <span className="flex items-center gap-x-2 pl-2">
+                    {/* @ts-ignore */}
+                    <ReactCountryFlag
+                      svg
+                      style={{ width: '16px', height: '16px' }}
+                      countryCode={option.flagCode}
+                    />
+                    {option.label}
+                  </span>
+                </ListboxOption>
+              ))}
+            </ListboxOptions>
+          </Transition>
+        </div>
+      </Listbox>
     </div>
   );
 }

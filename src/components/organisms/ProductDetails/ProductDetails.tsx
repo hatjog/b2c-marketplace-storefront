@@ -10,6 +10,7 @@ import {
 } from '@/components/cells';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import type { AdditionalAttributeProps } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
@@ -26,9 +27,10 @@ export const ProductDetails = async ({
 }) => {
   const user = await retrieveCustomer();
 
+  const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
   if (user) {
-    wishlist = await getUserWishlists({ countryCode: locale });
+    wishlist = await getUserWishlists({ countryCode });
   }
 
   return (
@@ -36,6 +38,7 @@ export const ProductDetails = async ({
       <ProductDetailsHeader
         product={product}
         locale={locale}
+        countryCode={countryCode}
         user={user}
         wishlist={wishlist}
       />

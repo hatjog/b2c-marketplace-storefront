@@ -3,19 +3,20 @@
 import { Accordion, FilterCheckboxOption } from '@/components/molecules';
 import useFilters from '@/hooks/useFilters';
 
-const DURATION_OPTIONS = [
-  { value: '30', label: '30 min' },
-  { value: '45', label: '45 min' },
-  { value: '60', label: '60 min' },
-  { value: '90', label: '90 min' },
-];
+const DEFAULT_DURATION_OPTIONS = [30, 45, 60, 90];
 
 type DurationFilterProps = {
   heading: string;
+  durationOptions?: number[];
 };
 
-export const DurationFilter = ({ heading }: DurationFilterProps) => {
+export const DurationFilter = ({ heading, durationOptions }: DurationFilterProps) => {
   const { updateFilters, isFilterActive } = useFilters('duration');
+
+  const options = (durationOptions ?? DEFAULT_DURATION_OPTIONS).map(minutes => ({
+    value: String(minutes),
+    label: `${minutes} min`
+  }));
 
   return (
     <Accordion
@@ -26,7 +27,7 @@ export const DurationFilter = ({ heading }: DurationFilterProps) => {
         className="px-4"
         data-testid="filter-duration-options"
       >
-        {DURATION_OPTIONS.map(({ value, label }) => (
+        {options.map(({ value, label }) => (
           <li
             key={value}
             className="mb-4"

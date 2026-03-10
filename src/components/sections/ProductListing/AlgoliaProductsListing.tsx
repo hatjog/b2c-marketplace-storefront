@@ -26,11 +26,13 @@ export const AlgoliaProductsListing = ({
   collection_id,
   seller_handle,
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION,
+  countryCode,
   currency_code
 }: {
   category_id?: string;
   collection_id?: string;
   locale?: string;
+  countryCode: string;
   seller_handle?: string;
   currency_code: string;
 }) => {
@@ -44,7 +46,7 @@ export const AlgoliaProductsListing = ({
     seller_handle
       ? `NOT seller:null AND seller.handle:${seller_handle} AND `
       : 'NOT seller:null AND '
-  }NOT seller.store_status:SUSPENDED AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code} AND variants.prices.amount > 0${
+  }NOT seller.store_status:SUSPENDED AND supported_countries:${countryCode} AND variants.prices.currency_code:${currency_code} AND variants.prices.amount > 0${
     category_id
       ? ` AND categories.id:${category_id}${
           collection_id !== undefined ? ` AND collections.id:${collection_id}` : ''
@@ -55,6 +57,7 @@ export const AlgoliaProductsListing = ({
   return (
     <ProductsListing
       locale={locale}
+      countryCode={countryCode}
       currency_code={currency_code}
       filters={filters}
       query={query}
@@ -65,12 +68,14 @@ export const AlgoliaProductsListing = ({
 
 const ProductsListing = ({
   locale,
+  countryCode,
   currency_code,
   filters,
   query,
   page
 }: {
   locale?: string;
+  countryCode: string;
   currency_code: string;
   filters: string;
   query: string;
@@ -86,7 +91,7 @@ const ProductsListing = ({
 
   useEffect(() => {
     async function fetchProducts() {
-      if (!locale) return;
+      if (!countryCode) return;
 
       try {
         setIsLoading(true);
@@ -96,7 +101,7 @@ const ProductsListing = ({
           hitsPerPage: PRODUCT_LIMIT,
           filters,
           currency_code,
-          countryCode: locale
+          countryCode
         });
 
         setProducts(result.products);

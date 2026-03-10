@@ -10,6 +10,7 @@ import { AlgoliaProductsListing } from '@/components/sections/ProductListing/Alg
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 import { listProducts } from '@/lib/data/products';
 import { getRegion, listRegions } from '@/lib/data/regions';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import isBot from '@/lib/helpers/isBot';
 
@@ -85,7 +86,8 @@ async function AllCategories({
     }
   ];
 
-  const currency_code = (await getRegion(locale))?.currency_code || 'usd';
+  const countryCode = await getCountryCode(locale);
+  const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
 
   // Fetch a small cached list for ItemList JSON-LD
   const headersList = await headers();
@@ -95,7 +97,7 @@ async function AllCategories({
   const {
     response: { products: jsonLdProducts }
   } = await listProducts({
-    countryCode: locale,
+    countryCode,
     queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' }
   });
 
@@ -159,6 +161,7 @@ async function AllCategories({
         ) : (
           <AlgoliaProductsListing
             locale={locale}
+            countryCode={countryCode}
             currency_code={currency_code}
           />
         )}

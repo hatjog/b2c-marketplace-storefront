@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { ProductDetailsPage } from '@/components/sections';
 import { listProducts } from '@/lib/data/products';
 import { generateProductMetadata } from '@/lib/helpers/seo';
+import { getCountryCode } from '@/lib/helpers/country-code';
 
 export async function generateMetadata({
   params
@@ -11,8 +12,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle, locale } = await params;
 
+  const countryCode = await getCountryCode(locale);
   const prod = await listProducts({
-    countryCode: locale,
+    countryCode,
     queryParams: { handle: [handle], limit: 1 },
     forceCache: true
   }).then(({ response }) => response.products[0]);

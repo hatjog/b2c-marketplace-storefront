@@ -19,6 +19,8 @@
     "logo_alt": "Logo",
     "shipping_to": "Shipping to",
     "language_switcher_label": "Select language",
+    "language_polish": "Polish",
+    "language_english": "English",
     "search_placeholder": "Search products...",
     "cart": "Cart",
     "wishlist": "Wishlist",
@@ -62,7 +64,8 @@
     "in_stock": "In stock",
     "apply": "Apply",
     "clear": "Clear",
-    "results": "results"
+    "results": "results",
+    "client_filter_hint": "Filtering applies to the first 100 results on this page"
   },
   "products": {
     "add_to_cart": "Add to cart",

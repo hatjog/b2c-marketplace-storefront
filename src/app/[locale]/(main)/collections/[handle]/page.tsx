@@ -11,6 +11,7 @@ import { ProductListing } from '@/components/sections/ProductListing/ProductList
 import { getCollectionPhotoUrl } from '@/lib/collection-media';
 import { getCollectionByHandle } from '@/lib/data/collections';
 import { getRegion } from '@/lib/data/regions';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import isBot from '@/lib/helpers/isBot';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
@@ -86,7 +87,8 @@ const SingleCollectionsPage = async ({
 
   if (!collection) return <NotFound />;
 
-  const currency_code = (await getRegion(locale))?.currency_code || 'usd';
+  const countryCode = await getCountryCode(locale);
+  const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
   const collectionPhotoUrl = getCollectionPhotoUrl(collection);
 
   const breadcrumbsItems = [
@@ -136,6 +138,7 @@ const SingleCollectionsPage = async ({
           <AlgoliaProductsListing
             collection_id={collection.id}
             locale={locale}
+            countryCode={countryCode}
             currency_code={currency_code}
           />
         )}

@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types';
 
 import { Carousel } from '@/components/cells';
 import { listProducts } from '@/lib/data/products';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import type { Product } from '@/types/product';
 
 import { ProductCard } from '../ProductCard/ProductCard';
@@ -15,11 +16,12 @@ export const HomeProductsCarousel = async ({
   sellerProducts: (Product | HttpTypes.StoreProduct)[];
   home: boolean;
 }) => {
+  const countryCode = await getCountryCode(locale);
   const products = sellerProducts.length
     ? sellerProducts
     : (
         await listProducts({
-          countryCode: locale,
+          countryCode,
           queryParams: {
             limit: home ? 4 : undefined,
             order: 'created_at',
