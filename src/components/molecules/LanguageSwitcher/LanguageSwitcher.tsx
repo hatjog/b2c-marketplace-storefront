@@ -26,6 +26,9 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'en', label: 'English', flagCode: 'GB' }
 ];
 
+const LANGUAGE_SWITCHER_BUTTON_ID = 'language-switcher-button';
+const LANGUAGE_SWITCHER_OPTIONS_ID = 'language-switcher-options';
+
 type LanguageSwitcherProps = {
   currentLocale: string;
 };
@@ -63,6 +66,7 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
         onChange={switchToLocale}
       >
         <ListboxButton
+          id={LANGUAGE_SWITCHER_BUTTON_ID}
           className="text-base-regular relative flex h-10 w-16 cursor-default items-center justify-between rounded-lg border bg-component-secondary text-left focus:outline-none focus-visible:border-gray-300 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-300"
           aria-label={t('language_switcher_label')}
         >
@@ -85,9 +89,13 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <ListboxOptions className="no-scrollbar text-small-regular border-top-0 absolute z-20 max-h-60 overflow-auto rounded-lg border bg-white focus:outline-none sm:text-sm">
+            <ListboxOptions
+              id={LANGUAGE_SWITCHER_OPTIONS_ID}
+              className="no-scrollbar text-small-regular border-top-0 absolute z-20 max-h-60 overflow-auto rounded-lg border bg-white focus:outline-none sm:text-sm"
+            >
               {LANGUAGE_OPTIONS.map(option => (
                 <ListboxOption
+                  id={`language-switcher-option-${option.code}`}
                   key={option.code}
                   value={option}
                   className="relative w-16 cursor-pointer select-none border-b py-2 hover:bg-gray-50"

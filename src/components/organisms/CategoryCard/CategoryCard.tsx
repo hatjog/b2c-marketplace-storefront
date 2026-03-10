@@ -20,6 +20,7 @@ export function CategoryCard({ category }: { category: { name: string; handle: s
     <LocalizedClientLink
       href={`/categories/${category.handle}`}
       className="relative flex aspect-square w-[233px] flex-col items-center rounded-sm border bg-component transition-all hover:rounded-full"
+      data-testid="category-item"
     >
       <div className="relative flex aspect-square w-[200px] overflow-hidden">
         <Image

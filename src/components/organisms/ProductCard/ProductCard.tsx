@@ -10,6 +10,28 @@ import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types/product';
 
+const PLACEHOLDER_CDN_HOST = 'cdn.example.com';
+const PLACEHOLDER_IMAGE_SRC = '/images/placeholder.svg';
+
+function resolveThumbnailSrc(thumbnail: string | null | undefined) {
+  if (!thumbnail) {
+    return PLACEHOLDER_IMAGE_SRC;
+  }
+
+  const decodedThumbnail = decodeURIComponent(thumbnail);
+
+  try {
+    const parsedUrl = new URL(decodedThumbnail);
+    if (parsedUrl.hostname === PLACEHOLDER_CDN_HOST) {
+      return PLACEHOLDER_IMAGE_SRC;
+    }
+
+    return decodedThumbnail;
+  } catch {
+    return decodedThumbnail.startsWith('/') ? decodedThumbnail : PLACEHOLDER_IMAGE_SRC;
+  }
+}
+
 export const ProductCard = ({
   product,
   className
@@ -26,6 +48,8 @@ export const ProductCard = ({
   const { cheapestPrice } = getProductPrice({ product: product as HttpTypes.StoreProduct });
 
   const productName = String(product.title || t('fallback_name'));
+  const thumbnailSrc = resolveThumbnailSrc(product.thumbnail);
+  const usesPlaceholderImage = thumbnailSrc === PLACEHOLDER_IMAGE_SRC;
 
   return (
     <div
@@ -33,7 +57,7 @@ export const ProductCard = ({
         'group relative flex w-full min-w-[250px] flex-col justify-between rounded-sm border p-1 lg:w-[calc(25%-1rem)]',
         className
       )}
-      data-testid="product-card"
+      data-testid="product-item"
       data-product-handle={product.handle}
     >
       <div
@@ -45,13 +69,14 @@ export const ProductCard = ({
           aria-label={t('view_aria', { name: productName })}
           title={t('view_aria', { name: productName })}
           data-testid="product-card-link"
+          data-product-handle={product.handle}
         >
           <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-sm">
-            {product.thumbnail ? (
+            {!usesPlaceholderImage ? (
               <Image
                 priority
                 fetchPriority="high"
-                src={decodeURIComponent(product.thumbnail)}
+                src={thumbnailSrc}
                 alt={t('image_alt', { name: productName })}
                 width={100}
                 height={100}
@@ -63,7 +88,7 @@ export const ProductCard = ({
               <Image
                 priority
                 fetchPriority="high"
-                src="/images/placeholder.svg"
+                src={PLACEHOLDER_IMAGE_SRC}
                 alt={t('image_placeholder_alt', { name: productName })}
                 width={100}
                 height={100}

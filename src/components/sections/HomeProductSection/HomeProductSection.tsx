@@ -19,7 +19,10 @@ export const HomeProductSection = async ({
   const resolvedMaxItems = Math.max(1, maxItems);
 
   return (
-    <section className="w-full py-8">
+    <section
+      className="w-full py-8"
+      data-testid="products-carousel"
+    >
       <h2 className="heading-lg mb-6 font-bold uppercase tracking-tight">{heading}</h2>
       <HomeProductsCarousel
         locale={locale}

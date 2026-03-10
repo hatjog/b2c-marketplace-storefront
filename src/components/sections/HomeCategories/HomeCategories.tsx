@@ -41,7 +41,10 @@ export const HomeCategories = async ({
   const categoriesToRender = sectionCategories?.length ? sectionCategories : categories;
 
   return (
-    <section className="w-full bg-primary py-8">
+    <section
+      className="w-full bg-primary py-8"
+      data-testid="categories-grid"
+    >
       <div className="mb-6">
         <h2 className="heading-lg uppercase text-primary">{heading}</h2>
       </div>

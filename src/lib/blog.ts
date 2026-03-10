@@ -171,13 +171,17 @@ export function getBlogDescription(page: PayloadPage) {
 }
 
 export function getBlogHref(page: PayloadPage) {
+  const slug = page.slug?.trim();
+  if (slug) {
+    return `/blog/${slug}`;
+  }
+
   const canonicalUrl = page.canonicalUrl?.trim();
   if (canonicalUrl && canonicalUrl.startsWith('/')) {
     return canonicalUrl;
   }
 
-  const slug = page.slug?.trim();
-  return slug ? `/blog/${slug}` : '#';
+  return '#';
 }
 
 export function mapPayloadPageToBlogPost(page: PayloadPage, index: number): BlogPost {
