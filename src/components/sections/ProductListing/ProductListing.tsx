@@ -165,8 +165,7 @@ export const ProductListing = async ({
 
   const queryParams: HttpTypes.FindParams & HttpTypes.StoreProductParams = {
     ...(minPrice ? { min_price: minPrice } : {}),
-    ...(maxPrice ? { max_price: maxPrice } : {}),
-    ...(tagIds.length > 0 ? { tag_id: tagIds } : {})
+    ...(maxPrice ? { max_price: maxPrice } : {})
   };
 
   const { response } = await listProductsWithSort({
@@ -179,10 +178,18 @@ export const ProductListing = async ({
     cities
   });
 
-  // v1.1.0 client-side filtering for duration and seller_rating.
+  // v1.1.0 client-side filtering for tag_group, duration, and seller_rating.
   // listProductsWithSort returns ALL products; we filter and slice here.
   // TODO(v1.2.0): move to server-side query once Medusa custom query extensions are ready.
   let filteredProducts = response.products;
+
+  if (tagIds.length > 0) {
+    filteredProducts = filteredProducts.filter(product =>
+      (product as any).tags?.some(
+        (tag: { id: string }) => tagIds.includes(tag.id)
+      )
+    );
+  }
 
   if (durations.length > 0) {
     filteredProducts = filteredProducts.filter(product =>
