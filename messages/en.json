@@ -65,7 +65,9 @@
     "apply": "Apply",
     "clear": "Clear",
     "results": "results",
-    "client_filter_hint": "Filtering applies to the first 100 results on this page"
+    "client_filter_hint": "Filtering applies to the first 100 results on this page",
+    "no_results": "No results for selected filters",
+    "rating_disclaimer": "Excludes listings without ratings"
   },
   "products": {
     "add_to_cart": "Add to cart",

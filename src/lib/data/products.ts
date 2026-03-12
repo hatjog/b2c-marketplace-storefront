@@ -1,5 +1,6 @@
 'use server';
 
+import * as Sentry from '@sentry/nextjs';
 import type { HttpTypes } from '@medusajs/types';
 
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
@@ -118,28 +119,29 @@ export const listProducts = async ({
     });
 };
 
+const FETCH_LIMIT = 100;
+const PRODUCT_HARD_CAP = 1000;
+
 /**
- * This will fetch 100 products to the Next.js cache and sort them based on the sortBy parameter.
- * It will then return the paginated products based on the page and limit parameters.
+ * Fetches ALL products (paginated fetch-all, hard cap 1000), applies city filter and sort,
+ * and returns the full filtered+sorted list. Slicing for display happens in the caller.
  */
 export const listProductsWithSort = async ({
-  page = 1,
   queryParams,
   sortBy = 'created_at',
   countryCode,
   category_id,
   seller_id,
   collection_id,
-  city
+  cities
 }: {
-  page?: number;
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
   sortBy?: SortOptions;
   countryCode: string;
   category_id?: string;
   seller_id?: string;
   collection_id?: string;
-  city?: string;
+  cities?: string[];
 }): Promise<{
   response: {
     products: HttpTypes.StoreProduct[];
@@ -148,34 +150,73 @@ export const listProductsWithSort = async ({
   nextPage: number | null;
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
 }> => {
-  const limit = queryParams?.limit || 12;
-
-  const {
-    response: { products, count }
-  } = await listProducts({
+  // First fetch to discover total count
+  const firstResult = await listProducts({
     pageParam: 1,
-    queryParams: {
-      ...queryParams,
-      limit: 100
-    },
+    queryParams: { ...queryParams, limit: FETCH_LIMIT },
     category_id,
     collection_id,
     countryCode
   });
 
+  const backendCount = firstResult.response.count;
+
+  if (backendCount > 500) {
+    console.warn('[GP] Product count exceeds 500, consider Algolia migration');
+  }
+
+  if (backendCount > PRODUCT_HARD_CAP) {
+    Sentry.captureMessage('[GP] Product count exceeds 1000, hard cap applied', 'error');
+  }
+
+  const cappedCount = Math.min(backendCount, PRODUCT_HARD_CAP);
+  let allProducts = [...firstResult.response.products];
+
+  // Fetch remaining pages in parallel
+  if (cappedCount > FETCH_LIMIT) {
+    const totalPages = Math.ceil(cappedCount / FETCH_LIMIT);
+    const remainingPageNums = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+
+    const results = await Promise.allSettled(
+      remainingPageNums.map(pageNum =>
+        listProducts({
+          pageParam: pageNum,
+          queryParams: { ...queryParams, limit: FETCH_LIMIT },
+          category_id,
+          collection_id,
+          countryCode
+        })
+      )
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allProducts.push(...result.value.response.products);
+      } else {
+        console.error('[products] listProductsWithSort parallel fetch failed:', result.reason);
+      }
+    }
+  }
+
+  // Deduplicate by product.id (guards against race condition between fetches)
+  const deduped = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
+
   // Filter by seller_id if provided (e.g. seller storefront page)
-  let filteredBySeller = seller_id
-    ? products.filter(product => (product as any).seller?.id === seller_id)
-    : products;
+  const filteredBySeller = seller_id
+    ? deduped.filter(product => (product as any).seller?.id === seller_id)
+    : deduped;
 
   // v1.1.0: city filter — client-side by seller city (case/unicode-insensitive)
   // TODO(v1.2.0): move to server-side via /store/sellers?city= → seller_ids query
-  const normalizedCity = city?.trim().toLowerCase().normalize('NFC');
-  const filteredProducts = normalizedCity
+  const normalizedCities = (cities ?? [])
+    .map(c => c.trim().toLowerCase().normalize('NFC'))
+    .filter(Boolean);
+
+  const filteredProducts = normalizedCities.length > 0
     ? filteredBySeller.filter(product => {
         const sellerCity = (product as any).seller?.city;
         return typeof sellerCity === 'string'
-          ? sellerCity.trim().toLowerCase().normalize('NFC') === normalizedCity
+          ? normalizedCities.includes(sellerCity.trim().toLowerCase().normalize('NFC'))
           : false;
       })
     : filteredBySeller;
@@ -186,19 +227,12 @@ export const listProductsWithSort = async ({
 
   const sortedProducts = sortProducts(pricedProducts, sortBy);
 
-  const pageParam = (page - 1) * limit;
-
-  const nextPage = sortedProducts.length > pageParam + limit ? page + 1 : null;
-
-  const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit);
-
   return {
     response: {
-      products: paginatedProducts,
-      // Use post-filter count (seller_id + city applied above), not backend total
+      products: sortedProducts,
       count: sortedProducts.length
     },
-    nextPage,
+    nextPage: null,
     queryParams
   };
 };

@@ -15,6 +15,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { getTranslations } from 'next-intl/server';
+import { ClearFiltersButton } from './ClearFiltersButton';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
@@ -37,43 +38,57 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
   const rawCity = raw('city');
   const rawDuration = raw('duration');
   const rawSellerRating = raw('seller_rating');
+  const rawPage = raw('page');
 
   const parsedMin = rawMin != null ? Number(rawMin) : NaN;
   const parsedMax = rawMax != null ? Number(rawMax) : NaN;
 
-  // city: max length 100, then strip non-allowed chars
-  let city: string | undefined;
-  if (rawCity && rawCity.length <= 100) {
-    const cleaned = rawCity.replace(CITY_ALLOWED_CHARS_RE, '').trim();
-    city = cleaned || undefined;
-  }
+  // cities: split by comma, validate each element (max 100 chars, strip non-allowed chars)
+  const cities: string[] = rawCity
+    ? rawCity
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(c => (c.length <= 100 ? c.replace(CITY_ALLOWED_CHARS_RE, '').trim() : ''))
+        .filter(Boolean)
+    : [];
 
-  // duration: must be in allowlist
-  let duration: number | undefined;
-  if (rawDuration) {
-    const parsed = parseInt(rawDuration, 10);
-    if (!isNaN(parsed) && (ALLOWED_DURATIONS as readonly number[]).includes(parsed)) {
-      duration = parsed;
-    }
-  }
+  // durations: split by comma, parseInt each, validate against allowlist
+  const durations: number[] = rawDuration
+    ? rawDuration
+        .split(',')
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => !isNaN(n) && (ALLOWED_DURATIONS as readonly number[]).includes(n))
+    : [];
 
-  // seller_rating: integer in range [1, 5]
-  let sellerRating: number | undefined;
-  if (rawSellerRating) {
-    const parsed = parseInt(rawSellerRating, 10);
-    if (!isNaN(parsed) && parsed >= 1 && parsed <= 5) {
-      sellerRating = parsed;
-    }
-  }
+  // sellerRatings: split by comma, parseInt each, validate range [1, 5]
+  const sellerRatings: number[] = rawSellerRating
+    ? rawSellerRating
+        .split(',')
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => !isNaN(n) && n >= 1 && n <= 5)
+    : [];
+
+  // tagIds: split by comma, validate each as UUID or alphanumeric
+  const tagIds: string[] = rawTagId
+    ? rawTagId
+        .split(',')
+        .map(s => s.trim())
+        .filter(id => Boolean(id) && (UUID_RE.test(id) || ALPHANUMERIC_RE.test(id)))
+    : [];
+
+  // page: integer [1, 999]
+  const page = rawPage ? Math.max(1, Math.min(999, parseInt(rawPage, 10) || 1)) : 1;
 
   return {
     minPrice: !Number.isNaN(parsedMin) && parsedMin >= 0 ? String(parsedMin) : undefined,
     maxPrice: !Number.isNaN(parsedMax) && parsedMax >= 0 ? String(parsedMax) : undefined,
-    tagId: rawTagId && rawTagId.length <= 100 && (UUID_RE.test(rawTagId) || ALPHANUMERIC_RE.test(rawTagId)) ? rawTagId : undefined,
+    tagIds,
     categoryHandle: rawCategoryHandle && HANDLE_RE.test(rawCategoryHandle) ? rawCategoryHandle : undefined,
-    city,
-    duration,
-    sellerRating
+    cities,
+    durations,
+    sellerRatings,
+    page
   };
 }
 
@@ -101,7 +116,7 @@ export const ProductListing = async ({
   searchParams?: Record<string, string | string[] | undefined>;
 }) => {
   // Resolve & sanitize filter params from URL search params
-  const { categoryHandle, minPrice, maxPrice, tagId, city, duration, sellerRating } = sanitizeSearchParams(searchParams);
+  const { categoryHandle, minPrice, maxPrice, tagIds, cities, durations, sellerRatings, page } = sanitizeSearchParams(searchParams);
 
   // ADR-046: resolve country code from cookie, not from locale URL segment
   const countryCode = await getCountryCode(locale);
@@ -112,7 +127,7 @@ export const ProductListing = async ({
   const storefrontFilters: StorefrontFilterConfig[] = [];
   let categories: Category[] = [];
   let tags: Tag[] = [];
-  let cities: string[] = [];
+  let sidebarCities: string[] = [];
 
   if (showSidebar && marketId) {
     try {
@@ -134,7 +149,7 @@ export const ProductListing = async ({
 
       const needsCities = rawFilters.some(f => f.type === 'location');
       if (needsCities) {
-        cities = await listSellerCities();
+        sidebarCities = await listSellerCities();
       }
     } catch {
       // Sidebar filters not critical — listing still works without them
@@ -149,10 +164,9 @@ export const ProductListing = async ({
   }
 
   const queryParams: HttpTypes.FindParams & HttpTypes.StoreProductParams = {
-    limit: PRODUCT_LIMIT,
     ...(minPrice ? { min_price: minPrice } : {}),
     ...(maxPrice ? { max_price: maxPrice } : {}),
-    ...(tagId ? { tag_id: [tagId] } : {})
+    ...(tagIds.length > 0 ? { tag_id: tagIds } : {})
   };
 
   const { response } = await listProductsWithSort({
@@ -162,69 +176,71 @@ export const ProductListing = async ({
     countryCode,
     sortBy: 'created_at',
     queryParams,
-    city
+    cities
   });
 
-  let { products } = await response;
-
   // v1.1.0 client-side filtering for duration and seller_rating.
+  // listProductsWithSort returns ALL products; we filter and slice here.
   // TODO(v1.2.0): move to server-side query once Medusa custom query extensions are ready.
-  const clientFiltersActive = duration !== undefined || sellerRating !== undefined;
+  let filteredProducts = response.products;
 
-  if (duration !== undefined) {
-    products = products.filter(product =>
+  if (durations.length > 0) {
+    filteredProducts = filteredProducts.filter(product =>
       product.variants?.some(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (variant: any) => Number(variant.metadata?.duration) === duration
+        (variant: any) => durations.includes(Number(variant.metadata?.duration))
       )
     );
   }
 
-  if (sellerRating !== undefined) {
-    products = products.filter(product => {
+  if (sellerRatings.length > 0) {
+    filteredProducts = filteredProducts.filter(product => {
       const avgRating = (product as any).seller?.avg_rating;
-      return avgRating !== undefined ? Number(avgRating) >= sellerRating : false;
+      return avgRating !== undefined ? sellerRatings.some(r => Number(avgRating) >= r) : false;
     });
   }
 
-  const count = products.length;
-
-  const pages = Math.ceil(count / PRODUCT_LIMIT) || 1;
+  const totalFiltered = filteredProducts.length;
+  const pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
+  const offset = (page - 1) * PRODUCT_LIMIT;
+  const paginatedProducts = filteredProducts.slice(offset, offset + PRODUCT_LIMIT);
 
   return (
     <div
       className="py-4"
       data-testid="product-listing-container"
     >
-      <ProductListingHeader total={count} />
+      <ProductListingHeader total={totalFiltered} />
       <div className="hidden md:block">
         <ProductListingActiveFilters />
       </div>
-      {clientFiltersActive && (
-        <p className="text-sm text-secondary mt-2 px-1" data-testid="client-filter-hint">
-          {t('client_filter_hint')}
-        </p>
-      )}
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
         {showSidebar && (
           <ProductSidebar
             filters={storefrontFilters}
             categories={categories}
             tags={tags}
-            cities={cities}
+            cities={sidebarCities}
           />
         )}
         <section
           className={showSidebar ? 'col-span-3' : 'col-span-4'}
           data-testid="product-listing-section"
         >
-          <div
-            className="flex flex-wrap gap-4"
-            data-testid="product-list"
-          >
-            <ProductsList products={products} />
-          </div>
-          {!clientFiltersActive && <ProductsPagination pages={pages} />}
+          {paginatedProducts.length === 0 ? (
+            <div className="flex flex-col items-center gap-4 py-12" data-testid="empty-state">
+              <p>{t('no_results')}</p>
+              <ClearFiltersButton />
+            </div>
+          ) : (
+            <div
+              className="flex flex-wrap gap-4"
+              data-testid="product-list"
+            >
+              <ProductsList products={paginatedProducts} />
+            </div>
+          )}
+          {pages > 1 && <ProductsPagination pages={pages} />}
         </section>
       </div>
     </div>

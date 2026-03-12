@@ -13,6 +13,11 @@ const useUpdateSearchParams = () => {
       updatedSearchParams.set(field, value);
     }
 
+    // Reset to page 1 whenever any filter changes (except pagination itself)
+    if (field !== 'page') {
+      updatedSearchParams.delete('page');
+    }
+
     router.push(`${pathname}?${updatedSearchParams}`, {
       scroll: false
     });

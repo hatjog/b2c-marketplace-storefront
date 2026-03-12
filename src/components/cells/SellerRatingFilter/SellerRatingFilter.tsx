@@ -33,6 +33,7 @@ export const SellerRatingFilter = ({ heading }: SellerRatingFilterProps) => {
           </li>
         ))}
       </ul>
+      <p className="text-xs text-muted-foreground mt-2 px-4">{t('rating_disclaimer')}</p>
     </Accordion>
   );
 };

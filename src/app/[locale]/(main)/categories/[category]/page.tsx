@@ -79,14 +79,17 @@ const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
 async function Category({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{
     category: string;
     locale: string;
   }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { category: categoryHandle, locale } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
 
   const category = await getCategoryByHandle(categoryHandle);
 
@@ -174,6 +177,7 @@ async function Category({
             category_id={category.id}
             showSidebar
             locale={locale}
+            searchParams={resolvedSearchParams}
           />
         ) : (
           <AlgoliaProductsListing

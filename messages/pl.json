@@ -65,7 +65,9 @@
     "apply": "Zastosuj",
     "clear": "Wyczyść",
     "results": "wyników",
-    "client_filter_hint": "Filtrowanie działa na pierwszych 100 wynikach strony"
+    "client_filter_hint": "Filtrowanie działa na pierwszych 100 wynikach strony",
+    "no_results": "Brak wyników dla wybranych filtrów",
+    "rating_disclaimer": "Nie uwzględnia ofert bez ocen"
   },
   "products": {
     "add_to_cart": "Dodaj do koszyka",
