@@ -1,25 +1,4 @@
-import { OrdersPagination } from '../organisms/OrdersPagination/OrdersPagination';
-import { BannerSection } from './BannerSection/BannerSection';
-import { BlogSection } from './BlogSection/BlogSection';
-import { Cart } from './Cart/Cart';
-import { Hero } from './Hero/Hero';
-import { HomeCategories } from './HomeCategories/HomeCategories';
-import { HomeProductSection } from './HomeProductSection/HomeProductSection';
-import { ProductDetailsPage } from './ProductDetailsPage/ProductDetailsPage';
-import { SellerPageHeader } from './SellerPageHeader/SellerPageHeader';
-import { ShopByStyleSection } from './ShopByStyle/ShopByStyleSection';
-import { WishlistPage } from './WishlistPage/WishlistPage';
-
-export {
-  Hero,
-  HomeProductSection,
-  HomeCategories,
-  BannerSection,
-  ShopByStyleSection,
-  BlogSection,
-  SellerPageHeader,
-  Cart,
-  WishlistPage,
-  ProductDetailsPage,
-  OrdersPagination
-};
+// Barrel re-export — split by component boundary for Next.js tree-shaking.
+// Prefer importing from index.server or index.client directly in new code.
+export * from './index.server';
+export * from './index.client';
