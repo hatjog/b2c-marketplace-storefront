@@ -67,6 +67,7 @@
     "results": "results",
     "client_filter_hint": "Filtering applies to the first 100 results on this page",
     "no_results": "No results for selected filters",
+    "load_error": "Failed to load products. Please try again.",
     "rating_disclaimer": "Excludes listings without ratings"
   },
   "products": {

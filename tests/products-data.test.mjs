@@ -1,7 +1,8 @@
-import test, { describe } from 'node:test';
+import test, { describe, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 const { normalizeListedProducts } = await import('../src/lib/helpers/normalize-listed-products.ts');
+const { hasCustomFilters, CUSTOM_FILTER_KEYS } = await import('../src/lib/helpers/has-custom-filters.ts');
 
 describe('pagination boundary: nextPage must use filtered count, not raw API count', () => {
   // Regression test for H1: listProductsWithSort was using raw API count
@@ -86,5 +87,69 @@ describe('products data normalization', () => {
     );
     assert.equal(result[0].seller, null);
     assert.deepEqual(result[1].seller?.reviews, [{ id: 'review-1' }]);
+  });
+});
+
+describe('hasCustomFilters', () => {
+  test('returns false when no params provided', () => {
+    assert.equal(hasCustomFilters({}), false);
+  });
+
+  test('returns false with only native params (category_id, min_price, max_price)', () => {
+    // Native params do NOT trigger pipeline mode
+    assert.equal(hasCustomFilters({ tagIds: [], cities: [], durations: [], sellerRatings: [] }), false);
+  });
+
+  test('returns true when tagIds is non-empty', () => {
+    assert.equal(hasCustomFilters({ tagIds: ['tag-uuid-1'] }), true);
+  });
+
+  test('returns true when cities is non-empty', () => {
+    assert.equal(hasCustomFilters({ cities: ['Warszawa'] }), true);
+  });
+
+  test('returns true when durations is non-empty', () => {
+    assert.equal(hasCustomFilters({ durations: [60] }), true);
+  });
+
+  test('returns true when sellerRatings is non-empty', () => {
+    assert.equal(hasCustomFilters({ sellerRatings: [4] }), true);
+  });
+
+  test('returns true for mixed custom + native params', () => {
+    assert.equal(hasCustomFilters({ tagIds: ['tag-uuid-1'], cities: [] }), true);
+  });
+
+  test('returns false for empty arrays after sanitize (tag_id=,,, → [])', () => {
+    // Simulates: sanitizeSearchParams parses tag_id=,,, → tagIds=[]
+    assert.equal(hasCustomFilters({ tagIds: [], cities: [], durations: [], sellerRatings: [] }), false);
+  });
+
+  test('CUSTOM_FILTER_KEYS exports the expected keys', () => {
+    assert.deepEqual([...CUSTOM_FILTER_KEYS].sort(), ['city', 'duration', 'seller_rating', 'tag_id']);
+  });
+});
+
+describe('listFilteredProducts page→offset conversion', () => {
+  // Unit tests for the page→offset conversion logic used in listFilteredProducts()
+  function pageToOffset(page, limit) {
+    return (Math.max(page, 1) - 1) * limit;
+  }
+
+  test('page 1 → offset 0', () => {
+    assert.equal(pageToOffset(1, 12), 0);
+  });
+
+  test('page 2 → offset 12 (with limit 12)', () => {
+    assert.equal(pageToOffset(2, 12), 12);
+  });
+
+  test('page 3 → offset 24 (with limit 12)', () => {
+    assert.equal(pageToOffset(3, 12), 24);
+  });
+
+  test('page 0 or negative → treated as page 1 (offset 0)', () => {
+    assert.equal(pageToOffset(0, 12), 0);
+    assert.equal(pageToOffset(-5, 12), 0);
   });
 });

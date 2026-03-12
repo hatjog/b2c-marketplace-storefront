@@ -5,6 +5,7 @@ import type { HttpTypes } from '@medusajs/types';
 
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
 import { normalizeListedProducts } from '@/lib/helpers/normalize-listed-products';
+import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import type { SortOptions } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
@@ -123,8 +124,104 @@ const FETCH_LIMIT = 100;
 const PRODUCT_HARD_CAP = 1000;
 
 /**
+ * Fetches from the custom pipeline endpoint GET /store/products/filtered.
+ * Called by listProductsWithSort() when hasCustomFilters() returns true.
+ *
+ * Products are already server-side paginated — no client-side slicing needed.
+ * The returned count is the total matching count for pagination UI.
+ *
+ * ERROR POLICY: Throws on fetch error (no fallback to native Medusa).
+ * Fallback would produce inconsistent counts and mask pipeline issues.
+ */
+export const listFilteredProducts = async ({
+  tagIds,
+  categoryId,
+  cities,
+  durations,
+  sellerRatings,
+  minPrice,
+  maxPrice,
+  page = 1,
+  limit,
+  sortBy,
+  countryCode,
+}: {
+  tagIds?: string[];
+  categoryId?: string;
+  cities?: string[];
+  durations?: number[];
+  sellerRatings?: number[];
+  minPrice?: string;
+  maxPrice?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: SortOptions;
+  countryCode: string;
+}): Promise<{
+  response: {
+    products: HttpTypes.StoreProduct[];
+    count: number;
+  };
+  nextPage: null;
+  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
+}> => {
+  const region = await getRegion(countryCode);
+
+  const effectiveLimit = limit ?? 12;
+  // page is 1-indexed from the URL (?page=2); backend accepts 0-indexed offset
+  const offset = (Math.max(page, 1) - 1) * effectiveLimit;
+
+  const params: Record<string, string> = {
+    offset: String(offset),
+    limit: String(effectiveLimit),
+  };
+
+  if (tagIds?.length) params.tag_id = tagIds.join(',');
+  if (categoryId) params.category_id = categoryId;
+  if (cities?.length) params.city = cities.join(',');
+  if (durations?.length) params.duration = durations.join(',');
+  if (sellerRatings?.length) params.seller_rating = sellerRatings.join(',');
+  if (minPrice) params.min_price = minPrice;
+  if (maxPrice) params.max_price = maxPrice;
+  if (sortBy) params.order = sortBy;
+  if (region?.id) params.region_id = region.id;
+
+  const headers = {
+    ...(await getAuthHeaders())
+  };
+
+  return sdk.client
+    .fetch<{ products: HttpTypes.StoreProduct[]; count: number; offset: number; limit: number }>(
+      `/store/products/filtered`,
+      {
+        method: 'GET',
+        query: params,
+        headers,
+        cache: 'no-cache',
+      }
+    )
+    .then(({ products, count }) => ({
+      response: { products, count },
+      nextPage: null,
+      queryParams: undefined,
+    }))
+    .catch((error) => {
+      console.error(
+        '[products] listFilteredProducts failed:',
+        error?.message || error,
+        { params }
+      );
+      // Re-throw: no silent fallback to Medusa native (would give inconsistent counts)
+      throw error;
+    });
+};
+
+/**
  * Fetches ALL products (paginated fetch-all, hard cap 1000), applies city filter and sort,
  * and returns the full filtered+sorted list. Slicing for display happens in the caller.
+ *
+ * When custom filters (tag_id, city, duration, seller_rating) are active, delegates to
+ * listFilteredProducts() for server-side filtering and pagination via the pipeline endpoint.
  */
 export const listProductsWithSort = async ({
   queryParams,
@@ -133,7 +230,12 @@ export const listProductsWithSort = async ({
   category_id,
   seller_id,
   collection_id,
-  cities
+  cities,
+  tagIds,
+  durations,
+  sellerRatings,
+  page,
+  limit,
 }: {
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
   sortBy?: SortOptions;
@@ -142,6 +244,11 @@ export const listProductsWithSort = async ({
   seller_id?: string;
   collection_id?: string;
   cities?: string[];
+  tagIds?: string[];
+  durations?: number[];
+  sellerRatings?: number[];
+  page?: number;
+  limit?: number;
 }): Promise<{
   response: {
     products: HttpTypes.StoreProduct[];
@@ -150,6 +257,25 @@ export const listProductsWithSort = async ({
   nextPage: number | null;
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
 }> => {
+  // Pipeline mode: any custom filter active AND no seller_id scope → backend pipeline.
+  // seller_id is not supported in the pipeline endpoint — fall through to native mode when set.
+  if (!seller_id && hasCustomFilters({ tagIds, cities, durations, sellerRatings })) {
+    return listFilteredProducts({
+      tagIds,
+      categoryId: category_id,
+      cities,
+      durations,
+      sellerRatings,
+      minPrice: queryParams?.min_price as string | undefined,
+      maxPrice: queryParams?.max_price as string | undefined,
+      page,
+      limit,
+      sortBy,
+      countryCode,
+    });
+  }
+
+  // Native mode: Medusa default path — fetch-all + client-side filtering
   // First fetch to discover total count
   const firstResult = await listProducts({
     pageParam: 1,
@@ -206,22 +332,7 @@ export const listProductsWithSort = async ({
     ? deduped.filter(product => (product as any).seller?.id === seller_id)
     : deduped;
 
-  // v1.1.0: city filter — client-side by seller city (case/unicode-insensitive)
-  // TODO(v1.2.0): move to server-side via /store/sellers?city= → seller_ids query
-  const normalizedCities = (cities ?? [])
-    .map(c => c.trim().toLowerCase().normalize('NFC'))
-    .filter(Boolean);
-
-  const filteredProducts = normalizedCities.length > 0
-    ? filteredBySeller.filter(product => {
-        const sellerCity = (product as any).seller?.city;
-        return typeof sellerCity === 'string'
-          ? normalizedCities.includes(sellerCity.trim().toLowerCase().normalize('NFC'))
-          : false;
-      })
-    : filteredBySeller;
-
-  const pricedProducts = filteredProducts.filter(prod =>
+  const pricedProducts = filteredBySeller.filter(prod =>
     prod.variants?.some(variant => variant.calculated_price !== null)
   );
 

@@ -67,6 +67,7 @@
     "results": "wyników",
     "client_filter_hint": "Filtrowanie działa na pierwszych 100 wynikach strony",
     "no_results": "Brak wyników dla wybranych filtrów",
+    "load_error": "Nie udało się załadować produktów. Spróbuj ponownie.",
     "rating_disclaimer": "Nie uwzględnia ofert bez ocen"
   },
   "products": {

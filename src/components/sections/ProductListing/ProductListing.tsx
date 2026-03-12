@@ -12,6 +12,7 @@ import { PRODUCT_LIMIT } from '@/const';
 import { listCategories } from '@/lib/data/categories';
 import { listProductsWithSort, listProductTags, listSellerCities } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { getTranslations } from 'next-intl/server';
@@ -129,6 +130,12 @@ export const ProductListing = async ({
   let tags: Tag[] = [];
   let sidebarCities: string[] = [];
 
+  if (showSidebar && !marketId) {
+    console.warn(
+      '[ProductListing] showSidebar=true but marketId is empty — check NEXT_PUBLIC_PAYLOAD_MARKET_ID env var'
+    );
+  }
+
   if (showSidebar && marketId) {
     try {
       const { marketConfig } = await resolveMarketConfig(marketId);
@@ -151,8 +158,13 @@ export const ProductListing = async ({
       if (needsCities) {
         sidebarCities = await listSellerCities();
       }
-    } catch {
-      // Sidebar filters not critical — listing still works without them
+    } catch (err) {
+      // Sidebar filters not critical — listing still works without them.
+      // Log the error to diagnose /categories sidebar not rendering (Task 8 bug).
+      console.error(
+        '[ProductListing] resolveMarketConfig failed — sidebar filters not loaded:',
+        { marketId, error: err instanceof Error ? err.message : String(err) }
+      );
     }
   }
 
@@ -168,49 +180,39 @@ export const ProductListing = async ({
     ...(maxPrice ? { max_price: maxPrice } : {})
   };
 
-  const { response } = await listProductsWithSort({
-    seller_id,
-    category_id: resolvedCategoryId,
-    collection_id,
-    countryCode,
-    sortBy: 'created_at',
-    queryParams,
-    cities
-  });
+  const usePipeline = hasCustomFilters({ tagIds, cities, durations, sellerRatings });
 
-  // v1.1.0 client-side filtering for tag_group, duration, and seller_rating.
-  // listProductsWithSort returns ALL products; we filter and slice here.
-  // TODO(v1.2.0): move to server-side query once Medusa custom query extensions are ready.
-  let filteredProducts = response.products;
-
-  if (tagIds.length > 0) {
-    filteredProducts = filteredProducts.filter(product =>
-      (product as any).tags?.some(
-        (tag: { id: string }) => tagIds.includes(tag.id)
-      )
+  let response: { products: HttpTypes.StoreProduct[]; count: number };
+  try {
+    ({ response } = await listProductsWithSort({
+      seller_id,
+      category_id: resolvedCategoryId,
+      collection_id,
+      countryCode,
+      sortBy: 'created_at',
+      queryParams,
+      cities,
+      tagIds,
+      durations,
+      sellerRatings,
+      page,
+      limit: PRODUCT_LIMIT,
+    }));
+  } catch {
+    return (
+      <div className="py-12 text-center" data-testid="product-listing-error">
+        <p>{t('load_error')}</p>
+      </div>
     );
   }
 
-  if (durations.length > 0) {
-    filteredProducts = filteredProducts.filter(product =>
-      product.variants?.some(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (variant: any) => durations.includes(Number(variant.metadata?.duration))
-      )
-    );
-  }
-
-  if (sellerRatings.length > 0) {
-    filteredProducts = filteredProducts.filter(product => {
-      const avgRating = (product as any).seller?.avg_rating;
-      return avgRating !== undefined ? sellerRatings.some(r => Number(avgRating) >= r) : false;
-    });
-  }
-
-  const totalFiltered = filteredProducts.length;
+  // Pipeline mode: products are already server-side paginated — use as-is.
+  // Native mode: products are the full sorted list — slice for the current page.
+  const totalFiltered = response.count;
   const pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
-  const offset = (page - 1) * PRODUCT_LIMIT;
-  const paginatedProducts = filteredProducts.slice(offset, offset + PRODUCT_LIMIT);
+  const paginatedProducts = usePipeline
+    ? response.products
+    : response.products.slice((page - 1) * PRODUCT_LIMIT, page * PRODUCT_LIMIT);
 
   return (
     <div
