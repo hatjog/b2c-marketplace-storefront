@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-// Pure logic extracted from ProductDetailsSeller: hasContact now checks phone OR email
+// Mirrors hasContact logic from ProductDetailsSeller
 function hasContact(seller: { phone?: string; email?: string }): boolean {
   return !!(seller.phone || seller.email);
+}
+
+// Mirrors tel: href sanitization from ProductDetailsSeller
+function formatTelHref(phone: string): string {
+  return `tel:${phone.replace(/\s/g, '')}`;
 }
 
 describe('ProductDetailsSeller contact visibility logic', () => {
@@ -28,9 +33,15 @@ describe('ProductDetailsSeller contact visibility logic', () => {
 });
 
 describe('tel: link format', () => {
-  it('formats phone as tel: href', () => {
-    const phone = '+48 500 000 000';
-    const href = `tel:${phone}`;
-    expect(href).toBe('tel:+48 500 000 000');
+  it('strips spaces from phone number in href', () => {
+    expect(formatTelHref('+48 500 000 000')).toBe('tel:+48500000000');
+  });
+
+  it('preserves phone without spaces', () => {
+    expect(formatTelHref('+48500000000')).toBe('tel:+48500000000');
+  });
+
+  it('handles tabs and mixed whitespace', () => {
+    expect(formatTelHref('+48\t500 000\t000')).toBe('tel:+48500000000');
   });
 });

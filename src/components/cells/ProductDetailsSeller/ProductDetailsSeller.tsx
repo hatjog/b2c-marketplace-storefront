@@ -31,7 +31,7 @@ export const ProductDetailsSeller = async ({ seller }: { seller?: SellerProps })
           )}
           {seller.phone && (
             <p className="label-md text-secondary">
-              {t('seller_phone')}: <a href={`tel:${seller.phone}`}>{seller.phone}</a>
+              {t('seller_phone')}: <a href={`tel:${seller.phone.replace(/\s/g, '')}`}>{seller.phone}</a>
             </p>
           )}
           {seller.email && (
