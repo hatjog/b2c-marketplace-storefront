@@ -112,11 +112,13 @@
     "attributes_heading": "Szczegóły",
     "not_available_in_region": "Niedostępne w Twoim regionie",
     "error_adding_to_cart": "Błąd dodawania do koszyka",
+    "error_adding_to_cart_desc": "Wybrany wariant może być niedostępny. Spróbuj inną opcję.",
     "posted_date": "Dodano",
     "report_listing": "Zgłoś ofertę",
     "more_from_seller": "Więcej od tego sprzedawcy",
     "write_to_seller": "Napisz do salonu",
-    "price_label": "Cena"
+    "price_label": "Cena",
+    "no_results_quality": "Nie znaleziono zabiegów spełniających kryteria"
   },
   "auth": {
     "login_heading": "Zaloguj się",

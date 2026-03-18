@@ -3,14 +3,24 @@
 import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { useCartContext } from '@/components/providers';
+import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { toast } from '@/lib/helpers/toast';
 import type { SellerProps } from '@/types/seller';
 
-import { useTranslations } from 'next-intl';
+const optionsAsKeymap = (variantOptions: HttpTypes.StoreProductVariant['options']) => {
+  return variantOptions?.reduce(
+    (acc: Record<string, string>, varopt: HttpTypes.StoreProductOptionValue) => {
+      acc[varopt.option?.title.toLowerCase() || ''] = varopt.value;
+      return acc;
+    },
+    {}
+  );
+};
 
 export const StickyAddToCart = ({
   product,
@@ -21,6 +31,7 @@ export const StickyAddToCart = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const { addToCart, isAddingItem } = useCartContext();
+  const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
 
   useEffect(() => {
@@ -43,7 +54,19 @@ export const StickyAddToCart = ({
 
   if (!hasAnyPrice) return null;
 
-  const variantId = cheapestVariant?.id || '';
+  // Resolve selected variant from URL params (same logic as ProductDetailsHeader)
+  const selectedVariant = {
+    ...optionsAsKeymap(cheapestVariant.options ?? null),
+    ...allSearchParams
+  };
+
+  const variantId =
+    product.variants?.find(({ options }: { options: any }) =>
+      options?.every((option: any) =>
+        selectedVariant[option.option?.title.toLowerCase() || '']?.includes(option.value)
+      )
+    )?.id || '';
+
   const { variantPrice } = getProductPrice({ product, variantId });
 
   const handleAddToCart = async () => {
@@ -54,14 +77,14 @@ export const StickyAddToCart = ({
     } catch {
       toast.error({
         title: t('error_adding_to_cart'),
-        description: ''
+        description: t('error_adding_to_cart_desc')
       });
     }
   };
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center justify-between bg-action-primary px-4 text-action-primary transition-transform duration-300 md:hidden ${
+      className={`fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center justify-between bg-action px-4 text-action-on-primary transition-transform duration-300 md:hidden ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >

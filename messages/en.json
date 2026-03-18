@@ -112,11 +112,13 @@
     "attributes_heading": "Details",
     "not_available_in_region": "Not available in your region",
     "error_adding_to_cart": "Error adding to cart",
+    "error_adding_to_cart_desc": "The selected variant may be unavailable. Please try a different option.",
     "posted_date": "Posted",
     "report_listing": "Report listing",
     "more_from_seller": "More from this seller",
     "write_to_seller": "Write to salon",
-    "price_label": "Price"
+    "price_label": "Price",
+    "no_results_quality": "No treatments found matching criteria"
   },
   "auth": {
     "login_heading": "Log in",

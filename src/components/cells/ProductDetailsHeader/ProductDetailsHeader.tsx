@@ -111,7 +111,7 @@ export const ProductDetailsHeader = ({
     } catch {
       toast.error({
         title: t('error_adding_to_cart'),
-        description: ''
+        description: t('error_adding_to_cart_desc')
       });
     }
   };
