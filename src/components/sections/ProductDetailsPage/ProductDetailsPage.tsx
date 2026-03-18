@@ -31,8 +31,10 @@ export const ProductDetailsPage = async ({
   const t = await getTranslations('products');
   const relatedSellerProducts = prod.seller?.products?.length ? prod.seller.products : null;
 
+  const hasPrice = prod.variants?.some(v => v.calculated_price);
+
   return (
-    <>
+    <div className={hasPrice ? 'pb-14 lg:pb-0' : ''}>
       <div
         className="flex flex-col md:flex-row lg:gap-12"
         data-testid="product-details-page"
@@ -66,6 +68,6 @@ export const ProductDetailsPage = async ({
         product={prod}
         countryCode={countryCode}
       />
-    </>
+    </div>
   );
 };

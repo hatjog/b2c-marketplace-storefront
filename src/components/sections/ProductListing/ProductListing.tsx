@@ -243,7 +243,7 @@ export const ProductListing = async ({
             </div>
           ) : (
             <div
-              className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+              className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${showSidebar ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}
               data-testid="product-list"
             >
               <ProductsList products={paginatedProducts} />

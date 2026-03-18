@@ -45,7 +45,7 @@ export const Header = async ({
     parentCategories: HttpTypes.StoreProductCategory[];
   };
   return (
-    <header className="sticky top-0 z-30 bg-primary" data-testid="header">
+    <header className="sticky top-0 z-20 bg-primary" data-testid="header">
       <div
         className="flex px-4 py-2 md:px-5 lg:px-8"
         data-testid="header-top"
