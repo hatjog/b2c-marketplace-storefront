@@ -1,0 +1,280 @@
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
+
+export const dynamic = 'force-static';
+
+function parseLegalMarkdown(markdown: string): ReactNode[] {
+  const lines = markdown.split('\n');
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+  let key = 0;
+
+  function nextKey() {
+    return `md-${key++}`;
+  }
+
+  function renderInline(text: string): ReactNode {
+    // Handle **bold**
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    if (parts.length === 1) return text;
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={idx}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  }
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Skip YAML-like front matter lines and horizontal rules and footer notes
+    if (
+      line.startsWith('Status:') ||
+      line.startsWith('Data:') ||
+      line.startsWith('Podstawa') ||
+      line.startsWith('Uwaga:') ||
+      line.startsWith('---') ||
+      line.startsWith('_Zaktualizowano') ||
+      line.startsWith('_BonBeauty') ||
+      line.startsWith('# Polityka')
+    ) {
+      i++;
+      continue;
+    }
+
+    // H2
+    if (line.startsWith('## ')) {
+      nodes.push(
+        <h2
+          key={nextKey()}
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 'clamp(1.25rem, 2vw, 2rem)',
+            fontWeight: 400,
+            color: '#1A1A1A',
+            marginTop: '2rem',
+            marginBottom: '0.75rem'
+          }}
+        >
+          {line.slice(3)}
+        </h2>
+      );
+      i++;
+      continue;
+    }
+
+    // H3
+    if (line.startsWith('### ')) {
+      nodes.push(
+        <h3
+          key={nextKey()}
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 'clamp(1.1rem, 1.5vw, 1.625rem)',
+            fontWeight: 500,
+            color: '#1A1A1A',
+            marginTop: '1.5rem',
+            marginBottom: '0.5rem'
+          }}
+        >
+          {line.slice(4)}
+        </h3>
+      );
+      i++;
+      continue;
+    }
+
+    // Table block — collect all | lines
+    if (line.startsWith('|')) {
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      // Parse header (first row), separator (second row with ---), body (rest)
+      const rows = tableLines.filter(l => !l.match(/^\|[-| :]+\|$/));
+      const parsedRows = rows.map(row =>
+        row
+          .split('|')
+          .slice(1, -1)
+          .map(cell => cell.trim())
+      );
+      if (parsedRows.length === 0) continue;
+      const [header, ...body] = parsedRows;
+      nodes.push(
+        <div
+          key={nextKey()}
+          style={{ overflowX: 'auto', marginTop: '1rem', marginBottom: '1rem' }}
+        >
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '0.875rem',
+              color: '#1A1A1A'
+            }}
+          >
+            <thead>
+              <tr>
+                {header.map((cell, idx) => (
+                  <th
+                    key={idx}
+                    style={{
+                      textAlign: 'left',
+                      padding: '0.5rem 0.75rem',
+                      borderBottom: '2px solid #7A7672',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {cell}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {body.map((row, rowIdx) => (
+                <tr key={rowIdx} style={{ borderBottom: '1px solid #D9D7D3' }}>
+                  {row.map((cell, cellIdx) => (
+                    <td
+                      key={cellIdx}
+                      style={{ padding: '0.5rem 0.75rem', verticalAlign: 'top' }}
+                    >
+                      {renderInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    // Numbered list item
+    if (/^\d+\.\s/.test(line)) {
+      const listItems: string[] = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        listItems.push(lines[i].replace(/^\d+\.\s/, ''));
+        i++;
+      }
+      nodes.push(
+        <ol
+          key={nextKey()}
+          style={{
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '1rem',
+            lineHeight: 1.6,
+            color: '#1A1A1A',
+            paddingLeft: '1.5rem',
+            marginTop: '0.5rem',
+            marginBottom: '0.75rem'
+          }}
+        >
+          {listItems.map((item, idx) => (
+            <li key={idx} style={{ marginBottom: '0.25rem' }}>
+              {renderInline(item)}
+            </li>
+          ))}
+        </ol>
+      );
+      continue;
+    }
+
+    // Empty line — skip
+    if (line.trim() === '') {
+      i++;
+      continue;
+    }
+
+    // Regular paragraph
+    nodes.push(
+      <p
+        key={nextKey()}
+        style={{
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '1rem',
+          lineHeight: 1.6,
+          color: '#1A1A1A',
+          marginTop: '0.5rem',
+          marginBottom: '0.5rem'
+        }}
+      >
+        {renderInline(line)}
+      </p>
+    );
+    i++;
+  }
+
+  return nodes;
+}
+
+function loadPrivacyPolicyContent(): { nodes: ReactNode[]; lastUpdated: string } {
+  const filePath = join(process.cwd(), '..', '..', 'specs', 'ops', 'privacy-policy-draft-v120.md');
+  let content: string;
+  try {
+    content = readFileSync(filePath, 'utf-8');
+  } catch {
+    // Fallback path for different working directory contexts
+    const fallbackPath = join(process.cwd(), 'specs', 'ops', 'privacy-policy-draft-v120.md');
+    content = readFileSync(fallbackPath, 'utf-8');
+  }
+
+  const dateMatch = content.match(/^Data:\s*(.+)$/m);
+  const lastUpdated = dateMatch ? dateMatch[1].trim() : '2026-03-17';
+
+  return { nodes: parseLegalMarkdown(content), lastUpdated };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Polityka Prywatności | BonBeauty',
+    description:
+      'Polityka prywatności BonBeauty — informacja o przetwarzaniu danych osobowych zgodnie z RODO.',
+    robots: { index: true, follow: true }
+  };
+}
+
+export default async function PolitykaPrywatnosciPage() {
+  const t = await getTranslations('legal');
+  const { nodes, lastUpdated } = loadPrivacyPolicyContent();
+
+  return (
+    <LegalPageLayout>
+      <article data-testid="privacy-policy-content">
+        <header style={{ marginBottom: '2rem' }}>
+          <h1
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              fontWeight: 300,
+              color: '#1A1A1A',
+              marginBottom: '0.5rem'
+            }}
+          >
+            {t('title_privacy')}
+          </h1>
+          <p
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '0.875rem',
+              color: '#7A7672'
+            }}
+          >
+            {t('last_updated')}: {lastUpdated}
+          </p>
+        </header>
+
+        <div>{nodes}</div>
+      </article>
+    </LegalPageLayout>
+  );
+}

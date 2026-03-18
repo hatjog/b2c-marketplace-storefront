@@ -306,5 +306,14 @@
     "cart_title": "Cart",
     "cart_description": "Review the items in your cart and continue to checkout.",
     "loading": "Loading..."
+  },
+  "legal": {
+    "title_privacy": "Privacy Policy",
+    "title_regulamin": "Terms of Service",
+    "coming_soon": "Page in preparation",
+    "coming_soon_description": "The terms of service are being finalized. Please contact us if you have any questions.",
+    "contact_email": "kontakt@bonbeauty.pl",
+    "last_updated": "Last updated",
+    "agent_disclaimer": "BonBeauty acts as an intermediary. Services are provided by the salon."
   }
 }

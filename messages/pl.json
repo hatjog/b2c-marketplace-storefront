@@ -307,5 +307,14 @@
     "cart_title": "Koszyk",
     "cart_description": "Przejrzyj produkty w koszyku i przejdź do kasy.",
     "loading": "Ładowanie..."
+  },
+  "legal": {
+    "title_privacy": "Polityka Prywatności",
+    "title_regulamin": "Regulamin",
+    "coming_soon": "Strona w przygotowaniu",
+    "coming_soon_description": "Regulamin jest w trakcie opracowania. W razie pytań prosimy o kontakt.",
+    "contact_email": "kontakt@bonbeauty.pl",
+    "last_updated": "Ostatnia aktualizacja",
+    "agent_disclaimer": "BonBeauty jest pośrednikiem. Usługę świadczy salon."
   }
 }
