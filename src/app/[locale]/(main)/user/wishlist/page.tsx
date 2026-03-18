@@ -29,6 +29,7 @@ export default async function Wishlist({ params }: { params: Promise<{ locale: s
 
   return (
     <main
+      id="main-content"
       className="container"
       data-testid="wishlist-page"
     >

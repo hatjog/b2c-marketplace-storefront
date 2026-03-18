@@ -15,6 +15,7 @@ export default async function Page() {
 
   return (
     <main
+      id="main-content"
       className="container"
       data-testid="addresses-page"
     >

@@ -300,7 +300,9 @@
     "opinion_max": "Opinion must be less than 300 characters"
   },
   "accessibility": {
-    "breadcrumb": "Breadcrumb"
+    "breadcrumb": "Breadcrumb",
+    "skip_to_content": "Skip to main content",
+    "loading": "Loading"
   },
   "page": {
     "cart_title": "Cart",

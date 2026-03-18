@@ -301,7 +301,8 @@
   },
   "accessibility": {
     "breadcrumb": "Okruszki nawigacyjne",
-    "skip_to_content": "Przejdź do głównej treści"
+    "skip_to_content": "Przejdź do głównej treści",
+    "loading": "Ładowanie"
   },
   "page": {
     "cart_title": "Koszyk",
