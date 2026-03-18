@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CartPage({}) {
   const t = await getTranslations('page');
   return (
-    <main className="container grid grid-cols-12">
+    <main id="main-content" className="container grid grid-cols-12">
       <Suspense fallback={<>{t('loading')}</>}>
         <Cart />
       </Suspense>

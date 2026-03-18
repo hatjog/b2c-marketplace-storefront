@@ -30,7 +30,7 @@ export default async function ProductPage({
   const { handle, locale } = await params;
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <ProductDetailsPage
         handle={handle}
         locale={locale}

@@ -1,6 +1,7 @@
 import { Session } from '@talkjs/react';
 import { redirect } from 'next/navigation';
 
+import { SkipLink } from '@/components/atoms';
 import { Footer } from '@/components/organisms';
 import { Header } from '@/components/organisms/Header/Header';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -29,6 +30,7 @@ export default async function RootLayout({
   if (!APP_ID || !user)
     return (
       <>
+        <SkipLink />
         <Header
           locale={locale}
           marketConfig={marketConfig}
@@ -44,6 +46,7 @@ export default async function RootLayout({
         appId={APP_ID}
         userId={user.id}
       >
+        <SkipLink />
         <Header
           locale={locale}
           marketConfig={marketConfig}

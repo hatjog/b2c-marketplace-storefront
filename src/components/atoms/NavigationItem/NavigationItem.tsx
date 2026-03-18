@@ -21,6 +21,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({
       active && 'underline underline-offset-8',
       className
     )}
+    aria-current={active ? 'page' : undefined}
     data-testid={dataTestId ?? 'navigation-item'}
     {...props}
   >

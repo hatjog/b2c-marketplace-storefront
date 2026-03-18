@@ -129,7 +129,7 @@ async function Category({
   }));
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <Script
         id="ld-breadcrumbs-category"
         type="application/ld+json"

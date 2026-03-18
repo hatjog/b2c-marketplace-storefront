@@ -93,6 +93,7 @@ export const Header = async ({
             <LocalizedClientLink
               href="/user/wishlist"
               className="relative"
+              aria-label={tHeader('wishlist')}
               data-testid="header-wishlist-link"
             >
               <HeartIcon size={20} />

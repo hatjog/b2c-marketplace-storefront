@@ -34,7 +34,7 @@ export function IconButton({
       className={cn(
         variantClasses[variant],
         sizeClasses[size],
-        'flex items-center justify-center rounded-sm transition-all duration-300 ease-out',
+        'flex items-center justify-center rounded-sm motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out',
         className
       )}
       data-testid={dataTestId ?? 'icon-button'}

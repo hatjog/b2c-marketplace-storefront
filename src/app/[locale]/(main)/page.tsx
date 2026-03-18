@@ -97,7 +97,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront';
 
   return (
-    <main className="row-start-2 flex flex-col items-center gap-8 text-primary sm:items-start">
+    <main id="main-content" className="row-start-2 flex flex-col items-center gap-8 text-primary sm:items-start">
       {/* Organization JSON-LD */}
       <Script
         id="ld-org"
