@@ -22,7 +22,7 @@ export default async function SellerReviewsPage({
   const tab = 'reviews';
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <SellerPageHeader
         header
         seller={seller}

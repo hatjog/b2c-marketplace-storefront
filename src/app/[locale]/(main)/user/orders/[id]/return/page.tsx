@@ -9,7 +9,7 @@ export default async function ReturnOrderPage({ params }: { params: Promise<{ id
   const returnMethods = await retriveReturnMethods(id);
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <OrderReturnSection
         order={order}
         returnReasons={returnReasons}

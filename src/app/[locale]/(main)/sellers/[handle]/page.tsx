@@ -27,7 +27,7 @@ export default async function SellerPage({
   }
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <SellerPageHeader
         header
         seller={seller}

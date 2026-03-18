@@ -12,6 +12,7 @@ export default async function ReviewsPage() {
 
   return (
     <main
+      id="main-content"
       className="container"
       data-testid="profile-settings-page"
     >

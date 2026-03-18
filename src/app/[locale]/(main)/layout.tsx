@@ -1,4 +1,5 @@
 import { Session } from '@talkjs/react';
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { SkipLink } from '@/components/atoms';
@@ -22,6 +23,7 @@ export default async function RootLayout({
 
   const user = await retrieveCustomer();
   const regionCheck = await checkRegion(locale);
+  const tA11y = await getTranslations('accessibility');
 
   if (!regionCheck) {
     return redirect('/');
@@ -30,7 +32,7 @@ export default async function RootLayout({
   if (!APP_ID || !user)
     return (
       <>
-        <SkipLink />
+        <SkipLink label={tA11y('skip_to_content')} />
         <Header
           locale={locale}
           marketConfig={marketConfig}
@@ -46,7 +48,7 @@ export default async function RootLayout({
         appId={APP_ID}
         userId={user.id}
       >
-        <SkipLink />
+        <SkipLink label={tA11y('skip_to_content')} />
         <Header
           locale={locale}
           marketConfig={marketConfig}

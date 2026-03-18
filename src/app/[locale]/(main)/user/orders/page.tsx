@@ -56,6 +56,7 @@ export default async function UserPage({
 
   return (
     <main
+      id="main-content"
       className="container"
       data-testid="orders-page"
     >

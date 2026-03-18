@@ -62,7 +62,7 @@ export default async function BlogIndexPage({
   });
 
   return (
-    <main className="container py-8 md:py-12">
+    <main id="main-content" className="container py-8 md:py-12">
       <section className="mx-auto flex max-w-6xl flex-col gap-8" data-testid="blog-index">
         <header className="flex max-w-3xl flex-col gap-4">
           <p className="text-xs font-medium uppercase tracking-[0.24em] text-secondary">{t('journal')}</p>

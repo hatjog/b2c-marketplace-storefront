@@ -99,7 +99,7 @@ const SingleCollectionsPage = async ({
   ];
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <div className="mb-2 hidden md:block">
         <Breadcrumbs items={breadcrumbsItems} />
       </div>

@@ -13,7 +13,7 @@ export default async function Page() {
   if (!orders) return null;
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <ReviewsToWrite orders={orders.filter(order => order.reviews.length === 0)} />

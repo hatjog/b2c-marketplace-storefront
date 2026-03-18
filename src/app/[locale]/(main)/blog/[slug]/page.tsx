@@ -96,7 +96,7 @@ export default async function BlogArticlePage({
   const bodyParagraphs = paragraphs.length > 0 ? paragraphs : [];
 
   return (
-    <main className="container py-8 md:py-12">
+    <main id="main-content" className="container py-8 md:py-12">
       <div className="mb-4 hidden md:block">
         <Breadcrumbs
           items={[

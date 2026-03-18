@@ -300,7 +300,8 @@
     "opinion_max": "Opinia może zawierać maksymalnie 300 znaków"
   },
   "accessibility": {
-    "breadcrumb": "Okruszki nawigacyjne"
+    "breadcrumb": "Okruszki nawigacyjne",
+    "skip_to_content": "Przejdź do głównej treści"
   },
   "page": {
     "cart_title": "Koszyk",

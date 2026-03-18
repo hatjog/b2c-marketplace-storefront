@@ -11,7 +11,7 @@ export default async function UserPage() {
   }
 
   return (
-    <main className="container">
+    <main id="main-content" className="container">
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3">
