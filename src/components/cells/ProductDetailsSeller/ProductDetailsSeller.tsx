@@ -9,7 +9,7 @@ export const ProductDetailsSeller = async ({ seller }: { seller?: SellerProps })
   const t = await getTranslations('products');
 
   const hasAddress = seller.city || seller.address_line;
-  const hasContact = seller.email;
+  const hasContact = seller.phone || seller.email;
 
   return (
     <div className="rounded-sm border">
@@ -29,7 +29,12 @@ export const ProductDetailsSeller = async ({ seller }: { seller?: SellerProps })
               {t('seller_address')}: {[seller.city, seller.address_line].filter(Boolean).join(' · ')}
             </p>
           )}
-          {hasContact && (
+          {seller.phone && (
+            <p className="label-md text-secondary">
+              {t('seller_phone')}: <a href={`tel:${seller.phone}`}>{seller.phone}</a>
+            </p>
+          )}
+          {seller.email && (
             <p className="label-md text-secondary">
               {t('seller_contact')}: {seller.email}
             </p>

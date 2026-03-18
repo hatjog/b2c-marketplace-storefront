@@ -98,6 +98,7 @@
     "seller_reviews": "Opinie o sprzedawcy",
     "seller_address": "Adres",
     "seller_contact": "Kontakt",
+    "seller_phone": "Telefon",
     "trust_curation": "Kuratela BonBeauty",
     "trust_curation_desc": "Salon przeszedł proces selekcji jakości. Usługę świadczy salon bezpośrednio.",
     "trust_policy": "Zasady realizacji",
@@ -317,5 +318,9 @@
     "contact_email": "kontakt@bonbeauty.pl",
     "last_updated": "Ostatnia aktualizacja",
     "agent_disclaimer": "BonBeauty jest pośrednikiem. Usługę świadczy salon."
+  },
+  "routes": {
+    "terms_of_service": "/regulamin",
+    "privacy_policy": "/polityka-prywatnosci"
   }
 }

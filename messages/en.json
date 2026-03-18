@@ -98,6 +98,7 @@
     "seller_reviews": "Seller reviews",
     "seller_address": "Address",
     "seller_contact": "Contact",
+    "seller_phone": "Phone",
     "trust_curation": "BonBeauty Curation",
     "trust_curation_desc": "This salon passed our quality selection process. The service is provided directly by the salon.",
     "trust_policy": "Redemption Policy",
@@ -317,5 +318,9 @@
     "contact_email": "kontakt@bonbeauty.pl",
     "last_updated": "Last updated",
     "agent_disclaimer": "BonBeauty acts as an intermediary. Services are provided by the salon."
+  },
+  "routes": {
+    "terms_of_service": "/terms-of-service",
+    "privacy_policy": "/privacy-policy"
   }
 }

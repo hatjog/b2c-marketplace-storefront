@@ -57,6 +57,12 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true
+  },
+  async rewrites() {
+    return [
+      { source: '/en/terms-of-service', destination: '/en/regulamin' },
+      { source: '/en/privacy-policy', destination: '/en/polityka-prywatnosci' }
+    ];
   }
 };
 

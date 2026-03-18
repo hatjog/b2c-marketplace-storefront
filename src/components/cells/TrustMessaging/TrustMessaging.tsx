@@ -4,6 +4,7 @@ import LocalizedLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
 export const TrustMessaging = async () => {
   const t = await getTranslations('products');
+  const tRoutes = await getTranslations('routes');
 
   const cards = [
     {
@@ -13,8 +14,7 @@ export const TrustMessaging = async () => {
     {
       title: t('trust_policy'),
       description: t('trust_policy_desc'),
-      // TODO: Change to /regulamin when Story 2.8 delivers legal pages
-      link: '/polityka-prywatnosci',
+      link: tRoutes('terms_of_service'),
       linkText: t('trust_policy_link')
     },
     {

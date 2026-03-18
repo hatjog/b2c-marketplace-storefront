@@ -18,5 +18,6 @@ export type SellerProps = SellerAddress & {
   reviews?: any[];
   products?: Product[];
   email?: string;
+  phone?: string;
   store_status?: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
 };
