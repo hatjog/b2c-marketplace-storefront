@@ -1,12 +1,13 @@
 import { Heading } from '@medusajs/ui';
 import { isEmpty } from 'lodash';
+import { getTranslations } from 'next-intl/server';
 
 import { OrdersPagination } from '@/components/organisms/OrdersPagination/OrdersPagination';
 import { SingleOrderReturn } from '@/components/organisms/SingleOrderReturn/SingleOrderReturn';
 
 const LIMIT = 10;
 
-export const OrderReturnRequests = ({
+export const OrderReturnRequests = async ({
   returns = [],
   user,
   page,
@@ -19,6 +20,7 @@ export const OrderReturnRequests = ({
   currentReturn: string;
   returnReasons: any[];
 }) => {
+  const t = await getTranslations('orders');
   const pages = Math.ceil(returns.length / LIMIT);
   const currentPage = +page || 1;
   const offset = (+currentPage - 1) * LIMIT;
@@ -36,13 +38,13 @@ export const OrderReturnRequests = ({
           className="heading-lg text-center uppercase"
           data-testid="no-returns-heading"
         >
-          No returns
+          {t('no_returns_heading')}
         </Heading>
         <p
           className="mx-auto mt-8 w-96 text-center text-secondary"
           data-testid="no-returns-description"
         >
-          {"You haven't requested any returns yet. Once you request a return, it will appear here."}
+          {t('no_returns_message')}
         </p>
       </div>
     );

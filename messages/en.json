@@ -13,7 +13,8 @@
     "none": "None",
     "yes": "Yes",
     "no": "No",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "edit": "Edit"
   },
   "header": {
     "logo_alt": "Logo",
@@ -119,7 +120,10 @@
     "more_from_seller": "More from this seller",
     "write_to_seller": "Write to salon",
     "price_label": "Price",
-    "no_results_quality": "No treatments found matching criteria"
+    "no_results_quality": "No treatments found matching criteria",
+    "seller_joined": "Joined {date}",
+    "report_seller": "Report Seller",
+    "chat_heading": "Chat"
   },
   "auth": {
     "login_heading": "Log in",
@@ -225,7 +229,8 @@
     "promo_remove_failed": "Failed to remove promotion code",
     "promo_code_heading": "Have promo code?",
     "promo_code_placeholder": "Enter code",
-    "promo_code_button": "Activate"
+    "promo_code_button": "Activate",
+    "gift_card": "Gift card"
   },
   "navigation": {
     "menu": "Menu",
@@ -244,7 +249,8 @@
     "parent_categories_aria": "Parent categories navigation",
     "search_aria": "Search products",
     "search_placeholder": "Search products",
-    "all_products": "All products"
+    "all_products": "All products",
+    "listings_count": "{count} listings"
   },
   "user": {
     "orders": "Orders",
@@ -266,7 +272,9 @@
     "cancel_description": "Select the items you want to cancel.",
     "cancel_button": "Cancel order",
     "select_items": "Select items",
-    "request_cancellation": "Request cancellation"
+    "request_cancellation": "Request cancellation",
+    "no_returns_heading": "No returns",
+    "no_returns_message": "You haven't requested any returns yet. Once you request a return, it will appear here."
   },
   "reviews": {
     "rating_label": "Rating",
@@ -322,5 +330,23 @@
   "routes": {
     "terms_of_service": "/terms-of-service",
     "privacy_policy": "/privacy-policy"
+  },
+  "wishlist": {
+    "all": "All",
+    "products": "Products",
+    "collections": "Collections"
+  },
+  "checkout": {
+    "payment_heading": "Payment",
+    "payment_method": "Payment method",
+    "payment_details": "Payment details",
+    "enter_card_details": "Enter card details",
+    "continue_to_review": "Continue to review",
+    "another_step_appears": "Another step will appear",
+    "delivery_heading": "Delivery",
+    "no_shipping_options": "No shipping options available",
+    "error_generic": "An error occurred",
+    "continue_to_payment": "Continue to payment",
+    "choose_delivery_option": "Choose delivery option"
   }
 }

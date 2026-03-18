@@ -3,12 +3,14 @@
 import { useState } from 'react';
 
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 import { Button, Divider } from '@/components/atoms';
 import { Modal, ReportSellerForm } from '@/components/molecules';
 import type { SellerProps } from '@/types/seller';
 
 export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
+  const t = useTranslations('products');
   const [openModal, setOpenModal] = useState(false);
   return (
     <div className="flex flex-col items-center justify-between p-5 lg:flex-row">
@@ -20,7 +22,7 @@ export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
           </div>
         )} */}
         <Divider square />
-        <p>Joined {format(seller.created_at, 'yyyy-MM-dd')}</p>
+        <p>{t('seller_joined', { date: format(seller.created_at, 'yyyy-MM-dd') })}</p>
         {/* <Divider square /> */}
         {/* <p>sold {seller.sold}</p> */}
       </div>
@@ -30,7 +32,7 @@ export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
         className="uppercase"
         onClick={() => setOpenModal(true)}
       >
-        Report Seller
+        {t('report_seller')}
       </Button>
       {openModal && (
         <Modal

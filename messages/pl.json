@@ -13,7 +13,8 @@
     "none": "Brak",
     "yes": "Tak",
     "no": "Nie",
-    "refresh": "Odśwież"
+    "refresh": "Odśwież",
+    "edit": "Edytuj"
   },
   "header": {
     "logo_alt": "Logo",
@@ -119,7 +120,10 @@
     "more_from_seller": "Więcej od tego sprzedawcy",
     "write_to_seller": "Napisz do salonu",
     "price_label": "Cena",
-    "no_results_quality": "Nie znaleziono zabiegów spełniających kryteria"
+    "no_results_quality": "Nie znaleziono zabiegów spełniających kryteria",
+    "seller_joined": "Dołączył: {date}",
+    "report_seller": "Zgłoś sprzedawcę",
+    "chat_heading": "Czat"
   },
   "auth": {
     "login_heading": "Zaloguj się",
@@ -225,7 +229,8 @@
     "promo_remove_failed": "Nie udało się usunąć kodu promocyjnego",
     "promo_code_heading": "Masz kod promocyjny?",
     "promo_code_placeholder": "Wpisz kod",
-    "promo_code_button": "Aktywuj"
+    "promo_code_button": "Aktywuj",
+    "gift_card": "Karta upominkowa"
   },
   "navigation": {
     "menu": "Menu",
@@ -244,7 +249,8 @@
     "parent_categories_aria": "Nawigacja kategorii nadrzędnych",
     "search_aria": "Szukaj produktów",
     "search_placeholder": "Szukaj produktów",
-    "all_products": "Wszystkie produkty"
+    "all_products": "Wszystkie produkty",
+    "listings_count": "{count} ofert"
   },
   "user": {
     "orders": "Zamówienia",
@@ -266,7 +272,9 @@
     "cancel_description": "Wybierz pozycje, które chcesz anulować.",
     "cancel_button": "Anuluj zamówienie",
     "select_items": "Wybierz produkty",
-    "request_cancellation": "Poproś o anulowanie"
+    "request_cancellation": "Poproś o anulowanie",
+    "no_returns_heading": "Brak zwrotów",
+    "no_returns_message": "Nie zgłoszono jeszcze żadnych zwrotów. Gdy złożysz wniosek o zwrot, pojawi się tutaj."
   },
   "reviews": {
     "rating_label": "Ocena",
@@ -322,5 +330,23 @@
   "routes": {
     "terms_of_service": "/regulamin",
     "privacy_policy": "/polityka-prywatnosci"
+  },
+  "wishlist": {
+    "all": "Wszystkie",
+    "products": "Produkty",
+    "collections": "Kolekcje"
+  },
+  "checkout": {
+    "payment_heading": "Płatność",
+    "payment_method": "Metoda płatności",
+    "payment_details": "Szczegóły płatności",
+    "enter_card_details": "Wprowadź dane karty",
+    "continue_to_review": "Przejdź do podsumowania",
+    "another_step_appears": "Kolejny krok zostanie wyświetlony",
+    "delivery_heading": "Dostawa",
+    "no_shipping_options": "Brak opcji dostawy",
+    "error_generic": "Wystąpił błąd",
+    "continue_to_payment": "Kontynuuj do płatności",
+    "choose_delivery_option": "Wybierz opcję dostawy"
   }
 }

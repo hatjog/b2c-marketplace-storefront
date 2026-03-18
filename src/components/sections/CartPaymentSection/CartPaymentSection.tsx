@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { RadioGroup } from '@headlessui/react';
 import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
 import { Container, Heading, Text } from '@medusajs/ui';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
@@ -31,6 +32,10 @@ const CartPaymentSection = ({
   cart: any;
   availablePaymentMethods: StoreCardPaymentMethod[] | null;
 }) => {
+  const t = useTranslations('checkout');
+  const tCart = useTranslations('cart');
+  const tCommon = useTranslations('common');
+
   const activeSession = cart.payment_collection?.payment_sessions?.find(
     (paymentSession: any) => paymentSession.status === 'pending'
   );
@@ -123,7 +128,7 @@ const CartPaymentSection = ({
           className="text-3xl-regular flex flex-row items-center items-baseline gap-x-2"
         >
           {!isOpen && paymentReady && <CheckCircleSolid />}
-          Payment
+          {t('payment_heading')}
         </Heading>
         {isEditEnabled && (
           <Text>
@@ -132,7 +137,7 @@ const CartPaymentSection = ({
               onClick={handleEdit}
               variant="tonal"
             >
-              Edit
+              {tCommon('edit')}
             </Button>
           </Text>
         )}
@@ -171,12 +176,12 @@ const CartPaymentSection = ({
 
           {paidByGiftcard && (
             <div className="flex w-1/3 flex-col">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">Payment method</Text>
+              <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('payment_method')}</Text>
               <Text
                 className="txt-medium text-ui-fg-subtle"
                 data-testid="payment-method-summary"
               >
-                Gift card
+                {tCart('gift_card')}
               </Text>
             </div>
           )}
@@ -193,8 +198,8 @@ const CartPaymentSection = ({
             disabled={(isStripe && !cardComplete) || (!selectedPaymentMethod && !paidByGiftcard)}
           >
             {!activeSession && isStripeFunc(selectedPaymentMethod)
-              ? ' Enter card details'
-              : 'Continue to review'}
+              ? t('enter_card_details')
+              : t('continue_to_review')}
           </Button>
         </div>
 
@@ -202,7 +207,7 @@ const CartPaymentSection = ({
           {cart && paymentReady && activeSession ? (
             <div className="flex w-full items-start gap-x-1">
               <div className="flex w-1/3 flex-col">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">Payment method</Text>
+                <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('payment_method')}</Text>
                 <Text
                   className="txt-medium text-ui-fg-subtle"
                   data-testid="payment-method-summary"
@@ -211,7 +216,7 @@ const CartPaymentSection = ({
                 </Text>
               </div>
               <div className="flex w-1/3 flex-col">
-                <Text className="txt-medium-plus text-ui-fg-base mb-1">Payment details</Text>
+                <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('payment_details')}</Text>
                 <div
                   className="txt-medium text-ui-fg-subtle flex items-center gap-2"
                   data-testid="payment-details-summary"
@@ -225,19 +230,19 @@ const CartPaymentSection = ({
                   <Text>
                     {isStripeFunc(selectedPaymentMethod) && cardBrand
                       ? cardBrand
-                      : 'Another step will appear'}
+                      : t('another_step_appears')}
                   </Text>
                 </div>
               </div>
             </div>
           ) : paidByGiftcard ? (
             <div className="flex w-1/3 flex-col">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">Payment method</Text>
+              <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('payment_method')}</Text>
               <Text
                 className="txt-medium text-ui-fg-subtle"
                 data-testid="payment-method-summary"
               >
-                Gift card
+                {tCart('gift_card')}
               </Text>
             </div>
           ) : null}

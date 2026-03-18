@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 
 const _selectOptions = [
@@ -9,6 +10,7 @@ const _selectOptions = [
 ];
 
 export const ProductListingHeader = ({ total }: { total: number }) => {
+  const t = useTranslations('navigation');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -21,7 +23,7 @@ export const ProductListingHeader = ({ total }: { total: number }) => {
       className="flex w-full items-center justify-between"
       data-testid="product-listing-header"
     >
-      <div data-testid="product-listing-total">{total} listings</div>
+      <div data-testid="product-listing-total">{t('listings_count', { count: total })}</div>
       {/* <div className='hidden md:flex gap-2 items-center'>
         Sort by:{' '}
         <SelectField

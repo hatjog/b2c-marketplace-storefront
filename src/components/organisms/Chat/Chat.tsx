@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { ChatBox } from '@/components/cells/ChatBox/ChatBox';
@@ -33,6 +34,7 @@ export const Chat = ({
   variant?: 'tonal' | 'filled';
   buttonSize?: 'small' | 'large';
 }) => {
+  const t = useTranslations('products');
   const [modal, setModal] = useState(false);
 
   if (!TALKJS_APP_ID) {
@@ -47,11 +49,11 @@ export const Chat = ({
         className={buttonClassNames}
         size={buttonSize}
       >
-        {icon ? <MessageIcon size={20} /> : 'Write to seller'}
+        {icon ? <MessageIcon size={20} /> : t('write_to_seller')}
       </Button>
       {modal && (
         <Modal
-          heading="Chat"
+          heading={t('chat_heading')}
           onClose={() => setModal(false)}
         >
           <div className="px-4">
