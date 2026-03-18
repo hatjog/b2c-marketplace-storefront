@@ -1,24 +1,27 @@
-import { ProductPageAccordion } from '@/components/molecules';
+import { getTranslations } from 'next-intl/server';
 
-export const ProductDetailsShipping = () => {
+import { ProductPageAccordion } from '@/components/molecules';
+import LocalizedLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+
+export const ProductDetailsShipping = async () => {
+  const t = await getTranslations('products');
+
   return (
     <ProductPageAccordion
-      heading="Shipping & Returns"
+      heading={t('shipping_heading')}
       defaultOpen={false}
     >
       <div className="product-details">
-        <ul>
-          <li>
-            Free standard shipping on all orders within the continental U.S. Expedited shipping
-            options are available at an additional cost. Orders typically ship within 3-5 business
-            days.
-          </li>
-          <li>
-            We offer a 30-day return policy. If you are not completely satisfied with your purchase,
-            you can return the chair for a full refund or exchange, provided it is in its original
-            condition and packaging.
-          </li>
-        </ul>
+        <p className="label-md text-secondary">
+          {t('shipping_info')}
+        </p>
+        {/* TODO: Change to /regulamin when Story 2.8 delivers legal pages */}
+        <LocalizedLink
+          href="/polityka-prywatnosci"
+          className="label-md mt-2 inline-block text-accent underline"
+        >
+          {t('shipping_policy_link')}
+        </LocalizedLink>
       </div>
     </ProductPageAccordion>
   );

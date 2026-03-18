@@ -71,7 +71,7 @@
     "rating_disclaimer": "Excludes listings without ratings"
   },
   "products": {
-    "add_to_cart": "Add to cart",
+    "add_to_cart": "Gift this moment",
     "add_to_wishlist": "Add to wishlist",
     "out_of_stock": "Out of stock",
     "price_from": "from",
@@ -95,7 +95,28 @@
     "image_placeholder_alt": "{name} product placeholder image",
     "see_more": "See more",
     "seller_aria": "Go to seller {name}",
-    "seller_reviews": "Seller reviews"
+    "seller_reviews": "Seller reviews",
+    "seller_address": "Address",
+    "seller_contact": "Contact",
+    "trust_curation": "BonBeauty Curation",
+    "trust_curation_desc": "This salon passed our quality selection process. The service is provided directly by the salon.",
+    "trust_policy": "Redemption Policy",
+    "trust_policy_desc": "Details in terms of service",
+    "trust_policy_link": "Read terms of service",
+    "trust_validity": "Voucher Validity",
+    "trust_validity_desc": "12 months from purchase",
+    "shipping_heading": "Redemption & Returns",
+    "shipping_info": "Redeem your voucher directly at the salon. Detailed terms are available in our terms of service.",
+    "shipping_policy_link": "Read terms of service",
+    "description_heading": "Treatment description",
+    "attributes_heading": "Details",
+    "not_available_in_region": "Not available in your region",
+    "error_adding_to_cart": "Error adding to cart",
+    "posted_date": "Posted",
+    "report_listing": "Report listing",
+    "more_from_seller": "More from this seller",
+    "write_to_seller": "Write to salon",
+    "price_label": "Price"
   },
   "auth": {
     "login_heading": "Log in",

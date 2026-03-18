@@ -1,18 +1,21 @@
+import { getTranslations } from 'next-intl/server';
+
 import { ProductPageAccordion } from '@/components/molecules';
 import type { AdditionalAttributeProps } from '@/types/product';
 
-export const ProductAdditionalAttributes = ({
+export const ProductAdditionalAttributes = async ({
   attributes
 }: {
   attributes: AdditionalAttributeProps[];
 }) => {
   if (!attributes?.length) return null;
 
+  const t = await getTranslations('products');
   const nonEmptyAttributes = attributes.filter(attribute => !!attribute && attribute.id);
 
   return (
     <ProductPageAccordion
-      heading="Additional attributes"
+      heading={t('attributes_heading')}
       defaultOpen={false}
       data-testid="product-additional-attributes-section"
     >

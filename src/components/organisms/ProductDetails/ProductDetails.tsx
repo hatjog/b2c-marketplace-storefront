@@ -8,6 +8,7 @@ import {
   ProductDetailsShipping,
   ProductPageDetails
 } from '@/components/cells';
+import { TrustMessaging } from '@/components/cells/TrustMessaging/TrustMessaging';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -42,6 +43,7 @@ export const ProductDetails = async ({
         user={user}
         wishlist={wishlist}
       />
+      <TrustMessaging />
       <ProductPageDetails details={product?.description || ''} />
       <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
       <ProductDetailsShipping />

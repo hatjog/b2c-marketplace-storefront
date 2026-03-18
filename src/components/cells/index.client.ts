@@ -13,4 +13,5 @@ export { PriceFilter } from './PriceFilter/PriceFilter';
 export { ProductCarousel } from './ProductCarousel/ProductCarousel';
 export { ProductDetailsHeader } from './ProductDetailsHeader/ProductDetailsHeader';
 export { SellerRatingFilter } from './SellerRatingFilter/SellerRatingFilter';
+export { StickyAddToCart } from './StickyAddToCart/StickyAddToCart';
 export { TagFilter } from './TagFilter/TagFilter';

@@ -1,12 +1,16 @@
+import { getTranslations } from 'next-intl/server';
+
 import { ProductPageAccordion } from '@/components/molecules';
 
-export const ProductPageDetails = ({ details }: { details: string }) => {
+export const ProductPageDetails = async ({ details }: { details: string }) => {
   if (!details) return null;
+
+  const t = await getTranslations('products');
 
   return (
     <ProductPageAccordion
-      heading="Product details"
-      defaultOpen={false}
+      heading={t('description_heading')}
+      defaultOpen={true}
       data-testid="product-details-section"
     >
       <div

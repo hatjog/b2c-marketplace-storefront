@@ -1,6 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { ProductVariants } from '@/components/molecules';
@@ -40,6 +41,7 @@ export const ProductDetailsHeader = ({
 }) => {
   const { addToCart, onAddToCart, cart, isAddingItem } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
+  const t = useTranslations('products');
 
   const { cheapestVariant, cheapestPrice } = getProductPrice({
     product
@@ -108,8 +110,8 @@ export const ProductDetailsHeader = ({
       });
     } catch {
       toast.error({
-        title: 'Error adding to cart',
-        description: 'Some variant does not have the required inventory'
+        title: t('error_adding_to_cart'),
+        description: ''
       });
     }
   };
@@ -157,7 +159,7 @@ export const ProductDetailsHeader = ({
                 className="label-md pb-4 pt-2 text-secondary"
                 data-testid="product-price-unavailable"
               >
-                Not available in your region
+                {t('not_available_in_region')}
               </span>
             )}
           </div>
@@ -183,15 +185,15 @@ export const ProductDetailsHeader = ({
         onClick={handleAddToCart}
         disabled={isAddToCartDisabled}
         loading={isAddingItem}
-        className="mb-4 flex w-full justify-center py-3 uppercase"
+        className="mb-4 flex w-full justify-center py-3"
         size="large"
         data-testid="product-add-to-cart-button"
       >
         {!hasAnyPrice
-          ? 'NOT AVAILABLE IN YOUR REGION'
+          ? t('not_available_in_region')
           : variantStock && variantHasPrice
-            ? 'ADD TO CART'
-            : 'OUT OF STOCK'}
+            ? t('add_to_cart')
+            : t('out_of_stock')}
       </Button>
       {/* Seller message */}
 
@@ -199,7 +201,7 @@ export const ProductDetailsHeader = ({
         <Chat
           user={user}
           seller={product.seller}
-          buttonClassNames="w-full uppercase"
+          buttonClassNames="w-full"
           product={product}
         />
       )}

@@ -1,4 +1,7 @@
+import { getTranslations } from 'next-intl/server';
+
 import NotFound from '@/app/not-found';
+import { StickyAddToCart } from '@/components/cells/StickyAddToCart/StickyAddToCart';
 import { ProductDetails, ProductGallery } from '@/components/organisms';
 import { listProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -25,8 +28,8 @@ export const ProductDetailsPage = async ({
     return NotFound();
   }
 
+  const t = await getTranslations('products');
   const relatedSellerProducts = prod.seller?.products?.length ? prod.seller.products : null;
-  const relatedHeading = locale.startsWith('pl') ? 'Więcej od tego sprzedawcy' : 'More from this seller';
 
   return (
     <>
@@ -53,12 +56,16 @@ export const ProductDetailsPage = async ({
       {relatedSellerProducts && (
         <div className="my-8">
           <HomeProductSection
-            heading={relatedHeading}
+            heading={t('more_from_seller')}
             products={relatedSellerProducts}
             locale={locale}
           />
         </div>
       )}
+      <StickyAddToCart
+        product={prod}
+        countryCode={countryCode}
+      />
     </>
   );
 };
