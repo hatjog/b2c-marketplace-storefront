@@ -223,7 +223,7 @@ export const ProductListing = async ({
       <div className="hidden md:block">
         <ProductListingActiveFilters />
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
         {showSidebar && (
           <ProductSidebar
             filters={storefrontFilters}
@@ -233,7 +233,7 @@ export const ProductListing = async ({
           />
         )}
         <section
-          className={showSidebar ? 'col-span-3' : 'col-span-4'}
+          className={showSidebar ? 'lg:col-span-3' : 'col-span-full'}
           data-testid="product-listing-section"
         >
           {paginatedProducts.length === 0 ? (
@@ -243,7 +243,7 @@ export const ProductListing = async ({
             </div>
           ) : (
             <div
-              className="flex flex-wrap gap-4"
+              className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
               data-testid="product-list"
             >
               <ProductsList products={paginatedProducts} />

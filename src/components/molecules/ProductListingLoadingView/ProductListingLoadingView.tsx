@@ -3,7 +3,7 @@ import { PRODUCT_LIMIT } from '@/const';
 
 const ProductListingLoadingView = () => (
   <div
-    className="flex flex-wrap gap-4"
+    className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
     data-testid="product-listing-loading-view"
   >
     {Array.from({ length: PRODUCT_LIMIT }).map((_, idx) => (

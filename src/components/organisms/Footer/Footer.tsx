@@ -26,7 +26,7 @@ export async function Footer({ marketConfig }: { marketConfig?: MarketConfig | n
       className="container bg-primary"
       data-testid="footer"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {navSections.map(({ section, links }) => (
           <div
             key={section}

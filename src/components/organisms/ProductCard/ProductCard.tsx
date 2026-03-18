@@ -54,7 +54,7 @@ export const ProductCard = ({
   return (
     <div
       className={cn(
-        'group relative flex w-full min-w-[250px] flex-col justify-between rounded-sm border p-1 lg:w-[calc(25%-1rem)]',
+        'group relative flex w-full flex-col justify-between rounded-sm border p-1',
         className
       )}
       data-testid="product-item"
@@ -80,7 +80,7 @@ export const ProductCard = ({
                 alt={t('image_alt', { name: productName })}
                 width={100}
                 height={100}
-                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                 className="aspect-square h-full w-full rounded-xs object-cover object-center transition-all duration-300 lg:group-hover:-mt-14"
                 data-testid="product-card-image"
               />
@@ -92,7 +92,7 @@ export const ProductCard = ({
                 alt={t('image_placeholder_alt', { name: productName })}
                 width={100}
                 height={100}
-                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                 data-testid="product-card-placeholder-image"
               />
             )}
