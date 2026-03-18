@@ -99,6 +99,33 @@ describe('getImageUrl', () => {
     );
     expect(console.warn).not.toHaveBeenCalled();
   });
+
+  it('strips trailing slash from portalBaseUrl before prefixing', () => {
+    expect(getImageUrl('/api/media/file/x.jpg', undefined, 'http://localhost:9003/')).toBe(
+      'http://localhost:9003/api/media/file/x.jpg',
+    );
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('returns fallback when image is whitespace-only string', () => {
+    expect(getImageUrl('   ', '/fallback.jpg')).toBe('/fallback.jpg');
+    expect(console.warn).toHaveBeenCalledWith('[homepage] image missing, using fallback:', '/fallback.jpg');
+  });
+
+  it('returns null when image is whitespace-only and no fallback', () => {
+    expect(getImageUrl('   ')).toBeNull();
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('returns fallback as-is when image is null and portalBaseUrl is provided', () => {
+    expect(getImageUrl(null, '/images/hero/Image.jpg', 'http://localhost:9003')).toBe('/images/hero/Image.jpg');
+    expect(console.warn).toHaveBeenCalledWith('[homepage] image missing, using fallback:', '/images/hero/Image.jpg');
+  });
+
+  it('returns fallback as-is when image is empty and portalBaseUrl is provided', () => {
+    expect(getImageUrl('', '/images/placeholder.svg', 'http://localhost:9003')).toBe('/images/placeholder.svg');
+    expect(console.warn).toHaveBeenCalledWith('[homepage] image missing, using fallback:', '/images/placeholder.svg');
+  });
 });
 
 describe('getBannerSectionData — fallback propagation', () => {

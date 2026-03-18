@@ -66,17 +66,21 @@ function normalizeText(value: string | null | undefined): string {
 
 export function getImageUrl(image: HeroImage, fallback?: string, portalBaseUrl?: string): string | null {
   // !image catches null/undefined; || null normalizes empty strings to null
-  const resolved =
+  const raw =
     !image ? null
     : typeof image === 'string' ? (image || null)
     : image.url || null;
+
+  // Trim whitespace-only strings so they are treated as missing
+  const resolved = raw?.trim() || null;
 
   if (resolved) {
     // Prefix relative paths (e.g. /api/media/...) with portal base URL so
     // storefront server components resolve images against Portal, not their own origin.
     // Only applied when portalBaseUrl is provided and the path is root-relative.
     if (portalBaseUrl && resolved.startsWith('/') && !resolved.startsWith('//')) {
-      return `${portalBaseUrl}${resolved}`;
+      const base = portalBaseUrl.replace(/\/$/, '');
+      return `${base}${resolved}`;
     }
     return resolved;
   }
