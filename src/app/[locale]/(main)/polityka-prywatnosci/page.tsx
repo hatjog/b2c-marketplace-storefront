@@ -126,6 +126,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
                 {header.map((cell, idx) => (
                   <th
                     key={idx}
+                    scope="col"
                     style={{
                       textAlign: 'left',
                       padding: '0.5rem 0.75rem',
@@ -155,6 +156,37 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             </tbody>
           </table>
         </div>
+      );
+      continue;
+    }
+
+    // Unordered list item
+    if (line.startsWith('- ')) {
+      const listItems: string[] = [];
+      while (i < lines.length && lines[i].startsWith('- ')) {
+        listItems.push(lines[i].slice(2));
+        i++;
+      }
+      nodes.push(
+        <ul
+          key={nextKey()}
+          style={{
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '1rem',
+            lineHeight: 1.6,
+            color: '#1A1A1A',
+            paddingLeft: '1.5rem',
+            marginTop: '0.5rem',
+            marginBottom: '0.75rem',
+            listStyleType: 'disc'
+          }}
+        >
+          {listItems.map((item, idx) => (
+            <li key={idx} style={{ marginBottom: '0.25rem' }}>
+              {renderInline(item)}
+            </li>
+          ))}
+        </ul>
       );
       continue;
     }
@@ -218,14 +250,23 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
 }
 
 function loadPrivacyPolicyContent(): { nodes: ReactNode[]; lastUpdated: string } {
-  const filePath = join(process.cwd(), '..', '..', 'specs', 'ops', 'privacy-policy-draft-v120.md');
-  let content: string;
-  try {
-    content = readFileSync(filePath, 'utf-8');
-  } catch {
-    // Fallback path for different working directory contexts
-    const fallbackPath = join(process.cwd(), 'specs', 'ops', 'privacy-policy-draft-v120.md');
-    content = readFileSync(fallbackPath, 'utf-8');
+  const candidates = [
+    join(process.cwd(), '..', '..', 'specs', 'ops', 'privacy-policy-draft-v120.md'),
+    join(process.cwd(), 'specs', 'ops', 'privacy-policy-draft-v120.md'),
+  ];
+  let content: string | undefined;
+  for (const candidate of candidates) {
+    try {
+      content = readFileSync(candidate, 'utf-8');
+      break;
+    } catch {
+      // try next candidate
+    }
+  }
+  if (!content) {
+    throw new Error(
+      `Privacy policy source file not found. Tried:\n${candidates.join('\n')}`
+    );
   }
 
   const dateMatch = content.match(/^Data:\s*(.+)$/m);
