@@ -17,7 +17,7 @@
  * VALUE FORMAT: RGB tuples only (e.g. "220, 130, 150")
  * NOT hex. Required by rgba(var(--...)) wrappers in tailwind.config.ts.
  *
- * WCAG AA verified: brand-900 on brand-25 = 16.42:1 (PASS).
+ * WCAG AAA verified: brand-900 on brand-25 = 16.42:1 (PASS).
  */
 
 :root {

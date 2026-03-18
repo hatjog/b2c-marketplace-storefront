@@ -13,7 +13,7 @@ const REQUIRED_BRAND_VARS = [
   '--brand-900'
 ];
 
-const RGB_TUPLE_RE = /\d{1,3},\s*\d{1,3},\s*\d{1,3}/;
+const RGB_TUPLE_RE = /(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)),\s*(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)),\s*(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?))/;
 
 // ---------- Theme CSS validation ----------
 
@@ -42,8 +42,13 @@ describe('theme CSS: bonbeauty', () => {
 describe('layout.tsx: theme loading', () => {
   const layout = read('src/app/layout.tsx');
 
+  test('validates theme against allowlist before constructing stylesheet path', () => {
+    assert.match(layout, /VALID_THEMES/);
+    assert.match(layout, /VALID_THEMES\.includes\(marketConfig\.theme\)/);
+  });
+
   test('resolves theme stylesheet from marketConfig.theme', () => {
-    assert.match(layout, /marketConfig\.theme\s*\?\s*`\/themes\/\$\{marketConfig\.theme\}\.css`/);
+    assert.match(layout, /`\/themes\/\$\{marketConfig\.theme\}\.css`/);
   });
 
   test('conditionally renders <link> for theme stylesheet', () => {

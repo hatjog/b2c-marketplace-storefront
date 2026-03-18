@@ -67,7 +67,11 @@ export default async function RootLayout({
   const htmlStyle: CSSProperties | undefined = marketConfig.primary_color
     ? ({ '--color-primary': marketConfig.primary_color } as CSSProperties)
     : undefined;
-  const themeStylesheet = marketConfig.theme ? `/themes/${marketConfig.theme}.css` : null;
+  const VALID_THEMES = ['bonbeauty', 'default'];
+  const themeStylesheet =
+    marketConfig.theme && VALID_THEMES.includes(marketConfig.theme)
+      ? `/themes/${marketConfig.theme}.css`
+      : null;
   // KNOWN LIMITATION: Root layout sits outside the [locale] segment so
   // params.locale is unavailable here. The static default is corrected
   // client-side by <HtmlLangSetter /> (uses next-intl useLocale()).
