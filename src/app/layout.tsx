@@ -13,6 +13,8 @@ import { resolveMarketConfig } from '@/lib/portal.server';
 
 import { Providers } from './providers';
 
+const VALID_THEMES = ['bonbeauty'] as const;
+
 const funnelDisplay = Funnel_Display({
   variable: '--font-funnel-sans',
   subsets: ['latin'],
@@ -67,9 +69,8 @@ export default async function RootLayout({
   const htmlStyle: CSSProperties | undefined = marketConfig.primary_color
     ? ({ '--color-primary': marketConfig.primary_color } as CSSProperties)
     : undefined;
-  const VALID_THEMES = ['bonbeauty', 'default'];
   const themeStylesheet =
-    marketConfig.theme && VALID_THEMES.includes(marketConfig.theme)
+    marketConfig.theme && (VALID_THEMES as readonly string[]).includes(marketConfig.theme)
       ? `/themes/${marketConfig.theme}.css`
       : null;
   // KNOWN LIMITATION: Root layout sits outside the [locale] segment so

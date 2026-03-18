@@ -44,7 +44,20 @@ describe('layout.tsx: theme loading', () => {
 
   test('validates theme against allowlist before constructing stylesheet path', () => {
     assert.match(layout, /VALID_THEMES/);
-    assert.match(layout, /VALID_THEMES\.includes\(marketConfig\.theme\)/);
+    assert.match(layout, /VALID_THEMES[^]*\.includes\(/);
+  });
+
+  test('rejects invalid theme names (path traversal, unknown values)', () => {
+    // Extract VALID_THEMES array from layout source
+    const match = layout.match(/const VALID_THEMES\s*=\s*\[([^\]]+)\]/);
+    assert.ok(match, 'VALID_THEMES declaration not found in layout.tsx');
+    const validThemes = match[1].match(/'([^']+)'/g).map(s => s.replace(/'/g, ''));
+
+    // Negative cases: none of these should be in the allowlist
+    const malicious = ['../../etc/passwd', '../secrets', 'javascript:alert(1)', '', ' ', 'unknown'];
+    for (const bad of malicious) {
+      assert.ok(!validThemes.includes(bad), `VALID_THEMES should not contain '${bad}'`);
+    }
   });
 
   test('resolves theme stylesheet from marketConfig.theme', () => {
@@ -148,5 +161,31 @@ describe('BonBeauty fixture: branding fields', () => {
     const themeName = themeMatch[1];
     const cssPath = path.join(root, 'public', 'themes', `${themeName}.css`);
     assert.ok(fs.existsSync(cssPath), `Theme CSS file missing: ${cssPath}`);
+  });
+
+  test('theme value is present in VALID_THEMES allowlist in layout.tsx', () => {
+    const themeMatch = yaml.match(/^theme:\s*(\S+)/m);
+    assert.ok(themeMatch, 'theme field not found');
+    const themeName = themeMatch[1];
+    const layout = read('src/app/layout.tsx');
+    const allowlistMatch = layout.match(/const VALID_THEMES\s*=\s*\[([^\]]+)\]/);
+    assert.ok(allowlistMatch, 'VALID_THEMES declaration not found');
+    assert.ok(allowlistMatch[1].includes(`'${themeName}'`), `Theme '${themeName}' not in VALID_THEMES`);
+  });
+});
+
+// ---------- Cross-validation: VALID_THEMES ↔ filesystem ----------
+
+describe('VALID_THEMES ↔ filesystem consistency', () => {
+  const layout = read('src/app/layout.tsx');
+  const match = layout.match(/const VALID_THEMES\s*=\s*\[([^\]]+)\]/);
+
+  test('every entry in VALID_THEMES has a corresponding CSS file', () => {
+    assert.ok(match, 'VALID_THEMES declaration not found');
+    const themes = match[1].match(/'([^']+)'/g).map(s => s.replace(/'/g, ''));
+    for (const theme of themes) {
+      const cssPath = path.join(root, 'public', 'themes', `${theme}.css`);
+      assert.ok(fs.existsSync(cssPath), `VALID_THEMES lists '${theme}' but ${cssPath} does not exist`);
+    }
   });
 });
