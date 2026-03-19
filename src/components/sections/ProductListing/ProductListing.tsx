@@ -109,7 +109,7 @@ export const ProductListing = async ({
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'pl',
   searchParams = {}
 }: {
-  category_id?: string;
+  category_id?: string | string[];
   collection_id?: string;
   seller_id?: string;
   showSidebar?: boolean;

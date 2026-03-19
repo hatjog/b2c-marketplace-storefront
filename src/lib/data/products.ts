@@ -29,7 +29,7 @@ export const listProducts = async ({
     HttpTypes.StoreProductParams & {
       handle?: string[];
     };
-  category_id?: string;
+  category_id?: string | string[];
   collection_id?: string;
   countryCode?: string;
   regionId?: string;
@@ -147,7 +147,7 @@ export const listFilteredProducts = async ({
   countryCode,
 }: {
   tagIds?: string[];
-  categoryId?: string;
+  categoryId?: string | string[];
   cities?: string[];
   durations?: number[];
   sellerRatings?: number[];
@@ -177,7 +177,7 @@ export const listFilteredProducts = async ({
   };
 
   if (tagIds?.length) params.tag_id = tagIds.join(',');
-  if (categoryId) params.category_id = categoryId;
+  if (categoryId) params.category_id = Array.isArray(categoryId) ? categoryId.join(',') : categoryId;
   if (cities?.length) params.city = cities.join(',');
   if (durations?.length) params.duration = durations.join(',');
   if (sellerRatings?.length) params.seller_rating = sellerRatings.join(',');
@@ -240,7 +240,7 @@ export const listProductsWithSort = async ({
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
   sortBy?: SortOptions;
   countryCode: string;
-  category_id?: string;
+  category_id?: string | string[];
   seller_id?: string;
   collection_id?: string;
   cities?: string[];

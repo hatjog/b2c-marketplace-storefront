@@ -7,14 +7,12 @@ import Script from 'next/script';
 
 import { Breadcrumbs } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
-import { AlgoliaProductsListing } from '@/components/sections/ProductListing/AlgoliaProductsListing';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 import { getCategoryByHandle } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
-import { getRegion, listRegions } from '@/lib/data/regions';
+import { listRegions } from '@/lib/data/regions';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
-import isBot from '@/lib/helpers/isBot';
 
 export const revalidate = 60;
 
@@ -75,9 +73,6 @@ export async function generateMetadata({
   };
 }
 
-const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
-const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
-
 async function Category({
   params,
   searchParams
@@ -97,9 +92,10 @@ async function Category({
     return notFound();
   }
   const countryCode = await getCountryCode(locale);
-  const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
-  const ua = (await headers()).get('user-agent') || '';
-  const bot = isBot(ua);
+
+  // Collect category IDs: parent + all children (products live in leaf categories)
+  const childIds = (category.category_children || []).map((c: { id: string }) => c.id);
+  const categoryIds = childIds.length > 0 ? [category.id, ...childIds] : category.id;
 
   const breadcrumbsItems = [
     {
@@ -118,7 +114,7 @@ async function Category({
   } = await listProducts({
     countryCode,
     queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' },
-    category_id: category.id
+    category_id: categoryIds
   });
 
   const itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({
@@ -172,21 +168,12 @@ async function Category({
           </div>
         }
       >
-        {bot || !ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-          <ProductListing
-            category_id={category.id}
-            showSidebar
-            locale={locale}
-            searchParams={resolvedSearchParams}
-          />
-        ) : (
-          <AlgoliaProductsListing
-            category_id={category.id}
-            locale={locale}
-            countryCode={countryCode}
-            currency_code={currency_code}
-          />
-        )}
+        <ProductListing
+          category_id={categoryIds}
+          showSidebar
+          locale={locale}
+          searchParams={resolvedSearchParams}
+        />
       </Suspense>
     </main>
   );

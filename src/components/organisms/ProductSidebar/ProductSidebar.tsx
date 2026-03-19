@@ -46,8 +46,8 @@ export const ProductSidebar = ({
       </Button>
       <div
         className={cn(
-          'pointer-events-none left-0 top-0 h-full w-full bg-primary blur-sm transition-opacity duration-100 md:relative',
-          filterModal ? 'opacity-1 z-20' : '-z-10 opacity-0 md:z-10 md:opacity-100'
+          'left-0 top-0 h-full w-full bg-primary transition-opacity duration-100 pointer-events-none blur-sm md:pointer-events-auto md:blur-none md:relative',
+          filterModal ? 'opacity-1 z-20 pointer-events-auto blur-none' : '-z-10 opacity-0 md:z-10 md:opacity-100'
         )}
       >
         {filterModal && (
