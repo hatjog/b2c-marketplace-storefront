@@ -1,7 +1,7 @@
 import { Carousel } from '@/components/cells';
 import { CategoryCard } from '@/components/organisms';
 
-type HomeCategory = { name: string; handle: string; id?: number };
+type HomeCategory = { name: string; handle: string; id?: number; metadata?: { photo_url?: string } };
 
 export const categories: { id: number; name: string; handle: string }[] = [
   {

@@ -12,6 +12,7 @@ const PLACEHOLDER_PATTERNS = [
   /no-image/i,
   /default-product/i,
   /via\.placeholder\.com/i,
+  /cdn\.example\.com/i,
 ];
 
 type QualityGateFailure = { criterion: string; detail: string };
@@ -24,7 +25,8 @@ function checkQualityGate(product: ListedProduct): QualityGateFailure[] {
     failures.push({ criterion: 'description', detail: `words=${wordCount} < ${MIN_DESCRIPTION_WORDS}` });
   }
 
-  const hasValidPrice = product.variants?.some(
+  const hasVendorPricing = (product as any).metadata?.gp?.has_vendor_pricing === true;
+  const hasValidPrice = hasVendorPricing || product.variants?.some(
     (v) => (v.calculated_price?.calculated_amount ?? 0) > 0
   );
   if (!hasValidPrice) {

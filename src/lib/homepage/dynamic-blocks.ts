@@ -112,7 +112,7 @@ export async function fetchHomepageCategories({
   limit
 }: {
   limit?: number | null;
-} = {}): Promise<{ name: string; handle: string }[]> {
+} = {}): Promise<{ name: string; handle: string; metadata?: Record<string, any> }[]> {
   const resolvedLimit = Math.max(1, Math.min(limit ?? 24, 100));
   const url = buildMedusaUrl('/store/product-categories');
 
@@ -151,7 +151,8 @@ export async function fetchHomepageCategories({
     const mapped = rootCategories
       .map(cat => ({
         name: cat.name,
-        handle: cat.handle
+        handle: cat.handle,
+        ...(cat.metadata ? { metadata: cat.metadata as Record<string, any> } : {}),
       }))
       .filter(cat => Boolean(cat.name && cat.handle));
 

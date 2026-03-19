@@ -11,10 +11,15 @@ const CATEGORY_IMAGE_HANDLES = new Set([
   'sport',
 ]);
 
-export function CategoryCard({ category }: { category: { name: string; handle: string } }) {
-  const imageSrc = CATEGORY_IMAGE_HANDLES.has(category.handle)
-    ? `/images/categories/${category.handle}.png`
-    : '/images/placeholder.svg';
+export function CategoryCard({
+  category,
+}: {
+  category: { name: string; handle: string; metadata?: { photo_url?: string } };
+}) {
+  const imageSrc = category.metadata?.photo_url
+    ?? (CATEGORY_IMAGE_HANDLES.has(category.handle)
+        ? `/images/categories/${category.handle}.png`
+        : '/images/placeholder.svg');
 
   return (
     <LocalizedClientLink
