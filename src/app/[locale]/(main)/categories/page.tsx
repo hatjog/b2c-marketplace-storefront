@@ -86,27 +86,37 @@ async function AllCategories({
     }
   ];
 
-  const countryCode = await getCountryCode(locale);
-  const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
+  let countryCode: string;
+  let currency_code: string;
+  let itemList: Array<{ '@type': string; position: number; url: string; name: string }> = [];
+  let baseUrl: string;
 
-  // Fetch a small cached list for ItemList JSON-LD
-  const headersList = await headers();
-  const host = headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
-  const {
-    response: { products: jsonLdProducts }
-  } = await listProducts({
-    countryCode,
-    queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' }
-  });
+  try {
+    countryCode = await getCountryCode(locale);
+    currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
 
-  const itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({
-    '@type': 'ListItem',
-    position: idx + 1,
-    url: `${baseUrl}/${locale}/products/${p.handle}`,
-    name: p.title
-  }));
+    // Fetch a small cached list for ItemList JSON-LD
+    const headersList = await headers();
+    const host = headersList.get('host');
+    const protocol = headersList.get('x-forwarded-proto') || 'https';
+    baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+    const {
+      response: { products: jsonLdProducts }
+    } = await listProducts({
+      countryCode,
+      queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' }
+    });
+
+    itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      url: `${baseUrl}/${locale}/products/${p.handle}`,
+      name: p.title
+    }));
+  } catch (error) {
+    console.error('Categories data fetch failed:', error);
+    throw error;
+  }
 
   return (
     <main id="main-content" className="container">
