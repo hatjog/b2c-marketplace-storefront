@@ -7,7 +7,6 @@ import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
 
-import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
 import { retrieveCart } from '@/lib/data/cart';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
@@ -190,7 +189,6 @@ export default async function RootLayout({
             Korzystasz z fallback MarketConfig. Payload API jest niedostepne.
           </div>
         )}
-        <HtmlLangSetter />
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />
       </body>

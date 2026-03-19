@@ -1,6 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
+import { HtmlLangSetter } from '@/components/atoms/HtmlLangSetter/HtmlLangSetter';
+
 export default async function LocaleLayout({
   children,
   params
@@ -16,6 +18,7 @@ export default async function LocaleLayout({
       locale={locale}
       messages={messages}
     >
+      <HtmlLangSetter />
       {children}
     </NextIntlClientProvider>
   );
