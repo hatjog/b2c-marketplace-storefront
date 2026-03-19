@@ -265,7 +265,9 @@
     "subtitle": "Market stories, launch notes, and editorial selections in one place.",
     "untitled_post": "Untitled post",
     "read_article": "Read article",
-    "no_posts": "No published blog posts are available for this market yet."
+    "no_posts": "No published blog posts are available for this market yet.",
+    "read_more": "Read more",
+    "section_heading": "Stay up to date"
   },
   "orders": {
     "cancel_heading": "Cancel order",

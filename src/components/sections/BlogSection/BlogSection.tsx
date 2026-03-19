@@ -33,17 +33,19 @@ export const blogPosts: BlogPost[] = [
 
 export function BlogSection({
   posts,
-  heading
+  heading,
+  readMoreLabel,
 }: {
   posts?: BlogPost[];
   heading?: string;
+  readMoreLabel?: string;
 } = {}) {
   const postsToRender = posts?.length ? posts : blogPosts;
 
   return (
     <section className="container bg-tertiary">
       <div className="mb-12 flex items-center justify-between">
-        <h2 className="heading-lg text-tertiary">{heading ?? 'STAY UP TO DATE'}</h2>
+        <h2 className="heading-lg text-tertiary">{heading ?? 'Stay up to date'}</h2>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3">
         {postsToRender.map((post, index) => (
@@ -51,6 +53,7 @@ export function BlogSection({
             key={post.id}
             index={index}
             post={post}
+            readMoreLabel={readMoreLabel}
           />
         ))}
       </div>

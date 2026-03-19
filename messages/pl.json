@@ -265,7 +265,9 @@
     "subtitle": "Historie marketu, notatki z wdrożeń i redakcyjne wybory w jednym miejscu.",
     "untitled_post": "Post bez tytułu",
     "read_article": "Czytaj artykuł",
-    "no_posts": "Dla tego marketu nie opublikowano jeszcze wpisów blogowych."
+    "no_posts": "Dla tego marketu nie opublikowano jeszcze wpisów blogowych.",
+    "read_more": "Czytaj więcej",
+    "section_heading": "Bądź na bieżąco"
   },
   "orders": {
     "cancel_heading": "Anuluj zamówienie",

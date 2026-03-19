@@ -10,9 +10,10 @@ import tailwindConfig from '../../../../tailwind.config';
 interface BlogCardProps {
   post: BlogPost;
   index: number;
+  readMoreLabel?: string;
 }
 
-export function BlogCard({ post, index }: BlogCardProps) {
+export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
   return (
     <LocalizedClientLink
       href={post.href}
@@ -36,7 +37,7 @@ export function BlogCard({ post, index }: BlogCardProps) {
         <h3 className="heading-sm">{post.title}</h3>
         <p className="text-md line-clamp-2">{post.excerpt}</p>
         <div className="label-md mt-[26px] flex items-center gap-4 uppercase">
-          Read more{' '}
+          {readMoreLabel ?? 'Read more'}{' '}
           <ArrowRightIcon
             size={20}
             color={tailwindConfig.theme.extend.colors.tertiary}
