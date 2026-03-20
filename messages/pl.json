@@ -349,6 +349,8 @@
     "no_shipping_options": "Brak opcji dostawy",
     "error_generic": "Wystąpił błąd",
     "continue_to_payment": "Kontynuuj do płatności",
-    "choose_delivery_option": "Wybierz opcję dostawy"
+    "choose_delivery_option": "Wybierz opcję dostawy",
+    "place_order": "Złóż zamówienie",
+    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty"
   }
 }

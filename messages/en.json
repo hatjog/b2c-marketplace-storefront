@@ -349,6 +349,8 @@
     "no_shipping_options": "No shipping options available",
     "error_generic": "An error occurred",
     "continue_to_payment": "Continue to payment",
-    "choose_delivery_option": "Choose delivery option"
+    "choose_delivery_option": "Choose delivery option",
+    "place_order": "Place order",
+    "payment_obligation_notice": "Order with obligation to pay"
   }
 }

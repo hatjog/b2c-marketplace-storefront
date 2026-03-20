@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { CartSummary } from '@/components/organisms';
 import { PromoCode } from '@/components/organisms/PromoCode/PromoCode';
 
@@ -7,6 +9,7 @@ import { CartItems } from './CartItems';
 import PaymentButton from './PaymentButton';
 
 const Review = ({ cart }: { cart: any }) => {
+  const t = useTranslations('checkout');
   const paidByGiftcard = cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0;
 
   const previousStepsCompleted =
@@ -36,10 +39,15 @@ const Review = ({ cart }: { cart: any }) => {
       </div>
 
       {previousStepsCompleted && (
-        <PaymentButton
-          cart={cart}
-          data-testid="submit-order-button"
-        />
+        <>
+          <p className="label-sm mb-3 text-center text-secondary">
+            {t('payment_obligation_notice')}
+          </p>
+          <PaymentButton
+            cart={cart}
+            data-testid="submit-order-button"
+          />
+        </>
       )}
     </div>
   );
