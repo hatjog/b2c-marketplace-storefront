@@ -11,9 +11,9 @@ vi.mock('next-intl', () => ({
   },
 }));
 
-// Don't mock qrcode.react — inspect the element tree instead
+// Mock as string — React treats it as intrinsic element; props are preserved on the element
 vi.mock('qrcode.react', () => ({
-  QRCodeSVG: 'QRCodeSVG', // renders as <QRCodeSVG> intrinsic element
+  QRCodeSVG: 'qrcode-svg-mock',
 }));
 
 import { VoucherQrCode } from '../VoucherQrCode';
@@ -33,7 +33,7 @@ function findChild(
 }
 
 function getQrElement(result: React.ReactElement): React.ReactElement | null {
-  return findChild(result, (el) => el.type === 'QRCodeSVG');
+  return findChild(result, (el) => el.type === 'qrcode-svg-mock');
 }
 
 describe('VoucherQrCode', () => {
@@ -79,6 +79,18 @@ describe('VoucherQrCode', () => {
     expect(qr.props.size).toBe(256);
   });
 
+  it('clamps size to minimum 64', () => {
+    const result = VoucherQrCode({ code: 'ABCD1234EFGH', size: 10 }) as React.ReactElement;
+    const qr = getQrElement(result)!;
+    expect(qr.props.size).toBe(64);
+  });
+
+  it('clamps size to maximum 512', () => {
+    const result = VoucherQrCode({ code: 'ABCD1234EFGH', size: 2000 }) as React.ReactElement;
+    const qr = getQrElement(result)!;
+    expect(qr.props.size).toBe(512);
+  });
+
   it('passes level M to QRCodeSVG', () => {
     const result = VoucherQrCode({ code: 'ABCD1234EFGH' }) as React.ReactElement;
     const qr = getQrElement(result)!;
@@ -104,5 +116,15 @@ describe('VoucherQrCode', () => {
       className: 'my-class',
     }) as React.ReactElement;
     expect(result.props.className).toBe('my-class');
+  });
+
+  it('has role="img" for accessibility', () => {
+    const result = VoucherQrCode({ code: 'ABCD1234EFGH' }) as React.ReactElement;
+    expect(result.props.role).toBe('img');
+  });
+
+  it('has aria-label for screen readers', () => {
+    const result = VoucherQrCode({ code: 'ABCD1234EFGH' }) as React.ReactElement;
+    expect(result.props['aria-label']).toBe('Voucher QR code');
   });
 });

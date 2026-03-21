@@ -13,11 +13,11 @@ import React, { useEffect, useState } from 'react';
 
 import * as Sentry from '@sentry/nextjs';
 
-import { VoucherQrCode } from '@/components/molecules/index.client';
+import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCode';
 import { getConfirmationState } from '@/lib/helpers/confirmation-state';
 
 class QrErrorBoundary extends React.Component<
-  { children: React.ReactNode },
+  { children: React.ReactNode; fallback?: React.ReactNode },
   { hasError: boolean }
 > {
   state = { hasError: false };
@@ -28,7 +28,7 @@ class QrErrorBoundary extends React.Component<
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
   render() {
-    return this.state.hasError ? null : this.props.children;
+    return this.state.hasError ? (this.props.fallback ?? null) : this.props.children;
   }
 }
 
@@ -98,7 +98,16 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
         </p>
       )}
       {entitlement.voucher_code && (
-        <QrErrorBoundary>
+        <QrErrorBoundary
+          fallback={
+            <div data-testid="qr-code-fallback">
+              <span className="text-xs text-ui-fg-subtle">Kod vouchera:</span>
+              <p style={{ fontFamily: 'monospace' }}>
+                {formatVoucherCode(entitlement.voucher_code)}
+              </p>
+            </div>
+          }
+        >
           <VoucherQrCode code={entitlement.voucher_code} />
         </QrErrorBoundary>
       )}
