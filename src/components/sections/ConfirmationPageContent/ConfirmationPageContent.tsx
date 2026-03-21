@@ -11,7 +11,26 @@
 
 import React, { useEffect, useState } from 'react';
 
+import * as Sentry from '@sentry/nextjs';
+
+import { VoucherQrCode } from '@/components/molecules/index.client';
 import { getConfirmationState } from '@/lib/helpers/confirmation-state';
+
+class QrErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
+  }
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
+}
 
 type OrderData = {
   id: string;
@@ -78,7 +97,11 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
           {formatVoucherCode(entitlement.voucher_code)}
         </p>
       )}
-      <div data-testid="qr-code" aria-label="QR code vouchera" />
+      {entitlement.voucher_code && (
+        <QrErrorBoundary>
+          <VoucherQrCode code={entitlement.voucher_code} />
+        </QrErrorBoundary>
+      )}
     </div>
   );
 }

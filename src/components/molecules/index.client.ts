@@ -20,3 +20,4 @@ export { SelectField } from './SelectField/SelectField';
 export { SellerInfo } from './SellerInfo/SellerInfo';
 export { SellerReviewList } from './SellerReviewList/SellerReviewList';
 export { UserNavigation } from './UserNavigation/UserNavigation';
+export { VoucherQrCode } from './VoucherQrCode/VoucherQrCode';

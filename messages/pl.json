@@ -352,5 +352,9 @@
     "choose_delivery_option": "Wybierz opcję dostawy",
     "place_order": "Złóż zamówienie",
     "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty"
+  },
+  "voucher": {
+    "qr_code_aria_label": "Kod QR vouchera",
+    "qr_code_label": "Zeskanuj w salonie"
   }
 }

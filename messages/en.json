@@ -352,5 +352,9 @@
     "choose_delivery_option": "Choose delivery option",
     "place_order": "Place order",
     "payment_obligation_notice": "Order with obligation to pay"
+  },
+  "voucher": {
+    "qr_code_aria_label": "Voucher QR code",
+    "qr_code_label": "Scan at salon"
   }
 }
