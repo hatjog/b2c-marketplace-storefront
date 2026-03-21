@@ -72,12 +72,16 @@ export const ProductDetailsHeader = ({
     variantId
   });
 
+  const selectedVariantData = product.variants?.find(({ id }) => id === variantId);
   const variantStock =
-    product.variants?.find(({ id }) => id === variantId)?.inventory_quantity || 0;
+    selectedVariantData?.manage_inventory === false
+      ? Infinity
+      : (selectedVariantData?.inventory_quantity || 0);
 
-  const variantHasPrice = !!product.variants?.find(({ id }) => id === variantId)?.calculated_price;
+  const variantHasPrice = !!selectedVariantData?.calculated_price;
 
   const isVariantStockMaxLimitReached =
+    variantStock !== Infinity &&
     (cart?.items?.find(item => item.variant_id === variantId)?.quantity ?? 0) >= variantStock;
 
   // add the selected variant to the cart
