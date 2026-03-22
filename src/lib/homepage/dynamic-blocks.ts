@@ -39,6 +39,25 @@ function mapSortToStorefront(sort: HomepageProductsSort): SortOptions {
   return sort;
 }
 
+async function resolveRegionId(countryCode: string): Promise<string | null> {
+  try {
+    const url = buildMedusaUrl('/store/regions');
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: getPublishableHeaders(),
+      next: { revalidate: 3600, tags: ['regions'] }
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as { regions?: Array<{ id: string; countries?: Array<{ iso_2?: string }> }> };
+    const region = data.regions?.find(r =>
+      r.countries?.some(c => c.iso_2 === countryCode)
+    );
+    return region?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchHomepageProducts({
   locale,
   sort,
@@ -51,13 +70,17 @@ export async function fetchHomepageProducts({
   const resolvedLimit = Math.max(1, Math.min(limit ?? 4, 24));
   const resolvedSort = mapSortToStorefront(sort ?? 'newest');
 
+  const regionId = await resolveRegionId(locale);
+
   const url = buildMedusaUrl('/store/products');
   url.searchParams.set('country_code', locale);
+  if (regionId) url.searchParams.set('region_id', regionId);
   url.searchParams.set('limit', String(resolvedLimit));
   url.searchParams.set('fields', '*variants.calculated_price,*variants,*seller');
 
   const fallbackUrl = buildMedusaUrl('/store/products');
   fallbackUrl.searchParams.set('country_code', locale);
+  if (regionId) fallbackUrl.searchParams.set('region_id', regionId);
   fallbackUrl.searchParams.set('limit', String(resolvedLimit));
 
   try {

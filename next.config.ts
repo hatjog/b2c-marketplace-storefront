@@ -58,6 +58,15 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true
   },
+  async redirects() {
+    return [
+      {
+        source: '/:locale/gp-dashboard/:path*',
+        destination: 'http://localhost:3000/gp-dashboard/:path*',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       { source: '/en/terms-of-service', destination: '/en/regulamin' },
