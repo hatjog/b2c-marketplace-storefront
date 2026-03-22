@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const read = (relativePath) =>
-  fs.readFileSync(path.join(root, relativePath), 'utf8');
+const read = (filePath) =>
+  fs.readFileSync(path.isAbsolute(filePath) ? filePath : path.join(root, filePath), 'utf8');
 
 // Dynamic imports for runtime-testable functions
 const { getFallbackMarketConfig, getMarketLogoUrl } = await import('../src/lib/portal.ts');

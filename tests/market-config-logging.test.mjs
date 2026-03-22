@@ -11,7 +11,7 @@ const read = (relativePath) => {
 };
 
 test('portal logs market config failures to Sentry', () => {
-  const source = read('src/lib/portal.ts');
+  const source = read('src/lib/portal.server.ts');
 
   assert.match(source, /@sentry\/nextjs/);
   assert.match(source, /logMarketConfigError/);

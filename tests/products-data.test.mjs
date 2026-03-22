@@ -36,20 +36,28 @@ describe('pagination boundary: nextPage must use filtered count, not raw API cou
 });
 
 describe('products data normalization', () => {
+  // Quality gate requires: 80+ word description, valid price, non-placeholder thumbnail
+  const longDescription = Array(85).fill('word').join(' ');
+  const validVariant = { calculated_price: { calculated_amount: 1000 } };
+
   test('keeps products without seller and removes only suspended seller products', () => {
     const result = normalizeListedProducts([
       {
         id: 'prod-without-seller',
         title: 'No seller product',
         handle: 'no-seller-product',
-        variants: [],
+        description: longDescription,
+        thumbnail: 'https://cdn.test.com/img.jpg',
+        variants: [validVariant],
         seller: null
       },
       {
         id: 'prod-with-seller',
         title: 'Seller product',
         handle: 'seller-product',
-        variants: [],
+        description: longDescription,
+        thumbnail: 'https://cdn.test.com/img2.jpg',
+        variants: [validVariant],
         seller: {
           id: 'seller-active',
           name: 'Active seller',
@@ -66,7 +74,9 @@ describe('products data normalization', () => {
         id: 'prod-suspended',
         title: 'Suspended product',
         handle: 'suspended-product',
-        variants: [],
+        description: longDescription,
+        thumbnail: 'https://cdn.test.com/img3.jpg',
+        variants: [validVariant],
         seller: {
           id: 'seller-suspended',
           name: 'Suspended seller',

@@ -119,7 +119,7 @@ test("HeroBlock: uses section data (heading/paragraph/image/buttons)", () => {
 
   assert.match(source, /const heading = section\.heading \?\? ['"]['"]/)
   assert.match(source, /const paragraph = section\.paragraph \?\? ['"]['"]/);
-  assert.match(source, /const imageUrl = getImageUrl\(section\.image\)/);
+  assert.match(source, /const imageUrl = getImageUrl\(section\.image/);
   assert.match(source, /const buttons = mapButtons\(section\.buttons\)/);
 });
 
@@ -135,11 +135,11 @@ test("HeroBlock: when image available, renders Hero section (which uses next/ima
   assert.match(heroSection, /<Image/);
 });
 
-test("HeroBlock: missing image does not crash and logs error", () => {
+test("HeroBlock: missing image uses fallback via getImageUrl", () => {
   const source = read("src/components/blocks/HeroBlock.tsx");
 
-  assert.match(source, /if \(section\.image == null\) \{/);
-  assert.match(source, /console\.error\(['"\[homepage\] hero image is missing or invalid['"]/);
+  // getImageUrl handles null image with a fallback path
+  assert.match(source, /getImageUrl\(section\.image,\s*['"][^'"]+['"]/);
 
   // Defensive: HeroBlock does not directly render next/image in fallback.
   assert.doesNotMatch(source, /from ['"]next\/image['"]/);
@@ -202,7 +202,7 @@ test("StyleSectionBlock: maps payload items to ShopByStyleSection props at runti
   assert.equal(element.props.items.length, 2);
   assert.deepStrictEqual(element.props.items[0], {
     href: "/collections?style=minimal",
-    imageUrl: null,
+    imageUrl: "/images/placeholder.svg",
     label: "Minimal edit",
   });
   assert.deepStrictEqual(element.props.items[1], {
@@ -223,7 +223,7 @@ test("StyleSectionBlock: returns null when there are no valid items", () => {
   assert.equal(element, null);
 });
 
-test("HeroBlock: returns null when all content fields are empty", () => {
+test("HeroBlock: renders fallback image when all content fields are empty but fallback exists", () => {
   const element = HeroBlock({
     section: {
       heading: "",
@@ -233,7 +233,8 @@ test("HeroBlock: returns null when all content fields are empty", () => {
     },
   });
 
-  assert.equal(element, null);
+  // With hardcoded fallback image, HeroBlock still renders (graceful degradation)
+  assert.ok(element, "HeroBlock should render with fallback image even when content is empty");
 });
 
 test("BannerSection: renders payload label, href and image props", () => {

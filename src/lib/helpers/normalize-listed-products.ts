@@ -43,10 +43,6 @@ function checkQualityGate(product: ListedProduct): QualityGateFailure[] {
   return failures;
 }
 
-function passesQualityGate(product: ListedProduct): boolean {
-  return checkQualityGate(product).length === 0;
-}
-
 export const normalizeListedProducts = (productsRaw: ListedProduct[]): ListedProduct[] => {
   return productsRaw
     .filter(product => product.seller?.store_status === 'ACTIVE' || !product.seller)

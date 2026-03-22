@@ -94,114 +94,97 @@ describe('footer nav links resolution', () => {
     assert.deepEqual(sections, []);
   });
 
-  test('parses nav_links sections with valid links', () => {
+  test('parses flat nav_links with valid href fields', () => {
     const sections = resolveFooterNavLinks({
       footer: {
         nav_links: [
-          {
-            section: 'customer_services',
-            links: [
-              { label: 'FAQs', path: '/faq' },
-              { label: 'Returns', path: '/returns' }
-            ]
-          },
-          {
-            section: 'about',
-            links: [
-              { label: 'About us', path: '/about' }
-            ]
-          }
+          { label: 'FAQs', href: '/faq' },
+          { label: 'Returns', href: '/returns' },
+          { label: 'About us', href: '/about' }
         ]
       }
     });
 
     assert.deepEqual(sections, [
       {
-        section: 'customer_services',
+        section: 'about',
         links: [
           { label: 'FAQs', path: '/faq' },
-          { label: 'Returns', path: '/returns' }
+          { label: 'Returns', path: '/returns' },
+          { label: 'About us', path: '/about' }
         ]
-      },
-      {
-        section: 'about',
-        links: [{ label: 'About us', path: '/about' }]
       }
     ]);
   });
 
-  test('skips sections with missing or empty section identifier', () => {
+  test('skips items with missing or empty label', () => {
     const sections = resolveFooterNavLinks({
       footer: {
         nav_links: [
-          { section: null, links: [{ label: 'FAQ', path: '/faq' }] },
-          { section: '  ', links: [{ label: 'FAQ', path: '/faq' }] },
-          { section: 'about', links: [{ label: 'About us', path: '/about' }] }
+          { label: null, href: '/faq' },
+          { label: '  ', href: '/faq' },
+          { label: 'About us', href: '/about' }
         ]
       }
     });
 
     assert.equal(sections.length, 1);
-    assert.equal(sections[0].section, 'about');
+    assert.equal(sections[0].links.length, 1);
+    assert.equal(sections[0].links[0].label, 'About us');
   });
 
-  test('skips individual links with missing label or path', () => {
+  test('skips items with missing label or href', () => {
     const sections = resolveFooterNavLinks({
       footer: {
         nav_links: [
-          {
-            section: 'customer_services',
-            links: [
-              { label: 'FAQ', path: '/faq' },
-              { label: null, path: '/returns' },
-              { label: 'Delivery', path: null }
-            ]
-          }
+          { label: 'FAQ', href: '/faq' },
+          { label: null, href: '/returns' },
+          { label: 'Delivery', href: null }
         ]
       }
     });
 
     assert.deepEqual(sections, [
       {
-        section: 'customer_services',
+        section: 'about',
         links: [{ label: 'FAQ', path: '/faq' }]
       }
     ]);
   });
 
-  test('handles section with no links (empty links array)', () => {
+  test('returns empty array when all items are invalid', () => {
     const sections = resolveFooterNavLinks({
       footer: {
-        nav_links: [{ section: 'about', links: [] }]
+        nav_links: [{ label: null, href: null }]
       }
     });
 
-    assert.deepEqual(sections, [{ section: 'about', links: [] }]);
+    assert.deepEqual(sections, []);
   });
 
-  test('handles section with null links', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [{ section: 'about', links: null }]
-      }
-    });
-
-    assert.deepEqual(sections, [{ section: 'about', links: [] }]);
-  });
-
-  test('rejects nav link paths that do not start with /', () => {
+  test('skips disabled items', () => {
     const sections = resolveFooterNavLinks({
       footer: {
         nav_links: [
-          {
-            section: 'about',
-            links: [
-              { label: 'Safe', path: '/about' },
-              { label: 'XSS', path: 'javascript:alert(1)' },
-              { label: 'External', path: 'https://evil.com' },
-              { label: 'Relative', path: 'about' }
-            ]
-          }
+          { label: 'About', href: '/about', enabled: true },
+          { label: 'Hidden', href: '/hidden', enabled: false }
+        ]
+      }
+    });
+
+    assert.deepEqual(sections, [
+      { section: 'about', links: [{ label: 'About', path: '/about' }] }
+    ]);
+  });
+
+  test('rejects nav link hrefs that do not start with /', () => {
+    const sections = resolveFooterNavLinks({
+      footer: {
+        nav_links: [
+          { label: 'Safe', href: '/about' },
+          { label: 'XSS', href: 'javascript:alert(1)' },
+          { label: 'External', href: 'https://evil.com' },
+          { label: 'Relative', href: 'about' }
         ]
       }
     });
