@@ -102,6 +102,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <Script
         id="ld-org"
         type="application/ld+json"
+        // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
@@ -116,6 +117,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <Script
         id="ld-website"
         type="application/ld+json"
+        // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',

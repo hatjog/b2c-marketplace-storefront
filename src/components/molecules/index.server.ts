@@ -1,4 +1,5 @@
 export { CartDropdownItem } from './CartDropdownItem/CartDropdownItem';
+export { SanitizedHTML } from './SanitizedHTML/SanitizedHTML';
 export { Dropdown } from './Dropdown/Dropdown';
 export { FilterCheckboxOption } from './FilterCheckboxOption/FilterCheckboxOption';
 export { GalleryCarouselItem } from './GalleryCarouselItem/GalleryCarouselItem';

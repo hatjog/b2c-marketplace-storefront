@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { ProductPageAccordion } from '@/components/molecules';
+import { ProductPageAccordion, SanitizedHTML } from '@/components/molecules';
 
 export const ProductPageDetails = async ({ details }: { details: string }) => {
   if (!details) return null;
@@ -13,12 +13,9 @@ export const ProductPageDetails = async ({ details }: { details: string }) => {
       defaultOpen={true}
       data-testid="product-details-section"
     >
-      <div
+      <SanitizedHTML
         className="product-details"
-        dangerouslySetInnerHTML={{
-          __html: details
-        }}
-        data-testid="product-details-content"
+        html={details}
       />
     </ProductPageAccordion>
   );

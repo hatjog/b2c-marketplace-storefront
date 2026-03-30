@@ -1,6 +1,6 @@
 import type { HttpTypes } from '@medusajs/types';
 
-import { SellerInfo } from '@/components/molecules';
+import { SanitizedHTML, SellerInfo } from '@/components/molecules';
 import type { SellerProps } from '@/types/seller';
 
 import { Chat } from '../Chat/Chat';
@@ -36,10 +36,8 @@ export const SellerHeading = ({
         )}
       </div>
       <div className="px-5 pb-5">
-        <p
-          dangerouslySetInnerHTML={{
-            __html: seller.description
-          }}
+        <SanitizedHTML
+          html={seller.description}
           className="label-md"
         />
       </div>

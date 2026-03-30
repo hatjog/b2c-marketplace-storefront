@@ -22,5 +22,20 @@ module.exports = {
     ],
     "import/no-relative-parent-imports": "warn",
     "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+        "message": "dangerouslySetInnerHTML is banned. Use <SanitizedHTML> server component (SSR) or sanitizeOnFetch() utility (CSR). See Story 0.4."
+      },
+      {
+        "selector": "AssignmentExpression[left.property.name='innerHTML']",
+        "message": "innerHTML assignment is banned. Use <SanitizedHTML> or sanitizeOnFetch(). See Story 0.4."
+      },
+      {
+        "selector": "CallExpression[callee.object.name='document'][callee.property.name='write']",
+        "message": "document.write() is banned. See Story 0.4."
+      }
+    ],
   },
 }

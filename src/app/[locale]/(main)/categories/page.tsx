@@ -113,6 +113,7 @@ async function AllCategories({
       <Script
         id="ld-breadcrumbs-categories"
         type="application/ld+json"
+        // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
@@ -131,6 +132,7 @@ async function AllCategories({
       <Script
         id="ld-itemlist-categories"
         type="application/ld+json"
+        // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
