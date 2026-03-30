@@ -22,6 +22,10 @@ type MarketRuntimeConfig = {
   public_profile?: {
     social_links?: Record<string, unknown> | null;
   } | null;
+  storefront?: {
+    pdp_trust_signals?: string[] | null;
+    default_validity_info?: string | null;
+  } | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -118,4 +122,15 @@ export function normalizeSocialLinks(value: unknown): MarketSocialLinks | null {
 export const resolveRuntimeSocialLinks = cache(async (marketId: string) => {
   const config = await readRuntimeMarketConfig(marketId);
   return normalizeSocialLinks(config?.public_profile?.social_links);
+});
+
+export const resolvePdpTrustSignals = cache(async (marketId: string): Promise<string[]> => {
+  const config = await readRuntimeMarketConfig(marketId);
+  const signals = config?.storefront?.pdp_trust_signals;
+  return Array.isArray(signals) ? signals : [];
+});
+
+export const resolveDefaultValidityInfo = cache(async (marketId: string): Promise<string | null> => {
+  const config = await readRuntimeMarketConfig(marketId);
+  return config?.storefront?.default_validity_info ?? null;
 });

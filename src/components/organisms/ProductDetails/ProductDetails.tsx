@@ -8,10 +8,12 @@ import {
   ProductDetailsShipping,
   ProductPageDetails
 } from '@/components/cells';
-import { TrustMessaging } from '@/components/cells/TrustMessaging/TrustMessaging';
+import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { getMarketId } from '@/lib/helpers/market-filter';
+import { resolvePdpTrustSignals } from '@/lib/runtime-market-config';
 import type { AdditionalAttributeProps } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
@@ -34,6 +36,9 @@ export const ProductDetails = async ({
     wishlist = await getUserWishlists({ countryCode });
   }
 
+  const marketId = getMarketId();
+  const trustSignals = await resolvePdpTrustSignals(marketId);
+
   return (
     <div>
       <ProductDetailsHeader
@@ -43,7 +48,7 @@ export const ProductDetails = async ({
         user={user}
         wishlist={wishlist}
       />
-      <TrustMessaging />
+      <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />
       <ProductPageDetails details={product?.description || ''} />
       <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
       <ProductDetailsShipping />

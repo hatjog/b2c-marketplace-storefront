@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import enMessages from '../../../../../messages/en.json';
-import plMessages from '../../../../../messages/pl.json';
+import enMessages from '../../messages/en.json';
+import plMessages from '../../messages/pl.json';
 
 describe('locale-aware route resolution', () => {
   it('PL routes.terms_of_service resolves to /regulamin', () => {

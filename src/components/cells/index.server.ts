@@ -13,5 +13,4 @@ export { ProductDetailsSellerReviews } from './ProductDetailsSellerReviews/Produ
 export { ProductDetailsShipping } from './ProductDetailsShipping/ProductDetailsShipping';
 export { ProductPageDetails } from './ProductPageDetails/ProductPageDetails';
 export { SellerReviewTab } from './SellerReviewTab/SellerReviewTab';
-export { TrustMessaging } from './TrustMessaging/TrustMessaging';
 export { WishlistItem } from './WishlistItem/WishlistItem';

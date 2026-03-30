@@ -10,4 +10,5 @@ export { ProductDetails } from './ProductDetails/ProductDetails';
 export { ProductGallery } from './ProductGallery/ProductGallery';
 export { ProductsList } from './ProductsList/ProductsList';
 export { SellerHeading } from './SellerHeading/SellerHeading';
+export { TrustSignals } from './TrustSignals/TrustSignals';
 export { WishlistTabs } from './WishlistTabs/WishlistTabs';

@@ -16,3 +16,4 @@ export { SellerReview } from './SellerReview/SellerReview';
 export { SellerScore } from './SellerScore/SellerScore';
 export { TabsContent } from './TabsContent/TabsContent';
 export { TabsList } from './TabsList/TabsList';
+export { VoucherValidityInfo } from './VoucherValidityInfo/VoucherValidityInfo';
