@@ -1,30 +1,78 @@
 import type { Metadata } from 'next';
 
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { ArrowUpIcon } from '@/icons';
-
 export const metadata: Metadata = {
-  title: '404',
-  description: 'Something went wrong'
+  title: '404 – Strona nie istnieje',
+  description: 'Przepraszamy, ta strona nie istnieje lub została przeniesiona.'
 };
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-24">
-      <h1 className="text-2xl-semi text-ui-fg-base">Page not found</h1>
-      <p className="text-small-regular text-ui-fg-base">
-        The page you tried to access does not exist.
-      </p>
-      <LocalizedClientLink
-        className="group flex items-center gap-x-1"
-        href="/"
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        padding: '48px 24px',
+        backgroundColor: '#FAF8F5',
+        fontFamily: 'inherit'
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '480px',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '24px',
+          textAlign: 'center'
+        }}
       >
-        Go to frontpage
-        <ArrowUpIcon
-          className="duration-150 ease-in-out group-hover:rotate-45"
-          color="var(--fg-interactive)"
-        />
-      </LocalizedClientLink>
+        <svg
+          width="56"
+          height="56"
+          viewBox="0 0 56 56"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="28" cy="28" r="26" stroke="#C5A059" strokeWidth="2" fill="white" />
+          <text
+            x="50%"
+            y="50%"
+            dominantBaseline="central"
+            textAnchor="middle"
+            fontSize="24"
+            fontWeight="600"
+            fill="#715828"
+            fontFamily="inherit"
+          >
+            B
+          </text>
+        </svg>
+
+        <h1 style={{ fontSize: '28px', fontWeight: '600', color: '#1A1A1A', margin: 0 }}>
+          Strona nie istnieje
+        </h1>
+
+        <p style={{ fontSize: '16px', color: '#1A1A1A', margin: 0, lineHeight: '1.6' }}>
+          Przepraszamy, ta strona nie istnieje lub została przeniesiona. Sprawdź adres
+          URL lub wróć na stronę główną.
+        </p>
+
+        <a
+          href="/"
+          style={{
+            color: '#907032',
+            fontSize: '16px',
+            textDecoration: 'underline',
+            fontWeight: '500'
+          }}
+        >
+          Wróć na stronę główną
+        </a>
+      </div>
     </div>
   );
 }
