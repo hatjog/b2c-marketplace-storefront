@@ -105,6 +105,17 @@ export default {
             secondary: "rgba(var(--content-warning-on-secondary))",
           },
         },
+        // BonBeauty semantic color tokens
+        cta: {
+          DEFAULT: 'var(--cta)',
+          hover: 'var(--cta-hover)',
+        },
+        gold: {
+          DEFAULT: 'var(--gold)',
+          light: 'var(--gold-light)',
+        },
+        trust: 'var(--color-trust)',
+        error: 'var(--color-error)',
       },
       borderColor: {
         DEFAULT: "rgba(var(--border-primary))",
@@ -130,6 +141,9 @@ export default {
         sm: "8px",
         md: "16px",
         full: "1000px",
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
       },
       fill: {
         primary: "rgba(var(--content-action-on-primary))",

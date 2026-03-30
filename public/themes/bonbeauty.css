@@ -37,3 +37,41 @@
   --brand-800:  83,  65,  29;  /* #53411D */
   --brand-900:  26,  26,  26;  /* #1A1A1A — matched to design's action dark */
 }
+
+/* ============================================================
+ * BonBeauty Semantic Tokens
+ * Aliasy semantyczne dla komponentów storefront.
+ * Format: rgb() (nie RGB tuple) — używane bezpośrednio jako var(--cta).
+ *
+ * SYNC NOTE: Claim page (apps/web) ma inline copy tych tokenów.
+ * Każda zmiana tutaj → manual update w claim page story.
+ * ============================================================ */
+:root {
+  /* Text */
+  --text-primary:   rgb(9, 9, 9);          /* neutral-1000, 19.3:1 ✅ AAA */
+  --text-secondary: rgb(82, 82, 82);       /* neutral-500,  7.1:1  ✅ AAA */
+  --text-on-action: rgb(250, 248, 245);    /* brand-25,     17.1:1 na dark ✅ */
+
+  /* Backgrounds */
+  --bg-action:       rgb(26, 26, 26);      /* brand-900 #1A1A1A — dark sections */
+  --bg-action-hover: rgb(83, 65, 29);      /* brand-800 #53411D — dark hover */
+
+  /* Borders */
+  --border-action: rgb(26, 26, 26);        /* brand-900 #1A1A1A — active borders */
+
+  /* CTA (Primary button bg) */
+  --cta:       rgb(144, 112, 50);          /* brand-600 #907032, 4.7:1 ✅ AA vs white */
+  --cta-hover: rgb(174, 135, 61);          /* brand-500 #AE873D */
+
+  /* Gold accents (NIE jako tekst na białym: 3.2:1 ❌) */
+  --gold:       rgb(197, 160, 89);         /* brand-400 #C5A059 — stars, dekoracje */
+  --gold-light: rgb(239, 229, 210);        /* brand-100 #EFE5D2 — avatar bg, tag bg */
+
+  /* Status colors */
+  --color-trust: rgb(22, 101, 52);         /* green-700 #166534, 6.5:1 ✅ AA */
+  --color-error: rgb(187, 37, 26);         /* red-600   #BB251A, 5.7:1 ✅ AA */
+
+  /* Misc */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --font-display: 'Funnel Display';
+}

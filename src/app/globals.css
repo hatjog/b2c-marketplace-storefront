@@ -48,6 +48,15 @@
   @apply text-[40px] leading-[48px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
 }
 
+/* BonBeauty type scale mapping:
+ * H1 (hero)   → .display-sm    (56px desk / 32px mob)
+ * H2 (section)→ .heading-md    (24px desk / 20px mob)
+ * H3          → .heading-sm + md:text-[18px] (16px mob / 18px desk)
+ * Body        → .text-md       (14px)
+ * Small/meta  → .text-sm       (12px)
+ * Price large → text-[24px] md:text-[28px] font-medium
+ * Price card  → .text-md font-medium
+ * CTA button  → (w .btn-cta, 14px 500) */
 .display-sm {
   @apply text-[56px] leading-[64px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
 }
@@ -56,6 +65,53 @@
 }
 .container {
   @apply px-4 md:px-5 max-w-full w-full lg:py-8 py-4 lg:px-8;
+}
+
+/* BonBeauty Button Utilities */
+@layer components {
+  /* BonBeauty Primary CTA — używa --cta (brand-600 #907032, 4.7:1 AA vs white) */
+  .btn-cta {
+    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+           text-white text-[14px] font-medium leading-none
+           transition-colors duration-150;
+    background-color: var(--cta);
+  }
+  .btn-cta:hover {
+    background-color: var(--cta-hover);
+  }
+  .btn-cta:disabled,
+  .btn-cta[data-disabled="true"] {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* BonBeauty Secondary — rgba bg na --neutral-1000 */
+  .btn-secondary {
+    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+           text-[14px] font-medium leading-none transition-colors duration-150;
+    background-color: rgba(var(--neutral-1000), 0.05);
+    color: var(--text-primary);
+  }
+  .btn-secondary:hover {
+    background-color: rgba(var(--neutral-1000), 0.1);
+  }
+
+  /* BonBeauty Ghost — transparent bg */
+  .btn-ghost {
+    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+           text-[14px] font-medium leading-none bg-transparent transition-colors duration-150;
+    color: var(--text-primary);
+  }
+  .btn-ghost:hover {
+    background-color: rgba(var(--neutral-1000), 0.05);
+  }
+
+  /* Disabled state (standalone variant) */
+  .btn-disabled {
+    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+           text-[14px] font-medium leading-none cursor-not-allowed opacity-50;
+    background-color: rgba(var(--neutral-200), 1);
+    color: rgba(var(--neutral-400), 1);
+  }
 }
 
 /* Atoms components */

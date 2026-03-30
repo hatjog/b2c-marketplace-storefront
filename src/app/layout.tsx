@@ -16,7 +16,7 @@ const VALID_THEMES = ['bonbeauty'] as const;
 
 const funnelDisplay = Funnel_Display({
   variable: '--font-funnel-sans',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
   weight: ['300', '400', '500', '600']
 });
 
