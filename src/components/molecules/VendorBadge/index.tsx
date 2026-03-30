@@ -69,7 +69,7 @@ export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
             height: avatarSize,
             backgroundColor: getColorFromHandle(vendor.handle),
           }}
-          className="absolute inset-0 rounded-full flex items-center justify-center bg-[--gold-light]"
+          className="absolute inset-0 rounded-full flex items-center justify-center"
           aria-hidden="true"
         >
           <span

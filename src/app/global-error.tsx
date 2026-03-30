@@ -1,14 +1,20 @@
 'use client';
 
+import { useEffect } from 'react';
+
 export default function GlobalError({
-  error: _error,
+  error,
   reset
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
   return (
-    <html>
+    <html lang="pl">
       <body
         style={{
           margin: 0,
@@ -73,6 +79,7 @@ export default function GlobalError({
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}
             >
               <button
+                type="button"
                 onClick={() => reset()}
                 data-testid="global-error-retry-button"
                 style={{

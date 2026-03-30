@@ -6,9 +6,9 @@ type VoucherValidityInfoProps = {
 };
 
 export function VoucherValidityInfo({ validityPeriod, defaultInfo }: VoucherValidityInfoProps) {
-  const text = validityPeriod ?? defaultInfo;
+  const text = validityPeriod || defaultInfo || null;
 
-  if (text === null || text === undefined) {
+  if (!text) {
     return null;
   }
 

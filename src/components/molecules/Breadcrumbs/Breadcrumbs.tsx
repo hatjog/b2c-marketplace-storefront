@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export interface BreadcrumbItem {
   label: string;
   href: string;
@@ -35,7 +37,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
           return (
             <li
-              key={`breadcrumb-${index}`}
+              key={item.href}
               className={
                 isMiddle
                   ? 'hidden sm:inline-flex items-center gap-1'
@@ -48,27 +50,52 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                 </span>
               )}
               {isLast ? (
-                <span className="font-semibold text-primary" aria-current="page">
+                <span className="font-semibold text-cta" aria-current="page">
                   {item.label}
                 </span>
               ) : (
-                <a href={item.href} className="text-secondary hover:underline">
+                <Link href={item.href} className="text-secondary hover:underline">
                   {item.label}
-                </a>
+                </Link>
               )}
             </li>
           );
         })}
+      </ol>
 
-        {hasMiddleItems && (
-          <li className="sm:hidden inline-flex items-center gap-1" aria-hidden="true">
-            <span className="mx-1 text-secondary" aria-hidden="true">
-              {'>'}
-            </span>
+      {/* Mobile ellipsis — inserted via CSS order to appear between first and last */}
+      {hasMiddleItems && (
+        <ol className="flex sm:hidden items-center gap-1 text-sm" aria-hidden="true">
+          <li className="inline-flex items-center gap-1">
+            <Link href={items[0].href} className="text-secondary hover:underline">
+              {items[0].label}
+            </Link>
+          </li>
+          <li className="inline-flex items-center gap-1">
+            <span className="mx-1 text-secondary" aria-hidden="true">{'>'}</span>
             <span>{'…'}</span>
           </li>
-        )}
-      </ol>
+          <li className="inline-flex items-center gap-1">
+            <span className="mx-1 text-secondary" aria-hidden="true">{'>'}</span>
+            <span className="font-semibold text-cta" aria-current="page">
+              {items[lastIndex].label}
+            </span>
+          </li>
+        </ol>
+      )}
+
+      {/* Desktop: show full ol, Mobile: show ellipsis ol */}
+      <style>{`
+        nav[aria-label="Breadcrumb"] > ol:first-of-type { display: flex; }
+        @media (max-width: 639px) {
+          nav[aria-label="Breadcrumb"] > ol:first-of-type { display: none; }
+        }
+        nav[aria-label="Breadcrumb"] > ol:nth-of-type(2) { display: none; }
+        @media (max-width: 639px) {
+          nav[aria-label="Breadcrumb"] > ol:nth-of-type(2) { display: flex; }
+        }
+      `}</style>
+
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
     </nav>
   );

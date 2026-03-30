@@ -70,6 +70,7 @@ export default function Error({
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
           <button
+            type="button"
             onClick={() => reset()}
             style={{
               backgroundColor: '#907032',

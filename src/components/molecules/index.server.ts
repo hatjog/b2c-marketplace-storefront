@@ -1,3 +1,4 @@
+export { Breadcrumbs } from './Breadcrumbs';
 export { CartDropdownItem } from './CartDropdownItem/CartDropdownItem';
 export { SanitizedHTML } from './SanitizedHTML/SanitizedHTML';
 export { Dropdown } from './Dropdown/Dropdown';
@@ -16,4 +17,5 @@ export { SellerReview } from './SellerReview/SellerReview';
 export { SellerScore } from './SellerScore/SellerScore';
 export { TabsContent } from './TabsContent/TabsContent';
 export { TabsList } from './TabsList/TabsList';
+export { PriceDisplay } from './PriceDisplay/PriceDisplay';
 export { VoucherValidityInfo } from './VoucherValidityInfo/VoucherValidityInfo';

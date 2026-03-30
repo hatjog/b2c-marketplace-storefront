@@ -60,8 +60,8 @@
   --border-action: rgb(26, 26, 26);        /* brand-900 #1A1A1A — active borders */
 
   /* CTA (Primary button bg) */
-  --cta:       rgb(144, 112, 50);          /* brand-600 #907032, 4.7:1 ✅ AA vs white */
-  --cta-hover: rgb(174, 135, 61);          /* brand-500 #AE873D */
+  --cta:       rgb(144, 112, 50);          /* brand-600 #907032, 4.62:1 ✅ AA vs white */
+  --cta-hover: rgb(113, 88, 40);           /* brand-700 #715828, 7.38:1 ✅ AA vs white */
 
   /* Gold accents (NIE jako tekst na białym: 3.2:1 ❌) */
   --gold:       rgb(197, 160, 89);         /* brand-400 #C5A059 — stars, dekoracje */

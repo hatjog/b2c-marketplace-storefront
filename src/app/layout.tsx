@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Funnel_Display } from 'next/font/google';
 
 import './globals.css';
+import '@/lib/env'; // fail-fast: validate required env vars at startup
 
 import { Toaster } from '@medusajs/ui';
 

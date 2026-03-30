@@ -13,7 +13,7 @@ export default function NotFound() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '60vh',
+        minHeight: '100vh',
         padding: '48px 24px',
         backgroundColor: '#FAF8F5',
         fontFamily: 'inherit'

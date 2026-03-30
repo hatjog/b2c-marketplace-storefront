@@ -1,15 +1,23 @@
-export interface PriceDisplayProps {
+type PriceDisplayBase = {
   amountInCents: number | null | undefined;
-  maxAmountInCents?: number;
-  variant?: 'default' | 'from' | 'range';
   size?: 'sm' | 'md' | 'lg';
   showDuration?: boolean;
   duration?: number | null;
   className?: string;
-}
+};
+
+export type PriceDisplayProps = PriceDisplayBase &
+  (
+    | { variant?: 'default' | 'from'; maxAmountInCents?: never }
+    | { variant: 'range'; maxAmountInCents: number }
+  );
 
 function formatPLN(amountInCents: number): string {
   return (amountInCents / 100).toLocaleString('pl-PL') + ' zł';
+}
+
+function formatRaw(amountInCents: number): string {
+  return (amountInCents / 100).toLocaleString('pl-PL');
 }
 
 export function PriceDisplay({
@@ -41,10 +49,7 @@ export function PriceDisplay({
   } else if (effectiveVariant === 'from') {
     priceText = 'od ' + formatPLN(amountInCents);
   } else if (effectiveVariant === 'range' && maxAmountInCents !== undefined) {
-    priceText =
-      formatPLN(amountInCents).replace(' zł', '') +
-      '\u2013' +
-      formatPLN(maxAmountInCents);
+    priceText = formatRaw(amountInCents) + '\u2013' + formatPLN(maxAmountInCents);
   } else {
     priceText = formatPLN(amountInCents);
   }
@@ -57,11 +62,17 @@ export function PriceDisplay({
     durationText = ' \u00B7 ' + durationLabel;
   }
 
-  // aria-label
-  const ariaLabel =
-    amountInCents === 0
-      ? 'Cena: Gratis'
-      : 'Cena: ' + Math.round(amountInCents / 100) + ' złotych';
+  // aria-label — include range for screen readers
+  let ariaLabel: string;
+  if (amountInCents === 0) {
+    ariaLabel = 'Cena: Gratis';
+  } else if (effectiveVariant === 'range' && maxAmountInCents !== undefined) {
+    ariaLabel = `Cena: od ${Math.round(amountInCents / 100)} do ${Math.round(maxAmountInCents / 100)} złotych`;
+  } else if (effectiveVariant === 'from') {
+    ariaLabel = `Cena: od ${Math.round(amountInCents / 100)} złotych`;
+  } else {
+    ariaLabel = `Cena: ${Math.round(amountInCents / 100)} złotych`;
+  }
 
   return (
     <span

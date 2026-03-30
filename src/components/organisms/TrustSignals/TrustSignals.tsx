@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-// TODO: import from '@/lib/constants' when Story 0.5 merges
-const TRUST_SIGNALS_MAX = 3;
+import { TRUST_SIGNALS_MAX } from '@/lib/constants';
 
 type TrustSignalsProps = {
   variant: 'full' | 'compact';
@@ -18,9 +17,9 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
 
   if (variant === 'compact') {
     return (
-      <div role="region" aria-label="Gwarancje BonBeauty">
+      <div role="region" aria-label="Gwarancje BonBeauty" className="inline-flex flex-wrap gap-x-3">
         {capped.map((signal, i) => (
-          <span key={i}>
+          <span key={`signal-${i}`}>
             <span>✓</span>{' '}
             {/* TODO: replace with SanitizedHTML after Story 0.4 */}
             <span>{signal}</span>
@@ -38,7 +37,7 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
       className="rounded bg-[var(--color-trust)] px-4 py-3"
     >
       {capped.map((signal, i) => (
-        <div key={i} className="flex items-center gap-1">
+        <div key={`signal-${i}`} className="flex items-center gap-1">
           <span>✓</span>
           {/* TODO: replace with SanitizedHTML after Story 0.4 */}
           <span>{signal}</span>
