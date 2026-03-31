@@ -14,7 +14,7 @@ export function SellerLocations({ locations }: Props) {
   if (!locations || locations.length === 0) return null;
 
   return (
-    <section aria-label="Lokalizacje salonu">
+    <section aria-label="Lokalizacje salonu" data-testid="seller-locations">
       <h2 className="text-xl font-semibold mb-4">Lokalizacje</h2>
       <ul className="space-y-3">
         {locations.map((loc, i) => {

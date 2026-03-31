@@ -23,7 +23,7 @@ export function SellerServiceList({ products, currencyCode: _currencyCode }: Sel
   const visible = showAll ? products : products.slice(0, SELLER_SERVICE_LIST_PAGE_SIZE);
 
   return (
-    <section aria-labelledby="seller-services-heading">
+    <section aria-labelledby="seller-services-heading" data-testid="seller-service-list">
       <h2 id="seller-services-heading" className="mb-4 text-xl font-bold">
         Zabiegi i usługi
       </h2>

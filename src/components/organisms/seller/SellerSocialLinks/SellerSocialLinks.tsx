@@ -43,7 +43,7 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
   if (!safeInstagram && !safeFacebook && !safeTiktok && !safeWebsite) return null;
 
   return (
-    <nav aria-label="Media społecznościowe salonu" className="flex items-center gap-3">
+    <nav aria-label="Media społecznościowe salonu" className="flex items-center gap-3" data-testid="seller-social-links">
       {safeInstagram && (
         <a
           href={safeInstagram}

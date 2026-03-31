@@ -11,7 +11,7 @@ export function SellerGallery({ gallery, sellerName }: Props) {
   if (!gallery || gallery.length === 0) return null;
 
   return (
-    <section aria-label="Galeria salonu">
+    <section aria-label="Galeria salonu" data-testid="seller-gallery">
       <h2 className="text-xl font-semibold mb-4">Galeria</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
         {gallery.map((item, i) => (
