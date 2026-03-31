@@ -53,10 +53,6 @@ function withRuntimeSocialLinks(
 }
 
 function withRuntimeLegalEntity(marketConfig: MarketConfig, legalEntity: LegalEntity | null) {
-  if (!legalEntity) {
-    return marketConfig;
-  }
-
   return {
     ...marketConfig,
     legal_entity: legalEntity
