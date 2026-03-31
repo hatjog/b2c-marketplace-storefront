@@ -49,6 +49,7 @@ export const ProductCard = ({
 
   const productName = String(product.title || t('fallback_name'));
   const thumbnailSrc = resolveThumbnailSrc(product.thumbnail);
+  const seller = (product as any).seller as { name: string; handle: string } | undefined;
   const usesPlaceholderImage = thumbnailSrc === PLACEHOLDER_IMAGE_SRC;
 
   return (
@@ -149,6 +150,24 @@ export const ProductCard = ({
           </div>
         </div>
       </LocalizedClientLink>
+      {seller && (
+        <div
+          className="px-4 pb-3"
+          data-testid="product-card-vendor"
+        >
+          <LocalizedClientLink
+            href={`/salony/${seller.handle}`}
+            aria-label={`Salon: ${seller.name}`}
+          >
+            <span
+              className="label-sm text-secondary"
+              data-testid="product-card-vendor-name"
+            >
+              {seller.name}
+            </span>
+          </LocalizedClientLink>
+        </div>
+      )}
     </div>
   );
 };

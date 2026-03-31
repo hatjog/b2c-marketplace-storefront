@@ -9,6 +9,7 @@ import {
   ProductPageDetails
 } from '@/components/cells';
 import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
+import { VendorBadge } from '@/components/molecules/VendorBadge';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -48,6 +49,22 @@ export const ProductDetails = async ({
         user={user}
         wishlist={wishlist}
       />
+      {product.seller && (
+        <div
+          className="mt-4"
+          data-testid="product-details-vendor-badge"
+        >
+          <VendorBadge
+            variant="pdp"
+            vendor={{
+              name: product.seller.name,
+              handle: product.seller.handle,
+              photoUrl: product.seller.photo || null,
+              productCount: product.seller.products?.length ?? 0,
+            }}
+          />
+        </div>
+      )}
       <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />
       <ProductPageDetails details={product?.description || ''} />
       <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
