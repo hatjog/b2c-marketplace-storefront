@@ -3,7 +3,9 @@ import { redirect } from 'next/navigation';
 
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SanitizedHTML } from '@/components/molecules/SanitizedHTML/SanitizedHTML';
+import { SellerGallery } from '@/components/organisms/seller/SellerGallery';
 import { SellerHero } from '@/components/organisms/seller/SellerHero';
+import { SellerLocations } from '@/components/organisms/seller/SellerLocations';
 import { SellerServiceList } from '@/components/organisms/seller/SellerServiceList';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getSellerByHandle } from '@/lib/data/seller';
@@ -98,6 +100,10 @@ export default async function SalonProfilPage({
         )}
 
         <SellerServiceList products={products} currencyCode={currencyCode} />
+
+        <SellerGallery gallery={seller.gallery} sellerName={seller.name} />
+
+        <SellerLocations locations={seller.locations} />
       </div>
 
       <script type="application/ld+json">{JSON.stringify(localBusinessJsonLd)}</script>
