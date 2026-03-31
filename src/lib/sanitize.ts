@@ -10,8 +10,9 @@ import DOMPurify from 'dompurify';
  */
 export function sanitizeOnFetch(html: string): string {
   if (typeof window === 'undefined') {
-    // SSR: DOMPurify requires DOM — return as-is; SanitizedHTML handles SSR sanitization.
-    return html;
+    throw new Error(
+      'sanitizeOnFetch() is client-only (requires DOM). Use <SanitizedHTML> for server-side rendering.',
+    );
   }
 
   // Inject rel="noopener noreferrer" target="_blank" on all <a> tags after sanitization
@@ -22,12 +23,12 @@ export function sanitizeOnFetch(html: string): string {
     }
   });
 
-  const clean = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'h2', 'h3', 'h4'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
-  });
-
-  DOMPurify.removeHook('afterSanitizeAttributes');
-
-  return clean;
+  try {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'h2', 'h3', 'h4'],
+      ALLOWED_ATTR: ['href', 'target', 'rel'],
+    });
+  } finally {
+    DOMPurify.removeHook('afterSanitizeAttributes');
+  }
 }

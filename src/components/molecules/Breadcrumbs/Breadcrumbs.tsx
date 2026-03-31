@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { STOREFRONT_BASE_URL } from '@/lib/env';
+
 export interface BreadcrumbItem {
   label: string;
   href: string;
@@ -12,7 +14,7 @@ export interface BreadcrumbsProps {
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   if (items.length === 0) return null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? '';
+  const baseUrl = STOREFRONT_BASE_URL;
   const lastIndex = items.length - 1;
   const hasMiddleItems = items.length > 2;
 
@@ -37,7 +39,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
           return (
             <li
-              key={item.href}
+              key={`${index}-${item.href}`}
               className={
                 isMiddle
                   ? 'hidden sm:inline-flex items-center gap-1'

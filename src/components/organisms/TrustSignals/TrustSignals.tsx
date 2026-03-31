@@ -34,7 +34,7 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
     <div
       role="region"
       aria-label="Gwarancje BonBeauty"
-      className="rounded bg-[var(--color-trust)] px-4 py-3"
+      className="rounded bg-[var(--color-trust)] px-4 py-3 text-white"
     >
       {capped.map((signal, i) => (
         <div key={`signal-${i}`} className="flex items-center gap-1">

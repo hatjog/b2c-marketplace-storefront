@@ -105,7 +105,7 @@ export default {
             secondary: "rgba(var(--content-warning-on-secondary))",
           },
         },
-        // BonBeauty semantic color tokens
+        // BonBeauty semantic color tokens (full rgb() values — opacity modifiers not supported)
         cta: {
           DEFAULT: 'var(--cta)',
           hover: 'var(--cta-hover)',

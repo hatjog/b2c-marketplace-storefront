@@ -6,7 +6,7 @@ vi.mock('next/image', () => ({ default: 'mock-next-image' }))
 vi.mock('next/link', () => ({ default: 'mock-link' }))
 vi.mock('@/icons', () => ({ ArrowRightIcon: 'mock-arrow-icon' }))
 
-import { VendorBadge, getInitialsFromName, getColorFromHandle } from '.'
+import { VendorBadge, getInitialsFromName, getColorFromHandle, produktPlural } from '.'
 
 // ---------------------------------------------------------------------------
 // Tree traversal helper
@@ -62,6 +62,37 @@ describe('getInitialsFromName', () => {
 
   it('uppercases initials', () => {
     expect(getInitialsFromName('anna kowalska')).toBe('AK')
+  })
+})
+
+describe('produktPlural', () => {
+  it('returns "1 produkt" for 1', () => {
+    expect(produktPlural(1)).toBe('1 produkt')
+  })
+
+  it('returns "2 produkty" for 2-4', () => {
+    expect(produktPlural(2)).toBe('2 produkty')
+    expect(produktPlural(3)).toBe('3 produkty')
+    expect(produktPlural(4)).toBe('4 produkty')
+  })
+
+  it('returns "5 produktów" for 5-21', () => {
+    expect(produktPlural(5)).toBe('5 produktów')
+    expect(produktPlural(12)).toBe('12 produktów')
+    expect(produktPlural(21)).toBe('21 produktów')
+  })
+
+  it('returns "22 produkty" for 22-24', () => {
+    expect(produktPlural(22)).toBe('22 produkty')
+    expect(produktPlural(23)).toBe('23 produkty')
+  })
+
+  it('returns "0 produktów" for 0', () => {
+    expect(produktPlural(0)).toBe('0 produktów')
+  })
+
+  it('returns "113 produktów" for teens pattern', () => {
+    expect(produktPlural(113)).toBe('113 produktów')
   })
 })
 

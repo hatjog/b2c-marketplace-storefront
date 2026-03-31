@@ -29,14 +29,16 @@ export function PriceDisplay({
   duration,
   className,
 }: PriceDisplayProps) {
-  if (amountInCents === null || amountInCents === undefined) {
+  if (amountInCents === null || amountInCents === undefined || amountInCents < 0) {
     return null;
   }
 
-  const sizeClass =
-    size === 'lg'
-      ? 'text-2xl font-medium leading-tight'
-      : 'text-sm font-medium leading-tight';
+  const SIZE_CLASSES = {
+    sm: 'text-xs font-medium leading-tight',
+    md: 'text-sm font-medium leading-tight',
+    lg: 'text-2xl font-medium leading-tight',
+  } as const;
+  const sizeClass = SIZE_CLASSES[size];
 
   // Resolve effective variant (range with equal min/max → default)
   const effectiveVariant =

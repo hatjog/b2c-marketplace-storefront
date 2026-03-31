@@ -43,6 +43,17 @@ export function getColorFromHandle(handle: string): string {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
 
+/** Polish plural for "produkt" (1 = produkt, 2-4 = produkty, 5+ = produktów). */
+export function produktPlural(n: number): string {
+  if (n === 1) return '1 produkt'
+  const lastTwo = Math.abs(n) % 100
+  const lastOne = lastTwo % 10
+  if (lastOne >= 2 && lastOne <= 4 && (lastTwo < 12 || lastTwo > 14)) {
+    return `${n} produkty`
+  }
+  return `${n} produktów`
+}
+
 /**
  * VendorBadge — shows the salon avatar + name (pdp variant) or avatar only (header variant).
  * Always links to /salony/[handle] (Polish route contract).
@@ -99,7 +110,7 @@ export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
         <>
           <div className="flex flex-col flex-1">
             <span className="font-medium">{vendor.name}</span>
-            <span className="text-sm">{`${vendor.productCount} produktów`}</span>
+            <span className="text-sm">{produktPlural(vendor.productCount)}</span>
           </div>
           <ArrowRightIcon size={20} />
         </>

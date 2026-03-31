@@ -91,16 +91,18 @@ describe('Breadcrumbs', () => {
     expect(ellipsis).toHaveLength(0);
   });
 
-  it('includes ellipsis li for 3+ items (mobile truncation)', () => {
+  it('includes mobile ellipsis ol for 3+ items (mobile truncation)', () => {
     const result = Breadcrumbs({ items: [HOME, CAT, PRODUCT] }) as ReactEl;
-    const ellipsisLi = findAll(
+    // Mobile ellipsis is rendered as a second <ol> with aria-hidden="true"
+    const mobileOl = findFirst(
       result,
       (el) =>
-        el.type === 'li' &&
-        typeof el.props.className === 'string' &&
-        el.props.className.includes('sm:hidden'),
+        el.type === 'ol' &&
+        el.props['aria-hidden'] === 'true',
     );
-    expect(ellipsisLi.length).toBeGreaterThan(0);
+    expect(mobileOl).not.toBeNull();
+    const text = collectTextContent(mobileOl!);
+    expect(text).toContain('…');
   });
 
   it('hides middle items on mobile using hidden sm:inline-flex class', () => {

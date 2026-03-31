@@ -118,6 +118,16 @@ describe('PriceDisplay', () => {
 
   it('applies sm size classes for size="sm"', () => {
     const result = PriceDisplay({ amountInCents: 20000, size: 'sm' }) as React.ReactElement;
+    expect(result.props.className).toContain('text-xs');
+  });
+
+  it('applies md size classes for size="md"', () => {
+    const result = PriceDisplay({ amountInCents: 20000, size: 'md' }) as React.ReactElement;
     expect(result.props.className).toContain('text-sm');
+  });
+
+  it('returns null for negative amountInCents', () => {
+    const result = PriceDisplay({ amountInCents: -500 });
+    expect(result).toBeNull();
   });
 });
