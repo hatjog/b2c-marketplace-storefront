@@ -3,6 +3,7 @@ import type { BlogPost } from '@/types/blog';
 
 export type PayloadStructuredData = {
   articleSection?: string | null;
+  image_url?: string | null;
 };
 
 export type PayloadPage = {
@@ -152,6 +153,12 @@ export function getPageImageUrl(
   const secondaryUrl = resolvePayloadImageUrl(secondaryImage);
   if (secondaryUrl) {
     return secondaryUrl;
+  }
+
+  // Fallback to structuredData.image_url (set by gp-config-sync-blog from blog.yaml)
+  const sdImageUrl = page.structuredData?.image_url;
+  if (typeof sdImageUrl === 'string' && sdImageUrl.length > 0) {
+    return sdImageUrl;
   }
 
   return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
