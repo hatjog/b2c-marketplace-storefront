@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 
 import NotFound from '@/app/not-found';
 import { Breadcrumbs } from '@/components/atoms';
+import { SanitizedHTML } from '@/components/molecules';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { AlgoliaProductsListing } from '@/components/sections/ProductListing/AlgoliaProductsListing';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
@@ -105,6 +106,7 @@ const SingleCollectionsPage = async ({
       ) : null}
 
       <h1 className="heading-xl uppercase">{collection.title}</h1>
+      <SanitizedHTML html={(collection as any).description ?? null} className="mt-4 mb-6 text-sm text-secondary" />
 
       <Suspense
         fallback={

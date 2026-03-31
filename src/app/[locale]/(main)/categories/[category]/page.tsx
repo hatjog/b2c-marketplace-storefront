@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import Script from 'next/script';
 
 import { Breadcrumbs } from '@/components/atoms';
+import { SanitizedHTML } from '@/components/molecules';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 import { getCategoryByHandle } from '@/lib/data/categories';
@@ -176,6 +177,7 @@ async function Category({
       </div>
 
       <h1 className="heading-xl uppercase">{category.name}</h1>
+      <SanitizedHTML html={category.description} className="mt-4 mb-6 text-sm text-secondary" />
 
       <Suspense
         fallback={

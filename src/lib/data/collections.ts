@@ -7,7 +7,7 @@ import { filterByMarket, getMarketId, selectMarketScopedItem } from '../helpers/
 import { getCacheOptions } from './cookies';
 
 const COLLECTION_LIST_FIELDS = 'id,handle,title,metadata';
-const COLLECTION_DETAIL_FIELDS = 'id,handle,title,metadata,*products';
+const COLLECTION_DETAIL_FIELDS = 'id,handle,title,metadata,description,*products';
 
 export const retrieveCollection = async (id: string) => {
   const next = {
