@@ -40,7 +40,7 @@ export const ProductCarousel = ({ slides = [] }: { slides: HttpTypes.StoreProduc
                 priority={idx === 0}
                 fetchPriority={idx === 0 ? 'high' : 'auto'}
                 src={decodeURIComponent(slide.url)}
-                alt="Product image"
+                alt={(slide as { metadata?: { alt?: string } }).metadata?.alt ?? 'Product image'}
                 width={700}
                 height={700}
                 quality={idx === 0 ? 85 : 70}

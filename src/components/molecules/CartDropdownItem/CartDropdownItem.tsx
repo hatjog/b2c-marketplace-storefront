@@ -26,7 +26,7 @@ export const CartDropdownItem = ({
         {item.thumbnail ? (
           <Image
             src={decodeURIComponent(item.thumbnail)}
-            alt={item.product_title || ''}
+            alt={item.product_title || 'Product thumbnail'}
             width={80}
             height={90}
             className="h-[90px] w-[80px] rounded-xs object-cover"

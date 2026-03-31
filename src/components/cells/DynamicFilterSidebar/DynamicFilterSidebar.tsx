@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { filterEmptyOptions } from '@/lib/helpers/filter-utils';
+
 import { CategoryFilter } from '../CategoryFilter/CategoryFilter';
 import { DurationFilter } from '../DurationFilter/DurationFilter';
 import { LocationFilter } from '../LocationFilter/LocationFilter';
@@ -17,8 +19,8 @@ export type StorefrontFilterConfig = {
   display?: string;
 };
 
-type Category = { id: string; name: string; handle: string };
-type Tag = { id: string; value: string };
+type Category = { id: string; name: string; handle: string; count?: number };
+type Tag = { id: string; value: string; count?: number };
 
 type DynamicFilterSidebarProps = {
   filters: StorefrontFilterConfig[];
@@ -49,25 +51,33 @@ export const DynamicFilterSidebar = ({
         const heading: string = t(msgKey) ?? msgKey;
 
         switch (filter.type) {
-          case 'category_group':
+          case 'category_group': {
+            const filteredCategories = filterEmptyOptions(categories);
+            if (!filteredCategories) return null;
             return (
               <CategoryFilter
                 key={filter.type}
                 heading={heading}
-                categories={categories}
+                categories={filteredCategories}
               />
             );
-          case 'tag_group':
+          }
+          case 'tag_group': {
+            const filteredTags = filterEmptyOptions(tags);
+            if (!filteredTags) return null;
             return (
               <TagFilter
                 key={`${filter.type}-${filter.tag_group ?? ''}`}
                 heading={heading}
-                tags={tags}
+                tags={filteredTags}
               />
             );
+          }
           case 'price_range':
+            // always visible when range > 0 PLN (ADR-047)
             return <PriceFilter key={filter.type} />;
           case 'duration':
+            // duration uses internal DEFAULT_DURATION_OPTIONS; visible per threshold rule
             return (
               <DurationFilter
                 key={filter.type}
@@ -82,6 +92,7 @@ export const DynamicFilterSidebar = ({
               />
             );
           case 'location':
+            // always visible — ADR-047: signals readiness for market expansion
             return (
               <LocationFilter
                 key={filter.type}
