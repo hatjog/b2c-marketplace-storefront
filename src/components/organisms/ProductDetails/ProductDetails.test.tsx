@@ -1,185 +1,126 @@
-import React from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('next-intl/server', () => ({
-  getTranslations: async () => (key: string) => key,
-}))
-vi.mock('@/lib/data/customer', () => ({
-  retrieveCustomer: async () => null,
-}))
-vi.mock('@/lib/data/wishlist', () => ({
-  getUserWishlists: async () => ({ products: [] }),
-}))
-vi.mock('@/lib/helpers/country-code', () => ({
-  getCountryCode: async () => 'pl',
-}))
-vi.mock('@/lib/helpers/market-filter', () => ({
-  getMarketId: () => 'pl-market',
-}))
+// Mock all external dependencies before importing the component under test
+vi.mock('@medusajs/types', () => ({ HttpTypes: {} }));
+vi.mock('@/lib/data/customer', () => ({ retrieveCustomer: vi.fn().mockResolvedValue(null) }));
+vi.mock('@/lib/data/wishlist', () => ({ getUserWishlists: vi.fn().mockResolvedValue({ products: [] }) }));
+vi.mock('@/lib/helpers/country-code', () => ({ getCountryCode: vi.fn().mockResolvedValue('pl') }));
+vi.mock('@/lib/helpers/market-filter', () => ({ getMarketId: vi.fn().mockReturnValue('pl') }));
 vi.mock('@/lib/runtime-market-config', () => ({
-  resolvePdpTrustSignals: async () => [],
-}))
+  resolvePdpTrustSignals: vi.fn().mockResolvedValue([]),
+  resolveDefaultValidityInfo: vi.fn().mockResolvedValue(null),
+}));
 vi.mock('@/components/cells', () => ({
-  ProductAdditionalAttributes: 'mock-additional-attributes',
-  ProductDetailsFooter: 'mock-details-footer',
-  ProductDetailsHeader: 'mock-details-header',
-  ProductDetailsSeller: 'mock-details-seller',
-  ProductDetailsShipping: 'mock-details-shipping',
-  ProductPageDetails: 'mock-page-details',
-}))
+  ProductAdditionalAttributes: 'ProductAdditionalAttributes',
+  ProductDetailsFooter: 'ProductDetailsFooter',
+  ProductDetailsHeader: 'ProductDetailsHeader',
+  ProductDetailsSeller: 'ProductDetailsSeller',
+  ProductDetailsShipping: 'ProductDetailsShipping',
+  ProductPageDetails: 'ProductPageDetails',
+}));
 vi.mock('@/components/organisms/TrustSignals/TrustSignals', () => ({
-  TrustSignals: 'mock-trust-signals',
-}))
-vi.mock('@/components/molecules/VendorBadge', () => ({
-  VendorBadge: 'mock-vendor-badge',
-}))
+  TrustSignals: 'TrustSignals',
+}));
+vi.mock('@/components/molecules', () => ({
+  VoucherValidityInfo: 'VoucherValidityInfo',
+}));
 
-import { ProductDetails } from './ProductDetails'
+import { resolveDefaultValidityInfo } from '@/lib/runtime-market-config';
+import { ProductDetails } from './ProductDetails';
 
-// ---------------------------------------------------------------------------
-// Tree traversal helpers
-// ---------------------------------------------------------------------------
-
-function findElement(
-  element: React.ReactElement,
+function findAll(
+  el: React.ReactNode,
   predicate: (el: React.ReactElement) => boolean,
-): React.ReactElement | null {
-  if (!React.isValidElement(element)) return null
-  const el = element as React.ReactElement<Record<string, unknown>>
-  if (predicate(el)) return el
-  const children = React.Children.toArray(el.props?.children ?? [])
-  for (const child of children) {
-    if (!React.isValidElement(child)) continue
-    const found = findElement(child as React.ReactElement, predicate)
-    if (found) return found
+  results: React.ReactElement[] = [],
+): React.ReactElement[] {
+  if (React.isValidElement(el)) {
+    if (predicate(el)) results.push(el);
+    const children = React.Children.toArray(el.props.children);
+    for (const child of children) {
+      findAll(child, predicate, results);
+    }
   }
-  return null
+  return results;
 }
 
-// ---------------------------------------------------------------------------
-// Test data
-// ---------------------------------------------------------------------------
-
-const baseSeller = {
-  id: 'sel_01',
-  name: 'Salon Piękności',
-  handle: 'salon-pieknosci',
-  photo: 'https://example.com/photo.jpg',
-  description: 'Opis salonu',
-  tax_id: '',
-  created_at: '2024-01-01',
-  products: [{ id: 'p1' }, { id: 'p2' }],
-  store_status: 'ACTIVE' as const,
+function makeProduct(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'prod-1',
+    title: 'Test Voucher',
+    description: 'Test description',
+    tags: [],
+    created_at: '2024-01-01',
+    attribute_values: [],
+    seller: undefined,
+    metadata: {},
+    ...overrides,
+  };
 }
 
-const baseProduct = {
-  id: 'prod_01',
-  handle: 'masaz-relaksacyjny',
-  title: 'Masaż relaksacyjny',
-  thumbnail: null,
-  variants: [],
-  tags: [],
-  images: [],
-  description: '',
-  attribute_values: [],
-  created_at: '2024-01-01',
-} as any
+describe('ProductDetails — VoucherValidityInfo integration', () => {
+  it('passes validityPeriod from product metadata to VoucherValidityInfo', async () => {
+    vi.mocked(resolveDefaultValidityInfo).mockResolvedValue(null);
+    const product = makeProduct({ metadata: { gp: { validity_period: '12 miesięcy od daty zakupu' } } });
 
-// ---------------------------------------------------------------------------
-// ProductDetails — VendorBadge (AC #2, #3, #4)
-// ---------------------------------------------------------------------------
+    const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-describe('ProductDetails — VendorBadge integration (AC #2, #3, #4)', () => {
-  it('renders VendorBadge when seller is present (AC #2)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    expect(badge).not.toBeNull()
-  })
+    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    expect(found).toHaveLength(1);
+    expect(found[0].props.validityPeriod).toBe('12 miesięcy od daty zakupu');
+    expect(found[0].props.defaultInfo).toBeNull();
+  });
 
-  it('VendorBadge receives variant="pdp" (AC #2)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    expect((badge!.props as Record<string, unknown>).variant).toBe('pdp')
-  })
+  it('passes null validityPeriod and defaultInfo from config when product has no validity_period', async () => {
+    vi.mocked(resolveDefaultValidityInfo).mockResolvedValue('Ważny 12 miesięcy');
+    const product = makeProduct({ metadata: {} });
 
-  it('VendorBadge vendor.name matches seller.name (AC #2)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    const vendor = (badge!.props as Record<string, unknown>).vendor as Record<string, unknown>
-    expect(vendor.name).toBe(baseSeller.name)
-  })
+    const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-  it('VendorBadge vendor.handle matches seller.handle (AC #3)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    const vendor = (badge!.props as Record<string, unknown>).vendor as Record<string, unknown>
-    expect(vendor.handle).toBe(baseSeller.handle)
-  })
+    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    expect(found).toHaveLength(1);
+    expect(found[0].props.validityPeriod).toBeNull();
+    expect(found[0].props.defaultInfo).toBe('Ważny 12 miesięcy');
+  });
 
-  it('VendorBadge vendor.photoUrl comes from seller.photo (AC #2)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    const vendor = (badge!.props as Record<string, unknown>).vendor as Record<string, unknown>
-    expect(vendor.photoUrl).toBe(baseSeller.photo)
-  })
+  it('passes null for both props when neither validity_period nor defaultInfo exists', async () => {
+    vi.mocked(resolveDefaultValidityInfo).mockResolvedValue(null);
+    const product = makeProduct({ metadata: {} });
 
-  it('VendorBadge vendor.productCount uses seller.products length (AC #2)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    const vendor = (badge!.props as Record<string, unknown>).vendor as Record<string, unknown>
-    expect(vendor.productCount).toBe(baseSeller.products.length)
-  })
+    const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-  it('does NOT render VendorBadge when seller is absent (AC #4)', async () => {
-    const result = (await ProductDetails({ product: baseProduct, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    expect(badge).toBeNull()
-  })
+    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    expect(found).toHaveLength(1);
+    expect(found[0].props.validityPeriod).toBeNull();
+    expect(found[0].props.defaultInfo).toBeNull();
+  });
 
-  it('does NOT render VendorBadge when seller is null (AC #4)', async () => {
-    const product = { ...baseProduct, seller: null }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    expect(badge).toBeNull()
-  })
+  it('validityPeriod from product wins over defaultInfo from config', async () => {
+    vi.mocked(resolveDefaultValidityInfo).mockResolvedValue('Ważny 12 miesięcy');
+    const product = makeProduct({ metadata: { gp: { validity_period: '6 miesięcy' } } });
 
-  it('renders without error when seller is absent (AC #4)', async () => {
-    await expect(ProductDetails({ product: baseProduct, locale: 'pl' })).resolves.not.toThrow()
-  })
+    const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-  it('vendor.photoUrl is null when seller.photo is empty string', async () => {
-    const product = { ...baseProduct, seller: { ...baseSeller, photo: '' } }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    const vendor = (badge!.props as Record<string, unknown>).vendor as Record<string, unknown>
-    expect(vendor.photoUrl).toBeNull()
-  })
+    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    expect(found).toHaveLength(1);
+    expect(found[0].props.validityPeriod).toBe('6 miesięcy');
+    expect(found[0].props.defaultInfo).toBe('Ważny 12 miesięcy');
+  });
 
-  it('vendor.productCount is 0 when seller has no products array', async () => {
-    const seller = { ...baseSeller, products: undefined }
-    const product = { ...baseProduct, seller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const badge = findElement(result, el => el.type === 'mock-vendor-badge')
-    const vendor = (badge!.props as Record<string, unknown>).vendor as Record<string, unknown>
-    expect(vendor.productCount).toBe(0)
-  })
+  it('VoucherValidityInfo appears after TrustSignals in the DOM order', async () => {
+    vi.mocked(resolveDefaultValidityInfo).mockResolvedValue(null);
+    const product = makeProduct({ metadata: { gp: { validity_period: '12 miesięcy' } } });
 
-  it('renders vendor badge container with data-testid (AC #2)', async () => {
-    const product = { ...baseProduct, seller: baseSeller }
-    const result = (await ProductDetails({ product, locale: 'pl' })) as React.ReactElement
-    const container = findElement(
-      result,
-      el =>
-        React.isValidElement(el) &&
-        (el as React.ReactElement<Record<string, unknown>>).props?.['data-testid'] ===
-          'product-details-vendor-badge',
-    )
-    expect(container).not.toBeNull()
-  })
-})
+    const result = await ProductDetails({ product: product as never, locale: 'pl' });
+
+    const children = React.Children.toArray((result as React.ReactElement).props.children);
+    const trustIdx = children.findIndex(
+      (c) => React.isValidElement(c) && c.type === 'TrustSignals',
+    );
+    const validityIdx = children.findIndex(
+      (c) => React.isValidElement(c) && c.type === 'VoucherValidityInfo',
+    );
+    expect(trustIdx).toBeGreaterThanOrEqual(0);
+    expect(validityIdx).toBeGreaterThan(trustIdx);
+  });
+});

@@ -147,9 +147,9 @@ export const ProductDetailsHeader = ({
                   className="heading-md text-primary"
                   data-testid="product-price-current"
                 >
-                  {variantPrice.calculated_price_number === 0 ? 'Gratis' : variantPrice.calculated_price}
+                  {variantPrice.calculated_price}
                 </span>
-                {variantPrice.calculated_price_number !== 0 && variantPrice.calculated_price_number !== variantPrice.original_price_number && (
+                {variantPrice.calculated_price_number !== variantPrice.original_price_number && (
                   <span
                     className="label-md text-secondary line-through"
                     data-testid="product-price-original"
@@ -193,18 +193,12 @@ export const ProductDetailsHeader = ({
         size="large"
         data-testid="product-add-to-cart-button"
       >
-        {variantStock && variantHasPrice
-          ? t('add_to_cart')
-          : t('out_of_stock')}
+        {!hasAnyPrice
+          ? t('not_available_in_region')
+          : variantStock && variantHasPrice
+            ? t('add_to_cart')
+            : t('out_of_stock')}
       </Button>
-      {!hasAnyPrice && (
-        <p
-          className="label-sm mb-2 text-center text-secondary"
-          data-testid="product-temporarily-unavailable"
-        >
-          {t('temporarily_unavailable')}
-        </p>
-      )}
       {/* Seller message */}
 
       {user && product.seller && (

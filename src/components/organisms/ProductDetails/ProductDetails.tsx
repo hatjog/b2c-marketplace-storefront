@@ -8,14 +8,15 @@ import {
   ProductDetailsShipping,
   ProductPageDetails
 } from '@/components/cells';
+import { VoucherValidityInfo } from '@/components/molecules';
 import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
 import { VendorBadge } from '@/components/molecules/VendorBadge';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
-import { resolvePdpTrustSignals } from '@/lib/runtime-market-config';
-import type { AdditionalAttributeProps } from '@/types/product';
+import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
+import type { AdditionalAttributeProps, GpProductMetadata } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -38,7 +39,13 @@ export const ProductDetails = async ({
   }
 
   const marketId = getMarketId();
-  const trustSignals = await resolvePdpTrustSignals(marketId);
+  const [trustSignals, defaultValidityInfo] = await Promise.all([
+    resolvePdpTrustSignals(marketId),
+    resolveDefaultValidityInfo(marketId),
+  ]);
+
+  const gpMeta = product.metadata?.gp as GpProductMetadata | undefined;
+  const validityPeriod = gpMeta?.validity_period ?? null;
 
   return (
     <div>
@@ -66,6 +73,7 @@ export const ProductDetails = async ({
         </div>
       )}
       <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />
+      <VoucherValidityInfo validityPeriod={validityPeriod} defaultInfo={defaultValidityInfo} />
       <ProductPageDetails details={product?.description || ''} />
       <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
       <ProductDetailsShipping />

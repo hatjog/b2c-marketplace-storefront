@@ -4,13 +4,9 @@ import { getPercentageDiff } from './get-precentage-diff';
 import { convertToLocale } from './money';
 
 export const getPricesForVariant = (variant: any) => {
-  if (!variant?.calculated_price) {
-    return null;
-  }
-
   if (
-    variant.calculated_price.calculated_amount_with_tax == null &&
-    variant.calculated_price.calculated_amount == null
+    !variant?.calculated_price?.calculated_amount_with_tax &&
+    !variant?.calculated_price?.calculated_amount
   ) {
     return null;
   }
@@ -82,17 +78,15 @@ export function getProductPrice({
       return null;
     }
 
-    const available = product.variants
-      .filter((v: any) => v.calculated_price != null)
+    return product.variants
+      .filter((v: any) => !!v.calculated_price)
       .sort((a: any, b: any) => {
-        return a.calculated_price.calculated_amount_with_tax != null &&
-          b.calculated_price.calculated_amount_with_tax != null
+        return a.calculated_price.calculated_amount_with_tax &&
+          b.calculated_price.calculated_amount_with_tax
           ? a.calculated_price.calculated_amount_with_tax -
               b.calculated_price.calculated_amount_with_tax
-          : (a.calculated_price.calculated_amount ?? 0) - (b.calculated_price.calculated_amount ?? 0);
-      });
-
-    return available[0] ?? null;
+          : a.calculated_amount - b.calculated_amount;
+      })[0];
   };
 
   const cheapestPrice = () => {

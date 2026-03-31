@@ -1,5 +1,11 @@
 import type { SellerProps } from './seller';
 
+export type GpProductMetadata = {
+  validity_period?: string | null;
+  seo?: { meta_title?: string; meta_description?: string; og_image_url?: string } | null;
+  [key: string]: unknown;
+};
+
 export interface AdditionalAttributeProps {
   id: string;
   attribute_id: string;
