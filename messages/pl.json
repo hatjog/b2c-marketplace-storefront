@@ -357,5 +357,9 @@
   "voucher": {
     "qr_code_aria_label": "Kod QR vouchera",
     "qr_code_label": "Zeskanuj w salonie"
+  },
+  "cross_sell": {
+    "same_seller": "W tym salonie",
+    "same_category": "W tej kategorii"
   }
 }

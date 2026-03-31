@@ -1,5 +1,6 @@
 export { BannerSection } from './BannerSection/BannerSection';
 export { BlogSection } from './BlogSection/BlogSection';
+export { CrossSellSection } from './CrossSellSection';
 export { Hero } from './Hero/Hero';
 export { HomeCategories } from './HomeCategories/HomeCategories';
 export { HomeProductSection } from './HomeProductSection/HomeProductSection';

@@ -357,5 +357,9 @@
   "voucher": {
     "qr_code_aria_label": "Voucher QR code",
     "qr_code_label": "Scan at salon"
+  },
+  "cross_sell": {
+    "same_seller": "From this salon",
+    "same_category": "In this category"
   }
 }

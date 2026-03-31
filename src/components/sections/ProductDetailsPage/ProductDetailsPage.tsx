@@ -6,6 +6,7 @@ import { ProductDetails, ProductGallery } from '@/components/organisms';
 import { listProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
 
+import { CrossSellSection } from '../CrossSellSection';
 import { HomeProductSection } from '../HomeProductSection/HomeProductSection';
 
 export const ProductDetailsPage = async ({
@@ -64,6 +65,10 @@ export const ProductDetailsPage = async ({
           />
         </div>
       )}
+      <CrossSellSection
+        product={prod}
+        countryCode={countryCode}
+      />
       <StickyAddToCart
         product={prod}
         countryCode={countryCode}
