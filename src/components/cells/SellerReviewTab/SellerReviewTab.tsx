@@ -1,8 +1,11 @@
+import { getTranslations } from 'next-intl/server';
+
 import { SellerReviewList, SellerScore } from '@/components/molecules';
 import { getSellerByHandle } from '@/lib/data/seller';
 import type { SellerProps } from '@/types/seller';
 
 export const SellerReviewTab = async ({ seller_handle }: { seller_handle: string }) => {
+  const t = await getTranslations('products');
   const seller = (await getSellerByHandle(seller_handle)) as SellerProps;
 
   const filteredReviews = seller.reviews?.filter(r => r !== null);
@@ -23,7 +26,7 @@ export const SellerReviewTab = async ({ seller_handle }: { seller_handle: string
         />
       </div>
       <div className="col-span-3 rounded-sm border p-4">
-        <h3 className="heading-sm border-b pb-4 uppercase">Seller reviews</h3>
+        <h3 className="heading-sm border-b pb-4 uppercase">{t('seller_reviews')}</h3>
         <SellerReviewList reviews={seller.reviews} />
       </div>
     </div>
