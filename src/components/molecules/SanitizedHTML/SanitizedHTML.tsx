@@ -5,7 +5,7 @@ const ALLOWLIST: sanitizeHtml.IOptions = {
   allowedAttributes: {
     'a': ['href', 'rel', 'target'],
   },
-  allowedSchemes: ['https', 'http', 'mailto'],
+  allowedSchemes: ['https', 'http', 'mailto', 'tel'],
   transformTags: {
     'a': sanitizeHtml.simpleTransform('a', {
       rel: 'noopener noreferrer',

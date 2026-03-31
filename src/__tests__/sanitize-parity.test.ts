@@ -15,7 +15,7 @@ const SANITIZE_HTML_OPTIONS: sanitizeHtml.IOptions = {
   allowedAttributes: {
     'a': ['href'],
   },
-  allowedSchemes: ['https', 'http', 'mailto'],
+  allowedSchemes: ['https', 'http', 'mailto', 'tel'],
 };
 
 const DOMPURIFY_CONFIG = {
@@ -61,7 +61,7 @@ describe('sanitize-html vs DOMPurify allowlist parity (AC3)', () => {
     const productionConfig: sanitizeHtml.IOptions = {
       allowedTags: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'h2', 'h3', 'h4'],
       allowedAttributes: { 'a': ['href', 'rel', 'target'] },
-      allowedSchemes: ['https', 'http', 'mailto'],
+      allowedSchemes: ['https', 'http', 'mailto', 'tel'],
       transformTags: {
         'a': sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer', target: '_blank' }),
       },
