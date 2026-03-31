@@ -23,7 +23,7 @@ export interface Product {
   sold?: boolean;
 }
 
-export type SortOptions = 'price_asc' | 'price_desc' | 'created_at';
+export type SortOptions = 'price_asc' | 'price_desc' | 'created_at' | 'recommended';
 
 export interface SingleProductImage {
   id: string;

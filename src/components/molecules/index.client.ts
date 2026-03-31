@@ -17,6 +17,7 @@ export { ReportListingForm } from './ReportListingForm/ReportListingForm';
 export { ReportSellerForm } from './ReportSellerForm/ReportSellerForm';
 export { ReviewForm } from './ReviewForm/ReviewForm';
 export { SelectField } from './SelectField/SelectField';
+export { SortDropdown } from './SortDropdown/SortDropdown';
 export { SellerInfo } from './SellerInfo/SellerInfo';
 export { SellerReviewList } from './SellerReviewList/SellerReviewList';
 export { UserNavigation } from './UserNavigation/UserNavigation';

@@ -7,6 +7,7 @@ import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
 import { normalizeListedProducts } from '@/lib/helpers/normalize-listed-products';
 import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
 import { sortProducts } from '@/lib/helpers/sort-products';
+import { sortByRecommended } from '@/lib/helpers/sort-utils';
 import type { SortOptions } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 
@@ -225,7 +226,7 @@ export const listFilteredProducts = async ({
  */
 export const listProductsWithSort = async ({
   queryParams,
-  sortBy = 'created_at',
+  sortBy = 'recommended',
   countryCode,
   category_id,
   seller_id,
@@ -336,7 +337,9 @@ export const listProductsWithSort = async ({
     prod.variants?.some(variant => variant.calculated_price !== null)
   );
 
-  const sortedProducts = sortProducts(pricedProducts, sortBy);
+  const sortedProducts = sortBy === 'recommended'
+    ? sortByRecommended(pricedProducts)
+    : sortProducts(pricedProducts, sortBy);
 
   return {
     response: {

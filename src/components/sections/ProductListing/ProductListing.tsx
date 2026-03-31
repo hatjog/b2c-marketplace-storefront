@@ -9,6 +9,8 @@ import {
 } from '@/components/organisms';
 import type { StorefrontFilterConfig } from '@/components/cells/DynamicFilterSidebar/DynamicFilterSidebar';
 import { PRODUCT_LIMIT } from '@/const';
+import { SORT_OPTIONS } from '@/lib/constants';
+import type { SortOption } from '@/lib/constants';
 import { listCategories } from '@/lib/data/categories';
 import { listProductsWithSort, listProductTags, listSellerCities } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -119,6 +121,10 @@ export const ProductListing = async ({
   // Resolve & sanitize filter params from URL search params
   const { categoryHandle, minPrice, maxPrice, tagIds, cities, durations, sellerRatings, page } = sanitizeSearchParams(searchParams);
 
+  // Resolve sort option — validate against allowlist, default to 'recommended'
+  const rawSort = typeof searchParams.sort === 'string' ? searchParams.sort : undefined;
+  const sortBy: SortOption = (SORT_OPTIONS as readonly string[]).includes(rawSort ?? '') ? (rawSort as SortOption) : 'recommended';
+
   // ADR-046: resolve country code from cookie, not from locale URL segment
   const countryCode = await getCountryCode(locale);
   const t = await getTranslations('filters');
@@ -189,7 +195,7 @@ export const ProductListing = async ({
       category_id: resolvedCategoryId,
       collection_id,
       countryCode,
-      sortBy: 'created_at',
+      sortBy,
       queryParams,
       cities,
       tagIds,

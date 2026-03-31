@@ -76,11 +76,14 @@ export async function generateMetadata({
 }
 
 const SingleCollectionsPage = async ({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ handle: string; locale: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) => {
   const { handle, locale } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
 
   const bot = isBot(navigator.userAgent);
   const collection = await getCollectionByHandle(handle);
@@ -133,6 +136,8 @@ const SingleCollectionsPage = async ({
           <ProductListing
             collection_id={collection.id}
             showSidebar
+            locale={locale}
+            searchParams={resolvedSearchParams}
           />
         ) : (
           <AlgoliaProductsListing
