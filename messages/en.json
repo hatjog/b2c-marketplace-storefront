@@ -113,6 +113,7 @@
     "description_heading": "Treatment description",
     "attributes_heading": "Details",
     "not_available_in_region": "Not available in your region",
+    "temporarily_unavailable": "Product temporarily unavailable",
     "error_adding_to_cart": "Error adding to cart",
     "error_adding_to_cart_desc": "The selected variant may be unavailable. Please try a different option.",
     "posted_date": "Posted",

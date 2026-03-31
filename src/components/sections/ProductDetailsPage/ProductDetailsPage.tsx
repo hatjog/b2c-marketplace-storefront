@@ -24,7 +24,7 @@ export const ProductDetailsPage = async ({
 
   if (!prod) return NotFound();
 
-  if (prod.seller && prod.seller.store_status !== 'ACTIVE') {
+  if (!prod.seller || prod.seller.store_status !== 'ACTIVE') {
     return NotFound();
   }
 
