@@ -13,6 +13,7 @@ import { getCollectionByHandle } from '@/lib/data/collections';
 import { getRegion } from '@/lib/data/regions';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import isBot from '@/lib/helpers/isBot';
+import { generateCollectionMetadata } from '@/lib/helpers/seo';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
@@ -38,41 +39,21 @@ export async function generateMetadata({
   }
 
   const baseUrl = await getBaseUrl();
-  const title = collection.title;
-  const description = `${collection.title} collection`;
-  const canonical = new URL(`/${locale}/collections/${handle}`, `${baseUrl}/`).toString();
-  const photoUrl = getCollectionPhotoUrl(collection);
-  const openGraphImage = photoUrl
-    ? photoUrl.startsWith('http')
-      ? photoUrl
-      : `${baseUrl}${photoUrl}`
-    : `${baseUrl}/images/placeholder.svg`;
+  const collectionMeta = generateCollectionMetadata(collection, baseUrl, locale);
 
-  return {
-    title,
-    description,
-    alternates: {
-      canonical
-    },
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      url: canonical,
-      images: [
-        {
-          url: openGraphImage,
-          alt: title
-        }
-      ]
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [openGraphImage]
+  // OG image: prefer collection photo over SEO placeholder
+  const photoUrl = getCollectionPhotoUrl(collection);
+  if (photoUrl) {
+    const photoAbsolute = photoUrl.startsWith('http') ? photoUrl : `${baseUrl}${photoUrl}`;
+    if (collectionMeta.openGraph && Array.isArray(collectionMeta.openGraph.images)) {
+      collectionMeta.openGraph.images = [{ url: photoAbsolute, alt: collection.title }];
     }
-  };
+    if (collectionMeta.twitter && Array.isArray(collectionMeta.twitter.images)) {
+      collectionMeta.twitter.images = [photoAbsolute];
+    }
+  }
+
+  return collectionMeta;
 }
 
 const SingleCollectionsPage = async ({

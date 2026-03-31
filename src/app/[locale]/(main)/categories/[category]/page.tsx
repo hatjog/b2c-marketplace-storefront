@@ -13,6 +13,7 @@ import { listProducts } from '@/lib/data/products';
 import { listRegions } from '@/lib/data/regions';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
+import { resolveGpSeoMetadata } from '@/lib/helpers/seo';
 
 export const revalidate = 60;
 
@@ -48,8 +49,14 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${cat.name} Category`;
-  const description = `${cat.name} Category - ${process.env.NEXT_PUBLIC_SITE_NAME || 'Storefront'}`;
+  const seo = resolveGpSeoMetadata(
+    cat.metadata as Record<string, unknown> | null | undefined
+  );
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
+  const title = seo.meta_title ?? cat.name;
+  const description =
+    seo.meta_description ?? `${cat.name} — zabiegi i vouchery na ${siteName}.`;
+  const ogImage = seo.og_image_url ?? `${baseUrl}/images/placeholder.svg`;
   const canonical = `${baseUrl}/${locale}/categories/${categoryHandle}`;
 
   return {
@@ -64,11 +71,18 @@ export async function generateMetadata({
     },
     robots: { index: true, follow: true },
     openGraph: {
-      title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || 'Storefront'}`,
+      title,
       description,
       url: canonical,
-      siteName: process.env.NEXT_PUBLIC_SITE_NAME || 'Storefront',
+      siteName,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
       type: 'website'
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage]
     }
   };
 }
