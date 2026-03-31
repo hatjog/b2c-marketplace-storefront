@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 import { ArrowRightIcon } from '@/icons';
 
+import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
+
 import tailwindConfig from '../../../../tailwind.config';
 
 type HeroProps = {
@@ -10,9 +12,10 @@ type HeroProps = {
   heading: string;
   paragraph: string;
   buttons: { label: string; path: string }[];
+  showSearch?: boolean;
 };
 
-export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
+export const Hero = ({ image, heading, paragraph, buttons, showSearch = false }: HeroProps) => {
   return (
     <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
       <Image
@@ -33,6 +36,9 @@ export const Hero = ({ image, heading, paragraph, buttons }: HeroProps) => {
               {heading}
             </h2>
             <p className="mb-8 text-lg">{paragraph}</p>
+            {showSearch && (
+              <NavbarSearch className="mt-6 w-full max-w-[600px] mx-auto px-4 md:px-0" />
+            )}
           </div>
         </div>
         {buttons.length && (

@@ -28,6 +28,7 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
         heading={heading}
         paragraph={paragraph}
         buttons={buttons}
+        showSearch={true}
       />
     );
   }
