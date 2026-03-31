@@ -1,6 +1,15 @@
 import { EarthIcon, FacebookIcon, InstagramIcon } from '@/icons';
 import type { SellerSocialLinks as SocialLinksType } from '@/types/seller';
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function TikTokIcon({ size = 24, className = '' }: { size?: number; className?: string }) {
   return (
     <svg
@@ -26,13 +35,18 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
 
   const { instagram, facebook, tiktok, website } = socialLinks;
 
-  if (!instagram && !facebook && !tiktok && !website) return null;
+  const safeInstagram = instagram && isSafeUrl(instagram) ? instagram : null;
+  const safeFacebook = facebook && isSafeUrl(facebook) ? facebook : null;
+  const safeTiktok = tiktok && isSafeUrl(tiktok) ? tiktok : null;
+  const safeWebsite = website && isSafeUrl(website) ? website : null;
+
+  if (!safeInstagram && !safeFacebook && !safeTiktok && !safeWebsite) return null;
 
   return (
     <nav aria-label="Media społecznościowe salonu" className="flex items-center gap-3">
-      {instagram && (
+      {safeInstagram && (
         <a
-          href={instagram}
+          href={safeInstagram}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Profil Instagram salonu"
@@ -41,9 +55,9 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
           <InstagramIcon size={20} />
         </a>
       )}
-      {facebook && (
+      {safeFacebook && (
         <a
-          href={facebook}
+          href={safeFacebook}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Profil Facebook salonu"
@@ -52,9 +66,9 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
           <FacebookIcon size={20} />
         </a>
       )}
-      {tiktok && (
+      {safeTiktok && (
         <a
-          href={tiktok}
+          href={safeTiktok}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Profil TikTok salonu"
@@ -63,9 +77,9 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
           <TikTokIcon size={20} />
         </a>
       )}
-      {website && (
+      {safeWebsite && (
         <a
-          href={website}
+          href={safeWebsite}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Strona internetowa salonu"

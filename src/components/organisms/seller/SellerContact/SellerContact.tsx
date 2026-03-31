@@ -1,32 +1,43 @@
 const BONBEAUTY_CONTACT_HREF = '/contact';
 
+function isSafePhone(phone: string): boolean {
+  return /^[+\d\s\-().]+$/.test(phone);
+}
+
+function isSafeEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export interface SellerContactProps {
   phone?: string | null;
   email?: string | null;
 }
 
 export function SellerContact({ phone, email }: SellerContactProps) {
+  const safePhone = phone && isSafePhone(phone) ? phone : null;
+  const safeEmail = email && isSafeEmail(email) ? email : null;
+
   return (
     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-      {phone && (
+      {safePhone && (
         <a
-          href={`tel:${phone}`}
+          href={`tel:${safePhone}`}
           className="hover:text-gray-900 transition-colors"
-          aria-label={`Zadzwoń: ${phone}`}
+          aria-label={`Zadzwoń: ${safePhone}`}
         >
-          {phone}
+          {safePhone}
         </a>
       )}
-      {email && (
+      {safeEmail && (
         <a
-          href={`mailto:${email}`}
+          href={`mailto:${safeEmail}`}
           className="hover:text-gray-900 transition-colors"
-          aria-label={`Napisz email: ${email}`}
+          aria-label={`Napisz email: ${safeEmail}`}
         >
-          {email}
+          {safeEmail}
         </a>
       )}
-      {!phone && !email && (
+      {!safePhone && !safeEmail && (
         <span>
           Problemy?{' '}
           <a
