@@ -4,14 +4,18 @@ import { getPercentageDiff } from './get-precentage-diff';
 import { convertToLocale } from './money';
 
 export const getPricesForVariant = (variant: any) => {
+  if (!variant?.calculated_price) {
+    return null;
+  }
+
   if (
-    !variant?.calculated_price?.calculated_amount_with_tax &&
-    !variant?.calculated_price?.calculated_amount
+    variant.calculated_price.calculated_amount_with_tax == null &&
+    variant.calculated_price.calculated_amount == null
   ) {
     return null;
   }
 
-  if (!variant?.calculated_price?.calculated_amount_with_tax) {
+  if (variant.calculated_price.calculated_amount_with_tax == null) {
     return {
       calculated_price_number: variant.calculated_price.calculated_amount,
       calculated_price: convertToLocale({
@@ -78,15 +82,17 @@ export function getProductPrice({
       return null;
     }
 
-    return product.variants
-      .filter((v: any) => !!v.calculated_price)
+    const available = product.variants
+      .filter((v: any) => v.calculated_price != null)
       .sort((a: any, b: any) => {
-        return a.calculated_price.calculated_amount_with_tax &&
-          b.calculated_price.calculated_amount_with_tax
+        return a.calculated_price.calculated_amount_with_tax != null &&
+          b.calculated_price.calculated_amount_with_tax != null
           ? a.calculated_price.calculated_amount_with_tax -
               b.calculated_price.calculated_amount_with_tax
-          : a.calculated_amount - b.calculated_amount;
-      })[0];
+          : (a.calculated_price.calculated_amount ?? 0) - (b.calculated_price.calculated_amount ?? 0);
+      });
+
+    return available[0] ?? null;
   };
 
   const cheapestPrice = () => {

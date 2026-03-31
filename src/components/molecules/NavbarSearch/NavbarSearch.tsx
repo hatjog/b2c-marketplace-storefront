@@ -27,7 +27,7 @@ export const NavbarSearch = ({
 
   const handleSearch = () => {
     if (search) {
-      redirect(`${submitPath}?${searchParam}=${search}`);
+      redirect(`${submitPath}?${searchParam}=${encodeURIComponent(search)}`);
     } else {
       redirect(submitPath);
     }
