@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { resolveFooterConnectLinks, resolveFooterCopyright, resolveFooterNavLinks } from '@/lib/footer';
+import { resolveFooterConnectLinks, resolveFooterCopyright, resolveFooterLegalEntity, resolveFooterNavLinks } from '@/lib/footer';
 import type { MarketConfig } from '@/lib/portal';
 
 const SECTION_I18N_KEYS: Record<string, string> = {
@@ -15,6 +15,7 @@ export async function Footer({ marketConfig }: { marketConfig?: MarketConfig | n
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);
   const navSections = resolveFooterNavLinks(marketConfig).filter(s => s.section !== 'connect');
+  const legalEntity = resolveFooterLegalEntity(marketConfig);
 
   const sectionLabel = (section: string) => {
     const key = SECTION_I18N_KEYS[section];
@@ -82,6 +83,40 @@ export async function Footer({ marketConfig }: { marketConfig?: MarketConfig | n
           </div>
         )}
       </div>
+
+      {legalEntity && (
+        <div
+          className="rounded-sm border p-6"
+          data-testid="footer-legal"
+        >
+          <h2 className="heading-sm mb-3 uppercase text-primary">{t('section_legal')}</h2>
+          <address className="label-md not-italic space-y-1 text-secondary">
+            <p data-testid="footer-legal-name">{legalEntity.name}</p>
+            <p data-testid="footer-legal-tax-id">{legalEntity.tax_id}</p>
+            <p data-testid="footer-legal-address">{legalEntity.address}</p>
+            {legalEntity.email && (
+              <p>
+                <a
+                  href={`mailto:${legalEntity.email}`}
+                  data-testid="footer-legal-email"
+                >
+                  {legalEntity.email}
+                </a>
+              </p>
+            )}
+            {legalEntity.phone && (
+              <p>
+                <a
+                  href={`tel:${legalEntity.phone}`}
+                  data-testid="footer-legal-phone"
+                >
+                  {legalEntity.phone}
+                </a>
+              </p>
+            )}
+          </address>
+        </div>
+      )}
 
       <div
         className="rounded-sm border py-6"

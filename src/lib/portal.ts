@@ -1,5 +1,7 @@
 // Source: portal/src/collections/MarketConfig.ts
-import type { MarketSocialLinks } from '@/lib/runtime-market-config';
+import type { LegalEntity, MarketSocialLinks } from '@/lib/runtime-market-config';
+
+export type { LegalEntity };
 
 import type { StorefrontFilterConfig } from '@/components/cells/DynamicFilterSidebar/DynamicFilterSidebar';
 export type { StorefrontFilterConfig };
@@ -43,6 +45,7 @@ export type MarketConfig = {
   tenant?: string | { id?: string | number } | null;
   favicon?: MarketConfigLogo | string | null;
   vendor_panel_url?: string | null;
+  legal_entity?: LegalEntity | null;
 };
 
 export function getMarketLogoUrl(marketConfig: MarketConfig | null | undefined) {

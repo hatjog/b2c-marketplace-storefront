@@ -18,6 +18,14 @@ export type MarketSocialLinkKey = (typeof SOCIAL_LINK_KEYS)[number];
 
 export type MarketSocialLinks = Partial<Record<MarketSocialLinkKey, string>>;
 
+export type LegalEntity = {
+  name: string;
+  address: string;
+  tax_id: string;
+  email?: string | null;
+  phone?: string | null;
+};
+
 type MarketRuntimeConfig = {
   public_profile?: {
     social_links?: Record<string, unknown> | null;
@@ -26,6 +34,7 @@ type MarketRuntimeConfig = {
     pdp_trust_signals?: string[] | null;
     default_validity_info?: string | null;
   } | null;
+  legal_entity?: Record<string, unknown> | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -133,4 +142,37 @@ export const resolvePdpTrustSignals = cache(async (marketId: string): Promise<st
 export const resolveDefaultValidityInfo = cache(async (marketId: string): Promise<string | null> => {
   const config = await readRuntimeMarketConfig(marketId);
   return config?.storefront?.default_validity_info ?? null;
+});
+
+function normalizeNonEmptyString(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+export function normalizeLegalEntity(value: unknown): LegalEntity | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const name = normalizeNonEmptyString(value.name);
+  const address = normalizeNonEmptyString(value.address);
+  const tax_id = normalizeNonEmptyString(value.tax_id);
+
+  if (!name || !address || !tax_id) {
+    return null;
+  }
+
+  return {
+    name,
+    address,
+    tax_id,
+    email: normalizeNonEmptyString(value.email),
+    phone: normalizeNonEmptyString(value.phone)
+  };
+}
+
+export const resolveLegalEntity = cache(async (marketId: string): Promise<LegalEntity | null> => {
+  const config = await readRuntimeMarketConfig(marketId);
+  return normalizeLegalEntity(config?.legal_entity);
 });

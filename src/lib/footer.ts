@@ -1,4 +1,4 @@
-import type { MarketConfig } from '@/lib/portal';
+import type { LegalEntity, MarketConfig } from '@/lib/portal';
 
 type FooterConnectLink = {
   label: string;
@@ -166,4 +166,28 @@ export function resolveFooterCopyright(marketConfig?: MarketConfig | null) {
   const year = new Date().getFullYear();
 
   return marketName ? `© ${year} ${marketName}` : `© ${year} Fleek`;
+}
+
+export function resolveFooterLegalEntity(marketConfig?: MarketConfig | null): LegalEntity | null {
+  const entity = marketConfig?.legal_entity;
+
+  if (!entity) {
+    return null;
+  }
+
+  const name = normalizeString(entity.name);
+  const address = normalizeString(entity.address);
+  const tax_id = normalizeString(entity.tax_id);
+
+  if (!name || !address || !tax_id) {
+    return null;
+  }
+
+  return {
+    name,
+    address,
+    tax_id,
+    email: normalizeString(entity.email) ?? null,
+    phone: normalizeString(entity.phone) ?? null
+  };
 }

@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
 
-import { resolveRuntimeSocialLinks, type MarketSocialLinks } from '@/lib/runtime-market-config';
+import { resolveLegalEntity, resolveRuntimeSocialLinks, type LegalEntity, type MarketSocialLinks } from '@/lib/runtime-market-config';
 import { getFallbackMarketConfig, type MarketConfig } from '@/lib/portal';
 
 type PayloadCollectionResponse<T> = {
@@ -52,6 +52,17 @@ function withRuntimeSocialLinks(
   } satisfies MarketConfig;
 }
 
+function withRuntimeLegalEntity(marketConfig: MarketConfig, legalEntity: LegalEntity | null) {
+  if (!legalEntity) {
+    return marketConfig;
+  }
+
+  return {
+    ...marketConfig,
+    legal_entity: legalEntity
+  } satisfies MarketConfig;
+}
+
 export async function fetchMarketConfig(marketId: string) {
   if (!marketId) {
     return null;
@@ -95,14 +106,20 @@ export async function fetchMarketConfig(marketId: string) {
 }
 
 export async function resolveMarketConfig(marketId: string) {
-  const runtimeSocialLinks = await resolveRuntimeSocialLinks(marketId);
+  const [runtimeSocialLinks, legalEntity] = await Promise.all([
+    resolveRuntimeSocialLinks(marketId),
+    resolveLegalEntity(marketId)
+  ]);
+
+  const applyRuntimeOverrides = (config: MarketConfig) =>
+    withRuntimeLegalEntity(withRuntimeSocialLinks(config, runtimeSocialLinks), legalEntity);
 
   try {
     const marketConfig = await fetchMarketConfig(marketId);
 
     if (marketConfig) {
       return {
-        marketConfig: withRuntimeSocialLinks(marketConfig, runtimeSocialLinks),
+        marketConfig: applyRuntimeOverrides(marketConfig),
         usedFallback: false
       };
     }
@@ -111,7 +128,7 @@ export async function resolveMarketConfig(marketId: string) {
   }
 
   return {
-    marketConfig: withRuntimeSocialLinks(getFallbackMarketConfig(marketId), runtimeSocialLinks),
+    marketConfig: applyRuntimeOverrides(getFallbackMarketConfig(marketId)),
     usedFallback: true
   };
 }
