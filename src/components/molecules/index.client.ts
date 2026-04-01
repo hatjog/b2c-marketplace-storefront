@@ -20,6 +20,7 @@ export { SelectField } from './SelectField/SelectField';
 export { SortDropdown } from './SortDropdown/SortDropdown';
 export { SellerInfo } from './SellerInfo/SellerInfo';
 export { SellerReviewList } from './SellerReviewList/SellerReviewList';
+export { SellerScore } from './SellerScore/SellerScore';
 export { UserNavigation } from './UserNavigation/UserNavigation';
 export { VendorBadge } from './VendorBadge/index';
 export { VoucherQrCode } from './VoucherQrCode/VoucherQrCode';

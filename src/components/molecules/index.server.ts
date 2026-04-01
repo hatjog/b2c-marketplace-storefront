@@ -14,7 +14,6 @@ export { ProductPostedDate } from './ProductPostedDate/ProductPostedDate';
 export { ProductTags } from './ProductTags/ProductTags';
 export { SellerInfoHeader } from './SellerInfoHeader/SellerInfoHeader';
 export { SellerReview } from './SellerReview/SellerReview';
-export { SellerScore } from './SellerScore/SellerScore';
 export { TabsContent } from './TabsContent/TabsContent';
 export { TabsList } from './TabsList/TabsList';
 export { PriceDisplay } from './PriceDisplay/PriceDisplay';

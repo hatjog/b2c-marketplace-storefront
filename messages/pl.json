@@ -118,7 +118,7 @@
     "no_results": "Brak wyników",
     "no_results_description": "Nie znaleziono wyników dla podanych kryteriów.",
     "seller_score": "Ocena sprzedawcy",
-    "reviews_count": "{count} opinii",
+    "reviews_count": "{count, plural, one {# opinia} few {# opinie} many {# opinii} other {# opinii}}",
     "error_adding_to_cart": "Błąd dodawania do koszyka",
     "error_adding_to_cart_desc": "Wybrany wariant może być niedostępny. Spróbuj inną opcję.",
     "posted_date": "Dodano",

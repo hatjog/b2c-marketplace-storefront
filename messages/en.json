@@ -118,7 +118,7 @@
     "no_results": "No results",
     "no_results_description": "Sorry, we can't find any results for your criteria",
     "seller_score": "Seller score",
-    "reviews_count": "{count} reviews",
+    "reviews_count": "{count, plural, one {# review} other {# reviews}}",
     "error_adding_to_cart": "Error adding to cart",
     "error_adding_to_cart_desc": "The selected variant may be unavailable. Please try a different option.",
     "posted_date": "Posted",
