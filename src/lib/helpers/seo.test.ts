@@ -155,4 +155,10 @@ describe('toSafeOgImageUrl', () => {
   it('returns fallback for empty string', () => {
     expect(toSafeOgImageUrl('', FALLBACK)).toBe(FALLBACK);
   });
+
+  it('returns fallback for SVG data URI', () => {
+    expect(
+      toSafeOgImageUrl('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=', FALLBACK)
+    ).toBe(FALLBACK);
+  });
 });

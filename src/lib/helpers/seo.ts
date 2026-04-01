@@ -11,6 +11,8 @@ export function toSafeOgImageUrl(
   fallback: string
 ): string {
   if (!url) return fallback;
+  // Block SVG data URIs (unsupported by social crawlers, not remotely fetchable)
+  if (url.toLowerCase().startsWith('data:image/svg')) return fallback;
   // Strip query string and fragment before checking extension
   const cleanUrl = url.split('?')[0].split('#')[0];
   if (cleanUrl.toLowerCase().endsWith('.svg')) return fallback;
