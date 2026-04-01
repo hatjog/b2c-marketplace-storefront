@@ -108,7 +108,7 @@ const SingleCollectionsPage = async ({
       ) : null}
 
       <h1 className="heading-xl uppercase">{collection.title}</h1>
-      <SanitizedHTML html={(collection as any).description ?? null} className="mt-4 mb-6 text-sm text-secondary" />
+      <SanitizedHTML html={collection.description ?? null} className="mt-4 mb-6 text-sm text-secondary" />
 
       <Suspense
         fallback={

@@ -9,13 +9,17 @@ import { getCacheOptions } from './cookies';
 const COLLECTION_LIST_FIELDS = 'id,handle,title,metadata';
 const COLLECTION_DETAIL_FIELDS = 'id,handle,title,metadata,description,*products';
 
-export const retrieveCollection = async (id: string) => {
+export type StoreCollectionDetail = HttpTypes.StoreCollection & {
+  description?: string | null;
+};
+
+export const retrieveCollection = async (id: string): Promise<StoreCollectionDetail> => {
   const next = {
     ...(await getCacheOptions('collections'))
   };
 
   return sdk.client
-    .fetch<{ collection: HttpTypes.StoreCollection }>(`/store/collections/${id}`, {
+    .fetch<{ collection: StoreCollectionDetail }>(`/store/collections/${id}`, {
       query: {
         fields: COLLECTION_DETAIL_FIELDS
       },
@@ -52,14 +56,14 @@ export const listCollections = async (
     });
 };
 
-export const getCollectionByHandle = async (handle: string): Promise<HttpTypes.StoreCollection | undefined> => {
+export const getCollectionByHandle = async (handle: string): Promise<StoreCollectionDetail | undefined> => {
   const next = {
     ...(await getCacheOptions('collections'))
   };
   const marketId = getMarketId();
 
   return sdk.client
-    .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
+    .fetch<{ collections: StoreCollectionDetail[]; count: number }>(`/store/collections`, {
       query: { handle, fields: COLLECTION_DETAIL_FIELDS },
       next,
       cache: 'force-cache'
