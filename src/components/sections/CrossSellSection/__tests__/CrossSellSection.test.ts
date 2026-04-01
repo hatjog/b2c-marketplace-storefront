@@ -162,3 +162,10 @@ describe('filterCrossSellSellerProducts', () => {
     expect(result.map(p => p.id)).toContain('multi-variant-seller');
   });
 });
+
+// Guard case note (AC4 — story v130-8-9):
+// When product.id is undefined/falsy, CrossSellSection returns null before invoking
+// these filter functions. The guard lives in the component (index.tsx), not here,
+// so filter unit tests always receive a guaranteed non-empty string currentProductId.
+// Verified: `if (!product.id) return null` is placed in CrossSellSection before
+// both filterCrossSellSellerProducts and filterCrossSellProducts are called.
