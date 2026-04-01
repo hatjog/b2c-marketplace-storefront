@@ -4,6 +4,14 @@ import Image from 'next/image';
 import { Button } from '@/components/atoms/Button/Button';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
+function safeDecodeURI(uri: string): string {
+  try {
+    return decodeURIComponent(uri);
+  } catch {
+    return uri;
+  }
+}
+
 type BannerSectionProps = {
   heading: string;
   subheading: string;
@@ -44,7 +52,7 @@ export const BannerSection = ({
           <div className="relative flex aspect-[4/3] justify-end rounded-sm lg:aspect-auto lg:h-full">
             <Image
               loading="lazy"
-              src={decodeURIComponent(imageUrl)}
+              src={safeDecodeURI(imageUrl)}
               alt={heading || label}
               width={700}
               height={600}
