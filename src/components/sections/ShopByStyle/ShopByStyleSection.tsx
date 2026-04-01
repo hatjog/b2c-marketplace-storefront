@@ -3,14 +3,7 @@ import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowRightIcon } from '@/icons';
-
-function safeDecodeURI(uri: string): string {
-  try {
-    return decodeURIComponent(uri);
-  } catch {
-    return uri;
-  }
-}
+import { safeDecodeURI } from '@/lib/helpers/url';
 
 type StyleSectionItemProps = {
   imageUrl: string | null;

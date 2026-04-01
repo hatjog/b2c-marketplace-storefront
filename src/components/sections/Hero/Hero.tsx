@@ -4,16 +4,9 @@ import Link from 'next/link';
 import { ArrowRightIcon } from '@/icons';
 
 import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
+import { safeDecodeURI } from '@/lib/helpers/url';
 
 import tailwindConfig from '../../../../tailwind.config';
-
-function safeDecodeURI(uri: string): string {
-  try {
-    return decodeURIComponent(uri);
-  } catch {
-    return uri;
-  }
-}
 
 type HeroProps = {
   image: string;
