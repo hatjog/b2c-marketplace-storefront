@@ -44,7 +44,6 @@ export const BannerSection = ({
           <div className="relative flex aspect-[4/3] justify-end rounded-sm lg:aspect-auto lg:h-full">
             <Image
               loading="lazy"
-              fetchPriority="high"
               src={decodeURIComponent(imageUrl)}
               alt={heading || label}
               width={700}

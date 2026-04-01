@@ -41,7 +41,6 @@ export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) 
                 <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-action-secondary">
                   <Image
                     loading="lazy"
-                    fetchPriority="high"
                     src={safeDecodeURI(item.imageUrl)}
                     alt={item.label}
                     fill
