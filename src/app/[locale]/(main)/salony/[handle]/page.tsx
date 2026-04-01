@@ -3,10 +3,12 @@ import { redirect } from 'next/navigation';
 
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SanitizedHTML } from '@/components/molecules/SanitizedHTML/SanitizedHTML';
+import { SellerContact } from '@/components/organisms/seller/SellerContact/SellerContact';
 import { SellerGallery } from '@/components/organisms/seller/SellerGallery';
 import { SellerHero } from '@/components/organisms/seller/SellerHero';
 import { SellerLocations } from '@/components/organisms/seller/SellerLocations';
 import { SellerServiceList } from '@/components/organisms/seller/SellerServiceList';
+import { SellerSocialLinks } from '@/components/organisms/seller/SellerSocialLinks/SellerSocialLinks';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { listProductsWithSort } from '@/lib/data/products';
@@ -95,6 +97,11 @@ export default async function SalonProfilPage({
 
       <div className="mt-6 space-y-8">
         <SellerHero name={seller.name} photo={seller.photo || null} />
+
+        <div className="flex flex-wrap items-center gap-4">
+          <SellerSocialLinks socialLinks={seller.social_links} />
+          <SellerContact phone={seller.phone} email={seller.email} />
+        </div>
 
         {seller.description && (
           <section aria-labelledby="seller-description-heading">
