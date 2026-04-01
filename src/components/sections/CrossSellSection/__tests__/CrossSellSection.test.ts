@@ -135,4 +135,30 @@ describe('filterCrossSellSellerProducts', () => {
     const result = filterCrossSellSellerProducts(products, CURRENT_ID);
     expect(result).toHaveLength(0);
   });
+
+  it('excludes seller products with no variants', () => {
+    const noVariantProduct = {
+      id: 'no-variant',
+      title: 'No variant',
+      status: 'published',
+      variants: [],
+    } as unknown as HttpTypes.StoreProduct;
+    const result = filterCrossSellSellerProducts([noVariantProduct, makeProduct('ok')], CURRENT_ID);
+    expect(result.map(p => p.id)).not.toContain('no-variant');
+    expect(result.map(p => p.id)).toContain('ok');
+  });
+
+  it('includes seller products where only a non-first variant has calculated_price', () => {
+    const product = {
+      id: 'multi-variant-seller',
+      title: 'Multi variant seller',
+      status: 'published',
+      variants: [
+        { id: 'v1', calculated_price: null } as any,
+        { id: 'v2', calculated_price: 5000 } as any,
+      ],
+    } as unknown as HttpTypes.StoreProduct;
+    const result = filterCrossSellSellerProducts([product], CURRENT_ID);
+    expect(result.map(p => p.id)).toContain('multi-variant-seller');
+  });
 });
