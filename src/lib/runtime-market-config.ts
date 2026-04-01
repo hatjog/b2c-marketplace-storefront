@@ -173,13 +173,25 @@ export function normalizeLegalEntity(value: unknown): LegalEntity | null {
   };
 }
 
+export function normalizeZasadySection(value: unknown): { title: string; body: string } | null {
+  if (!isRecord(value)) return null;
+  const title = normalizeNonEmptyString(value.title);
+  const body = normalizeNonEmptyString(value.body);
+  if (!title || !body) return null;
+  return { title, body };
+}
+
 export const resolveZasadySections = cache(async (
   marketId: string
 ): Promise<Array<{ title: string; body: string }> | null> => {
   const config = await readRuntimeMarketConfig(marketId);
   const sections = config?.storefront?.zasady_sections;
   if (!Array.isArray(sections) || sections.length === 0) return null;
-  return sections;
+  const valid = sections.flatMap(item => {
+    const normalized = normalizeZasadySection(item);
+    return normalized ? [normalized] : [];
+  });
+  return valid.length > 0 ? valid : null;
 });
 
 export const resolveLegalEntity = cache(async (marketId: string): Promise<LegalEntity | null> => {
