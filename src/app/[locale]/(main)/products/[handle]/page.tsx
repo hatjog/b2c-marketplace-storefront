@@ -68,11 +68,7 @@ export default async function ProductPage({
         '@type': 'Offer' as const,
         price: (priceRaw / 100).toFixed(2),
         priceCurrency: currencyCode,
-        availability: product?.variants?.some(
-          v => v.inventory_quantity != null && v.inventory_quantity > 0
-        )
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/InStock' // digital vouchers are always available
+        availability: 'https://schema.org/InStock' as const // digital vouchers are always available
       }
     : undefined;
 
