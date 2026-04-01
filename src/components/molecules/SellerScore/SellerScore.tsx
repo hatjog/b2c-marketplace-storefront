@@ -6,8 +6,9 @@ import { StarRating } from '@/components/atoms';
 
 export const SellerScore = ({ rate, reviewCount }: { rate: number; reviewCount: number }) => {
   const t = useTranslations('products');
-  const safeRate = Number.isNaN(rate) ? 0 : rate;
-  const rateDisplay = Number.isNaN(rate) ? '–' : rate.toFixed(1);
+  const isInvalidRate = typeof rate !== 'number' || !Number.isFinite(rate);
+  const safeRate = isInvalidRate ? 0 : rate;
+  const rateDisplay = isInvalidRate ? '–' : rate.toFixed(1);
 
   return (
     <div className="label-md flex h-full flex-col items-center py-12">

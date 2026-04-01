@@ -88,6 +88,24 @@ describe('SellerScore — normal rate (AC3)', () => {
 })
 
 // ---------------------------------------------------------------------------
+// Tests: Infinity guard (F3)
+// ---------------------------------------------------------------------------
+
+describe('SellerScore — Infinity rate (F3 guard)', () => {
+  it('displays "–" instead of "Infinity" when rate is Infinity', () => {
+    const result = SellerScore({ rate: Infinity, reviewCount: 0 }) as React.ReactElement
+    expect(findText(result, '–')).toBe(true)
+    expect(findText(result, 'Infinity')).toBe(false)
+  })
+
+  it('passes rate=0 to StarRating when rate is Infinity', () => {
+    const result = SellerScore({ rate: Infinity, reviewCount: 0 }) as React.ReactElement
+    const star = findElement(result, el => el.type === 'mock-star-rating')
+    expect(star!.props.rate).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Tests: zero rate (AC4)
 // ---------------------------------------------------------------------------
 
