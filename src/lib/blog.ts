@@ -1,5 +1,6 @@
 import { fetchMarketConfig } from '@/lib/portal.server';
 import type { BlogPost } from '@/types/blog';
+import { stripHtml } from '@/lib/helpers/text';
 
 export type PayloadStructuredData = {
   articleSection?: string | null;
@@ -174,7 +175,7 @@ export function getBlogCategory(page: PayloadPage) {
 }
 
 export function getBlogDescription(page: PayloadPage) {
-  return page.excerpt || page.summary || 'Read the latest updates from our marketplace blog.';
+  return stripHtml(page.excerpt || page.summary || 'Read the latest updates from our marketplace blog.');
 }
 
 export function getBlogHref(page: PayloadPage) {
