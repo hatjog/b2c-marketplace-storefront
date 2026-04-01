@@ -1,7 +1,7 @@
 import type { HttpTypes } from '@medusajs/types';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { getGpMetadata } from './metadata-utils';
+import { getGpField } from './metadata-utils';
 
 /**
  * Returns `url` unless it points to an SVG file, in which case returns `fallback`.
@@ -33,8 +33,7 @@ export interface GpSeoMetadata {
 export function resolveGpSeoMetadata(
   metadata: Record<string, unknown> | null | undefined
 ): GpSeoMetadata {
-  const gp = getGpMetadata<Record<string, unknown>>(metadata);
-  const gpSeo = gp?.seo as GpSeoMetadata | undefined;
+  const gpSeo = getGpField<GpSeoMetadata>(metadata, 'seo');
   // backward-compat: flat metadata.seo.* (remove in v1.4.0)
   const legacySeo = metadata?.seo as GpSeoMetadata | undefined;
   return {
@@ -54,7 +53,7 @@ export const generateProductMetadata = async (
   const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
-  const gpVendor = getGpMetadata<Record<string, unknown>>(product?.metadata as Record<string, unknown>)?.vendor_name as string | undefined ?? siteName;
+  const gpVendor = getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
   const title = seo.meta_title ?? product?.title ?? siteName;
   const description =
