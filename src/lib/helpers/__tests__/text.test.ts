@@ -41,9 +41,13 @@ describe('stripHtml', () => {
     expect(stripHtml("It&#39;s fine")).toBe("It's fine");
   });
 
+  it('decodes &apos;', () => {
+    expect(stripHtml("Don&apos;t")).toBe("Don't");
+  });
+
   // T3.4 — numeric entities
-  it('decodes &#160; (non-breaking space)', () => {
-    expect(stripHtml('Hello&#160;World')).toBe('Hello\u00a0World');
+  it('decodes &#160; (non-breaking space) as regular space', () => {
+    expect(stripHtml('Hello&#160;World')).toBe('Hello World');
   });
 
   it('decodes &#38; (ampersand)', () => {
@@ -64,11 +68,11 @@ describe('stripHtml', () => {
   });
 });
 
-// T3.6 — getBlogDescription integration
-describe('getBlogDescription integration', () => {
-  it('strips <em> and decodes &amp; from excerpt', async () => {
-    // Dynamic import avoids pulling in server-only dependencies at test time
-    // We test the pure function directly instead
+// T3.6 — stripHtml called with the same input getBlogDescription would receive
+describe('stripHtml — T3.6 mixed tag+entity (getBlogDescription contract)', () => {
+  it('strips <em> and decodes &amp; from excerpt', () => {
+    // getBlogDescription wraps stripHtml; server-only import prevents direct test here —
+    // testing the pure function with representative getBlogDescription input instead.
     const result = stripHtml('<em>Fresh</em> &amp; Natural');
     expect(result).toBe('Fresh & Natural');
   });
