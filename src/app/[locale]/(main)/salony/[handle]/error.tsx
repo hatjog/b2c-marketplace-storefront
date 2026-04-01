@@ -21,6 +21,7 @@ export default function SellerProfileError({
         spróbuj później.
       </p>
       <button
+        type="button"
         onClick={reset}
         className="rounded bg-black px-6 py-3 text-white hover:bg-gray-800 transition-colors"
       >
