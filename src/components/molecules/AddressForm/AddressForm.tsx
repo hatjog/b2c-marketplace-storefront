@@ -18,6 +18,8 @@ import { LabeledInput } from '@/components/cells';
 import CountrySelect from '@/components/cells/CountrySelect/CountrySelect';
 import { addCustomerAddress, updateCustomerAddress } from '@/lib/data/customer';
 
+import { emptyDefaultAddressValues } from '@/lib/helpers/address-form';
+
 import { createAddressSchema, type AddressFormData } from './schema';
 
 interface Props {
@@ -26,20 +28,6 @@ interface Props {
   regions: HttpTypes.StoreRegion[];
   handleClose?: () => void;
 }
-
-export const emptyDefaultAddressValues = {
-  addressName: '',
-  firstName: '',
-  lastName: '',
-  address: '',
-  city: '',
-  countryCode: '',
-  postalCode: '',
-  company: '',
-  province: '',
-  phone: '',
-  metadata: {}
-};
 
 export const AddressForm: FC<Props> = ({ defaultValues, ...props }) => {
   const tValidation = useTranslations('validation');

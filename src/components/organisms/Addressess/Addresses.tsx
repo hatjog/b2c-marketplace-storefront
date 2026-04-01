@@ -7,7 +7,7 @@ import { isEmpty } from 'lodash';
 
 import { Button, Card } from '@/components/atoms';
 import { AddressForm, Modal } from '@/components/molecules';
-import { emptyDefaultAddressValues } from '@/components/molecules/AddressForm/AddressForm';
+import { emptyDefaultAddressValues } from '@/lib/helpers/address-form';
 import type { AddressFormData } from '@/components/molecules/AddressForm/schema';
 import { deleteCustomerAddress } from '@/lib/data/customer';
 import { cn } from '@/lib/utils';

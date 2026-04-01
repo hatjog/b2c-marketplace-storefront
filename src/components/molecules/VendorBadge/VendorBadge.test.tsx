@@ -6,7 +6,8 @@ vi.mock('next/image', () => ({ default: 'mock-next-image' }))
 vi.mock('next/link', () => ({ default: 'mock-link' }))
 vi.mock('@/icons', () => ({ ArrowRightIcon: 'mock-arrow-icon' }))
 
-import { VendorBadge, getInitialsFromName, getColorFromHandle, produktPlural } from '.'
+import { getColorFromHandle, getInitialsFromName, produktPlural } from '@/lib/helpers/vendor-badge'
+import { VendorBadge } from '.'
 
 // ---------------------------------------------------------------------------
 // Tree traversal helper
