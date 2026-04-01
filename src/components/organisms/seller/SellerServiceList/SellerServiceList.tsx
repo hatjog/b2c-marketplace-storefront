@@ -12,6 +12,14 @@ export interface SellerServiceListProps {
   currencyCode: string;
 }
 
+function getCheapestPrice(product: HttpTypes.StoreProduct): number | null {
+  const prices = (product.variants ?? [])
+    .map((v: any) => v.calculated_price?.calculated_amount)
+    .filter((p: unknown): p is number => typeof p === 'number');
+  if (prices.length === 0) return null;
+  return Math.min(...prices);
+}
+
 export function SellerServiceList({ products, currencyCode: _currencyCode }: SellerServiceListProps) {
   const [showAll, setShowAll] = useState(false);
 
@@ -30,7 +38,7 @@ export function SellerServiceList({ products, currencyCode: _currencyCode }: Sel
 
       <ul className="divide-y divide-gray-100">
         {visible.map((product) => {
-          const price = product.variants?.[0]?.calculated_price?.calculated_amount ?? null;
+          const price = getCheapestPrice(product);
 
           return (
             <li

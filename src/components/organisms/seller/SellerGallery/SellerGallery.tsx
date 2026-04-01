@@ -15,7 +15,7 @@ export function SellerGallery({ gallery, sellerName }: Props) {
       <h2 className="text-xl font-semibold mb-4">Galeria</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
         {gallery.map((item, i) => (
-          <div key={i} className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-zoom-in">
+          <div key={item.url} className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-zoom-in">
             <Image
               src={item.url}
               alt={item.alt ?? sellerName}

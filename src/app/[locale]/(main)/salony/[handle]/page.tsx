@@ -23,7 +23,7 @@ export async function generateMetadata({
   const { handle } = await params;
   const seller = await getSellerByHandle(handle);
 
-  if (!seller || Array.isArray(seller)) {
+  if (!seller) {
     return { title: 'Salon | BonBeauty' };
   }
 
@@ -52,7 +52,7 @@ export default async function SalonProfilPage({
 
   const seller = await getSellerByHandle(handle);
 
-  if (!seller || Array.isArray(seller)) {
+  if (!seller) {
     redirect('/salony');
   }
 
@@ -60,11 +60,17 @@ export default async function SalonProfilPage({
   const region = await getRegion(countryCode);
   const currencyCode = region?.currency_code ?? 'pln';
 
-  const { response: { products } } = await listProductsWithSort({
-    countryCode,
-    seller_id: seller.id,
-    limit: 50,
-  });
+  let products: Awaited<ReturnType<typeof listProductsWithSort>>['response']['products'] = [];
+  try {
+    const result = await listProductsWithSort({
+      countryCode,
+      seller_id: seller.id,
+      limit: 50,
+    });
+    products = result.response.products;
+  } catch {
+    // Gracefully degrade — show seller profile without services
+  }
 
   const pageUrl = `${STOREFRONT_BASE_URL}/salony/${seller.handle}`;
 

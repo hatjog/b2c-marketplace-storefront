@@ -24,6 +24,15 @@ export function hashColor(handle: string): string {
   return HASH_COLORS[sum % HASH_COLORS.length];
 }
 
+function pluralizeProducts(count: number): string {
+  if (count === 1) return '1 produkt';
+  const lastTwo = count % 100;
+  if (lastTwo >= 12 && lastTwo <= 14) return `${count} produktów`;
+  const lastDigit = count % 10;
+  if (lastDigit >= 2 && lastDigit <= 4) return `${count} produkty`;
+  return `${count} produktów`;
+}
+
 export interface SellerCardProps {
   name: string;
   handle: string;
@@ -70,7 +79,7 @@ export function SellerCard({ name, handle, photo_url, city, product_count }: Sel
         {city && (
           <p className="mt-0.5 text-sm text-gray-500 truncate">{city}</p>
         )}
-        <p className="mt-1 text-sm text-gray-400">{product_count} produktów</p>
+        <p className="mt-1 text-sm text-gray-400">{pluralizeProducts(product_count)}</p>
       </div>
     </Link>
   );

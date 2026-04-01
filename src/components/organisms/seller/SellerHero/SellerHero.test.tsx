@@ -110,7 +110,7 @@ describe('SellerHero', () => {
     it('renders fallback container with testid', () => {
       const el = SellerHero({ name: 'Salon', photo: null }) as ReactEl;
 
-      const fallback = findFirst(el, e => e.props['data-testid'] === 'seller-hero-fallback');
+      const fallback = findFirst(el, e => e.props['data-testid'] === 'seller-hero');
       expect(fallback).not.toBeNull();
     });
 
@@ -124,7 +124,7 @@ describe('SellerHero', () => {
     it('applies gradient background style in fallback', () => {
       const el = SellerHero({ name: 'Salon', photo: null }) as ReactEl;
 
-      const fallback = findFirst(el, e => e.props['data-testid'] === 'seller-hero-fallback') as ReactEl;
+      const fallback = findFirst(el, e => e.props['data-testid'] === 'seller-hero') as ReactEl;
       expect(fallback.props.style).toBeDefined();
       expect((fallback.props.style as Record<string, string>).background).toContain('gradient');
     });
