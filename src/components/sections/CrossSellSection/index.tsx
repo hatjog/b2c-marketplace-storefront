@@ -28,7 +28,8 @@ export const CrossSellSection = async ({
       })
     : { response: { products: [] as ListedProduct[] } };
 
-  const productId = product.id ?? '';
+  if (!product.id) return null;
+  const productId = product.id;
   const sellerFiltered = filterCrossSellSellerProducts(sellerProductsRaw, productId);
   const categoryFiltered = filterCrossSellProducts(
     categoryResult.response.products as unknown as HttpTypes.StoreProduct[],
