@@ -186,7 +186,7 @@ export const resolveZasadySections = cache(async (
 ): Promise<Array<{ title: string; body: string }> | null> => {
   const config = await readRuntimeMarketConfig(marketId);
   const sections = config?.storefront?.zasady_sections;
-  if (!Array.isArray(sections) || sections.length === 0) return null;
+  if (!Array.isArray(sections)) return null;
   const valid = sections.flatMap(item => {
     const normalized = normalizeZasadySection(item);
     return normalized ? [normalized] : [];
