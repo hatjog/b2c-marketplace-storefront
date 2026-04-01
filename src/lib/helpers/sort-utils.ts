@@ -1,4 +1,5 @@
 import type { HttpTypes } from '@medusajs/types';
+import { getGpMetadata } from './metadata-utils';
 
 /**
  * Sorts products by metadata.gp.sort_rank ascending.
@@ -7,8 +8,8 @@ import type { HttpTypes } from '@medusajs/types';
  */
 export function sortByRecommended(products: HttpTypes.StoreProduct[]): HttpTypes.StoreProduct[] {
   return [...products].sort((a, b) => {
-    const rankA = (a.metadata?.gp as { sort_rank?: number } | null)?.sort_rank ?? Infinity;
-    const rankB = (b.metadata?.gp as { sort_rank?: number } | null)?.sort_rank ?? Infinity;
+    const rankA = getGpMetadata<{ sort_rank?: number }>(a.metadata as Record<string, unknown>)?.sort_rank ?? Infinity;
+    const rankB = getGpMetadata<{ sort_rank?: number }>(b.metadata as Record<string, unknown>)?.sort_rank ?? Infinity;
     return rankA - rankB;
   });
 }

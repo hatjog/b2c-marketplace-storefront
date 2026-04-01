@@ -15,6 +15,7 @@ import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
+import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
 import type { AdditionalAttributeProps, GpProductMetadata } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
@@ -44,7 +45,7 @@ export const ProductDetails = async ({
     resolveDefaultValidityInfo(marketId),
   ]);
 
-  const gpMeta = product.metadata?.gp as GpProductMetadata | undefined;
+  const gpMeta = getGpMetadata<GpProductMetadata>(product.metadata as Record<string, unknown>);
   const validityPeriod = gpMeta?.validity_period ?? null;
 
   return (

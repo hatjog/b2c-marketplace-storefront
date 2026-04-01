@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { ProductDetailsPage } from '@/components/sections';
 import { listProducts } from '@/lib/data/products';
 import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { getGpField } from '@/lib/helpers/metadata-utils';
 import { getCountryCode } from '@/lib/helpers/country-code';
 
 export async function generateMetadata({
@@ -39,10 +40,7 @@ export default async function ProductPage({
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const gpVendor =
-    (
-      (product?.metadata?.gp as Record<string, unknown> | undefined)
-        ?.vendor_name as string | undefined
-    ) ?? siteName;
+    getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
   const seo = resolveGpSeoMetadata(
     product?.metadata as Record<string, unknown> | null | undefined

@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types';
 import * as Sentry from '@sentry/nextjs';
 
 import type { SellerProps } from '@/types/seller';
+import { getGpField } from '@/lib/helpers/metadata-utils';
 
 export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null };
 
@@ -25,7 +26,7 @@ function checkQualityGate(product: ListedProduct): QualityGateFailure[] {
     failures.push({ criterion: 'description', detail: `words=${wordCount} < ${MIN_DESCRIPTION_WORDS}` });
   }
 
-  const hasVendorPricing = (product as any).metadata?.gp?.has_vendor_pricing === true;
+  const hasVendorPricing = getGpField<boolean>(product.metadata as Record<string, unknown>, 'has_vendor_pricing') === true;
   const hasValidPrice = hasVendorPricing || product.variants?.some(
     (v) => (v.calculated_price?.calculated_amount ?? 0) > 0
   );

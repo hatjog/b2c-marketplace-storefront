@@ -9,6 +9,8 @@
  * Fallback: when market_id is empty (dev/unset env), all items pass through.
  */
 
+import { getGpMetadata } from './metadata-utils';
+
 export function getMarketId(): string {
   return process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
 }
@@ -19,7 +21,7 @@ function readGpMarketId(item: unknown): string | null {
   }
 
   const anyItem = item as { metadata?: Record<string, unknown> }
-  const gpMeta = anyItem.metadata?.gp as Record<string, unknown> | undefined
+  const gpMeta = getGpMetadata<Record<string, unknown>>(anyItem.metadata)
   const marketId = gpMeta?.market_id
 
   return typeof marketId === 'string' && marketId.length > 0 ? marketId : null
