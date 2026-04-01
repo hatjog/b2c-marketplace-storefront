@@ -86,7 +86,11 @@ export default async function ProductPage({
   return (
     <main id="main-content" className="container">
       {productSchema ? (
-        <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
       ) : null}
       <ProductDetailsPage
         handle={handle}
