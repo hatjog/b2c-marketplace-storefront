@@ -11,3 +11,4 @@ export const emptyDefaultAddressValues = {
   phone: '',
   metadata: {}
 }
+

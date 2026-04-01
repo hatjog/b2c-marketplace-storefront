@@ -106,6 +106,12 @@ describe('getColorFromHandle', () => {
   it('is deterministic for the same handle', () => {
     expect(getColorFromHandle('abc')).toBe(getColorFromHandle('abc'))
   })
+
+  it('returns a valid hex color string', () => {
+    expect(getColorFromHandle('abc')).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(getColorFromHandle('test-handle')).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    expect(getColorFromHandle('')).toMatch(/^#[0-9A-Fa-f]{6}$/)
+  })
 })
 
 // ---------------------------------------------------------------------------
