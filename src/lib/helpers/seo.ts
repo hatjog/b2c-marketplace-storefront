@@ -2,6 +2,21 @@ import type { HttpTypes } from '@medusajs/types';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 
+/**
+ * Returns `url` unless it points to an SVG file, in which case returns `fallback`.
+ * SVG is not supported as OG image by Facebook, Twitter/X, LinkedIn, or Slack crawlers.
+ */
+export function toSafeOgImageUrl(
+  url: string | null | undefined,
+  fallback: string
+): string {
+  if (!url) return fallback;
+  // Strip query string and fragment before checking extension
+  const cleanUrl = url.split('?')[0].split('#')[0];
+  if (cleanUrl.toLowerCase().endsWith('.svg')) return fallback;
+  return url;
+}
+
 export interface GpSeoMetadata {
   meta_title?: string;
   meta_description?: string;
@@ -44,10 +59,11 @@ export const generateProductMetadata = async (
   const description =
     seo.meta_description ??
     `${product?.title} — voucher na zabieg w ${gpVendor}. Kup na ${siteName}.`;
-  const ogImage =
+  const ogImageRaw =
     seo.og_image_url ??
     product?.thumbnail ??
-    `${protocol}://${host}/B2C_Storefront_Open_Graph.png`;
+    null;
+  const ogImage = toSafeOgImageUrl(ogImageRaw, `${protocol}://${host}/B2C_Storefront_Open_Graph.png`);
 
   return {
     title,
@@ -95,8 +111,10 @@ export const generateCategoryMetadata = async (
   const description =
     seo.meta_description ??
     `${category.name} — zabiegi i vouchery na ${siteName}.`;
-  const ogImage =
-    seo.og_image_url ?? `${protocol}://${host}/B2C_Storefront_Open_Graph.png`;
+  const ogImage = toSafeOgImageUrl(
+    seo.og_image_url,
+    `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
+  );
 
   return {
     robots: 'index, follow',
@@ -143,8 +161,7 @@ export const generateCollectionMetadata = (
     seo.meta_description ??
     `${collection.title} — zabiegi i vouchery na ${siteName}.`;
   const canonical = new URL(`/${locale}/collections/${collection.handle}`, `${baseUrl}/`).toString();
-  const ogImage =
-    seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
+  const ogImage = toSafeOgImageUrl(seo.og_image_url, `${baseUrl}/B2C_Storefront_Open_Graph.png`);
 
   return {
     title,

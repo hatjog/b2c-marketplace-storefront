@@ -5,7 +5,7 @@ vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Map())
 }));
 
-import { resolveGpSeoMetadata } from './seo';
+import { resolveGpSeoMetadata, toSafeOgImageUrl } from './seo';
 
 describe('resolveGpSeoMetadata', () => {
   it('returns gp.seo.* values when present', () => {
@@ -110,5 +110,49 @@ describe('resolveGpSeoMetadata', () => {
     expect(result.meta_title).toBeUndefined();
     expect(result.meta_description).toBeUndefined();
     expect(result.og_image_url).toBeUndefined();
+  });
+});
+
+describe('toSafeOgImageUrl', () => {
+  const FALLBACK = 'https://example.com/og.png';
+
+  it('returns PNG URL unchanged', () => {
+    expect(toSafeOgImageUrl('https://cdn.example.com/image.png', FALLBACK)).toBe(
+      'https://cdn.example.com/image.png'
+    );
+  });
+
+  it('returns JPEG URL unchanged', () => {
+    expect(toSafeOgImageUrl('https://cdn.example.com/image.jpg', FALLBACK)).toBe(
+      'https://cdn.example.com/image.jpg'
+    );
+  });
+
+  it('returns fallback for SVG URL', () => {
+    expect(toSafeOgImageUrl('https://cdn.example.com/logo.svg', FALLBACK)).toBe(FALLBACK);
+  });
+
+  it('returns fallback for SVG with uppercase extension', () => {
+    expect(toSafeOgImageUrl('https://cdn.example.com/logo.SVG', FALLBACK)).toBe(FALLBACK);
+  });
+
+  it('returns fallback for SVG with query string', () => {
+    expect(toSafeOgImageUrl('https://cdn.example.com/logo.svg?v=1', FALLBACK)).toBe(FALLBACK);
+  });
+
+  it('returns fallback for SVG with fragment', () => {
+    expect(toSafeOgImageUrl('https://cdn.example.com/logo.svg#icon', FALLBACK)).toBe(FALLBACK);
+  });
+
+  it('returns fallback for null', () => {
+    expect(toSafeOgImageUrl(null, FALLBACK)).toBe(FALLBACK);
+  });
+
+  it('returns fallback for undefined', () => {
+    expect(toSafeOgImageUrl(undefined, FALLBACK)).toBe(FALLBACK);
+  });
+
+  it('returns fallback for empty string', () => {
+    expect(toSafeOgImageUrl('', FALLBACK)).toBe(FALLBACK);
   });
 });

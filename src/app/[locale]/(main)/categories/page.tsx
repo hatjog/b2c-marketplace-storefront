@@ -42,6 +42,7 @@ export async function generateMetadata({
   const title = 'All Products';
   const description = `Browse all products on ${process.env.NEXT_PUBLIC_SITE_NAME || 'our store'}`;
   const canonical = `${baseUrl}/${locale}/categories`;
+  const ogImage = `${baseUrl}/B2C_Storefront_Open_Graph.png`;
 
   return {
     title,
@@ -56,7 +57,14 @@ export async function generateMetadata({
       description,
       url: canonical,
       siteName: process.env.NEXT_PUBLIC_SITE_NAME || 'Storefront',
-      type: 'website'
+      type: 'website',
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage]
     }
   };
 }
