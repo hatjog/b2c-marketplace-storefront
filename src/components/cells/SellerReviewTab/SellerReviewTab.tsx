@@ -9,9 +9,9 @@ export const SellerReviewTab = async ({ seller_handle }: { seller_handle: string
 
   if (!seller) return null;
 
-  const filteredReviews = seller.reviews?.filter(r => r !== null);
+  const filteredReviews = seller.reviews;
 
-  const reviewCount = filteredReviews ? filteredReviews?.length : 0;
+  const reviewCount = filteredReviews ? filteredReviews.length : 0;
 
   const rating =
     filteredReviews && filteredReviews.length > 0

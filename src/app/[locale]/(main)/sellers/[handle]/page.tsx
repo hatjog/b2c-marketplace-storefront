@@ -4,7 +4,6 @@ import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getSellerByHandle } from '@/lib/data/seller';
-import type { SellerProps } from '@/types/seller';
 
 export default async function SellerPage({
   params
@@ -13,7 +12,9 @@ export default async function SellerPage({
 }) {
   const { handle, locale } = await params;
 
-  const seller = (await getSellerByHandle(handle)) as SellerProps;
+  const seller = await getSellerByHandle(handle);
+
+  if (!seller) return null;
 
   const user = await retrieveCustomer();
 
@@ -21,10 +22,6 @@ export default async function SellerPage({
   const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
 
   const tab = 'products';
-
-  if (!seller) {
-    return null;
-  }
 
   return (
     <main id="main-content" className="container">
