@@ -99,7 +99,8 @@ describe('filterCrossSellProducts', () => {
 describe('filterCrossSellSellerProducts', () => {
   const CURRENT_ID = 'current-product';
 
-  it('includes seller products even without calculated_price on variants', () => {
+  // AC 1: priceless seller products are excluded (same rule as filterCrossSellProducts)
+  it('excludes seller products where all variants have null calculated_price', () => {
     const product = {
       id: 'seller-prod',
       title: 'Seller product',
@@ -107,7 +108,14 @@ describe('filterCrossSellSellerProducts', () => {
       variants: [{ id: 'v1', calculated_price: null } as any],
     } as unknown as HttpTypes.StoreProduct;
     const result = filterCrossSellSellerProducts([product], CURRENT_ID);
-    expect(result.map(p => p.id)).toContain('seller-prod');
+    expect(result.map(p => p.id)).not.toContain('seller-prod');
+  });
+
+  // AC 2: seller products with a price are included
+  it('includes seller products when at least one variant has calculated_price', () => {
+    const product = makeProduct('seller-priced', 5000);
+    const result = filterCrossSellSellerProducts([product], CURRENT_ID);
+    expect(result.map(p => p.id)).toContain('seller-priced');
   });
 
   it('excludes the current product', () => {
@@ -120,5 +128,11 @@ describe('filterCrossSellSellerProducts', () => {
     const products = Array.from({ length: 8 }, (_, i) => makeProduct(`p${i}`));
     const result = filterCrossSellSellerProducts(products, CURRENT_ID);
     expect(result.length).toBeLessThanOrEqual(4);
+  });
+
+  it('returns empty array when all seller products are priceless', () => {
+    const products = [makeProduct('p1', null), makeProduct('p2', null)];
+    const result = filterCrossSellSellerProducts(products, CURRENT_ID);
+    expect(result).toHaveLength(0);
   });
 });

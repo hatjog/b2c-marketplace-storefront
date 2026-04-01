@@ -15,8 +15,8 @@ export function filterCrossSellProducts(
 
 /**
  * Filter for seller-embedded products (from product.seller.products).
- * These lack calculated_price (not in fields query) so we skip the price check.
- * They are already published (Medusa store API filters status=published).
+ * Applies the same price check as filterCrossSellProducts — seller products
+ * now include calculated_price via the listProducts fields query.
  */
 export function filterCrossSellSellerProducts(
   products: HttpTypes.StoreProduct[],
@@ -24,5 +24,6 @@ export function filterCrossSellSellerProducts(
 ): HttpTypes.StoreProduct[] {
   return products
     .filter((p) => p.id !== currentProductId)
+    .filter((p) => p.variants?.some(v => v.calculated_price != null) ?? false)
     .slice(0, MAX_GROUP_SIZE);
 }
