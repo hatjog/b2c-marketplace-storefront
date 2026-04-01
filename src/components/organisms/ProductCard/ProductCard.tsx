@@ -18,9 +18,8 @@ function resolveThumbnailSrc(thumbnail: string | null | undefined) {
     return PLACEHOLDER_IMAGE_SRC;
   }
 
-  const decodedThumbnail = decodeURIComponent(thumbnail);
-
   try {
+    const decodedThumbnail = decodeURIComponent(thumbnail);
     const parsedUrl = new URL(decodedThumbnail);
     if (parsedUrl.hostname === PLACEHOLDER_CDN_HOST) {
       return PLACEHOLDER_IMAGE_SRC;
@@ -28,7 +27,7 @@ function resolveThumbnailSrc(thumbnail: string | null | undefined) {
 
     return decodedThumbnail;
   } catch {
-    return decodedThumbnail.startsWith('/') ? decodedThumbnail : PLACEHOLDER_IMAGE_SRC;
+    return thumbnail.startsWith('/') ? thumbnail : PLACEHOLDER_IMAGE_SRC;
   }
 }
 
@@ -49,7 +48,7 @@ export const ProductCard = ({
 
   const productName = String(product.title || t('fallback_name'));
   const thumbnailSrc = resolveThumbnailSrc(product.thumbnail);
-  const seller = (product as any).seller as { name: string; handle: string } | undefined;
+  const seller = (product as HttpTypes.StoreProduct & { seller?: { name: string; handle: string } }).seller;
   const usesPlaceholderImage = thumbnailSrc === PLACEHOLDER_IMAGE_SRC;
 
   return (
@@ -157,7 +156,7 @@ export const ProductCard = ({
         >
           <LocalizedClientLink
             href={`/salony/${seller.handle}`}
-            aria-label={`Salon: ${seller.name}`}
+            aria-label={t('seller_aria', { name: seller.name })}
           >
             <span
               className="label-sm text-secondary"

@@ -1,26 +1,40 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { SORT_OPTIONS, type SortOption } from '@/lib/constants';
 
-const SORT_LABELS: Record<SortOption, string> = {
-  recommended: 'Polecane',
-  price_asc: 'Cena \u2191',
-  price_desc: 'Cena \u2193',
-};
-
 export function SortDropdown() {
+  const t = useTranslations('sort');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentSort = (searchParams.get('sort') as SortOption) ?? 'recommended';
+  const raw = searchParams.get('sort');
+  const currentSort: SortOption = SORT_OPTIONS.includes(raw as SortOption)
+    ? (raw as SortOption)
+    : 'recommended';
 
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      setOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [open, handleClickOutside]);
 
   function selectSort(value: SortOption) {
     const params = new URLSearchParams(searchParams.toString());
@@ -65,8 +79,14 @@ export function SortDropdown() {
     }
   }
 
+  const SORT_LABELS: Record<SortOption, string> = {
+    recommended: t('recommended'),
+    price_asc: t('price_asc'),
+    price_desc: t('price_desc'),
+  };
+
   return (
-    <div className="relative inline-block">
+    <div ref={containerRef} className="relative inline-block">
       <button
         ref={triggerRef}
         type="button"
@@ -77,7 +97,7 @@ export function SortDropdown() {
         className="flex items-center gap-1 rounded border border-[var(--border-action)] px-3 py-1.5 text-sm text-[var(--text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--text-primary)]"
         data-testid="sort-dropdown-trigger"
       >
-        <span>Sortuj: {SORT_LABELS[currentSort]}</span>
+        <span>{t('label')}: {SORT_LABELS[currentSort]}</span>
         <span aria-hidden="true" className="ml-1 text-[var(--text-secondary)]">
           {open ? '▲' : '▼'}
         </span>
@@ -86,7 +106,7 @@ export function SortDropdown() {
       {open && (
         <ul
           role="listbox"
-          aria-label="Sortowanie"
+          aria-label={t('aria_label')}
           className="absolute right-0 z-10 mt-1 min-w-[140px] rounded border border-[var(--border-action)] bg-white shadow-md"
           data-testid="sort-dropdown-menu"
         >

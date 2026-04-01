@@ -4,6 +4,14 @@ import Image from 'next/image';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowRightIcon } from '@/icons';
 
+function safeDecodeURI(uri: string): string {
+  try {
+    return decodeURIComponent(uri);
+  } catch {
+    return uri;
+  }
+}
+
 type StyleSectionItemProps = {
   imageUrl: string | null;
   href: string;
@@ -34,7 +42,7 @@ export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) 
                   <Image
                     loading="lazy"
                     fetchPriority="high"
-                    src={decodeURIComponent(item.imageUrl)}
+                    src={safeDecodeURI(item.imageUrl)}
                     alt={item.label}
                     fill
                     className="object-cover"

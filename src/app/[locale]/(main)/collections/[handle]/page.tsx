@@ -67,7 +67,9 @@ const SingleCollectionsPage = async ({
   const { handle, locale } = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
 
-  const bot = isBot(navigator.userAgent);
+  const headersList = await headers();
+  const userAgent = headersList.get('user-agent') ?? '';
+  const bot = isBot(userAgent);
   const collection = await getCollectionByHandle(handle);
 
   if (!collection) return <NotFound />;

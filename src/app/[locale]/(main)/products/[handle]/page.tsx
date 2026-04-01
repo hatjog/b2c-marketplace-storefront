@@ -30,9 +30,10 @@ export default async function ProductPage({
   const { handle, locale } = await params;
 
   const countryCode = await getCountryCode(locale);
+  // Full product fetch (no field restriction) — variants include calculated_price + inventory_quantity
   const product = await listProducts({
     countryCode,
-    queryParams: { handle: [handle], limit: 1, fields: 'id,title,description,thumbnail,handle,variants,metadata' },
+    queryParams: { handle: [handle], limit: 1 },
     forceCache: true
   }).then(({ response }) => response.products[0]);
 
@@ -58,6 +59,23 @@ export default async function ProductPage({
         (b.calculated_price?.calculated_amount ?? Infinity)
     )[0];
 
+  const priceRaw = cheapestVariant?.calculated_price?.calculated_amount;
+  const currencyCode = cheapestVariant?.calculated_price?.currency_code ?? 'PLN';
+
+  // Build offers block only when we have a valid price (Google rejects Offer without price)
+  const offers = priceRaw != null
+    ? {
+        '@type': 'Offer' as const,
+        price: (priceRaw / 100).toFixed(2),
+        priceCurrency: currencyCode,
+        availability: product?.variants?.some(
+          v => v.inventory_quantity != null && v.inventory_quantity > 0
+        )
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/InStock' // digital vouchers are always available
+      }
+    : undefined;
+
   const productSchema = product
     ? {
         '@context': 'https://schema.org',
@@ -65,16 +83,7 @@ export default async function ProductPage({
         name: product.title,
         description: resolvedDescription,
         image: product.thumbnail ?? undefined,
-        offers: {
-          '@type': 'Offer',
-          price: cheapestVariant?.calculated_price?.calculated_amount,
-          priceCurrency: 'PLN',
-          availability: product.variants?.some(
-            v => v.inventory_quantity != null && v.inventory_quantity > 0
-          )
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock'
-        }
+        ...(offers ? { offers } : {})
       }
     : null;
 

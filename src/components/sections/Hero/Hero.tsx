@@ -7,6 +7,14 @@ import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
 
 import tailwindConfig from '../../../../tailwind.config';
 
+function safeDecodeURI(uri: string): string {
+  try {
+    return decodeURIComponent(uri);
+  } catch {
+    return uri;
+  }
+}
+
 type HeroProps = {
   image: string;
   heading: string;
@@ -19,7 +27,7 @@ export const Hero = ({ image, heading, paragraph, buttons, showSearch = false }:
   return (
     <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
       <Image
-        src={decodeURIComponent(image)}
+        src={safeDecodeURI(image)}
         width={700}
         height={600}
         alt={`Hero banner - ${heading}`}
@@ -41,7 +49,7 @@ export const Hero = ({ image, heading, paragraph, buttons, showSearch = false }:
             )}
           </div>
         </div>
-        {buttons.length && (
+        {buttons.length > 0 && (
           <div className="flex h-[72px] font-bold uppercase lg:h-[144px]">
             {buttons.map(({ label, path }) => (
               <Link

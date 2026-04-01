@@ -47,7 +47,7 @@ export const generateProductMetadata = async (
   const ogImage =
     seo.og_image_url ??
     product?.thumbnail ??
-    `${protocol}://${host}/images/placeholder.svg`;
+    `${protocol}://${host}/B2C_Storefront_Open_Graph.png`;
 
   return {
     title,
@@ -96,7 +96,7 @@ export const generateCategoryMetadata = async (
     seo.meta_description ??
     `${category.name} — zabiegi i vouchery na ${siteName}.`;
   const ogImage =
-    seo.og_image_url ?? `${protocol}://${host}/images/placeholder.svg`;
+    seo.og_image_url ?? `${protocol}://${host}/B2C_Storefront_Open_Graph.png`;
 
   return {
     robots: 'index, follow',
@@ -144,7 +144,7 @@ export const generateCollectionMetadata = (
     `${collection.title} — zabiegi i vouchery na ${siteName}.`;
   const canonical = new URL(`/${locale}/collections/${collection.handle}`, `${baseUrl}/`).toString();
   const ogImage =
-    seo.og_image_url ?? `${baseUrl}/images/placeholder.svg`;
+    seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
 
   return {
     title,

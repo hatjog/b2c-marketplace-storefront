@@ -5,9 +5,9 @@ import { ProductCard } from '@/components/organisms/ProductCard/ProductCard';
 import { listProducts } from '@/lib/data/products';
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
 
-import { MIN_GROUP_SIZE, filterCrossSellProducts } from './filters';
+import { MIN_GROUP_SIZE, filterCrossSellProducts, filterCrossSellSellerProducts } from './filters';
 
-export { filterCrossSellProducts } from './filters';
+export { filterCrossSellProducts, filterCrossSellSellerProducts } from './filters';
 
 export const CrossSellSection = async ({
   product,
@@ -20,20 +20,19 @@ export const CrossSellSection = async ({
 
   const sellerProductsRaw = (product.seller?.products ?? []) as unknown as HttpTypes.StoreProduct[];
 
-  const [categoryResult] = await Promise.all([
-    categoryId
-      ? listProducts({
-          category_id: categoryId,
-          countryCode,
-          queryParams: { limit: 5 },
-        })
-      : Promise.resolve({ response: { products: [] as ListedProduct[] } }),
-  ]);
+  const categoryResult = categoryId
+    ? await listProducts({
+        category_id: categoryId,
+        countryCode,
+        queryParams: { limit: 6 },
+      })
+    : { response: { products: [] as ListedProduct[] } };
 
-  const sellerFiltered = filterCrossSellProducts(sellerProductsRaw, product.id!);
+  const productId = product.id ?? '';
+  const sellerFiltered = filterCrossSellSellerProducts(sellerProductsRaw, productId);
   const categoryFiltered = filterCrossSellProducts(
     categoryResult.response.products as unknown as HttpTypes.StoreProduct[],
-    product.id!,
+    productId,
   );
 
   if (sellerFiltered.length < MIN_GROUP_SIZE && categoryFiltered.length < MIN_GROUP_SIZE) {

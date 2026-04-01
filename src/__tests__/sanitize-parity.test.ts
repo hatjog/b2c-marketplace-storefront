@@ -63,11 +63,48 @@ describe('sanitize-html vs DOMPurify allowlist parity (AC3)', () => {
       allowedAttributes: { 'a': ['href', 'rel', 'target'] },
       allowedSchemes: ['https', 'http', 'mailto', 'tel'],
       transformTags: {
-        'a': sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer', target: '_blank' }),
+        'a': (tagName: string, attribs: Record<string, string>) => {
+          const isTelOrMailto = /^(tel|mailto):/.test(attribs.href ?? '');
+          return {
+            tagName,
+            attribs: {
+              ...attribs,
+              rel: 'noopener noreferrer',
+              ...(isTelOrMailto ? {} : { target: '_blank' }),
+            },
+          };
+        },
       },
     };
     const out = sanitizeHtml('<a href="https://example.com">link</a>', productionConfig);
     expect(out).toContain('rel="noopener noreferrer"');
     expect(out).toContain('target="_blank"');
+  });
+
+  it('does not add target="_blank" to tel: and mailto: links', () => {
+    const productionConfig: sanitizeHtml.IOptions = {
+      allowedTags: ['a'],
+      allowedAttributes: { 'a': ['href', 'rel', 'target'] },
+      allowedSchemes: ['https', 'http', 'mailto', 'tel'],
+      transformTags: {
+        'a': (tagName: string, attribs: Record<string, string>) => {
+          const isTelOrMailto = /^(tel|mailto):/.test(attribs.href ?? '');
+          return {
+            tagName,
+            attribs: {
+              ...attribs,
+              rel: 'noopener noreferrer',
+              ...(isTelOrMailto ? {} : { target: '_blank' }),
+            },
+          };
+        },
+      },
+    };
+    const telOut = sanitizeHtml('<a href="tel:+48123456789">Call</a>', productionConfig);
+    expect(telOut).toContain('rel="noopener noreferrer"');
+    expect(telOut).not.toContain('target="_blank"');
+
+    const mailtoOut = sanitizeHtml('<a href="mailto:test@example.com">Email</a>', productionConfig);
+    expect(mailtoOut).not.toContain('target="_blank"');
   });
 });

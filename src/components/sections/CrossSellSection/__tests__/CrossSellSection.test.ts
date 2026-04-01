@@ -1,7 +1,7 @@
 import type { HttpTypes } from '@medusajs/types';
 import { describe, expect, it } from 'vitest';
 
-import { filterCrossSellProducts } from '../filters';
+import { filterCrossSellProducts, filterCrossSellSellerProducts } from '../filters';
 
 function makeProduct(
   id: string,
@@ -79,5 +79,46 @@ describe('filterCrossSellProducts', () => {
 
   it('returns empty array when no products provided', () => {
     expect(filterCrossSellProducts([], CURRENT_ID)).toHaveLength(0);
+  });
+
+  it('includes products where only a non-first variant has calculated_price', () => {
+    const product = {
+      id: 'multi-variant',
+      title: 'Multi variant',
+      status: 'published',
+      variants: [
+        { id: 'v1', calculated_price: null } as any,
+        { id: 'v2', calculated_price: 5000 } as any,
+      ],
+    } as unknown as HttpTypes.StoreProduct;
+    const result = filterCrossSellProducts([product], CURRENT_ID);
+    expect(result.map(p => p.id)).toContain('multi-variant');
+  });
+});
+
+describe('filterCrossSellSellerProducts', () => {
+  const CURRENT_ID = 'current-product';
+
+  it('includes seller products even without calculated_price on variants', () => {
+    const product = {
+      id: 'seller-prod',
+      title: 'Seller product',
+      status: 'published',
+      variants: [{ id: 'v1', calculated_price: null } as any],
+    } as unknown as HttpTypes.StoreProduct;
+    const result = filterCrossSellSellerProducts([product], CURRENT_ID);
+    expect(result.map(p => p.id)).toContain('seller-prod');
+  });
+
+  it('excludes the current product', () => {
+    const products = [makeProduct(CURRENT_ID), makeProduct('other')];
+    const result = filterCrossSellSellerProducts(products, CURRENT_ID);
+    expect(result.map(p => p.id)).not.toContain(CURRENT_ID);
+  });
+
+  it('returns at most 4 products', () => {
+    const products = Array.from({ length: 8 }, (_, i) => makeProduct(`p${i}`));
+    const result = filterCrossSellSellerProducts(products, CURRENT_ID);
+    expect(result.length).toBeLessThanOrEqual(4);
   });
 });

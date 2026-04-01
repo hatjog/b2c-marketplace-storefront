@@ -57,7 +57,7 @@ export async function generateMetadata({
   const title = seo.meta_title ?? cat.name;
   const description =
     seo.meta_description ?? `${cat.name} — zabiegi i vouchery na ${siteName}.`;
-  const ogImage = seo.og_image_url ?? `${baseUrl}/images/placeholder.svg`;
+  const ogImage = seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
   const canonical = `${baseUrl}/${locale}/categories/${categoryHandle}`;
 
   return {

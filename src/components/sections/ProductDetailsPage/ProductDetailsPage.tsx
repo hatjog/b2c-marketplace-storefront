@@ -1,5 +1,3 @@
-import { getTranslations } from 'next-intl/server';
-
 import NotFound from '@/app/not-found';
 import { StickyAddToCart } from '@/components/cells/StickyAddToCart/StickyAddToCart';
 import { ProductDetails, ProductGallery } from '@/components/organisms';
@@ -7,7 +5,6 @@ import { listProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
 
 import { CrossSellSection } from '../CrossSellSection';
-import { HomeProductSection } from '../HomeProductSection/HomeProductSection';
 
 export const ProductDetailsPage = async ({
   handle,
@@ -28,9 +25,6 @@ export const ProductDetailsPage = async ({
   if (prod.seller && prod.seller.store_status !== 'ACTIVE') {
     return NotFound();
   }
-
-  const t = await getTranslations('products');
-  const relatedSellerProducts = prod.seller?.products?.length ? prod.seller.products : null;
 
   const hasPrice = prod.variants?.some(v => v.calculated_price);
 
@@ -56,15 +50,6 @@ export const ProductDetailsPage = async ({
           />
         </div>
       </div>
-      {relatedSellerProducts && (
-        <div className="my-8">
-          <HomeProductSection
-            heading={t('more_from_seller')}
-            products={relatedSellerProducts}
-            locale={locale}
-          />
-        </div>
-      )}
       <CrossSellSection
         product={prod}
         countryCode={countryCode}

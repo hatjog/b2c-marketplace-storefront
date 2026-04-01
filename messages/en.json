@@ -366,5 +366,12 @@
   "cross_sell": {
     "same_seller": "From this salon",
     "same_category": "In this category"
+  },
+  "sort": {
+    "label": "Sort",
+    "aria_label": "Sort options",
+    "recommended": "Recommended",
+    "price_asc": "Price ↑",
+    "price_desc": "Price ↓"
   }
 }

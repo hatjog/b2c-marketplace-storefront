@@ -7,10 +7,17 @@ const ALLOWLIST: sanitizeHtml.IOptions = {
   },
   allowedSchemes: ['https', 'http', 'mailto', 'tel'],
   transformTags: {
-    'a': sanitizeHtml.simpleTransform('a', {
-      rel: 'noopener noreferrer',
-      target: '_blank',
-    }),
+    'a': (tagName: string, attribs: Record<string, string>) => {
+      const isTelOrMailto = /^(tel|mailto):/.test(attribs.href ?? '');
+      return {
+        tagName,
+        attribs: {
+          ...attribs,
+          rel: 'noopener noreferrer',
+          ...(isTelOrMailto ? {} : { target: '_blank' }),
+        },
+      };
+    },
   },
 };
 

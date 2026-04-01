@@ -184,7 +184,7 @@ export const listFilteredProducts = async ({
   if (sellerRatings?.length) params.seller_rating = sellerRatings.join(',');
   if (minPrice) params.min_price = minPrice;
   if (maxPrice) params.max_price = maxPrice;
-  if (sortBy) params.order = sortBy;
+  if (sortBy && sortBy !== 'recommended') params.order = sortBy;
   if (region?.id) params.region_id = region.id;
 
   const headers = {

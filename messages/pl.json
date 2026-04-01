@@ -366,5 +366,12 @@
   "cross_sell": {
     "same_seller": "W tym salonie",
     "same_category": "W tej kategorii"
+  },
+  "sort": {
+    "label": "Sortuj",
+    "aria_label": "Sortowanie",
+    "recommended": "Polecane",
+    "price_asc": "Cena ↑",
+    "price_desc": "Cena ↓"
   }
 }

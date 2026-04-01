@@ -33,6 +33,7 @@ type MarketRuntimeConfig = {
   storefront?: {
     pdp_trust_signals?: string[] | null;
     default_validity_info?: string | null;
+    zasady_sections?: Array<{ title: string; body: string }> | null;
   } | null;
   legal_entity?: Record<string, unknown> | null;
 };
@@ -171,6 +172,15 @@ export function normalizeLegalEntity(value: unknown): LegalEntity | null {
     phone: normalizeNonEmptyString(value.phone)
   };
 }
+
+export const resolveZasadySections = cache(async (
+  marketId: string
+): Promise<Array<{ title: string; body: string }> | null> => {
+  const config = await readRuntimeMarketConfig(marketId);
+  const sections = config?.storefront?.zasady_sections;
+  if (!Array.isArray(sections) || sections.length === 0) return null;
+  return sections;
+});
 
 export const resolveLegalEntity = cache(async (marketId: string): Promise<LegalEntity | null> => {
   const config = await readRuntimeMarketConfig(marketId);
