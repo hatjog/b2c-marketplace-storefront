@@ -6,6 +6,8 @@
  */
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { resolveMedusaBackendUrl } from '@/lib/env';
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
   const orderId = searchParams.get('order_id');
@@ -14,7 +16,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'order_id is required' }, { status: 400 });
   }
 
-  const backendUrl = process.env.MEDUSA_BACKEND_URL ?? 'http://localhost:9000';
+  const backendUrl = resolveMedusaBackendUrl();
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? '';
 
   try {

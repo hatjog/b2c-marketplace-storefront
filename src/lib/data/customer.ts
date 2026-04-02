@@ -5,6 +5,7 @@ import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { sdk } from '../config';
+import { resolveMedusaBackendUrl } from '../env';
 import {
   getAuthHeaders,
   getCacheOptions,
@@ -14,6 +15,8 @@ import {
   removeCartId,
   setAuthToken
 } from './cookies';
+
+const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
 export const retrieveCustomer = async (): Promise<HttpTypes.StoreCustomer | null> => {
   const authHeaders = await getAuthHeaders();
@@ -247,7 +250,7 @@ export const updateCustomerAddress = async (formData: FormData): Promise<any> =>
 };
 
 export const updateCustomerPassword = async (password: string, token: string): Promise<any> => {
-  const res = await fetch(`${process.env.MEDUSA_BACKEND_URL}/auth/customer/emailpass/update`, {
+  const res = await fetch(`${MEDUSA_BACKEND_URL}/auth/customer/emailpass/update`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

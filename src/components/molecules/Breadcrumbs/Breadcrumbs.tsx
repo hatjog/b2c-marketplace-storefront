@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { STOREFRONT_BASE_URL } from '@/lib/env';
+import { resolveStorefrontBaseUrl } from '@/lib/env';
 
 export interface BreadcrumbItem {
   label: string;
@@ -14,7 +14,7 @@ export interface BreadcrumbsProps {
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   if (items.length === 0) return null;
 
-  const baseUrl = STOREFRONT_BASE_URL;
+  const baseUrl = resolveStorefrontBaseUrl();
   const lastIndex = items.length - 1;
   const hasMiddleItems = items.length > 2;
 

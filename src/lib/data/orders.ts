@@ -5,8 +5,11 @@ import type { HttpTypes } from '@medusajs/types';
 import type { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
+import { resolveMedusaBackendUrl } from '../env';
 import medusaError from '../helpers/medusa-error';
 import { getAuthHeaders, getCacheOptions } from './cookies';
+
+const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
 export const retrieveOrderSet = async (id: string) => {
   const headers = {
@@ -54,7 +57,7 @@ export const createReturnRequest = async (data: any) => {
     'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string
   };
 
-  const response = await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/return-request`, {
+  const response = await fetch(`${MEDUSA_BACKEND_URL}/store/return-request`, {
     method: 'POST',
     headers,
     body: JSON.stringify(data)

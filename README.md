@@ -74,11 +74,13 @@ Make a .env.local file and copy the code below
 
 ```js
 # API URL
-MEDUSA_BACKEND_URL=http://localhost:9000
+MEDUSA_BACKEND_URL=http://localhost:9002
 # Your publishable key generated in mercur admin panel
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
 # Your public url
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_BASE_URL=http://localhost:3001
+# Optional explicit override for absolute storefront URLs
+STOREFRONT_BASE_URL=http://localhost:3001
 # Default region
 NEXT_PUBLIC_DEFAULT_REGION=pl
 # Stripe payment key. It can be random string, don't leave it empty.

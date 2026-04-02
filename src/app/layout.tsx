@@ -4,16 +4,18 @@ import type { Metadata } from 'next';
 import { Funnel_Display } from 'next/font/google';
 
 import './globals.css';
-import '@/lib/env'; // fail-fast: validate required env vars at startup
 
 import { Toaster } from '@medusajs/ui';
 
 import { retrieveCart } from '@/lib/data/cart';
+import { resolveStorefrontBaseUrl, validateStorefrontEnv } from '@/lib/env';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 import { Providers } from './providers';
 
 const VALID_THEMES = ['bonbeauty'] as const;
+
+validateStorefrontEnv();
 
 const funnelDisplay = Funnel_Display({
   variable: '--font-funnel-sans',
@@ -34,8 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
       ? titlePattern
       : `%s | ${siteName}`;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  const metadataBase = baseUrl ? new URL(baseUrl) : undefined;
+  const baseUrl = resolveStorefrontBaseUrl();
+  const metadataBase = new URL(baseUrl);
 
   return {
     title: {
@@ -45,13 +47,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
     metadataBase,
-    alternates: baseUrl
-      ? {
-          languages: {
-            'x-default': baseUrl
-          }
-        }
-      : undefined
+    alternates: {
+      languages: {
+        'x-default': baseUrl
+      }
+    }
   };
 }
 

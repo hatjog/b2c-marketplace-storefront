@@ -6,11 +6,13 @@
  */
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { resolveMedusaBackendUrl } from '@/lib/env';
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
   const { id } = await context.params;
-  const backendUrl = process.env.MEDUSA_BACKEND_URL ?? 'http://localhost:9000';
+  const backendUrl = resolveMedusaBackendUrl();
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? '';
 
   try {

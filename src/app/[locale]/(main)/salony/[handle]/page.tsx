@@ -13,7 +13,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { listProductsWithSort } from '@/lib/data/products';
 import { getRegion } from '@/lib/data/regions';
-import { STOREFRONT_BASE_URL } from '@/lib/env';
+import { resolveStorefrontBaseUrl } from '@/lib/env';
 
 type PageParams = { handle: string; locale: string };
 
@@ -73,7 +73,7 @@ export default async function SalonProfilPage({
     // Gracefully degrade — show seller profile without services
   }
 
-  const pageUrl = `${STOREFRONT_BASE_URL}/salony/${seller.handle}`;
+  const pageUrl = `${resolveStorefrontBaseUrl()}/salony/${seller.handle}`;
 
   const localBusinessJsonLd = {
     '@context': 'https://schema.org',

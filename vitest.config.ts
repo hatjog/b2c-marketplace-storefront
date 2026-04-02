@@ -20,8 +20,8 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     passWithNoTests: false,
     env: {
-      MEDUSA_BACKEND_URL: 'http://localhost:9000',
-      STOREFRONT_BASE_URL: 'http://localhost:3000',
+      MEDUSA_BACKEND_URL: 'http://localhost:9002',
+      STOREFRONT_BASE_URL: 'http://localhost:3001',
     },
   },
 });

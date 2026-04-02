@@ -5,22 +5,13 @@ import {
   getPayloadApiUrl,
   mapPayloadPageToBlogPost
 } from '@/lib/blog';
+import { buildMedusaUrl } from '@/lib/env';
 import { filterByMarket, filterByMarketOrKeepUntagged, getMarketId } from '@/lib/helpers/market-filter';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import type { BlogPost } from '@/types/blog';
 import type { SortOptions } from '@/types/product';
 
 type HomepageProductsSort = 'newest' | 'price_asc' | 'price_desc';
-
-function getMedusaBackendUrl() {
-  return process.env.MEDUSA_BACKEND_URL || 'http://localhost:9002';
-}
-
-function buildMedusaUrl(pathname: string) {
-  const baseUrl = getMedusaBackendUrl();
-  const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-  return new URL(pathname.replace(/^\//, ''), normalizedBase);
-}
 
 function getPublishableHeaders() {
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
