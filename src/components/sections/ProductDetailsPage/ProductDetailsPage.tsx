@@ -1,6 +1,7 @@
 import NotFound from '@/app/not-found';
 import { StickyAddToCart } from '@/components/cells/StickyAddToCart/StickyAddToCart';
-import { ProductDetails, ProductGallery } from '@/components/organisms';
+import { ProductDetails } from '@/components/organisms/ProductDetails/ProductDetails';
+import { ProductGallery } from '@/components/organisms';
 import { listProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
 

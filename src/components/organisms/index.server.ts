@@ -6,7 +6,6 @@ export { CategoryCard } from './CategoryCard/CategoryCard';
 export { Footer } from './Footer/Footer';
 export { GalleryCarousel } from './GalleryCarousel/GalleryCarousel';
 export { HomeProductsCarousel } from './HomeProductsCarousel/HomeProductsCarousel';
-export { ProductDetails } from './ProductDetails/ProductDetails';
 export { ProductGallery } from './ProductGallery/ProductGallery';
 export { ProductsList } from './ProductsList/ProductsList';
 export { SellerHeading } from './SellerHeading/SellerHeading';
