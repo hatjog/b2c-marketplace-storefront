@@ -3,6 +3,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 import enMessages from './messages/en.json';
 import plMessages from './messages/pl.json';
+import { loadSlugRedirectsForNext } from './scripts/slug-redirects';
 import { generateLocaleRewrites } from './src/i18n/locale-rewrite-rules';
 
 const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
@@ -68,6 +69,7 @@ const nextConfig: NextConfig = {
         destination: 'http://localhost:3000/gp-dashboard/:path*',
         permanent: false,
       },
+      ...loadSlugRedirectsForNext(),
     ];
   },
   async rewrites() {
