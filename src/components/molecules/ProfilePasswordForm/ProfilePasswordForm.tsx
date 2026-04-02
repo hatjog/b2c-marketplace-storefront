@@ -88,8 +88,8 @@ const Form = ({
         } else {
           toast.error(res.error || t('error_password_change'));
         }
-      } catch (err) {
-        console.log(err);
+      } catch {
+        toast.error(t('error_password_change'));
         return;
       }
     }

@@ -28,7 +28,6 @@ const optionsAsKeymap = (variantOptions: HttpTypes.StoreProductVariant['options'
 
 export const ProductDetailsHeader = ({
   product,
-  locale,
   countryCode,
   user,
   wishlist

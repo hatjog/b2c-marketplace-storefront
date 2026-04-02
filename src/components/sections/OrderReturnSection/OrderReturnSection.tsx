@@ -73,7 +73,8 @@ export const OrderReturnSection = ({
     const { order_return_request } = await createReturnRequest(data);
 
     if (!order_return_request.id) {
-      return console.log('Error creating return request');
+      setError(true);
+      return;
     }
 
     router.push(`/user/orders/${order_return_request.id}/request-success`);

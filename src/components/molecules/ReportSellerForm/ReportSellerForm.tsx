@@ -39,9 +39,7 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
     }
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log('Form Data:', data);
-  };
+  const onSubmit = (_data: FormData) => {};
 
   return (
     <div>

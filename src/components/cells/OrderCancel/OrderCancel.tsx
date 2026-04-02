@@ -16,7 +16,7 @@ export const OrderCancel = ({ order }: { order: any }) => {
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
   const handleCancel = () => {
-    console.log('cancel');
+    setOpen(false);
   };
 
   const handleSelectItem = (item: any) => {

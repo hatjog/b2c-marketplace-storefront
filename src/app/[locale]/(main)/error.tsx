@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect } from 'react';
 
 export default function Error({
@@ -87,7 +88,7 @@ export default function Error({
             Spróbuj ponownie
           </button>
 
-          <a
+          <Link
             href="/"
             style={{
               color: '#907032',
@@ -97,7 +98,7 @@ export default function Error({
             }}
           >
             Wróć na stronę główną
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '404 – Strona nie istnieje',
@@ -61,7 +62,7 @@ export default function NotFound() {
           URL lub wróć na stronę główną.
         </p>
 
-        <a
+        <Link
           href="/"
           style={{
             color: '#907032',
@@ -71,7 +72,7 @@ export default function NotFound() {
           }}
         >
           Wróć na stronę główną
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@
 import React, { useEffect, useState } from 'react';
 
 import * as Sentry from '@sentry/nextjs';
+import Link from 'next/link';
 
 import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCode';
 import { getConfirmationState } from '@/lib/helpers/confirmation-state';
@@ -148,12 +149,12 @@ function PaymentErrorView() {
   return (
     <div data-testid="error-state">
       <h1>Płatność nie powiodła się</h1>
-      <a href="/checkout" data-testid="retry-cta">
+      <Link href="/checkout" data-testid="retry-cta">
         Spróbuj ponownie
-      </a>
-      <a href="/cart" data-testid="change-method-cta">
+      </Link>
+      <Link href="/cart" data-testid="change-method-cta">
         Zmień metodę
-      </a>
+      </Link>
     </div>
   );
 }

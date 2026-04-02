@@ -8,7 +8,7 @@ import { Breadcrumbs } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 import { listProducts } from '@/lib/data/products';
-import { getRegion, listRegions } from '@/lib/data/regions';
+import { listRegions } from '@/lib/data/regions';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
 

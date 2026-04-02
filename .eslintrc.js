@@ -20,7 +20,7 @@ module.exports = {
       { name: "name", message: "Use a local variable instead of global 'name'." },
       { name: "status", message: "Use a local variable instead of global 'status'." },
     ],
-    "import/no-relative-parent-imports": "warn",
+    "import/no-relative-parent-imports": "off",
     "eqeqeq": ["error", "always", { "null": "ignore" }],
     "no-restricted-syntax": [
       "error",

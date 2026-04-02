@@ -1,4 +1,3 @@
-import type { HttpTypes } from '@medusajs/types';
 import { Text } from '@medusajs/ui';
 
 import { paymentInfoMap } from '@/lib/constants';

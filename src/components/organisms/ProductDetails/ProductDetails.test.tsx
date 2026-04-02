@@ -1,5 +1,5 @@
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // Mock all external dependencies before importing the component under test
 vi.mock('@medusajs/types', () => ({ HttpTypes: {} }));
