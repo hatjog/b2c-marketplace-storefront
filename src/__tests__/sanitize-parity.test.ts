@@ -5,7 +5,6 @@ import sanitizeHtml from 'sanitize-html';
 import { describe, it, expect } from 'vitest';
 
 const { window } = new JSDOM('');
-// @ts-expect-error - DOMPurify accepts a window-like object
 const purify = DOMPurify(window);
 
 // Parity config: no transformTags — tests allowlist behavior only.

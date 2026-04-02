@@ -27,6 +27,8 @@ export function getCollectionPhotoUrl(collection: HttpTypes.StoreCollection | nu
     return null;
   }
 
-  const nestedPhotoUrl = typeof gpMetadata.photo_url === 'string' ? gpMetadata.photo_url.trim() : '';
+  const gpMetadataRecord = gpMetadata as Record<string, unknown>;
+  const nestedPhotoUrl =
+    typeof gpMetadataRecord.photo_url === 'string' ? gpMetadataRecord.photo_url.trim() : '';
   return nestedPhotoUrl || null;
 }

@@ -67,7 +67,6 @@ export default async function SalonProfilPage({
     const result = await listProductsWithSort({
       countryCode,
       seller_id: seller.id,
-      limit: 50,
     });
     products = result.response.products;
   } catch {

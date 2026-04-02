@@ -12,10 +12,10 @@ vi.mock('../config', () => ({
 
 import { getSellers } from './seller';
 
-const makeVendor = (overrides: Record<string, unknown> = {}) => ({
+const makeSeller = (overrides: Record<string, unknown> = {}) => ({
   handle: 'salon-a',
   name: 'Salon A',
-  photo_url: null,
+  photo: null,
   city: 'Warszawa',
   product_count: 5,
   ...overrides
@@ -32,35 +32,34 @@ describe('getSellers', () => {
     expect(result).toEqual([]);
   });
 
-  it('filters out vendors with product_count = 0', async () => {
+  it('calls the GP seller endpoint', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [
-        makeVendor({ handle: 'zero', name: 'Zero', product_count: 0 }),
-        makeVendor({ handle: 'one', name: 'One', product_count: 1 })
-      ]
+      sellers: [makeSeller()]
     });
-    const result = await getSellers();
-    expect(result).toHaveLength(1);
-    expect(result[0].handle).toBe('one');
+    await getSellers();
+
+    expect(mockFetch).toHaveBeenCalledWith('/store/seller', { cache: 'no-cache' });
   });
 
-  it('filters out vendors with product_count derived from empty products array', async () => {
+  it('returns all sellers provided by the API regardless of product_count', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [
-        makeVendor({ handle: 'empty', name: 'Empty', product_count: undefined, products: [] }),
-        makeVendor({ handle: 'full', name: 'Full', product_count: undefined, products: [{}] })
+      sellers: [
+        makeSeller({ handle: 'zero', name: 'Zero', product_count: 0 }),
+        makeSeller({ handle: 'one', name: 'One', product_count: 1 })
       ]
     });
+
     const result = await getSellers();
-    expect(result.map(s => s.handle)).toEqual(['full']);
+
+    expect(result.map(s => s.handle)).toEqual(['one', 'zero']);
   });
 
   it('sorts sellers alphabetically by name (case-insensitive, pl locale)', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [
-        makeVendor({ handle: 'c', name: 'Żaneta', product_count: 1 }),
-        makeVendor({ handle: 'a', name: 'anna', product_count: 1 }),
-        makeVendor({ handle: 'b', name: 'Basia', product_count: 1 })
+      sellers: [
+        makeSeller({ handle: 'c', name: 'Żaneta', product_count: 1 }),
+        makeSeller({ handle: 'a', name: 'anna', product_count: 1 }),
+        makeSeller({ handle: 'b', name: 'Basia', product_count: 1 })
       ]
     });
     const result = await getSellers();
@@ -71,29 +70,37 @@ describe('getSellers', () => {
     expect(names[2]).toBe('Żaneta');
   });
 
-  it('maps photo field to photo_url when photo_url absent', async () => {
+  it('maps photo field to photo_url', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [makeVendor({ handle: 'x', photo_url: undefined, photo: 'http://img.test/a.jpg', product_count: 1 })]
+      sellers: [makeSeller({ handle: 'x', photo: 'http://img.test/a.jpg', product_count: 1 })]
     });
     const result = await getSellers();
     expect(result[0].photo_url).toBe('http://img.test/a.jpg');
   });
 
-  it('returns null photo_url when neither photo_url nor photo present', async () => {
+  it('returns null photo_url when photo is absent', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [makeVendor({ photo_url: undefined, photo: undefined, product_count: 1 })]
+      sellers: [makeSeller({ photo: undefined, product_count: 1 })]
     });
     const result = await getSellers();
     expect(result[0].photo_url).toBeNull();
   });
 
-  it('returns empty array when vendors array is empty', async () => {
-    mockFetch.mockResolvedValue({ vendors: [] });
+  it('defaults product_count to 0 when the field is missing', async () => {
+    mockFetch.mockResolvedValue({
+      sellers: [makeSeller({ handle: 'x', product_count: undefined })]
+    });
+    const result = await getSellers();
+    expect(result[0].product_count).toBe(0);
+  });
+
+  it('returns empty array when sellers array is empty', async () => {
+    mockFetch.mockResolvedValue({ sellers: [] });
     const result = await getSellers();
     expect(result).toEqual([]);
   });
 
-  it('returns empty array when vendors key is undefined', async () => {
+  it('returns empty array when sellers key is undefined', async () => {
     mockFetch.mockResolvedValue({});
     const result = await getSellers();
     expect(result).toEqual([]);
@@ -101,7 +108,7 @@ describe('getSellers', () => {
 
   it('maps city from vendor city field', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [makeVendor({ handle: 'x', city: 'Kraków', product_count: 1 })]
+      sellers: [makeSeller({ handle: 'x', city: 'Kraków', product_count: 1 })]
     });
     const result = await getSellers();
     expect(result[0].city).toBe('Kraków');
@@ -109,7 +116,7 @@ describe('getSellers', () => {
 
   it('sets city to null when city field absent', async () => {
     mockFetch.mockResolvedValue({
-      vendors: [makeVendor({ handle: 'x', city: undefined, product_count: 1 })]
+      sellers: [makeSeller({ handle: 'x', city: undefined, product_count: 1 })]
     });
     const result = await getSellers();
     expect(result[0].city).toBeNull();

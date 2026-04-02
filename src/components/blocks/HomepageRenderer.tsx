@@ -2,9 +2,20 @@ import { BannerBlock } from './BannerBlock';
 import { BlogSectionBlock } from './BlogSectionBlock';
 import { CategoriesGridBlock } from './CategoriesGridBlock';
 import { HeroBlock } from './HeroBlock';
-import { isSectionObject, type RawSection } from './homepage-utils';
-import { ProductsCarouselBlock } from './ProductsCarouselBlock';
+import {
+  isSectionObject,
+  type BannerSectionBlock,
+  type RawSection,
+  type StyleSectionBlock as HomepageStyleSectionBlock,
+} from './homepage-utils';
+import {
+  ProductsCarouselBlock,
+  type ProductsCarouselSectionBlock,
+} from './ProductsCarouselBlock';
+import type { CategoriesGridSectionBlock } from './CategoriesGridBlock';
+import type { HeroSectionBlock } from './HeroBlock';
 import { StyleSectionBlock } from './StyleSectionBlock';
+import type { BlogSectionSectionBlock } from './BlogSectionBlock';
 
 export function HomepageRenderer({
   sections,
@@ -35,14 +46,14 @@ export function HomepageRenderer({
             return (
               <HeroBlock
                 key={key}
-                section={section}
+                section={section as HeroSectionBlock}
               />
             );
           case 'products_carousel':
             return (
               <ProductsCarouselBlock
                 key={key}
-                section={section}
+                section={section as ProductsCarouselSectionBlock}
                 locale={locale}
               />
             );
@@ -50,28 +61,28 @@ export function HomepageRenderer({
             return (
               <CategoriesGridBlock
                 key={key}
-                section={section}
+                section={section as CategoriesGridSectionBlock}
               />
             );
           case 'banner':
             return (
               <BannerBlock
                 key={key}
-                section={section}
+                section={section as BannerSectionBlock}
               />
             );
           case 'style_section':
             return (
               <StyleSectionBlock
                 key={key}
-                section={section}
+                section={section as HomepageStyleSectionBlock}
               />
             );
           case 'blog_section':
             return (
               <BlogSectionBlock
                 key={key}
-                section={section}
+                section={section as BlogSectionSectionBlock}
               />
             );
           default:

@@ -10,33 +10,29 @@ export interface SellerListItem {
   product_count: number;
 }
 
-type VendorApiItem = {
+type SellerApiItem = {
   handle: string;
   name: string;
-  photo_url?: string | null;
   photo?: string | null;
   city?: string | null;
   product_count?: number;
-  products?: unknown[];
 };
 
 export const getSellers = async (): Promise<SellerListItem[]> => {
   return sdk.client
-    .fetch<{ vendors: VendorApiItem[] }>('/store/vendors', {
+    .fetch<{ sellers: SellerApiItem[] }>('/store/seller', {
       cache: 'no-cache'
     })
-    .then(({ vendors }) => {
-      const mapped: SellerListItem[] = (vendors ?? []).map(v => ({
+    .then(({ sellers }) => {
+      const mapped: SellerListItem[] = (sellers ?? []).map(v => ({
         handle: v.handle,
         name: v.name,
-        photo_url: v.photo_url ?? v.photo ?? null,
+        photo_url: v.photo ?? null,
         city: v.city ?? null,
-        product_count: v.product_count ?? v.products?.length ?? 0
+        product_count: v.product_count ?? 0
       }));
 
-      return mapped
-        .filter(s => s.product_count > 0)
-        .sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
+      return mapped.sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
     })
     .catch(() => []);
 };

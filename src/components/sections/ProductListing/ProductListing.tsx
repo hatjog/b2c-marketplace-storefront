@@ -12,9 +12,9 @@ import { PRODUCT_LIMIT } from '@/const';
 import { SORT_OPTIONS } from '@/lib/constants';
 import type { SortOption } from '@/lib/constants';
 import { listCategories } from '@/lib/data/categories';
+import type { ProductQueryParams } from '@/lib/data/products';
 import { listProductsWithSort, listProductTags, listSellerCities } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { getTranslations } from 'next-intl/server';
@@ -181,12 +181,10 @@ export const ProductListing = async ({
     if (matched) resolvedCategoryId = matched.id;
   }
 
-  const queryParams: HttpTypes.FindParams & HttpTypes.StoreProductParams = {
+  const queryParams: ProductQueryParams = {
     ...(minPrice ? { min_price: minPrice } : {}),
     ...(maxPrice ? { max_price: maxPrice } : {})
   };
-
-  const usePipeline = hasCustomFilters({ tagIds, cities, durations, sellerRatings });
 
   let response: { products: HttpTypes.StoreProduct[]; count: number };
   try {
@@ -212,13 +210,9 @@ export const ProductListing = async ({
     );
   }
 
-  // Pipeline mode: products are already server-side paginated — use as-is.
-  // Native mode: products are the full sorted list — slice for the current page.
   const totalFiltered = response.count;
   const pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
-  const paginatedProducts = usePipeline
-    ? response.products
-    : response.products.slice((page - 1) * PRODUCT_LIMIT, page * PRODUCT_LIMIT);
+  const paginatedProducts = response.products;
 
   return (
     <div

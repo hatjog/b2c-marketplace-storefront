@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, type Locale } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { getLocale, getTranslations } from 'next-intl/server';
 

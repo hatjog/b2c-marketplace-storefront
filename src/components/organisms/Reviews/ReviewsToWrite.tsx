@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { isEmpty } from 'lodash';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 
 import { Card, NavigationItem } from '@/components/atoms';
@@ -14,6 +15,7 @@ import { navigation } from './navigation';
 import { OrderCard } from './OrderCard';
 
 export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
+  const t = useTranslations('reviews');
   const [showForm, setShowForm] = useState<
     | (HttpTypes.StoreOrder & {
         seller: { id: string; name: string; reviews?: any[] };
@@ -38,13 +40,13 @@ export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
         <div className="flex gap-4">
           {navigation.map(item => (
             <NavigationItem
-              key={item.label}
+              key={item.key}
               href={item.href}
-              data-testid={`reviews-to-write-navigation-item-${item.label}`}
+              data-testid={`reviews-to-write-navigation-item-${item.key}`}
               active={pathname === item.href}
               className="px-0"
             >
-              {item.label}
+              {t(item.key)}
             </NavigationItem>
           ))}
         </div>

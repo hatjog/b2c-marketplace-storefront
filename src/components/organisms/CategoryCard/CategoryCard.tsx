@@ -14,7 +14,7 @@ const CATEGORY_IMAGE_HANDLES = new Set([
 export function CategoryCard({
   category,
 }: {
-  category: { name: string; handle: string; metadata?: { photo_url?: string } };
+  category: { name: string; handle: string; metadata?: { photo_url?: string } | null };
 }) {
   const imageSrc = category.metadata?.photo_url
     ?? (CATEGORY_IMAGE_HANDLES.has(category.handle)

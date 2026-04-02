@@ -26,21 +26,23 @@ vi.mock('@/lib/utils', () => ({
 
 import { ProductCard } from './ProductCard'
 
+type ReactEl = React.ReactElement<Record<string, unknown>>
+
 // ---------------------------------------------------------------------------
 // Tree traversal helpers
 // ---------------------------------------------------------------------------
 
 function findElement(
-  element: React.ReactElement,
-  predicate: (el: React.ReactElement) => boolean,
-): React.ReactElement | null {
-  if (!React.isValidElement(element)) return null
-  const el = element as React.ReactElement<Record<string, unknown>>
+  element: React.ReactNode,
+  predicate: (el: ReactEl) => boolean,
+): ReactEl | null {
+  if (!React.isValidElement<Record<string, unknown>>(element)) return null
+  const el = element as ReactEl
   if (predicate(el)) return el
-  const children = React.Children.toArray(el.props?.children ?? [])
+  const children = React.Children.toArray(el.props.children as React.ReactNode)
   for (const child of children) {
     if (!React.isValidElement(child)) continue
-    const found = findElement(child as React.ReactElement, predicate)
+    const found = findElement(child, predicate)
     if (found) return found
   }
   return null
@@ -50,7 +52,7 @@ function findText(node: React.ReactNode, text: string): boolean {
   if (typeof node === 'string') return node.includes(text)
   if (React.isValidElement(node)) {
     const el = node as React.ReactElement<Record<string, unknown>>
-    const children = React.Children.toArray(el.props?.children ?? [])
+    const children = React.Children.toArray(el.props.children as React.ReactNode)
     return children.some(c => findText(c, text))
   }
   return false
@@ -82,7 +84,7 @@ const sellerData = {
 describe('ProductCard — vendor name (AC #1)', () => {
   it('renders vendor name when seller is present', () => {
     const product = { ...baseProduct, seller: sellerData }
-    const result = ProductCard({ product }) as React.ReactElement
+    const result = ProductCard({ product }) as ReactEl
     expect(result).not.toBeNull()
     const hasVendorName = findText(result, sellerData.name)
     expect(hasVendorName).toBe(true)
@@ -90,7 +92,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
 
   it('renders vendor badge container with data-testid when seller is present', () => {
     const product = { ...baseProduct, seller: sellerData }
-    const result = ProductCard({ product }) as React.ReactElement
+    const result = ProductCard({ product }) as ReactEl
     const vendorDiv = findElement(
       result,
       el =>
@@ -102,7 +104,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
 
   it('vendor link href points to /salony/[handle] (AC #3)', () => {
     const product = { ...baseProduct, seller: sellerData }
-    const result = ProductCard({ product }) as React.ReactElement
+    const result = ProductCard({ product }) as ReactEl
     const vendorLink = findElement(
       result,
       el =>
@@ -115,7 +117,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
   })
 
   it('does NOT render vendor section when seller is absent (AC #4)', () => {
-    const result = ProductCard({ product: baseProduct }) as React.ReactElement
+    const result = ProductCard({ product: baseProduct }) as ReactEl
     expect(result).not.toBeNull()
     const vendorDiv = findElement(
       result,
@@ -127,7 +129,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
   })
 
   it('does NOT render vendor name text when seller is absent (AC #4)', () => {
-    const result = ProductCard({ product: baseProduct }) as React.ReactElement
+    const result = ProductCard({ product: baseProduct }) as ReactEl
     const hasVendorName = findText(result, sellerData.name)
     expect(hasVendorName).toBe(false)
   })
@@ -144,7 +146,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
 
 describe('ProductCard — core rendering', () => {
   it('renders product title', () => {
-    const result = ProductCard({ product: baseProduct }) as React.ReactElement
+    const result = ProductCard({ product: baseProduct }) as ReactEl
     const hasTitleText = findText(result, baseProduct.title)
     expect(hasTitleText).toBe(true)
   })

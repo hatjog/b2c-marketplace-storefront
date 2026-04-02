@@ -8,10 +8,10 @@
  * @param threshold - Minimum number of unique options required to show dimension (default: 3)
  * @returns Filtered array of options, or `null` if the dimension should be hidden entirely
  */
-export function filterEmptyOptions<T extends { count?: number }>(
-  options: T[],
+export function filterEmptyOptions<T extends object>(
+  options: Array<T & { count?: number }>,
   threshold = 3
-): T[] | null {
+): Array<T & { count?: number }> | null {
   const nonEmpty = options.filter(opt => opt.count === undefined || opt.count > 0);
   if (nonEmpty.length < threshold) return null;
   return nonEmpty;

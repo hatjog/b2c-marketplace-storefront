@@ -26,6 +26,11 @@ export const ProductDetailsPage = async ({
     return NotFound();
   }
 
+  const product = {
+    ...prod,
+    seller: prod.seller ?? undefined,
+  };
+
   const hasPrice = prod.variants?.some(v => v.calculated_price);
 
   return (
@@ -45,7 +50,7 @@ export const ProductDetailsPage = async ({
           data-testid="product-details-container"
         >
           <ProductDetails
-            product={prod}
+            product={product}
             locale={locale}
           />
         </div>
@@ -55,7 +60,7 @@ export const ProductDetailsPage = async ({
         countryCode={countryCode}
       />
       <StickyAddToCart
-        product={prod}
+        product={product}
         countryCode={countryCode}
       />
     </div>

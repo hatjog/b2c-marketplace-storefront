@@ -15,7 +15,13 @@ export function stripHtml(html: string): string {
     const key = entity.toLowerCase();
     if (key in NAMED_ENTITIES) return NAMED_ENTITIES[key];
     const numericMatch = entity.match(/^&#(\d+);$/i);
-    if (numericMatch) return String.fromCodePoint(parseInt(numericMatch[1], 10));
+    if (numericMatch) {
+      const codePoint = parseInt(numericMatch[1], 10);
+      if (!Number.isFinite(codePoint) || codePoint > 0x10ffff) {
+        return entity;
+      }
+      return String.fromCodePoint(codePoint);
+    }
     return entity;
   });
 }

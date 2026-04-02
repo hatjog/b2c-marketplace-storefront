@@ -7,9 +7,11 @@ export const ProductDetailsSeller = async ({ seller }: { seller?: SellerProps })
   if (!seller) return null;
 
   const t = await getTranslations('products');
+  const sellerPhone = seller.phone?.trim() || null;
+  const sellerEmail = seller.email?.trim() || null;
 
   const hasAddress = seller.city || seller.address_line;
-  const hasContact = seller.phone || seller.email;
+  const hasContact = sellerPhone || sellerEmail;
 
   return (
     <div className="rounded-sm border">
@@ -29,14 +31,14 @@ export const ProductDetailsSeller = async ({ seller }: { seller?: SellerProps })
               {t('seller_address')}: {[seller.city, seller.address_line].filter(Boolean).join(' · ')}
             </p>
           )}
-          {seller.phone && (
+          {sellerPhone && (
             <p className="label-md text-secondary">
-              {t('seller_phone')}: <a href={`tel:${seller.phone.replace(/\s/g, '')}`}>{seller.phone}</a>
+              {t('seller_phone')}: <a href={`tel:${sellerPhone.replace(/\s/g, '')}`}>{sellerPhone}</a>
             </p>
           )}
-          {seller.email && (
+          {sellerEmail && (
             <p className="label-md text-secondary">
-              {t('seller_contact')}: {seller.email}
+              {t('seller_email')}: {sellerEmail}
             </p>
           )}
         </div>

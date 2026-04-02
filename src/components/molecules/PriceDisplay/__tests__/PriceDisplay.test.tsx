@@ -2,6 +2,8 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { PriceDisplay } from '../PriceDisplay';
 
+type ReactEl = React.ReactElement<Record<string, unknown>>;
+
 describe('PriceDisplay', () => {
   // AC#2 — null/undefined returns null
   it('returns null when amountInCents is null', () => {
@@ -16,17 +18,17 @@ describe('PriceDisplay', () => {
 
   // AC#3 — zero → "Gratis"
   it('displays "Gratis" when amountInCents is 0', () => {
-    const result = PriceDisplay({ amountInCents: 0 }) as React.ReactElement;
+    const result = PriceDisplay({ amountInCents: 0 }) as ReactEl;
     expect(result).not.toBeNull();
     // children[0] is the price text
-    const children = React.Children.toArray(result.props.children);
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('Gratis');
   });
 
   // AC#6 — default variant → "200 zł"
   it('renders "200 zł" for default variant with 20000 cents', () => {
-    const result = PriceDisplay({ amountInCents: 20000 }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    const result = PriceDisplay({ amountInCents: 20000 }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('200 zł');
   });
 
@@ -35,8 +37,8 @@ describe('PriceDisplay', () => {
     const result = PriceDisplay({
       amountInCents: 20000,
       variant: 'from',
-    }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('od 200 zł');
   });
 
@@ -46,8 +48,8 @@ describe('PriceDisplay', () => {
       amountInCents: 20000,
       maxAmountInCents: 28000,
       variant: 'range',
-    }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('200\u2013280 z\u0142');
   });
 
@@ -57,8 +59,8 @@ describe('PriceDisplay', () => {
       amountInCents: 20000,
       maxAmountInCents: 20000,
       variant: 'range',
-    }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('200 zł');
   });
 
@@ -68,8 +70,8 @@ describe('PriceDisplay', () => {
       amountInCents: 20000,
       showDuration: true,
       duration: 60,
-    }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('200 zł');
     expect(children[1]).toBe(' \u00B7 60 min');
   });
@@ -81,8 +83,8 @@ describe('PriceDisplay', () => {
       variant: 'from',
       showDuration: true,
       duration: 60,
-    }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('od 200 zł');
     expect(children[1]).toBe(' \u00B7 od 60 min');
   });
@@ -93,36 +95,36 @@ describe('PriceDisplay', () => {
       amountInCents: 20000,
       showDuration: true,
       duration: null,
-    }) as React.ReactElement;
-    const children = React.Children.toArray(result.props.children);
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
     // Second child should be empty string (no separator)
     expect(children[1]).toBe('');
   });
 
   // AC#1 — aria-label
   it('has correct aria-label for standard price', () => {
-    const result = PriceDisplay({ amountInCents: 20000 }) as React.ReactElement;
+    const result = PriceDisplay({ amountInCents: 20000 }) as ReactEl;
     expect(result.props['aria-label']).toBe('Cena: 200 złotych');
   });
 
   it('has aria-label "Cena: Gratis" when amountInCents is 0', () => {
-    const result = PriceDisplay({ amountInCents: 0 }) as React.ReactElement;
+    const result = PriceDisplay({ amountInCents: 0 }) as ReactEl;
     expect(result.props['aria-label']).toBe('Cena: Gratis');
   });
 
   // Size classes
   it('applies lg size classes for size="lg"', () => {
-    const result = PriceDisplay({ amountInCents: 20000, size: 'lg' }) as React.ReactElement;
+    const result = PriceDisplay({ amountInCents: 20000, size: 'lg' }) as ReactEl;
     expect(result.props.className).toContain('text-2xl');
   });
 
   it('applies sm size classes for size="sm"', () => {
-    const result = PriceDisplay({ amountInCents: 20000, size: 'sm' }) as React.ReactElement;
+    const result = PriceDisplay({ amountInCents: 20000, size: 'sm' }) as ReactEl;
     expect(result.props.className).toContain('text-xs');
   });
 
   it('applies md size classes for size="md"', () => {
-    const result = PriceDisplay({ amountInCents: 20000, size: 'md' }) as React.ReactElement;
+    const result = PriceDisplay({ amountInCents: 20000, size: 'md' }) as ReactEl;
     expect(result.props.className).toContain('text-sm');
   });
 

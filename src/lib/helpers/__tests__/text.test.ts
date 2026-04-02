@@ -54,6 +54,10 @@ describe('stripHtml', () => {
     expect(stripHtml('A&#38;B')).toBe('A&B');
   });
 
+  it('leaves unsupported numeric entities unchanged instead of throwing', () => {
+    expect(stripHtml('Bad: &#99999999;')).toBe('Bad: &#99999999;');
+  });
+
   // T3.5 — edge cases
   it('returns empty string unchanged', () => {
     expect(stripHtml('')).toBe('');

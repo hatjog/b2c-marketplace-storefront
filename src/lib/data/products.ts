@@ -14,7 +14,15 @@ import type { SellerProps } from '@/types/seller';
 import { sdk } from '../config';
 import { getAuthHeaders } from './cookies';
 import { retrieveCustomer } from './customer';
+import { paginateSortedProducts } from './products-pagination';
 import { getRegion, retrieveRegion } from './regions';
+
+export type ProductQueryParams = HttpTypes.FindParams &
+  HttpTypes.StoreProductParams & {
+    handle?: string[];
+    min_price?: string;
+    max_price?: string;
+  };
 
 export const listProducts = async ({
   pageParam = 1,
@@ -26,10 +34,7 @@ export const listProducts = async ({
   forceCache = false
 }: {
   pageParam?: number;
-  queryParams?: HttpTypes.FindParams &
-    HttpTypes.StoreProductParams & {
-      handle?: string[];
-    };
+  queryParams?: ProductQueryParams;
   category_id?: string | string[];
   collection_id?: string;
   countryCode?: string;
@@ -41,7 +46,7 @@ export const listProducts = async ({
     count: number;
   };
   nextPage: number | null;
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
+  queryParams?: ProductQueryParams;
 }> => {
   if (!countryCode && !regionId) {
     throw new Error('Country code or region ID is required');
@@ -165,7 +170,7 @@ export const listFilteredProducts = async ({
     count: number;
   };
   nextPage: null;
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
+  queryParams?: ProductQueryParams;
 }> => {
   const region = await getRegion(countryCode);
 
@@ -220,7 +225,7 @@ export const listFilteredProducts = async ({
 
 /**
  * Fetches ALL products (paginated fetch-all, hard cap 1000), applies city filter and sort,
- * and returns the full filtered+sorted list. Slicing for display happens in the caller.
+ * and returns the correct paginated page in native mode when `limit` is provided.
  *
  * When custom filters (tag_id, city, duration, seller_rating) are active, delegates to
  * listFilteredProducts() for server-side filtering and pagination via the pipeline endpoint.
@@ -239,7 +244,7 @@ export const listProductsWithSort = async ({
   page,
   limit,
 }: {
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
+  queryParams?: ProductQueryParams;
   sortBy?: SortOptions;
   countryCode: string;
   category_id?: string | string[];
@@ -257,7 +262,7 @@ export const listProductsWithSort = async ({
     count: number;
   };
   nextPage: number | null;
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams;
+  queryParams?: ProductQueryParams;
 }> => {
   // Pipeline mode: any custom filter active AND no seller_id scope → backend pipeline.
   // seller_id is not supported in the pipeline endpoint — fall through to native mode when set.
@@ -342,12 +347,14 @@ export const listProductsWithSort = async ({
     ? sortByRecommended(pricedProducts)
     : sortProducts(pricedProducts, sortBy);
 
+  const paginatedProducts = paginateSortedProducts(sortedProducts, page, limit);
+
   return {
     response: {
-      products: sortedProducts,
+      products: paginatedProducts.products,
       count: sortedProducts.length
     },
-    nextPage: null,
+    nextPage: paginatedProducts.nextPage,
     queryParams
   };
 };

@@ -9,28 +9,30 @@ vi.mock('@/icons', () => ({
 
 import { SellerSocialLinks } from './SellerSocialLinks';
 
+type ReactEl = React.ReactElement<Record<string, unknown>>;
+
 // ---------------------------------------------------------------------------
 // Tree traversal helper
 // ---------------------------------------------------------------------------
 
 function findAll(
-  element: React.ReactElement | null,
-  predicate: (el: React.ReactElement) => boolean,
-): React.ReactElement[] {
-  if (!element || !React.isValidElement(element)) return [];
-  const el = element as React.ReactElement<Record<string, unknown>>;
-  const results: React.ReactElement[] = [];
+  element: ReactEl | null,
+  predicate: (el: ReactEl) => boolean,
+): ReactEl[] {
+  if (!element || !React.isValidElement<Record<string, unknown>>(element)) return [];
+  const el = element as ReactEl;
+  const results: ReactEl[] = [];
   if (predicate(el)) results.push(el);
-  const children = React.Children.toArray(el.props?.children ?? []);
+  const children = React.Children.toArray(el.props.children as React.ReactNode);
   for (const child of children) {
-    if (React.isValidElement(child)) {
-      results.push(...findAll(child as React.ReactElement, predicate));
+    if (React.isValidElement<Record<string, unknown>>(child)) {
+      results.push(...findAll(child as ReactEl, predicate));
     }
   }
   return results;
 }
 
-function findLinks(root: React.ReactElement): React.ReactElement[] {
+function findLinks(root: ReactEl): ReactEl[] {
   return findAll(root, el => el.type === 'a');
 }
 
@@ -66,7 +68,7 @@ describe('SellerSocialLinks — renders only non-null links (AC1)', () => {
   it('renders Instagram link with correct href and attributes', () => {
     const result = SellerSocialLinks({
       socialLinks: { instagram: 'https://instagram.com/salon', facebook: null },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     expect(links).toHaveLength(1);
     expect(links[0].props.href).toBe('https://instagram.com/salon');
@@ -78,7 +80,7 @@ describe('SellerSocialLinks — renders only non-null links (AC1)', () => {
   it('renders Facebook link when present', () => {
     const result = SellerSocialLinks({
       socialLinks: { facebook: 'https://facebook.com/salon', instagram: null },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     expect(links).toHaveLength(1);
     expect(links[0].props.href).toBe('https://facebook.com/salon');
@@ -88,7 +90,7 @@ describe('SellerSocialLinks — renders only non-null links (AC1)', () => {
   it('renders TikTok link when present', () => {
     const result = SellerSocialLinks({
       socialLinks: { tiktok: 'https://tiktok.com/@salon' },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     expect(links).toHaveLength(1);
     expect(links[0].props.href).toBe('https://tiktok.com/@salon');
@@ -98,7 +100,7 @@ describe('SellerSocialLinks — renders only non-null links (AC1)', () => {
   it('renders website link when present', () => {
     const result = SellerSocialLinks({
       socialLinks: { website: 'https://salon.pl' },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     expect(links).toHaveLength(1);
     expect(links[0].props.href).toBe('https://salon.pl');
@@ -108,7 +110,7 @@ describe('SellerSocialLinks — renders only non-null links (AC1)', () => {
   it('renders only non-null links when partial', () => {
     const result = SellerSocialLinks({
       socialLinks: { instagram: 'https://instagram.com/salon', facebook: null, tiktok: null },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     expect(links).toHaveLength(1);
     expect(links[0].props.href).toBe('https://instagram.com/salon');
@@ -122,7 +124,7 @@ describe('SellerSocialLinks — renders only non-null links (AC1)', () => {
         tiktok: 'https://tiktok.com/@salon',
         website: 'https://salon.pl',
       },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     expect(links).toHaveLength(4);
   });
@@ -137,7 +139,7 @@ describe('SellerSocialLinks — ARIA labels present (AC1)', () => {
         tiktok: 'https://tiktok.com/@salon',
         website: 'https://salon.pl',
       },
-    }) as React.ReactElement;
+    }) as ReactEl;
     const links = findLinks(result);
     for (const link of links) {
       expect(link.props['aria-label']).toBeTruthy();

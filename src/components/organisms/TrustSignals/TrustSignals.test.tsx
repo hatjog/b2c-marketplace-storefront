@@ -7,14 +7,17 @@ vi.mock('next/link', () => ({
 
 import { TrustSignals } from './TrustSignals';
 
+type ReactEl = React.ReactElement<Record<string, unknown>>;
+
 function findAll(
   el: React.ReactNode,
-  predicate: (el: React.ReactElement) => boolean,
-  results: React.ReactElement[] = [],
-): React.ReactElement[] {
-  if (React.isValidElement(el)) {
-    if (predicate(el)) results.push(el);
-    const children = React.Children.toArray(el.props.children);
+  predicate: (el: ReactEl) => boolean,
+  results: ReactEl[] = [],
+): ReactEl[] {
+  if (React.isValidElement<Record<string, unknown>>(el)) {
+    const element = el as ReactEl;
+    if (predicate(element)) results.push(element);
+    const children = React.Children.toArray(element.props.children as React.ReactNode);
     for (const child of children) {
       findAll(child, predicate, results);
     }
@@ -24,8 +27,9 @@ function findAll(
 
 function findText(el: React.ReactNode, text: string): boolean {
   if (typeof el === 'string') return el.includes(text);
-  if (React.isValidElement(el)) {
-    const children = React.Children.toArray(el.props.children);
+  if (React.isValidElement<Record<string, unknown>>(el)) {
+    const element = el as ReactEl;
+    const children = React.Children.toArray(element.props.children as React.ReactNode);
     return children.some(c => findText(c, text));
   }
   return false;
@@ -43,19 +47,19 @@ describe('TrustSignals', () => {
   });
 
   it('full variant: wrapper has role=region and aria-label', () => {
-    const result = TrustSignals({ variant: 'full', signals, detailsUrl: '/zasady' }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'full', signals, detailsUrl: '/zasady' }) as ReactEl;
     expect(result.props.role).toBe('region');
     expect(result.props['aria-label']).toBe('Gwarancje BonBeauty');
   });
 
   it('full variant: renders checkmark spans for each signal', () => {
-    const result = TrustSignals({ variant: 'full', signals, detailsUrl: '/zasady' }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'full', signals, detailsUrl: '/zasady' }) as ReactEl;
     const checkmarks = findAll(result, el => el.type === 'span' && el.props.children === '✓');
     expect(checkmarks).toHaveLength(3);
   });
 
   it('full variant: renders Szczegóły link', () => {
-    const result = TrustSignals({ variant: 'full', signals, detailsUrl: '/zasady' }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'full', signals, detailsUrl: '/zasady' }) as ReactEl;
     const links = findAll(result, el => el.type === 'a');
     expect(links).toHaveLength(1);
     expect(links[0].props.href).toBe('/zasady');
@@ -63,39 +67,39 @@ describe('TrustSignals', () => {
   });
 
   it('full variant: no link when detailsUrl absent', () => {
-    const result = TrustSignals({ variant: 'full', signals }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'full', signals }) as ReactEl;
     const links = findAll(result, el => el.type === 'a');
     expect(links).toHaveLength(0);
   });
 
   it('full variant: 4 signals → only 3 shown (TRUST_SIGNALS_MAX)', () => {
     const fourSignals = ['A', 'B', 'C', 'D'];
-    const result = TrustSignals({ variant: 'full', signals: fourSignals, detailsUrl: '/zasady' }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'full', signals: fourSignals, detailsUrl: '/zasady' }) as ReactEl;
     const checkmarks = findAll(result, el => el.type === 'span' && el.props.children === '✓');
     expect(checkmarks).toHaveLength(3);
   });
 
   it('compact variant: wrapper has role=region and aria-label', () => {
-    const result = TrustSignals({ variant: 'compact', signals }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'compact', signals }) as ReactEl;
     expect(result.props.role).toBe('region');
     expect(result.props['aria-label']).toBe('Gwarancje BonBeauty');
   });
 
   it('compact variant: no details link', () => {
-    const result = TrustSignals({ variant: 'compact', signals, detailsUrl: '/zasady' }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'compact', signals, detailsUrl: '/zasady' }) as ReactEl;
     const links = findAll(result, el => el.type === 'a');
     expect(links).toHaveLength(0);
   });
 
   it('compact variant: renders all signal texts', () => {
-    const result = TrustSignals({ variant: 'compact', signals }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'compact', signals }) as ReactEl;
     for (const signal of signals) {
       expect(findText(result, signal)).toBe(true);
     }
   });
 
   it('compact variant: renders checkmark for each signal', () => {
-    const result = TrustSignals({ variant: 'compact', signals }) as React.ReactElement;
+    const result = TrustSignals({ variant: 'compact', signals }) as ReactEl;
     const checkmarks = findAll(result, el => el.type === 'span' && el.props.children === '✓');
     expect(checkmarks).toHaveLength(3);
   });

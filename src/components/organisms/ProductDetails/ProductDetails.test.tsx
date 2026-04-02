@@ -29,14 +29,17 @@ vi.mock('@/components/molecules', () => ({
 import { resolveDefaultValidityInfo } from '@/lib/runtime-market-config';
 import { ProductDetails } from './ProductDetails';
 
+type ReactEl = React.ReactElement<Record<string, unknown>>;
+
 function findAll(
   el: React.ReactNode,
-  predicate: (el: React.ReactElement) => boolean,
-  results: React.ReactElement[] = [],
-): React.ReactElement[] {
-  if (React.isValidElement(el)) {
-    if (predicate(el)) results.push(el);
-    const children = React.Children.toArray(el.props.children);
+  predicate: (el: ReactEl) => boolean,
+  results: ReactEl[] = [],
+): ReactEl[] {
+  if (React.isValidElement<Record<string, unknown>>(el)) {
+    const element = el as ReactEl;
+    if (predicate(element)) results.push(element);
+    const children = React.Children.toArray(element.props.children as React.ReactNode);
     for (const child of children) {
       findAll(child, predicate, results);
     }
@@ -65,7 +68,7 @@ describe('ProductDetails — VoucherValidityInfo integration', () => {
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    const found = findAll(result as ReactEl, el => el.type === 'VoucherValidityInfo');
     expect(found).toHaveLength(1);
     expect(found[0].props.validityPeriod).toBe('12 miesięcy od daty zakupu');
     expect(found[0].props.defaultInfo).toBeNull();
@@ -77,7 +80,7 @@ describe('ProductDetails — VoucherValidityInfo integration', () => {
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    const found = findAll(result as ReactEl, el => el.type === 'VoucherValidityInfo');
     expect(found).toHaveLength(1);
     expect(found[0].props.validityPeriod).toBeNull();
     expect(found[0].props.defaultInfo).toBe('Ważny 12 miesięcy');
@@ -89,7 +92,7 @@ describe('ProductDetails — VoucherValidityInfo integration', () => {
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    const found = findAll(result as ReactEl, el => el.type === 'VoucherValidityInfo');
     expect(found).toHaveLength(1);
     expect(found[0].props.validityPeriod).toBeNull();
     expect(found[0].props.defaultInfo).toBeNull();
@@ -101,7 +104,7 @@ describe('ProductDetails — VoucherValidityInfo integration', () => {
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-    const found = findAll(result as React.ReactElement, el => el.type === 'VoucherValidityInfo');
+    const found = findAll(result as ReactEl, el => el.type === 'VoucherValidityInfo');
     expect(found).toHaveLength(1);
     expect(found[0].props.validityPeriod).toBe('6 miesięcy');
     expect(found[0].props.defaultInfo).toBe('Ważny 12 miesięcy');
@@ -113,7 +116,7 @@ describe('ProductDetails — VoucherValidityInfo integration', () => {
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
-    const children = React.Children.toArray((result as React.ReactElement).props.children);
+    const children = React.Children.toArray((result as ReactEl).props.children as React.ReactNode);
     const trustIdx = children.findIndex(
       (c) => React.isValidElement(c) && c.type === 'TrustSignals',
     );

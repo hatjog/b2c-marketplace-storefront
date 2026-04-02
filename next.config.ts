@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
+import enMessages from './messages/en.json';
+import plMessages from './messages/pl.json';
+import { generateLocaleRewrites } from './src/i18n/locale-rewrite-rules';
 
 const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
 
@@ -68,10 +71,10 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
-    return [
-      { source: '/en/terms-of-service', destination: '/en/regulamin' },
-      { source: '/en/privacy-policy', destination: '/en/polityka-prywatnosci' }
-    ];
+    return generateLocaleRewrites('pl', {
+      pl: plMessages.routes,
+      en: enMessages.routes
+    });
   }
 };
 

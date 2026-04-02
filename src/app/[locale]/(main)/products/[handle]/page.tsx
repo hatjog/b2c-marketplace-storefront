@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cache } from 'react';
 
 import { ProductDetailsPage } from '@/components/sections';
 import { listProducts } from '@/lib/data/products';
@@ -6,19 +7,23 @@ import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo
 import { getGpField } from '@/lib/helpers/metadata-utils';
 import { getCountryCode } from '@/lib/helpers/country-code';
 
+const fetchProductForPage = cache(async (handle: string, locale: string) => {
+  const countryCode = await getCountryCode(locale);
+
+  return listProducts({
+    countryCode,
+    queryParams: { handle: [handle], limit: 1 },
+    forceCache: true
+  }).then(({ response }) => response.products[0]);
+});
+
 export async function generateMetadata({
   params
 }: {
   params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
-
-  const countryCode = await getCountryCode(locale);
-  const prod = await listProducts({
-    countryCode,
-    queryParams: { handle: [handle], limit: 1 },
-    forceCache: true
-  }).then(({ response }) => response.products[0]);
+  const prod = await fetchProductForPage(handle, locale);
 
   return generateProductMetadata(prod);
 }
@@ -29,14 +34,8 @@ export default async function ProductPage({
   params: Promise<{ handle: string; locale: string }>;
 }) {
   const { handle, locale } = await params;
-
-  const countryCode = await getCountryCode(locale);
   // Full product fetch (no field restriction) — variants include calculated_price + inventory_quantity
-  const product = await listProducts({
-    countryCode,
-    queryParams: { handle: [handle], limit: 1 },
-    forceCache: true
-  }).then(({ response }) => response.products[0]);
+  const product = await fetchProductForPage(handle, locale);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const gpVendor =

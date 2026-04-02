@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 // Mirrors hasContact logic from ProductDetailsSeller
 function hasContact(seller: { phone?: string; email?: string }): boolean {
-  return !!(seller.phone || seller.email);
+  return !!(seller.phone?.trim() || seller.email?.trim());
 }
 
 // Mirrors tel: href sanitization from ProductDetailsSeller
@@ -29,6 +29,22 @@ describe('ProductDetailsSeller contact visibility logic', () => {
 
   it('returns false when phone and email are empty strings', () => {
     expect(hasContact({ phone: '', email: '' })).toBe(false);
+  });
+
+  it('returns false when phone is whitespace only', () => {
+    expect(hasContact({ phone: '   ' })).toBe(false);
+  });
+
+  it('returns false when email is whitespace only', () => {
+    expect(hasContact({ email: '   ' })).toBe(false);
+  });
+
+  it('returns false when phone and email are whitespace only', () => {
+    expect(hasContact({ phone: '  ', email: '\t' })).toBe(false);
+  });
+
+  it('returns true when only one contact value remains after trimming', () => {
+    expect(hasContact({ phone: '   ', email: 'salon@example.com' })).toBe(true);
   });
 });
 
