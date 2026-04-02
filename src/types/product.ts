@@ -3,6 +3,9 @@ import type { SellerProps } from './seller';
 export type GpProductMetadata = {
   validity_period?: string | null;
   seo?: { meta_title?: string; meta_description?: string; og_image_url?: string } | null;
+  has_vendor_pricing?: boolean | null;
+  sort_rank?: number | null;
+  vendor_id?: string | null;
   [key: string]: unknown;
 };
 

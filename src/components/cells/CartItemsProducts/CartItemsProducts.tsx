@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { DeleteCartItemButton } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
 import { convertToLocale } from '@/lib/helpers/money';
 
@@ -44,7 +45,7 @@ export const CartItemsProducts = ({
               >
                 {product.thumbnail ? (
                   <Image
-                    src={decodeURIComponent(product.thumbnail)}
+                    src={safeDecodeURIComponent(product.thumbnail)}
                     alt="Product thumbnail"
                     width={100}
                     height={132}

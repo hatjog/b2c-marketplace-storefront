@@ -13,7 +13,8 @@ const fetchProductForPage = cache(async (handle: string, locale: string) => {
   return listProducts({
     countryCode,
     queryParams: { handle: [handle], limit: 1 },
-    forceCache: true
+    forceCache: true,
+    includeSellerContext: true,
   }).then(({ response }) => response.products[0]);
 });
 

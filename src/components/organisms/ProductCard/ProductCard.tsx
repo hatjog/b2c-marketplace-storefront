@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types/product';
@@ -19,7 +20,7 @@ function resolveThumbnailSrc(thumbnail: string | null | undefined) {
   }
 
   try {
-    const decodedThumbnail = decodeURIComponent(thumbnail);
+    const decodedThumbnail = safeDecodeURIComponent(thumbnail);
     const parsedUrl = new URL(decodedThumbnail);
     if (parsedUrl.hostname === PLACEHOLDER_CDN_HOST) {
       return PLACEHOLDER_IMAGE_SRC;

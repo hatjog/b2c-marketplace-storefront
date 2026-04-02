@@ -27,19 +27,17 @@ export interface GpSeoMetadata {
 }
 
 /**
- * Resolves GP SEO metadata from entity metadata using fallback chain:
- * metadata.gp.seo.* → metadata.seo.* (backward-compat, remove in v1.4.0) → undefined
+ * Resolves GP SEO metadata from entity metadata using ADR-054 namespace:
+ * metadata.gp.seo.* → undefined
  */
 export function resolveGpSeoMetadata(
   metadata: Record<string, unknown> | null | undefined
 ): GpSeoMetadata {
   const gpSeo = getGpField<GpSeoMetadata>(metadata, 'seo');
-  // backward-compat: flat metadata.seo.* (remove in v1.4.0)
-  const legacySeo = metadata?.seo as GpSeoMetadata | undefined;
   return {
-    meta_title: gpSeo?.meta_title ?? legacySeo?.meta_title,
-    meta_description: gpSeo?.meta_description ?? legacySeo?.meta_description,
-    og_image_url: gpSeo?.og_image_url ?? legacySeo?.og_image_url,
+    meta_title: gpSeo?.meta_title,
+    meta_description: gpSeo?.meta_description,
+    og_image_url: gpSeo?.og_image_url,
   };
 }
 

@@ -8,6 +8,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
 
 import { Indicator } from '@/components/atoms';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { cn } from '@/lib/utils';
 
 export const ProductCarouselIndicator = ({
@@ -70,7 +71,7 @@ export const ProductCarouselIndicator = ({
                 onClick={() => changeSlideHandler(index)}
               >
                 <Image
-                  src={decodeURIComponent(slide.url)}
+                  src={safeDecodeURIComponent(slide.url)}
                   alt="Product carousel Indicator"
                   width={64}
                   height={64}

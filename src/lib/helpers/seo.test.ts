@@ -24,7 +24,7 @@ describe('resolveGpSeoMetadata', () => {
     expect(result.og_image_url).toBe('https://cdn.example.com/gp.jpg');
   });
 
-  it('gp.seo.* wins over legacy metadata.seo.*', () => {
+  it('ignores flat metadata.seo.* when gp.seo.* is present', () => {
     const metadata = {
       gp: {
         seo: {
@@ -45,7 +45,7 @@ describe('resolveGpSeoMetadata', () => {
     expect(result.og_image_url).toBe('https://cdn.example.com/gp.jpg');
   });
 
-  it('falls back to legacy metadata.seo.* when gp.seo.* is absent (backward-compat)', () => {
+  it('ignores flat metadata.seo.* when gp.seo.* is absent', () => {
     const metadata = {
       seo: {
         meta_title: 'Legacy Title',
@@ -54,12 +54,12 @@ describe('resolveGpSeoMetadata', () => {
       }
     };
     const result = resolveGpSeoMetadata(metadata);
-    expect(result.meta_title).toBe('Legacy Title');
-    expect(result.meta_description).toBe('Legacy Description');
-    expect(result.og_image_url).toBe('https://cdn.example.com/legacy.jpg');
+    expect(result.meta_title).toBeUndefined();
+    expect(result.meta_description).toBeUndefined();
+    expect(result.og_image_url).toBeUndefined();
   });
 
-  it('returns partial gp.seo.* with legacy fallback per field', () => {
+  it('returns only defined gp.seo.* fields without legacy per-field fallback', () => {
     const metadata = {
       gp: {
         seo: {
@@ -75,8 +75,8 @@ describe('resolveGpSeoMetadata', () => {
     };
     const result = resolveGpSeoMetadata(metadata);
     expect(result.meta_title).toBe('GP Title');
-    expect(result.meta_description).toBe('Legacy Description');
-    expect(result.og_image_url).toBe('https://cdn.example.com/legacy.jpg');
+    expect(result.meta_description).toBeUndefined();
+    expect(result.og_image_url).toBeUndefined();
   });
 
   it('returns undefined for all fields when metadata is null', () => {

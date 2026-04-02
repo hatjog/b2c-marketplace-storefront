@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowRightIcon } from '@/icons';
-import { safeDecodeURI } from '@/lib/helpers/url';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 
 type StyleSectionItemProps = {
   imageUrl: string | null;
@@ -34,7 +34,7 @@ export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) 
                 <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-action-secondary">
                   <Image
                     loading="lazy"
-                    src={safeDecodeURI(item.imageUrl)}
+                    src={safeDecodeURIComponent(item.imageUrl)}
                     alt={item.label}
                     fill
                     className="object-cover"

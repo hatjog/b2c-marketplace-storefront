@@ -1,5 +1,7 @@
 import Image from 'next/image';
 
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
+
 export const SellerAvatar = ({
   photo = '',
   size = 32,
@@ -11,7 +13,7 @@ export const SellerAvatar = ({
 }) => {
   return photo ? (
     <Image
-      src={decodeURIComponent(photo)}
+      src={safeDecodeURIComponent(photo)}
       alt={alt}
       width={size}
       height={size}

@@ -3,13 +3,15 @@ import { Text } from '@medusajs/ui';
 
 import { paymentInfoMap } from '@/lib/constants';
 import { convertToLocale } from '@/lib/helpers/money';
+import type { MercurOrder } from '@/types/medusa-extensions';
 
 type ShippingDetailsProps = {
-  order: HttpTypes.StoreOrder;
+  order: MercurOrder;
 };
 
 const OrderShipping = ({ order }: ShippingDetailsProps) => {
   const payment = order.payment_collections?.[0].payments?.[0];
+  const shippingMethod = order.shipping_methods?.[0];
 
   return (
     <div className="rounded-sm border p-4">
@@ -44,9 +46,9 @@ const OrderShipping = ({ order }: ShippingDetailsProps) => {
       >
         <Text className="txt-medium-plus text-ui-fg-base mb-1 font-bold">Delivery method</Text>
         <Text className="txt-medium text-ui-fg-subtle">
-          {(order as any).shipping_methods[0]?.name} (
+          {shippingMethod?.name} (
           {convertToLocale({
-            amount: order.shipping_methods?.[0].total ?? 0,
+            amount: shippingMethod?.total ?? 0,
             currency_code: order.currency_code
           })
             .replace(/,/g, '')

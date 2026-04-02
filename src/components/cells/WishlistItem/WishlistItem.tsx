@@ -4,6 +4,7 @@ import Image from 'next/image';
 
 import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { convertToLocale } from '@/lib/helpers/money';
 import type { Wishlist } from '@/types/wishlist';
@@ -49,7 +50,7 @@ export const WishlistItem = ({
           <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-sm">
             {product.thumbnail ? (
               <Image
-                src={decodeURIComponent(product.thumbnail)}
+                src={safeDecodeURIComponent(product.thumbnail)}
                 alt={product.title}
                 width={360}
                 height={360}

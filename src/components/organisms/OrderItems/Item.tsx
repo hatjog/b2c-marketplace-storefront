@@ -1,6 +1,7 @@
 import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
 
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { convertToLocale } from '@/lib/helpers/money';
 
 export const Item = ({
@@ -25,7 +26,7 @@ export const Item = ({
       <div className="flex h-[132px] w-[100px] items-center justify-center">
         {item.thumbnail ? (
           <Image
-            src={decodeURIComponent(item.thumbnail)}
+            src={safeDecodeURIComponent(item.thumbnail)}
             alt="Product thumbnail"
             width={100}
             height={132}

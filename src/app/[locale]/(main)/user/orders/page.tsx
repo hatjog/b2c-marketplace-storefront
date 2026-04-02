@@ -5,6 +5,7 @@ import { LoginForm, ParcelAccordion, UserNavigation } from '@/components/molecul
 import { OrdersPagination } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listOrders } from '@/lib/data/orders';
+import type { MercurOrderWithOrderSet } from '@/types/medusa-extensions';
 
 const LIMIT = 10;
 
@@ -28,19 +29,19 @@ export default async function UserPage({
 
   const orderSetsGrouped = orders.reduce(
     (acc, order) => {
-      const orderSetId = (order as any).order_set.id;
+      const orderSetId = order.order_set.id;
       if (!acc[orderSetId]) {
         acc[orderSetId] = [];
       }
       acc[orderSetId].push(order);
       return acc;
     },
-    {} as Record<string, typeof orders>
+    {} as Record<string, MercurOrderWithOrderSet[]>
   );
 
   const orderSets = Object.entries(orderSetsGrouped).map(([orderSetId, orders]) => {
     const firstOrder = orders[0];
-    const orderSet = (firstOrder as any).order_set;
+    const orderSet = firstOrder.order_set;
 
     return {
       id: orderSetId,

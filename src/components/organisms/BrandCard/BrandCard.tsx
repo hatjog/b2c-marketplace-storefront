@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import type { Brand } from '@/types/brands';
 
 interface BrandCardProps {
@@ -12,7 +13,7 @@ export function BrandCard({ brand }: BrandCardProps) {
     <LocalizedClientLink href={brand.href}>
       <div className="relative flex h-[320px] w-[320px] items-center justify-center rounded-sm border border-secondary bg-action transition-all duration-200 hover:rounded-full 2xl:h-[400px] 2xl:w-[400px]">
         <Image
-          src={decodeURIComponent(brand.logo)}
+          src={safeDecodeURIComponent(brand.logo)}
           alt={brand.name}
           fill
           className="object-contain brightness-0 invert"

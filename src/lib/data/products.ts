@@ -31,7 +31,8 @@ export const listProducts = async ({
   regionId,
   category_id,
   collection_id,
-  forceCache = false
+  forceCache = false,
+  includeSellerContext = false,
 }: {
   pageParam?: number;
   queryParams?: ProductQueryParams;
@@ -40,6 +41,7 @@ export const listProducts = async ({
   countryCode?: string;
   regionId?: string;
   forceCache?: boolean;
+  includeSellerContext?: boolean;
 }): Promise<{
   response: {
     products: ListedProduct[];
@@ -75,6 +77,28 @@ export const listProducts = async ({
     ...(await getAuthHeaders())
   };
 
+  const fields = [
+    '*variants.calculated_price',
+    '+variants.inventory_quantity',
+    '*seller',
+    '*variants',
+    ...(includeSellerContext
+      ? [
+          '*seller.products',
+          '*seller.reviews',
+          '*seller.reviews.customer',
+          '*seller.reviews.seller',
+          '*seller.products.variants',
+          '*seller.products.variants.calculated_price',
+        ]
+      : []),
+    '*attribute_values',
+    '*attribute_values.attribute',
+    '*tags',
+    '*images',
+    '+metadata',
+  ].join(',');
+
   const useCached = forceCache || (limit <= 8 && !category_id && !collection_id);
 
   return sdk.client
@@ -90,10 +114,7 @@ export const listProducts = async ({
         limit,
         offset,
         region_id: region?.id,
-        fields:
-          '*variants.calculated_price,+variants.inventory_quantity,*seller,*variants,*seller.products,' +
-          '*seller.reviews,*seller.reviews.customer,*seller.reviews.seller,*seller.products.variants,' +
-          '*seller.products.variants.calculated_price,*attribute_values,*attribute_values.attribute,*tags,*images,+metadata',
+        fields,
         ...queryParams
       },
       headers,

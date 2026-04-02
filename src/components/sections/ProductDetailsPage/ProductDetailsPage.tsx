@@ -18,7 +18,8 @@ export const ProductDetailsPage = async ({
   const prod = await listProducts({
     countryCode,
     queryParams: { handle: [handle], limit: 1 },
-    forceCache: true
+    forceCache: true,
+    includeSellerContext: true,
   }).then(({ response }) => response.products[0]);
 
   if (!prod) return NotFound();

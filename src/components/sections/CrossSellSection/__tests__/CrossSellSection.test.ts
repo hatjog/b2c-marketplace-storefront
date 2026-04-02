@@ -3,6 +3,30 @@ import { describe, expect, it } from 'vitest';
 
 import { filterCrossSellProducts, filterCrossSellSellerProducts } from '../filters';
 
+function makeCalculatedPrice(amount: number | null) {
+  if (amount == null) {
+    return {
+      calculated_amount_with_tax: null,
+      calculated_amount: null,
+      calculated_amount_without_tax: null,
+      original_amount: null,
+      original_amount_with_tax: null,
+      currency_code: 'pln',
+      calculated_price: null,
+    };
+  }
+
+  return {
+    calculated_amount_with_tax: amount,
+    calculated_amount: amount,
+    calculated_amount_without_tax: amount,
+    original_amount: amount + 1000,
+    original_amount_with_tax: amount + 1000,
+    currency_code: 'pln',
+    calculated_price: null,
+  };
+}
+
 function makeProduct(
   id: string,
   calculatedPrice: number | null = 10000,
@@ -13,8 +37,8 @@ function makeProduct(
     handle: `product-${id}`,
     status: 'published',
     variants: calculatedPrice !== null
-      ? [{ id: `v-${id}`, calculated_price: calculatedPrice } as any]
-      : [{ id: `v-${id}`, calculated_price: null } as any],
+      ? [{ id: `v-${id}`, calculated_price: makeCalculatedPrice(calculatedPrice) } as any]
+      : [{ id: `v-${id}`, calculated_price: makeCalculatedPrice(null) } as any],
   } as HttpTypes.StoreProduct;
 }
 
@@ -87,12 +111,23 @@ describe('filterCrossSellProducts', () => {
       title: 'Multi variant',
       status: 'published',
       variants: [
-        { id: 'v1', calculated_price: null } as any,
-        { id: 'v2', calculated_price: 5000 } as any,
+        { id: 'v1', calculated_price: makeCalculatedPrice(null) } as any,
+        { id: 'v2', calculated_price: makeCalculatedPrice(5000) } as any,
       ],
     } as unknown as HttpTypes.StoreProduct;
     const result = filterCrossSellProducts([product], CURRENT_ID);
     expect(result.map(p => p.id)).toContain('multi-variant');
+  });
+
+  it('excludes products without an id', () => {
+    const product = {
+      id: undefined,
+      title: 'Missing id',
+      status: 'published',
+      variants: [{ id: 'v1', calculated_price: makeCalculatedPrice(5000) } as any],
+    } as unknown as HttpTypes.StoreProduct;
+    const result = filterCrossSellProducts([product], CURRENT_ID);
+    expect(result).toHaveLength(0);
   });
 });
 
@@ -105,7 +140,7 @@ describe('filterCrossSellSellerProducts', () => {
       id: 'seller-prod',
       title: 'Seller product',
       status: 'published',
-      variants: [{ id: 'v1', calculated_price: null } as any],
+      variants: [{ id: 'v1', calculated_price: makeCalculatedPrice(null) } as any],
     } as unknown as HttpTypes.StoreProduct;
     const result = filterCrossSellSellerProducts([product], CURRENT_ID);
     expect(result.map(p => p.id)).not.toContain('seller-prod');
@@ -154,12 +189,23 @@ describe('filterCrossSellSellerProducts', () => {
       title: 'Multi variant seller',
       status: 'published',
       variants: [
-        { id: 'v1', calculated_price: null } as any,
-        { id: 'v2', calculated_price: 5000 } as any,
+        { id: 'v1', calculated_price: makeCalculatedPrice(null) } as any,
+        { id: 'v2', calculated_price: makeCalculatedPrice(5000) } as any,
       ],
     } as unknown as HttpTypes.StoreProduct;
     const result = filterCrossSellSellerProducts([product], CURRENT_ID);
     expect(result.map(p => p.id)).toContain('multi-variant-seller');
+  });
+
+  it('excludes seller products without an id', () => {
+    const product = {
+      id: undefined,
+      title: 'Missing id seller',
+      status: 'published',
+      variants: [{ id: 'v1', calculated_price: makeCalculatedPrice(5000) } as any],
+    } as unknown as HttpTypes.StoreProduct;
+    const result = filterCrossSellSellerProducts([product], CURRENT_ID);
+    expect(result).toHaveLength(0);
   });
 });
 

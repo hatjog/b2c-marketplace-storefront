@@ -5,6 +5,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
 
 import { ProductCarouselIndicator } from '@/components/molecules';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { useScreenSize } from '@/hooks/useScreenSize';
 
 export const ProductCarousel = ({ slides = [] }: { slides: HttpTypes.StoreProduct['images'] }) => {
@@ -39,7 +40,7 @@ export const ProductCarousel = ({ slides = [] }: { slides: HttpTypes.StoreProduc
               <Image
                 priority={idx === 0}
                 fetchPriority={idx === 0 ? 'high' : 'auto'}
-                src={decodeURIComponent(slide.url)}
+                src={safeDecodeURIComponent(slide.url)}
                 alt={(slide as { metadata?: { alt?: string } }).metadata?.alt ?? 'Product image'}
                 width={700}
                 height={700}

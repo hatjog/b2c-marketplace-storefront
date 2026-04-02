@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowRightIcon } from '@/icons';
 
 import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
-import { safeDecodeURI } from '@/lib/helpers/url';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 
 import tailwindConfig from '../../../../tailwind.config';
 
@@ -20,7 +20,7 @@ export const Hero = ({ image, heading, paragraph, buttons, showSearch = false }:
   return (
     <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
       <Image
-        src={safeDecodeURI(image)}
+        src={safeDecodeURIComponent(image)}
         width={700}
         height={600}
         alt={`Hero banner - ${heading}`}

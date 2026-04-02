@@ -1,7 +1,1 @@
-export function safeDecodeURI(uri: string): string {
-  try {
-    return decodeURIComponent(uri);
-  } catch {
-    return uri;
-  }
-}
+export { safeDecodeURIComponent as safeDecodeURI } from './decode-uri';

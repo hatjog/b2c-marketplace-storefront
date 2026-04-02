@@ -2,7 +2,7 @@
 
 import type { HttpTypes } from '@medusajs/types';
 
-import type { SellerProps } from '@/types/seller';
+import type { MercurOrder, MercurOrderWithOrderSet, OrderSet } from '@/types/medusa-extensions';
 
 import { sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
@@ -17,7 +17,7 @@ export const retrieveOrderSet = async (id: string) => {
   };
 
   return sdk.client
-    .fetch<any>(`/store/order-set/${id}`, {
+    .fetch<{ order_set: OrderSet }>(`/store/order-set/${id}`, {
       method: 'GET',
       headers,
       cache: 'no-cache'
@@ -36,7 +36,7 @@ export const retrieveOrder = async (id: string) => {
   };
 
   return sdk.client
-    .fetch<HttpTypes.StoreOrderResponse & { seller: SellerProps }>(`/store/orders/${id}`, {
+    .fetch<{ order: MercurOrder }>(`/store/orders/${id}`, {
       method: 'GET',
       query: {
         fields:
@@ -112,15 +112,11 @@ export const listOrders = async (
     ...(await getCacheOptions('orders'))
   };
 
+  const hasOrderSet = (order: MercurOrder): order is MercurOrderWithOrderSet => Boolean(order.order_set?.id);
+
   return sdk.client
     .fetch<{
-      orders: Array<
-        HttpTypes.StoreOrder & {
-          seller: { id: string; name: string; reviews?: any[] };
-          reviews: any[];
-          order_set: { id: string };
-        }
-      >;
+      orders: MercurOrder[];
     }>(`/store/orders`, {
       method: 'GET',
       query: {
@@ -135,7 +131,7 @@ export const listOrders = async (
       next,
       cache: 'no-cache'
     })
-    .then(({ orders }) => orders.filter(order => order.order_set))
+    .then(({ orders }) => orders.filter(hasOrderSet))
     .catch(err => medusaError(err));
 };
 

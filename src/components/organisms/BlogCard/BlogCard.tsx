@@ -2,6 +2,7 @@ import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowRightIcon } from '@/icons';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { cn } from '@/lib/utils';
 import type { BlogPost } from '@/types/blog';
 
@@ -26,7 +27,7 @@ export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
         <Image
           loading="lazy"
           sizes="(min-width: 1024px) 33vw, 100vw"
-          src={decodeURIComponent(post.image)}
+          src={safeDecodeURIComponent(post.image)}
           alt={post.title}
           width={467}
           height={472}
