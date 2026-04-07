@@ -13,9 +13,9 @@ export function VoucherValidityInfo({ validityPeriod, defaultInfo }: VoucherVali
   }
 
   return (
-    <div className="flex items-center gap-2 rounded bg-primary px-3 py-2 text-primary-contrast">
+    <div className="bb-card-muted flex h-full items-center gap-3">
       <CalendarIcon size={16} />
-      <span>{text}</span>
+      <span className="label-md text-primary">{text}</span>
     </div>
   );
 }

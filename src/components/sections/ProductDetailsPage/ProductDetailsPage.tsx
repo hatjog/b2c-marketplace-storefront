@@ -36,19 +36,19 @@ export const ProductDetailsPage = async ({
   const hasPrice = prod.variants?.some(v => v.calculated_price);
 
   return (
-    <div className={hasPrice ? 'pb-14 lg:pb-0' : ''}>
+    <div className={hasPrice ? 'pb-20 lg:pb-0' : ''}>
       <div
-        className="flex flex-col md:flex-row lg:gap-12"
+        className="grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(380px,0.92fr)] lg:items-start"
         data-testid="product-details-page"
       >
         <div
-          className="md:w-1/2 md:px-2"
+          className="bb-section-shell !p-3 md:!p-4"
           data-testid="product-gallery-container"
         >
           <ProductGallery images={prod?.images || []} />
         </div>
         <div
-          className="md:w-1/2 md:px-2"
+          className="space-y-4"
           data-testid="product-details-container"
         >
           <ProductDetails

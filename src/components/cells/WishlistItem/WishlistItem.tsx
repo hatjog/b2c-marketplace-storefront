@@ -1,8 +1,8 @@
 import type { HttpTypes } from '@medusajs/types';
 import clsx from 'clsx';
 import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 
-import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
@@ -11,7 +11,7 @@ import type { Wishlist } from '@/types/wishlist';
 
 import { WishlistButton } from '../WishlistButton/WishlistButton';
 
-export const WishlistItem = ({
+export const WishlistItem = async ({
   product,
   wishlist,
   user,
@@ -25,6 +25,7 @@ export const WishlistItem = ({
   user?: HttpTypes.StoreCustomer | null;
   testIdPrefix?: string;
 }) => {
+  const t = await getTranslations('products');
   const { cheapestPrice } = getProductPrice({ product });
   const price = convertToLocale({
     amount: cheapestPrice?.calculated_price_number,
@@ -34,11 +35,11 @@ export const WishlistItem = ({
   return (
     <div
       className={clsx(
-        'group relative flex w-[250px] flex-col justify-between rounded-sm border p-1 lg:w-[370px]'
+        'group relative flex w-full max-w-[370px] flex-col justify-between overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)]'
       )}
       data-testid={testIdPrefix}
     >
-      <div className="relative aspect-square h-full w-full bg-primary">
+      <div className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[22px] bg-primary">
         <div className="absolute right-3 top-3 z-10 cursor-pointer">
           <WishlistButton
             productId={product.id}
@@ -47,14 +48,14 @@ export const WishlistItem = ({
           />
         </div>
         <LocalizedClientLink href={`/products/${product.handle}`}>
-          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-sm">
+          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[22px]">
             {product.thumbnail ? (
               <Image
                 src={safeDecodeURIComponent(product.thumbnail)}
                 alt={product.title}
                 width={360}
                 height={360}
-                className="aspect-square h-full w-full rounded-xs object-cover object-center transition-all duration-300 lg:group-hover:-mt-14"
+                className="aspect-[4/5] h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                 priority
                 data-testid={testIdPrefix ? `${testIdPrefix}-thumbnail` : undefined}
               />
@@ -71,25 +72,25 @@ export const WishlistItem = ({
           </div>
         </LocalizedClientLink>
         <LocalizedClientLink href={`/products/${product.handle}`}>
-          <Button
-            className="absolute bottom-1 z-10 hidden h-auto w-full rounded-sm bg-action uppercase text-action-on-primary lg:h-[48px] lg:group-hover:block"
+          <span
+            className="bb-primary-cta absolute bottom-3 left-3 right-3 z-10 hidden justify-center rounded-full px-4 py-2 text-[12px] lg:inline-flex lg:opacity-0 lg:transition-opacity lg:duration-300 lg:group-hover:opacity-100"
             data-testid={testIdPrefix ? `${testIdPrefix}-see-more-button` : undefined}
           >
-            See More
-          </Button>
+            {t('see_more')}
+          </span>
         </LocalizedClientLink>
       </div>
       <LocalizedClientLink href={`/products/${product.handle}`}>
         <div className="flex justify-between p-4">
           <div className="w-full">
             <h3
-              className="heading-sm truncate"
+              className="heading-sm line-clamp-2"
               data-testid={testIdPrefix ? `${testIdPrefix}-title` : undefined}
             >
               {product.title}
             </h3>
             <div
-              className="mt-2 flex items-center gap-2"
+              className="mt-2 flex items-center gap-2 text-lg font-medium"
               data-testid={testIdPrefix ? `${testIdPrefix}-price` : undefined}
             >
               {price}

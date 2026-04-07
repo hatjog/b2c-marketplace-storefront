@@ -27,7 +27,7 @@ export async function ProductsCarouselBlock({
   }
 
   return (
-    <div className="w-full px-4 lg:px-8">
+    <div className="w-full">
       <HomeProductSection
         heading={section.heading ?? 'trending listings'}
         locale={locale}

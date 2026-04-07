@@ -1,4 +1,5 @@
-import { Carousel } from '@/components/cells';
+import { getTranslations } from 'next-intl/server';
+
 import { CategoryCard } from '@/components/organisms';
 
 type HomeCategory = { name: string; handle: string; id?: number; metadata?: { photo_url?: string } };
@@ -38,24 +39,26 @@ export const HomeCategories = async ({
   heading: string;
   categories?: HomeCategory[];
 }) => {
+  const t = await getTranslations('homepage');
   const categoriesToRender = sectionCategories?.length ? sectionCategories : categories;
 
   return (
     <section
-      className="w-full bg-primary py-8"
+      className="bb-section-shell bb-section-shell-strong"
       data-testid="categories-grid"
     >
-      <div className="mb-6">
-        <h2 className="heading-lg uppercase text-primary">{heading}</h2>
+      <div className="mb-8 space-y-2">
+        <p className="bb-eyebrow">{t('categories_eyebrow')}</p>
+        <h2 className="heading-lg text-primary">{heading}</h2>
       </div>
-      <Carousel
-        items={categoriesToRender.map((category, index) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {categoriesToRender.map((category, index) => (
           <CategoryCard
             key={`${category.id ?? category.handle}-${index}`}
             category={category}
           />
         ))}
-      />
+      </div>
     </section>
   );
 };

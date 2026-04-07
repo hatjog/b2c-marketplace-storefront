@@ -1,6 +1,7 @@
 import type { HttpTypes } from '@medusajs/types';
 import { isEmpty } from 'lodash';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/components/atoms';
 import { WishlistItem } from '@/components/cells';
@@ -12,6 +13,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import type { Wishlist as WishlistType } from '@/types/wishlist';
 
 export default async function Wishlist({ params }: { params: Promise<{ locale: string }> }) {
+  const t = await getTranslations('wishlist');
   const user = await retrieveCustomer();
   const { locale } = await params;
 
@@ -30,10 +32,10 @@ export default async function Wishlist({ params }: { params: Promise<{ locale: s
   return (
     <main
       id="main-content"
-      className="container"
+      className="bb-page-shell"
       data-testid="wishlist-page"
     >
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div
           className="space-y-8 md:col-span-3"
@@ -41,43 +43,43 @@ export default async function Wishlist({ params }: { params: Promise<{ locale: s
         >
           {isEmpty(wishlist?.products) ? (
             <div
-              className="mx-auto flex w-96 flex-col items-center justify-center"
+              className="bb-section-shell bb-section-shell-strong mx-auto flex max-w-xl flex-col items-center justify-center text-center"
               data-testid="wishlist-empty-state"
             >
               <h2
-                className="heading-lg mb-2 uppercase text-primary"
+                className="heading-lg mb-2 text-primary"
                 data-testid="wishlist-empty-heading"
               >
-                Wishlist
+                {t('title')}
               </h2>
               <p
                 className="mb-6 text-lg text-secondary"
                 data-testid="wishlist-empty-description"
               >
-                Your wishlist is currently empty.
+                {t('empty_description')}
               </p>
               <LocalizedClientLink
                 href="/categories"
                 className="w-full"
               >
                 <Button
-                  className="w-full"
+                  className="w-full rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
                   data-testid="wishlist-explore-button"
                 >
-                  Explore
+                  {t('explore')}
                 </Button>
               </LocalizedClientLink>
             </div>
           ) : (
-            <div className="flex flex-col gap-6">
+            <div className="bb-section-shell flex flex-col gap-6">
               <h2
-                className="heading-lg uppercase text-primary"
+                className="heading-lg text-primary"
                 data-testid="wishlist-heading"
               >
-                Wishlist
+                {t('title')}
               </h2>
               <div className="flex items-center justify-between">
-                <p data-testid="wishlist-count">{count} listings</p>
+                <p data-testid="wishlist-count">{t('count', { count })}</p>
               </div>
               <div
                 className="flex flex-wrap gap-4 max-md:justify-center"

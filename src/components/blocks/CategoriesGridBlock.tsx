@@ -12,7 +12,7 @@ export async function CategoriesGridBlock({ section }: { section: CategoriesGrid
   });
 
   return (
-    <div className="w-full px-4 lg:px-8">
+    <div className="w-full">
       <HomeCategories
         heading={section.heading ?? 'SHOP BY CATEGORY'}
         categories={categories}

@@ -1,3 +1,5 @@
+import { getTranslations } from 'next-intl/server';
+
 import { BlogCard } from '@/components/organisms';
 import type { BlogPost } from '@/types/blog';
 
@@ -31,7 +33,7 @@ export const blogPosts: BlogPost[] = [
   }
 ];
 
-export function BlogSection({
+export async function BlogSection({
   posts,
   heading,
   readMoreLabel,
@@ -40,14 +42,16 @@ export function BlogSection({
   heading?: string;
   readMoreLabel?: string;
 } = {}) {
+  const t = await getTranslations('homepage');
   const postsToRender = posts?.length ? posts : blogPosts;
 
   return (
-    <section className="container bg-tertiary">
-      <div className="mb-12 flex items-center justify-between">
-        <h2 className="heading-lg text-tertiary">{heading ?? 'Stay up to date'}</h2>
+    <section className="bb-section-shell w-full bg-transparent">
+      <div className="mb-8 space-y-2">
+        <p className="bb-eyebrow">{t('blog_eyebrow')}</p>
+        <h2 className="heading-lg text-primary">{heading ?? 'Stay up to date'}</h2>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {postsToRender.map((post, index) => (
           <BlogCard
             key={post.id}

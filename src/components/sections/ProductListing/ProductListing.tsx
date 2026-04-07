@@ -215,15 +215,14 @@ export const ProductListing = async ({
   const paginatedProducts = response.products;
 
   return (
-    <div
-      className="py-4"
-      data-testid="product-listing-container"
-    >
-      <ProductListingHeader total={totalFiltered} />
-      <div className="hidden md:block">
-        <ProductListingActiveFilters />
+    <div className="space-y-6 py-2" data-testid="product-listing-container">
+      <div className="bb-section-shell bb-section-shell-strong space-y-4">
+        <ProductListingHeader total={totalFiltered} />
+        <div className="hidden md:block">
+          <ProductListingActiveFilters />
+        </div>
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
+      <div className={`grid grid-cols-1 gap-6 ${showSidebar ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
         {showSidebar && (
           <ProductSidebar
             filters={storefrontFilters}
@@ -233,23 +232,27 @@ export const ProductListing = async ({
           />
         )}
         <section
-          className={showSidebar ? 'lg:col-span-3' : 'col-span-full'}
+          className={showSidebar ? 'space-y-6' : 'col-span-full space-y-6'}
           data-testid="product-listing-section"
         >
           {paginatedProducts.length === 0 ? (
-            <div className="flex flex-col items-center gap-4 py-12" data-testid="empty-state">
+            <div className="bb-section-shell flex flex-col items-center gap-4 py-12" data-testid="empty-state">
               <p>{t('no_results')}</p>
               <ClearFiltersButton />
             </div>
           ) : (
             <div
-              className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${showSidebar ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}
+              className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${showSidebar ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}
               data-testid="product-list"
             >
               <ProductsList products={paginatedProducts} />
             </div>
           )}
-          {pages > 1 && <ProductsPagination pages={pages} />}
+          {pages > 1 && (
+            <div className="bb-section-shell">
+              <ProductsPagination pages={pages} />
+            </div>
+          )}
         </section>
       </div>
     </div>

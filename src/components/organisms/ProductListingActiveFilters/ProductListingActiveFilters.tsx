@@ -13,8 +13,12 @@ export const ProductListingActiveFilters = () => {
       element[0] !== 'products[page]'
   );
 
+  if (filters.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="no-scrollbar flex gap-4 overflow-x-scroll">
+    <div className="no-scrollbar flex flex-wrap gap-2 overflow-x-auto">
       {filters.map(filter => (
         <ActiveFilterElement
           key={filter[0]}

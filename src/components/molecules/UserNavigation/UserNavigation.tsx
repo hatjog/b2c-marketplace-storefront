@@ -21,13 +21,13 @@ export const UserNavigation = () => {
   const path = usePathname();
 
   return (
-    <Card className="h-min">
+    <Card className="bb-section-shell h-min !p-2">
       {navigationItems.map(item => (
         <NavigationItem
           key={item.key}
           href={item.href}
           active={path === item.href}
-          className="relative"
+          className="relative rounded-full"
         >
           {t(item.key)}
           {item.key === 'messages' && Boolean(unreads?.length) && (
@@ -35,10 +35,11 @@ export const UserNavigation = () => {
           )}
         </NavigationItem>
       ))}
-      <Divider className="my-2" />
+      <Divider className="my-2 border-[rgba(144,112,50,0.14)]" />
       <NavigationItem
         href={'/user/settings'}
         active={path === '/user/settings'}
+        className="rounded-full"
       >
         {t('settings')}
       </NavigationItem>

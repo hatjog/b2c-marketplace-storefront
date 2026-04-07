@@ -17,13 +17,12 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
 
   if (variant === 'compact') {
     return (
-      <div role="region" aria-label="Gwarancje BonBeauty" className="inline-flex flex-wrap gap-x-3">
+      <div role="region" aria-label="Gwarancje BonBeauty" className="inline-flex flex-wrap gap-2">
         {capped.map((signal, i) => (
-          <span key={`signal-${i}`}>
+          <span key={`signal-${i}`} className="inline-flex items-center gap-1 rounded-full bg-[rgba(239,229,210,0.72)] px-3 py-1 text-[13px] text-primary">
             <span>✓</span>{' '}
             {/* TODO: replace with SanitizedHTML after Story 0.4 */}
             <span>{signal}</span>
-            {i < capped.length - 1 ? ' ' : ''}
           </span>
         ))}
       </div>
@@ -34,18 +33,20 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
     <div
       role="region"
       aria-label="Gwarancje BonBeauty"
-      className="rounded bg-[var(--color-trust)] px-4 py-3 text-white"
+      className="bb-section-shell h-full space-y-3 border-[rgba(22,101,52,0.14)] bg-[rgba(22,101,52,0.08)]"
     >
       {capped.map((signal, i) => (
-        <div key={`signal-${i}`} className="flex items-center gap-1">
-          <span>✓</span>
+        <div key={`signal-${i}`} className="flex items-start gap-2 text-primary">
+          <span className="mt-0.5 text-[var(--color-trust)]">✓</span>
           {/* TODO: replace with SanitizedHTML after Story 0.4 */}
           <span>{signal}</span>
         </div>
       ))}
       {detailsUrl && (
         <div className="mt-2 text-right">
-          <Link href={detailsUrl}>Szczegóły →</Link>
+          <Link href={detailsUrl} className="label-md text-[var(--cta)] underline underline-offset-4">
+            Szczegóły →
+          </Link>
         </div>
       )}
     </div>

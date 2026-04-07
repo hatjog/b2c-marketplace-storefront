@@ -18,33 +18,36 @@ type ShopByStyleSectionProps = {
 
 export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) {
   return (
-    <section className="container bg-primary">
-      <h2 className="heading-lg mb-12 text-primary">{heading}</h2>
+    <section className="bb-section-shell bb-section-shell-dark w-full overflow-hidden">
+      <div className="mb-8">
+        <h2 className="heading-lg text-white">{heading}</h2>
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map(item => (
           <div
             key={`${item.href}-${item.label}`}
-            className="h-full rounded-sm border"
+            className="h-full overflow-hidden rounded-[24px] border border-white/12 bg-white/6"
           >
             <LocalizedClientLink
               href={item.href}
-              className="group flex h-full flex-col gap-4 p-6 text-primary transition-colors hover:text-action"
+              className="group flex h-full flex-col gap-4 p-4 text-white transition-colors md:p-5"
             >
               {item.imageUrl && (
-                <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-action-secondary">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-white/8">
                   <Image
                     loading="lazy"
                     src={safeDecodeURIComponent(item.imageUrl)}
                     alt={item.label}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
                 </div>
               )}
-              <div className="mt-auto flex items-center justify-between gap-4 border-b border-transparent pb-2 group-hover:border-primary">
-                <span className="heading-lg">{item.label}</span>
-                <ArrowRightIcon className="-translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+              <div className="mt-auto flex items-center justify-between gap-4 rounded-[20px] border border-white/10 bg-white/8 p-4 backdrop-blur">
+                <span className="heading-md text-white">{item.label}</span>
+                <ArrowRightIcon className="translate-x-0 opacity-80 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
               </div>
             </LocalizedClientLink>
           </div>

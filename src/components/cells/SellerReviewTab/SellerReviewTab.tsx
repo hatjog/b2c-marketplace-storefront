@@ -19,15 +19,15 @@ export const SellerReviewTab = async ({ seller_handle }: { seller_handle: string
       : 0;
 
   return (
-    <div className="mt-8 grid grid-cols-1 lg:grid-cols-4">
-      <div className="rounded-sm border p-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="bb-section-shell bb-section-shell-strong">
         <SellerScore
           rate={rating}
           reviewCount={reviewCount}
         />
       </div>
-      <div className="col-span-3 rounded-sm border p-4">
-        <h3 className="heading-sm border-b pb-4 uppercase">{t('seller_reviews')}</h3>
+      <div className="bb-section-shell">
+        <h3 className="heading-sm border-b border-[rgba(144,112,50,0.14)] pb-4 uppercase">{t('seller_reviews')}</h3>
         <SellerReviewList reviews={seller.reviews} />
       </div>
     </div>

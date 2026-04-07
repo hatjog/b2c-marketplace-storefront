@@ -4,7 +4,6 @@ import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
@@ -51,28 +50,45 @@ export const ProductCard = ({
   const thumbnailSrc = resolveThumbnailSrc(product.thumbnail);
   const seller = (product as HttpTypes.StoreProduct & { seller?: { name: string; handle: string } }).seller;
   const usesPlaceholderImage = thumbnailSrc === PLACEHOLDER_IMAGE_SRC;
+  const sellerReviews = Array.isArray((seller as { reviews?: Array<{ rating?: number | null } | null> } | undefined)?.reviews)
+    ? (seller as { reviews?: Array<{ rating?: number | null } | null> }).reviews?.filter(Boolean) ?? []
+    : [];
+  const reviewCount = sellerReviews.length;
+  const rating = reviewCount
+    ? sellerReviews.reduce((sum, review) => sum + Number(review?.rating ?? 0), 0) / reviewCount
+    : null;
+  const sellerLocation =
+    (seller as { city?: string | null; address_line?: string | null } | undefined)?.city?.trim() ||
+    (seller as { city?: string | null; address_line?: string | null } | undefined)?.address_line?.trim() ||
+    null;
 
   return (
     <div
       className={cn(
-        'group relative flex w-full flex-col justify-between rounded-sm border p-1',
+        'group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
         className
       )}
       data-testid="product-item"
       data-product-handle={product.handle}
     >
       <div
-        className="relative aspect-square h-full w-full bg-primary"
+        className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[22px] bg-primary"
         data-testid="product-card-image-container"
       >
+        {seller?.name && (
+          <div className="absolute left-3 top-3 z-10 max-w-[calc(100%-24px)]">
+            <span className="bb-pill max-w-full truncate">{seller.name}</span>
+          </div>
+        )}
         <LocalizedClientLink
           href={`/products/${product.handle}`}
           aria-label={t('view_aria', { name: productName })}
           title={t('view_aria', { name: productName })}
           data-testid="product-card-link"
           data-product-handle={product.handle}
+          className="block h-full"
         >
-          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-sm">
+          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[22px]">
             {!usesPlaceholderImage ? (
               <Image
                 priority
@@ -82,7 +98,7 @@ export const ProductCard = ({
                 width={100}
                 height={100}
                 sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                className="aspect-square h-full w-full rounded-xs object-cover object-center transition-all duration-300 lg:group-hover:-mt-14"
+                className="aspect-[4/5] h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                 data-testid="product-card-image"
               />
             ) : (
@@ -94,80 +110,73 @@ export const ProductCard = ({
                 width={100}
                 height={100}
                 sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                className="h-full w-full object-contain p-10"
                 data-testid="product-card-placeholder-image"
               />
             )}
           </div>
         </LocalizedClientLink>
+      </div>
+      <div className="flex flex-1 flex-col gap-4 p-4" data-testid="product-card-info">
         <LocalizedClientLink
           href={`/products/${product.handle}`}
-          aria-label={t('view_aria', { name: productName })}
-          title={t('view_aria', { name: productName })}
+          aria-label={t('go_to_product_aria', { name: productName })}
+          title={t('go_to_product_aria', { name: productName })}
+          className="space-y-3"
         >
-          <Button
-            className="absolute bottom-1 z-10 hidden h-auto w-full rounded-sm bg-action uppercase text-action-on-primary lg:h-[48px] lg:group-hover:block"
-            data-testid="product-card-see-more-button"
-          >
-            {t('see_more')}
-          </Button>
-        </LocalizedClientLink>
-      </div>
-      <LocalizedClientLink
-        href={`/products/${product.handle}`}
-        aria-label={t('go_to_product_aria', { name: productName })}
-        title={t('go_to_product_aria', { name: productName })}
-      >
-        <div
-          className="flex justify-between p-4"
-          data-testid="product-card-info"
-        >
-          <div className="w-full">
-            <h3
-              className="heading-sm truncate"
-              data-testid="product-card-title"
-            >
+          <div className="space-y-2">
+            <h3 className="heading-sm line-clamp-2" data-testid="product-card-title">
               {product.title}
             </h3>
-            <div
-              className="mt-2 flex items-center gap-2"
-              data-testid="product-card-price"
-            >
-              <p
-                className="font-medium"
-                data-testid="product-card-current-price"
-              >
-                {cheapestPrice?.calculated_price}
-              </p>
-              {cheapestPrice?.calculated_price !== cheapestPrice?.original_price && (
-                <p
-                  className="text-sm text-gray-500 line-through"
-                  data-testid="product-card-original-price"
-                >
-                  {cheapestPrice?.original_price}
-                </p>
+            <div className="flex flex-wrap gap-2 text-[13px] text-secondary">
+              {rating != null && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(239,229,210,0.72)] px-2.5 py-1">
+                  <span className="text-[var(--gold)]">★</span>
+                  <span>{rating.toFixed(1)}</span>
+                  <span>·</span>
+                  <span>{t('reviews_count', { count: reviewCount })}</span>
+                </span>
+              )}
+              {sellerLocation && (
+                <span className="inline-flex items-center rounded-full bg-[rgba(239,229,210,0.42)] px-2.5 py-1">
+                  {sellerLocation}
+                </span>
               )}
             </div>
           </div>
-        </div>
-      </LocalizedClientLink>
-      {seller && (
-        <div
-          className="px-4 pb-3"
-          data-testid="product-card-vendor"
-        >
-          <LocalizedClientLink
-            href={`/salony/${seller.handle}`}
-            aria-label={t('seller_aria', { name: seller.name })}
-          >
-            <span
-              className="label-sm text-secondary"
-              data-testid="product-card-vendor-name"
+          <div className="flex items-center gap-2" data-testid="product-card-price">
+            <p className="text-lg font-medium text-primary" data-testid="product-card-current-price">
+              {cheapestPrice?.calculated_price}
+            </p>
+            {cheapestPrice?.calculated_price !== cheapestPrice?.original_price && (
+              <p className="text-sm text-gray-500 line-through" data-testid="product-card-original-price">
+                {cheapestPrice?.original_price}
+              </p>
+            )}
+          </div>
+        </LocalizedClientLink>
+        <div className="mt-auto flex items-center justify-between gap-3">
+          {seller && (
+            <LocalizedClientLink
+              href={`/salony/${seller.handle}`}
+              aria-label={t('seller_aria', { name: seller.name })}
+              className="label-sm text-secondary transition-opacity hover:opacity-70"
+              data-testid="product-card-vendor"
             >
               {seller.name}
-            </span>
+            </LocalizedClientLink>
+          )}
+          <LocalizedClientLink
+            href={`/products/${product.handle}`}
+            aria-label={t('view_aria', { name: productName })}
+            title={t('view_aria', { name: productName })}
+            className="bb-primary-cta ml-auto min-h-[44px] rounded-full px-4 py-2 text-[12px]"
+            data-testid="product-card-see-more-button"
+          >
+            {t('see_more')}
           </LocalizedClientLink>
         </div>
-      )}
+      </div>
     </div>
   );
 };

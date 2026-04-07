@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Script from 'next/script';
+import { getTranslations } from 'next-intl/server';
 
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
@@ -15,6 +16,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations('homepage');
 
   const headersList = await headers();
   const host = headersList.get('host');
@@ -27,9 +29,9 @@ export async function generateMetadata({
     return acc;
   }, {});
 
-  const title = 'Home';
-  const description =
-    'Welcome to Mercur B2C Demo! Create a modern marketplace that you own and customize in every aspect with high-performance, fully customizable storefront.';
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
+  const title = t('meta_title');
+  const description = t('meta_description');
   const ogImage = '/B2C_Storefront_Open_Graph.png';
   const canonical = `${baseUrl}/${locale}`;
 
@@ -55,19 +57,17 @@ export async function generateMetadata({
       }
     },
     openGraph: {
-      title: `${title} | ${
-        process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
-      }`,
+      title,
       description,
       url: canonical,
-      siteName: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront',
+      siteName,
       type: 'website',
       images: [
         {
           url: ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`,
           width: 1200,
           height: 630,
-          alt: process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront'
+          alt: siteName
         }
       ]
     },
@@ -94,10 +94,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Mercur B2C Demo - Marketplace Storefront';
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
 
   return (
-    <main id="main-content" className="row-start-2 flex flex-col items-center gap-8 text-primary sm:items-start">
+    <main id="main-content" className="bb-page-shell row-start-2 text-primary">
       {/* Organization JSON-LD */}
       <Script
         id="ld-org"

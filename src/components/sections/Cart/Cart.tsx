@@ -22,7 +22,7 @@ export const Cart = () => {
       </div>
       <div className="lg:col-span-2"></div>
       <div className="col-span-12 lg:col-span-4">
-        <div className="h-fit rounded-sm border p-4">
+        <div className="bb-section-shell bb-section-shell-strong h-fit">
           <CartSummary
             item_total={cart?.item_subtotal || 0}
             shipping_total={cart?.shipping_subtotal || 0}
@@ -32,7 +32,7 @@ export const Cart = () => {
             discount_total={cart?.discount_subtotal || 0}
           />
           <LocalizedClientLink href="/checkout?step=address">
-            <Button className="flex w-full items-center justify-center py-3">{t('go_to_checkout')}</Button>
+            <Button className="mt-4 flex w-full items-center justify-center rounded-full bg-[var(--cta)] py-3 text-white hover:bg-[var(--cta-hover)]">{t('go_to_checkout')}</Button>
           </LocalizedClientLink>
         </div>
       </div>

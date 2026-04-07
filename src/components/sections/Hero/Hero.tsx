@@ -18,45 +18,52 @@ type HeroProps = {
 
 export const Hero = ({ image, heading, paragraph, buttons, showSearch = false }: HeroProps) => {
   return (
-    <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
-      <Image
-        src={safeDecodeURIComponent(image)}
-        width={700}
-        height={600}
-        alt={`Hero banner - ${heading}`}
-        className="order-2 w-full lg:order-1"
-        priority
-        fetchPriority="high"
-        quality={50}
-        sizes="(min-width: 1024px) 50vw, 100vw"
-      />
-      <div className="w-full lg:order-2">
-        <div className="flex h-[calc(100%-144px)] w-full items-end rounded-sm border px-6">
-          <div>
-            <h2 className="display-md mb-6 max-w-[652px] text-4xl font-bold uppercase leading-tight md:text-5xl">
-              {heading}
-            </h2>
-            <p className="mb-8 text-lg">{paragraph}</p>
-            {showSearch && (
-              <NavbarSearch className="mt-6 w-full max-w-[600px] mx-auto px-4 md:px-0" />
-            )}
-          </div>
+    <section
+      className="relative w-full overflow-hidden rounded-[36px] border border-white/12 shadow-[0_30px_80px_rgba(37,28,12,0.18)]"
+      data-testid="homepage-hero"
+    >
+      <div className="absolute inset-0">
+        <Image
+          src={safeDecodeURIComponent(image)}
+          width={1600}
+          height={960}
+          alt={`Hero banner - ${heading}`}
+          className="h-full w-full object-cover"
+          priority
+          fetchPriority="high"
+          quality={60}
+          sizes="100vw"
+        />
+        <div className="absolute inset-0" style={{ background: 'var(--bb-hero-overlay)' }} />
+      </div>
+      <div className="relative z-10 flex min-h-[560px] flex-col justify-center gap-8 p-6 md:min-h-[620px] md:p-10 lg:max-w-[760px] lg:p-14">
+        <div className="space-y-5">
+          <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.28em] text-white/88 backdrop-blur">
+            BonBeauty
+          </span>
+          <h2 className="display-sm max-w-[12ch] text-white md:text-[64px] md:leading-[72px]">
+            {heading}
+          </h2>
+          <p className="max-w-[58ch] text-base leading-7 text-white/88 md:text-lg md:leading-8">
+            {paragraph}
+          </p>
         </div>
+        {showSearch && (
+          <div className="max-w-[620px] rounded-[24px] border border-white/18 bg-white/92 p-3 shadow-[0_24px_70px_rgba(12,12,12,0.16)] backdrop-blur md:p-4">
+            <NavbarSearch className="w-full" />
+          </div>
+        )}
         {buttons.length > 0 && (
-          <div className="flex h-[72px] font-bold uppercase lg:h-[144px]">
+          <div className="flex flex-col gap-3 sm:flex-row">
             {buttons.map(({ label, path }) => (
               <Link
                 key={path}
                 href={path}
-                className="bg-content group flex h-full w-1/2 items-end justify-between rounded-sm border p-6 transition-all duration-300 hover:bg-action hover:text-tertiary"
+                className="inline-flex min-h-[48px] items-center justify-between gap-3 rounded-full border border-white/18 px-5 py-3 text-sm font-medium uppercase tracking-[0.24em] text-white transition-colors duration-300 hover:bg-white hover:text-primary"
                 aria-label={label}
                 title={label}
               >
-                <span>
-                  <span className="hidden group-hover:inline-flex">#</span>
-                  {label}
-                </span>
-
+                <span>{label}</span>
                 <ArrowRightIcon
                   color={tailwindConfig.theme.extend.backgroundColor.primary}
                   aria-hidden

@@ -96,7 +96,7 @@ export default async function BlogArticlePage({
   const bodyParagraphs = paragraphs.length > 0 ? paragraphs : [];
 
   return (
-    <main id="main-content" className="container py-8 md:py-12">
+    <main id="main-content" className="bb-page-shell">
       <div className="mb-4 hidden md:block">
         <Breadcrumbs
           items={[
@@ -111,7 +111,7 @@ export default async function BlogArticlePage({
         className="mx-auto flex max-w-4xl flex-col gap-8"
         data-testid="blog-article"
       >
-        <header className="flex flex-col gap-4">
+        <header className="bb-section-shell bb-section-shell-strong flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.24em] text-secondary">
             <span data-testid="blog-article-category">{category}</span>
             {publishedDate ? <span data-testid="blog-article-date">{publishedDate}</span> : null}
@@ -138,7 +138,7 @@ export default async function BlogArticlePage({
           />
         </div>
 
-        <div className="flex flex-col gap-5 text-base leading-8 text-primary">
+        <div className="bb-section-shell flex flex-col gap-5 text-base leading-8 text-primary">
           {bodyParagraphs.length > 0 ? (
             bodyParagraphs.map((paragraph, index) => <p key={`${page.slug || slug}-${index}`}>{paragraph}</p>)
           ) : (
@@ -149,7 +149,7 @@ export default async function BlogArticlePage({
           )}
         </div>
 
-        <div className="border-t border-secondary pt-6">
+        <div className="border-t border-[rgba(144,112,50,0.14)] pt-6">
           <LocalizedClientLink
             href="/blog"
             className="label-md inline-flex items-center uppercase text-primary transition-opacity hover:opacity-70"

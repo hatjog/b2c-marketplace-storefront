@@ -65,7 +65,7 @@ describe('BonBeauty fixture: homepage sections pipeline', () => {
 
   test('homepage section exists with version', () => {
     assert.match(yaml, /homepage:/);
-    assert.match(yaml, /version:\s*"1"/);
+    assert.match(yaml, /version:\s*"1(?:\.0\.0)?"/);
   });
 
   for (const blockType of VALID_BLOCK_TYPES) {

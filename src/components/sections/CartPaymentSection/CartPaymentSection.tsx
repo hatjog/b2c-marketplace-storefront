@@ -119,7 +119,7 @@ const CartPaymentSection = ({
 
   return (
     <div
-      className="bg-ui-bg-interactive rounded-sm border p-4"
+      className="bb-section-shell"
       data-testid="checkout-step-payment"
     >
       <div className="mb-6 flex flex-row items-center justify-between">
@@ -196,6 +196,7 @@ const CartPaymentSection = ({
             variant="tonal"
             loading={isLoading}
             disabled={(isStripe && !cardComplete) || (!selectedPaymentMethod && !paidByGiftcard)}
+            className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
           >
             {!activeSession && isStripeFunc(selectedPaymentMethod)
               ? t('enter_card_details')

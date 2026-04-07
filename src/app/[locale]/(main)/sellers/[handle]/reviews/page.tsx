@@ -24,7 +24,7 @@ export default async function SellerReviewsPage({
   const tab = 'reviews';
 
   return (
-    <main id="main-content" className="container">
+    <main id="main-content" className="bb-page-shell">
       <SellerPageHeader
         header
         seller={seller}

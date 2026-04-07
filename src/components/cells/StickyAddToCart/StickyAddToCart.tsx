@@ -84,7 +84,7 @@ export const StickyAddToCart = ({
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center justify-between bg-action px-4 text-action-on-primary transition-transform duration-300 lg:hidden ${
+      className={`fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between border-t border-[rgba(144,112,50,0.18)] bg-[rgba(255,249,240,0.95)] px-4 py-3 text-primary shadow-[0_-10px_30px_rgba(37,28,12,0.08)] backdrop-blur transition-transform duration-300 lg:hidden ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
@@ -95,7 +95,7 @@ export const StickyAddToCart = ({
         onClick={handleAddToCart}
         loading={isAddingItem}
         size="small"
-        className="bg-primary text-primary"
+        className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
       >
         {t('add_to_cart')}
       </Button>

@@ -257,8 +257,8 @@ test("BannerSection: renders payload label, href and image props", () => {
   assert.ok(srcs.includes("https://cdn.example.com/banner.jpg"));
 });
 
-test("ShopByStyleSection: renders runtime items instead of hardcoded styles", () => {
-  const element = ShopByStyleSection({
+test("ShopByStyleSection: renders runtime items instead of hardcoded styles", async () => {
+  const element = await ShopByStyleSection({
     heading: "Shop by style",
     items: [
       { href: "/collections?style=minimal", imageUrl: null, label: "Minimal edit" },

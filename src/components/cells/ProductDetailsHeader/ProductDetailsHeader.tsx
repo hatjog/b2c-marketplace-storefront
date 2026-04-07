@@ -124,51 +124,35 @@ export const ProductDetailsHeader = ({
 
   return (
     <div
-      className="rounded-sm border p-5"
+      className="bb-section-shell bb-section-shell-strong space-y-6"
       data-testid="product-details-header"
     >
-      <div className="flex justify-between">
-        <div>
-          <h2 className="label-md text-secondary">{/* {product?.brand || "No brand"} */}</h2>
-          <h1
-            className="heading-lg text-primary"
-            data-testid="product-title"
-          >
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-3">
+          {product.seller?.name && <span className="bb-pill">{product.seller.name}</span>}
+          <h1 className="heading-lg text-primary" data-testid="product-title">
             {product.title}
           </h1>
-          <div
-            className="mt-2 flex items-center gap-2"
-            data-testid="product-price-container"
-          >
+          <div className="flex items-center gap-2" data-testid="product-price-container">
             {hasAnyPrice && variantPrice ? (
               <>
-                <span
-                  className="heading-md text-primary"
-                  data-testid="product-price-current"
-                >
+                <span className="text-[28px] font-medium text-primary md:text-[34px]" data-testid="product-price-current">
                   {variantPrice.calculated_price}
                 </span>
                 {variantPrice.calculated_price_number !== variantPrice.original_price_number && (
-                  <span
-                    className="label-md text-secondary line-through"
-                    data-testid="product-price-original"
-                  >
+                  <span className="label-md text-secondary line-through" data-testid="product-price-original">
                     {variantPrice.original_price}
                   </span>
                 )}
               </>
             ) : (
-              <span
-                className="label-md pb-4 pt-2 text-secondary"
-                data-testid="product-price-unavailable"
-              >
+              <span className="label-md pb-4 pt-2 text-secondary" data-testid="product-price-unavailable">
                 {t('not_available_in_region')}
               </span>
             )}
           </div>
         </div>
         <div>
-          {/* Add to Wishlist */}
           <WishlistButton
             productId={product.id}
             wishlist={wishlist}
@@ -176,38 +160,39 @@ export const ProductDetailsHeader = ({
           />
         </div>
       </div>
-      {/* Product Variants */}
       {hasAnyPrice && (
-        <ProductVariants
-          product={product}
-          selectedVariant={selectedVariant}
-        />
+        <div className="bb-card-muted">
+          <ProductVariants
+            product={product}
+            selectedVariant={selectedVariant}
+          />
+        </div>
       )}
-      {/* Add to Cart */}
-      <Button
-        onClick={handleAddToCart}
-        disabled={isAddToCartDisabled}
-        loading={isAddingItem}
-        className="mb-4 flex w-full justify-center py-3"
-        size="large"
-        data-testid="product-add-to-cart-button"
-      >
-        {!hasAnyPrice
-          ? t('not_available_in_region')
-          : variantStock && variantHasPrice
-            ? t('add_to_cart')
-            : t('out_of_stock')}
-      </Button>
-      {/* Seller message */}
+      <div className="flex flex-col gap-3 md:flex-row">
+        <Button
+          onClick={handleAddToCart}
+          disabled={isAddToCartDisabled}
+          loading={isAddingItem}
+          className="flex w-full justify-center rounded-full bg-[var(--cta)] py-4 text-white hover:bg-[var(--cta-hover)] md:flex-1"
+          size="large"
+          data-testid="product-add-to-cart-button"
+        >
+          {!hasAnyPrice
+            ? t('not_available_in_region')
+            : variantStock && variantHasPrice
+              ? t('add_to_cart')
+              : t('out_of_stock')}
+        </Button>
 
-      {user && product.seller && (
-        <Chat
-          user={user}
-          seller={product.seller}
-          buttonClassNames="w-full"
-          product={product}
-        />
-      )}
+        {user && product.seller && (
+          <Chat
+            user={user}
+            seller={product.seller}
+            buttonClassNames="w-full rounded-full bg-[rgba(9,9,9,0.06)] text-primary hover:bg-[rgba(9,9,9,0.12)] md:w-auto"
+            product={product}
+          />
+        )}
+      </div>
     </div>
   );
 };

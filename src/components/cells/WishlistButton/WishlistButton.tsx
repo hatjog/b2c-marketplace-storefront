@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { HeartFilledIcon, HeartIcon } from '@/icons';
@@ -23,6 +24,7 @@ export const WishlistButton = ({
   const [isWishlisted, setIsWishlisted] = useState(
     wishlist?.products?.some(item => item.id === productId)
   );
+  const t = useTranslations('wishlist');
 
   useEffect(() => {
     setIsWishlisted(wishlist?.products?.some(item => item.id === productId));
@@ -41,8 +43,8 @@ export const WishlistButton = ({
       });
     } catch (error) {
       toast.error({
-        title: 'Failed to add item to wishlist',
-        description: error instanceof Error ? error?.message : 'An error occurred'
+        title: t('add_failed'),
+        description: error instanceof Error ? error?.message : t('error_generic')
       });
     } finally {
       setIsWishlistAdding(false);
@@ -58,8 +60,8 @@ export const WishlistButton = ({
       });
     } catch (error) {
       toast.error({
-        title: 'Failed to add item to wishlist',
-        description: error instanceof Error ? error?.message : 'An error occurred'
+        title: t('remove_failed'),
+        description: error instanceof Error ? error?.message : t('error_generic')
       });
     } finally {
       setIsWishlistAdding(false);
@@ -69,7 +71,7 @@ export const WishlistButton = ({
     <Button
       onClick={isWishlisted ? () => handleRemoveFromWishlist() : () => handleAddToWishlist()}
       variant="tonal"
-      className="flex h-10 w-10 items-center justify-center p-0"
+      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/16 bg-[rgba(255,255,255,0.9)] p-0 text-primary hover:bg-white"
       loading={isWishlistAdding}
       disabled={isWishlistAdding}
     >

@@ -34,7 +34,7 @@ export const SellerTabs = ({
   ];
 
   return (
-    <div className="mt-8">
+    <div className="space-y-6">
       <TabsList
         list={tabsList}
         activeTab={tab}

@@ -57,7 +57,7 @@ export const CartAddressSection = ({
 
   return (
     <div
-      className="bg-ui-bg-interactive rounded-sm border p-4"
+      className="bb-section-shell"
       data-testid="checkout-step-address"
     >
       <div className="mb-6 flex flex-row items-center justify-between">
@@ -95,7 +95,7 @@ export const CartAddressSection = ({
               cart={cart}
             />
             <Button
-              className="mt-6"
+              className="mt-6 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
               data-testid="submit-address-button"
               variant="tonal"
             >
@@ -138,7 +138,7 @@ export const CartAddressSection = ({
         {isAddress && !searchParams.get('step') && (
           <LocalizedClientLink href="/checkout?step=delivery">
             <Button
-              className="mt-6"
+              className="mt-6 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
               variant="tonal"
             >
               Continue to Delivery

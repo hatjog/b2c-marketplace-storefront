@@ -33,11 +33,11 @@ export const ProductSidebar = ({
 
   return (
     <aside
-      className="relative w-full"
+      className="relative w-full lg:sticky lg:top-6 lg:self-start"
       data-testid="sidebar"
     >
       <Button
-        className="label-sm mb-4 w-full uppercase block md:hidden"
+        className="label-sm mb-4 block w-full rounded-full uppercase md:hidden"
         variant="tonal"
         onClick={() => setFilterModal(true)}
         data-testid="sidebar-open-filters-button"
@@ -46,62 +46,64 @@ export const ProductSidebar = ({
       </Button>
       <div
         className={cn(
-          'left-0 top-0 h-full w-full bg-primary transition-opacity duration-100 pointer-events-none blur-sm md:pointer-events-auto md:blur-none md:relative',
-          filterModal ? 'opacity-1 z-20 pointer-events-auto blur-none' : '-z-10 opacity-0 md:z-10 md:opacity-100'
+          'fixed inset-0 z-40 bg-black/30 px-4 py-6 opacity-0 pointer-events-none transition-opacity duration-150 md:static md:bg-transparent md:p-0 md:opacity-100 md:pointer-events-auto',
+          filterModal ? 'opacity-100 pointer-events-auto' : 'md:opacity-100 md:pointer-events-auto'
         )}
       >
-        {filterModal && (
-          <div className="md:hidden">
-            <div
-              className="mb-4 flex items-center justify-between border-y p-4"
-              data-testid="sidebar-filter-header"
-            >
-              <h3 className="heading-md uppercase">{t('filters')}</h3>
+        <div className="bb-section-shell bb-section-shell-strong relative h-full max-h-[100vh] overflow-hidden md:h-auto md:max-h-none">
+          {filterModal && (
+            <div className="md:hidden">
               <div
-                onClick={() => setFilterModal(false)}
-                className="cursor-pointer"
-                data-testid="sidebar-close-button"
+                className="mb-4 flex items-center justify-between border-b border-[rgba(144,112,50,0.14)] pb-4"
+                data-testid="sidebar-filter-header"
               >
-                <CloseIcon size={20} />
+                <h3 className="heading-md">{t('filters')}</h3>
+                <div
+                  onClick={() => setFilterModal(false)}
+                  className="cursor-pointer"
+                  data-testid="sidebar-close-button"
+                >
+                  <CloseIcon size={20} />
+                </div>
+              </div>
+              <div className="mb-4">
+                <ProductListingActiveFilters />
               </div>
             </div>
-            <div className="mb-4 px-2 md:mb-0">
-              <ProductListingActiveFilters />
-            </div>
+          )}
+
+          <div
+            className="no-scrollbar h-[calc(100vh-210px)] overflow-y-auto md:h-auto"
+            data-testid="sidebar-filters"
+          >
+            <DynamicFilterSidebar
+              filters={filters}
+              categories={categories}
+              tags={tags}
+              cities={cities}
+            />
           </div>
-        )}
 
-        <div
-          className="no-scrollbar h-[calc(100vh-200px)] overflow-y-scroll px-2 md:h-full md:overflow-y-auto md:px-0"
-          data-testid="sidebar-filters"
-        >
-          <DynamicFilterSidebar
-            filters={filters}
-            categories={categories}
-            tags={tags}
-            cities={cities}
-          />
-        </div>
-
-        <div
-          className="absolute bottom-0 left-0 flex w-full items-center gap-2 border-y bg-primary px-4 py-4 md:hidden"
-          data-testid="sidebar-actions"
-        >
-          <Button
-            className="label-sm w-1/2 uppercase"
-            variant="tonal"
-            onClick={() => clearAllFilters()}
-            data-testid="sidebar-clear-all-button"
+          <div
+            className="mt-4 flex w-full items-center gap-2 border-t border-[rgba(144,112,50,0.14)] pt-4 md:hidden"
+            data-testid="sidebar-actions"
           >
-            {t('clear_all')}
-          </Button>
-          <Button
-            className="label-sm w-1/2 uppercase"
-            onClick={() => setFilterModal(false)}
-            data-testid="sidebar-view-listings-button"
-          >
-            {t('view_results')}
-          </Button>
+            <Button
+              className="label-sm w-1/2 rounded-full uppercase"
+              variant="tonal"
+              onClick={() => clearAllFilters()}
+              data-testid="sidebar-clear-all-button"
+            >
+              {t('clear_all')}
+            </Button>
+            <Button
+              className="label-sm w-1/2 rounded-full uppercase bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
+              onClick={() => setFilterModal(false)}
+              data-testid="sidebar-view-listings-button"
+            >
+              {t('view_results')}
+            </Button>
+          </div>
         </div>
       </div>
     </aside>

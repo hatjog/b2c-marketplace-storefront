@@ -18,7 +18,7 @@ const Review = ({ cart }: { cart: any }) => {
     (cart.payment_collection || paidByGiftcard);
 
   return (
-    <div>
+    <div className="space-y-4">
       <div className="mb-6 w-full">
         <CartItems cart={cart} />
       </div>
@@ -27,7 +27,7 @@ const Review = ({ cart }: { cart: any }) => {
         <PromoCode cart={cart} />
       </div>
 
-      <div className="mb-6 w-full rounded-sm border p-4">
+      <div className="bb-section-shell bb-section-shell-strong mb-6 w-full">
         <CartSummary
           item_total={cart?.item_subtotal || 0}
           shipping_total={cart?.shipping_subtotal || 0}

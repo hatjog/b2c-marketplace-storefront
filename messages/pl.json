@@ -31,6 +31,21 @@
     "account": "Moje konto",
     "home_fallback": "Strona główna"
   },
+  "homepage": {
+    "meta_title": "BonBeauty | Vouchery do najlepszych salonów beauty",
+    "meta_description": "BonBeauty łączy editorial discovery, salony partnerskie i zakup voucherów w jednym premium flow beauty.",
+    "categories_eyebrow": "Kategorie",
+    "products_eyebrow": "Polecane teraz",
+    "style_eyebrow": "Odkrywaj style",
+    "blog_eyebrow": "Dziennik BonBeauty"
+  },
+  "seller_page": {
+    "home": "Strona główna",
+    "salons": "Salony",
+    "about": "O salonie",
+    "meta_fallback_title": "Salon | BonBeauty",
+    "meta_description": "Odkryj ofertę salonu {name} na BonBeauty."
+  },
   "footer": {
     "section_customer_services": "Obsługa klienta",
     "section_about": "O nas",
@@ -336,7 +351,14 @@
   "wishlist": {
     "all": "Wszystkie",
     "products": "Produkty",
-    "collections": "Kolekcje"
+    "collections": "Kolekcje",
+    "title": "Lista życzeń",
+    "empty_description": "Zapisz zabiegi i vouchery, do których chcesz wrócić, gdy będziesz gotowa na zakup.",
+    "explore": "Odkrywaj zabiegi",
+    "count": "{count, plural, one {# oferta} few {# oferty} many {# ofert} other {# oferty}}",
+    "add_failed": "Nie udało się dodać do listy życzeń",
+    "remove_failed": "Nie udało się usunąć z listy życzeń",
+    "error_generic": "Wystąpił błąd"
   },
   "checkout": {
     "payment_heading": "Płatność",
@@ -352,6 +374,25 @@
     "choose_delivery_option": "Wybierz opcję dostawy",
     "place_order": "Złóż zamówienie",
     "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty"
+  },
+  "confirmation": {
+    "loading": "Ładowanie...",
+    "not_found": "Zamówienie nie zostało znalezione",
+    "generic_title": "Dziękujemy! Zamówienie zostało przyjęte.",
+    "gift_title": "Voucher jest gotowy do wręczenia",
+    "active_title": "Voucher jest aktywny",
+    "voucher_code_label": "Kod vouchera",
+    "go_to_orders": "Przejdź do zamówień",
+    "gift_cta": "Przekaż voucher",
+    "continue_shopping": "Odkrywaj kolejne zabiegi",
+    "pending_title": "Przygotowujemy Twój voucher",
+    "pending_safe_close": "Możesz bezpiecznie zamknąć przeglądarkę.",
+    "pending_ready_soon": "Voucher zostanie dostarczony wkrótce. Sprawdź e-mail lub wróć na tę stronę.",
+    "order_ref": "Numer zamówienia: {orderId}",
+    "error_title": "Płatność nie powiodła się",
+    "error_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności.",
+    "retry": "Spróbuj ponownie",
+    "change_method": "Zmień metodę"
   },
   "voucher": {
     "qr_code_aria_label": "Kod QR vouchera",

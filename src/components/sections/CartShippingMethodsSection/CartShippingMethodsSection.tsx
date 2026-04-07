@@ -173,7 +173,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   );
 
   return (
-    <div className="bg-ui-bg-interactive rounded-sm border p-4">
+    <div className="bb-section-shell">
       <div className="mb-6 flex flex-row items-center justify-between">
         <Heading
           level="h2"
@@ -300,6 +300,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
               variant="tonal"
               disabled={!cart.shipping_methods?.[0] || isPendingDeleteRow}
               loading={isLoadingPrices}
+              className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
             >
               {t('continue_to_payment')}
             </Button>

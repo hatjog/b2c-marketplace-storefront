@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SanitizedHTML } from '@/components/molecules/SanitizedHTML/SanitizedHTML';
@@ -22,17 +23,18 @@ export async function generateMetadata({
 }: {
   params: Promise<PageParams>;
 }): Promise<Metadata> {
-  const { handle } = await params;
+  const { handle, locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'seller_page' });
   const seller = await getSellerByHandle(handle);
 
   if (!seller) {
-    return { title: 'Salon | BonBeauty' };
+    return { title: t('meta_fallback_title') };
   }
 
   const title = `${seller.name} | BonBeauty`;
   const description = seller.description
     ? seller.description.replace(/<[^>]+>/g, '').slice(0, 160)
-    : `Odkryj ofertę salonu ${seller.name} na BonBeauty.`;
+    : t('meta_description', { name: seller.name });
 
   return {
     title,
@@ -51,6 +53,7 @@ export default async function SalonProfilPage({
   params: Promise<PageParams>;
 }) {
   const { handle, locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'seller_page' });
 
   const seller = await getSellerByHandle(handle);
 
@@ -85,37 +88,45 @@ export default async function SalonProfilPage({
   };
 
   return (
-    <main id="main-content" className="container py-8">
+    <main id="main-content" className="bb-page-shell">
       <Breadcrumbs
         items={[
-          { label: 'Strona główna', href: '/' },
-          { label: 'Salony', href: '/salony' },
+          { label: t('home'), href: '/' },
+          { label: t('salons'), href: '/salony' },
           { label: seller.name, href: `/salony/${seller.handle}` },
         ]}
       />
 
-      <div className="mt-6 space-y-8">
-        <SellerHero name={seller.name} photo={seller.photo || null} />
+      <div className="space-y-8">
+        <div className="bb-section-shell bb-section-shell-strong">
+          <SellerHero name={seller.name} photo={seller.photo || null} />
+        </div>
 
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="bb-section-shell flex flex-wrap items-center gap-4">
           <SellerSocialLinks socialLinks={seller.social_links} />
           <SellerContact phone={seller.phone} email={seller.email} />
         </div>
 
         {seller.description && (
-          <section aria-labelledby="seller-description-heading">
+          <section aria-labelledby="seller-description-heading" className="bb-section-shell">
             <h2 id="seller-description-heading" className="mb-3 text-xl font-bold">
-              O salonie
+              {t('about')}
             </h2>
             <SanitizedHTML html={seller.description} className="label-md" />
           </section>
         )}
 
-        <SellerServiceList products={products} currencyCode={currencyCode} />
+        <div className="bb-section-shell">
+          <SellerServiceList products={products} currencyCode={currencyCode} />
+        </div>
 
-        <SellerGallery gallery={seller.gallery} sellerName={seller.name} />
+        <div className="bb-section-shell">
+          <SellerGallery gallery={seller.gallery} sellerName={seller.name} />
+        </div>
 
-        <SellerLocations locations={seller.locations} />
+        <div className="bb-section-shell">
+          <SellerLocations locations={seller.locations} />
+        </div>
       </div>
 
       <script type="application/ld+json">{JSON.stringify(localBusinessJsonLd)}</script>

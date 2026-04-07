@@ -74,4 +74,21 @@
   /* Misc */
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
   --font-display: 'Funnel Display';
+
+  /* BonBeauty v4 storefront surfaces */
+  --bb-page-bg: rgb(249, 244, 236);
+  --bb-surface: rgba(255, 252, 247, 0.92);
+  --bb-surface-strong: rgb(255, 249, 240);
+  --bb-surface-muted: rgba(239, 229, 210, 0.52);
+  --bb-surface-dark: rgba(20, 20, 20, 0.94);
+  --bb-border-soft: rgba(144, 112, 50, 0.14);
+  --bb-border-strong: rgba(144, 112, 50, 0.28);
+  --bb-shadow-soft: 0 20px 60px rgba(90, 67, 28, 0.08);
+  --bb-shadow-lift: 0 30px 80px rgba(37, 28, 12, 0.14);
+  --bb-radius-card: 28px;
+  --bb-radius-panel: 36px;
+  --bb-radius-pill: 999px;
+  --bb-hero-overlay: linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
+  --bb-soft-gradient: linear-gradient(135deg, rgba(255, 249, 240, 0.98) 0%, rgba(246, 237, 222, 0.96) 100%);
+  --bb-dark-gradient: linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
 }

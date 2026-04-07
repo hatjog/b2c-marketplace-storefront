@@ -49,12 +49,12 @@ async function CheckoutPageContent({}) {
   return (
     <PaymentWrapper cart={cart}>
       <main
-        className="container"
+        className="bb-page-shell"
         data-testid="checkout-page"
       >
-        <div className="grid gap-8 lg:grid-cols-11">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
           <div
-            className="flex flex-col gap-4 lg:col-span-6"
+            className="flex flex-col gap-4"
             data-testid="checkout-steps-container"
           >
             <CartAddressSection
@@ -72,7 +72,7 @@ async function CheckoutPageContent({}) {
           </div>
 
           <div
-            className="lg:col-span-5"
+            className="lg:sticky lg:top-6 lg:self-start"
             data-testid="checkout-review-container"
           >
             <CartReview cart={cart} />

@@ -24,21 +24,26 @@ export function CategoryCard({
   return (
     <LocalizedClientLink
       href={`/categories/${category.handle}`}
-      className="relative flex aspect-square w-[233px] flex-col items-center rounded-sm border bg-component transition-all hover:rounded-full"
+      className="group relative flex min-h-[320px] overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.75)] shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1"
       data-testid="category-item"
     >
-      <div className="relative flex aspect-square w-[200px] overflow-hidden">
+      <div className="absolute inset-0">
         <Image
           loading="lazy"
           src={imageSrc}
           alt={`category - ${category.name}`}
-          width={200}
-          height={200}
-          sizes="(min-width: 1024px) 200px, 40vw"
-          className="scale-90 rounded-full object-contain"
+          fill
+          sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
       </div>
-      <h3 className="label-lg w-full text-center text-primary">{category.name}</h3>
+      <div className="relative mt-auto flex w-full items-end justify-between gap-3 p-5 text-white">
+        <h3 className="heading-md max-w-[12ch]">{category.name}</h3>
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/18 bg-white/10 text-xl backdrop-blur transition-colors duration-300 group-hover:bg-white group-hover:text-primary">
+          +
+        </span>
+      </div>
     </LocalizedClientLink>
   );
 }

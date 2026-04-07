@@ -62,9 +62,9 @@ export default async function BlogIndexPage({
   });
 
   return (
-    <main id="main-content" className="container py-8 md:py-12">
-      <section className="mx-auto flex max-w-6xl flex-col gap-8" data-testid="blog-index">
-        <header className="flex max-w-3xl flex-col gap-4">
+    <main id="main-content" className="bb-page-shell">
+      <section className="mx-auto flex w-full max-w-6xl flex-col gap-8" data-testid="blog-index">
+        <header className="bb-section-shell bb-section-shell-strong flex max-w-4xl flex-col gap-4">
           <p className="text-xs font-medium uppercase tracking-[0.24em] text-secondary">{t('journal')}</p>
           <h1 className="heading-xl" data-testid="blog-index-title">{t('title')}</h1>
           <p className="text-lg leading-8 text-secondary">
@@ -111,7 +111,7 @@ export default async function BlogIndexPage({
             })}
           </div>
         ) : (
-          <div className="rounded-sm border border-secondary p-6 text-secondary">
+          <div className="bb-section-shell text-secondary">
             {t('no_posts')}
           </div>
         )}

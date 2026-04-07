@@ -67,6 +67,10 @@
   @apply px-4 md:px-5 max-w-full w-full lg:py-8 py-4 lg:px-8;
 }
 
+body {
+  background: var(--bb-page-bg, #f9f4ec);
+}
+
 /* BonBeauty Button Utilities */
 @layer components {
   /* BonBeauty Primary CTA — używa --cta (brand-600 #907032, 4.62:1 AA vs white) */
@@ -111,6 +115,72 @@
            text-[14px] font-medium leading-none cursor-not-allowed opacity-50;
     background-color: rgba(var(--neutral-200), 1);
     color: rgba(var(--neutral-400), 1);
+  }
+
+  .bb-page-shell {
+    @apply mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 py-4 md:gap-8 md:px-5 md:py-6 lg:px-8 lg:py-8;
+  }
+
+  .bb-section-shell {
+    @apply w-full rounded-[28px] border p-6 md:p-8 lg:p-10;
+    background: var(--bb-surface, rgba(255, 252, 247, 0.92));
+    border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
+    box-shadow: var(--bb-shadow-soft, 0 20px 60px rgba(90, 67, 28, 0.08));
+  }
+
+  .bb-section-shell-strong {
+    background: var(--bb-soft-gradient, rgba(255, 249, 240, 0.98));
+    border-color: var(--bb-border-strong, rgba(144, 112, 50, 0.28));
+    box-shadow: var(--bb-shadow-lift, 0 30px 80px rgba(37, 28, 12, 0.14));
+  }
+
+  .bb-section-shell-dark {
+    @apply text-white;
+    background: var(--bb-dark-gradient, rgba(20, 20, 20, 0.94));
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: var(--bb-shadow-lift, 0 30px 80px rgba(37, 28, 12, 0.14));
+  }
+
+  .bb-card {
+    @apply rounded-[24px] border p-5 md:p-6;
+    background: rgba(255, 255, 255, 0.84);
+    border-color: rgba(144, 112, 50, 0.14);
+    box-shadow: 0 12px 35px rgba(90, 67, 28, 0.08);
+    backdrop-filter: blur(12px);
+  }
+
+  .bb-card-muted {
+    @apply rounded-[24px] border p-5 md:p-6;
+    background: rgba(239, 229, 210, 0.42);
+    border-color: rgba(144, 112, 50, 0.14);
+  }
+
+  .bb-pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em];
+    background: rgba(239, 229, 210, 0.9);
+    color: rgba(83, 65, 29, 1);
+  }
+
+  .bb-eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.28em];
+    color: rgba(113, 88, 40, 1);
+  }
+
+  .bb-meta {
+    @apply text-[13px] leading-6;
+    color: var(--text-secondary);
+  }
+
+  .bb-divider {
+    border-color: rgba(144, 112, 50, 0.14);
+  }
+
+  .bb-primary-cta {
+    @apply btn-cta inline-flex items-center justify-center gap-2;
+  }
+
+  .bb-secondary-cta {
+    @apply btn-secondary inline-flex items-center justify-center gap-2;
   }
 }
 

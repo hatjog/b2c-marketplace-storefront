@@ -49,7 +49,7 @@ export const ProductDetails = async ({
   const validityPeriod = gpMeta?.validity_period ?? null;
 
   return (
-    <div>
+    <div className="space-y-4">
       <ProductDetailsHeader
         product={product}
         locale={locale}
@@ -59,7 +59,7 @@ export const ProductDetails = async ({
       />
       {product.seller && (
         <div
-          className="mt-4"
+          className="bb-card-muted"
           data-testid="product-details-vendor-badge"
         >
           <VendorBadge
@@ -73,8 +73,10 @@ export const ProductDetails = async ({
           />
         </div>
       )}
-      <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />
-      <VoucherValidityInfo validityPeriod={validityPeriod} defaultInfo={defaultValidityInfo} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />
+        <VoucherValidityInfo validityPeriod={validityPeriod} defaultInfo={defaultValidityInfo} />
+      </div>
       <ProductPageDetails details={product?.description || ''} />
       <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
       <ProductDetailsShipping />

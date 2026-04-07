@@ -9,10 +9,13 @@ export const ProductListingHeader = ({ total }: { total: number }) => {
 
   return (
     <div
-      className="flex w-full items-center justify-between"
+      className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
       data-testid="product-listing-header"
     >
-      <div data-testid="product-listing-total">{t('listings_count', { count: total })}</div>
+      <div className="space-y-2">
+        <p className="bb-eyebrow">{t('all_products')}</p>
+        <div className="heading-lg" data-testid="product-listing-total">{t('listings_count', { count: total })}</div>
+      </div>
       <SortDropdown />
     </div>
   );

@@ -31,6 +31,21 @@
     "account": "My account",
     "home_fallback": "Home"
   },
+  "homepage": {
+    "meta_title": "BonBeauty | Gift vouchers for the best beauty salons",
+    "meta_description": "BonBeauty editorial storefront: discover treatments, explore partner salons and buy vouchers in one premium shopping flow.",
+    "categories_eyebrow": "Categories",
+    "products_eyebrow": "Trending now",
+    "style_eyebrow": "Editorial discovery",
+    "blog_eyebrow": "BonBeauty journal"
+  },
+  "seller_page": {
+    "home": "Home",
+    "salons": "Salons",
+    "about": "About the salon",
+    "meta_fallback_title": "Salon | BonBeauty",
+    "meta_description": "Discover the offer from {name} on BonBeauty."
+  },
   "footer": {
     "section_customer_services": "Customer services",
     "section_about": "About",
@@ -336,7 +351,14 @@
   "wishlist": {
     "all": "All",
     "products": "Products",
-    "collections": "Collections"
+    "collections": "Collections",
+    "title": "Wishlist",
+    "empty_description": "Save treatments and vouchers you want to come back to when you are ready to buy.",
+    "explore": "Explore treatments",
+    "count": "{count, plural, one {# listing} other {# listings}}",
+    "add_failed": "Failed to add to wishlist",
+    "remove_failed": "Failed to remove from wishlist",
+    "error_generic": "An error occurred"
   },
   "checkout": {
     "payment_heading": "Payment",
@@ -352,6 +374,25 @@
     "choose_delivery_option": "Choose delivery option",
     "place_order": "Place order",
     "payment_obligation_notice": "Order with obligation to pay"
+  },
+  "confirmation": {
+    "loading": "Loading...",
+    "not_found": "Order not found",
+    "generic_title": "Thank you. Your order has been received.",
+    "gift_title": "Your voucher is ready to gift",
+    "active_title": "Your voucher is active",
+    "voucher_code_label": "Voucher code",
+    "go_to_orders": "Go to orders",
+    "gift_cta": "Transfer voucher",
+    "continue_shopping": "Explore more treatments",
+    "pending_title": "We are preparing your voucher",
+    "pending_safe_close": "You can safely close your browser.",
+    "pending_ready_soon": "Your voucher will be delivered shortly. Check your email or return to this page.",
+    "order_ref": "Order number: {orderId}",
+    "error_title": "Payment failed",
+    "error_description": "Try again or go back to the cart to change the payment method.",
+    "retry": "Try again",
+    "change_method": "Change payment method"
   },
   "voucher": {
     "qr_code_aria_label": "Voucher QR code",
