@@ -498,6 +498,10 @@ export const searchProducts = async (params: {
       headers,
       cache: 'no-cache'
     })
+    .then((result) => ({
+      ...result,
+      products: normalizeListedProducts(result.products),
+    }))
     .catch((error) => {
       console.error('[products] searchProducts failed:', error?.message || error);
       return {
