@@ -9,13 +9,17 @@ export const HomeProductSection = async ({
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'pl',
   products = [],
   home = false,
-  maxItems = 4
+  maxItems = 4,
+  showPrice = true,
+  showVendor = true,
 }: {
   heading: string;
   locale?: string;
   products?: (Product | HttpTypes.StoreProduct)[];
   home?: boolean;
   maxItems?: number;
+  showPrice?: boolean;
+  showVendor?: boolean;
 }) => {
   const t = await getTranslations('homepage');
   const resolvedMaxItems = Math.max(1, maxItems);
@@ -33,6 +37,8 @@ export const HomeProductSection = async ({
         locale={locale}
         sellerProducts={products.slice(0, resolvedMaxItems)}
         home={home}
+        showPrice={showPrice}
+        showVendor={showVendor}
       />
     </section>
   );

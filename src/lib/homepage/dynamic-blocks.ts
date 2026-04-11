@@ -123,9 +123,11 @@ export async function fetchHomepageProducts({
 }
 
 export async function fetchHomepageCategories({
-  limit
+  limit,
+  hideEmpty = false,
 }: {
   limit?: number | null;
+  hideEmpty?: boolean;
 } = {}): Promise<{ name: string; handle: string; metadata?: Record<string, any> }[]> {
   const resolvedLimit = Math.max(1, Math.min(limit ?? 24, 100));
   const url = buildMedusaUrl('/store/product-categories');
@@ -161,7 +163,9 @@ export async function fetchHomepageCategories({
 
     const allCategories = data.product_categories || [];
     const marketFiltered = filterByMarket(allCategories, getMarketId());
-    const rootCategories = marketFiltered.filter(cat => !cat.parent_category_id);
+    const rootCategories = marketFiltered
+      .filter(cat => !cat.parent_category_id)
+      .filter(cat => !hideEmpty || (Array.isArray(cat.category_children) && cat.category_children.length > 0));
     const mapped = rootCategories
       .map(cat => ({
         name: cat.name,

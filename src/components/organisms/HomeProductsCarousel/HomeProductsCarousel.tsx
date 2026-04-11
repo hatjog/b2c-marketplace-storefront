@@ -10,11 +10,15 @@ import { ProductCard } from '../ProductCard/ProductCard';
 export const HomeProductsCarousel = async ({
   locale,
   sellerProducts,
-  home
+  home,
+  showPrice = true,
+  showVendor = true,
 }: {
   locale: string;
   sellerProducts: (Product | HttpTypes.StoreProduct)[];
   home: boolean;
+  showPrice?: boolean;
+  showVendor?: boolean;
 }) => {
   const countryCode = await getCountryCode(locale);
   const products = sellerProducts.length
@@ -41,6 +45,8 @@ export const HomeProductsCarousel = async ({
           <ProductCard
             key={product.id}
             product={product}
+            showPrice={showPrice}
+            showVendor={showVendor}
           />
         ))}
       />

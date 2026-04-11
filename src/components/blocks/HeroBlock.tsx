@@ -6,7 +6,8 @@ import { Hero } from '@/components/sections/Hero/Hero';
 import {
   type HeroSectionBlock,
   getImageUrl,
-  mapButtons
+  mapButtons,
+  normalizeOptionalText,
 } from './homepage-utils';
 
 export type { HeroSectionBlock };
@@ -16,6 +17,7 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
   const paragraph = section.paragraph ?? '';
   const imageUrl = getImageUrl(section.image, '/images/hero/Image.jpg', process.env.PAYLOAD_API_URL);
   const buttons = mapButtons(section.buttons);
+  const maxHeight = normalizeOptionalText(section.max_height);
 
   if (!heading && !paragraph && !imageUrl && buttons.length === 0) {
     return null;
@@ -28,6 +30,7 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
         heading={heading}
         paragraph={paragraph}
         buttons={buttons}
+        maxHeight={maxHeight}
         showSearch={true}
       />
     );

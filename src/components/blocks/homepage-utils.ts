@@ -18,6 +18,7 @@ export type HeroSectionBlock = {
   paragraph?: string | null;
   image?: HeroImage;
   buttons?: HeroButton[] | null;
+  max_height?: string | null;
 };
 
 export type BannerSectionBlock = {
@@ -60,8 +61,17 @@ export type RawSection = {
   [key: string]: unknown;
 };
 
+export function normalizeOptionalText(value: string | null | undefined): string | null {
+  const trimmed = value?.trim() ?? '';
+  return trimmed || null;
+}
+
 function normalizeText(value: string | null | undefined): string {
-  return value?.trim() ?? '';
+  return normalizeOptionalText(value) ?? '';
+}
+
+export function resolveBooleanFlag(value: boolean | null | undefined, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback;
 }
 
 export function getImageUrl(image: HeroImage, fallback?: string, portalBaseUrl?: string): string | null {

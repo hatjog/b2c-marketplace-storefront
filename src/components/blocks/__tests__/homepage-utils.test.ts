@@ -4,7 +4,33 @@ import {
   getBannerSectionData,
   getImageUrl,
   getStyleSectionData,
+  normalizeOptionalText,
+  resolveBooleanFlag,
 } from '../homepage-utils';
+
+describe('normalizeOptionalText', () => {
+  it('returns trimmed string for non-empty input', () => {
+    expect(normalizeOptionalText(' 60vh ')).toBe('60vh');
+  });
+
+  it('returns null for empty or whitespace-only input', () => {
+    expect(normalizeOptionalText('')).toBeNull();
+    expect(normalizeOptionalText('   ')).toBeNull();
+    expect(normalizeOptionalText(undefined)).toBeNull();
+  });
+});
+
+describe('resolveBooleanFlag', () => {
+  it('returns explicit boolean values unchanged', () => {
+    expect(resolveBooleanFlag(true, false)).toBe(true);
+    expect(resolveBooleanFlag(false, true)).toBe(false);
+  });
+
+  it('falls back when value is nullish', () => {
+    expect(resolveBooleanFlag(undefined, true)).toBe(true);
+    expect(resolveBooleanFlag(null, false)).toBe(false);
+  });
+});
 
 describe('getImageUrl', () => {
   beforeEach(() => {

@@ -33,10 +33,14 @@ function resolveThumbnailSrc(thumbnail: string | null | undefined) {
 
 export const ProductCard = ({
   product,
-  className
+  className,
+  showPrice = true,
+  showVendor = true,
 }: {
   product: HttpTypes.StoreProduct | Product;
   className?: string;
+  showPrice?: boolean;
+  showVendor?: boolean;
 }) => {
   const t = useTranslations('products');
 
@@ -75,7 +79,7 @@ export const ProductCard = ({
         className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[22px] bg-primary"
         data-testid="product-card-image-container"
       >
-        {seller?.name && (
+        {showVendor && seller?.name && (
           <div className="absolute left-3 top-3 z-10 max-w-[calc(100%-24px)]">
             <span className="bb-pill max-w-full truncate">{seller.name}</span>
           </div>
@@ -144,19 +148,21 @@ export const ProductCard = ({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2" data-testid="product-card-price">
-            <p className="text-lg font-medium text-primary" data-testid="product-card-current-price">
-              {cheapestPrice?.calculated_price}
-            </p>
-            {cheapestPrice?.calculated_price !== cheapestPrice?.original_price && (
-              <p className="text-sm text-gray-500 line-through" data-testid="product-card-original-price">
-                {cheapestPrice?.original_price}
+          {showPrice && (
+            <div className="flex items-center gap-2" data-testid="product-card-price">
+              <p className="text-lg font-medium text-primary" data-testid="product-card-current-price">
+                {cheapestPrice?.calculated_price}
               </p>
-            )}
-          </div>
+              {cheapestPrice?.calculated_price !== cheapestPrice?.original_price && (
+                <p className="text-sm text-gray-500 line-through" data-testid="product-card-original-price">
+                  {cheapestPrice?.original_price}
+                </p>
+              )}
+            </div>
+          )}
         </LocalizedClientLink>
         <div className="mt-auto flex items-center justify-between gap-3">
-          {seller && (
+          {showVendor && seller && (
             <LocalizedClientLink
               href={`/salony/${seller.handle}`}
               aria-label={t('seller_aria', { name: seller.name })}

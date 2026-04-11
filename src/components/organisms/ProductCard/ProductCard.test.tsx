@@ -155,4 +155,19 @@ describe('ProductCard — core rendering', () => {
     const result = ProductCard({ product: null as any })
     expect(result).toBeNull()
   })
+
+  it('does not render price section when showPrice=false', () => {
+    const result = ProductCard({ product: baseProduct, showPrice: false }) as ReactEl
+    const priceContainer = findElement(
+      result,
+      el => (el.props as Record<string, unknown>)?.['data-testid'] === 'product-card-price',
+    )
+    expect(priceContainer).toBeNull()
+  })
+
+  it('does not render vendor name when showVendor=false even if seller exists', () => {
+    const product = { ...baseProduct, seller: sellerData }
+    const result = ProductCard({ product, showVendor: false }) as ReactEl
+    expect(findText(result, sellerData.name)).toBe(false)
+  })
 })
