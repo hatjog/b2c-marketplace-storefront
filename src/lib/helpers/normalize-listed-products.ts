@@ -18,6 +18,24 @@ const PLACEHOLDER_PATTERNS = [
 
 type QualityGateFailure = { criterion: string; detail: string };
 
+function resolveSingleSeller(product: ListedProduct, preferredSellerId?: string): SellerProps | null {
+  const sellerValue = (product as ListedProduct & { seller?: SellerProps | SellerProps[] | null }).seller;
+
+  if (Array.isArray(sellerValue)) {
+    if (preferredSellerId) {
+      const preferredSeller = sellerValue.find((seller) => seller?.id === preferredSellerId);
+      if (preferredSeller) {
+        return preferredSeller as SellerProps;
+      }
+    }
+
+    const activeSeller = sellerValue.find((seller) => seller?.store_status === 'ACTIVE');
+    return (activeSeller ?? sellerValue[0] ?? null) as SellerProps | null;
+  }
+
+  return (sellerValue ?? null) as SellerProps | null;
+}
+
 function checkQualityGate(product: ListedProduct): QualityGateFailure[] {
   const failures: QualityGateFailure[] = [];
 
@@ -44,8 +62,18 @@ function checkQualityGate(product: ListedProduct): QualityGateFailure[] {
   return failures;
 }
 
-export const normalizeListedProducts = (productsRaw: ListedProduct[]): ListedProduct[] => {
+export const normalizeListedProducts = (
+  productsRaw: ListedProduct[],
+  preferredSellerId?: string
+): ListedProduct[] => {
   return productsRaw
+    .map((product) => {
+      const seller = resolveSingleSeller(product, preferredSellerId);
+      return {
+        ...product,
+        seller,
+      };
+    })
     .filter(product => product.seller?.store_status === 'ACTIVE' || !product.seller)
     .filter(product => {
       const failures = checkQualityGate(product);

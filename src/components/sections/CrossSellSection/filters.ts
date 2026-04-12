@@ -21,10 +21,9 @@ export function filterCrossSellProducts(
 
 /**
  * Filter for seller-embedded products (from product.seller.products).
- * Applies the same price check as filterCrossSellProducts — seller products
- * now include calculated_price via the listProducts fields query.
- *
- * Intentionally identical to filterCrossSellProducts — keep in sync if either changes.
+ * Applies the same price check as filterCrossSellProducts; when seller-embedded
+ * products do not include pricing context, this will intentionally suppress the
+ * same-seller cross-sell block instead of failing the PDP request.
  */
 export function filterCrossSellSellerProducts(
   products: HttpTypes.StoreProduct[],

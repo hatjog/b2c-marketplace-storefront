@@ -34,7 +34,7 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
   const groupedBySeller: any = {};
 
   cart.items?.forEach((item: any) => {
-    const seller = item.product?.seller;
+    const seller = resolveCartItemSeller(item.product?.seller);
     if (seller) {
       if (!groupedBySeller[seller.id]) {
         groupedBySeller[seller.id] = {
@@ -60,4 +60,13 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
   });
 
   return groupedBySeller;
+}
+
+function resolveCartItemSeller(sellerValue: any) {
+  if (Array.isArray(sellerValue)) {
+    const activeSeller = sellerValue.find((seller) => seller?.store_status === 'ACTIVE');
+    return activeSeller ?? sellerValue[0] ?? null;
+  }
+
+  return sellerValue ?? null;
 }

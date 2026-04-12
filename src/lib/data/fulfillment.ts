@@ -21,7 +21,8 @@ export const listCartShippingMethods = async (cartId: string, _is_return: boolea
       method: 'GET',
       query: {
         cart_id: cartId,
-        fields: '+service_zone.fulfllment_set.type,*service_zone.fulfillment_set.location.address'
+        fields:
+          'seller.id,seller.name,+service_zone.fulfillment_set.type,*service_zone.fulfillment_set.location.address'
       },
       headers,
       next,

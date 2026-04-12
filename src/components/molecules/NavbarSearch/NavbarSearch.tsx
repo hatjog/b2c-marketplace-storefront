@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import clsx from 'clsx';
-import { redirect, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { Input } from '@/components/atoms/Input/Input';
@@ -21,15 +21,16 @@ export const NavbarSearch = ({
   searchParam = 'query',
 }: Props) => {
   const t = useTranslations('navigation');
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState(searchParams.get(searchParam) || '');
 
   const handleSearch = () => {
     if (search) {
-      redirect(`${submitPath}?${searchParam}=${encodeURIComponent(search)}`);
+      router.push(`${submitPath}?${searchParam}=${encodeURIComponent(search)}`);
     } else {
-      redirect(submitPath);
+      router.push(submitPath);
     }
   };
 

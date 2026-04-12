@@ -34,7 +34,12 @@ type CartItem = {
 };
 
 export type StoreCardShippingMethod = HttpTypes.StoreCartShippingOption & {
+  seller?: {
+    id: string;
+    name: string;
+  };
   seller_id?: string;
+  seller_name?: string;
   service_zone?: {
     fulfillment_set: {
       type: string;
@@ -71,6 +76,22 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   const pathname = usePathname();
 
   const isOpen = searchParams.get('step') === 'delivery';
+
+  const fallbackSeller = (() => {
+    const sellers = Array.from(
+      new Map(
+        (cart.items ?? [])
+          .flatMap(item => (item.product?.seller ? [[item.product.seller.id, item.product.seller.name]] : []))
+      ).entries()
+    );
+
+    if (sellers.length !== 1) {
+      return null;
+    }
+
+    const [id, name] = sellers[0];
+    return { id, name };
+  })();
 
   const _shippingMethods = availableShippingMethods?.filter(
     sm => sm.rules?.find((rule: any) => rule.attribute === 'is_return')?.value !== 'true'
@@ -146,7 +167,9 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   }, [isOpen]);
 
   const groupedBySellerId = _shippingMethods?.reduce((acc: any, method) => {
-    const sellerId = method.seller_id!;
+    const sellerId = method.seller?.id ?? method.seller_id ?? fallbackSeller?.id ?? 'market';
+    const sellerName =
+      method.seller?.name ?? method.seller_name ?? fallbackSeller?.name ?? t('delivery_heading');
 
     if (!acc[sellerId]) {
       acc[sellerId] = [];
@@ -157,7 +180,10 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     );
 
     if (!isNaN(amount)) {
-      acc[sellerId]?.push(method);
+      acc[sellerId]?.push({
+        ...method,
+        seller_name: sellerName,
+      });
     }
 
     return acc;

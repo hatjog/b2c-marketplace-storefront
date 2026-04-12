@@ -13,7 +13,7 @@ import { SORT_OPTIONS } from '@/lib/constants';
 import type { SortOption } from '@/lib/constants';
 import { listCategories } from '@/lib/data/categories';
 import type { ProductQueryParams } from '@/lib/data/products';
-import { listProductsWithSort, listProductTags, listSellerCities } from '@/lib/data/products';
+import { listProductsWithSort, listProductTags, listSellerCities, searchProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveMarketConfig } from '@/lib/portal.server';
@@ -42,6 +42,7 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
   const rawDuration = raw('duration');
   const rawSellerRating = raw('seller_rating');
   const rawPage = raw('page');
+  const rawQuery = raw('query');
 
   const parsedMin = rawMin != null ? Number(rawMin) : NaN;
   const parsedMax = rawMax != null ? Number(rawMax) : NaN;
@@ -88,6 +89,7 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
     maxPrice: !Number.isNaN(parsedMax) && parsedMax >= 0 ? String(parsedMax) : undefined,
     tagIds,
     categoryHandle: rawCategoryHandle && HANDLE_RE.test(rawCategoryHandle) ? rawCategoryHandle : undefined,
+    query: rawQuery?.trim() || undefined,
     cities,
     durations,
     sellerRatings,
@@ -119,7 +121,7 @@ export const ProductListing = async ({
   searchParams?: Record<string, string | string[] | undefined>;
 }) => {
   // Resolve & sanitize filter params from URL search params
-  const { categoryHandle, minPrice, maxPrice, tagIds, cities, durations, sellerRatings, page } = sanitizeSearchParams(searchParams);
+  const { categoryHandle, minPrice, maxPrice, query, tagIds, cities, durations, sellerRatings, page } = sanitizeSearchParams(searchParams);
 
   // Resolve sort option — validate against allowlist, default to 'recommended'
   const rawSort = typeof searchParams.sort === 'string' ? searchParams.sort : undefined;
@@ -186,22 +188,42 @@ export const ProductListing = async ({
     ...(maxPrice ? { max_price: maxPrice } : {})
   };
 
-  let response: { products: HttpTypes.StoreProduct[]; count: number };
+  let totalFiltered = 0;
+  let pages = 0;
+  let paginatedProducts: HttpTypes.StoreProduct[] = [];
+
   try {
-    ({ response } = await listProductsWithSort({
-      seller_id,
-      category_id: resolvedCategoryId,
-      collection_id,
-      countryCode,
-      sortBy,
-      queryParams,
-      cities,
-      tagIds,
-      durations,
-      sellerRatings,
-      page,
-      limit: PRODUCT_LIMIT,
-    }));
+    if (query) {
+      const searchResult = await searchProducts({
+        query,
+        page: page - 1,
+        hitsPerPage: PRODUCT_LIMIT,
+        countryCode,
+      });
+
+      totalFiltered = searchResult.nbHits;
+      pages = searchResult.nbPages;
+      paginatedProducts = searchResult.products;
+    } else {
+      const { response } = await listProductsWithSort({
+        seller_id,
+        category_id: resolvedCategoryId,
+        collection_id,
+        countryCode,
+        sortBy,
+        queryParams,
+        cities,
+        tagIds,
+        durations,
+        sellerRatings,
+        page,
+        limit: PRODUCT_LIMIT,
+      });
+
+      totalFiltered = response.count;
+      pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
+      paginatedProducts = response.products;
+    }
   } catch {
     return (
       <div className="py-12 text-center" data-testid="product-listing-error">
@@ -209,10 +231,6 @@ export const ProductListing = async ({
       </div>
     );
   }
-
-  const totalFiltered = response.count;
-  const pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
-  const paginatedProducts = response.products;
 
   return (
     <div className="space-y-6 py-2" data-testid="product-listing-container">

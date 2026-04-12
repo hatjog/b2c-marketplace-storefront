@@ -43,13 +43,20 @@ export const CartAddressSection = ({
       : true
   );
 
-  const [message, formAction] = useActionState(setAddresses, sameAsBilling);
+  const [message, formAction] = useActionState<string | null, FormData>(setAddresses, null);
 
   useEffect(() => {
-    if (!isAddress) {
+    if (!isAddress && message !== 'success') {
       router.replace(pathname + '?step=address');
     }
-  }, [isAddress]);
+  }, [isAddress, message, pathname, router]);
+
+  useEffect(() => {
+    if (message === 'success' && isOpen) {
+      router.replace(`${pathname}?step=delivery`);
+      router.refresh();
+    }
+  }, [isOpen, message, pathname, router]);
 
   const handleEdit = () => {
     router.replace(pathname + '?step=address');
@@ -82,8 +89,6 @@ export const CartAddressSection = ({
       <form
         action={async data => {
           await formAction(data);
-          router.replace(`${pathname}?step=delivery`);
-          router.refresh();
         }}
       >
         {isOpen ? (
@@ -102,7 +107,7 @@ export const CartAddressSection = ({
               Save
             </Button>
             <ErrorMessage
-              error={message !== 'success' && message}
+              error={message && message !== 'success' ? message : null}
               data-testid="address-error-message"
             />
           </div>

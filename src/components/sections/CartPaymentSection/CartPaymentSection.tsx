@@ -100,9 +100,11 @@ const CartPaymentSection = ({
       }
 
       if (!shouldInputCard) {
-        return router.push(pathname + '?' + createQueryString('step', 'review'), {
+        router.push(pathname + '?' + createQueryString('step', 'review'), {
           scroll: false
         });
+        router.refresh();
+        return;
       }
     } catch (err: any) {
       setError(err.message);

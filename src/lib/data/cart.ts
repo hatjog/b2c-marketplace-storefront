@@ -20,6 +20,110 @@ import {
 import { getRegion } from './regions';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
+const CART_RETRIEVE_FIELDS = [
+  '*items',
+  '*region',
+  '*region.countries',
+  '*items.product',
+  '*items.variant',
+  '*items.variant.options',
+  'items.variant.options.option.title',
+  '*items.thumbnail',
+  '*items.metadata',
+  '+items.total',
+  '+items.subtotal',
+  '+items.tax_total',
+  '+items.discount_total',
+  '+items.discount_subtotal',
+  'item_subtotal',
+  'shipping_subtotal',
+  'shipping_total',
+  'tax_total',
+  'discount_total',
+  'discount_subtotal',
+  'subtotal',
+  'total',
+  'currency_code',
+  '*payment_collection',
+  '*payment_collection.payment_sessions',
+  '+payment_collection.payment_sessions.data',
+  '*promotions',
+  '+shipping_methods.name',
+  '*items.product.seller'
+].join(',');
+
+type MedusaNumericLike =
+  | number
+  | string
+  | null
+  | undefined
+  | {
+      numeric_?: number | string;
+      raw_?: {
+        value?: string;
+      };
+    };
+
+function normalizeMedusaNumeric(value: MedusaNumericLike): number | undefined {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : undefined;
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  if (typeof value.numeric_ === 'number') {
+    return Number.isFinite(value.numeric_) ? value.numeric_ : undefined;
+  }
+
+  if (typeof value.numeric_ === 'string' && value.numeric_.trim() !== '') {
+    const parsed = Number(value.numeric_);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  if (typeof value.raw_?.value === 'string' && value.raw_.value.trim() !== '') {
+    const parsed = Number(value.raw_.value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+}
+
+function normalizeCartLineItem(item: HttpTypes.StoreCartLineItem): HttpTypes.StoreCartLineItem {
+  return {
+    ...item,
+    subtotal: normalizeMedusaNumeric(item.subtotal) ?? 0,
+    total: normalizeMedusaNumeric(item.total) ?? 0,
+    tax_total: normalizeMedusaNumeric(item.tax_total) ?? 0,
+    discount_total: normalizeMedusaNumeric(item.discount_total) ?? 0,
+    discount_subtotal: normalizeMedusaNumeric(item.discount_subtotal) ?? 0,
+    original_total: normalizeMedusaNumeric(item.original_total) ?? 0,
+    unit_price: normalizeMedusaNumeric(item.unit_price) ?? item.unit_price
+  } as HttpTypes.StoreCartLineItem;
+}
+
+function normalizeCart(cart: HttpTypes.StoreCart): HttpTypes.StoreCart {
+  return {
+    ...cart,
+    item_subtotal: normalizeMedusaNumeric(cart.item_subtotal) ?? 0,
+    shipping_subtotal: normalizeMedusaNumeric(cart.shipping_subtotal) ?? 0,
+    shipping_total: normalizeMedusaNumeric(cart.shipping_total) ?? 0,
+    tax_total: normalizeMedusaNumeric(cart.tax_total) ?? 0,
+    discount_total: normalizeMedusaNumeric(cart.discount_total) ?? 0,
+    discount_subtotal: normalizeMedusaNumeric(cart.discount_subtotal) ?? 0,
+    subtotal: normalizeMedusaNumeric(cart.subtotal) ?? 0,
+    total: normalizeMedusaNumeric(cart.total) ?? 0,
+    items: cart.items?.map(normalizeCartLineItem)
+  } as HttpTypes.StoreCart;
+}
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -41,15 +145,12 @@ export async function retrieveCart(cartId?: string) {
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
       method: 'GET',
       query: {
-        fields:
-          '*items,*region, *items.product, *items.variant, *items.variant.options, items.variant.options.option.title,' +
-          '*items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *items.product.seller' +
-          ''
+        fields: CART_RETRIEVE_FIELDS
       },
       headers,
       cache: 'no-cache'
     })
-    .then(({ cart }) => cart)
+    .then(({ cart }) => normalizeCart(cart))
     .catch(() => null);
 }
 
@@ -384,6 +485,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 
     await updateCart(data);
     await revalidatePath('/cart');
+    return 'success';
   } catch (e: any) {
     return e.message;
   }

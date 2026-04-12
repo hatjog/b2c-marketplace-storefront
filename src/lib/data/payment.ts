@@ -3,15 +3,11 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { sdk } from '../config';
-import { getAuthHeaders, getCacheOptions } from './cookies';
+import { getAuthHeaders } from './cookies';
 
 export const listCartPaymentMethods = async (regionId: string) => {
   const headers = {
     ...(await getAuthHeaders())
-  };
-
-  const next = {
-    ...(await getCacheOptions('payment_providers'))
   };
 
   return sdk.client
@@ -19,8 +15,7 @@ export const listCartPaymentMethods = async (regionId: string) => {
       method: 'GET',
       query: { region_id: regionId },
       headers,
-      next,
-      cache: 'force-cache'
+      cache: 'no-cache'
     })
     .then(({ payment_providers }) =>
       payment_providers.sort((a, b) => {

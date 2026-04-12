@@ -33,6 +33,7 @@ export const listProducts = async ({
   collection_id,
   forceCache = false,
   includeSellerContext = false,
+  preferredSellerId,
 }: {
   pageParam?: number;
   queryParams?: ProductQueryParams;
@@ -42,6 +43,7 @@ export const listProducts = async ({
   regionId?: string;
   forceCache?: boolean;
   includeSellerContext?: boolean;
+  preferredSellerId?: string;
 }): Promise<{
   response: {
     products: ListedProduct[];
@@ -89,7 +91,6 @@ export const listProducts = async ({
           '*seller.reviews.customer',
           '*seller.reviews.seller',
           '*seller.products.variants',
-          '*seller.products.variants.calculated_price',
         ]
       : []),
     '*attribute_values',
@@ -113,16 +114,16 @@ export const listProducts = async ({
         collection_id,
         limit,
         offset,
-        region_id: region?.id,
         fields,
-        ...queryParams
+        ...queryParams,
+        region_id: region.id,
       },
       headers,
       next: useCached ? { revalidate: 60 } : undefined,
       cache: useCached ? 'force-cache' : 'no-cache'
     })
     .then(({ products: productsRaw, count }) => {
-      const products = normalizeListedProducts(productsRaw);
+      const products = normalizeListedProducts(productsRaw, preferredSellerId);
 
       const nextPage = count > offset + limit ? pageParam + 1 : null;
 
@@ -194,6 +195,7 @@ export const listFilteredProducts = async ({
   queryParams?: ProductQueryParams;
 }> => {
   const region = await getRegion(countryCode);
+  const currencyCode = region?.currency_code ?? undefined;
 
   const effectiveLimit = limit ?? 12;
   // page is 1-indexed from the URL (?page=2); backend accepts 0-indexed offset
@@ -213,6 +215,7 @@ export const listFilteredProducts = async ({
   if (maxPrice) params.max_price = maxPrice;
   if (sortBy && sortBy !== 'recommended') params.order = sortBy;
   if (region?.id) params.region_id = region.id;
+  if (currencyCode) params.currency_code = currencyCode;
 
   const headers = {
     ...(await getAuthHeaders())
@@ -310,7 +313,8 @@ export const listProductsWithSort = async ({
     queryParams: { ...queryParams, limit: FETCH_LIMIT },
     category_id,
     collection_id,
-    countryCode
+    countryCode,
+    preferredSellerId: seller_id,
   });
 
   const backendCount = firstResult.response.count;
@@ -338,7 +342,8 @@ export const listProductsWithSort = async ({
           queryParams: { ...queryParams, limit: FETCH_LIMIT },
           category_id,
           collection_id,
-          countryCode
+          countryCode,
+          preferredSellerId: seller_id,
         })
       )
     );
@@ -447,13 +452,18 @@ export const searchProducts = async (params: {
   }
 
   let region_id = params.region_id;
+  let currency_code = params.currency_code;
 
-  if (!region_id && params.countryCode) {
+  if ((!region_id || !currency_code) && params.countryCode) {
     const region = await getRegion(params.countryCode);
     if (!region) {
       throw new Error(`Region not found for country code: ${params.countryCode}`);
     }
     region_id = region.id;
+    currency_code = currency_code ?? region.currency_code ?? undefined;
+  } else if (!currency_code && region_id) {
+    const region = await retrieveRegion(region_id);
+    currency_code = region.currency_code ?? undefined;
   }
 
   const headers = {
@@ -490,6 +500,7 @@ export const searchProducts = async (params: {
       method: 'POST',
       body: {
         ...bodyParams,
+        ...(currency_code ? { currency_code } : {}),
         region_id,
         customer_id,
         facets,
