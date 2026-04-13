@@ -17,24 +17,22 @@ export const FilterCheckboxOption = ({
   'data-testid'?: string;
 }) => {
   return (
-    <label
-      className={cn('flex cursor-pointer items-center gap-4', disabled && '!cursor-default')}
-      onClick={() => (disabled ? null : onCheck(label))}
+    <Checkbox
+      checked={checked}
+      disabled={disabled}
+      onChange={() => (disabled ? null : onCheck(label))}
+      label={
+        <span
+          className={cn(
+            'label-md !font-normal',
+            checked && '!font-semibold',
+            disabled && 'text-disabled'
+          )}
+        >
+          {label} {amount && <span className="label-sm !font-light">({amount})</span>}
+        </span>
+      }
       {...props}
-    >
-      <Checkbox
-        checked={checked}
-        disabled={disabled}
-      />
-      <p
-        className={cn(
-          'label-md !font-normal',
-          checked && '!font-semibold',
-          disabled && 'text-disabled'
-        )}
-      >
-        {label} {amount && <span className="label-sm !font-light">({amount})</span>}
-      </p>
-    </label>
+    />
   );
 };

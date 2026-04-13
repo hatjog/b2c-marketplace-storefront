@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { ArrowRightIcon } from '@/icons'
-import { getInitialsFromName, getColorFromHandle, produktPlural } from '@/lib/helpers/vendor-badge'
+import { getInitialsFromName, getAvatarTextColor, getColorFromHandle, produktPlural } from '@/lib/helpers/vendor-badge'
 
 export interface VendorBadgeProps {
   vendor: {
@@ -23,6 +23,8 @@ export interface VendorBadgeProps {
 export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
   const avatarSize = variant === 'header' ? 72 : 48
   const initials = getInitialsFromName(vendor.name)
+  const avatarColor = getColorFromHandle(vendor.handle)
+  const avatarTextColor = getAvatarTextColor(avatarColor)
 
   return (
     <Link
@@ -40,14 +42,14 @@ export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
           style={{
             width: avatarSize,
             height: avatarSize,
-            backgroundColor: getColorFromHandle(vendor.handle),
+            backgroundColor: avatarColor,
           }}
           className="absolute inset-0 rounded-full flex items-center justify-center"
           aria-hidden="true"
         >
           <span
-            className="font-[--font-display] font-semibold text-white"
-            style={{ fontSize: Math.round(avatarSize * 0.35) }}
+            className="font-[--font-display] font-semibold"
+            style={{ color: avatarTextColor, fontSize: Math.round(avatarSize * 0.35) }}
           >
             {initials}
           </span>

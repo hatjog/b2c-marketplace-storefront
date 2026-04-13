@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   indeterminate?: boolean;
   error?: boolean;
-  label?: string;
+  label?: React.ReactNode;
   'data-testid'?: string;
 }
 
@@ -19,6 +19,11 @@ export function Checkbox({
   'data-testid': dataTestId,
   ...props
 }: CheckboxProps) {
+  const inputAriaLabel =
+    typeof label === 'string' && label.trim().length > 0
+      ? label
+      : props['aria-label'];
+
   return (
     <label className="flex cursor-pointer items-center gap-2">
       <span
@@ -41,6 +46,7 @@ export function Checkbox({
             props.disabled && 'cursor-default'
           )}
           data-testid={dataTestId ?? 'checkbox'}
+          aria-label={inputAriaLabel}
           {...props}
         />
       </span>
