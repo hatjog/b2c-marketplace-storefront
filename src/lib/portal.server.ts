@@ -1,6 +1,12 @@
 import * as Sentry from '@sentry/nextjs';
 
-import { resolveLegalEntity, resolveRuntimeSocialLinks, type LegalEntity, type MarketSocialLinks } from '@/lib/runtime-market-config';
+import {
+  resolveLegalEntity,
+  resolveRuntimePortalMarketConfig,
+  resolveRuntimeSocialLinks,
+  type LegalEntity,
+  type MarketSocialLinks
+} from '@/lib/runtime-market-config';
 import { getFallbackMarketConfig, type MarketConfig } from '@/lib/portal';
 
 type PayloadCollectionResponse<T> = {
@@ -111,6 +117,15 @@ export async function resolveMarketConfig(marketId: string) {
     withRuntimeLegalEntity(withRuntimeSocialLinks(config, runtimeSocialLinks), legalEntity);
 
   try {
+    const runtimeMarketConfig = await resolveRuntimePortalMarketConfig(marketId);
+
+    if (runtimeMarketConfig) {
+      return {
+        marketConfig: applyRuntimeOverrides(runtimeMarketConfig),
+        usedFallback: false
+      };
+    }
+
     const marketConfig = await fetchMarketConfig(marketId);
 
     if (marketConfig) {

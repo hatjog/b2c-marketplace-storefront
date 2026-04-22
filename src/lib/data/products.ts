@@ -387,15 +387,15 @@ export const listProductsWithSort = async ({
 
 /**
  * Fetches product tags scoped to the current sales channel.
- * Optional `tagGroup` parameter for future server-side group filtering.
+ * Optional `tagGroup` parameter forwards to backend prefix filtering.
  */
-export const listProductTags = async (_tagGroup?: string): Promise<Array<{ id: string; value: string; label: string }>> => {
-  // _tagGroup reserved for future server-side filtering — backend does not support it yet.
+export const listProductTags = async (tagGroup?: string): Promise<Array<{ id: string; value: string; label: string }>> => {
   return sdk.client
     .fetch<{ tags: Array<{ id: string; value: string; label: string }> }>(
-      `/store/product-tags`,
+      `/store/gp-product-tags`,
       {
         method: 'GET',
+        query: tagGroup ? { tag_group: tagGroup } : undefined,
         cache: 'no-cache'
       }
     )
