@@ -16,13 +16,7 @@ import { OrderCard } from './OrderCard';
 
 export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
   const t = useTranslations('reviews');
-  const [showForm, setShowForm] = useState<
-    | (HttpTypes.StoreOrder & {
-        seller: { id: string; name: string; reviews?: any[] };
-        reviews: any[];
-      })
-    | null
-  >(null);
+  const [showForm, setShowForm] = useState<Order | null>(null);
   const pathname = usePathname();
 
   return (

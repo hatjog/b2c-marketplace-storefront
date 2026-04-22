@@ -74,6 +74,10 @@ export function resolveBooleanFlag(value: boolean | null | undefined, fallback: 
   return typeof value === 'boolean' ? value : fallback;
 }
 
+function shouldPrefixWithPortalBaseUrl(resolved: string) {
+  return resolved.startsWith('/api/media/');
+}
+
 export function getImageUrl(image: HeroImage, fallback?: string, portalBaseUrl?: string): string | null {
   // !image catches null/undefined; || null normalizes empty strings to null
   const raw =
@@ -85,10 +89,8 @@ export function getImageUrl(image: HeroImage, fallback?: string, portalBaseUrl?:
   const resolved = raw?.trim() || null;
 
   if (resolved) {
-    // Prefix relative paths (e.g. /api/media/...) with portal base URL so
-    // storefront server components resolve images against Portal, not their own origin.
-    // Only applied when portalBaseUrl is provided and the path is root-relative.
-    if (portalBaseUrl && resolved.startsWith('/') && !resolved.startsWith('//')) {
+    // Payload media endpoints stay rooted at Portal; same-origin app routes should remain untouched.
+    if (portalBaseUrl && shouldPrefixWithPortalBaseUrl(resolved)) {
       const base = portalBaseUrl.replace(/\/$/, '');
       return `${base}${resolved}`;
     }

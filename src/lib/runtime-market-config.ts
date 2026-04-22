@@ -7,6 +7,8 @@ import { cache } from 'react';
 
 import type { MarketConfig } from '@/lib/portal';
 
+const RUNTIME_ASSET_ROUTE_BASE = '/api/runtime-market-assets';
+
 const SOCIAL_LINK_KEYS = [
   'facebook',
   'instagram',
@@ -93,16 +95,20 @@ const resolveConfigRoot = cache(async () => {
   return candidates[0];
 });
 
-function getMarketConfigPath(configRoot: string, marketId: string) {
-  const instanceId = process.env.GP_INSTANCE_ID?.trim() || 'gp-dev';
+function getRuntimeInstanceId() {
+  return process.env.GP_INSTANCE_ID?.trim() || 'gp-dev';
+}
 
-  return path.resolve(configRoot, instanceId, 'markets', marketId, 'market.yaml');
+function getMarketRootPath(configRoot: string, marketId: string) {
+  return path.resolve(configRoot, getRuntimeInstanceId(), 'markets', marketId);
+}
+
+function getMarketConfigPath(configRoot: string, marketId: string) {
+  return path.resolve(getMarketRootPath(configRoot, marketId), 'market.yaml');
 }
 
 function getHomepageConfigPath(configRoot: string, marketId: string) {
-  const instanceId = process.env.GP_INSTANCE_ID?.trim() || 'gp-dev';
-
-  return path.resolve(configRoot, instanceId, 'markets', marketId, 'homepage.yaml');
+  return path.resolve(getMarketRootPath(configRoot, marketId), 'homepage.yaml');
 }
 
 async function readYamlRecord(filePath: string, errorScope: string): Promise<Record<string, unknown> | null> {
@@ -213,8 +219,82 @@ function normalizeRelativePath(value: unknown): string | null {
   return candidate;
 }
 
-function normalizeAssetReference(value: unknown): string | null {
-  return normalizeHttpUrl(value) ?? normalizeRelativePath(value);
+function normalizeRuntimeAssetPath(value: unknown): string | null {
+  const candidate = normalizeNonEmptyString(value);
+  if (!candidate) {
+    return null;
+  }
+
+  const normalized = candidate.replaceAll('\\', '/').replace(/^\.\/+/, '');
+  if (!normalized || normalized.startsWith('/')) {
+    return null;
+  }
+
+  const segments = normalized.split('/').filter(Boolean);
+  if (segments.length === 0 || segments.some(segment => segment === '.' || segment === '..')) {
+    return null;
+  }
+
+  return segments[0] === 'assets' ? segments.join('/') : ['assets', ...segments].join('/');
+}
+
+function buildRuntimeAssetUrl(marketId: string, assetPath: string): string {
+  const encodedPath = assetPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+  return `${RUNTIME_ASSET_ROUTE_BASE}/${encodeURIComponent(marketId)}/${encodedPath}`;
+}
+
+function normalizeAssetReference(value: unknown, marketId: string): string | null {
+  const runtimeAssetPath = normalizeRuntimeAssetPath(value);
+
+  return (
+    normalizeHttpUrl(value) ??
+    normalizeRelativePath(value) ??
+    (runtimeAssetPath && marketId ? buildRuntimeAssetUrl(marketId, runtimeAssetPath) : null)
+  );
+}
+
+function normalizeRuntimeAssetSegments(assetPathSegments: string[]): string[] | null {
+  if (!Array.isArray(assetPathSegments) || assetPathSegments.length === 0) {
+    return null;
+  }
+
+  const segments = assetPathSegments.flatMap(segment => {
+    const normalized = normalizeNonEmptyString(segment)?.replaceAll('\\', '/');
+    if (!normalized) {
+      return [];
+    }
+
+    return normalized.split('/').filter(Boolean);
+  });
+
+  if (segments.length === 0 || segments.some(segment => segment === '.' || segment === '..')) {
+    return null;
+  }
+
+  return segments;
+}
+
+export async function resolveRuntimeAssetFilePath(
+  marketId: string,
+  assetPathSegments: string[]
+): Promise<string | null> {
+  const normalizedMarketId = normalizeNonEmptyString(marketId);
+  const normalizedSegments = normalizeRuntimeAssetSegments(assetPathSegments);
+
+  if (!normalizedMarketId || !normalizedSegments) {
+    return null;
+  }
+
+  const configRoot = await resolveConfigRoot();
+  const marketRoot = getMarketRootPath(configRoot, normalizedMarketId);
+  const candidatePath = path.resolve(marketRoot, ...normalizedSegments);
+  const relativeToMarketRoot = path.relative(marketRoot, candidatePath);
+
+  if (relativeToMarketRoot.startsWith('..') || path.isAbsolute(relativeToMarketRoot)) {
+    return null;
+  }
+
+  return candidatePath;
 }
 
 function normalizeTitlePattern(value: unknown): string | null {
@@ -329,16 +409,16 @@ function normalizeFooter(value: unknown): MarketConfig['footer'] | null {
   };
 }
 
-function normalizeHomepageImage(value: unknown) {
+function normalizeHomepageImage(value: unknown, marketId: string) {
   if (typeof value === 'string') {
-    return normalizeAssetReference(value);
+    return normalizeAssetReference(value, marketId);
   }
 
   if (!isRecord(value)) {
     return null;
   }
 
-  const url = normalizeAssetReference(value.url);
+  const url = normalizeAssetReference(value.url, marketId);
   return url ? { url } : null;
 }
 
@@ -366,7 +446,7 @@ function normalizeHomepageButtons(value: unknown) {
   return buttons.length > 0 ? buttons : null;
 }
 
-function normalizeStyleSectionItems(value: unknown) {
+function normalizeStyleSectionItems(value: unknown, marketId: string) {
   if (!Array.isArray(value)) {
     return null;
   }
@@ -378,7 +458,7 @@ function normalizeStyleSectionItems(value: unknown) {
 
     const label = normalizeNonEmptyString(item.label);
     const link = normalizeNonEmptyString(item.link);
-    const image = normalizeHomepageImage(item.image);
+    const image = normalizeHomepageImage(item.image, marketId);
 
     if (!label || !link) {
       return [];
@@ -391,7 +471,8 @@ function normalizeStyleSectionItems(value: unknown) {
 }
 
 function normalizeHomepageSections(
-  value: HomepageRuntimeConfig | null
+  value: HomepageRuntimeConfig | null,
+  marketId: string
 ): MarketConfig['homepage_sections'] | null {
   if (!isRecord(value?.sections)) {
     return null;
@@ -409,7 +490,7 @@ function normalizeHomepageSections(
     };
 
     if ('image' in section) {
-      normalizedSection.image = normalizeHomepageImage(section.image);
+      normalizedSection.image = normalizeHomepageImage(section.image, marketId);
     }
 
     if ('buttons' in section) {
@@ -417,7 +498,7 @@ function normalizeHomepageSections(
     }
 
     if ('items' in section) {
-      normalizedSection.items = normalizeStyleSectionItems(section.items);
+      normalizedSection.items = normalizeStyleSectionItems(section.items, marketId);
     }
 
     return [normalizedSection];
@@ -495,7 +576,7 @@ export const resolveRuntimePortalMarketConfig = cache(async (
   return {
     market_id: normalizeNonEmptyString(marketConfig?.market_id) ?? marketId,
     name: normalizeMarketName(marketConfig?.name, titlePattern, marketId),
-    logo: normalizeAssetReference(marketConfig?.storefront?.logo),
+    logo: normalizeAssetReference(marketConfig?.storefront?.logo, marketId),
     primary_color: normalizeNonEmptyString(marketConfig?.storefront?.primary_color),
     theme: normalizeNonEmptyString(marketConfig?.storefront?.theme),
     seo_defaults: titlePattern ? { title_pattern: titlePattern } : null,
@@ -506,9 +587,9 @@ export const resolveRuntimePortalMarketConfig = cache(async (
     storefront_filters: Array.isArray(marketConfig?.storefront?.storefront_filters)
       ? (marketConfig.storefront.storefront_filters as MarketConfig['storefront_filters'])
       : null,
-    homepage_sections: normalizeHomepageSections(homepageConfig),
+    homepage_sections: normalizeHomepageSections(homepageConfig, marketId),
     tenant: null,
-    favicon: normalizeAssetReference(marketConfig?.storefront?.favicon),
+    favicon: normalizeAssetReference(marketConfig?.storefront?.favicon, marketId),
     vendor_panel_url: normalizeHttpUrl(marketConfig?.storefront?.vendor_panel_url),
     legal_entity: normalizeLegalEntity(marketConfig?.legal_entity)
   } satisfies MarketConfig;

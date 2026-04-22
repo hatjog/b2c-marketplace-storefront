@@ -439,7 +439,7 @@ export const searchProducts = async (params: {
   customer_id?: string;
   customer_group_id?: string[];
 }): Promise<{
-  products: (HttpTypes.StoreProduct & { seller?: SellerProps })[];
+  products: ListedProduct[];
   nbHits: number;
   page: number;
   nbPages: number;
@@ -489,7 +489,7 @@ export const searchProducts = async (params: {
 
   return sdk.client
     .fetch<{
-      products: (HttpTypes.StoreProduct & { seller?: SellerProps })[];
+      products: ListedProduct[];
       nbHits: number;
       page: number;
       nbPages: number;

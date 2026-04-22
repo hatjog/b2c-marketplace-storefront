@@ -133,6 +133,17 @@ describe('getImageUrl', () => {
     expect(console.warn).not.toHaveBeenCalled();
   });
 
+  it('keeps same-origin runtime asset route unchanged when portalBaseUrl is provided', () => {
+    expect(
+      getImageUrl(
+        '/api/runtime-market-assets/bonbeauty/assets/hero.jpg',
+        undefined,
+        'http://localhost:9003/',
+      ),
+    ).toBe('/api/runtime-market-assets/bonbeauty/assets/hero.jpg');
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
   it('returns fallback when image is whitespace-only string', () => {
     expect(getImageUrl('   ', '/fallback.jpg')).toBe('/fallback.jpg');
     expect(console.warn).toHaveBeenCalledWith('[homepage] image missing, using fallback:', '/fallback.jpg');

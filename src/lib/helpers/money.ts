@@ -13,7 +13,7 @@ function getCurrencyFractionDigits(currencyCode: string, locale: string) {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currencyCode,
-  }).resolvedOptions().maximumFractionDigits;
+  }).resolvedOptions().maximumFractionDigits ?? 2;
 }
 
 export const convertToLocale = ({

@@ -14,10 +14,12 @@ export const SellerPageHeader = async ({
   user: HttpTypes.StoreCustomer | null;
 }) => {
   const t = await getTranslations('products');
-  const reviews = Array.isArray(seller.reviews) ? seller.reviews.filter(Boolean) : [];
+  const reviews = Array.isArray(seller.reviews)
+    ? (seller.reviews.filter(Boolean) as Array<{ rating?: number | null }>)
+    : [];
   const reviewCount = reviews.length;
   const rating = reviewCount
-    ? reviews.reduce((sum, review) => sum + Number(review?.rating ?? 0), 0) / reviewCount
+    ? reviews.reduce((sum: number, review: { rating?: number | null }) => sum + Number(review?.rating ?? 0), 0) / reviewCount
     : null;
   const locationText = [seller.city, seller.address_line]
     .map((value: string | null | undefined) => value?.trim())

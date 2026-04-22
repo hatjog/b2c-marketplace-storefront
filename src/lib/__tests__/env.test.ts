@@ -8,6 +8,7 @@ describe('env validation', () => {
   beforeEach(() => {
     vi.resetModules()
     process.env = { ...originalEnv }
+    vi.unstubAllEnvs()
   })
 
   afterEach(() => {
@@ -37,7 +38,7 @@ describe('env validation', () => {
   it('uses the local backend default in development when backend env vars are missing', async () => {
     delete process.env.MEDUSA_BACKEND_URL
     delete process.env.MEDUSA_URL
-    process.env.NODE_ENV = 'development'
+    vi.stubEnv('NODE_ENV', 'development')
     process.env.STOREFRONT_BASE_URL = storefrontUrl
 
     const env = await import('../env')
@@ -48,7 +49,7 @@ describe('env validation', () => {
   it('throws when backend url sources are missing outside development', async () => {
     delete process.env.MEDUSA_BACKEND_URL
     delete process.env.MEDUSA_URL
-    process.env.NODE_ENV = 'production'
+    vi.stubEnv('NODE_ENV', 'production')
     process.env.STOREFRONT_BASE_URL = storefrontUrl
 
     const env = await import('../env')
@@ -69,7 +70,7 @@ describe('env validation', () => {
   it('error message contains helpful hint about .env.local', async () => {
     delete process.env.MEDUSA_BACKEND_URL
     delete process.env.MEDUSA_URL
-    process.env.NODE_ENV = 'production'
+    vi.stubEnv('NODE_ENV', 'production')
     process.env.STOREFRONT_BASE_URL = storefrontUrl
 
     const env = await import('../env')

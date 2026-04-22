@@ -64,6 +64,14 @@ type MedusaNumericLike =
       };
     };
 
+type StoreCartLineItemWithDiscountSubtotal = HttpTypes.StoreCartLineItem & {
+  discount_subtotal?: MedusaNumericLike;
+};
+
+type StoreCartWithDiscountSubtotal = HttpTypes.StoreCart & {
+  discount_subtotal?: MedusaNumericLike;
+};
+
 function normalizeMedusaNumeric(value: MedusaNumericLike): number | undefined {
   if (typeof value === 'number') {
     return Number.isFinite(value) ? value : undefined;
@@ -98,19 +106,23 @@ function normalizeMedusaNumeric(value: MedusaNumericLike): number | undefined {
 }
 
 function normalizeCartLineItem(item: HttpTypes.StoreCartLineItem): HttpTypes.StoreCartLineItem {
+  const lineItem = item as StoreCartLineItemWithDiscountSubtotal;
+
   return {
     ...item,
     subtotal: normalizeMedusaNumeric(item.subtotal) ?? 0,
     total: normalizeMedusaNumeric(item.total) ?? 0,
     tax_total: normalizeMedusaNumeric(item.tax_total) ?? 0,
     discount_total: normalizeMedusaNumeric(item.discount_total) ?? 0,
-    discount_subtotal: normalizeMedusaNumeric(item.discount_subtotal) ?? 0,
+    discount_subtotal: normalizeMedusaNumeric(lineItem.discount_subtotal) ?? 0,
     original_total: normalizeMedusaNumeric(item.original_total) ?? 0,
     unit_price: normalizeMedusaNumeric(item.unit_price) ?? item.unit_price
   } as HttpTypes.StoreCartLineItem;
 }
 
 function normalizeCart(cart: HttpTypes.StoreCart): HttpTypes.StoreCart {
+  const normalizedCart = cart as StoreCartWithDiscountSubtotal;
+
   return {
     ...cart,
     item_subtotal: normalizeMedusaNumeric(cart.item_subtotal) ?? 0,
@@ -118,7 +130,7 @@ function normalizeCart(cart: HttpTypes.StoreCart): HttpTypes.StoreCart {
     shipping_total: normalizeMedusaNumeric(cart.shipping_total) ?? 0,
     tax_total: normalizeMedusaNumeric(cart.tax_total) ?? 0,
     discount_total: normalizeMedusaNumeric(cart.discount_total) ?? 0,
-    discount_subtotal: normalizeMedusaNumeric(cart.discount_subtotal) ?? 0,
+    discount_subtotal: normalizeMedusaNumeric(normalizedCart.discount_subtotal) ?? 0,
     subtotal: normalizeMedusaNumeric(cart.subtotal) ?? 0,
     total: normalizeMedusaNumeric(cart.total) ?? 0,
     items: cart.items?.map(normalizeCartLineItem)

@@ -47,20 +47,18 @@ export type StoreCardShippingMethod = HttpTypes.StoreCartShippingOption & {
   };
 };
 
+type AvailableShippingMethod = StoreCardShippingMethod & {
+  rules: any;
+  price_type: string;
+  id: string;
+  amount?: number;
+};
+
 type ShippingProps = {
   cart: Omit<HttpTypes.StoreCart, 'items'> & {
     items?: CartItem[];
   };
-  availableShippingMethods:
-    | (StoreCardShippingMethod &
-        {
-          rules: any;
-          seller_id: string;
-          price_type: string;
-          id: string;
-          amount?: number;
-        }[])
-    | null;
+  availableShippingMethods: AvailableShippingMethod[] | null;
 };
 
 const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShippingMethods }) => {

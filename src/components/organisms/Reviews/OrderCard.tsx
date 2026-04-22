@@ -13,6 +13,8 @@ export const OrderCard = ({
   showForm?: (review: Order) => void;
   testIdPrefix?: string;
 }) => {
+  const firstReview = order.reviews[0];
+
   return (
     <Card
       className="flex w-full justify-between gap-6 px-4"
@@ -78,17 +80,17 @@ export const OrderCard = ({
               className="text-sm text-secondary"
               data-testid={testIdPrefix ? `${testIdPrefix}-review-date` : undefined}
             >
-              {format(order.reviews[0].created_at, 'MMM dd, yyyy')}
+              {firstReview?.created_at ? format(firstReview.created_at, 'MMM dd, yyyy') : '-'}
             </p>
             <StarRating
-              rate={order.reviews[0].rating}
+              rate={Number(firstReview?.rating ?? 0)}
               starSize={12}
             />
             <p
               className="label-md mt-2 whitespace-pre-line break-words"
               data-testid={testIdPrefix ? `${testIdPrefix}-review-note` : undefined}
             >
-              {order.reviews[0].customer_note}
+              {firstReview?.customer_note ?? ''}
             </p>
           </div>
         )}

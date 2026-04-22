@@ -16,7 +16,7 @@ export const ParcelAccordion = ({
 }: {
   orderId: string;
   orderDisplayId: string;
-  createdAt: string | Date;
+  createdAt?: string | Date | null;
   total: number;
   currency_code?: string;
   orders: any[];
@@ -40,7 +40,7 @@ export const ParcelAccordion = ({
         >
           Order date:{' '}
           <span className="text-primary lg:block xl:inline-block">
-            {format(createdAt || '', 'yyyy-MM-dd')}
+            {createdAt ? format(createdAt, 'yyyy-MM-dd') : '-'}
           </span>
         </h2>
         <h2
