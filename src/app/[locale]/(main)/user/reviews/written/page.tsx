@@ -2,7 +2,8 @@ import { LoginForm, UserNavigation } from '@/components/molecules';
 import { ReviewsWritten } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listOrders } from '@/lib/data/orders';
-import { getReviews, isReviewableOrder } from '@/lib/data/reviews';
+import { getReviews } from '@/lib/data/reviews';
+import { isReviewableOrder } from '@/lib/data/reviews.shared';
 
 export default async function Page() {
   const user = await retrieveCustomer();

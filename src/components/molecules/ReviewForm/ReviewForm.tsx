@@ -14,7 +14,8 @@ import {
 
 import { Button } from '@/components/atoms';
 import { InteractiveStarRating } from '@/components/atoms/InteractiveStarRating/InteractiveStarRating';
-import { createReview, type Order } from '@/lib/data/reviews';
+import { createReview } from '@/lib/data/reviews';
+import type { Order } from '@/lib/data/reviews.shared';
 import { cn } from '@/lib/utils';
 
 import { createReviewSchema, type ReviewFormData } from './schema';

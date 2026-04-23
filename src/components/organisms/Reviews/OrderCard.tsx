@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 
 import { Button, Card, StarRating } from '@/components/atoms';
-import type { Order } from '@/lib/data/reviews';
+import type { Order } from '@/lib/data/reviews.shared';
 
 export const OrderCard = ({
   order,

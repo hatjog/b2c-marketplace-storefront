@@ -3,12 +3,10 @@
 import type { HttpTypes } from '@medusajs/types';
 import { revalidatePath } from 'next/cache';
 
-import type { MercurOrderWithOrderSet } from '@/types/medusa-extensions';
-import type { SellerProps } from '@/types/seller';
-
 import { fetchQuery } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
 import { getAuthHeaders } from './cookies';
+import type { Order } from './reviews.shared';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
@@ -30,15 +28,6 @@ export type OrderReview = {
   customer_note?: string | null;
   rating?: number | null;
 };
-
-export type Order = MercurOrderWithOrderSet & {
-  seller: SellerProps;
-  reviews: OrderReview[];
-};
-
-export function isReviewableOrder(order: MercurOrderWithOrderSet | null | undefined): order is Order {
-  return Boolean(order?.seller?.id && order.seller?.name && Array.isArray(order.reviews));
-}
 
 const getReviews = async () => {
   const headers = {

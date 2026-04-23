@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 
 import { Card, NavigationItem } from '@/components/atoms';
 import { Modal, ReviewForm } from '@/components/molecules';
-import type { Order } from '@/lib/data/reviews';
+import type { Order } from '@/lib/data/reviews.shared';
 
 import { navigation } from './navigation';
 import { OrderCard } from './OrderCard';
