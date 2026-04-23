@@ -1,3 +1,5 @@
+import { safeDecodeURIComponent } from './decode-uri';
+
 function normalizeNonEmptyString(value: unknown): string | null {
   if (typeof value !== 'string') {
     return null;
@@ -62,4 +64,22 @@ export function resolveMarketAssetUrl(value: unknown, marketId: string): string 
     normalizeRelativePath(value) ??
     (runtimeAssetPath && marketId ? buildRuntimeAssetUrl(marketId, runtimeAssetPath) : null)
   );
+}
+
+export const STOREFRONT_PLACEHOLDER_IMAGE_SRC = '/images/placeholder.svg';
+
+export function resolveStorefrontImageSrc(
+  value: unknown,
+  marketId: string,
+  fallback = STOREFRONT_PLACEHOLDER_IMAGE_SRC
+): string {
+  const candidate = normalizeNonEmptyString(value);
+
+  if (!candidate) {
+    return fallback;
+  }
+
+  const decodedCandidate = safeDecodeURIComponent(candidate);
+
+  return resolveMarketAssetUrl(decodedCandidate, marketId) ?? fallback;
 }

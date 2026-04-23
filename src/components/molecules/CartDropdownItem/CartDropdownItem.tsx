@@ -1,7 +1,11 @@
 import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
 
-import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
+import {
+  resolveStorefrontImageSrc,
+  STOREFRONT_PLACEHOLDER_IMAGE_SRC,
+} from '@/lib/helpers/asset-reference';
+import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
 
 export const CartDropdownItem = ({
@@ -20,13 +24,15 @@ export const CartDropdownItem = ({
     amount: item.subtotal ?? 0,
     currency_code
   });
+  const thumbnailSrc = resolveStorefrontImageSrc(item.thumbnail, getMarketId());
+  const usesPlaceholderImage = thumbnailSrc === STOREFRONT_PLACEHOLDER_IMAGE_SRC;
 
   return (
     <div className="mb-4 flex gap-2 rounded-sm border p-1">
       <div className="flex h-[132px] w-[100px] items-center justify-center">
-        {item.thumbnail ? (
+        {!usesPlaceholderImage ? (
           <Image
-            src={safeDecodeURIComponent(item.thumbnail)}
+            src={thumbnailSrc}
             alt={item.product_title || 'Product thumbnail'}
             width={80}
             height={90}
@@ -35,7 +41,7 @@ export const CartDropdownItem = ({
           />
         ) : (
           <Image
-            src={'/images/placeholder.svg'}
+            src={STOREFRONT_PLACEHOLDER_IMAGE_SRC}
             alt="Product thumbnail"
             width={50}
             height={66}

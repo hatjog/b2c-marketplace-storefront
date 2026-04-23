@@ -1,7 +1,11 @@
 import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
 
-import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
+import {
+  resolveStorefrontImageSrc,
+  STOREFRONT_PLACEHOLDER_IMAGE_SRC,
+} from '@/lib/helpers/asset-reference';
+import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
 
 export const Item = ({
@@ -20,13 +24,15 @@ export const Item = ({
     amount: item.total ?? 0,
     currency_code: currencyCode
   });
+  const thumbnailSrc = resolveStorefrontImageSrc(item.thumbnail, getMarketId());
+  const usesPlaceholderImage = thumbnailSrc === STOREFRONT_PLACEHOLDER_IMAGE_SRC;
 
   return (
     <div className="flex gap-2 rounded-sm border p-1">
       <div className="flex h-[132px] w-[100px] items-center justify-center">
-        {item.thumbnail ? (
+        {!usesPlaceholderImage ? (
           <Image
-            src={safeDecodeURIComponent(item.thumbnail)}
+            src={thumbnailSrc}
             alt="Product thumbnail"
             width={100}
             height={132}
@@ -34,7 +40,7 @@ export const Item = ({
           />
         ) : (
           <Image
-            src={'/images/placeholder.svg'}
+            src={STOREFRONT_PLACEHOLDER_IMAGE_SRC}
             alt="Product thumbnail"
             width={50}
             height={66}

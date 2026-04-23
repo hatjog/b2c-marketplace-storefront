@@ -8,7 +8,9 @@ import { ProductVariants } from '@/components/molecules';
 import { Chat } from '@/components/organisms/Chat/Chat';
 import { useCartContext } from '@/components/providers';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
+import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { getMarketId } from '@/lib/helpers/market-filter';
 import { toast } from '@/lib/helpers/toast';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
@@ -41,6 +43,7 @@ export const ProductDetailsHeader = ({
   const { addToCart, onAddToCart, cart, isAddingItem } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
+  const marketId = getMarketId();
 
   const { cheapestVariant, cheapestPrice } = getProductPrice({
     product
@@ -91,7 +94,7 @@ export const ProductDetailsHeader = ({
     const total = +(variantPrice?.calculated_price_number || 0);
 
     const storeCartLineItem = {
-      thumbnail: product.thumbnail || '',
+      thumbnail: resolveStorefrontImageSrc(product.thumbnail, marketId),
       product_title: product.title,
       quantity: 1,
       subtotal,

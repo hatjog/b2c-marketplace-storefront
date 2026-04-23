@@ -4,8 +4,12 @@ import Image from 'next/image';
 import { DeleteCartItemButton } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
-import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
+import {
+  resolveStorefrontImageSrc,
+  STOREFRONT_PLACEHOLDER_IMAGE_SRC,
+} from '@/lib/helpers/asset-reference';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
+import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
 
 export const CartItemsProducts = ({
@@ -26,6 +30,8 @@ export const CartItemsProducts = ({
     <div>
       {validProducts.map(product => {
         const { options } = product.variant ?? {};
+        const thumbnailSrc = resolveStorefrontImageSrc(product.thumbnail, getMarketId());
+        const usesPlaceholderImage = thumbnailSrc === STOREFRONT_PLACEHOLDER_IMAGE_SRC;
 
         const total = convertToLocale({
           amount: product.subtotal ?? 0,
@@ -43,9 +49,9 @@ export const CartItemsProducts = ({
                 className="flex h-[132px] w-[100px] items-center justify-center"
                 data-testid="cart-item-image"
               >
-                {product.thumbnail ? (
+                {!usesPlaceholderImage ? (
                   <Image
-                    src={safeDecodeURIComponent(product.thumbnail)}
+                    src={thumbnailSrc}
                     alt="Product thumbnail"
                     width={100}
                     height={132}
@@ -53,7 +59,7 @@ export const CartItemsProducts = ({
                   />
                 ) : (
                   <Image
-                    src={'/images/placeholder.svg'}
+                    src={STOREFRONT_PLACEHOLDER_IMAGE_SRC}
                     alt="Product thumbnail"
                     width={50}
                     height={66}

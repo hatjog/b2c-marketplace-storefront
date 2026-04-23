@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation';
 
 import medusaError from '@/lib/helpers/medusa-error';
 import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
+import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
+import { getMarketId } from '@/lib/helpers/market-filter';
 
 import { fetchQuery, sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
@@ -107,9 +109,11 @@ function normalizeMedusaNumeric(value: MedusaNumericLike): number | undefined {
 
 function normalizeCartLineItem(item: HttpTypes.StoreCartLineItem): HttpTypes.StoreCartLineItem {
   const lineItem = item as StoreCartLineItemWithDiscountSubtotal;
+  const marketId = getMarketId();
 
   return {
     ...item,
+    thumbnail: resolveStorefrontImageSrc(item.thumbnail, marketId),
     subtotal: normalizeMedusaNumeric(item.subtotal) ?? 0,
     total: normalizeMedusaNumeric(item.total) ?? 0,
     tax_total: normalizeMedusaNumeric(item.tax_total) ?? 0,
