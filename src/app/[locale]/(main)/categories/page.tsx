@@ -86,18 +86,17 @@ async function AllCategories({
     }
   ];
 
-  let countryCode: string;
   let itemList: Array<{ '@type': string; position: number; url: string; name: string }> = [];
-  let baseUrl: string;
+  const headersList = await headers();
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
   try {
-    countryCode = await getCountryCode(locale);
+    const countryCode = await getCountryCode(locale);
 
-    // Fetch a small cached list for ItemList JSON-LD
-    const headersList = await headers();
-    const host = headersList.get('host');
-    const protocol = headersList.get('x-forwarded-proto') || 'https';
-    baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+    // Fetch a small cached list for ItemList JSON-LD.
+    // If this auxiliary fetch fails, the listing page should still SSR normally.
     const {
       response: { products: jsonLdProducts }
     } = await listProducts({
@@ -112,8 +111,7 @@ async function AllCategories({
       name: p.title
     }));
   } catch (error) {
-    console.error('Categories data fetch failed:', error);
-    throw error;
+    console.warn('Categories structured data fetch failed:', error);
   }
 
   return (

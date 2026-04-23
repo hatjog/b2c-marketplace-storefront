@@ -63,6 +63,7 @@ export const Header = async ({
         <div className="flex items-center pl-4 lg:w-1/3 lg:justify-center lg:pl-0">
           <LocalizedClientLink
             href="/"
+            locale={locale}
             className="flex items-center gap-2"
             data-testid="header-logo-link"
           >
@@ -92,6 +93,7 @@ export const Header = async ({
           {isLoggedIn && (
             <LocalizedClientLink
               href="/user/wishlist"
+              locale={locale}
               className="relative"
               aria-label={tHeader('wishlist')}
               data-testid="header-wishlist-link"

@@ -28,7 +28,10 @@ export default async function AuthLayout({
         marketConfig={marketConfig}
       />
       {children}
-      <Footer marketConfig={marketConfig} />
+      <Footer
+        marketConfig={marketConfig}
+        locale={locale}
+      />
     </>
   );
 }

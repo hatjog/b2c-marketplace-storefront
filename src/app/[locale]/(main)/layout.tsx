@@ -38,7 +38,10 @@ export default async function RootLayout({
           marketConfig={marketConfig}
         />
         {children}
-        <Footer marketConfig={marketConfig} />
+        <Footer
+          marketConfig={marketConfig}
+          locale={locale}
+        />
       </>
     );
 
@@ -54,7 +57,10 @@ export default async function RootLayout({
           marketConfig={marketConfig}
         />
         {children}
-        <Footer marketConfig={marketConfig} />
+        <Footer
+          marketConfig={marketConfig}
+          locale={locale}
+        />
       </Session>
     </>
   );

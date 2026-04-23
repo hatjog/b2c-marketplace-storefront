@@ -10,7 +10,13 @@ const SECTION_I18N_KEYS: Record<string, string> = {
   connect: 'section_connect'
 };
 
-export async function Footer({ marketConfig }: { marketConfig?: MarketConfig | null } = {}) {
+export async function Footer({
+  marketConfig,
+  locale
+}: {
+  marketConfig?: MarketConfig | null;
+  locale: string;
+}) {
   const t = await getTranslations('footer');
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);
@@ -45,6 +51,7 @@ export async function Footer({ marketConfig }: { marketConfig?: MarketConfig | n
                 <LocalizedClientLink
                   key={label}
                   href={path}
+                  locale={locale}
                   className="label-md block"
                   data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
                 >
