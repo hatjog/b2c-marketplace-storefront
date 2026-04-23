@@ -1,5 +1,8 @@
 import type { HttpTypes } from '@medusajs/types';
 
+import { resolveMarketAssetUrl } from './helpers/asset-reference';
+import { getMarketId } from './helpers/market-filter';
+
 type StoreCollectionWithMetadata = HttpTypes.StoreCollection & {
   metadata?: Record<string, unknown> | null;
 };
@@ -18,8 +21,12 @@ export function getCollectionPhotoUrl(collection: HttpTypes.StoreCollection | nu
   const metadata = getCollectionMetadata(collection);
   const directPhotoUrl = typeof metadata?.photo_url === 'string' ? metadata.photo_url.trim() : '';
 
+  const resolvePhotoUrl = (value: string) => {
+    return resolveMarketAssetUrl(value, getMarketId()) ?? value;
+  };
+
   if (directPhotoUrl) {
-    return directPhotoUrl;
+    return resolvePhotoUrl(directPhotoUrl);
   }
 
   const gpMetadata = metadata?.gp;
@@ -30,5 +37,5 @@ export function getCollectionPhotoUrl(collection: HttpTypes.StoreCollection | nu
   const gpMetadataRecord = gpMetadata as Record<string, unknown>;
   const nestedPhotoUrl =
     typeof gpMetadataRecord.photo_url === 'string' ? gpMetadataRecord.photo_url.trim() : '';
-  return nestedPhotoUrl || null;
+  return nestedPhotoUrl ? resolvePhotoUrl(nestedPhotoUrl) : null;
 }

@@ -2,6 +2,8 @@ import type { HttpTypes } from '@medusajs/types';
 import * as Sentry from '@sentry/nextjs';
 
 import type { SellerProps } from '@/types/seller';
+import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
+import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpField } from '@/lib/helpers/metadata-utils';
 
 export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null };
@@ -17,6 +19,22 @@ const PLACEHOLDER_PATTERNS = [
 ];
 
 type QualityGateFailure = { criterion: string; detail: string };
+
+function normalizeProductAssetReferences(product: ListedProduct, marketId: string): ListedProduct {
+  const thumbnail = resolveMarketAssetUrl(product.thumbnail, marketId) ?? product.thumbnail ?? null;
+  const images = Array.isArray(product.images)
+    ? product.images.flatMap(image => {
+        const url = resolveMarketAssetUrl(image?.url, marketId);
+        return url ? [{ ...image, url }] : [];
+      })
+    : product.images;
+
+  return {
+    ...product,
+    thumbnail,
+    images,
+  };
+}
 
 function resolveSingleSeller(product: ListedProduct, preferredSellerId?: string): SellerProps | null {
   const sellerValue = (product as ListedProduct & { seller?: SellerProps | SellerProps[] | null }).seller;
@@ -66,11 +84,14 @@ export const normalizeListedProducts = (
   productsRaw: ListedProduct[],
   preferredSellerId?: string
 ): ListedProduct[] => {
+  const marketId = getMarketId();
+
   return productsRaw
     .map((product) => {
-      const seller = resolveSingleSeller(product, preferredSellerId);
+      const normalizedProduct = normalizeProductAssetReferences(product, marketId);
+      const seller = resolveSingleSeller(normalizedProduct, preferredSellerId);
       return {
-        ...product,
+        ...normalizedProduct,
         seller,
       };
     })

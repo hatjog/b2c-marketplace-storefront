@@ -80,7 +80,7 @@ const SingleCollectionsPage = async ({
 
   const breadcrumbsItems = [
     {
-      path: collection.handle,
+      path: `/collections/${collection.handle}`,
       label: collection.title
     }
   ];

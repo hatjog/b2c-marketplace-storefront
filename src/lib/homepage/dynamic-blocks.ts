@@ -6,12 +6,29 @@ import {
   mapPayloadPageToBlogPost
 } from '@/lib/blog';
 import { buildMedusaUrl } from '@/lib/env';
+import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
 import { filterByMarket, filterByMarketOrKeepUntagged, getMarketId } from '@/lib/helpers/market-filter';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import type { BlogPost } from '@/types/blog';
 import type { SortOptions } from '@/types/product';
 
 type HomepageProductsSort = 'newest' | 'price_asc' | 'price_desc';
+
+function normalizeHomepageProductAssets(
+  products: HttpTypes.StoreProduct[],
+  marketId: string
+): HttpTypes.StoreProduct[] {
+  return products.map(product => ({
+    ...product,
+    thumbnail: resolveMarketAssetUrl(product.thumbnail, marketId) ?? product.thumbnail ?? null,
+    images: Array.isArray(product.images)
+      ? product.images.flatMap(image => {
+          const url = resolveMarketAssetUrl(image?.url, marketId);
+          return url ? [{ ...image, url }] : [];
+        })
+      : product.images,
+  }));
+}
 
 function getPublishableHeaders() {
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
@@ -113,9 +130,10 @@ export async function fetchHomepageProducts({
       }
     }
 
-    const marketFiltered = filterByMarketOrKeepUntagged(products, getMarketId());
+    const marketId = getMarketId();
+    const marketFiltered = filterByMarketOrKeepUntagged(products, marketId);
     const sorted = sortProducts(marketFiltered, resolvedSort);
-    return sorted.slice(0, resolvedLimit);
+    return normalizeHomepageProductAssets(sorted, marketId).slice(0, resolvedLimit);
   } catch (error) {
     console.error('[homepage][products] request error', error);
     return [];
@@ -162,16 +180,26 @@ export async function fetchHomepageCategories({
     };
 
     const allCategories = data.product_categories || [];
-    const marketFiltered = filterByMarket(allCategories, getMarketId());
+    const marketId = getMarketId();
+    const marketFiltered = filterByMarket(allCategories, marketId);
     const rootCategories = marketFiltered
       .filter(cat => !cat.parent_category_id)
       .filter(cat => !hideEmpty || (Array.isArray(cat.category_children) && cat.category_children.length > 0));
     const mapped = rootCategories
-      .map(cat => ({
-        name: cat.name,
-        handle: cat.handle,
-        ...(cat.metadata ? { metadata: cat.metadata as Record<string, any> } : {}),
-      }))
+      .map(cat => {
+        const metadata = cat.metadata ? { ...(cat.metadata as Record<string, any>) } : undefined;
+        const resolvedPhotoUrl = resolveMarketAssetUrl(metadata?.photo_url, marketId);
+
+        if (metadata && resolvedPhotoUrl) {
+          metadata.photo_url = resolvedPhotoUrl;
+        }
+
+        return {
+          name: cat.name,
+          handle: cat.handle,
+          ...(metadata ? { metadata } : {}),
+        };
+      })
       .filter(cat => Boolean(cat.name && cat.handle));
 
     return mapped.slice(0, resolvedLimit);
