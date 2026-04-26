@@ -49,7 +49,7 @@ export async function Footer({
             >
               {links.map(({ label, path }) => (
                 <LocalizedClientLink
-                  key={label}
+                  key={`${section}-${path}`}
                   href={path}
                   locale={locale}
                   className="label-md block"
@@ -76,7 +76,7 @@ export async function Footer({
                 <a
                   aria-label={t('go_to_social', { name: label })}
                   title={t('go_to_social', { name: label })}
-                  key={label}
+                  key={href}
                   href={href}
                   className="label-md block"
                   target="_blank"
