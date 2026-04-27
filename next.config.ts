@@ -64,12 +64,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true
   },
   async headers() {
+    const cspMode =
+      process.env.STOREFRONT_CSP_MODE ??
+      (process.env.NODE_ENV !== 'production' ? 'report-only' : undefined);
     return [
       {
         source: '/:path*',
         headers: [
           {
-            key: resolveCspHeaderName(),
+            key: resolveCspHeaderName(cspMode),
             value: CSP_DIRECTIVES,
           },
         ],
