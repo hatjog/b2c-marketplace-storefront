@@ -5,6 +5,7 @@ import enMessages from './messages/en.json';
 import plMessages from './messages/pl.json';
 import { loadSlugRedirectsForNext } from './scripts/slug-redirects';
 import { generateLocaleRewrites } from './src/i18n/locale-rewrite-rules';
+import { CSP_DIRECTIVES, resolveCspHeaderName } from './src/lib/security/csp';
 
 const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
 
@@ -61,6 +62,19 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: resolveCspHeaderName(),
+            value: CSP_DIRECTIVES,
+          },
+        ],
+      },
+    ];
   },
   async redirects() {
     return [
