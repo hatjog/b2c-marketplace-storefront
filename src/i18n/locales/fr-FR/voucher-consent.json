@@ -1,0 +1,33 @@
+{
+  "voucher": {
+    "consent": {
+      "heading": "Consentement au traitement des données du destinataire",
+      "purpose": "Je consens au traitement des données du destinataire aux fins de la livraison du bon. Les données seront conservées pendant 365 jours et peuvent être supprimées sur demande, conformément au RGPD.",
+      "checkbox_label": "J'ai lu et j'accepte les informations ci-dessus.",
+      "checkbox_aria": "Je consens au traitement des données du destinataire",
+      "grant_cta": "Continuer",
+      "pending_cta": "Traitement en cours...",
+      "skip_cta": "Continuer sans consentement",
+      "withdraw_cta": "Retirer le consentement",
+      "withdraw_explainer": "Vous pouvez retirer votre consentement à tout moment. Le retrait est aussi simple que l'octroi (RGPD art. 7, par. 3).",
+      "tooltip_required": "Cochez la case pour continuer.",
+      "error_audit_failed": "Impossible d'enregistrer votre consentement. Veuillez réessayer dans un instant.",
+      "privacy_link": "Politique de confidentialité",
+      "privacy_link_aria": "Ouvrir la politique de confidentialité dans un nouvel onglet",
+      "pause": {
+        "region_aria": "Options de mise en pause de la décision",
+        "heading": "Pas encore prêt(e) à décider ?",
+        "description_default": "Si vous avez besoin de plus de temps, vous pouvez mettre votre décision en pause.",
+        "description_considering": "Vous réfléchissez. Vous pouvez mettre en pause pour 14 jours ou revenir au consentement.",
+        "description_paused": "Décision en pause. Nous reviendrons vers vous dans 14 jours ; vous pouvez aussi reprendre ou retirer le consentement.",
+        "description_timeout": "La fenêtre de pause a expiré. Vous pouvez reprendre le processus ou retirer votre consentement.",
+        "description_withdrawn": "Consentement retiré. Les données du destinataire ont été marquées pour suppression (RGPD art. 17).",
+        "cta_consider": "Je réfléchis",
+        "cta_pause": "Mettre en pause 14 jours",
+        "cta_cancel": "Annuler la pause",
+        "cta_resume": "Reprendre",
+        "cta_withdraw": "Retirer le consentement"
+      }
+    }
+  }
+}

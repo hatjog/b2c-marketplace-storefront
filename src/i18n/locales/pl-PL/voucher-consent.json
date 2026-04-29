@@ -1,0 +1,33 @@
+{
+  "voucher": {
+    "consent": {
+      "heading": "Zgoda na przetwarzanie danych odbiorcy",
+      "purpose": "Wyrażam zgodę na przetwarzanie danych odbiorcy w celu dostarczenia vouchera. Dane będą przechowywane przez 365 dni i mogą zostać usunięte na żądanie zgodnie z RODO.",
+      "checkbox_label": "Zaznaczam, że przeczytałem(-am) i zgadzam się z powyższą informacją.",
+      "checkbox_aria": "Wyrażam zgodę na przetwarzanie danych odbiorcy",
+      "grant_cta": "Dalej",
+      "pending_cta": "Przetwarzanie...",
+      "skip_cta": "Pomiń bez zgody",
+      "withdraw_cta": "Wycofaj zgodę",
+      "withdraw_explainer": "W każdej chwili możesz wycofać zgodę. Wycofanie zgody jest tak samo proste jak jej udzielenie (RODO art. 7 ust. 3).",
+      "tooltip_required": "Zaznacz zgodę, aby kontynuować.",
+      "error_audit_failed": "Nie udało się zapisać zgody. Spróbuj ponownie za chwilę.",
+      "privacy_link": "Polityka prywatności",
+      "privacy_link_aria": "Otwórz politykę prywatności w nowej karcie",
+      "pause": {
+        "region_aria": "Opcje wstrzymania decyzji",
+        "heading": "Nie jesteś jeszcze gotowy(-a) na decyzję?",
+        "description_default": "Jeśli potrzebujesz więcej czasu na zapoznanie się z informacją, możesz wstrzymać decyzję.",
+        "description_considering": "Zastanawiasz się. Możesz wstrzymać decyzję na 14 dni lub anulować i wrócić do zgody.",
+        "description_paused": "Decyzja wstrzymana. Wrócimy do Ciebie za 14 dni; możesz też wznowić rozmowę lub wycofać się teraz.",
+        "description_timeout": "Czas wstrzymania minął. Możesz wznowić proces lub wycofać zgodę.",
+        "description_withdrawn": "Zgoda została wycofana. Dane odbiorcy zostały oznaczone do usunięcia (RODO art. 17).",
+        "cta_consider": "Zastanowię się",
+        "cta_pause": "Wstrzymaj na 14 dni",
+        "cta_cancel": "Anuluj wstrzymanie",
+        "cta_resume": "Wznów rozmowę",
+        "cta_withdraw": "Wycofaj zgodę"
+      }
+    }
+  }
+}
