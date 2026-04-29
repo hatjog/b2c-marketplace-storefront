@@ -1,0 +1,27 @@
+/**
+ * v1.5.0 Design Tokens — Spacing (8px base scale)
+ *
+ * Source of truth: _bmad-output/planning-artifacts/ux-design-specification.md
+ *   §Spacing & Layout Foundation (Robert decision 5a — 8px base confirmed)
+ *
+ * Generous whitespace premium-as-clarity layout. NEVER use `space-0.5`
+ * (2px) for tap-target gap — minimum spacing between tap targets is
+ * `space-3` (12px) per WCAG AAA selective + FM1.b prevention.
+ */
+
+:root {
+  --space-0:    0;
+  --space-0-5: 0.125rem; /* 2px  — hairline (icon+label tight) */
+  --space-1:   0.25rem;  /* 4px  — inline */
+  --space-2:   0.5rem;   /* 8px  — tight pair (label+input) */
+  --space-3:   0.75rem;  /* 12px — default form field; min tap-target gap */
+  --space-4:   1rem;     /* 16px — default card padding */
+  --space-6:   1.5rem;   /* 24px — section internal */
+  --space-8:   2rem;     /* 32px — between sections */
+  --space-12:  3rem;     /* 48px — major section break; minimum tap target */
+  --space-16:  4rem;     /* 64px — page section break */
+  --space-24:  6rem;     /* 96px — hero section */
+
+  /* Tap target minimum (AC-UI-6.1-09 — 48×48px) */
+  --tap-target-min: var(--space-12);
+}

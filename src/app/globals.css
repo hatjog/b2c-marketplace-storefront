@@ -1,6 +1,9 @@
 /* Defined colors variables */
 @import "colors.css";
 
+/* v1.5.0 Design Tokens (Story 6.1.a — Sprint Week 0 stub) */
+@import "../styles/tokens/index.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

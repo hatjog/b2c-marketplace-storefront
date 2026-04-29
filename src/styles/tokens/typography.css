@@ -1,0 +1,44 @@
+/**
+ * v1.5.0 Design Tokens — Typography (Display/Heading/Body 8-step scale)
+ *
+ * Source of truth: _bmad-output/planning-artifacts/ux-design-specification.md
+ *   §Typography System (8-step modular scale candidate)
+ *
+ * Type families are STUBS — Robert finalizes Sprint Week 0 from candidates
+ * (Lora / Playfair Display / Cormorant Garamond / etc.). Body sans-serif
+ * candidate: Inter (Sally recommendation).
+ *
+ * PL i18n stress-test mandate (CONV-1): all sizes validated z PL sample
+ * copy ("to jest TWÓJ voucher", "Salon Marta — Warszawa", PL longer-than-EN
+ * ~20-30%).
+ */
+
+:root {
+  /* Font families — STUB; Robert Sprint Week 0 bundle finalization */
+  --font-family-serif:     'Lora', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-family-sans:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-family-monospace: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Font sizes — 8-step modular scale */
+  --font-size-display-1: 3rem;    /* 48px — recipient claim moment hero */
+  --font-size-display-2: 2.25rem; /* 36px — buyer pre-add-to-cart vendor identity */
+  --font-size-h1:        1.875rem;/* 30px — page title */
+  --font-size-h2:        1.5rem;  /* 24px — section title */
+  --font-size-h3:        1.25rem; /* 20px — sub-section title */
+  --font-size-h4:        1.125rem;/* 18px — card title */
+  --font-size-body:      1rem;    /* 16px — default body text */
+  --font-size-body-sm:   0.875rem;/* 14px — captions, audit log timestamps */
+
+  /* Font weights */
+  --font-weight-light:    300;
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  /* Line heights */
+  --line-height-display: 1.2;  /* Display 1 → H4 (1.2-1.3 range) */
+  --line-height-heading: 1.3;  /* Tight headings */
+  --line-height-body:    1.6;  /* Body Default + Body Small (1.5-1.7) */
+  --line-height-caption: 1.4;  /* Captions */
+}

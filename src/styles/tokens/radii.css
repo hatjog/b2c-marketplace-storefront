@@ -1,0 +1,19 @@
+/**
+ * v1.5.0 Design Tokens — Border Radii (small / medium / large)
+ *
+ * Source of truth: _bmad-output/planning-artifacts/ux-design-specification.md
+ *   §Spacing & Layout Foundation (premium-as-clarity restraint)
+ *
+ * Premium-as-clarity: subtle radii (NIE excessive rounding); editorial
+ * register prefers small-medium consistent across surfaces.
+ */
+
+:root {
+  --radius-none:   0;
+  --radius-xs:     0.125rem; /* 2px  — hairline accents (badge corners) */
+  --radius-sm:     0.25rem;  /* 4px  — small inputs, chips */
+  --radius-md:     0.5rem;   /* 8px  — cards, modals, primary controls */
+  --radius-lg:     0.75rem;  /* 12px — major surfaces (hero cards, settlement profile) */
+  --radius-xl:     1rem;     /* 16px — large modals, recipient claim moment hero */
+  --radius-full:   9999px;   /* pill — avatars, status dots */
+}

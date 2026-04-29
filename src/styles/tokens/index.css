@@ -1,0 +1,12 @@
+/**
+ * v1.5.0 Design Tokens — Aggregator
+ *
+ * Single import surface for all token primitives. Imported once from
+ * `src/app/globals.css` so Tailwind's `extend` hooks (in
+ * `tailwind.config.ts`) can resolve `var(--token-*)` references at build time.
+ */
+
+@import "./colors.css";
+@import "./spacing.css";
+@import "./typography.css";
+@import "./radii.css";
