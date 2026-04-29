@@ -2,7 +2,7 @@ import NotFound from '@/app/not-found';
 import { StickyAddToCart } from '@/components/cells/StickyAddToCart/StickyAddToCart';
 import { ProductDetails } from '@/components/organisms/ProductDetails/ProductDetails';
 import { ProductGallery } from '@/components/organisms';
-import { listProducts } from '@/lib/data/products';
+import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
 import { getCountryCode } from '@/lib/helpers/country-code';
 
 import { CrossSellSection } from '../CrossSellSection';
@@ -15,12 +15,10 @@ export const ProductDetailsPage = async ({
   locale: string;
 }) => {
   const countryCode = await getCountryCode(locale);
-  const prod = await listProducts({
-    countryCode,
-    queryParams: { handle: [handle], limit: 1 },
-    forceCache: true,
-    includeSellerContext: true,
-  }).then(({ response }) => response.products[0]);
+  // D-09: cache()-wrapped fetcher. The outer route page.tsx already invoked
+  // this with the same (handle, countryCode); React 19 cache() returns the
+  // memoized payload here, so listProducts() runs once per render.
+  const prod = await fetchProductForDetailPage(handle, countryCode);
 
   if (!prod) return NotFound();
 

@@ -13,7 +13,6 @@ import { SellerSocialLinks } from '@/components/organisms/seller/SellerSocialLin
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { listProductsWithSort } from '@/lib/data/products';
-import { getRegion } from '@/lib/data/regions';
 import { resolveStorefrontBaseUrl } from '@/lib/env';
 
 type PageParams = { handle: string; locale: string };
@@ -62,8 +61,6 @@ export default async function SalonProfilPage({
   }
 
   const countryCode = await getCountryCode(locale);
-  const region = await getRegion(countryCode);
-  const currencyCode = region?.currency_code ?? 'pln';
 
   let products: Awaited<ReturnType<typeof listProductsWithSort>>['response']['products'] = [];
   try {
@@ -117,7 +114,7 @@ export default async function SalonProfilPage({
         )}
 
         <div className="bb-section-shell">
-          <SellerServiceList products={products} currencyCode={currencyCode} />
+          <SellerServiceList products={products} />
         </div>
 
         <div className="bb-section-shell">

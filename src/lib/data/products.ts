@@ -47,7 +47,16 @@ export const listProducts = async ({
 }): Promise<{
   response: {
     products: ListedProduct[];
+    /**
+     * Post-filter count for the current page's rendered batch.
+     * Use this for UI pagination labels ("X listings on this page").
+     */
     count: number;
+    /**
+     * Pre-filter backend count (total products across all pages).
+     * Use this for fetch-all logic in listProductsWithSort.
+     */
+    backendCount?: number;
   };
   nextPage: number | null;
   queryParams?: ProductQueryParams;
@@ -122,15 +131,32 @@ export const listProducts = async ({
       next: useCached ? { revalidate: 60 } : undefined,
       cache: useCached ? 'force-cache' : 'no-cache'
     })
-    .then(({ products: productsRaw, count }) => {
+    .then(({ products: productsRaw, count: backendCount }) => {
+      // Apply quality-gate filter BEFORE exposing pagination signals to UI.
+      // Backend `count` is pre-filter; using it for the rendered listing causes
+      // pagination drift ("12 listings shown but only 9 rendered") —
+      // see deferred-work.md (v1.4.0).
+      //
+      // Rule: filter step (normalizeListedProducts) THEN pagination logic.
+      // - `filteredCount` = post-filter length, authoritative for UI rendering
+      //   of THIS page's batch.
+      // - `count` = same value as `filteredCount` for backwards-compat callers
+      //   of listProducts() that render the page directly.
+      // - `backendCount` = pre-filter total, exposed for fetch-all consumers
+      //   like listProductsWithSort() which need to know how many pages exist
+      //   server-side before client-side filtering trims the batch.
       const products = normalizeListedProducts(productsRaw, preferredSellerId);
+      const filteredCount = products.length;
 
-      const nextPage = count > offset + limit ? pageParam + 1 : null;
+      // nextPage uses backendCount because the iterator advances over backend
+      // pagination — additional filtered pages may exist server-side.
+      const nextPage = backendCount > offset + limit ? pageParam + 1 : null;
 
       return {
         response: {
           products,
-          count
+          count: filteredCount,
+          backendCount
         },
         nextPage: nextPage,
         queryParams
@@ -141,7 +167,8 @@ export const listProducts = async ({
       return {
         response: {
           products: [],
-          count: 0
+          count: 0,
+          backendCount: 0
         },
         nextPage: null,
         queryParams
@@ -317,7 +344,11 @@ export const listProductsWithSort = async ({
     preferredSellerId: seller_id,
   });
 
-  const backendCount = firstResult.response.count;
+  // Use the pre-filter `backendCount` for fetch-all bookkeeping; falls back to
+  // `count` for legacy callers (and offline test mocks) that don't expose
+  // backendCount. Inside listProducts() count == filteredCount; backendCount
+  // is the authoritative pre-filter total.
+  const backendCount = firstResult.response.backendCount ?? firstResult.response.count;
 
   if (backendCount > 500) {
     console.warn('[GP] Product count exceeds 500, consider Algolia migration');
@@ -509,10 +540,25 @@ export const searchProducts = async (params: {
       headers,
       cache: 'no-cache'
     })
-    .then((result) => ({
-      ...result,
-      products: normalizeListedProducts(result.products),
-    }))
+    .then((result) => {
+      // Apply quality-gate filter BEFORE pagination signals. Backend nbHits is
+      // pre-filter; using it directly causes pagination drift (deferred-work.md
+      // v1.4.0). Adjust nbHits/nbPages to reflect post-filter counts so the UI
+      // pagination matches the rendered grid.
+      const products = normalizeListedProducts(result.products);
+      const droppedThisPage = result.products.length - products.length;
+      const adjustedNbHits = Math.max(0, result.nbHits - droppedThisPage);
+      const adjustedNbPages = result.hitsPerPage > 0
+        ? Math.max(1, Math.ceil(adjustedNbHits / result.hitsPerPage))
+        : result.nbPages;
+
+      return {
+        ...result,
+        products,
+        nbHits: adjustedNbHits,
+        nbPages: adjustedNbPages,
+      };
+    })
     .catch((error) => {
       console.error('[products] searchProducts failed:', error?.message || error);
       return {

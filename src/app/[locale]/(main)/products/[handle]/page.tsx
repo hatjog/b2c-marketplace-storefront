@@ -1,22 +1,18 @@
 import type { Metadata } from 'next';
-import { cache } from 'react';
 
 import { ProductDetailsPage } from '@/components/sections';
-import { listProducts } from '@/lib/data/products';
+import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
 import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
 import { getGpField } from '@/lib/helpers/metadata-utils';
 import { getCountryCode } from '@/lib/helpers/country-code';
 
-const fetchProductForPage = cache(async (handle: string, locale: string) => {
+// D-09: shared cache() wrapper lives in product-detail-fetcher.ts so this
+// route AND the inner ProductDetailsPage server component dedupe their
+// listProducts() calls within a single render (zero duplicate fetches).
+const fetchProductForPage = async (handle: string, locale: string) => {
   const countryCode = await getCountryCode(locale);
-
-  return listProducts({
-    countryCode,
-    queryParams: { handle: [handle], limit: 1 },
-    forceCache: true,
-    includeSellerContext: true,
-  }).then(({ response }) => response.products[0]);
-});
+  return fetchProductForDetailPage(handle, countryCode);
+};
 
 export async function generateMetadata({
   params

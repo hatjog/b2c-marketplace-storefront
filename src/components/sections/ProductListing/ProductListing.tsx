@@ -16,6 +16,7 @@ import type { ProductQueryParams } from '@/lib/data/products';
 import { listProductsWithSort, listProductTags, listSellerCities, searchProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
+import { sanitizeTagIdList } from '@/lib/helpers/sanitize-tag-id';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { getTranslations } from 'next-intl/server';
 import { ClearFiltersButton } from './ClearFiltersButton';
@@ -23,9 +24,6 @@ import { ClearFiltersButton } from './ClearFiltersButton';
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ALPHANUMERIC_RE = /^[a-z0-9]+$/i;
-const STABLE_TAG_ID_RE = /^[a-z0-9_-]+(?::[a-z0-9_-]+)+$/i;
 const HANDLE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const CITY_ALLOWED_CHARS_RE = /[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]/g;
 const ALLOWED_DURATIONS = [30, 45, 60, 90] as const;
@@ -74,13 +72,11 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
         .filter(n => !isNaN(n) && n >= 1 && n <= 5)
     : [];
 
-  // tagIds: split by comma, validate each as UUID, legacy plain ID, or stable config ID (group:value)
-  const tagIds: string[] = rawTagId
-    ? rawTagId
-        .split(',')
-        .map(s => s.trim())
-        .filter(id => Boolean(id) && (UUID_RE.test(id) || ALPHANUMERIC_RE.test(id) || STABLE_TAG_ID_RE.test(id)))
-    : [];
+  // tagIds: split by comma, NFC-normalize, ASCII-narrow, then validate each
+  // candidate (UUID / legacy alphanumeric / kebab-case / stable config ID).
+  // Allowlist includes BonBeauty StyleSection kebab-case forms (e.g. `k-beauty`)
+  // — see lib/helpers/sanitize-tag-id.ts.
+  const tagIds: string[] = sanitizeTagIdList(rawTagId);
 
   // page: integer [1, 999]
   const page = rawPage ? Math.max(1, Math.min(999, parseInt(rawPage, 10) || 1)) : 1;

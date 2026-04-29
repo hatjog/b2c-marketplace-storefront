@@ -7,9 +7,11 @@ import type { HttpTypes } from '@medusajs/types';
 import { PriceDisplay } from '@/components/molecules/PriceDisplay/PriceDisplay';
 import { SELLER_SERVICE_LIST_PAGE_SIZE } from '@/lib/constants';
 
+// D-13 (v1.4.0 carry-over): `currencyCode` removed — was dead prop because
+// PriceDisplay is currently hardcoded PLN. When multi-currency rolls out at
+// the locale boundary, reintroduce the prop and thread it into PriceDisplay.
 export interface SellerServiceListProps {
   products: HttpTypes.StoreProduct[];
-  currencyCode: string;
 }
 
 function getCheapestPrice(product: HttpTypes.StoreProduct): number | null {
@@ -20,7 +22,7 @@ function getCheapestPrice(product: HttpTypes.StoreProduct): number | null {
   return Math.min(...prices);
 }
 
-export function SellerServiceList({ products, currencyCode: _currencyCode }: SellerServiceListProps) {
+export function SellerServiceList({ products }: SellerServiceListProps) {
   const [showAll, setShowAll] = useState(false);
 
   if (products.length === 0) {

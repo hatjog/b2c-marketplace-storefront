@@ -76,13 +76,13 @@ function makeProducts(count: number): HttpTypes.StoreProduct[] {
 
 describe('SellerServiceList', () => {
   it('returns null when products is empty', () => {
-    const result = SellerServiceList({ products: [], currencyCode: 'pln' });
+    const result = SellerServiceList({ products: [] });
     expect(result).toBeNull();
   });
 
   describe('heading', () => {
     it('renders "Zabiegi i usługi" heading', () => {
-      const el = SellerServiceList({ products: makeProducts(1), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(1) }) as ReactEl;
       expect(collectText(el)).toContain('Zabiegi i usługi');
     });
   });
@@ -90,21 +90,21 @@ describe('SellerServiceList', () => {
   describe('with ≤10 products (showAll = false)', () => {
     it('renders all 5 products as list items', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(5), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(5) }) as ReactEl;
       const links = findAll(el, e => e.type === 'a');
       expect(links).toHaveLength(5);
     });
 
     it('renders all 10 products (boundary)', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(10), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(10) }) as ReactEl;
       const links = findAll(el, e => e.type === 'a');
       expect(links).toHaveLength(10);
     });
 
     it('does NOT render "Pokaż więcej" for ≤10 products', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(10), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(10) }) as ReactEl;
       const text = collectText(el);
       expect(text).not.toContain('Pokaż więcej');
     });
@@ -113,14 +113,14 @@ describe('SellerServiceList', () => {
   describe('with >10 products, showAll = false', () => {
     it('renders only first 10 products', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(15), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(15) }) as ReactEl;
       const links = findAll(el, e => e.type === 'a');
       expect(links).toHaveLength(10);
     });
 
     it('renders "Pokaż więcej" button', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(15), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(15) }) as ReactEl;
       const btn = findFirst(el, e => e.type === 'button');
       expect(btn).not.toBeNull();
       expect(collectText(btn!)).toContain('Pokaż więcej');
@@ -128,7 +128,7 @@ describe('SellerServiceList', () => {
 
     it('"Pokaż więcej" button shows remaining count', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(15), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(15) }) as ReactEl;
       const text = collectText(el);
       expect(text).toContain('(5)');
     });
@@ -136,7 +136,7 @@ describe('SellerServiceList', () => {
     it('calls setShowAll(true) on button click', () => {
       mockShowAll = false;
       mockSetShowAll.mockClear();
-      const el = SellerServiceList({ products: makeProducts(15), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(15) }) as ReactEl;
       const btn = findFirst(el, e => e.type === 'button') as ReactEl;
       const onClick = btn.props.onClick as () => void;
       onClick();
@@ -147,14 +147,14 @@ describe('SellerServiceList', () => {
   describe('with >10 products, showAll = true', () => {
     it('renders all 15 products', () => {
       mockShowAll = true;
-      const el = SellerServiceList({ products: makeProducts(15), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(15) }) as ReactEl;
       const links = findAll(el, e => e.type === 'a');
       expect(links).toHaveLength(15);
     });
 
     it('does NOT render "Pokaż więcej" button when showAll = true', () => {
       mockShowAll = true;
-      const el = SellerServiceList({ products: makeProducts(15), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(15) }) as ReactEl;
       const btn = findFirst(el, e => e.type === 'button');
       expect(btn).toBeNull();
     });
@@ -164,7 +164,7 @@ describe('SellerServiceList', () => {
     it('links "Kup voucher" to /products/[handle]', () => {
       mockShowAll = false;
       const product = makeProduct('p1', 'masaz-relaksacyjny');
-      const el = SellerServiceList({ products: [product], currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: [product] }) as ReactEl;
       const link = findFirst(el, e => e.type === 'a') as ReactEl;
       expect(link.props.href).toBe('/products/masaz-relaksacyjny');
     });
@@ -173,14 +173,14 @@ describe('SellerServiceList', () => {
       mockShowAll = false;
       const product = makeProduct('p1');
       (product as any).title = 'Masaż klasyczny';
-      const el = SellerServiceList({ products: [product], currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: [product] }) as ReactEl;
       expect(collectText(el)).toContain('Masaż klasyczny');
     });
 
     it('renders PriceDisplay with calculated_amount from first variant', () => {
       mockShowAll = false;
       const product = makeProduct('p1');
-      const el = SellerServiceList({ products: [product], currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: [product] }) as ReactEl;
       const priceEl = findFirst(el, e => e.type === 'mock-price');
       expect(priceEl).not.toBeNull();
       expect(priceEl!.props.amountInCents).toBe(10000);
@@ -188,7 +188,7 @@ describe('SellerServiceList', () => {
 
     it('renders "Kup voucher" text', () => {
       mockShowAll = false;
-      const el = SellerServiceList({ products: makeProducts(1), currencyCode: 'pln' }) as ReactEl;
+      const el = SellerServiceList({ products: makeProducts(1) }) as ReactEl;
       expect(collectText(el)).toContain('Kup voucher');
     });
   });
