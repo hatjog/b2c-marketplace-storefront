@@ -7,7 +7,6 @@ import { ArrowRightIcon } from '@/icons';
 import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 
-import tailwindConfig from '../../../../tailwind.config';
 
 type HeroProps = {
   image: string;
@@ -79,7 +78,7 @@ export const Hero = ({ image, heading, paragraph, buttons, maxHeight = null, sho
               >
                 <span>{label}</span>
                 <ArrowRightIcon
-                  color={tailwindConfig.theme.extend.backgroundColor.primary}
+                  color="rgba(var(--bg-primary))"
                   aria-hidden
                 />
               </Link>

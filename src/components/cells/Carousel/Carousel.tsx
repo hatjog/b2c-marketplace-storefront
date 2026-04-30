@@ -8,8 +8,6 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { Indicator } from '@/components/atoms';
 import { ArrowLeftIcon, ArrowRightIcon } from '@/icons';
 
-import tailwindConfig from '../../../../tailwind.config';
-
 export const CustomCarousel = ({
   variant = 'light',
   items,
@@ -48,8 +46,8 @@ export const CustomCarousel = ({
   );
 
   const arrowColor = {
-    light: tailwindConfig.theme.extend.colors.primary,
-    dark: tailwindConfig.theme.extend.colors.tertiary
+    light: 'rgba(var(--content-primary))',
+    dark: 'rgba(var(--content-tertiary))'
   };
 
   return (

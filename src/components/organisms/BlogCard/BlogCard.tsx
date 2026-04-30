@@ -6,8 +6,6 @@ import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { cn } from '@/lib/utils';
 import type { BlogPost } from '@/types/blog';
 
-import tailwindConfig from '../../../../tailwind.config';
-
 interface BlogCardProps {
   post: BlogPost;
   index: number;
@@ -42,7 +40,7 @@ export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
           {readMoreLabel ?? 'Read more'}{' '}
           <ArrowRightIcon
             size={20}
-            color={tailwindConfig.theme.extend.colors.primary}
+            color="rgba(var(--content-primary))"
           />
         </div>
       </div>

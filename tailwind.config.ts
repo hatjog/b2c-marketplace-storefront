@@ -116,6 +116,38 @@ export default {
         },
         trust: 'var(--color-trust)',
         error: 'var(--color-error)',
+        // v1.5.0 design tokens (Story 6.1.a) — gp- prefixed, wired via CSS vars
+        // from src/styles/tokens/. Validator: _grow/tools/validate_design_tokens.py
+        // Merged into the single colors block (post-v1.5.0 retro AI-0a fix:
+        // duplicate colors key was overwriting semantic tokens at runtime).
+        "gp-flag-active-bg": "hsl(var(--color-flag-active-bg))",
+        "gp-flag-active-fg": "hsl(var(--color-flag-active-fg))",
+        "gp-flag-paused-bg": "hsl(var(--color-flag-paused-bg))",
+        "gp-flag-paused-fg": "hsl(var(--color-flag-paused-fg))",
+        "gp-flag-disabled-bg": "hsl(var(--color-flag-disabled-bg))",
+        "gp-flag-disabled-fg": "hsl(var(--color-flag-disabled-fg))",
+        "gp-accent": {
+          50:  "hsl(var(--color-accent-50))",
+          100: "hsl(var(--color-accent-100))",
+          300: "hsl(var(--color-accent-300))",
+          500: "hsl(var(--color-accent-500))",
+          700: "hsl(var(--color-accent-700))",
+          900: "hsl(var(--color-accent-900))",
+        },
+        "gp-neutral": {
+          0:    "hsl(var(--color-neutral-0))",
+          50:   "hsl(var(--color-neutral-50))",
+          100:  "hsl(var(--color-neutral-100))",
+          200:  "hsl(var(--color-neutral-200))",
+          300:  "hsl(var(--color-neutral-300))",
+          400:  "hsl(var(--color-neutral-400))",
+          500:  "hsl(var(--color-neutral-500))",
+          600:  "hsl(var(--color-neutral-600))",
+          700:  "hsl(var(--color-neutral-700))",
+          800:  "hsl(var(--color-neutral-800))",
+          900:  "hsl(var(--color-neutral-900))",
+          1000: "hsl(var(--color-neutral-1000))",
+        },
       },
       borderColor: {
         DEFAULT: "rgba(var(--border-primary))",
@@ -156,39 +188,8 @@ export default {
       fill: {
         primary: "rgba(var(--content-action-on-primary))",
         secondary: "rgba(var(--content-action-on-secondary))",
+        tertiary: "rgba(var(--content-tertiary))",
         disabled: "rgba(var(--content-disabled))",
-      },
-      // v1.5.0 design tokens (Story 6.1.a) — wired via CSS vars from
-      // src/styles/tokens/. Validator: _grow/tools/validate_design_tokens.py
-      colors: {
-        "gp-flag-active-bg": "hsl(var(--color-flag-active-bg))",
-        "gp-flag-active-fg": "hsl(var(--color-flag-active-fg))",
-        "gp-flag-paused-bg": "hsl(var(--color-flag-paused-bg))",
-        "gp-flag-paused-fg": "hsl(var(--color-flag-paused-fg))",
-        "gp-flag-disabled-bg": "hsl(var(--color-flag-disabled-bg))",
-        "gp-flag-disabled-fg": "hsl(var(--color-flag-disabled-fg))",
-        "gp-accent": {
-          50:  "hsl(var(--color-accent-50))",
-          100: "hsl(var(--color-accent-100))",
-          300: "hsl(var(--color-accent-300))",
-          500: "hsl(var(--color-accent-500))",
-          700: "hsl(var(--color-accent-700))",
-          900: "hsl(var(--color-accent-900))",
-        },
-        "gp-neutral": {
-          0:    "hsl(var(--color-neutral-0))",
-          50:   "hsl(var(--color-neutral-50))",
-          100:  "hsl(var(--color-neutral-100))",
-          200:  "hsl(var(--color-neutral-200))",
-          300:  "hsl(var(--color-neutral-300))",
-          400:  "hsl(var(--color-neutral-400))",
-          500:  "hsl(var(--color-neutral-500))",
-          600:  "hsl(var(--color-neutral-600))",
-          700:  "hsl(var(--color-neutral-700))",
-          800:  "hsl(var(--color-neutral-800))",
-          900:  "hsl(var(--color-neutral-900))",
-          1000: "hsl(var(--color-neutral-1000))",
-        },
       },
       spacing: {
         "gp-0":    "var(--space-0)",
