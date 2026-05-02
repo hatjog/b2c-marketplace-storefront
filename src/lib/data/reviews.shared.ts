@@ -1,4 +1,4 @@
-import type { MercurOrderWithOrderSet } from '@/types/medusa-extensions';
+import type { MercurOrderWithOrderGroup } from '@/types/medusa-extensions';
 import type { SellerProps } from '@/types/seller';
 
 export type OrderReview = {
@@ -7,13 +7,13 @@ export type OrderReview = {
   rating?: number | null;
 };
 
-export type Order = MercurOrderWithOrderSet & {
+export type Order = MercurOrderWithOrderGroup & {
   seller: SellerProps;
   reviews: OrderReview[];
 };
 
 export function isReviewableOrder(
-  order: MercurOrderWithOrderSet | null | undefined
+  order: MercurOrderWithOrderGroup | null | undefined
 ): order is Order {
   return Boolean(order?.seller?.id && order.seller?.name && Array.isArray(order.reviews));
 }

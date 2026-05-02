@@ -85,7 +85,7 @@ export const OrderReturnSection = ({
       <UserNavigation />
       <div className="mb-8 md:col-span-3 md:mb-0">
         {tab === 0 ? (
-          <LocalizedClientLink href={`/user/orders/${order.order_set.id}`}>
+          <LocalizedClientLink href={`/user/orders/${order.order_group.id}`}>
             <Button
               variant="tonal"
               className="label-md flex items-center gap-2 uppercase text-action-on-secondary"
