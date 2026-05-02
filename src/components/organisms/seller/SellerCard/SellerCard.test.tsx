@@ -132,7 +132,7 @@ describe('SellerCard', () => {
   });
 
   describe('hover and navigation', () => {
-    it('wraps card in link pointing to /salony/[handle]', () => {
+    it('wraps card in link pointing to /sellers/[handle]', () => {
       const el = SellerCard({
         name: 'Salon',
         handle: 'moj-salon',
@@ -140,7 +140,7 @@ describe('SellerCard', () => {
       }) as ReactEl;
 
       expect(el.type).toBe('a');
-      expect(el.props.href).toBe('/salony/moj-salon');
+      expect(el.props.href).toBe('/sellers/moj-salon');
     });
 
     it('applies hover translate classes to root element', () => {

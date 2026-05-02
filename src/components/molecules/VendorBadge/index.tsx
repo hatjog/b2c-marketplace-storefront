@@ -18,7 +18,7 @@ export interface VendorBadgeProps {
 
 /**
  * VendorBadge — shows the salon avatar + name (pdp variant) or avatar only (header variant).
- * Always links to /salony/[handle] (Polish route contract).
+ * Always links to /sellers/[handle] (canonical EN route slug; PL display copy "salon" preserved in UI text).
  */
 export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
   const avatarSize = variant === 'header' ? 72 : 48
@@ -28,7 +28,7 @@ export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
 
   return (
     <Link
-      href={`/salony/${vendor.handle}`}
+      href={`/sellers/${vendor.handle}`}
       aria-label={`Profil salonu ${vendor.name}`}
       className="inline-flex items-center gap-3"
     >

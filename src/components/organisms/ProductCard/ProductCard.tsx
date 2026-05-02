@@ -182,7 +182,7 @@ export const ProductCard = ({
         <div className="mt-auto flex items-center justify-between gap-3">
           {showVendor && seller && (
             <LocalizedClientLink
-              href={`/salony/${seller.handle}`}
+              href={`/sellers/${seller.handle}`}
               aria-label={t('seller_aria', { name: seller.name })}
               className="label-sm text-secondary transition-opacity hover:opacity-70"
               data-testid="product-card-vendor"
