@@ -8,6 +8,19 @@ export interface SellerListItem {
   photo_url: string | null;
   city: string | null;
   product_count: number;
+  /**
+   * Story v160-4-2: optional geo coords for SellerMap markers. Mercur 2.1.1
+   * `/store/sellers` does not yet expose lat/lng — type augmented as optional;
+   * SellerMap defensively filters sellers w/o valid finite coords. Backend
+   * exposure tracked under Story 4.x follow-up.
+   */
+  lat?: number | null;
+  lng?: number | null;
+  /**
+   * Optional human-readable address for marker popup. Falls back to i18n
+   * `seller.list.map.popup_address` when absent.
+   */
+  address?: string | null;
 }
 
 type SellerApiItem = {
@@ -16,6 +29,9 @@ type SellerApiItem = {
   photo?: string | null;
   city?: string | null;
   product_count?: number;
+  lat?: number | null;
+  lng?: number | null;
+  address?: string | null;
 };
 
 /**
@@ -33,7 +49,10 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
         name: v.name,
         photo_url: v.photo ?? null,
         city: v.city ?? null,
-        product_count: v.product_count ?? 0
+        product_count: v.product_count ?? 0,
+        lat: typeof v.lat === 'number' ? v.lat : null,
+        lng: typeof v.lng === 'number' ? v.lng : null,
+        address: v.address ?? null
       }));
 
       return mapped.sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));

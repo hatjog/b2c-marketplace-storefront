@@ -47,7 +47,17 @@
       "loading": "Ładowanie salonów...",
       "meta_title": "Salony partnerskie | BonBeauty",
       "previous_page": "Poprzednia strona",
-      "next_page": "Następna strona"
+      "next_page": "Następna strona",
+      "map": {
+        "view_toggle_list": "Lista",
+        "view_toggle_map": "Mapa",
+        "view_toggle_aria": "Wybierz widok salonów",
+        "popup_address": "Brak adresu",
+        "popup_view_details": "Zobacz szczegóły",
+        "loading": "Ładowanie mapy...",
+        "aria_map": "Mapa salonów",
+        "aria_marker": "Marker salonu {name}"
+      }
     },
     "search": {
       "form_aria": "Wyszukaj salony",

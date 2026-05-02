@@ -3,9 +3,11 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { SellerMap } from '@/components/cells/SellerMap';
 import { SellersPagination } from '@/components/cells/SellersPagination/SellersPagination';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SellersSearchForm } from '@/components/molecules/SellersSearchForm/SellersSearchForm';
+import { SellersViewToggle, type SellersView } from '@/components/molecules/SellersViewToggle/SellersViewToggle';
 import { SellerCard } from '@/components/organisms/seller/SellerCard';
 import { searchSellers, type SellerSortKey } from '@/lib/data/seller';
 
@@ -43,6 +45,12 @@ function parseSort(raw: string | string[] | undefined): SellerSortKey {
   return VALID_SORT_KEYS.has(value as SellerSortKey)
     ? (value as SellerSortKey)
     : DEFAULT_SORT;
+}
+
+function parseView(raw: string | string[] | undefined): SellersView {
+  // Defensive — anything other than the literal "map" falls back to list,
+  // preserves SEO surface for the default canonical view.
+  return parseString(raw) === 'map' ? 'map' : 'list';
 }
 
 export async function generateMetadata({
@@ -99,6 +107,7 @@ export default async function SellersListPage({
   const q = parseString(sp.q).trim();
   const city = parseString(sp.city).trim();
   const sort = parseSort(sp.sort);
+  const view = parseView(sp.view);
 
   const t = await getTranslations('seller.list');
   const tSearch = await getTranslations('seller.search');
@@ -117,6 +126,10 @@ export default async function SellersListPage({
   if (q) preservedParams.q = q;
   if (city) preservedParams.city = city;
   if (sort && sort !== DEFAULT_SORT) preservedParams.sort = sort;
+  // Pagination preserves view so /sellers?view=map&offset=24 keeps the map.
+  // SellersViewToggle ignores incoming `view` and rewrites per target.
+  const paginationPreservedParams =
+    view === 'map' ? { ...preservedParams, view: 'map' } : preservedParams;
 
   return (
     <main id="main-content" className="container py-8">
@@ -128,7 +141,13 @@ export default async function SellersListPage({
       />
 
       <h1 className="mt-6 mb-2 text-2xl font-bold">{t('title')}</h1>
-      <p className="mb-8 text-sm text-gray-500">{t('description')}</p>
+      <p className="mb-4 text-sm text-gray-500">{t('description')}</p>
+
+      <SellersViewToggle
+        locale={locale}
+        view={view}
+        preservedParams={preservedParams}
+      />
 
       <SellersSearchForm
         locale={locale}
@@ -141,7 +160,11 @@ export default async function SellersListPage({
         {tSearch('results_count', { count: total })}
       </p>
 
-      {pageItems.length === 0 ? (
+      {view === 'map' ? (
+        <div className="mb-6" data-testid="sellers-list-map-view">
+          <SellerMap sellers={pageItems} locale={locale} />
+        </div>
+      ) : pageItems.length === 0 ? (
         <div data-testid="sellers-list-empty" className="py-12 text-center">
           <h2 className="mb-2 text-lg font-semibold">
             {hasActiveFilters
@@ -183,7 +206,7 @@ export default async function SellersListPage({
         total={total}
         limit={limit}
         offset={offset}
-        preservedParams={preservedParams}
+        preservedParams={paginationPreservedParams}
       />
     </main>
   );
