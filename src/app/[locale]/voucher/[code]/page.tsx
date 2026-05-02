@@ -7,6 +7,7 @@ import { getVoucherByCode, getVoucherEvents } from '@/lib/data/voucher';
 import { claimVoucher } from '@/actions/voucher-claim';
 import { OfflineBanner } from '@/components/voucher/OfflineBanner';
 import { VoucherAuditTrail } from '@/components/molecules/VoucherAuditTrail';
+import { VoucherIdleClaimSection } from '@/components/molecules/VoucherIdleClaimSection';
 
 // Adapter so <form action={...}> matches Next.js Server Action signature
 // (void return). claimVoucher's structured result is consumed via
@@ -157,23 +158,28 @@ export default async function VoucherClaimPage({
       </section>
 
       {voucher.status === 'idle' && (
-        <form
-          action={claimVoucherFormAction}
-          method="POST"
-          className="flex flex-col gap-3"
-          data-testid="claim-cta-form"
-        >
-          <input type="hidden" name="code" value={voucher.code} />
-          <input type="hidden" name="locale" value={locale} />
-          <button
-            type="submit"
-            data-testid="claim-cta-button"
-            data-event="claim_cta_click"
-            className="min-h-12 min-w-12 rounded-sm bg-action px-6 py-3 text-action-on-primary"
-          >
-            {t('claim_cta')}
-          </button>
-        </form>
+        <VoucherIdleClaimSection
+          code={voucher.code}
+          claimCta={
+            <form
+              action={claimVoucherFormAction}
+              method="POST"
+              className="flex flex-col gap-3"
+              data-testid="claim-cta-form"
+            >
+              <input type="hidden" name="code" value={voucher.code} />
+              <input type="hidden" name="locale" value={locale} />
+              <button
+                type="submit"
+                data-testid="claim-cta-button"
+                data-event="claim_cta_click"
+                className="min-h-12 min-w-12 rounded-sm bg-action px-6 py-3 text-action-on-primary"
+              >
+                {t('claim_cta')}
+              </button>
+            </form>
+          }
+        />
       )}
 
       {voucher.status === 'consent_pending' && (
