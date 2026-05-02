@@ -46,6 +46,15 @@
     "meta_fallback_title": "Salon | BonBeauty",
     "meta_description": "Odkryj ofertę salonu {name} na BonBeauty."
   },
+  "sellers_list": {
+    "title": "Salony partnerskie",
+    "description": "Odkryj salony partnerskie BonBeauty. Znajdź salon w swoim mieście i przeglądaj ich ofertę.",
+    "empty": "Brak salonów partnerskich.",
+    "loading": "Ładowanie salonów...",
+    "meta_title": "Salony partnerskie | BonBeauty",
+    "previous_page": "Poprzednia strona",
+    "next_page": "Następna strona"
+  },
   "footer": {
     "section_customer_services": "Obsługa klienta",
     "section_about": "O nas",
