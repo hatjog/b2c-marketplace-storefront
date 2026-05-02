@@ -223,14 +223,43 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
     .catch(medusaError);
 }
 
+/**
+ * Add product variant to cart.
+ *
+ * Story 5.5 (v160-5-5-vendor-context-preservation-cart): optional
+ * `selectedSellerId` + `selectedSellerName` parameters persist multi-vendor
+ * PDP selection as `cart_item.metadata.selected_seller_id` /
+ * `selected_seller_name` for downstream grouping (Story 5.7) + Phase B+
+ * fulfillment routing.
+ *
+ * Backward-compat: oba parametry optional (`undefined` lub `null` →
+ * legacy single-vendor flow; zero metadata appended; existing callers
+ * np. quick-buy w PLP card bez zmian).
+ *
+ * Persistence path (Option A — Mercur 2 / Medusa cart_item metadata):
+ *  - Medusa types support `metadata?: Record<string, unknown>` na
+ *    `StoreAddCartLineItem` payload (audit T2.3 Story 5.5).
+ *  - Spread tylko gdy `selectedSellerId` non-null/non-empty — zero
+ *    metadata noise w legacy flow.
+ *  - Phase B+ checkout fulfillment reads `metadata.selected_seller_id`
+ *    bez extra fetch.
+ */
 export async function addToCart({
   variantId,
   quantity,
-  countryCode
+  countryCode,
+  selectedSellerId,
+  selectedSellerName
 }: {
   variantId: string;
   quantity: number;
   countryCode: string;
+  /** Optional seller selection from multi-vendor PDP (Story 5.5);
+   *  persisted as cart_item metadata for downstream grouping (Story 5.7). */
+  selectedSellerId?: string | null;
+  /** Denormalized seller name dla cart UI (zero extra fetch w cart render);
+   *  Story 5.5 — paired z selectedSellerId. */
+  selectedSellerName?: string | null;
 }) {
   if (!variantId) {
     throw new Error('Missing variant ID when adding to cart');
@@ -248,12 +277,25 @@ export async function addToCart({
 
   const currentItem = cart.items?.find(item => item.variant_id === variantId);
 
+  // Story 5.5 — only attach metadata gdy seller context provided. Defensive:
+  // empty string treated jako absence (typescript-permissive callers).
+  const sellerMetadata =
+    selectedSellerId && selectedSellerName
+      ? {
+          selected_seller_id: selectedSellerId,
+          selected_seller_name: selectedSellerName
+        }
+      : undefined;
+
   if (currentItem) {
     await sdk.store.cart
       .updateLineItem(
         cart.id,
         currentItem.id,
-        { quantity: currentItem.quantity + quantity },
+        {
+          quantity: currentItem.quantity + quantity,
+          ...(sellerMetadata ? { metadata: { ...(currentItem.metadata ?? {}), ...sellerMetadata } } : {})
+        },
         {},
         headers
       )
@@ -268,7 +310,8 @@ export async function addToCart({
         cart.id,
         {
           variant_id: variantId,
-          quantity
+          quantity,
+          ...(sellerMetadata ? { metadata: sellerMetadata } : {})
         },
         {},
         headers

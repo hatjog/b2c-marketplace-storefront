@@ -1,12 +1,22 @@
 import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import {
   resolveStorefrontImageSrc,
   STOREFRONT_PLACEHOLDER_IMAGE_SRC,
 } from '@/lib/helpers/asset-reference';
+import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
+
+/**
+ * Story 5.5 — multi-vendor pricing flag re-used (Story 5.1/5.2 pattern).
+ * Mini-cart line item seller label render gated. Default OFF → legacy
+ * cart dropdown unchanged.
+ */
+const MULTI_VENDOR_PRICING_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 export const CartDropdownItem = ({
   item,
@@ -15,6 +25,9 @@ export const CartDropdownItem = ({
   item: HttpTypes.StoreCartLineItem;
   currency_code: string;
 }) => {
+  const t = useTranslations('seller.cart');
+  // Story 5.5 — flag-gated; null gdy single-vendor flow.
+  const selectedSeller = MULTI_VENDOR_PRICING_ENABLED ? readSelectedSeller(item) : null;
   const _original_total = convertToLocale({
     amount: (item.compare_at_unit_price || 0) * item.quantity,
     currency_code
@@ -52,6 +65,15 @@ export const CartDropdownItem = ({
 
       <div className="py-2">
         <h4 className="heading-xs">{item.product_title}</h4>
+        {selectedSeller && (
+          <p
+            className="text-xs text-secondary"
+            aria-label={t('line_item_seller_label')}
+            data-testid={`cart-line-item-seller-${item.id}`}
+          >
+            {t('from_seller', { seller_name: selectedSeller.name })}
+          </p>
+        )}
         <div className="label-md text-secondary">
           {item.variant?.options?.map(({ option, id, value }) => (
             <p key={id}>

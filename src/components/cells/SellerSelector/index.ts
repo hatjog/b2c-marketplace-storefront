@@ -5,3 +5,5 @@ export type { SellerSelectorWithGeolocationProps } from './SellerSelectorWithGeo
 export { SellerSelectorErrorBoundary } from './SellerSelectorErrorBoundary';
 export type { SellerSelectorErrorBoundaryProps } from './SellerSelectorErrorBoundary';
 export { SellerSelectorFallback } from './SellerSelectorFallback';
+export { SellerSelectorCartBridge } from './SellerSelectorCartBridge';
+export type { SellerSelectorCartBridgeProps } from './SellerSelectorCartBridge';

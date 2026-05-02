@@ -1,5 +1,6 @@
 import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import { DeleteCartItemButton } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -8,9 +9,19 @@ import {
   resolveStorefrontImageSrc,
   STOREFRONT_PLACEHOLDER_IMAGE_SRC,
 } from '@/lib/helpers/asset-reference';
+import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
+
+/**
+ * Story 5.5 — multi-vendor pricing flag re-used (Story 5.1/5.2 pattern).
+ * Seller label render gated; persistence path NIE gated. Default OFF →
+ * legacy single-vendor cart UI unchanged. Flag flip ON → seller labels
+ * surface retroactively dla items z istniejącym metadata.
+ */
+const MULTI_VENDOR_PRICING_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 export const CartItemsProducts = ({
   products,
@@ -25,6 +36,7 @@ export const CartItemsProducts = ({
 }) => {
   // Filter out items with invalid data (missing prices/variants)
   const validProducts = filterValidCartItems(products);
+  const t = useTranslations('seller.cart');
 
   return (
     <div>
@@ -37,6 +49,12 @@ export const CartItemsProducts = ({
           amount: product.subtotal ?? 0,
           currency_code
         });
+
+        // Story 5.5 — multi-vendor seller label (flag-gated; null when
+        // legacy single-vendor flow → label not rendered → zero regression).
+        const selectedSeller = MULTI_VENDOR_PRICING_ENABLED
+          ? readSelectedSeller(product)
+          : null;
 
         return (
           <div
@@ -80,6 +98,15 @@ export const CartItemsProducts = ({
                       {product.product_title}
                       {product.subtitle && ` - ${product.subtitle}`}
                     </h3>
+                    {selectedSeller && (
+                      <p
+                        className="text-xs text-secondary"
+                        aria-label={t('line_item_seller_label')}
+                        data-testid={`cart-line-item-seller-${product.id}`}
+                      >
+                        {t('from_seller', { seller_name: selectedSeller.name })}
+                      </p>
+                    )}
                   </div>
                 </LocalizedClientLink>
                 {delete_item && (

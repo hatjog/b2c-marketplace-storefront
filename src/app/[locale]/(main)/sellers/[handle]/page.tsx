@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
+import { DirectionsBlock } from '@/components/organisms/DirectionsBlock';
 import { SellerTabs } from '@/components/organisms/SellerTabs/SellerTabs';
 import { SellerPageHeader } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -110,6 +111,23 @@ export default async function SellerPage({
 
   const tab = 'products';
 
+  // Story v160-4-5 — assemble human-readable address z `SellerProps` shape
+  // (`address_line`, `postal_code`, `city`, `country_code`). `lat`/`lng` are
+  // NOT yet exposed on `SellerProps` — pass `null` defensively; DirectionsBlock
+  // gracefully falls back do search-query deeplink mode (per AC4). Backend
+  // augmentation tracked under Story 4.x follow-up (same blocker as
+  // `vendor_offer.seller_lat` w SellerSelector).
+  const sellerAddressParts = [
+    seller.address_line,
+    [seller.postal_code, seller.city].filter(Boolean).join(' '),
+    seller.country_code
+  ]
+    .map(part => (typeof part === 'string' ? part.trim() : ''))
+    .filter(part => part.length > 0);
+  const sellerAddress = sellerAddressParts.length > 0 ? sellerAddressParts.join(', ') : null;
+  const sellerLat = (seller as { lat?: number | null }).lat ?? null;
+  const sellerLng = (seller as { lng?: number | null }).lng ?? null;
+
   return (
     <main id="main-content" className="bb-page-shell">
       <div className="container pt-4">
@@ -126,6 +144,18 @@ export default async function SellerPage({
         seller={seller}
         user={user}
       />
+      <div className="container py-6">
+        <DirectionsBlock
+          seller={{
+            name: seller.name,
+            handle: seller.handle,
+            address: sellerAddress,
+            lat: sellerLat,
+            lng: sellerLng
+          }}
+          locale={locale}
+        />
+      </div>
       <SellerTabs
         tab={tab}
         seller_id={seller.id}

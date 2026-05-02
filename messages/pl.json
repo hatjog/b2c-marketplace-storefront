@@ -106,7 +106,15 @@
       "no_address": "Brak adresu — skontaktuj się z salonem.",
       "meta_fallback_title": "Nieznany salon | BonBeauty",
       "meta_description": "Odkryj ofertę salonu {name} na BonBeauty.",
-      "meta_default_description": "Salon partnerski BonBeauty — sprawdź ofertę i adres."
+      "meta_default_description": "Salon partnerski BonBeauty — sprawdź ofertę i adres.",
+      "directions_title": "Jak dojechać",
+      "directions_open_google": "Otwórz w Google Maps",
+      "directions_open_apple": "Otwórz w Apple Maps",
+      "directions_no_coords": "Współrzędne salonu nie są dostępne — kliknij przycisk poniżej, aby wyszukać adres w mapach.",
+      "directions_external_notice": "Otwierając mapy zewnętrzne, opuszczasz BonBeauty.",
+      "context_chip_label": "Z salonu: {name}",
+      "context_chip_back": "Wróć do salonu",
+      "context_chip_close": "Zamknij"
     },
     "shared": {
       "home": "Strona główna",
@@ -138,6 +146,10 @@
       "open": "Otwarty",
       "suspended": "Wstrzymany",
       "terminated": "Zakończony"
+    },
+    "cart": {
+      "line_item_seller_label": "Sprzedawca",
+      "from_seller": "od {seller_name}"
     }
   },
   "footer": {

@@ -108,7 +108,8 @@ export const ProductListing = async ({
   seller_id,
   showSidebar = false,
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'pl',
-  searchParams = {}
+  searchParams = {},
+  fromContext
 }: {
   category_id?: string | string[];
   collection_id?: string;
@@ -116,6 +117,13 @@ export const ProductListing = async ({
   showSidebar?: boolean;
   locale?: string;
   searchParams?: Record<string, string | string[] | undefined>;
+  /**
+   * Story v160-4-6: optional salon-anchored context — when set, product cards
+   * augment hrefs with `?from=seller:{handle}` so PDP renders the
+   * SalonContextChip overlay. Set by SellerTabs when listing rendered in
+   * salon detail context.
+   */
+  fromContext?: { type: 'seller'; handle: string };
 }) => {
   // Resolve & sanitize filter params from URL search params
   const { categoryHandle, minPrice, maxPrice, query, tagIds, cities, durations, sellerRatings, page } = sanitizeSearchParams(searchParams);
@@ -260,7 +268,7 @@ export const ProductListing = async ({
               className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${showSidebar ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}
               data-testid="product-list"
             >
-              <ProductsList products={paginatedProducts} />
+              <ProductsList products={paginatedProducts} fromContext={fromContext} />
             </div>
           )}
           {pages > 1 && (

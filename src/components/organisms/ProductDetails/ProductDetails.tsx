@@ -11,7 +11,7 @@ import {
 import { VoucherValidityInfo } from '@/components/molecules';
 import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
 import { VendorBadge } from '@/components/molecules/VendorBadge';
-import { SellerSelectorWithGeolocation } from '@/components/cells/SellerSelector';
+import { SellerSelectorCartBridge } from '@/components/cells/SellerSelector';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -100,14 +100,10 @@ export const ProductDetails = async ({
         // hook (client-side) and feeds resolved coords + status to the
         // presentational SellerSelector. Lowest-price fallback preserved
         // when geolocation denied / unsupported / sellers lack coords.
-        <SellerSelectorWithGeolocation
-          sellers={vendorOffers}
-          // Story 5.5+ wires cart context; v1.6.0 placeholder (no-op) —
-          // selector is flag-gated DRAFT until Phase B flip.
-          onSelect={() => {
-            /* TODO Story 5.5+ — propagate seller_id into cart context */
-          }}
-        />
+        // Story 5.5 — Bridge wraps wrapper i propaguje selected seller
+        // do CartContext shared state (consumed by ProductDetailsHeader
+        // Add-to-Cart button + StickyAddToCart fallback path).
+        <SellerSelectorCartBridge sellers={vendorOffers} />
       )}
       <div className="grid gap-4 lg:grid-cols-2">
         <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />

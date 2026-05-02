@@ -106,7 +106,15 @@
       "no_address": "Address unavailable — contact the salon directly.",
       "meta_fallback_title": "Unknown salon | BonBeauty",
       "meta_description": "Discover the offer from {name} on BonBeauty.",
-      "meta_default_description": "BonBeauty partner salon — check the offer and address."
+      "meta_default_description": "BonBeauty partner salon — check the offer and address.",
+      "directions_title": "How to get there",
+      "directions_open_google": "Open in Google Maps",
+      "directions_open_apple": "Open in Apple Maps",
+      "directions_no_coords": "Salon coordinates are not available — click button below to search for the address in maps.",
+      "directions_external_notice": "Opening external maps, you leave BonBeauty.",
+      "context_chip_label": "From salon: {name}",
+      "context_chip_back": "Back to salon",
+      "context_chip_close": "Close"
     },
     "shared": {
       "home": "Home",
@@ -138,6 +146,10 @@
       "open": "Open",
       "suspended": "Suspended",
       "terminated": "Terminated"
+    },
+    "cart": {
+      "line_item_seller_label": "Seller",
+      "from_seller": "from {seller_name}"
     }
   },
   "footer": {

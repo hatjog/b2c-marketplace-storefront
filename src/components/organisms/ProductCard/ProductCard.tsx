@@ -45,17 +45,31 @@ export const ProductCard = ({
   className,
   showPrice = true,
   showVendor = true,
+  fromContext,
 }: {
   product: HttpTypes.StoreProduct | Product;
   className?: string;
   showPrice?: boolean;
   showVendor?: boolean;
+  /**
+   * Story v160-4-6: when present, augments product hrefs with
+   * `?from=seller:{handle}` so the PDP knows to render SalonContextChip.
+   * Only set when ProductCard is rendered in salon-anchored context (e.g.
+   * SellerTabs ProductListing). Other surfaces (search, category, home) leave
+   * this undefined → links stay clean.
+   */
+  fromContext?: { type: 'seller'; handle: string };
 }) => {
   const t = useTranslations('products');
 
   if (!product) {
     return null;
   }
+
+  // Story v160-4-6: build product href with optional `?from=seller:` suffix.
+  const fromQuery =
+    fromContext?.type === 'seller' ? `?from=seller:${fromContext.handle}` : '';
+  const productHref = `/products/${product.handle}${fromQuery}`;
 
   const { cheapestPrice } = getProductPrice({ product: product as HttpTypes.StoreProduct });
 
@@ -94,7 +108,7 @@ export const ProductCard = ({
           </div>
         )}
         <LocalizedClientLink
-          href={`/products/${product.handle}`}
+          href={productHref}
           aria-label={t('view_aria', { name: productName })}
           title={t('view_aria', { name: productName })}
           data-testid="product-card-link"
@@ -132,7 +146,7 @@ export const ProductCard = ({
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4" data-testid="product-card-info">
         <LocalizedClientLink
-          href={`/products/${product.handle}`}
+          href={productHref}
           aria-label={t('go_to_product_aria', { name: productName })}
           title={t('go_to_product_aria', { name: productName })}
           className="space-y-3"
@@ -191,7 +205,7 @@ export const ProductCard = ({
             </LocalizedClientLink>
           )}
           <LocalizedClientLink
-            href={`/products/${product.handle}`}
+            href={productHref}
             aria-label={t('view_aria', { name: productName })}
             title={t('view_aria', { name: productName })}
             className="bb-primary-cta ml-auto min-h-[44px] rounded-full px-4 py-2 text-[12px]"

@@ -6,6 +6,8 @@ export { InteractiveStarRating } from './InteractiveStarRating/InteractiveStarRa
 export { LogoutButton } from './LogoutButton/LogoutButton';
 export { LowestPriceBadge } from './LowestPriceBadge/LowestPriceBadge';
 export type { LowestPriceBadgeProps } from './LowestPriceBadge/LowestPriceBadge';
+export { SalonContextChip } from './SalonContextChip/SalonContextChip';
+export type { SalonContextChipProps, SalonContextChipSeller } from './SalonContextChip/SalonContextChip';
 export { SellerStatusBadge } from './SellerStatusBadge/SellerStatusBadge';
 export type { SellerStatusBadgeProps, SellerStatus } from './SellerStatusBadge/SellerStatusBadge';
 export { Textarea } from './Textarea/Textarea';

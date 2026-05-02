@@ -40,7 +40,17 @@ export const ProductDetailsHeader = ({
   user: HttpTypes.StoreCustomer | null;
   wishlist?: Wishlist;
 }) => {
-  const { addToCart, onAddToCart, cart, isAddingItem } = useCartContext();
+  // Story 5.5 — selectedSellerId/Name pulled from CartContext shared state;
+  // populated przez SellerSelectorCartBridge gdy multi-vendor flag ON
+  // (default OFF → wartości pozostają null → addToCart legacy single-vendor flow).
+  const {
+    addToCart,
+    onAddToCart,
+    cart,
+    isAddingItem,
+    selectedSellerId,
+    selectedSellerName
+  } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
   const marketId = getMarketId();
@@ -112,7 +122,11 @@ export const ProductDetailsHeader = ({
       await addToCart({
         variantId: variantId,
         quantity: 1,
-        countryCode
+        countryCode,
+        // Story 5.5 — propagate multi-vendor seller selection;
+        // null when flag OFF → metadata not attached → legacy flow.
+        selectedSellerId,
+        selectedSellerName
       });
     } catch {
       toast.error({
