@@ -120,6 +120,12 @@
       "retry_button": "Spróbuj ponownie",
       "fallback_notice": "Wybór sprzedawcy chwilowo niedostępny — pokazujemy domyślnego sprzedawcę",
       "circuit_open_message": "Tymczasowo używamy domyślnego sprzedawcy. Odśwież stronę za chwilę by spróbować ponownie."
+    },
+    "status": {
+      "pending_approval": "Oczekuje na zatwierdzenie",
+      "open": "Otwarty",
+      "suspended": "Wstrzymany",
+      "terminated": "Zakończony"
     }
   },
   "footer": {

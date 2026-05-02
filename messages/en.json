@@ -120,6 +120,12 @@
       "retry_button": "Retry",
       "fallback_notice": "Multi-vendor unavailable; using default seller",
       "circuit_open_message": "Temporarily using default seller. Refresh shortly to try again."
+    },
+    "status": {
+      "pending_approval": "Pending approval",
+      "open": "Open",
+      "suspended": "Suspended",
+      "terminated": "Terminated"
     }
   },
   "footer": {
