@@ -45,8 +45,17 @@ export interface VendorOfferOption {
   seller_name: string;
   /** Price in PLN (integer minor units OR formatted display number — consumer decides). */
   price_pln: number;
-  /** Optional distance from buyer in km. Story 5.3 wires real value; until then undefined. */
+  /** Optional distance from buyer in km. Story 5.3 computes this client-side
+   *  via Haversine when caller provides `userLat`/`userLng` to SellerSelector
+   *  and the seller has `seller_lat`/`seller_lng`; otherwise undefined.
+   */
   distance_km?: number;
+  /** Optional seller latitude (Story 5.3). Backend Phase B exposes via
+   *  vendor_offer aggregator; v1.6.0 baseline DRAFT — typically undefined.
+   */
+  seller_lat?: number;
+  /** Optional seller longitude (Story 5.3). See `seller_lat`. */
+  seller_lng?: number;
 }
 
 export interface AdditionalAttributeProps {

@@ -25,11 +25,48 @@ const messages = {
       title: 'Wybierz salon',
       choose_button: 'Wybierz',
       price_from: 'od',
-      distance_km: '{distance} km',
+      distance_km: 'ok. {distance} km',
       lowest_price_label: 'Najniższa cena',
+      closest_label: 'Najbliższy',
+      geolocation_pending: 'Pobieramy Twoją lokalizację...',
+      geolocation_denied: 'Brak dostępu do lokalizacji — pokazujemy najtańszy salon',
+      privacy_notice: 'Twoja lokalizacja używana lokalnie, nie wysyłamy',
     },
   },
 };
+
+// Story 5.3 — buyer in Warsaw centre (Pałac Kultury i Nauki).
+const WARSAW_CENTRE = { lat: 52.2297, lng: 21.0122 };
+
+// Story 5.3 — three Warsaw sellers with realistic lat/lng around the centre.
+// Distances from WARSAW_CENTRE (Haversine):
+//   seller-1 Mokotów  (52.1936, 21.0354)  ≈ 4.3 km
+//   seller-2 Wola     (52.2347, 20.9614)  ≈ 3.5 km
+//   seller-3 Praga    (52.2519, 21.0506)  ≈ 4.0 km
+//   seller-5 Centrum  (52.2298, 21.0118)  ≈ 0.03 km (closest, <0.1 km display)
+const sellersWithCoords: VendorOfferOption[] = [
+  {
+    seller_id: 'seller-1',
+    seller_name: 'Salon Mokotów',
+    price_pln: 149,
+    seller_lat: 52.1936,
+    seller_lng: 21.0354,
+  },
+  {
+    seller_id: 'seller-2',
+    seller_name: 'Salon Wola',
+    price_pln: 129,
+    seller_lat: 52.2347,
+    seller_lng: 20.9614,
+  },
+  {
+    seller_id: 'seller-3',
+    seller_name: 'Salon Praga',
+    price_pln: 169,
+    seller_lat: 52.2519,
+    seller_lng: 21.0506,
+  },
+];
 
 const singleSeller: VendorOfferOption[] = [
   { seller_id: 'seller-1', seller_name: 'Salon Mokotów', price_pln: 149 },
@@ -142,6 +179,60 @@ export const OnSelectActionLogged: Story = {
       description: {
         story:
           'Click any row or its CTA to emit seller_id into the Storybook Actions panel.',
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Story 5.3 — geolocation-aware fixtures
+// ---------------------------------------------------------------------------
+
+export const WithGeolocationGranted: Story = {
+  name: 'Geolocation granted (closest pre-selected)',
+  args: {
+    sellers: sellersWithCoords,
+    userLat: WARSAW_CENTRE.lat,
+    userLng: WARSAW_CENTRE.lng,
+    geolocationStatus: 'granted',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Buyer at Warsaw centre. Sort = Haversine distance ASC → Salon Centrum (≈0.03 km) is pre-selected and shows "Najbliższy" badge. The cheapest row (Salon Wola, 129 zł) keeps its "Najniższa cena" badge — both markers coexist on different rows so the buyer can override.',
+      },
+    },
+  },
+};
+
+export const WithGeolocationDenied: Story = {
+  name: 'Geolocation denied (lowest-price fallback)',
+  args: {
+    sellers: sellersWithCoords,
+    geolocationStatus: 'denied',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Buyer rejected the browser prompt. No `userLat`/`userLng` → fallback to lowest-price (Salon Wola). Distance lines hidden, "Najbliższy" badge absent, denied messaging shown.',
+      },
+    },
+  },
+};
+
+export const WithGeolocationPending: Story = {
+  name: 'Geolocation pending (privacy notice visible)',
+  args: {
+    sellers: sellersWithCoords,
+    geolocationStatus: 'pending',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Browser prompt active. Selector pre-renders with lowest-price fallback so the buyer is never blocked; privacy notice ("location used locally, not transmitted") is visible while waiting for the user response.',
       },
     },
   },
