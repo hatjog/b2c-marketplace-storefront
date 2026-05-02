@@ -10,6 +10,7 @@ import { SellersSearchForm } from '@/components/molecules/SellersSearchForm/Sell
 import { SellersViewToggle, type SellersView } from '@/components/molecules/SellersViewToggle/SellersViewToggle';
 import { SellerCard } from '@/components/organisms/seller/SellerCard';
 import { searchSellers, type SellerSortKey } from '@/lib/data/seller';
+import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
 
 export const revalidate = 60;
 
@@ -60,7 +61,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
-  await params;
+  const { locale } = await params;
   const sp = await searchParams;
   const q = parseString(sp.q).trim();
   const city = parseString(sp.city).trim();
@@ -81,9 +82,16 @@ export async function generateMetadata({
 
   const description = tList('description');
 
+  // Story v160-3-3: canonical strips query params (filter/search results
+  // inherit canonical from the bare list URL — prevents indexing duplicates
+  // for `?q=` / `?city=` / `?sort=` permutations). Hreflang map covers all
+  // active locales with `x-default` → DEFAULT_LOCALE per Google docs.
+  const alternates = buildSellerAlternates(locale, '');
+
   return {
     title,
     description,
+    alternates,
     robots: { index: true, follow: true },
     openGraph: {
       title,

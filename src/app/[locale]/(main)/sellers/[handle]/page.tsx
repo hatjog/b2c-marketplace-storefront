@@ -9,6 +9,7 @@ import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
 
 export const revalidate = 60;
 
@@ -36,7 +37,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; handle: string }>;
 }): Promise<Metadata> {
-  const { handle } = await params;
+  const { locale, handle } = await params;
   const tDetail = await getTranslations('seller.detail');
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
@@ -46,10 +47,17 @@ export async function generateMetadata({
     seller = null;
   }
 
+  // Story v160-3-3: canonical + hreflang per locale × handle. Even on the
+  // not-found branch we keep the alternates pointing at the requested handle
+  // so that crawlers reaching the URL via a stale link see the right
+  // cross-locale signal (the page itself stays `noindex`).
+  const alternates = buildSellerAlternates(locale, `/${handle}`);
+
   if (!seller) {
     return {
       title: tDetail('meta_fallback_title'),
       description: tDetail('meta_default_description'),
+      alternates,
       robots: { index: false, follow: false }
     };
   }
@@ -65,6 +73,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates,
     robots: { index: true, follow: true },
     openGraph: {
       title,
