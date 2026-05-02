@@ -1,0 +1,111 @@
+/**
+ * CartGroupedBySeller — Story 5.7 multi-vendor cart grouping organism.
+ *
+ * Renders cart line items partitioned per seller (read from
+ * `metadata.selected_seller_id` via Story 5.5 `readSelectedSeller`). Each
+ * seller group exposes header (seller name + optional storefront link) and
+ * its slice of line items via existing `CartItemsProducts` cell. Items
+ * lacking seller context fall through to the "default" group rendered last.
+ *
+ * Server Component (default Next 15 RSC) — uses `getTranslations` async
+ * helper. No client state required; render is pure prop-driven.
+ *
+ * Flag-gated by parent CartItems wire-up: callers should only render
+ * <CartGroupedBySeller /> when both `MULTI_VENDOR_PRICING_ENABLED === 'true'`
+ * and `hasMultipleSellers(items) === true`. Mini-cart (CartDropdown) keeps
+ * flat layout per UX density rationale (drawer real estate).
+ *
+ * Story: v160-5-7-multi-vendor-cart-grouping (epic-5)
+ */
+
+import type { HttpTypes } from '@medusajs/types';
+import { getTranslations } from 'next-intl/server';
+
+import { CartItemsProducts } from '@/components/cells';
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { groupLineItemsBySeller } from '@/lib/helpers/cart-vendor-context';
+import { convertToLocale } from '@/lib/helpers/money';
+
+interface CartGroupedBySellerProps {
+  cart: HttpTypes.StoreCart;
+  /** Show delete buttons per line item (cart page = true; review = false). */
+  delete_item?: boolean;
+  /** Show quantity edit per line item (cart page = true; review = false). */
+  change_quantity?: boolean;
+  /** Show subtotal per seller group footer (default true on review surfaces). */
+  show_subtotal?: boolean;
+}
+
+export const CartGroupedBySeller = async ({
+  cart,
+  delete_item = true,
+  change_quantity = true,
+  show_subtotal = false,
+}: CartGroupedBySellerProps) => {
+  const t = await getTranslations('seller.cart');
+
+  const items = cart.items ?? [];
+  const groups = groupLineItemsBySeller(items);
+
+  if (groups.length === 0) {
+    // Caller (CartItems organism) should already have early-returned EmptyCart;
+    // defensive null render avoids stray section wrappers.
+    return null;
+  }
+
+  return (
+    <>
+      {groups.map((group) => {
+        const groupKey = group.seller_id ?? 'default';
+        const headerLabel = group.seller
+          ? t('group_header_label', { seller_name: group.seller.name })
+          : t('default_seller_group_label');
+        const subtotalFormatted = show_subtotal
+          ? convertToLocale({
+              amount: group.subtotal,
+              currency_code: cart.currency_code,
+            })
+          : null;
+
+        return (
+          <section
+            key={groupKey}
+            data-testid={`cart-grouped-by-seller-${groupKey}`}
+            className="mb-4 rounded-sm border"
+          >
+            <header className="flex items-center justify-between gap-4 border-b p-4">
+              <h3 className="heading-xs uppercase">{headerLabel}</h3>
+              {group.seller?.handle && (
+                <LocalizedClientLink
+                  href={`/sellers/${group.seller.handle}`}
+                  className="label-md text-secondary hover:underline"
+                  data-testid={`cart-group-seller-link-${groupKey}`}
+                >
+                  {t('visit_seller_storefront')}
+                </LocalizedClientLink>
+              )}
+            </header>
+            <div className="p-2">
+              <CartItemsProducts
+                products={group.items}
+                currency_code={cart.currency_code}
+                delete_item={delete_item}
+                change_quantity={change_quantity}
+              />
+            </div>
+            {subtotalFormatted && (
+              <footer
+                className="border-t p-4 text-right"
+                data-testid={`cart-group-subtotal-${groupKey}`}
+              >
+                <p className="label-md text-secondary">
+                  {t('subtotal_per_seller', { amount: subtotalFormatted })}
+                </p>
+              </footer>
+            )}
+          </section>
+        );
+      })}
+    </>
+  );
+};

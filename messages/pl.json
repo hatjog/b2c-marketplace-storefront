@@ -153,7 +153,11 @@
     },
     "cart": {
       "line_item_seller_label": "Sprzedawca",
-      "from_seller": "od {seller_name}"
+      "from_seller": "od {seller_name}",
+      "group_header_label": "Od sprzedawcy: {seller_name}",
+      "default_seller_group_label": "Pozostałe pozycje",
+      "subtotal_per_seller": "Suma częściowa: {amount}",
+      "visit_seller_storefront": "Zobacz sklep sprzedawcy"
     },
     "checkout": {
       "purchase_mode_label": "Dla kogo kupujesz?",

@@ -153,7 +153,11 @@
     },
     "cart": {
       "line_item_seller_label": "Seller",
-      "from_seller": "from {seller_name}"
+      "from_seller": "from {seller_name}",
+      "group_header_label": "From seller: {seller_name}",
+      "default_seller_group_label": "Other items",
+      "subtotal_per_seller": "Subtotal: {amount}",
+      "visit_seller_storefront": "Visit seller storefront"
     },
     "checkout": {
       "purchase_mode_label": "Who are you buying for?",

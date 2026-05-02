@@ -28,6 +28,12 @@ const LOCALSTORAGE_KEY = 'gp_cart_seller_map';
 export interface SelectedSellerContext {
   id: string;
   name: string;
+  /**
+   * Storefront seller handle for `/sellers/{handle}` link target.
+   * Optional: Story 5.5 baseline metadata write may not include handle;
+   * organism renders link defensively (skip when undefined).
+   */
+  handle?: string;
 }
 
 /**
@@ -45,8 +51,14 @@ export const readSelectedSeller = (
   const metaId = typeof metadata?.selected_seller_id === 'string' ? metadata.selected_seller_id : undefined;
   const metaName =
     typeof metadata?.selected_seller_name === 'string' ? metadata.selected_seller_name : undefined;
+  const metaHandle =
+    typeof metadata?.selected_seller_handle === 'string'
+      ? metadata.selected_seller_handle
+      : undefined;
   if (metaId && metaName) {
-    return { id: metaId, name: metaName };
+    return metaHandle
+      ? { id: metaId, name: metaName, handle: metaHandle }
+      : { id: metaId, name: metaName };
   }
 
   // Option B fallback: localStorage map keyed by line_item_id
@@ -83,9 +95,79 @@ export const writeSelectedSellerLocal = (
   try {
     const raw = window.localStorage.getItem(LOCALSTORAGE_KEY);
     const map = raw ? (JSON.parse(raw) as Record<string, SelectedSellerContext>) : {};
-    map[lineItemId] = { id: ctx.id, name: ctx.name };
+    map[lineItemId] = { id: ctx.id, name: ctx.name, ...(ctx.handle ? { handle: ctx.handle } : {}) };
     window.localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(map));
   } catch {
     // silently fail — graceful degradation acceptable per AC2
   }
+};
+
+/**
+ * Story 5.7 — multi-vendor cart grouping primitives.
+ *
+ * `SellerGroup` reprezentuje jedną sekcję cart UI keyed by seller_id (lub
+ * `null` dla default group dla items bez seller context — legacy single-vendor
+ * lub addToCart bez selectedSellerId). Helper `groupLineItemsBySeller` jest
+ * pure data transform — Server Component + SSR safe via underlying
+ * `readSelectedSeller`. Helper `hasMultipleSellers` służy do flag-gated
+ * conditional render decision (skip grouping gdy zero items z seller context).
+ */
+export interface SellerGroup {
+  /** seller_id when known; null = default group (no seller context). */
+  seller_id: string | null;
+  /** seller context when known; null = default group. */
+  seller: SelectedSellerContext | null;
+  /** line items in this group; non-empty by construction. */
+  items: HttpTypes.StoreCartLineItem[];
+  /** sum of line item subtotals (minor units, currency-agnostic). */
+  subtotal: number;
+}
+
+const DEFAULT_GROUP_KEY = '__default';
+
+/**
+ * Group cart line items by selected seller context.
+ *
+ * Deterministic order: alphabetical by seller name; default group last.
+ * Pure read — no side effects; safe in Server Component.
+ *
+ * @param items - StoreCartLineItem[] (cart.items); empty array → empty result
+ * @returns ordered SellerGroup[] (alphabetical seller name, default last)
+ */
+export const groupLineItemsBySeller = (
+  items: ReadonlyArray<HttpTypes.StoreCartLineItem>
+): SellerGroup[] => {
+  const groups = new Map<string, SellerGroup>();
+  for (const item of items) {
+    const seller = readSelectedSeller(item);
+    const key = seller?.id ?? DEFAULT_GROUP_KEY;
+    let group = groups.get(key);
+    if (!group) {
+      group = {
+        seller_id: seller?.id ?? null,
+        seller,
+        items: [],
+        subtotal: 0,
+      };
+      groups.set(key, group);
+    }
+    group.items.push(item);
+    group.subtotal += typeof item.subtotal === 'number' ? item.subtotal : 0;
+  }
+  return Array.from(groups.values()).sort((a, b) => {
+    if (a.seller_id === null) return 1;
+    if (b.seller_id === null) return -1;
+    return (a.seller?.name ?? '').localeCompare(b.seller?.name ?? '');
+  });
+};
+
+/**
+ * Detect whether cart has any item z seller metadata. Used dla flag-gated
+ * conditional render: gdy zero items mają seller context, grouping yields
+ * jedną default group → no UX benefit → flat fallback preferred.
+ */
+export const hasMultipleSellers = (
+  items: ReadonlyArray<HttpTypes.StoreCartLineItem>
+): boolean => {
+  return items.some((item) => readSelectedSeller(item) !== null);
 };
