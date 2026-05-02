@@ -12,9 +12,10 @@
   "dependencies": {
     "@headlessui/react": "^2.2.1",
     "@hookform/resolvers": "^3.10.0",
-    "@medusajs/js-sdk": "^2.12.5",
-    "@medusajs/types": "2.12.6",
+    "@medusajs/js-sdk": "2.13.4",
+    "@medusajs/types": "2.13.4",
     "@medusajs/ui": "^4.0.33",
+    "@mercurjs/client": "2.1.1",
     "@sentry/nextjs": "^10.40.0",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.1.0",
@@ -85,5 +86,5 @@
       "plugin:storybook/recommended"
     ]
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "pnpm@10.33.0"
 }
