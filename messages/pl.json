@@ -92,6 +92,8 @@
     "add_to_wishlist": "Dodaj do listy życzeń",
     "out_of_stock": "Niedostępny",
     "price_from": "od",
+    "lowest_price_prefix": "od",
+    "lowest_price_tooltip": "Cena od najtańszego z {count} salonów",
     "view_details": "Zobacz szczegóły",
     "view_aria": "Zobacz {name}",
     "go_to_product_aria": "Przejdź do strony produktu {name}",

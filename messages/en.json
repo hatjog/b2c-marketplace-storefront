@@ -92,6 +92,8 @@
     "add_to_wishlist": "Add to wishlist",
     "out_of_stock": "Out of stock",
     "price_from": "from",
+    "lowest_price_prefix": "from",
+    "lowest_price_tooltip": "Price from the cheapest of {count} salons",
     "view_details": "View details",
     "view_aria": "View {name}",
     "go_to_product_aria": "Go to {name} product page",

@@ -4,11 +4,20 @@ import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { LowestPriceBadge } from '@/components/atoms/LowestPriceBadge/LowestPriceBadge';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
-import type { Product } from '@/types/product';
+import type { MultiVendorPricingFields, Product } from '@/types/product';
+
+/**
+ * Story 5.1 — multi-vendor pricing feature flag.
+ * Default OFF (`'false'`) → badge hidden across whole app.
+ * Phase B activation (post-v1.6.0) flips this to surface lowest-price prefix.
+ */
+const MULTI_VENDOR_PRICING_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 const PLACEHOLDER_CDN_HOST = 'cdn.example.com';
 const PLACEHOLDER_IMAGE_SRC = '/images/placeholder.svg';
@@ -150,6 +159,15 @@ export const ProductCard = ({
           </div>
           {showPrice && (
             <div className="flex items-center gap-2" data-testid="product-card-price">
+              {MULTI_VENDOR_PRICING_ENABLED &&
+                typeof (product as Product & MultiVendorPricingFields).vendor_count === 'number' &&
+                typeof (product as Product & MultiVendorPricingFields).lowest_price_pln === 'number' && (
+                  <LowestPriceBadge
+                    vendorCount={
+                      (product as Product & MultiVendorPricingFields).vendor_count as number
+                    }
+                  />
+                )}
               <p className="text-lg font-medium text-primary" data-testid="product-card-current-price">
                 {cheapestPrice?.calculated_price}
               </p>

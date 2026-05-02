@@ -9,6 +9,23 @@ export type GpProductMetadata = {
   [key: string]: unknown;
 };
 
+/**
+ * Story 5.1 — multi-vendor lowest-price badge schema augmentation.
+ *
+ * v1.6.0 baseline: backend (Mercur 2.1.1) does NOT yet produce these fields
+ * — vendor_offer aggregation is Phase B territory. Storefront reads
+ * `undefined` → LowestPriceBadge stays hidden via AC2 conditional gate.
+ *
+ * Post Phase B activation: backend story (post-v1.6.0) populates from
+ * vendor_offer aggregation; flag flip → badge surfaces.
+ */
+export interface MultiVendorPricingFields {
+  /** Lowest aggregated price (PLN, integer minor units OR string-formatted) — defined by Phase B aggregator. */
+  lowest_price_pln?: number | null;
+  /** Count of vendors offering this product. Badge renders only when >= 2. */
+  vendor_count?: number | null;
+}
+
 export interface AdditionalAttributeProps {
   id: string;
   attribute_id: string;
