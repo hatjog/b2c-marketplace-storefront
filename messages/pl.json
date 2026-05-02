@@ -550,6 +550,16 @@
         "cta_withdraw": "Wycofaj zgodę"
       }
     },
+    "pdf": {
+      "download_cta": "Pobierz voucher PDF",
+      "download_cta_for_vendor": "Pobierz voucher dla {seller_name}",
+      "email_pending": "Voucher trafi na email w ciągu 5 min",
+      "salon_section_title": "Salon",
+      "redemption_code_label": "Kod realizacji",
+      "validity_period_label": "Ważność",
+      "voucher_value_label": "Wartość vouchera",
+      "service_description_label": "Usługa"
+    },
     "claim": {
       "title": "Twój voucher",
       "subtitle": "Skorzystaj z vouchera w wybranym salonie",

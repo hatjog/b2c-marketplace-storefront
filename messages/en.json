@@ -550,6 +550,16 @@
         "cta_withdraw": "Withdraw consent"
       }
     },
+    "pdf": {
+      "download_cta": "Download voucher PDF",
+      "download_cta_for_vendor": "Download voucher for {seller_name}",
+      "email_pending": "Voucher will arrive in your email within 5 min",
+      "salon_section_title": "Salon",
+      "redemption_code_label": "Redemption code",
+      "validity_period_label": "Valid until",
+      "voucher_value_label": "Voucher value",
+      "service_description_label": "Service"
+    },
     "claim": {
       "title": "Your voucher",
       "subtitle": "Use your voucher at the chosen salon",
