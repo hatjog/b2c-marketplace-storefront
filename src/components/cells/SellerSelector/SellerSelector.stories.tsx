@@ -5,6 +5,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { VendorOfferOption } from '@/types/product';
 
 import { SellerSelector } from './SellerSelector';
+import { SellerSelectorErrorBoundary } from './SellerSelectorErrorBoundary';
+import { SellerSelectorFallback } from './SellerSelectorFallback';
 
 /**
  * Story 5.2 — SellerSelector cell PDP multi-vendor picker.
@@ -31,6 +33,12 @@ const messages = {
       geolocation_pending: 'Pobieramy Twoją lokalizację...',
       geolocation_denied: 'Brak dostępu do lokalizacji — pokazujemy najtańszy salon',
       privacy_notice: 'Twoja lokalizacja używana lokalnie, nie wysyłamy',
+      error_message: 'Nie udało się załadować ofert sprzedawców',
+      retry_button: 'Spróbuj ponownie',
+      fallback_notice:
+        'Wybór sprzedawcy chwilowo niedostępny — pokazujemy domyślnego sprzedawcę',
+      circuit_open_message:
+        'Tymczasowo używamy domyślnego sprzedawcy. Odśwież stronę za chwilę by spróbować ponownie.',
     },
   },
 };
@@ -233,6 +241,92 @@ export const WithGeolocationPending: Story = {
       description: {
         story:
           'Browser prompt active. Selector pre-renders with lowest-price fallback so the buyer is never blocked; privacy notice ("location used locally, not transmitted") is visible while waiting for the user response.',
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Story 5.4 — circuit breaker + error boundary fixtures
+// ---------------------------------------------------------------------------
+
+/**
+ * Normal_State — baseline reference re-using Story 5.3 geolocation-granted
+ * fixture; circuit breaker would be `closed`, error boundary inactive.
+ * Documented here so reviewers see the happy path next to the new
+ * Error_State / Circuit_Open_Fallback variants.
+ */
+export const Normal_State: Story = {
+  name: 'Normal state (baseline; closed circuit)',
+  args: {
+    sellers: sellersWithCoords,
+    userLat: WARSAW_CENTRE.lat,
+    userLng: WARSAW_CENTRE.lng,
+    geolocationStatus: 'granted',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Story 5.4 baseline: circuit breaker `closed`, no errors. Re-uses geolocation-granted fixture — the Error Boundary wraps SellerSelector transparently, so happy-path output matches Story 5.3.',
+      },
+    },
+  },
+};
+
+// Tiny child component that throws on render — used solely to drive the
+// error boundary in the Error_State story. Storybook will log the expected
+// React internal warning; not a regression.
+const ThrowingChild = () => {
+  throw new Error('Simulated SellerSelector render failure (Story 5.4 fixture)');
+};
+
+/**
+ * Error_State — forces a render-time error inside the boundary subtree.
+ * Verifies AC1: getDerivedStateFromError flips state, default fallback UI
+ * with retry CTA renders, retry button clears the boundary state.
+ */
+export const Error_State: Story = {
+  name: 'Error state (boundary catches; retry visible)',
+  render: () => (
+    <NextIntlClientProvider locale="pl" messages={messages}>
+      <div style={{ maxWidth: 480 }}>
+        <SellerSelectorErrorBoundary>
+          <ThrowingChild />
+        </SellerSelectorErrorBoundary>
+      </div>
+    </NextIntlClientProvider>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Boundary catches a render error from a child component. Default fallback UI with `seller.selector.error_message` and `seller.selector.retry_button` is shown. Click retry to reset boundary state (here child still throws — re-clicking re-mounts the failure). Storybook logs an expected React internal console.error.',
+      },
+    },
+  },
+};
+
+/**
+ * Circuit_Open_Fallback — renders the fallback notice that
+ * SellerSelectorWithGeolocation uses when `breaker.state === 'open'`.
+ * The selector subtree is intentionally absent — the parent ProductDetails
+ * already renders the default Medusa product variant flow.
+ */
+export const Circuit_Open_Fallback: Story = {
+  name: 'Circuit open (fallback notice; default seller delegation)',
+  render: () => (
+    <NextIntlClientProvider locale="pl" messages={messages}>
+      <div style={{ maxWidth: 480 }}>
+        <SellerSelectorFallback />
+      </div>
+    </NextIntlClientProvider>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'After 3 failures within a 10s rolling window, useCircuitBreaker transitions to `open` for a 60s cooldown. SellerSelectorWithGeolocation renders SellerSelectorFallback (single role="status" notice) instead of the radio list. Parent ProductDetails handles the default Medusa variant flow below.',
       },
     },
   },

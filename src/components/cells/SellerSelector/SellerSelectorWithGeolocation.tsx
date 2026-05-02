@@ -2,9 +2,11 @@
 
 /**
  * SellerSelectorWithGeolocation — client wrapper bridging useGeolocation
- * hook to the (presentational) SellerSelector cell (Story 5.3).
+ * hook to the (presentational) SellerSelector cell + circuit-breaker
+ * resilience (Story 5.3 + Story 5.4 extension).
  *
  * Story: v160-5-3-seller-selector-default-sort-geolocation
+ *        v160-5-4-seller-selector-circuit-breaker
  *
  * Why a wrapper:
  *  - SellerSelector is intentionally prop-driven so it stays unit-testable
@@ -18,18 +20,31 @@
  *    SellerSelector is already a user-perceivable affordance — the prompt
  *    is contextual, not surprise.
  *
+ * Story 5.4 additions:
+ *  - `useCircuitBreaker` consumed locally; per-instance state.
+ *  - `<SellerSelectorErrorBoundary>` wraps `<SellerSelector>`; render
+ *    errors propagate to `breaker.recordFailure`.
+ *  - When `breaker.state === 'open'` → render `<SellerSelectorFallback />`
+ *    in place of the selector (single-vendor delegation).
+ *  - When `breaker.state === 'half-open'` → selector mounts normally;
+ *    the first successful render after the cooldown automatically counts
+ *    as a passing test call (mount effect calls `recordSuccess`).
+ *
  * Boundaries:
  *  - NIE owns the feature flag (parent ProductDetails enforces it)
  *  - NIE wires cart context (Story 5.5+ territory)
- *  - NIE handles error retry — Story 5.4 (circuit breaker) wraps this.
+ *  - NIE adds backend retry — frontend-only resilience.
  */
 
 import { useEffect } from 'react';
 
+import { useCircuitBreaker } from '@/hooks/useCircuitBreaker';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import type { VendorOfferOption } from '@/types/product';
 
 import { SellerSelector } from './SellerSelector';
+import { SellerSelectorErrorBoundary } from './SellerSelectorErrorBoundary';
+import { SellerSelectorFallback } from './SellerSelectorFallback';
 
 export interface SellerSelectorWithGeolocationProps {
   sellers: VendorOfferOption[];
@@ -45,6 +60,7 @@ export const SellerSelectorWithGeolocation = ({
   className,
 }: SellerSelectorWithGeolocationProps) => {
   const { status, lat, lng, requestLocation } = useGeolocation();
+  const breaker = useCircuitBreaker();
 
   // Fire once on mount. Hook's `requestLocation` is stable (useCallback) —
   // the dep array intentionally excludes it to avoid ESLint exhaustive-deps
@@ -56,15 +72,37 @@ export const SellerSelectorWithGeolocation = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Half-open auto-resolve: a successful render of SellerSelector while the
+  // breaker is in the test state counts as a passing call. Effect runs
+  // after commit so the boundary had a chance to catch render errors.
+  useEffect(() => {
+    if (breaker.state === 'half-open') {
+      breaker.recordSuccess();
+    }
+  }, [breaker]);
+
+  // Open circuit → delegate to default Medusa product variant flow with
+  // a transparent notice. Parent ProductDetails renders the default flow
+  // when the wrapper does not render the selector.
+  if (breaker.state === 'open') {
+    return <SellerSelectorFallback />;
+  }
+
   return (
-    <SellerSelector
-      sellers={sellers}
-      defaultSelectedSellerId={defaultSelectedSellerId}
-      onSelect={onSelect}
-      className={className}
-      userLat={status === 'granted' && lat !== null ? lat : undefined}
-      userLng={status === 'granted' && lng !== null ? lng : undefined}
-      geolocationStatus={status}
-    />
+    <SellerSelectorErrorBoundary
+      onError={() => breaker.recordFailure()}
+      onReset={() => breaker.reset()}
+      fallback={<SellerSelectorFallback />}
+    >
+      <SellerSelector
+        sellers={sellers}
+        defaultSelectedSellerId={defaultSelectedSellerId}
+        onSelect={onSelect}
+        className={className}
+        userLat={status === 'granted' && lat !== null ? lat : undefined}
+        userLng={status === 'granted' && lng !== null ? lng : undefined}
+        geolocationStatus={status}
+      />
+    </SellerSelectorErrorBoundary>
   );
 };

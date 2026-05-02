@@ -115,7 +115,11 @@
       "closest_label": "Closest",
       "geolocation_pending": "Acquiring your location...",
       "geolocation_denied": "Location unavailable — showing the cheapest salon",
-      "privacy_notice": "Your location used locally, not transmitted"
+      "privacy_notice": "Your location used locally, not transmitted",
+      "error_message": "Failed to load seller offers",
+      "retry_button": "Retry",
+      "fallback_notice": "Multi-vendor unavailable; using default seller",
+      "circuit_open_message": "Temporarily using default seller. Refresh shortly to try again."
     }
   },
   "footer": {
