@@ -24,8 +24,8 @@ export async function SellersPagination({
   offset,
   preservedParams
 }: SellersPaginationProps) {
-  const t = await getTranslations('sellers_search');
-  const tList = await getTranslations('sellers_list');
+  const t = await getTranslations('seller.search');
+  const tList = await getTranslations('seller.list');
 
   if (total <= limit) {
     return (

@@ -23,17 +23,17 @@ export async function generateMetadata({
   params: Promise<PageParams>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'seller_page' });
+  const tDetail = await getTranslations({ locale, namespace: 'seller.detail' });
   const seller = await getSellerByHandle(handle);
 
   if (!seller) {
-    return { title: t('meta_fallback_title') };
+    return { title: tDetail('meta_fallback_title') };
   }
 
   const title = `${seller.name} | BonBeauty`;
   const description = seller.description
     ? seller.description.replace(/<[^>]+>/g, '').slice(0, 160)
-    : t('meta_description', { name: seller.name });
+    : tDetail('meta_description', { name: seller.name });
 
   return {
     title,
@@ -52,7 +52,8 @@ export default async function SalonProfilPage({
   params: Promise<PageParams>;
 }) {
   const { handle, locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'seller_page' });
+  const tShared = await getTranslations({ locale, namespace: 'seller.shared' });
+  const tDetail = await getTranslations({ locale, namespace: 'seller.detail' });
 
   const seller = await getSellerByHandle(handle);
 
@@ -88,8 +89,8 @@ export default async function SalonProfilPage({
     <main id="main-content" className="bb-page-shell">
       <Breadcrumbs
         items={[
-          { label: t('home'), href: '/' },
-          { label: t('salons'), href: '/salony' },
+          { label: tShared('home'), href: '/' },
+          { label: tShared('salons'), href: '/salony' },
           { label: seller.name, href: `/salony/${seller.handle}` },
         ]}
       />
@@ -107,7 +108,7 @@ export default async function SalonProfilPage({
         {seller.description && (
           <section aria-labelledby="seller-description-heading" className="bb-section-shell">
             <h2 id="seller-description-heading" className="mb-3 text-xl font-bold">
-              {t('about')}
+              {tDetail('about')}
             </h2>
             <SanitizedHTML html={seller.description} className="label-md" />
           </section>

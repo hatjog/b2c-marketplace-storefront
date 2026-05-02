@@ -39,42 +39,50 @@
     "style_eyebrow": "Odkrywaj style",
     "blog_eyebrow": "Dziennik BonBeauty"
   },
-  "seller_page": {
-    "home": "Strona główna",
-    "salons": "Salony",
-    "about": "O salonie",
-    "meta_fallback_title": "Salon | BonBeauty",
-    "meta_description": "Odkryj ofertę salonu {name} na BonBeauty."
-  },
-  "sellers_list": {
-    "title": "Salony partnerskie",
-    "description": "Odkryj salony partnerskie BonBeauty. Znajdź salon w swoim mieście i przeglądaj ich ofertę.",
-    "empty": "Brak salonów partnerskich.",
-    "loading": "Ładowanie salonów...",
-    "meta_title": "Salony partnerskie | BonBeauty",
-    "previous_page": "Poprzednia strona",
-    "next_page": "Następna strona"
-  },
-  "sellers_search": {
-    "form_aria": "Wyszukaj salony",
-    "label_query": "Wyszukaj",
-    "placeholder": "Nazwa salonu...",
-    "label_city": "Miasto",
-    "city_all": "Wszystkie miasta",
-    "label_sort": "Sortuj",
-    "sort_name_asc": "Nazwa A-Z",
-    "sort_name_desc": "Nazwa Z-A",
-    "submit": "Szukaj",
-    "results_count": "{count} salonów",
-    "empty_heading": "Brak salonów partnerskich.",
-    "empty_heading_filtered": "Brak wyników dla '{query}'",
-    "empty_body": "Spróbuj zmienić zapytanie albo wyczyść filtry.",
-    "clear_filters": "Wyczyść filtry",
-    "clear_filters_aria": "Wyczyść filtry i pokaż wszystkie salony",
-    "pagination_aria": "Paginacja listy salonów",
-    "meta_title_query": "'{query}' — Salony partnerskie | BonBeauty",
-    "meta_title_city": "Salony beauty w {city} | BonBeauty",
-    "meta_title_query_city": "'{query}' w {city} — Salony partnerskie | BonBeauty"
+  "seller": {
+    "list": {
+      "title": "Salony partnerskie",
+      "description": "Odkryj salony partnerskie BonBeauty. Znajdź salon w swoim mieście i przeglądaj ich ofertę.",
+      "empty": "Brak salonów partnerskich.",
+      "loading": "Ładowanie salonów...",
+      "meta_title": "Salony partnerskie | BonBeauty",
+      "previous_page": "Poprzednia strona",
+      "next_page": "Następna strona"
+    },
+    "search": {
+      "form_aria": "Wyszukaj salony",
+      "label_query": "Wyszukaj",
+      "placeholder": "Nazwa salonu...",
+      "label_city": "Miasto",
+      "city_all": "Wszystkie miasta",
+      "label_sort": "Sortuj",
+      "sort_name_asc": "Nazwa A-Z",
+      "sort_name_desc": "Nazwa Z-A",
+      "submit": "Szukaj",
+      "results_count": "{count} salonów",
+      "empty_heading": "Brak salonów partnerskich.",
+      "empty_heading_filtered": "Brak wyników dla '{query}'",
+      "empty_body": "Spróbuj zmienić zapytanie albo wyczyść filtry.",
+      "clear_filters": "Wyczyść filtry",
+      "clear_filters_aria": "Wyczyść filtry i pokaż wszystkie salony",
+      "pagination_aria": "Paginacja listy salonów",
+      "meta_title_query": "'{query}' — Salony partnerskie | BonBeauty",
+      "meta_title_city": "Salony beauty w {city} | BonBeauty",
+      "meta_title_query_city": "'{query}' w {city} — Salony partnerskie | BonBeauty"
+    },
+    "detail": {
+      "about": "O salonie",
+      "meta_fallback_title": "Salon | BonBeauty",
+      "meta_description": "Odkryj ofertę salonu {name} na BonBeauty."
+    },
+    "shared": {
+      "home": "Strona główna",
+      "salons": "Salony"
+    },
+    "lowest_price": {
+      "prefix": "od",
+      "tooltip": "Cena od najtańszego z {count} salonów"
+    }
   },
   "footer": {
     "section_customer_services": "Obsługa klienta",
@@ -122,8 +130,6 @@
     "add_to_wishlist": "Dodaj do listy życzeń",
     "out_of_stock": "Niedostępny",
     "price_from": "od",
-    "lowest_price_prefix": "od",
-    "lowest_price_tooltip": "Cena od najtańszego z {count} salonów",
     "view_details": "Zobacz szczegóły",
     "view_aria": "Zobacz {name}",
     "go_to_product_aria": "Przejdź do strony produktu {name}",
@@ -427,21 +433,6 @@
     "change_method": "Zmień metodę"
   },
   "voucher": {
-    "qr_code_aria_label": "Kod QR vouchera",
-    "qr_code_label": "Zeskanuj w salonie"
-  },
-  "cross_sell": {
-    "same_seller": "W tym salonie",
-    "same_category": "W tej kategorii"
-  },
-  "sort": {
-    "label": "Sortuj",
-    "aria_label": "Sortowanie",
-    "recommended": "Polecane",
-    "price_asc": "Cena ↑",
-    "price_desc": "Cena ↓"
-  },
-  "voucher": {
     "consent": {
       "heading": "Zgoda na przetwarzanie danych odbiorcy",
       "purpose": "Wyrażam zgodę na przetwarzanie danych odbiorcy w celu dostarczenia vouchera. Dane będą przechowywane przez 365 dni i mogą zostać usunięte na żądanie zgodnie z RODO.",
@@ -471,5 +462,16 @@
         "cta_withdraw": "Wycofaj zgodę"
       }
     }
+  },
+  "cross_sell": {
+    "same_seller": "W tym salonie",
+    "same_category": "W tej kategorii"
+  },
+  "sort": {
+    "label": "Sortuj",
+    "aria_label": "Sortowanie",
+    "recommended": "Polecane",
+    "price_asc": "Cena ↑",
+    "price_desc": "Cena ↓"
   }
 }

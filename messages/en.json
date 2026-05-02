@@ -39,42 +39,50 @@
     "style_eyebrow": "Editorial discovery",
     "blog_eyebrow": "BonBeauty journal"
   },
-  "seller_page": {
-    "home": "Home",
-    "salons": "Salons",
-    "about": "About the salon",
-    "meta_fallback_title": "Salon | BonBeauty",
-    "meta_description": "Discover the offer from {name} on BonBeauty."
-  },
-  "sellers_list": {
-    "title": "Partner salons",
-    "description": "Discover BonBeauty partner salons. Find a salon in your city and browse their offering.",
-    "empty": "No salons available.",
-    "loading": "Loading salons...",
-    "meta_title": "Partner salons | BonBeauty",
-    "previous_page": "Previous page",
-    "next_page": "Next page"
-  },
-  "sellers_search": {
-    "form_aria": "Search salons",
-    "label_query": "Search",
-    "placeholder": "Salon name...",
-    "label_city": "City",
-    "city_all": "All cities",
-    "label_sort": "Sort",
-    "sort_name_asc": "Name A-Z",
-    "sort_name_desc": "Name Z-A",
-    "submit": "Search",
-    "results_count": "{count} salons",
-    "empty_heading": "No partner salons available.",
-    "empty_heading_filtered": "No results for '{query}'",
-    "empty_body": "Try a different query or clear the filters.",
-    "clear_filters": "Clear filters",
-    "clear_filters_aria": "Clear filters and show all salons",
-    "pagination_aria": "Salon list pagination",
-    "meta_title_query": "'{query}' — Partner salons | BonBeauty",
-    "meta_title_city": "Beauty salons in {city} | BonBeauty",
-    "meta_title_query_city": "'{query}' in {city} — Partner salons | BonBeauty"
+  "seller": {
+    "list": {
+      "title": "Partner salons",
+      "description": "Discover BonBeauty partner salons. Find a salon in your city and browse their offering.",
+      "empty": "No salons available.",
+      "loading": "Loading salons...",
+      "meta_title": "Partner salons | BonBeauty",
+      "previous_page": "Previous page",
+      "next_page": "Next page"
+    },
+    "search": {
+      "form_aria": "Search salons",
+      "label_query": "Search",
+      "placeholder": "Salon name...",
+      "label_city": "City",
+      "city_all": "All cities",
+      "label_sort": "Sort",
+      "sort_name_asc": "Name A-Z",
+      "sort_name_desc": "Name Z-A",
+      "submit": "Search",
+      "results_count": "{count} salons",
+      "empty_heading": "No partner salons available.",
+      "empty_heading_filtered": "No results for '{query}'",
+      "empty_body": "Try a different query or clear the filters.",
+      "clear_filters": "Clear filters",
+      "clear_filters_aria": "Clear filters and show all salons",
+      "pagination_aria": "Salon list pagination",
+      "meta_title_query": "'{query}' — Partner salons | BonBeauty",
+      "meta_title_city": "Beauty salons in {city} | BonBeauty",
+      "meta_title_query_city": "'{query}' in {city} — Partner salons | BonBeauty"
+    },
+    "detail": {
+      "about": "About the salon",
+      "meta_fallback_title": "Salon | BonBeauty",
+      "meta_description": "Discover the offer from {name} on BonBeauty."
+    },
+    "shared": {
+      "home": "Home",
+      "salons": "Salons"
+    },
+    "lowest_price": {
+      "prefix": "from",
+      "tooltip": "Price from the cheapest of {count} salons"
+    }
   },
   "footer": {
     "section_customer_services": "Customer services",
@@ -122,8 +130,6 @@
     "add_to_wishlist": "Add to wishlist",
     "out_of_stock": "Out of stock",
     "price_from": "from",
-    "lowest_price_prefix": "from",
-    "lowest_price_tooltip": "Price from the cheapest of {count} salons",
     "view_details": "View details",
     "view_aria": "View {name}",
     "go_to_product_aria": "Go to {name} product page",
@@ -427,21 +433,6 @@
     "change_method": "Change payment method"
   },
   "voucher": {
-    "qr_code_aria_label": "Voucher QR code",
-    "qr_code_label": "Scan at salon"
-  },
-  "cross_sell": {
-    "same_seller": "From this salon",
-    "same_category": "In this category"
-  },
-  "sort": {
-    "label": "Sort",
-    "aria_label": "Sort options",
-    "recommended": "Recommended",
-    "price_asc": "Price ↑",
-    "price_desc": "Price ↓"
-  },
-  "voucher": {
     "consent": {
       "heading": "Recipient data processing consent",
       "purpose": "I consent to the processing of recipient data for the purpose of delivering the voucher. Data will be retained for 365 days and may be erased on request in accordance with the GDPR.",
@@ -471,5 +462,16 @@
         "cta_withdraw": "Withdraw consent"
       }
     }
+  },
+  "cross_sell": {
+    "same_seller": "From this salon",
+    "same_category": "In this category"
+  },
+  "sort": {
+    "label": "Sort",
+    "aria_label": "Sort options",
+    "recommended": "Recommended",
+    "price_asc": "Price ↑",
+    "price_desc": "Price ↓"
   }
 }

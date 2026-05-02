@@ -15,9 +15,11 @@ import { LowestPriceBadge } from './LowestPriceBadge';
  */
 
 const messages = {
-  products: {
-    lowest_price_prefix: 'od',
-    lowest_price_tooltip: 'Cena od najtańszego z {count} salonów',
+  seller: {
+    lowest_price: {
+      prefix: 'od',
+      tooltip: 'Cena od najtańszego z {count} salonów',
+    },
   },
 };
 

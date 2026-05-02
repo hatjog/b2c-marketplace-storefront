@@ -27,7 +27,7 @@ export async function SellersSearchForm({
   city,
   sort
 }: SellersSearchFormProps) {
-  const t = await getTranslations('sellers_search');
+  const t = await getTranslations('seller.search');
 
   return (
     <form

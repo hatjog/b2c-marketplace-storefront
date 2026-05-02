@@ -36,7 +36,7 @@ export interface LowestPriceBadgeProps {
 }
 
 export const LowestPriceBadge = ({ vendorCount, className }: LowestPriceBadgeProps) => {
-  const t = useTranslations('products');
+  const t = useTranslations('seller.lowest_price');
 
   // Single-vendor (or invalid) → no prefix per UX spec line 1104.
   if (!Number.isFinite(vendorCount) || vendorCount < 2) {
@@ -46,10 +46,10 @@ export const LowestPriceBadge = ({ vendorCount, className }: LowestPriceBadgePro
   return (
     <span
       className={cn('text-xs text-secondary', className)}
-      title={t('lowest_price_tooltip', { count: vendorCount })}
+      title={t('tooltip', { count: vendorCount })}
       data-testid="lowest-price-badge"
     >
-      {t('lowest_price_prefix')}
+      {t('prefix')}
     </span>
   );
 };

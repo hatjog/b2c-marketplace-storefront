@@ -57,8 +57,8 @@ export async function generateMetadata({
   const q = parseString(sp.q).trim();
   const city = parseString(sp.city).trim();
 
-  const t = await getTranslations('sellers_search');
-  const tList = await getTranslations('sellers_list');
+  const t = await getTranslations('seller.search');
+  const tList = await getTranslations('seller.list');
 
   let title: string;
   if (q && city) {
@@ -100,9 +100,9 @@ export default async function SellersListPage({
   const city = parseString(sp.city).trim();
   const sort = parseSort(sp.sort);
 
-  const t = await getTranslations('sellers_list');
-  const tSearch = await getTranslations('sellers_search');
-  const tSellerPage = await getTranslations('seller_page');
+  const t = await getTranslations('seller.list');
+  const tSearch = await getTranslations('seller.search');
+  const tSellerPage = await getTranslations('seller.shared');
 
   const { items: pageItems, total } = await searchSellers({
     q,
