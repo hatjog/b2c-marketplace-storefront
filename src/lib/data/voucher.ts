@@ -1,4 +1,8 @@
 import { mercurClient } from '../config';
+import type {
+  VoucherAuditEvent,
+  VoucherAuditEventType
+} from '@/types/voucher';
 
 /**
  * Story v160-6-1: Recipient claim page voucher data layer (Path B).
@@ -134,4 +138,110 @@ export async function getVoucherByCode(code: string): Promise<VoucherPublicView 
   }
 
   return null;
+}
+
+const KNOWN_EVENT_TYPES: ReadonlySet<VoucherAuditEventType> = new Set([
+  'created',
+  'sent',
+  'opened',
+  'claimed',
+  'withdrawn'
+]);
+
+type VoucherAuditEventApiPayload = {
+  id?: string;
+  event_type?: string;
+  type?: string;
+  occurred_at?: string;
+  created_at?: string;
+  // Buyer-side fields are explicitly NOT enumerated; AR45 strip applied below.
+};
+
+/**
+ * Story v160-6-3: AR45-safe projection — whitelist allowlist (ONLY id +
+ * event_type + occurred_at survive). Backend metadata is stripped regardless
+ * of payload shape, so the timeline cannot leak buyer-side PII.
+ */
+function projectAuditEvent(
+  p: VoucherAuditEventApiPayload | null | undefined
+): VoucherAuditEvent | null {
+  if (!p) return null;
+  const id = p.id ? String(p.id) : null;
+  const rawType = (p.event_type ?? p.type ?? '').toLowerCase();
+  if (!id || !KNOWN_EVENT_TYPES.has(rawType as VoucherAuditEventType)) {
+    return null;
+  }
+  const occurred_at = p.occurred_at ?? p.created_at;
+  if (!occurred_at) return null;
+  return {
+    id,
+    event_type: rawType as VoucherAuditEventType,
+    occurred_at: String(occurred_at),
+    metadata: {}
+  };
+}
+
+/**
+ * Fetches the recipient-visible voucher audit trail events. Strategy:
+ *   (a) Try typed `mercurClient.store.vouchers.events({ code })`.
+ *   (b) Fall back to raw `mercurClient.fetch('/store/vouchers/<code>/events')`.
+ *   (c) Returns empty array if neither yields a payload (Mercur 2 native
+ *       voucher events endpoint may NOT be first-class in v1.6.0; UI degrades
+ *       gracefully via `voucher.audit_trail.empty_state` copy).
+ *
+ * Privacy: all surfaces apply `projectAuditEvent()` allowlist BEFORE return,
+ * so no buyer-side metadata can reach the React tree (AR45 invariant).
+ */
+export async function getVoucherEvents(
+  code: string
+): Promise<VoucherAuditEvent[]> {
+  if (!code || code.length < 3) return [];
+
+  // Path B preferred: typed mercurClient call.
+  try {
+    const client = mercurClient as unknown as {
+      store?: {
+        vouchers?: {
+          events?: (args: {
+            code: string;
+          }) => Promise<{ events?: VoucherAuditEventApiPayload[] }>;
+        };
+      };
+    };
+    if (client.store?.vouchers?.events) {
+      const res = await client.store.vouchers.events({ code });
+      const projected = (res?.events ?? [])
+        .map(projectAuditEvent)
+        .filter((e): e is VoucherAuditEvent => e !== null);
+      if (projected.length > 0) {
+        projected.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
+        return projected;
+      }
+    }
+  } catch {
+    // Fall through.
+  }
+
+  // Fallback A: raw fetch via mercurClient.
+  try {
+    const url = `/store/vouchers/${encodeURIComponent(code)}/events`;
+    const rawClient = mercurClient as unknown as {
+      fetch?: (path: string, init?: RequestInit) => Promise<unknown>;
+    };
+    if (typeof rawClient.fetch === 'function') {
+      const res = (await rawClient.fetch(url, { method: 'GET' })) as
+        | { events?: VoucherAuditEventApiPayload[] }
+        | null;
+      const projected = (res?.events ?? [])
+        .map(projectAuditEvent)
+        .filter((e): e is VoucherAuditEvent => e !== null);
+      projected.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
+      return projected;
+    }
+  } catch {
+    // Endpoint not provisioned (Mercur 2 voucher events endpoint OUT OF 6.3
+    // scope). UI shows empty state per AC2.
+  }
+
+  return [];
 }

@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
-import { getVoucherByCode } from '@/lib/data/voucher';
+import { getVoucherByCode, getVoucherEvents } from '@/lib/data/voucher';
 import { claimVoucher } from '@/actions/voucher-claim';
 import { OfflineBanner } from '@/components/voucher/OfflineBanner';
+import { VoucherAuditTrail } from '@/components/molecules/VoucherAuditTrail';
 
 // Adapter so <form action={...}> matches Next.js Server Action signature
 // (void return). claimVoucher's structured result is consumed via
@@ -80,6 +81,14 @@ export default async function VoucherClaimPage({
   if (!voucher) {
     notFound();
   }
+
+  // Story v160-6-3: fetch audit trail events for collapsible timeline. Empty
+  // array is acceptable (Mercur 2 voucher events endpoint may NOT be first-
+  // class in v1.6.0; UI degrades gracefully via empty_state copy).
+  const auditEvents =
+    voucher.status === 'claimed' || voucher.status === 'withdrawn'
+      ? await getVoucherEvents(code)
+      : [];
 
   const formattedValue = formatValue(voucher.value_minor, voucher.currency_code, locale);
 
@@ -202,6 +211,10 @@ export default async function VoucherClaimPage({
         >
           <span className="heading-sm">{t('withdrawn_status')}</span>
         </section>
+      )}
+
+      {(voucher.status === 'claimed' || voucher.status === 'withdrawn') && (
+        <VoucherAuditTrail events={auditEvents} locale={locale} />
       )}
     </main>
   );
