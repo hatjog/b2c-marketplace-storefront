@@ -82,6 +82,13 @@
     "lowest_price": {
       "prefix": "od",
       "tooltip": "Cena od najtańszego z {count} salonów"
+    },
+    "selector": {
+      "title": "Wybierz salon",
+      "choose_button": "Wybierz",
+      "price_from": "od",
+      "distance_km": "{distance} km",
+      "lowest_price_label": "Najniższa cena"
     }
   },
   "footer": {

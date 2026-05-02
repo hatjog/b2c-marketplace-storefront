@@ -82,6 +82,13 @@
     "lowest_price": {
       "prefix": "from",
       "tooltip": "Price from the cheapest of {count} salons"
+    },
+    "selector": {
+      "title": "Choose a salon",
+      "choose_button": "Choose",
+      "price_from": "from",
+      "distance_km": "{distance} km",
+      "lowest_price_label": "Lowest price"
     }
   },
   "footer": {

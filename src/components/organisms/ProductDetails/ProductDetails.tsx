@@ -11,15 +11,29 @@ import {
 import { VoucherValidityInfo } from '@/components/molecules';
 import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
 import { VendorBadge } from '@/components/molecules/VendorBadge';
+import { SellerSelector } from '@/components/cells/SellerSelector';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
-import type { AdditionalAttributeProps, GpProductMetadata } from '@/types/product';
+import type {
+  AdditionalAttributeProps,
+  GpProductMetadata,
+  MultiVendorPricingFields,
+} from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
+
+/**
+ * Story 5.2 — multi-vendor pricing feature flag (re-uses single flag
+ * introduced in Story 5.1 ProductCard.tsx). Single flag governs both
+ * PLP badge + PDP selector for coherent Phase B flip (story 8.3).
+ * Default OFF (`'false'`) → selector hidden across whole app.
+ */
+const MULTI_VENDOR_PRICING_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 export const ProductDetails = async ({
   product,
@@ -48,6 +62,14 @@ export const ProductDetails = async ({
   const gpMeta = getGpMetadata<GpProductMetadata>(product.metadata as Record<string, unknown>);
   const validityPeriod = gpMeta?.validity_period ?? null;
 
+  // Story 5.2 — vendor offers DRAFT schema-only in v1.6.0; backend Phase B
+  // populates this field. Read defensively from metadata; selector hidden
+  // unless flag flipped AND length > 1 per AC4.
+  const vendorOffers =
+    (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
+  const showSellerSelector =
+    MULTI_VENDOR_PRICING_ENABLED && Array.isArray(vendorOffers) && vendorOffers.length > 1;
+
   return (
     <div className="space-y-4">
       <ProductDetailsHeader
@@ -72,6 +94,16 @@ export const ProductDetails = async ({
             }}
           />
         </div>
+      )}
+      {showSellerSelector && vendorOffers && (
+        <SellerSelector
+          sellers={vendorOffers}
+          // Story 5.5+ wires cart context; v1.6.0 placeholder (no-op) —
+          // selector is flag-gated DRAFT until Phase B flip.
+          onSelect={() => {
+            /* TODO Story 5.5+ — propagate seller_id into cart context */
+          }}
+        />
       )}
       <div className="grid gap-4 lg:grid-cols-2">
         <TrustSignals variant="full" signals={trustSignals} detailsUrl="/zasady" />

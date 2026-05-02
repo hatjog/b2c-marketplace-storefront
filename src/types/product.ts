@@ -24,6 +24,29 @@ export interface MultiVendorPricingFields {
   lowest_price_pln?: number | null;
   /** Count of vendors offering this product. Badge renders only when >= 2. */
   vendor_count?: number | null;
+  /**
+   * Story 5.2 — per-vendor offer list for PDP SellerSelector.
+   * Optional in v1.6.0 baseline (DRAFT schema-only). Backend Phase B
+   * aggregator populates from vendor_offer table.
+   */
+  vendor_offers?: VendorOfferOption[];
+}
+
+/**
+ * Story 5.2 — single vendor offer shape consumed by PDP SellerSelector.
+ *
+ * Source: aggregated from vendor_offer rows by Phase B backend. v1.6.0
+ * storefront treats this as static prop (no runtime fetch). `distance_km`
+ * is optional — story 5.3 territory wires geolocation; before then prop
+ * arrives undefined and selector hides distance line per AC.
+ */
+export interface VendorOfferOption {
+  seller_id: string;
+  seller_name: string;
+  /** Price in PLN (integer minor units OR formatted display number — consumer decides). */
+  price_pln: number;
+  /** Optional distance from buyer in km. Story 5.3 wires real value; until then undefined. */
+  distance_km?: number;
 }
 
 export interface AdditionalAttributeProps {
