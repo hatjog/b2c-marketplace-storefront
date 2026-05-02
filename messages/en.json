@@ -165,7 +165,11 @@
       "mode_gift": "As a gift",
       "mode_self_description": "Default purchase for you — quick checkout without extra steps",
       "mode_gift_description": "Send a gift — add recipient details in the next step",
-      "recipient_placeholder": "Recipient details will be added in a future version (Story 6.x — Recipient Claim)"
+      "recipient_placeholder": "Recipient details will be added in a future version (Story 6.x — Recipient Claim)",
+      "flag_changed_title": "Order configuration changed",
+      "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",
+      "review_cart_cta": "Review cart",
+      "flag_changed_close_cta": "Close"
     }
   },
   "footer": {

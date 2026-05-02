@@ -165,7 +165,11 @@
       "mode_gift": "W prezencie",
       "mode_self_description": "Domyślny zakup dla Ciebie — szybkie checkout bez dodatkowych kroków",
       "mode_gift_description": "Wyślij prezent — dodaj dane odbiorcy w kolejnym kroku",
-      "recipient_placeholder": "Dane odbiorcy zostaną dodane w kolejnej wersji (Story 6.x — Recipient Claim)"
+      "recipient_placeholder": "Dane odbiorcy zostaną dodane w kolejnej wersji (Story 6.x — Recipient Claim)",
+      "flag_changed_title": "Konfiguracja zamówienia uległa zmianie",
+      "flag_changed_message": "Ustawienia oferty wielosprzedawcowej zostały zmienione w trakcie Twojego zamówienia. Sprawdź zawartość koszyka i spróbuj ponownie.",
+      "review_cart_cta": "Przejdź do koszyka",
+      "flag_changed_close_cta": "Zamknij"
     }
   },
   "footer": {
