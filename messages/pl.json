@@ -549,6 +549,31 @@
         "cta_resume": "Wznów rozmowę",
         "cta_withdraw": "Wycofaj zgodę"
       }
+    },
+    "claim": {
+      "title": "Twój voucher",
+      "subtitle": "Skorzystaj z vouchera w wybranym salonie",
+      "seller_label": "Salon",
+      "service_label": "Usługa",
+      "value_label": "Wartość",
+      "claim_cta": "Skorzystaj z vouchera",
+      "claimed_status": "Voucher zrealizowany",
+      "withdrawn_status": "Zgoda wycofana",
+      "expires_at_label": "Ważny do",
+      "not_found_message": "Nieznany voucher",
+      "consent_pending_message": "Trwa zapis zgody. Wróć za chwilę.",
+      "post_claim_link": "Przejdź do salonu",
+      "meta_default_title": "Voucher BonBeauty",
+      "meta_default_description": "Skorzystaj z otrzymanego vouchera w wybranym salonie BonBeauty.",
+      "offline": {
+        "banner_no_connection": "Brak połączenia. Voucher zostanie zrealizowany po przywróceniu sieci.",
+        "toast_queued": "Zapisaliśmy Twoje żądanie. Wyślemy je gdy wrócisz online.",
+        "toast_syncing": "Synchronizacja…",
+        "toast_synced": "Voucher zrealizowany. Sprawdź email.",
+        "toast_failed_terminal": "Voucher już został zrealizowany lub wygasł.",
+        "toast_failed_permanent": "Nie udało się zrealizować vouchera po 8 próbach. Skontaktuj się z support.",
+        "button_retry": "Spróbuj ponownie"
+      }
     }
   },
   "cross_sell": {
