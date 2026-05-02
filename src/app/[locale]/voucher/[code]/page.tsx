@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getVoucherByCode } from '@/lib/data/voucher';
 import { claimVoucher } from '@/actions/voucher-claim';
+import { OfflineBanner } from '@/components/voucher/OfflineBanner';
 
 // Adapter so <form action={...}> matches Next.js Server Action signature
 // (void return). claimVoucher's structured result is consumed via
@@ -89,6 +90,7 @@ export default async function VoucherClaimPage({
       data-status={voucher.status}
       className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10"
     >
+      <OfflineBanner />
       <header className="flex flex-col gap-2">
         <span
           className="bb-pill"
