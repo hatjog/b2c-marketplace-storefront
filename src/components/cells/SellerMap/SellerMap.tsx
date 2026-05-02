@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 
 import type { SellerListItem } from '@/lib/data/seller';
 
@@ -42,6 +42,16 @@ export interface SellerMapProps {
   locale: string;
   onMarkerClick?: (seller: SellerListItem) => void;
   className?: string;
+  /**
+   * Story v160-4-3 — geolocation "Blisko mnie" radius overlay. When all
+   * three are finite, the map renders a Leaflet `<Circle>` centered on the
+   * user position with `radiusKm * 1000` metres + a marker pin for the
+   * user. The map auto-fits bounds to include the circle. All three are
+   * required together — partial inputs are treated as no-overlay.
+   */
+  userLat?: number;
+  userLng?: number;
+  radiusKm?: number;
 }
 
 function isFiniteNumber(value: unknown): value is number {
@@ -56,17 +66,49 @@ function hasCoords(
 
 interface FitBoundsProps {
   sellers: ReadonlyArray<SellerListItem & { lat: number; lng: number }>;
+  /**
+   * Story v160-4-3 — when "Blisko mnie" is active, fit bounds includes the
+   * circle so the user always sees their radius onscreen, even with 0-1
+   * markers. Falls back to seller markers when overlay absent.
+   */
+  userLat?: number;
+  userLng?: number;
+  radiusKm?: number;
 }
 
-function FitBoundsToMarkers({ sellers }: FitBoundsProps) {
+function FitBoundsToMarkers({ sellers, userLat, userLng, radiusKm }: FitBoundsProps) {
   const map = useMap();
   useEffect(() => {
-    if (sellers.length < 2) return;
-    const bounds = L.latLngBounds(
-      sellers.map(s => [s.lat, s.lng] as [number, number])
-    );
+    const points: Array<[number, number]> = sellers.map(s => [s.lat, s.lng]);
+    const overlayActive =
+      typeof userLat === 'number' &&
+      typeof userLng === 'number' &&
+      typeof radiusKm === 'number' &&
+      Number.isFinite(userLat) &&
+      Number.isFinite(userLng) &&
+      Number.isFinite(radiusKm) &&
+      radiusKm > 0;
+
+    if (overlayActive) {
+      // Build a synthetic bounding box that encloses the circle by adding
+      // four cardinal points at radius distance — this avoids depending on
+      // Leaflet's internal `Circle.getBounds()` (only available post-add).
+      const center = L.latLng(userLat as number, userLng as number);
+      const radiusMeters = (radiusKm as number) * 1000;
+      const bounds = center.toBounds(radiusMeters * 2);
+      const all = L.latLngBounds([
+        bounds.getNorthEast(),
+        bounds.getSouthWest(),
+        ...points
+      ]);
+      map.fitBounds(all, { padding: [40, 40], maxZoom: 13 });
+      return;
+    }
+
+    if (points.length < 2) return;
+    const bounds = L.latLngBounds(points);
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
-  }, [map, sellers]);
+  }, [map, sellers, userLat, userLng, radiusKm]);
   return null;
 }
 
@@ -74,7 +116,10 @@ export function SellerMap({
   sellers,
   locale,
   onMarkerClick,
-  className
+  className,
+  userLat,
+  userLng,
+  radiusKm
 }: SellerMapProps) {
   const t = useTranslations('seller.list.map');
   const skipped = useRef(0);
@@ -114,7 +159,33 @@ export function SellerMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
-        <FitBoundsToMarkers sellers={validSellers} />
+        <FitBoundsToMarkers
+          sellers={validSellers}
+          userLat={userLat}
+          userLng={userLng}
+          radiusKm={radiusKm}
+        />
+        {typeof userLat === 'number' &&
+          typeof userLng === 'number' &&
+          typeof radiusKm === 'number' &&
+          Number.isFinite(userLat) &&
+          Number.isFinite(userLng) &&
+          Number.isFinite(radiusKm) &&
+          radiusKm > 0 && (
+            <>
+              <Circle
+                center={[userLat, userLng]}
+                radius={radiusKm * 1000}
+                pathOptions={{
+                  color: '#7C3AED',
+                  fillColor: '#7C3AED',
+                  fillOpacity: 0.1,
+                  weight: 2
+                }}
+              />
+              <Marker position={[userLat, userLng]} alt="user location" />
+            </>
+          )}
         {validSellers.map(seller => (
           <Marker
             key={seller.handle}

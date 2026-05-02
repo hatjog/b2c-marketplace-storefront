@@ -1,5 +1,6 @@
 import type { SellerProps } from '@/types/seller';
 
+import { haversineKm } from '../helpers/distance';
 import { mercurClient, sdk } from '../config';
 
 export interface SellerListItem {
@@ -81,6 +82,23 @@ export interface SearchSellersArgs {
   sort?: SellerSortKey;
   limit: number;
   offset: number;
+  /**
+   * Story v160-4-3 — geolocation "Blisko mnie" filter (REUSE Story 5.3
+   * `haversineKm`). When all three of `userLat`, `userLng`, `radiusKm` are
+   * defined, the post-filter pipeline keeps only sellers whose distance to
+   * (userLat, userLng) is ≤ radiusKm. Sellers without finite `lat`/`lng`
+   * are excluded from the near-me result (defensive — we don't surface a
+   * salon when we don't know where it is).
+   *
+   * v1.6.0 backend caveat: Mercur 2.1.1 does NOT yet expose `lat`/`lng` on
+   * `/store/sellers` (DRAFT — same blocker as `vendor_offer.seller_lat` in
+   * Story 5.3). When that pipeline lands empty (zero coords on the wire),
+   * the near-me filter naturally returns 0 items → the page renders the
+   * `no_results_in_radius` empty state. Acceptable degradation for MVP.
+   */
+  userLat?: number;
+  userLng?: number;
+  radiusKm?: number;
 }
 
 export interface SearchSellersResult {
@@ -93,7 +111,10 @@ export const searchSellers = async ({
   city,
   sort = 'name_asc',
   limit,
-  offset
+  offset,
+  userLat,
+  userLng,
+  radiusKm
 }: SearchSellersArgs): Promise<SearchSellersResult> => {
   // Defensive try/catch: getSellers() is `async` and already has its own
   // `.catch(() => [])`, but mercurClient.store.sellers.query() can throw
@@ -122,13 +143,60 @@ export const searchSellers = async ({
     );
   }
 
-  const sorted = [...filtered].sort((a, b) => {
+  // Story v160-4-3 — geolocation post-filter. AR48: client-side filter
+  // pipeline at the server data-layer (NOT browser); zero new fetch calls.
+  const nearMeActive =
+    typeof userLat === 'number' &&
+    typeof userLng === 'number' &&
+    typeof radiusKm === 'number' &&
+    Number.isFinite(userLat) &&
+    Number.isFinite(userLng) &&
+    Number.isFinite(radiusKm) &&
+    radiusKm > 0;
+
+  let withDistance: Array<SellerListItem & { _distanceKm?: number }> = filtered;
+  if (nearMeActive) {
+    withDistance = filtered
+      .filter(
+        (s): s is SellerListItem & { lat: number; lng: number } =>
+          typeof s.lat === 'number' &&
+          typeof s.lng === 'number' &&
+          Number.isFinite(s.lat) &&
+          Number.isFinite(s.lng)
+      )
+      .map((s) => ({
+        ...s,
+        _distanceKm: haversineKm(userLat as number, userLng as number, s.lat as number, s.lng as number)
+      }))
+      .filter(
+        (s) => Number.isFinite(s._distanceKm) && (s._distanceKm as number) <= (radiusKm as number)
+      );
+  }
+
+  const sorted = [...withDistance].sort((a, b) => {
+    if (nearMeActive) {
+      // When near-me is active, distance ASC dominates unless user explicitly
+      // chose a non-default sort key. Default is name_asc; we override it to
+      // distance-first because the very point of the filter is proximity.
+      const aDist = a._distanceKm ?? Number.POSITIVE_INFINITY;
+      const bDist = b._distanceKm ?? Number.POSITIVE_INFINITY;
+      if (sort === 'name_asc' || sort === 'name_desc') {
+        // Distance wins when default sort. If user picked name_desc explicitly,
+        // honor it — same precedent as Story 5.3 SellerSelector.
+        if (sort === 'name_asc') {
+          if (aDist !== bDist) return aDist - bDist;
+        }
+      }
+    }
     const cmp = a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' });
     return sort === 'name_desc' ? -cmp : cmp;
   });
 
+  // Strip internal _distanceKm before returning to keep public type stable.
+  const items = sorted.slice(offset, offset + limit).map(({ _distanceKm: _drop, ...rest }) => rest);
+
   return {
-    items: sorted.slice(offset, offset + limit),
+    items,
     total: sorted.length
   };
 };

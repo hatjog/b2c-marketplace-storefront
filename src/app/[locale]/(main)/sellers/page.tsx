@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { SellerMap } from '@/components/cells/SellerMap';
 import { SellersPagination } from '@/components/cells/SellersPagination/SellersPagination';
+import { clampRadius, type RadiusOption } from '@/components/atoms/RadiusSelector/clampRadius';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SellersSearchForm } from '@/components/molecules/SellersSearchForm/SellersSearchForm';
 import { SellersViewToggle, type SellersView } from '@/components/molecules/SellersViewToggle/SellersViewToggle';
@@ -52,6 +53,18 @@ function parseView(raw: string | string[] | undefined): SellersView {
   // Defensive — anything other than the literal "map" falls back to list,
   // preserves SEO surface for the default canonical view.
   return parseString(raw) === 'map' ? 'map' : 'list';
+}
+
+/**
+ * Story v160-4-3 — parse a finite-number lat/lng from URL searchParams.
+ * Returns `undefined` for missing, non-string, or non-finite inputs so the
+ * downstream geolocation filter receives a clean signal (no `NaN` leaks).
+ */
+function parseFiniteNumber(raw: string | string[] | undefined): number | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof value !== 'string' || value === '') return undefined;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 export async function generateMetadata({
@@ -117,6 +130,15 @@ export default async function SellersListPage({
   const sort = parseSort(sp.sort);
   const view = parseView(sp.view);
 
+  // Story v160-4-3 — geolocation "Blisko mnie" filter parse.
+  const nearMe = parseString(sp.nearMe) === '1';
+  const userLat = parseFiniteNumber(sp.lat);
+  const userLng = parseFiniteNumber(sp.lng);
+  const radiusRaw = parseFiniteNumber(sp.radius);
+  const radius: RadiusOption = clampRadius(radiusRaw);
+  // Effective near-me only when toggle is on AND we have valid coords.
+  const nearMeEffective = nearMe && typeof userLat === 'number' && typeof userLng === 'number';
+
   const t = await getTranslations('seller.list');
   const tSearch = await getTranslations('seller.search');
   const tSellerPage = await getTranslations('seller.shared');
@@ -126,14 +148,24 @@ export default async function SellersListPage({
     city,
     sort,
     limit,
-    offset
+    offset,
+    ...(nearMeEffective
+      ? { userLat, userLng, radiusKm: radius }
+      : {})
   });
 
-  const hasActiveFilters = Boolean(q || city);
+  const hasActiveFilters = Boolean(q || city || nearMe);
   const preservedParams: Record<string, string> = {};
   if (q) preservedParams.q = q;
   if (city) preservedParams.city = city;
   if (sort && sort !== DEFAULT_SORT) preservedParams.sort = sort;
+  // Story v160-4-3: preserve geolocation params on view toggle + pagination.
+  if (nearMe) {
+    preservedParams.nearMe = '1';
+    preservedParams.radius = String(radius);
+    if (typeof userLat === 'number') preservedParams.lat = userLat.toFixed(6);
+    if (typeof userLng === 'number') preservedParams.lng = userLng.toFixed(6);
+  }
   // Pagination preserves view so /sellers?view=map&offset=24 keeps the map.
   // SellersViewToggle ignores incoming `view` and rewrites per target.
   const paginationPreservedParams =
@@ -162,6 +194,10 @@ export default async function SellersListPage({
         q={q}
         city={city}
         sort={sort}
+        nearMe={nearMe}
+        radius={radius}
+        lat={userLat}
+        lng={userLng}
       />
 
       <p className="mb-4 text-sm text-gray-500" data-testid="sellers-list-results-count">
@@ -170,12 +206,20 @@ export default async function SellersListPage({
 
       {view === 'map' ? (
         <div className="mb-6" data-testid="sellers-list-map-view">
-          <SellerMap sellers={pageItems} locale={locale} />
+          <SellerMap
+            sellers={pageItems}
+            locale={locale}
+            userLat={nearMeEffective ? userLat : undefined}
+            userLng={nearMeEffective ? userLng : undefined}
+            radiusKm={nearMeEffective ? radius : undefined}
+          />
         </div>
       ) : pageItems.length === 0 ? (
         <div data-testid="sellers-list-empty" className="py-12 text-center">
-          <h2 className="mb-2 text-lg font-semibold">
-            {hasActiveFilters
+          <h2 className="mb-2 text-lg font-semibold" data-testid="sellers-list-empty-heading">
+            {nearMe
+              ? t('no_results_in_radius', { radius: String(radius) })
+              : hasActiveFilters
               ? tSearch('empty_heading_filtered', { query: q || city })
               : tSearch('empty_heading')}
           </h2>

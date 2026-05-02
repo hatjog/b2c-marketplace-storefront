@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { NearMeToggle } from '@/components/atoms/NearMeToggle/NearMeToggle';
+import { RadiusSelector } from '@/components/atoms/RadiusSelector/RadiusSelector';
 import type { SellerSortKey } from '@/lib/data/seller';
 
 const CITY_OPTIONS = ['Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Łódź'] as const;
@@ -11,6 +13,15 @@ export interface SellersSearchFormProps {
   q: string;
   city: string;
   sort: SellerSortKey;
+  /**
+   * Story v160-4-3 — current "blisko mnie" filter state, surfaced as hidden
+   * inputs so a no-JS form submission preserves the geolocation filter.
+   * Client-side toggle/selector mutate the URL directly via router.push.
+   */
+  nearMe?: boolean;
+  radius?: number;
+  lat?: number;
+  lng?: number;
 }
 
 /**
@@ -25,7 +36,11 @@ export async function SellersSearchForm({
   locale,
   q,
   city,
-  sort
+  sort,
+  nearMe = false,
+  radius,
+  lat,
+  lng
 }: SellersSearchFormProps) {
   const t = await getTranslations('seller.search');
 
@@ -100,6 +115,33 @@ export async function SellersSearchForm({
           ))}
         </select>
       </div>
+
+      {/*
+        Story v160-4-3: client-side island for "Blisko mnie" toggle + radius
+        selector. They mutate URL via router.push (NOT form submit) so we
+        keep them outside the GET pipeline. Hidden inputs below preserve the
+        geolocation params if the user re-submits the search form.
+      */}
+      <div className="flex flex-col gap-1 md:self-end">
+        <NearMeToggle defaultRadiusKm={radius ?? 10} />
+      </div>
+
+      <RadiusSelector defaultRadiusKm={(radius ?? 10) as 5 | 10 | 25 | 50} />
+
+      {nearMe && (
+        <>
+          <input type="hidden" name="nearMe" value="1" />
+          {typeof radius === 'number' && (
+            <input type="hidden" name="radius" value={String(radius)} />
+          )}
+          {typeof lat === 'number' && (
+            <input type="hidden" name="lat" value={lat.toFixed(6)} />
+          )}
+          {typeof lng === 'number' && (
+            <input type="hidden" name="lng" value={lng.toFixed(6)} />
+          )}
+        </>
+      )}
 
       <button
         type="submit"
