@@ -150,6 +150,14 @@
     "cart": {
       "line_item_seller_label": "Seller",
       "from_seller": "from {seller_name}"
+    },
+    "checkout": {
+      "purchase_mode_label": "Who are you buying for?",
+      "mode_self": "For myself",
+      "mode_gift": "As a gift",
+      "mode_self_description": "Default purchase for you — quick checkout without extra steps",
+      "mode_gift_description": "Send a gift — add recipient details in the next step",
+      "recipient_placeholder": "Recipient details will be added in a future version (Story 6.x — Recipient Claim)"
     }
   },
   "footer": {

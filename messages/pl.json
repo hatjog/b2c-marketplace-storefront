@@ -150,6 +150,14 @@
     "cart": {
       "line_item_seller_label": "Sprzedawca",
       "from_seller": "od {seller_name}"
+    },
+    "checkout": {
+      "purchase_mode_label": "Dla kogo kupujesz?",
+      "mode_self": "Dla siebie",
+      "mode_gift": "W prezencie",
+      "mode_self_description": "Domyślny zakup dla Ciebie — szybkie checkout bez dodatkowych kroków",
+      "mode_gift_description": "Wyślij prezent — dodaj dane odbiorcy w kolejnym kroku",
+      "recipient_placeholder": "Dane odbiorcy zostaną dodane w kolejnej wersji (Story 6.x — Recipient Claim)"
     }
   },
   "footer": {
