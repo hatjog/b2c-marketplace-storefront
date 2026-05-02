@@ -55,6 +55,27 @@
     "previous_page": "Poprzednia strona",
     "next_page": "Następna strona"
   },
+  "sellers_search": {
+    "form_aria": "Wyszukaj salony",
+    "label_query": "Wyszukaj",
+    "placeholder": "Nazwa salonu...",
+    "label_city": "Miasto",
+    "city_all": "Wszystkie miasta",
+    "label_sort": "Sortuj",
+    "sort_name_asc": "Nazwa A-Z",
+    "sort_name_desc": "Nazwa Z-A",
+    "submit": "Szukaj",
+    "results_count": "{count} salonów",
+    "empty_heading": "Brak salonów partnerskich.",
+    "empty_heading_filtered": "Brak wyników dla '{query}'",
+    "empty_body": "Spróbuj zmienić zapytanie albo wyczyść filtry.",
+    "clear_filters": "Wyczyść filtry",
+    "clear_filters_aria": "Wyczyść filtry i pokaż wszystkie salony",
+    "pagination_aria": "Paginacja listy salonów",
+    "meta_title_query": "'{query}' — Salony partnerskie | BonBeauty",
+    "meta_title_city": "Salony beauty w {city} | BonBeauty",
+    "meta_title_query_city": "'{query}' w {city} — Salony partnerskie | BonBeauty"
+  },
   "footer": {
     "section_customer_services": "Obsługa klienta",
     "section_about": "O nas",
