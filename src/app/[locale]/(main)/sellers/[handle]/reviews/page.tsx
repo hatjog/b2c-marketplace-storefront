@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { SellerTabs } from '@/components/organisms/SellerTabs/SellerTabs';
 import { SellerPageHeader } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -14,7 +15,7 @@ export default async function SellerReviewsPage({
 
   const seller = await getSellerByHandle(handle);
 
-  if (!seller) return null;
+  if (!seller) notFound();
 
   const countryCode = await getCountryCode(locale);
   const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
