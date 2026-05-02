@@ -139,7 +139,11 @@
       "error_message": "Failed to load seller offers",
       "retry_button": "Retry",
       "fallback_notice": "Multi-vendor unavailable; using default seller",
-      "circuit_open_message": "Temporarily using default seller. Refresh shortly to try again."
+      "circuit_open_message": "Temporarily using default seller. Refresh shortly to try again.",
+      "no_active_vendors_title": "Salon preparing offer",
+      "no_active_vendors_message": "Sellers are updating availability. Check back soon or we will notify you when an offer is available.",
+      "back_to_list_cta": "Back to list",
+      "notify_me_cta": "Notify me"
     },
     "status": {
       "pending_approval": "Pending approval",

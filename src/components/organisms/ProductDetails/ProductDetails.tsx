@@ -11,7 +11,10 @@ import {
 import { VoucherValidityInfo } from '@/components/molecules';
 import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
 import { VendorBadge } from '@/components/molecules/VendorBadge';
-import { SellerSelectorCartBridge } from '@/components/cells/SellerSelector';
+import {
+  NoActiveVendorsFallback,
+  SellerSelectorCartBridge,
+} from '@/components/cells/SellerSelector';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -69,6 +72,13 @@ export const ProductDetails = async ({
     (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
   const showSellerSelector =
     MULTI_VENDOR_PRICING_ENABLED && Array.isArray(vendorOffers) && vendorOffers.length > 1;
+  // Story 5.6 — sibling branch dla `length === 0` empty-state path. Defensive
+  // `Array.isArray()` guard zapobiega cross-contamination z undefined case
+  // (undefined → fallthrough do default Medusa flow; flag OFF default w v1.6.0).
+  const showNoActiveVendorsFallback =
+    MULTI_VENDOR_PRICING_ENABLED &&
+    Array.isArray(vendorOffers) &&
+    vendorOffers.length === 0;
 
   return (
     <div className="space-y-4">
@@ -94,6 +104,15 @@ export const ProductDetails = async ({
             }}
           />
         </div>
+      )}
+      {showNoActiveVendorsFallback && (
+        // Story 5.6 — empty-state branch (vendor_offers === [] po flag flip).
+        // Renders muted card "Salon przygotowuje ofertę" + Back to list CTA
+        // + disabled Notify me placeholder. Orthogonal do 5.4 error path:
+        // 5.4 = circuit/boundary failure; 5.6 = lifecycle vendor onboarding
+        // in-progress. Per persona Marta-self transparent komunikat zamiast
+        // mylącego default Medusa single-variant flow.
+        <NoActiveVendorsFallback backHref={`/${locale}/categories`} />
       )}
       {showSellerSelector && vendorOffers && (
         // Story 5.3 — geolocation-aware wrapper consumes useGeolocation

@@ -139,7 +139,11 @@
       "error_message": "Nie udało się załadować ofert sprzedawców",
       "retry_button": "Spróbuj ponownie",
       "fallback_notice": "Wybór sprzedawcy chwilowo niedostępny — pokazujemy domyślnego sprzedawcę",
-      "circuit_open_message": "Tymczasowo używamy domyślnego sprzedawcy. Odśwież stronę za chwilę by spróbować ponownie."
+      "circuit_open_message": "Tymczasowo używamy domyślnego sprzedawcy. Odśwież stronę za chwilę by spróbować ponownie.",
+      "no_active_vendors_title": "Salon przygotowuje ofertę",
+      "no_active_vendors_message": "Sprzedawcy aktualizują dostępność. Zajrzyj wkrótce lub powiadomimy Cię gdy oferta będzie dostępna.",
+      "back_to_list_cta": "Powrót do listy",
+      "notify_me_cta": "Powiadom mnie"
     },
     "status": {
       "pending_approval": "Oczekuje na zatwierdzenie",

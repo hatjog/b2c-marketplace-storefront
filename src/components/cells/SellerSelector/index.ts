@@ -7,3 +7,5 @@ export type { SellerSelectorErrorBoundaryProps } from './SellerSelectorErrorBoun
 export { SellerSelectorFallback } from './SellerSelectorFallback';
 export { SellerSelectorCartBridge } from './SellerSelectorCartBridge';
 export type { SellerSelectorCartBridgeProps } from './SellerSelectorCartBridge';
+export { NoActiveVendorsFallback } from './NoActiveVendorsFallback';
+export type { NoActiveVendorsFallbackProps } from './NoActiveVendorsFallback';

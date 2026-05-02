@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 
 import type { VendorOfferOption } from '@/types/product';
 
+import { NoActiveVendorsFallback } from './NoActiveVendorsFallback';
 import { SellerSelector } from './SellerSelector';
 import { SellerSelectorErrorBoundary } from './SellerSelectorErrorBoundary';
 import { SellerSelectorFallback } from './SellerSelectorFallback';
@@ -39,6 +40,11 @@ const messages = {
         'Wybór sprzedawcy chwilowo niedostępny — pokazujemy domyślnego sprzedawcę',
       circuit_open_message:
         'Tymczasowo używamy domyślnego sprzedawcy. Odśwież stronę za chwilę by spróbować ponownie.',
+      no_active_vendors_title: 'Salon przygotowuje ofertę',
+      no_active_vendors_message:
+        'Sprzedawcy aktualizują dostępność. Zajrzyj wkrótce lub powiadomimy Cię gdy oferta będzie dostępna.',
+      back_to_list_cta: 'Powrót do listy',
+      notify_me_cta: 'Powiadom mnie',
     },
   },
 };
@@ -327,6 +333,41 @@ export const Circuit_Open_Fallback: Story = {
       description: {
         story:
           'After 3 failures within a 10s rolling window, useCircuitBreaker transitions to `open` for a 60s cooldown. SellerSelectorWithGeolocation renders SellerSelectorFallback (single role="status" notice) instead of the radio list. Parent ProductDetails handles the default Medusa variant flow below.',
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Story 5.6 — no active vendors empty-state fixture
+// ---------------------------------------------------------------------------
+
+/**
+ * NoActiveVendors — renders the empty-state card that ProductDetails uses
+ * when `MULTI_VENDOR_PRICING_ENABLED && vendor_offers.length === 0`.
+ * Orthogonal to Story 5.4 error path (Circuit_Open_Fallback above): 5.4 =
+ * backend hiccup; 5.6 = lifecycle vendor onboarding in-progress (no offers
+ * available yet). Persona Marta-self gets transparent "Salon przygotowuje
+ * ofertę" message + Back-to-list CTA + disabled Notify-me placeholder
+ * (Phase B+ feature territory).
+ */
+export const NoActiveVendors: StoryObj<typeof NoActiveVendorsFallback> = {
+  name: 'No active vendors (empty-state; vendor onboarding in progress)',
+  render: (args) => (
+    <NextIntlClientProvider locale="pl" messages={messages}>
+      <div style={{ maxWidth: 480 }}>
+        <NoActiveVendorsFallback {...args} />
+      </div>
+    </NextIntlClientProvider>
+  ),
+  args: {
+    backHref: '/categories',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `vendor_offers === []` (query SUCCESS, brak active offers) ProductDetails renders this empty-state card zamiast mylącego default Medusa single-variant flow. Notify-me CTA jest disabled placeholder w v1.6.0 (future Phase B+ email subscription pipeline).',
       },
     },
   },
