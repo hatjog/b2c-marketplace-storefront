@@ -82,12 +82,25 @@
     },
     "detail": {
       "about": "About the salon",
-      "meta_fallback_title": "Salon | BonBeauty",
-      "meta_description": "Discover the offer from {name} on BonBeauty."
+      "title": "Partner salon",
+      "title_template": "{name} — Partner Salons | BonBeauty",
+      "description_label": "Description",
+      "address_label": "Address",
+      "opening_hours_label": "Opening hours",
+      "products_label": "Salon products",
+      "not_found_message": "No salon found for this address.",
+      "no_products": "This salon does not have any products listed yet.",
+      "no_description": "This salon has not provided a description yet.",
+      "no_address": "Address unavailable — contact the salon directly.",
+      "meta_fallback_title": "Unknown salon | BonBeauty",
+      "meta_description": "Discover the offer from {name} on BonBeauty.",
+      "meta_default_description": "BonBeauty partner salon — check the offer and address."
     },
     "shared": {
       "home": "Home",
-      "salons": "Salons"
+      "salons": "Salons",
+      "breadcrumb_home": "Home",
+      "breadcrumb_sellers": "Partner Salons"
     },
     "lowest_price": {
       "prefix": "from",
@@ -97,8 +110,12 @@
       "title": "Choose a salon",
       "choose_button": "Choose",
       "price_from": "from",
-      "distance_km": "{distance} km",
-      "lowest_price_label": "Lowest price"
+      "distance_km": "approx. {distance} km",
+      "lowest_price_label": "Lowest price",
+      "closest_label": "Closest",
+      "geolocation_pending": "Acquiring your location...",
+      "geolocation_denied": "Location unavailable — showing the cheapest salon",
+      "privacy_notice": "Your location used locally, not transmitted"
     }
   },
   "footer": {
