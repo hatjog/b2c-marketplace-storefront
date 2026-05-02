@@ -20,6 +20,19 @@ export function CartProvider({ cart, children }: CartProviderProps) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [isUpdatingItem, setIsUpdatingItem] = useState(false);
   const [isRemovingItem, setIsRemovingItem] = useState(false);
+  // Story 5.5 — multi-vendor PDP seller selection state.
+  const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
+  const [selectedSellerName, setSelectedSellerName] = useState<string | null>(null);
+
+  const setSelectedSeller = useCallback((ctx: { id: string; name: string } | null) => {
+    if (ctx === null) {
+      setSelectedSellerId(null);
+      setSelectedSellerName(null);
+      return;
+    }
+    setSelectedSellerId(ctx.id);
+    setSelectedSellerName(ctx.name);
+  }, []);
 
   useEffect(() => {
     setCartState(cart);
@@ -114,11 +127,17 @@ export function CartProvider({ cart, children }: CartProviderProps) {
   const addToCart = async ({
     variantId,
     quantity,
-    countryCode
+    countryCode,
+    selectedSellerId,
+    selectedSellerName
   }: {
     variantId: string;
     quantity: number;
     countryCode: string;
+    /** Story 5.5 — optional seller selection from multi-vendor PDP. */
+    selectedSellerId?: string | null;
+    /** Story 5.5 — denormalized seller name dla cart UI render. */
+    selectedSellerName?: string | null;
   }) => {
     setIsAddingItem(true);
     setIsUpdating(true);
@@ -127,7 +146,9 @@ export function CartProvider({ cart, children }: CartProviderProps) {
       await apiAddToCart({
         variantId,
         quantity,
-        countryCode
+        countryCode,
+        selectedSellerId,
+        selectedSellerName
       });
       await refreshCart();
     } catch (error) {
@@ -188,7 +209,10 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         isUpdating,
         isAddingItem,
         isUpdatingItem,
-        isRemovingItem
+        isRemovingItem,
+        selectedSellerId,
+        selectedSellerName,
+        setSelectedSeller
       }}
     >
       {children}

@@ -9,6 +9,55 @@ export type GpProductMetadata = {
   [key: string]: unknown;
 };
 
+/**
+ * Story 5.1 — multi-vendor lowest-price badge schema augmentation.
+ *
+ * v1.6.0 baseline: backend (Mercur 2.1.1) does NOT yet produce these fields
+ * — vendor_offer aggregation is Phase B territory. Storefront reads
+ * `undefined` → LowestPriceBadge stays hidden via AC2 conditional gate.
+ *
+ * Post Phase B activation: backend story (post-v1.6.0) populates from
+ * vendor_offer aggregation; flag flip → badge surfaces.
+ */
+export interface MultiVendorPricingFields {
+  /** Lowest aggregated price (PLN, integer minor units OR string-formatted) — defined by Phase B aggregator. */
+  lowest_price_pln?: number | null;
+  /** Count of vendors offering this product. Badge renders only when >= 2. */
+  vendor_count?: number | null;
+  /**
+   * Story 5.2 — per-vendor offer list for PDP SellerSelector.
+   * Optional in v1.6.0 baseline (DRAFT schema-only). Backend Phase B
+   * aggregator populates from vendor_offer table.
+   */
+  vendor_offers?: VendorOfferOption[];
+}
+
+/**
+ * Story 5.2 — single vendor offer shape consumed by PDP SellerSelector.
+ *
+ * Source: aggregated from vendor_offer rows by Phase B backend. v1.6.0
+ * storefront treats this as static prop (no runtime fetch). `distance_km`
+ * is optional — story 5.3 territory wires geolocation; before then prop
+ * arrives undefined and selector hides distance line per AC.
+ */
+export interface VendorOfferOption {
+  seller_id: string;
+  seller_name: string;
+  /** Price in PLN (integer minor units OR formatted display number — consumer decides). */
+  price_pln: number;
+  /** Optional distance from buyer in km. Story 5.3 computes this client-side
+   *  via Haversine when caller provides `userLat`/`userLng` to SellerSelector
+   *  and the seller has `seller_lat`/`seller_lng`; otherwise undefined.
+   */
+  distance_km?: number;
+  /** Optional seller latitude (Story 5.3). Backend Phase B exposes via
+   *  vendor_offer aggregator; v1.6.0 baseline DRAFT — typically undefined.
+   */
+  seller_lat?: number;
+  /** Optional seller longitude (Story 5.3). See `seller_lat`. */
+  seller_lng?: number;
+}
+
 export interface AdditionalAttributeProps {
   id: string;
   attribute_id: string;

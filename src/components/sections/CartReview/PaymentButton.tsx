@@ -4,12 +4,29 @@ import React, { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
+import { FlagDriftErrorModal } from '@/components/molecules/FlagDriftErrorModal';
 import { placeOrder } from '@/lib/data/cart';
 
 import { isManual, isStripe } from '../../../lib/constants';
+
+/**
+ * Story v160-5-9 — typeguard dla FlagDriftError przepuszczonego przez
+ * server action boundary. Server-side `class FlagDriftError extends Error`
+ * traci `instanceof` na granicy — Next.js serializuje do plain `Error`.
+ * Used `error.name === 'FlagDriftError'` per AC1 contract.
+ */
+function isFlagDriftError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    (error as { name?: unknown }).name === 'FlagDriftError'
+  );
+}
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart;
@@ -66,6 +83,9 @@ const StripePaymentButton = ({
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [disabled, setDisabled] = useState(true);
+  // Story v160-5-9 — AC4 modal state.
+  const [driftModalOpen, setDriftModalOpen] = useState(false);
+  const router = useRouter();
 
   const onPaymentCompleted = async () => {
     try {
@@ -74,7 +94,11 @@ const StripePaymentButton = ({
         setErrorMessage(res.error?.message);
       }
     } catch (error: any) {
-      if (error?.message !== 'NEXT_REDIRECT') {
+      if (isFlagDriftError(error)) {
+        // Story v160-5-9 — AC4: render FlagDriftErrorModal zamiast generic
+        // error message. Inne errors zachowują existing UX path.
+        setDriftModalOpen(true);
+      } else if (error?.message !== 'NEXT_REDIRECT') {
         setErrorMessage(error?.message?.replace('Error setting up the request: ', ''));
       }
     } finally {
@@ -157,6 +181,14 @@ const StripePaymentButton = ({
         error={errorMessage}
         data-testid="stripe-payment-error-message"
       />
+      <FlagDriftErrorModal
+        open={driftModalOpen}
+        onClose={() => setDriftModalOpen(false)}
+        onReviewCart={() => {
+          setDriftModalOpen(false);
+          router.push('/cart');
+        }}
+      />
     </>
   );
 };
@@ -164,6 +196,9 @@ const StripePaymentButton = ({
 const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Story v160-5-9 — AC4 modal state.
+  const [driftModalOpen, setDriftModalOpen] = useState(false);
+  const router = useRouter();
 
   const onPaymentCompleted = async () => {
     try {
@@ -172,7 +207,9 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         setErrorMessage(res.error?.message);
       }
     } catch (error: any) {
-      if (error?.message !== 'NEXT_REDIRECT') {
+      if (isFlagDriftError(error)) {
+        setDriftModalOpen(true);
+      } else if (error?.message !== 'NEXT_REDIRECT') {
         setErrorMessage(error?.message?.replace('Error setting up the request: ', ''));
       }
     } finally {
@@ -197,6 +234,14 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
       <ErrorMessage
         error={errorMessage}
         data-testid="manual-payment-error-message"
+      />
+      <FlagDriftErrorModal
+        open={driftModalOpen}
+        onClose={() => setDriftModalOpen(false)}
+        onReviewCart={() => {
+          setDriftModalOpen(false);
+          router.push('/cart');
+        }}
       />
     </>
   );

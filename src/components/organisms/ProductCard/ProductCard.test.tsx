@@ -102,7 +102,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
     expect(vendorDiv).not.toBeNull()
   })
 
-  it('vendor link href points to /salony/[handle] (AC #3)', () => {
+  it('vendor link href points to /sellers/[handle] (AC #3)', () => {
     const product = { ...baseProduct, seller: sellerData }
     const result = ProductCard({ product }) as ReactEl
     const vendorLink = findElement(
@@ -110,10 +110,10 @@ describe('ProductCard — vendor name (AC #1)', () => {
       el =>
         el.type === 'mock-link' &&
         typeof (el as React.ReactElement<Record<string, unknown>>).props?.href === 'string' &&
-        ((el as React.ReactElement<Record<string, unknown>>).props.href as string).includes('/salony/'),
+        ((el as React.ReactElement<Record<string, unknown>>).props.href as string).includes('/sellers/'),
     )
     expect(vendorLink).not.toBeNull()
-    expect((vendorLink!.props as Record<string, unknown>).href).toBe(`/salony/${sellerData.handle}`)
+    expect((vendorLink!.props as Record<string, unknown>).href).toBe(`/sellers/${sellerData.handle}`)
   })
 
   it('does NOT render vendor section when seller is absent (AC #4)', () => {

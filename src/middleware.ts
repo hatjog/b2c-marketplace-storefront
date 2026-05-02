@@ -52,6 +52,10 @@ export function resolveRegion(geoCountry?: string, regionCookie?: string): strin
   return undefined;
 }
 
+// Story 3.2: 301 permanent redirect /[locale]/salony/* → /[locale]/sellers/* (SEO continuity post-3.1 directory removal)
+// allow: salony route preserved for 3.2 redirect source
+const SALONY_REDIRECT_RE = /^\/([a-z]{2})\/salony(\/.*)?$/;
+
 export async function middleware(request: NextRequest) {
   // Short-circuit static assets (match common file extensions at end of path)
   if (/\.\w{2,5}$/.test(request.nextUrl.pathname)) {
@@ -59,6 +63,18 @@ export async function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
+
+  // Story 3.2: legacy /[locale]/salony/* → 301 → /[locale]/sellers/*
+  // Inserted BEFORE resolveLang/auth-guard so redirect short-circuits locale processing.
+  // Query params + handle suffix preserved 1:1 via request.nextUrl.search + capture group.
+  const salonyMatch = pathname.match(SALONY_REDIRECT_RE);
+  if (salonyMatch) {
+    const [, locale, suffix = ''] = salonyMatch;
+    const target = new URL(`/${locale}/sellers${suffix}`, request.url);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target, 301);
+  }
+
   const urlSegment = pathname.split('/')[1] ?? '';
   const pathnameWithoutLang = isSupportedLocale(urlSegment)
     ? pathname.replace(/^\/[^/]+/, '')

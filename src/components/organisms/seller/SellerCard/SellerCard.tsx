@@ -44,7 +44,7 @@ export interface SellerCardProps {
 export function SellerCard({ name, handle, photo_url, city, product_count }: SellerCardProps) {
   return (
     <Link
-      href={`/salony/${handle}`}
+      href={`/sellers/${handle}`}
       className="group block rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       aria-label={name}
       data-testid="seller-card"

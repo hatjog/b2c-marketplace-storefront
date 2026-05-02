@@ -30,7 +30,8 @@ export const StickyAddToCart = ({
   countryCode: string;
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { addToCart, isAddingItem } = useCartContext();
+  // Story 5.5 — selectedSellerId/Name from CartContext shared state.
+  const { addToCart, isAddingItem, selectedSellerId, selectedSellerName } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
 
@@ -73,7 +74,14 @@ export const StickyAddToCart = ({
     if (!variantId) return;
 
     try {
-      await addToCart({ variantId, quantity: 1, countryCode });
+      await addToCart({
+        variantId,
+        quantity: 1,
+        countryCode,
+        // Story 5.5 — multi-vendor seller context (null when flag OFF).
+        selectedSellerId,
+        selectedSellerName
+      });
     } catch {
       toast.error({
         title: t('error_adding_to_cart'),

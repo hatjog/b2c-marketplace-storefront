@@ -39,12 +39,138 @@
     "style_eyebrow": "Editorial discovery",
     "blog_eyebrow": "BonBeauty journal"
   },
-  "seller_page": {
-    "home": "Home",
-    "salons": "Salons",
-    "about": "About the salon",
-    "meta_fallback_title": "Salon | BonBeauty",
-    "meta_description": "Discover the offer from {name} on BonBeauty."
+  "seller": {
+    "list": {
+      "title": "Partner salons",
+      "description": "Discover BonBeauty partner salons. Find a salon in your city and browse their offering.",
+      "empty": "No salons available.",
+      "loading": "Loading salons...",
+      "meta_title": "Partner salons | BonBeauty",
+      "previous_page": "Previous page",
+      "next_page": "Next page",
+      "near_me_toggle": "Near me",
+      "near_me_toggle_active": "Near me (active)",
+      "near_me_radius_label": "Radius",
+      "radius_5km": "5 km",
+      "radius_10km": "10 km",
+      "radius_25km": "25 km",
+      "radius_50km": "50 km",
+      "geolocation_required": "Geolocation consent required",
+      "geolocation_pending": "Acquiring your location...",
+      "geolocation_denied": "Location unavailable — disable Near me or allow in browser settings",
+      "no_results_in_radius": "No salons within {radius} km",
+      "privacy_notice_inline": "Your location used locally, not transmitted",
+      "map": {
+        "view_toggle_list": "List",
+        "view_toggle_map": "Map",
+        "view_toggle_aria": "Choose seller view",
+        "popup_address": "Address unavailable",
+        "popup_view_details": "View details",
+        "loading": "Loading map...",
+        "aria_map": "Sellers map",
+        "aria_marker": "Marker for {name}"
+      }
+    },
+    "search": {
+      "form_aria": "Search salons",
+      "label_query": "Search",
+      "placeholder": "Salon name...",
+      "label_city": "City",
+      "city_all": "All cities",
+      "label_sort": "Sort",
+      "sort_name_asc": "Name A-Z",
+      "sort_name_desc": "Name Z-A",
+      "submit": "Search",
+      "results_count": "{count} salons",
+      "empty_heading": "No partner salons available.",
+      "empty_heading_filtered": "No results for '{query}'",
+      "empty_body": "Try a different query or clear the filters.",
+      "clear_filters": "Clear filters",
+      "clear_filters_aria": "Clear filters and show all salons",
+      "pagination_aria": "Salon list pagination",
+      "meta_title_query": "'{query}' — Partner salons | BonBeauty",
+      "meta_title_city": "Beauty salons in {city} | BonBeauty",
+      "meta_title_query_city": "'{query}' in {city} — Partner salons | BonBeauty"
+    },
+    "detail": {
+      "about": "About the salon",
+      "title": "Partner salon",
+      "title_template": "{name} — Partner Salons | BonBeauty",
+      "description_label": "Description",
+      "address_label": "Address",
+      "opening_hours_label": "Opening hours",
+      "products_label": "Salon products",
+      "not_found_message": "No salon found for this address.",
+      "no_products": "This salon does not have any products listed yet.",
+      "no_description": "This salon has not provided a description yet.",
+      "no_address": "Address unavailable — contact the salon directly.",
+      "meta_fallback_title": "Unknown salon | BonBeauty",
+      "meta_description": "Discover the offer from {name} on BonBeauty.",
+      "meta_default_description": "BonBeauty partner salon — check the offer and address.",
+      "directions_title": "How to get there",
+      "directions_open_google": "Open in Google Maps",
+      "directions_open_apple": "Open in Apple Maps",
+      "directions_no_coords": "Salon coordinates are not available — click button below to search for the address in maps.",
+      "directions_external_notice": "Opening external maps, you leave BonBeauty.",
+      "context_chip_label": "From salon: {name}",
+      "context_chip_back": "Back to salon",
+      "context_chip_close": "Close"
+    },
+    "shared": {
+      "home": "Home",
+      "salons": "Salons",
+      "breadcrumb_home": "Home",
+      "breadcrumb_sellers": "Partner Salons"
+    },
+    "lowest_price": {
+      "prefix": "from",
+      "tooltip": "Price from the cheapest of {count} salons"
+    },
+    "selector": {
+      "title": "Choose a salon",
+      "choose_button": "Choose",
+      "price_from": "from",
+      "distance_km": "approx. {distance} km",
+      "lowest_price_label": "Lowest price",
+      "closest_label": "Closest",
+      "geolocation_pending": "Acquiring your location...",
+      "geolocation_denied": "Location unavailable — showing the cheapest salon",
+      "privacy_notice": "Your location used locally, not transmitted",
+      "error_message": "Failed to load seller offers",
+      "retry_button": "Retry",
+      "fallback_notice": "Multi-vendor unavailable; using default seller",
+      "circuit_open_message": "Temporarily using default seller. Refresh shortly to try again.",
+      "no_active_vendors_title": "Salon preparing offer",
+      "no_active_vendors_message": "Sellers are updating availability. Check back soon or we will notify you when an offer is available.",
+      "back_to_list_cta": "Back to list",
+      "notify_me_cta": "Notify me"
+    },
+    "status": {
+      "pending_approval": "Pending approval",
+      "open": "Open",
+      "suspended": "Suspended",
+      "terminated": "Terminated"
+    },
+    "cart": {
+      "line_item_seller_label": "Seller",
+      "from_seller": "from {seller_name}",
+      "group_header_label": "From seller: {seller_name}",
+      "default_seller_group_label": "Other items",
+      "subtotal_per_seller": "Subtotal: {amount}",
+      "visit_seller_storefront": "Visit seller storefront"
+    },
+    "checkout": {
+      "purchase_mode_label": "Who are you buying for?",
+      "mode_self": "For myself",
+      "mode_gift": "As a gift",
+      "mode_self_description": "Default purchase for you — quick checkout without extra steps",
+      "mode_gift_description": "Send a gift — add recipient details in the next step",
+      "recipient_placeholder": "Recipient details will be added in a future version (Story 6.x — Recipient Claim)",
+      "flag_changed_title": "Order configuration changed",
+      "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",
+      "review_cart_cta": "Review cart",
+      "flag_changed_close_cta": "Close"
+    }
   },
   "footer": {
     "section_customer_services": "Customer services",
@@ -395,21 +521,6 @@
     "change_method": "Change payment method"
   },
   "voucher": {
-    "qr_code_aria_label": "Voucher QR code",
-    "qr_code_label": "Scan at salon"
-  },
-  "cross_sell": {
-    "same_seller": "From this salon",
-    "same_category": "In this category"
-  },
-  "sort": {
-    "label": "Sort",
-    "aria_label": "Sort options",
-    "recommended": "Recommended",
-    "price_asc": "Price ↑",
-    "price_desc": "Price ↓"
-  },
-  "voucher": {
     "consent": {
       "heading": "Recipient data processing consent",
       "purpose": "I consent to the processing of recipient data for the purpose of delivering the voucher. Data will be retained for 365 days and may be erased on request in accordance with the GDPR.",
@@ -439,5 +550,16 @@
         "cta_withdraw": "Withdraw consent"
       }
     }
+  },
+  "cross_sell": {
+    "same_seller": "From this salon",
+    "same_category": "In this category"
+  },
+  "sort": {
+    "label": "Sort",
+    "aria_label": "Sort options",
+    "recommended": "Recommended",
+    "price_asc": "Price ↑",
+    "price_desc": "Price ↓"
   }
 }

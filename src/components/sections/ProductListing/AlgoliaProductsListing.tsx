@@ -27,7 +27,8 @@ export const AlgoliaProductsListing = ({
   seller_handle,
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION,
   countryCode,
-  currency_code
+  currency_code,
+  fromContext
 }: {
   category_id?: string;
   collection_id?: string;
@@ -35,6 +36,10 @@ export const AlgoliaProductsListing = ({
   countryCode: string;
   seller_handle?: string;
   currency_code: string;
+  /**
+   * Story v160-4-6: optional salon-anchored context propagated to ProductCard.
+   */
+  fromContext?: { type: 'seller'; handle: string };
 }) => {
   const searchParams = useSearchParams();
 
@@ -62,6 +67,7 @@ export const AlgoliaProductsListing = ({
       filters={filters}
       query={query}
       page={page}
+      fromContext={fromContext}
     />
   );
 };
@@ -72,7 +78,8 @@ const ProductsListing = ({
   currency_code,
   filters,
   query,
-  page
+  page,
+  fromContext
 }: {
   locale?: string;
   countryCode: string;
@@ -80,6 +87,7 @@ const ProductsListing = ({
   filters: string;
   query: string;
   page: number;
+  fromContext?: { type: 'seller'; handle: string };
 }) => {
   const [products, setProducts] = useState<(HttpTypes.StoreProduct & { seller?: any })[]>([]);
   const [facets, setFacets] = useState<Record<string, FacetModel[]>>({});
@@ -140,7 +148,9 @@ const ProductsListing = ({
 
           {!isLoading && !products.length && <ProductListingNoResultsView />}
 
-          {!isLoading && products.length > 0 && <ProductListingProductsView products={products} />}
+          {!isLoading && products.length > 0 && (
+            <ProductListingProductsView products={products} fromContext={fromContext} />
+          )}
 
           <div className="mt-auto">
             <ProductsPagination pages={pages} />

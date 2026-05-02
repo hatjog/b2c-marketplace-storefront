@@ -8,6 +8,7 @@ import { CartAddressSection } from '@/components/sections/CartAddressSection/Car
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
 import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
+import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode/CheckoutPurchaseMode';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
@@ -65,6 +66,7 @@ async function CheckoutPageContent({}) {
               cart={cart}
               availableShippingMethods={shippingMethods as any}
             />
+            <CheckoutPurchaseMode />
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}

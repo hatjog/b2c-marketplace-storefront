@@ -12,6 +12,12 @@ import { getMarketId } from '@/lib/helpers/market-filter';
 import { fetchQuery, sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
 import {
+  FlagDriftError,
+  snapshotFlagAtCartStart,
+  verifyFlagUnchanged,
+  type FlagSnapshot
+} from '../security/flagAtomicCheck';
+import {
   getAuthHeaders,
   getCacheOptions,
   getCacheTag,
@@ -20,6 +26,35 @@ import {
   setCartId
 } from './cookies';
 import { getRegion } from './regions';
+
+/**
+ * Story v160-5-9 — flag snapshot keys w cart_metadata (Option A persistence).
+ * Per ADR-088-reassess: storefront komplementarny do backend mor-policy.
+ * Idempotent — pierwszy zapis wygrywa (`getOrSetCart` checks before write).
+ */
+const MVP_FLAG_SNAPSHOT_KEY = 'mvp_flag_snapshot';
+const MVP_FLAG_SNAPSHOT_TS_KEY = 'mvp_flag_snapshot_ts';
+
+/**
+ * Story v160-5-9 — extracts flag snapshot z cart.metadata (Option A).
+ * Returns `null` gdy snapshot missing — caller (placeOrder) treats this jako
+ * fail-open Phase A per AC2 (backend mor-policy retains FM-9 guarantee).
+ */
+function readFlagSnapshotFromCart(cart: HttpTypes.StoreCart | null | undefined): FlagSnapshot | null {
+  const metadata = cart?.metadata as Record<string, unknown> | null | undefined;
+  if (!metadata) {
+    return null;
+  }
+  const flagRaw = metadata[MVP_FLAG_SNAPSHOT_KEY];
+  const tsRaw = metadata[MVP_FLAG_SNAPSHOT_TS_KEY];
+  if (typeof flagRaw !== 'string' || typeof tsRaw !== 'string') {
+    return null;
+  }
+  if (flagRaw !== 'true' && flagRaw !== 'false') {
+    return null;
+  }
+  return { flag: flagRaw === 'true', ts: tsRaw };
+}
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 const CART_RETRIEVE_FIELDS = [
@@ -32,6 +67,7 @@ const CART_RETRIEVE_FIELDS = [
   'items.variant.options.option.title',
   '*items.thumbnail',
   '*items.metadata',
+  'metadata',
   '+items.total',
   '+items.subtotal',
   '+items.tax_total',
@@ -193,6 +229,36 @@ export async function getOrSetCart(countryCode: string) {
     revalidateTag(cartCacheTag);
   }
 
+  // Story v160-5-9 — Atomic Flag Check, AC2 cart-start snapshot.
+  // Idempotent: pierwszy zapis wygrywa (cart lifecycle = od first item do
+  // completion lub cleanup). Defensive: zero crash gdy persistence fails
+  // (fail-open Phase A — backend mor-policy retains FM-9 guarantee per
+  // ADR-088-reassess).
+  const existingSnapshot = readFlagSnapshotFromCart(cart);
+  if (!existingSnapshot) {
+    try {
+      const snapshot = snapshotFlagAtCartStart();
+      const cartUpdateResp = await sdk.store.cart.update(
+        cart.id,
+        {
+          metadata: {
+            ...(cart.metadata ?? {}),
+            [MVP_FLAG_SNAPSHOT_KEY]: snapshot.flag ? 'true' : 'false',
+            [MVP_FLAG_SNAPSHOT_TS_KEY]: snapshot.ts
+          }
+        },
+        {},
+        headers
+      );
+      cart = cartUpdateResp.cart;
+      const cartCacheTag = await getCacheTag('carts');
+      revalidateTag(cartCacheTag);
+    } catch (e) {
+      // Fail-open per AC2 — log + proceed; backend mor-policy holds FM-9.
+      console.warn('[atomic-flag-check] cart-start snapshot persistence failed; proceeding fail-open', e);
+    }
+  }
+
   if (cart && cart?.region_id !== region.id) {
     await sdk.store.cart.update(cart.id, { region_id: region.id }, {}, headers);
     const cartCacheTag = await getCacheTag('carts');
@@ -223,14 +289,43 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
     .catch(medusaError);
 }
 
+/**
+ * Add product variant to cart.
+ *
+ * Story 5.5 (v160-5-5-vendor-context-preservation-cart): optional
+ * `selectedSellerId` + `selectedSellerName` parameters persist multi-vendor
+ * PDP selection as `cart_item.metadata.selected_seller_id` /
+ * `selected_seller_name` for downstream grouping (Story 5.7) + Phase B+
+ * fulfillment routing.
+ *
+ * Backward-compat: oba parametry optional (`undefined` lub `null` →
+ * legacy single-vendor flow; zero metadata appended; existing callers
+ * np. quick-buy w PLP card bez zmian).
+ *
+ * Persistence path (Option A — Mercur 2 / Medusa cart_item metadata):
+ *  - Medusa types support `metadata?: Record<string, unknown>` na
+ *    `StoreAddCartLineItem` payload (audit T2.3 Story 5.5).
+ *  - Spread tylko gdy `selectedSellerId` non-null/non-empty — zero
+ *    metadata noise w legacy flow.
+ *  - Phase B+ checkout fulfillment reads `metadata.selected_seller_id`
+ *    bez extra fetch.
+ */
 export async function addToCart({
   variantId,
   quantity,
-  countryCode
+  countryCode,
+  selectedSellerId,
+  selectedSellerName
 }: {
   variantId: string;
   quantity: number;
   countryCode: string;
+  /** Optional seller selection from multi-vendor PDP (Story 5.5);
+   *  persisted as cart_item metadata for downstream grouping (Story 5.7). */
+  selectedSellerId?: string | null;
+  /** Denormalized seller name dla cart UI (zero extra fetch w cart render);
+   *  Story 5.5 — paired z selectedSellerId. */
+  selectedSellerName?: string | null;
 }) {
   if (!variantId) {
     throw new Error('Missing variant ID when adding to cart');
@@ -248,12 +343,25 @@ export async function addToCart({
 
   const currentItem = cart.items?.find(item => item.variant_id === variantId);
 
+  // Story 5.5 — only attach metadata gdy seller context provided. Defensive:
+  // empty string treated jako absence (typescript-permissive callers).
+  const sellerMetadata =
+    selectedSellerId && selectedSellerName
+      ? {
+          selected_seller_id: selectedSellerId,
+          selected_seller_name: selectedSellerName
+        }
+      : undefined;
+
   if (currentItem) {
     await sdk.store.cart
       .updateLineItem(
         cart.id,
         currentItem.id,
-        { quantity: currentItem.quantity + quantity },
+        {
+          quantity: currentItem.quantity + quantity,
+          ...(sellerMetadata ? { metadata: { ...(currentItem.metadata ?? {}), ...sellerMetadata } } : {})
+        },
         {},
         headers
       )
@@ -268,7 +376,8 @@ export async function addToCart({
         cart.id,
         {
           variant_id: variantId,
-          quantity
+          quantity,
+          ...(sellerMetadata ? { metadata: sellerMetadata } : {})
         },
         {},
         headers
@@ -522,6 +631,27 @@ export async function placeOrder(cartId?: string) {
   const headers = {
     ...(await getAuthHeaders())
   };
+
+  // Story v160-5-9 — AC3 pre-submit guard. Read snapshot z cart_metadata
+  // (Option A); jeśli present → verifyFlagUnchanged → on drift throw
+  // FlagDriftError (caller catch path obsługuje modal). Fail-open gdy
+  // snapshot missing (backend mor-policy retains FM-9 guarantee per
+  // ADR-088-reassess).
+  try {
+    const cart = await retrieveCart(id);
+    const snapshot = readFlagSnapshotFromCart(cart);
+    if (snapshot) {
+      verifyFlagUnchanged(snapshot);
+    } else {
+      console.warn('[atomic-flag-check] no snapshot found, fail-open');
+    }
+  } catch (e) {
+    if (e instanceof FlagDriftError) {
+      throw e;
+    }
+    // Snapshot read errors (network, etc.) → fail-open per AC2.
+    console.warn('[atomic-flag-check] snapshot read failed, fail-open', e);
+  }
 
   const res = await fetchQuery(`/store/carts/${id}/complete`, {
     method: 'POST',

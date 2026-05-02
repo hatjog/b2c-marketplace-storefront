@@ -121,11 +121,11 @@ describe('getColorFromHandle', () => {
 // ---------------------------------------------------------------------------
 
 describe('VendorBadge — link (AC #2, #5)', () => {
-  it('renders link to /salony/[handle]', () => {
+  it('renders link to /sellers/[handle]', () => {
     const result = VendorBadge({ vendor: baseVendor, variant: 'pdp' }) as ReactEl
     // Root element is the mocked Link ('mock-link')
     expect(result.type).toBe('mock-link')
-    expect(result.props.href).toBe('/salony/salon-pieknosci')
+    expect(result.props.href).toBe('/sellers/salon-pieknosci')
   })
 
   it('has aria-label describing salon name', () => {

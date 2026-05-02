@@ -54,6 +54,7 @@ export const SellerTabs = ({
             <ProductListing
               showSidebar
               seller_id={seller_id}
+              fromContext={{ type: 'seller', handle: seller_handle }}
             />
           ) : (
             <AlgoliaProductsListing
@@ -61,6 +62,7 @@ export const SellerTabs = ({
               countryCode={countryCode}
               seller_handle={seller_handle}
               currency_code={currency_code}
+              fromContext={{ type: 'seller', handle: seller_handle }}
             />
           )}
         </Suspense>

@@ -1,12 +1,42 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { CartItemsFooter, CartItemsHeader, CartItemsProducts } from '@/components/cells';
+import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
+
+import { CartGroupedBySeller } from '../CartGroupedBySeller/CartGroupedBySeller';
 
 import { EmptyCart } from './EmptyCart';
+
+/**
+ * Story 5.7 — multi-vendor cart grouping flag (re-uses Story 5.5 pattern).
+ * When ON AND any line item carries seller metadata → swap to
+ * `<CartGroupedBySeller>` (sections per seller, alphabetical order).
+ * When OFF or no seller metadata → legacy flat grouping by `product.seller`
+ * preserved → zero regression vs v1.5.0 baseline.
+ */
+const MULTI_VENDOR_PRICING_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
+  const items = cart.items ?? [];
+  if (items.length === 0) return <EmptyCart />;
+
+  // Story 5.7 — flag-gated grouping by selected seller metadata.
+  if (MULTI_VENDOR_PRICING_ENABLED && hasMultipleSellers(items)) {
+    return (
+      <>
+        <CartGroupedBySeller cart={cart} />
+        <CartItemsFooter
+          currency_code={cart.currency_code}
+          price={cart.shipping_subtotal}
+        />
+      </>
+    );
+  }
+
+  // Legacy flat grouping by product.seller (pre-5.7 baseline).
   const groupedItems: any = groupItemsBySeller(cart);
 
   if (!Object.keys(groupedItems).length) return <EmptyCart />;
