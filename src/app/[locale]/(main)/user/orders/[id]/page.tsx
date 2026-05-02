@@ -7,13 +7,13 @@ import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedL
 import { OrderDetailsSection } from '@/components/sections/OrderDetailsSection/OrderDetailsSection';
 import { ArrowLeftIcon } from '@/icons';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { retrieveOrderSet } from '@/lib/data/orders';
+import { retrieveOrderGroup } from '@/lib/data/orders';
 
 export default async function UserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const user = await retrieveCustomer();
-  const orderSet = await retrieveOrderSet(id);
+  const orderGroup = await retrieveOrderGroup(id);
 
   if (!user) return redirect('/login');
 
@@ -32,15 +32,15 @@ export default async function UserPage({ params }: { params: Promise<{ id: strin
             </Button>
           </LocalizedClientLink>
           <div className="items-center justify-between sm:flex">
-            <h1 className="heading-md my-8 uppercase">Order set #{orderSet.display_id}</h1>
+            <h1 className="heading-md my-8 uppercase">Order group #{orderGroup.display_id}</h1>
             <p className="label-md text-secondary">
               Order date:{' '}
               <span className="text-primary">
-                {format(orderSet.created_at || '', 'yyyy-MM-dd')}
+                {format(orderGroup.created_at || '', 'yyyy-MM-dd')}
               </span>
             </p>
           </div>
-          <OrderDetailsSection orderSet={orderSet} />
+          <OrderDetailsSection orderGroup={orderGroup} />
         </div>
       </div>
     </main>

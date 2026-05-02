@@ -531,11 +531,11 @@ export async function placeOrder(cartId?: string) {
   const cartCacheTag = await getCacheTag('carts');
   revalidateTag(cartCacheTag);
 
-  if (res?.data?.order_set) {
+  if (res?.data?.order_group) {
     revalidatePath('/user/reviews');
     revalidatePath('/user/orders');
     removeCartId();
-    redirect(`/order/${res?.data?.order_set.orders[0].id}/confirmed`);
+    redirect(`/order/${res?.data?.order_group.orders[0].id}/confirmed`);
   }
 
   return res;

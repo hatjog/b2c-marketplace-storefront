@@ -2,10 +2,21 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 const { mockFetch } = vi.hoisted(() => ({ mockFetch: vi.fn() }));
 
+// Path B (story v160-2-6): seller.ts now uses `mercurClient.store.sellers.query()`
+// for the Mercur 2.1.1 native `/store/sellers` route. The Proxy-based client is
+// mocked here as a direct function call returning the fetched payload — a faithful
+// representation of the runtime contract until backend codegen lands the typed Routes.
 vi.mock('../config', () => ({
   sdk: {
     client: {
-      fetch: mockFetch
+      fetch: vi.fn()
+    }
+  },
+  mercurClient: {
+    store: {
+      sellers: {
+        query: mockFetch
+      }
     }
   }
 }));
@@ -38,7 +49,7 @@ describe('getSellers', () => {
     });
     await getSellers();
 
-    expect(mockFetch).toHaveBeenCalledWith('/store/seller', { cache: 'no-cache' });
+    expect(mockFetch).toHaveBeenCalledWith({ fetchOptions: { cache: 'no-cache' } });
   });
 
   it('returns all sellers provided by the API regardless of product_count', async () => {

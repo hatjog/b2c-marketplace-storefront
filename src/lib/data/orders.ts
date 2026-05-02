@@ -2,7 +2,7 @@
 
 import type { HttpTypes } from '@medusajs/types';
 
-import type { MercurOrder, MercurOrderWithOrderSet, OrderSet } from '@/types/medusa-extensions';
+import type { MercurOrder, MercurOrderWithOrderGroup, OrderGroup } from '@/types/medusa-extensions';
 
 import { sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
@@ -11,18 +11,18 @@ import { getAuthHeaders, getCacheOptions } from './cookies';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
-export const retrieveOrderSet = async (id: string) => {
+export const retrieveOrderGroup = async (id: string) => {
   const headers = {
     ...(await getAuthHeaders())
   };
 
   return sdk.client
-    .fetch<{ order_set: OrderSet }>(`/store/order-set/${id}`, {
+    .fetch<{ order_group: OrderGroup }>(`/store/order-groups/${id}`, {
       method: 'GET',
       headers,
       cache: 'no-cache'
     })
-    .then(({ order_set }) => order_set)
+    .then(({ order_group }) => order_group)
     .catch(err => medusaError(err));
 };
 
@@ -40,7 +40,7 @@ export const retrieveOrder = async (id: string) => {
       method: 'GET',
       query: {
         fields:
-          '*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*seller,*order_set'
+          '*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*seller,*order_group'
       },
       headers,
       next,
@@ -112,7 +112,7 @@ export const listOrders = async (
     ...(await getCacheOptions('orders'))
   };
 
-  const hasOrderSet = (order: MercurOrder): order is MercurOrderWithOrderSet => Boolean(order.order_set?.id);
+  const hasOrderGroup = (order: MercurOrder): order is MercurOrderWithOrderGroup => Boolean(order.order_group?.id);
 
   return sdk.client
     .fetch<{
@@ -124,14 +124,14 @@ export const listOrders = async (
         offset,
         order: '-created_at',
         fields:
-          '*items,+items.metadata,*items.variant,*items.product,*seller,*reviews,*order_set,shipping_total,total,created_at',
+          '*items,+items.metadata,*items.variant,*items.product,*seller,*reviews,*order_group,shipping_total,total,created_at',
         ...filters
       },
       headers,
       next,
       cache: 'no-cache'
     })
-    .then(({ orders }) => orders.filter(hasOrderSet))
+    .then(({ orders }) => orders.filter(hasOrderGroup))
     .catch(err => medusaError(err));
 };
 

@@ -1,6 +1,6 @@
 import type { SellerProps } from '@/types/seller';
 
-import { sdk } from '../config';
+import { mercurClient, sdk } from '../config';
 
 export interface SellerListItem {
   handle: string;
@@ -18,11 +18,15 @@ type SellerApiItem = {
   product_count?: number;
 };
 
+/**
+ * Path B (story v160-2-6): migrated from `sdk.client.fetch('/store/seller')`
+ * (Mercur 1.5 singular path) to `mercurClient.store.sellers.query()` (Mercur
+ * 2.1.1 native plural path). Until backend codegen lands `@mercurjs/core/_generated`
+ * Routes the client is `any` — typing is enforced via the local
+ * `{ sellers: SellerApiItem[] }` cast.
+ */
 export const getSellers = async (): Promise<SellerListItem[]> => {
-  return sdk.client
-    .fetch<{ sellers: SellerApiItem[] }>('/store/seller', {
-      cache: 'no-cache'
-    })
+  return (mercurClient.store.sellers.query({ fetchOptions: { cache: 'no-cache' } }) as Promise<{ sellers: SellerApiItem[] }>)
     .then(({ sellers }) => {
       const mapped: SellerListItem[] = (sellers ?? []).map(v => ({
         handle: v.handle,
@@ -37,6 +41,15 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
     .catch(() => []);
 };
 
+/**
+ * Mercur 2.1.1 native `/store/sellers/:id` accepts ID-only (NOT handle). The
+ * Mercur 1.5 contract supported handle lookup via `/store/seller/:handle` —
+ * Mercur 2 dropped that overload. Until a GP backend extension restores the
+ * handle path (story 2.7 follow-up) this fetcher continues to call the
+ * legacy path through `sdk.client.fetch`. The path WILL 404 against a fresh
+ * Mercur 2 backend; consumers (`/[locale]/sellers/[handle]`) should expect
+ * graceful degradation (`null` return) until 2.7 lands the rewrite.
+ */
 export const getSellerByHandle = async (handle: string) => {
   return sdk.client
     .fetch<{ seller: SellerProps }>(`/store/seller/${handle}`, {

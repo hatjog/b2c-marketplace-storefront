@@ -40,7 +40,7 @@ export type MercurStoreVariant = HttpTypes.StoreProductVariant & {
   calculated_price?: MercurCalculatedPrice;
 };
 
-export type OrderSet = {
+export type OrderGroup = {
   id: string;
   created_at?: string | null;
   display_id?: number | string | null;
@@ -59,12 +59,12 @@ export type MercurOrderShippingMethod = NonNullable<HttpTypes.StoreOrder['shippi
 export type MercurOrder = HttpTypes.StoreOrder & {
   seller?: SellerProps | null;
   reviews?: unknown[];
-  order_set?: OrderSet | null;
+  order_group?: OrderGroup | null;
   shipping_methods?: MercurOrderShippingMethod[] | null;
 };
 
-export type MercurOrderWithOrderSet = MercurOrder & {
-  order_set: OrderSet;
+export type MercurOrderWithOrderGroup = MercurOrder & {
+  order_group: OrderGroup;
 };
 
 export type MercurCollection = HttpTypes.StoreCollection & {
