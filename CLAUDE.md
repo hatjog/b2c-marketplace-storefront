@@ -1,8 +1,9 @@
-# Storefront — Next.js 16 + React 19 + Tailwind 4
+# Storefront — Next.js App Router
 
 ## Stack lokalny
-- Next.js 16 (App Router), React 19, TypeScript 5 strict, Tailwind 4
-- Vitest dla unit testów
+- Sprawdzaj faktyczne wersje w `package.json`; nie traktuj tego pliku jako SSOT wersji.
+- Next.js App Router, React, TypeScript, Tailwind 3.
+- Testy jednostkowe używają skryptu `test` z `package.json`.
 - i18n: locales `[locale]/(main)/...` (pl, en, ua, de)
 
 ## Struktura
@@ -17,7 +18,7 @@
 ## Pułapki
 - **Barrel exports leak server modules into client bundles.** Edytując `index.ts` w komponentach trace pełen import chain — nie ciągnij `node:*` ani modułów backendowych do client components.
 - Komponenty client muszą mieć `"use client"` na top. Czyste presentational → server-side default.
-- Tailwind 4: nowe `@theme` syntax i CSS-first config. Stare `tailwind.config.js` może być nieaktualne — sprawdź `globals.css`.
+- Tailwind 3: sprawdzaj `tailwind.config.*`, PostCSS config i `globals.css` przed zmianą klas lub theme.
 
 ## Testy
-- `cd GP/storefront && npx vitest run <plik>` lub `node --test <plik>` (per `bmad-code-review-fix-runner` rules).
+- `cd GP/storefront && pnpm test` albo węższy wariant zgodny ze skryptami w `package.json`.
