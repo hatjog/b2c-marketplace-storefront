@@ -549,6 +549,74 @@
         "cta_resume": "Resume",
         "cta_withdraw": "Withdraw consent"
       }
+    },
+    "pdf": {
+      "download_cta": "Download voucher PDF",
+      "download_cta_for_vendor": "Download voucher for {seller_name}",
+      "email_pending": "Voucher will arrive in your email within 5 min",
+      "salon_section_title": "Salon",
+      "redemption_code_label": "Redemption code",
+      "validity_period_label": "Valid until",
+      "voucher_value_label": "Voucher value",
+      "service_description_label": "Service"
+    },
+    "claim": {
+      "title": "Your voucher",
+      "subtitle": "Use your voucher at the chosen salon",
+      "seller_label": "Salon",
+      "service_label": "Service",
+      "value_label": "Value",
+      "claim_cta": "Use voucher",
+      "claimed_status": "Voucher claimed",
+      "withdrawn_status": "Consent withdrawn",
+      "expires_at_label": "Valid until",
+      "not_found_message": "Unknown voucher",
+      "consent_pending_message": "Saving consent. Please come back in a moment.",
+      "post_claim_link": "Go to the salon",
+      "meta_default_title": "BonBeauty voucher",
+      "meta_default_description": "Use your BonBeauty voucher at the chosen salon.",
+      "offline": {
+        "banner_no_connection": "No connection. Your voucher request will be processed when the network returns.",
+        "toast_queued": "We saved your request. We will send it when you are back online.",
+        "toast_syncing": "Syncing…",
+        "toast_synced": "Voucher claimed. Check your email.",
+        "toast_failed_terminal": "Voucher already claimed or expired.",
+        "toast_failed_permanent": "We couldn't claim the voucher after 8 attempts. Please contact support.",
+        "button_retry": "Try again"
+      }
+    },
+    "audit_trail": {
+      "title": "Voucher history",
+      "toggle_show": "Show voucher history",
+      "toggle_hide": "Hide voucher history",
+      "event_created": "Voucher created",
+      "event_sent": "Sent to recipient",
+      "event_opened": "Opened by recipient",
+      "event_claimed": "Voucher claimed",
+      "event_withdrawn": "Consent withdrawn",
+      "privacy_notice": "History is visible only to you. We don't reveal sender data.",
+      "empty_state": "No history entries"
+    },
+    "consent_pause": {
+      "pause_button": "Pause decision",
+      "paused_badge": "Paused — voucher waiting",
+      "resume_button": "Resume decision",
+      "paused_helper": "Voucher stays active for 24h",
+      "resume_modal_title": "Are you sure you want to resume?",
+      "resume_modal_body": "Resuming will unlock the \"Use voucher\" button.",
+      "resume_confirm": "Yes, resume",
+      "resume_cancel": "Cancel",
+      "pause_persisted_notice": "Your choice is remembered locally.",
+      "pause_aria_label": "Decision pause switch"
+    },
+    "pdf_directions": {
+      "title": "How to get there",
+      "seller_label": "Salon",
+      "address_label": "Address",
+      "google_maps_label": "Google Maps",
+      "apple_maps_label": "Apple Maps",
+      "privacy_notice": "Clicking external map links, you leave BonBeauty. BonBeauty does not share your data with external map providers.",
+      "no_coords_helper": "Coordinates not available — link searches address"
     }
   },
   "cross_sell": {

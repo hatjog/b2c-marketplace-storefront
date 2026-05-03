@@ -549,6 +549,74 @@
         "cta_resume": "Wznów rozmowę",
         "cta_withdraw": "Wycofaj zgodę"
       }
+    },
+    "pdf": {
+      "download_cta": "Pobierz voucher PDF",
+      "download_cta_for_vendor": "Pobierz voucher dla {seller_name}",
+      "email_pending": "Voucher trafi na email w ciągu 5 min",
+      "salon_section_title": "Salon",
+      "redemption_code_label": "Kod realizacji",
+      "validity_period_label": "Ważność",
+      "voucher_value_label": "Wartość vouchera",
+      "service_description_label": "Usługa"
+    },
+    "claim": {
+      "title": "Twój voucher",
+      "subtitle": "Skorzystaj z vouchera w wybranym salonie",
+      "seller_label": "Salon",
+      "service_label": "Usługa",
+      "value_label": "Wartość",
+      "claim_cta": "Skorzystaj z vouchera",
+      "claimed_status": "Voucher zrealizowany",
+      "withdrawn_status": "Zgoda wycofana",
+      "expires_at_label": "Ważny do",
+      "not_found_message": "Nieznany voucher",
+      "consent_pending_message": "Trwa zapis zgody. Wróć za chwilę.",
+      "post_claim_link": "Przejdź do salonu",
+      "meta_default_title": "Voucher BonBeauty",
+      "meta_default_description": "Skorzystaj z otrzymanego vouchera w wybranym salonie BonBeauty.",
+      "offline": {
+        "banner_no_connection": "Brak połączenia. Voucher zostanie zrealizowany po przywróceniu sieci.",
+        "toast_queued": "Zapisaliśmy Twoje żądanie. Wyślemy je gdy wrócisz online.",
+        "toast_syncing": "Synchronizacja…",
+        "toast_synced": "Voucher zrealizowany. Sprawdź email.",
+        "toast_failed_terminal": "Voucher już został zrealizowany lub wygasł.",
+        "toast_failed_permanent": "Nie udało się zrealizować vouchera po 8 próbach. Skontaktuj się z support.",
+        "button_retry": "Spróbuj ponownie"
+      }
+    },
+    "audit_trail": {
+      "title": "Historia vouchera",
+      "toggle_show": "Pokaż historię vouchera",
+      "toggle_hide": "Ukryj historię vouchera",
+      "event_created": "Voucher utworzony",
+      "event_sent": "Wysłany do odbiorcy",
+      "event_opened": "Otwarty przez odbiorcę",
+      "event_claimed": "Voucher zrealizowany",
+      "event_withdrawn": "Zgoda wycofana",
+      "privacy_notice": "Historia jest widoczna tylko Tobie. Nie ujawniamy danych nadawcy.",
+      "empty_state": "Brak wpisów w historii"
+    },
+    "consent_pause": {
+      "pause_button": "Wstrzymaj decyzję",
+      "paused_badge": "Pauzowane — voucher czeka",
+      "resume_button": "Wznów decyzję",
+      "paused_helper": "Voucher pozostanie aktywny przez 24h",
+      "resume_modal_title": "Czy na pewno chcesz wznowić?",
+      "resume_modal_body": "Wznowienie odblokuje przycisk „Skorzystaj z vouchera”.",
+      "resume_confirm": "Tak, wznów",
+      "resume_cancel": "Anuluj",
+      "pause_persisted_notice": "Twój wybór zapamiętujemy lokalnie.",
+      "pause_aria_label": "Przełącznik pauzy decyzji"
+    },
+    "pdf_directions": {
+      "title": "Jak dojechać",
+      "seller_label": "Salon",
+      "address_label": "Adres",
+      "google_maps_label": "Google Maps",
+      "apple_maps_label": "Apple Maps",
+      "privacy_notice": "Klikając linki map zewnętrznych, opuszczasz BonBeauty. BonBeauty nie udostępnia Twoich danych zewnętrznym dostawcom map.",
+      "no_coords_helper": "Współrzędne nie są dostępne — link wyszukuje adres"
     }
   },
   "cross_sell": {
