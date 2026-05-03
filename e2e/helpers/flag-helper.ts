@@ -14,7 +14,14 @@
 
 const BACKEND_BASE = process.env.BACKEND_BASE_URL ?? "http://localhost:9002"
 const FLAG_TOGGLE_URL = `${BACKEND_BASE}/admin/test/flag-toggle`
-const FLAG_STATUS_URL = `${BACKEND_BASE}/admin/operator/flag-flip`
+// Use the same test route for reads (GET) so both ops share identical auth guards.
+const FLAG_STATUS_URL = FLAG_TOGGLE_URL
+
+// Standard headers required by the test-only endpoint.
+const TEST_HEADERS = {
+  "Content-Type": "application/json",
+  "X-Test-Mode": "true",
+} as const
 
 export type MultiVendorFlagState = "off" | "shadow" | "on"
 
@@ -23,9 +30,7 @@ export type MultiVendorFlagState = "off" | "shadow" | "on"
  */
 export async function getFlagState(): Promise<MultiVendorFlagState> {
   const res = await fetch(FLAG_STATUS_URL, {
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: TEST_HEADERS,
   })
   if (!res.ok) {
     throw new Error(
@@ -45,10 +50,7 @@ export async function setFlagState(
 ): Promise<{ from: MultiVendorFlagState; to: MultiVendorFlagState }> {
   const res = await fetch(FLAG_TOGGLE_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Test-Mode": "true",
-    },
+    headers: TEST_HEADERS,
     body: JSON.stringify({ to_state: toState }),
   })
   if (!res.ok) {
@@ -97,6 +99,10 @@ export async function ensureFlagOn(): Promise<MultiVendorFlagState> {
 /**
  * Ensure flag is OFF — set it if currently different.
  * Returns the previous state so callers can restore after the test.
+ *
+ * ISOLATION WARNING: the on→off transition triggers cache invalidation
+ * (ISR tag revalidation, Redis key busting). Run only against a dedicated
+ * staging instance — not against a process shared with live traffic.
  */
 export async function ensureFlagOff(): Promise<MultiVendorFlagState> {
   const current = await getFlagState()

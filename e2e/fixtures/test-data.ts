@@ -50,9 +50,11 @@ export const TEST_BUYER = {
 
 /**
  * Stripe test card for mock payment in staging.
- * Uses Stripe's standard test card for payment success.
+ * These are Stripe's published test-only values (NOT real credentials).
+ * @see https://stripe.com/docs/testing#cards
  */
 export const TEST_STRIPE_CARD = {
+  // Stripe published test card — not a real card number
   number: "4242424242424242",
   expiry: "12/26",
   cvc: "123",

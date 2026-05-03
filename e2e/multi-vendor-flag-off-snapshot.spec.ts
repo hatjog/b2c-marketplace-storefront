@@ -129,13 +129,12 @@ test("PLP — flag OFF: no multi-vendor lowest-price badge on category page", as
   const mvIndicators = page.locator('[data-testid="multi-vendor-indicator"]')
   expect(await mvIndicators.count()).toBe(0)
 
-  // Capture snapshot
+  // Capture snapshot (capturedAt in meta — excluded from comparisons).
   const snapshot = {
-    url: p.category(TEST_CATEGORY_HANDLE),
     flag: "off",
     mvLowestPriceBadgeCount: 0,
     mvIndicatorCount: 0,
-    capturedAt: new Date().toISOString(),
+    meta: { url: p.category(TEST_CATEGORY_HANDLE), capturedAt: new Date().toISOString() },
   }
   writeSnapshot("flag-off-plp", snapshot)
   console.log("[SNAPSHOT] flag-off-plp written")
@@ -163,10 +162,9 @@ test("PDP — flag OFF: no seller selector on product detail page", async ({
   expect(await sellerSelector.count()).toBe(0)
 
   const snapshot = {
-    url: p.product(productHandle),
     flag: "off",
     sellerSelectorCount: 0,
-    capturedAt: new Date().toISOString(),
+    meta: { url: p.product(productHandle), capturedAt: new Date().toISOString() },
   }
   writeSnapshot("flag-off-pdp", snapshot)
   console.log("[SNAPSHOT] flag-off-pdp written")
@@ -180,17 +178,16 @@ test("Cart — flag OFF: no vendor-cart-group headers", async ({ page }) => {
   await page.goto(p.cart)
 
   // Wait for cart page to load
-  await page.waitForTimeout(1_000) // brief settle
+  await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {})
 
   // Assert NO vendor cart groups
   const vendorGroups = page.locator('[data-testid="vendor-cart-group"]')
   expect(await vendorGroups.count()).toBe(0)
 
   const snapshot = {
-    url: p.cart,
     flag: "off",
     vendorCartGroupCount: 0,
-    capturedAt: new Date().toISOString(),
+    meta: { url: p.cart, capturedAt: new Date().toISOString() },
   }
   writeSnapshot("flag-off-cart", snapshot)
   console.log("[SNAPSHOT] flag-off-cart written")
@@ -205,7 +202,7 @@ test("Checkout — flag OFF: no multi-vendor order_set splits", async ({
 }) => {
   await page.goto(p.checkout)
 
-  await page.waitForTimeout(1_000)
+  await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {})
 
   // Assert NO order-set splits widget
   const orderSetSplits = page.locator('[data-testid="order-set-splits"]')
@@ -217,11 +214,10 @@ test("Checkout — flag OFF: no multi-vendor order_set splits", async ({
   expect(await multiVendorSummary.count()).toBe(0)
 
   const snapshot = {
-    url: p.checkout,
     flag: "off",
     orderSetSplitsCount: 0,
     multiVendorOrderSummaryCount: 0,
-    capturedAt: new Date().toISOString(),
+    meta: { url: p.checkout, capturedAt: new Date().toISOString() },
   }
   writeSnapshot("flag-off-checkout", snapshot)
   console.log("[SNAPSHOT] flag-off-checkout written")
@@ -231,17 +227,21 @@ test("Checkout — flag OFF: no multi-vendor order_set splits", async ({
  * Snapshot existence validation
  * -------------------------------------------------------------------------*/
 
-test("All 4 flag-off snapshots are present in __snapshots__/", async () => {
-  const requiredSnapshots = [
-    "flag-off-plp",
-    "flag-off-pdp",
-    "flag-off-cart",
-    "flag-off-checkout",
+test("All 4 flag-off snapshots are present and assert zero multi-vendor elements", async () => {
+  type Snapshot = { flag: string; [key: string]: unknown }
+  const checks: Array<{ name: string; zeroKeys: string[] }> = [
+    { name: "flag-off-plp", zeroKeys: ["mvLowestPriceBadgeCount", "mvIndicatorCount"] },
+    { name: "flag-off-pdp", zeroKeys: ["sellerSelectorCount"] },
+    { name: "flag-off-cart", zeroKeys: ["vendorCartGroupCount"] },
+    { name: "flag-off-checkout", zeroKeys: ["orderSetSplitsCount", "multiVendorOrderSummaryCount"] },
   ]
-  for (const name of requiredSnapshots) {
-    const data = loadSnapshot(name)
+  for (const { name, zeroKeys } of checks) {
+    const data = loadSnapshot(name) as Snapshot | null
     expect(data).not.toBeNull()
-    expect((data as { flag?: string }).flag).toBe("off")
+    expect(data!.flag).toBe("off")
+    for (const key of zeroKeys) {
+      expect(data![key]).toBe(0)
+    }
   }
-  console.log("[PASS] All 4 flag-off snapshots verified.")
+  console.log("[PASS] All 4 flag-off snapshots verified — zero multi-vendor elements.")
 })

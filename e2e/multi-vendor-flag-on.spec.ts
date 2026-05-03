@@ -14,7 +14,11 @@
  */
 
 import { test, expect } from "@playwright/test"
-import { assertFlagState, ensureFlagOn } from "./helpers/flag-helper"
+import {
+  assertFlagState,
+  ensureFlagOn,
+  type MultiVendorFlagState,
+} from "./helpers/flag-helper"
 import {
   findProductsFromMultipleSellers,
   probeBackendHealth,
@@ -22,6 +26,7 @@ import {
 import {
   LOCALE,
   TEST_CATEGORY_HANDLE,
+  TEST_RECIPIENT,
   paths,
 } from "./fixtures/test-data"
 
@@ -50,15 +55,39 @@ async function checkEnvironmentOrSkip(): Promise<void> {
 }
 
 /* ---------------------------------------------------------------------------
- * Setup
+ * State tracking for afterAll cleanup
+ * -------------------------------------------------------------------------*/
+
+let previousFlagState: MultiVendorFlagState = "on"
+
+/* ---------------------------------------------------------------------------
+ * Setup & teardown
  * -------------------------------------------------------------------------*/
 
 test.beforeAll(async () => {
   await checkEnvironmentOrSkip()
   // Ensure flag is ON before the suite runs.
   // ensureFlagOn transitions through shadow if currently off.
-  await ensureFlagOn()
+  previousFlagState = await ensureFlagOn()
   await assertFlagState("on")
+})
+
+test.afterAll(async () => {
+  const healthy = await probeBackendHealth()
+  if (!healthy) return
+  // Restore flag if it was not already 'on' before the suite ran.
+  if (previousFlagState === "off") {
+    const { setFlagState, getFlagState } = await import("./helpers/flag-helper")
+    const current = await getFlagState()
+    if (current !== "off") {
+      if (current === "on") await setFlagState("shadow")
+      await setFlagState("off")
+    }
+  } else if (previousFlagState === "shadow") {
+    const { setFlagState, getFlagState } = await import("./helpers/flag-helper")
+    const current = await getFlagState()
+    if (current === "on") await setFlagState("shadow")
+  }
 })
 
 /* ---------------------------------------------------------------------------
@@ -113,12 +142,6 @@ test("Step 2 — PDP seller selector lists >= 2 sellers with default sort", asyn
 
   // Assert at least 2 seller options
   const sellerOptions = page.locator('[data-testid="seller-option"]')
-  await expect(sellerOptions).toHaveCount(
-    await sellerOptions.count() >= 2
-      ? await sellerOptions.count()
-      : 2,
-    { timeout: 10_000 },
-  )
   expect(await sellerOptions.count()).toBeGreaterThanOrEqual(2)
 
   // Assert default sort indicator present (geolocation OR alphabetic fallback)
@@ -169,10 +192,6 @@ test("Step 3 — Cart shows 2 vendor groups with seller headers and per-vendor t
 
   // Assert cart has 2 vendor groups
   const vendorGroups = page.locator('[data-testid="vendor-cart-group"]')
-  await expect(vendorGroups).toHaveCount(
-    await vendorGroups.count() >= 2 ? await vendorGroups.count() : 2,
-    { timeout: 10_000 },
-  )
   expect(await vendorGroups.count()).toBeGreaterThanOrEqual(2)
 
   // Assert each group has a seller handle header
@@ -191,24 +210,32 @@ test("Step 3 — Cart shows 2 vendor groups with seller headers and per-vendor t
 test("Step 4 — Checkout order confirmation shows multi-vendor order_set splits", async ({
   page,
 }) => {
-  // Navigate to checkout directly (assumes cart from step 3 persists via cookie)
-  await page.goto(p.checkout)
+  // Self-contained: populate cart with 2 products from different sellers.
+  const seedResult = await findProductsFromMultipleSellers(2)
+  if (!seedResult) {
+    console.warn("[DEFERRED] Not enough multi-seller products — Step 4 skipped.")
+    test.skip()
+    return
+  }
 
-  // Assert checkout page loaded
+  const [handle1, handle2] = seedResult.productHandles
+  for (const handle of [handle1, handle2]) {
+    await page.goto(p.product(handle))
+    const addToCartBtn = page.locator(
+      '[data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")',
+    )
+    await expect(addToCartBtn).toBeVisible({ timeout: 10_000 })
+    await addToCartBtn.click()
+  }
+
+  await page.goto(p.checkout)
   await expect(page).toHaveURL(/checkout/, { timeout: 10_000 })
 
-  // Assert multi-vendor order summary / order_set splits are shown
-  // This renders when flag === 'on' and cart has multiple vendors
+  // Assert multi-vendor order summary / order_set splits visible.
   const orderSetSplits = page
     .locator('[data-testid="order-set-splits"]')
     .or(page.locator('[data-testid="multi-vendor-order-summary"]'))
-  // Soft-assert: structure may vary by checkout progress step
-  const hasSplits = await orderSetSplits.count() > 0
-  if (!hasSplits) {
-    console.warn(
-      "[WARN] order-set-splits not found at checkout entry — may appear post-payment",
-    )
-  }
+  await expect(orderSetSplits.first()).toBeVisible({ timeout: 10_000 })
 })
 
 /* ---------------------------------------------------------------------------
@@ -283,13 +310,16 @@ test("Step 6 — Audit log contains claim_initiated and voucher_downloaded entri
   const auditEntries = page.locator('[data-testid^="audit-entry-"]')
   expect(await auditEntries.count()).toBeGreaterThanOrEqual(1)
 
-  // Assert PII-stripped: no email/full-name in audit entries text
+  // Assert PII-stripped: no raw email or phone in audit entries text.
   const auditText = await auditTrail.textContent()
   if (auditText) {
-    // Rough PII check: no @ sign in audit trail (email must be masked)
     const hasRawEmail = /@[a-z]/.test(auditText)
-    if (hasRawEmail) {
-      console.warn("[WARN] Possible PII leak: @ detected in audit trail text")
-    }
+    expect(hasRawEmail).toBe(false)
+
+    const hasRawPhone = /\+48\d{9}/.test(auditText)
+    expect(hasRawPhone).toBe(false)
+
+    // Recipient name must be masked — test fixture names must not appear verbatim.
+    expect(auditText).not.toContain(TEST_RECIPIENT.firstName + " " + TEST_RECIPIENT.lastName)
   }
 })
