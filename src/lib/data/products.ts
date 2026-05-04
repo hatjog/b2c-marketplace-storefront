@@ -96,9 +96,8 @@ export const listProducts = async ({
     ...(includeSellerContext
       ? [
           '*seller.products',
-          '*seller.reviews',
-          '*seller.reviews.customer',
-          '*seller.reviews.seller',
+          // '*seller.reviews' — causes backend 500 (Mercur 2 SellerReview expansion
+          // not supported on /store/products; reviews fetched separately on seller page).
           '*seller.products.variants',
         ]
       : []),
