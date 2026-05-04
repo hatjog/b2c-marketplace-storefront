@@ -7,6 +7,14 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 
 import { CrossSellSection } from '../CrossSellSection';
 
+const isSellerActive = (seller: { status?: string; store_status?: string } | null | undefined) => {
+  if (!seller) {
+    return true;
+  }
+
+  return seller.status === 'open' || seller.store_status === 'ACTIVE';
+};
+
 export const ProductDetailsPage = async ({
   handle,
   locale
@@ -22,7 +30,7 @@ export const ProductDetailsPage = async ({
 
   if (!prod) return NotFound();
 
-  if (prod.seller && prod.seller.store_status !== 'ACTIVE') {
+  if (!isSellerActive(prod.seller)) {
     return NotFound();
   }
 
