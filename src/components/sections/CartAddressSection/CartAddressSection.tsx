@@ -86,11 +86,7 @@ export const CartAddressSection = ({
           </Text>
         )}
       </div>
-      <form
-        action={async data => {
-          await formAction(data);
-        }}
-      >
+      <form action={formAction}>
         {isOpen ? (
           <div className="pb-8">
             <ShippingAddress
@@ -100,6 +96,7 @@ export const CartAddressSection = ({
               cart={cart}
             />
             <Button
+              type="submit"
               className="mt-6 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
               data-testid="submit-address-button"
               variant="tonal"

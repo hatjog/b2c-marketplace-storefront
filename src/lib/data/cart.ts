@@ -575,7 +575,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     if (!formData) {
       throw new Error('No form data found when setting addresses');
     }
-    const cartId = getCartId();
+    const cartId = await getCartId();
     if (!cartId) {
       throw new Error('No existing cart found when setting addresses');
     }
