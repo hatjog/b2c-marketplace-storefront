@@ -107,7 +107,25 @@ async function handleClaimPost(req) {
     const body = await req.clone().text();
     const url = req.url;
     const queuedAt = new Date().toISOString();
-    const id = crypto.randomUUID ? crypto.randomUUID() : `q-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    // Sub-bundle 6b (cleanup-6 CRIT-6.2): fail closed — NEVER fall back to
+    // Math.random for idempotency keys. Math.random is not cryptographically
+    // random and enables replay attacks across tabs/devices/sessions.
+    // If crypto.randomUUID is unavailable (non-secure context), do NOT enqueue
+    // and return a 503 so the client retries when connectivity is restored.
+    if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+      return new Response(
+        JSON.stringify({
+          error: 'crypto_unavailable',
+          message: 'Cannot generate idempotency key — crypto.randomUUID not available. Request not queued.'
+        }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    const id = crypto.randomUUID();
 
     await enqueueClaim({ id, url, body, queuedAt, retryCount: 0 });
 
