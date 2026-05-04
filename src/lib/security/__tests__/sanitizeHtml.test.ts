@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 
-import { sanitizeHtml } from '../sanitizeHtml';
+import { sanitizeHtml, ALLOWED_URI_REGEXP, SANITIZE_VERSION } from '../sanitizeHtml';
 
 describe('sanitizeHtml — Story v160-4-7 anti-Booksy whitelist', () => {
   it('AC5(a) preserves allowed formatting tags (<p>, <strong>)', () => {
@@ -92,5 +92,91 @@ describe('sanitizeHtml — Story v160-4-7 anti-Booksy whitelist', () => {
     expect(out).toContain('<li>');
     expect(out).toContain('<em>Massage</em>');
     expect(out).toContain('<strong>Manicure</strong>');
+  });
+});
+
+describe('sanitizeHtml — Story v160-cleanup-4 bypass fixtures (CRIT-7.3 + HIGH-4.1)', () => {
+  // ─── AC5(a): entity-encoded XSS ───────────────────────────────────────────
+  it('strips entity-encoded <script> tag (CRIT-7.3)', () => {
+    const out = sanitizeHtml('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(out.toLowerCase()).not.toContain('<script');
+    expect(out).not.toContain('alert(1)');
+  });
+
+  it('strips entity-encoded onerror attribute (CRIT-7.3)', () => {
+    const out = sanitizeHtml('&lt;img src=x onerror="alert(1)"&gt;');
+    expect(out).not.toContain('alert(1)');
+    expect(out.toLowerCase()).not.toContain('onerror');
+  });
+
+  // ─── AC5(b): mXSS HTML comment bypass ─────────────────────────────────────
+  it('strips HTML comments — mXSS prevention (CRIT-7.3)', () => {
+    const out = sanitizeHtml('<!--<script>alert(1)//--><img src=x onerror=alert(1)>');
+    expect(out).not.toContain('<!--');
+    expect(out).not.toContain('-->');
+    expect(out.toLowerCase()).not.toContain('<script');
+    expect(out.toLowerCase()).not.toContain('onerror');
+  });
+
+  it('strips IE conditional comments (CRIT-7.3)', () => {
+    const out = sanitizeHtml('<!--[if lt IE 9]><script>alert(1)</script><![endif]-->');
+    expect(out).not.toContain('<!--');
+    expect(out.toLowerCase()).not.toContain('alert');
+  });
+
+  // ─── AC5(c): formaction on anchor ─────────────────────────────────────────
+  it('strips formaction from <a> (CRIT-7.3)', () => {
+    const out = sanitizeHtml('<a formaction="javascript:alert(1)" href="https://example.com">click</a>');
+    expect(out.toLowerCase()).not.toContain('formaction');
+    expect(out).not.toContain('alert(1)');
+    expect(out).toContain('href="https://example.com"');
+  });
+
+  // ─── AC5(d): title= phishing + mixed-case javascript href ─────────────────
+  it('strips title from <a> — URL-shadow phishing prevention (HIGH-4.1)', () => {
+    const out = sanitizeHtml('<a title="https://evil.com" href="https://safe.com">click</a>');
+    expect(out.toLowerCase()).not.toContain('title=');
+  });
+
+  it('neutralises javascript: href with mixed-case attributes (HIGH-4.1)', () => {
+    const out = sanitizeHtml('<a TITLE="x" HREF="javascript:alert(1)">click</a>');
+    expect(out.toLowerCase()).not.toContain('javascript:');
+    expect(out.toLowerCase()).not.toContain('title=');
+  });
+
+  // ─── AC6: ALLOWED_URI_REGEXP ───────────────────────────────────────────────
+  it('ALLOWED_URI_REGEXP rejects javascript:', () => {
+    expect(ALLOWED_URI_REGEXP.test('javascript:alert(1)')).toBe(false);
+  });
+
+  it('ALLOWED_URI_REGEXP rejects data:', () => {
+    expect(ALLOWED_URI_REGEXP.test('data:text/html,payload')).toBe(false);
+  });
+
+  it('ALLOWED_URI_REGEXP rejects vbscript:', () => {
+    expect(ALLOWED_URI_REGEXP.test('vbscript:msgbox(1)')).toBe(false);
+  });
+
+  it('ALLOWED_URI_REGEXP rejects file:', () => {
+    expect(ALLOWED_URI_REGEXP.test('file:///etc/passwd')).toBe(false);
+  });
+
+  it('ALLOWED_URI_REGEXP allows https:', () => {
+    expect(ALLOWED_URI_REGEXP.test('https://example.com')).toBe(true);
+  });
+
+  it('ALLOWED_URI_REGEXP allows mailto:', () => {
+    expect(ALLOWED_URI_REGEXP.test('mailto:test@example.com')).toBe(true);
+  });
+
+  it('ALLOWED_URI_REGEXP allows relative paths', () => {
+    expect(ALLOWED_URI_REGEXP.test('/relative/path')).toBe(true);
+    expect(ALLOWED_URI_REGEXP.test('relative/path')).toBe(true);
+    expect(ALLOWED_URI_REGEXP.test('#anchor')).toBe(true);
+  });
+
+  // ─── SANITIZE_VERSION ─────────────────────────────────────────────────────
+  it('SANITIZE_VERSION bumped to cleanup4-dompurify', () => {
+    expect(SANITIZE_VERSION).toContain('cleanup4-dompurify');
   });
 });
