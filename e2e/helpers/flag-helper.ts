@@ -1,19 +1,19 @@
 /**
  * Flag helper — Story v160-8-8
  *
- * Wraps the test-only backend route POST /admin/test/flag-toggle
+ * Wraps the test-only backend route POST /admin/e2e-flag-toggle
  * to read and write the multi-vendor flag state during E2E tests.
  *
  * The backend endpoint is gated by:
  *   - NODE_ENV !== 'production'
  *   - X-Test-Mode: true header
  *
- * @see GP/backend/packages/api/src/api/admin/test/flag-toggle/route.ts
+ * @see GP/backend/packages/api/src/api/admin/e2e-flag-toggle/route.ts
  * @see specs/operator/pre-promote-smoke-checklist.md
  */
 
 const BACKEND_BASE = process.env.BACKEND_BASE_URL ?? "http://localhost:9002"
-const FLAG_TOGGLE_URL = `${BACKEND_BASE}/admin/test/flag-toggle`
+const FLAG_TOGGLE_URL = `${BACKEND_BASE}/admin/e2e-flag-toggle`
 // Use the same test route for reads (GET) so both ops share identical auth guards.
 const FLAG_STATUS_URL = FLAG_TOGGLE_URL
 
