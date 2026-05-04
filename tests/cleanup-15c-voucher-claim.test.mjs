@@ -270,4 +270,15 @@ describe('AC5 static: voucher-claim.ts source has no { ok: true } stub for missi
       );
     }
   });
+
+  test('idempotency_key is HMAC-derived, not a bare random UUID', () => {
+    assert.ok(
+      claimSrc.includes('createHmac('),
+      'voucher-claim.ts must derive idempotency_key via HMAC'
+    );
+    assert.ok(
+      !claimSrc.includes('const idempotencyKey = randomUUID();'),
+      'voucher-claim.ts must not use a bare randomUUID() as idempotency_key'
+    );
+  });
 });

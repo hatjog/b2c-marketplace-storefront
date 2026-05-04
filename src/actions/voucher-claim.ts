@@ -12,9 +12,9 @@
  * cleanup-15c (AC5): stub fallthrough removed — if backend is unavailable,
  * the action returns a structured error. No `{ ok: true }` masquerade.
  *
- * Request includes HMAC binding metadata:
- *   { code, locale, recipient_session, idempotency_key, claimed_at }
- * backend validates the binding per CRIT-2 spec.
+ * Request includes HMAC-bound idempotency metadata:
+ *   idempotency_key = HMAC(secret, code|recipient_session|claimed_at)
+ * backend validates the binding on the first claim and on replays.
  *
  * AR45 boundary: `recipient_session` is an opaque client-side UUID — no
  * name/email/phone crosses this boundary. Only code + locale + session UUID.
@@ -28,7 +28,7 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { randomUUID } from 'crypto';
+import { createHmac, randomUUID } from 'crypto';
 
 export type ClaimVoucherState =
   | 'idle'
@@ -58,6 +58,24 @@ function resolveBackendUrl(): string | null {
   );
 }
 
+function resolveClaimBindingSecret(): string | null {
+  return process.env.GP_VOUCHER_CLAIM_HMAC_SECRET ?? process.env.JWT_SECRET ?? null;
+}
+
+function computeClaimBinding(
+  code: string,
+  recipientSession: string,
+  claimedAt: string
+): string | null {
+  const secret = resolveClaimBindingSecret();
+  if (!secret) return null;
+  if (code.includes('|') || recipientSession.includes('|')) return null;
+
+  return createHmac('sha256', Buffer.from(secret, 'utf8'))
+    .update(`${code}|${recipientSession}|${claimedAt}`, 'utf8')
+    .digest('hex');
+}
+
 export async function claimVoucher(formData: FormData): Promise<ClaimVoucherResult> {
   const code = String(formData.get('code') ?? '').trim();
   const locale = String(formData.get('locale') ?? 'pl').trim();
@@ -82,7 +100,15 @@ export async function claimVoucher(formData: FormData): Promise<ClaimVoucherResu
   }
 
   const claimedAt = new Date().toISOString();
-  const idempotencyKey = randomUUID();
+  const idempotencyKey = computeClaimBinding(code, recipientSession, claimedAt);
+
+  if (!idempotencyKey) {
+    return {
+      ok: false,
+      state: 'error-claim-failed',
+      error: 'binding_secret_unavailable'
+    };
+  }
 
   try {
     const response = await fetch(
