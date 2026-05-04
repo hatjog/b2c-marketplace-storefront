@@ -48,7 +48,12 @@ export const SellerSelectorCartBridge = ({
     (sellerId: string) => {
       const match = sellers.find((s) => s.seller_id === sellerId);
       if (match) {
-        setSelectedSeller({ id: match.seller_id, name: match.seller_name });
+        setSelectedSeller({
+          id: match.seller_id,
+          name: match.seller_name,
+          // cleanup-12d AC1 — propagate handle for cart group link.
+          handle: match.seller_handle ?? null,
+        });
       } else {
         setSelectedSeller(null);
       }

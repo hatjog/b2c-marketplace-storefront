@@ -49,7 +49,8 @@ export const ProductDetailsHeader = ({
     cart,
     isAddingItem,
     selectedSellerId,
-    selectedSellerName
+    selectedSellerName,
+    selectedSellerHandle,
   } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
@@ -126,7 +127,9 @@ export const ProductDetailsHeader = ({
         // Story 5.5 — propagate multi-vendor seller selection;
         // null when flag OFF → metadata not attached → legacy flow.
         selectedSellerId,
-        selectedSellerName
+        selectedSellerName,
+        // cleanup-12d AC1 — propagate seller handle.
+        selectedSellerHandle,
       });
     } catch {
       toast.error({

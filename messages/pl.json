@@ -143,7 +143,8 @@
       "no_active_vendors_title": "Salon przygotowuje ofertę",
       "no_active_vendors_message": "Sprzedawcy aktualizują dostępność. Zajrzyj wkrótce lub powiadomimy Cię gdy oferta będzie dostępna.",
       "back_to_list_cta": "Powrót do listy",
-      "notify_me_cta": "Powiadom mnie"
+      "notify_me_cta": "Powiadom mnie",
+      "sole_vendor_label": "Wyłączny sprzedawca"
     },
     "status": {
       "pending_approval": "Oczekuje na zatwierdzenie",

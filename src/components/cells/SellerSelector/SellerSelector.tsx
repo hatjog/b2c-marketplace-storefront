@@ -263,7 +263,8 @@ export const SellerSelector = ({
                   ? 'border-action bg-component-secondary-hover'
                   : 'border-tertiary hover:border-secondary',
               )}
-              data-testid={`seller-option-${seller.seller_id}`}
+              data-testid="seller-option"
+              data-seller-id={seller.seller_id}
               data-selected={isSelected || undefined}
             >
               <input
