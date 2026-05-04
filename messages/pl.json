@@ -170,6 +170,10 @@
       "flag_changed_message": "Ustawienia oferty wielosprzedawcowej zostały zmienione w trakcie Twojego zamówienia. Sprawdź zawartość koszyka i spróbuj ponownie.",
       "review_cart_cta": "Przejdź do koszyka",
       "flag_changed_close_cta": "Zamknij"
+    },
+    "multi_vendor": {
+      "indicator_label": "{count} salonów oferuje",
+      "indicator_tooltip": "Ten produkt oferowany przez {count} salonów partnerskich"
     }
   },
   "footer": {
@@ -499,7 +503,11 @@
     "continue_to_payment": "Kontynuuj do płatności",
     "choose_delivery_option": "Wybierz opcję dostawy",
     "place_order": "Złóż zamówienie",
-    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty"
+    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty",
+    "order_set_summary": {
+      "heading": "Podział zamówienia na salony",
+      "unknown_seller": "Salon"
+    }
   },
   "confirmation": {
     "loading": "Ładowanie...",

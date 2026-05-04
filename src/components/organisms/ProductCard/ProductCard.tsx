@@ -16,8 +16,7 @@ import type { MultiVendorPricingFields, Product } from '@/types/product';
  * Default OFF (`'false'`) → badge hidden across whole app.
  * Phase B activation (post-v1.6.0) flips this to surface lowest-price prefix.
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
+const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
 const PLACEHOLDER_CDN_HOST = 'cdn.example.com';
 const PLACEHOLDER_IMAGE_SRC = '/images/placeholder.svg';
@@ -172,24 +171,34 @@ export const ProductCard = ({
             </div>
           </div>
           {showPrice && (
-            <div className="flex items-center gap-2" data-testid="product-card-price">
+            <div className="flex flex-col gap-1" data-testid="product-card-price">
               {MULTI_VENDOR_PRICING_ENABLED &&
-                typeof (product as Product & MultiVendorPricingFields).vendor_count === 'number' &&
-                typeof (product as Product & MultiVendorPricingFields).lowest_price_pln === 'number' && (
-                  <LowestPriceBadge
+                typeof (product as Product & MultiVendorPricingFields).vendor_count === 'number' && (
+                  <MultiVendorIndicator
                     vendorCount={
                       (product as Product & MultiVendorPricingFields).vendor_count as number
                     }
                   />
                 )}
-              <p className="text-lg font-medium text-primary" data-testid="product-card-current-price">
-                {cheapestPrice?.calculated_price}
-              </p>
-              {cheapestPrice?.calculated_price !== cheapestPrice?.original_price && (
-                <p className="text-sm text-gray-500 line-through" data-testid="product-card-original-price">
-                  {cheapestPrice?.original_price}
+              <div className="flex items-center gap-2">
+                {MULTI_VENDOR_PRICING_ENABLED &&
+                  typeof (product as Product & MultiVendorPricingFields).vendor_count === 'number' &&
+                  typeof (product as Product & MultiVendorPricingFields).lowest_price_pln === 'number' && (
+                    <LowestPriceBadge
+                      vendorCount={
+                        (product as Product & MultiVendorPricingFields).vendor_count as number
+                      }
+                    />
+                  )}
+                <p className="text-lg font-medium text-primary" data-testid="product-card-current-price">
+                  {cheapestPrice?.calculated_price}
                 </p>
-              )}
+                {cheapestPrice?.calculated_price !== cheapestPrice?.original_price && (
+                  <p className="text-sm text-gray-500 line-through" data-testid="product-card-original-price">
+                    {cheapestPrice?.original_price}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </LocalizedClientLink>
