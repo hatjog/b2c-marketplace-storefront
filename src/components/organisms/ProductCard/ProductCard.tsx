@@ -21,8 +21,12 @@ import type { MultiVendorPricingFields, Product } from '@/types/product';
  * cleanup-12f: added missing import for isMultiVendorEnabled (was causing
  * ReferenceError at SSR module evaluation — ProductCard was calling the function
  * without importing it).
+ *
+ * cleanup-13c: gate moved inside component body so SSR-time runtime cache
+ * (warmed by parent server component) is consulted at render-time, not at
+ * module-init. Backend tri-state flag toggle now effectively gates this UI
+ * without rebuilding.
  */
-const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
 const PLACEHOLDER_CDN_HOST = 'cdn.example.com';
 const PLACEHOLDER_IMAGE_SRC = '/images/placeholder.svg';
@@ -70,6 +74,9 @@ export const ProductCard = ({
   if (!product) {
     return null;
   }
+
+  // cleanup-13c: render-time gate (consults runtime cache when warm).
+  const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
   // Story v160-4-6: build product href with optional `?from=seller:` suffix.
   const fromQuery =

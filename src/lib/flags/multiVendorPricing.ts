@@ -28,11 +28,112 @@ import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
  * comparison — all other values (including 'false', '1', 'on', undefined) return
  * false. Defaults to false (production-safe OFF).
  *
- * Phase B+: when admin-DB flag tri-state is wired, extend this function to also
- * return true for `('on', 'shadow')` states from the live admin API.
+ * STORY v160-cleanup-13c: This synchronous helper now ALSO consults the
+ * runtime cache (`_runtimeFlagCache`). If a recent successful runtime probe
+ * resolved 'off', this returns false EVEN IF the build-baked env says true.
+ * This lets the backend tri-state flag toggle effectively gate the storefront
+ * without rebuilding (Story 8.8 AC7 snapshot-off guard).
+ *
+ * Refresh cadence: callers should invoke `isMultiVendorEnabledRuntime()`
+ * (async) on server boundaries (RSC root layouts, page-level fetches) before
+ * downstream sync `isMultiVendorEnabled()` calls. Cache TTL = 30 s.
  */
 export function isMultiVendorEnabled(): boolean {
-  return getCurrentFlagValue();
+  const buildBaked = getCurrentFlagValue();
+  const runtime = _peekRuntimeFlag();
+  // Runtime override — only when fresh AND backend explicitly returned 'off'.
+  if (runtime !== null && runtime === false) return false;
+  // Runtime explicitly true — also AND with build-baked (defense-in-depth: a
+  // build that omitted the env var should NOT silently render MV UI on a
+  // runtime-on backend; ops must explicitly bake the env to surface it).
+  return buildBaked;
+}
+
+// ---------------------------------------------------------------------------
+// Runtime gate (Story v160-cleanup-13c)
+// ---------------------------------------------------------------------------
+
+interface RuntimeFlagCache {
+  value: boolean;
+  fetchedAt: number;
+}
+
+const RUNTIME_TTL_MS = 30_000;
+let _runtimeFlagCache: RuntimeFlagCache | null = null;
+
+/** Peek at cached runtime flag value if fresh; otherwise null. */
+function _peekRuntimeFlag(): boolean | null {
+  if (!_runtimeFlagCache) return null;
+  if (Date.now() - _runtimeFlagCache.fetchedAt > RUNTIME_TTL_MS) return null;
+  return _runtimeFlagCache.value;
+}
+
+function _backendBaseUrl(): string {
+  return (
+    process.env.MEDUSA_BACKEND_URL ||
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+    process.env.BACKEND_BASE_URL ||
+    'http://localhost:9002'
+  );
+}
+
+function _publishableKey(): string | null {
+  return (
+    process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+    process.env.MEDUSA_PUBLISHABLE_KEY ||
+    null
+  );
+}
+
+/**
+ * Resolves the multi-vendor flag from the backend `/store/feature-flags`
+ * endpoint, caches result for 30 s, and returns the AND of (build-baked &&
+ * (runtime !== 'off')) for callers preferring async resolution.
+ *
+ * Fallback semantics: if the backend is unreachable or the response is
+ * malformed, returns the build-baked value (graceful degradation — storefront
+ * keeps working with stale gate during backend outages).
+ */
+export async function isMultiVendorEnabledRuntime(): Promise<boolean> {
+  const buildBaked = getCurrentFlagValue();
+
+  // Cache hit shortcut.
+  const cached = _peekRuntimeFlag();
+  if (cached !== null) {
+    if (cached === false) return false;
+    return buildBaked;
+  }
+
+  try {
+    const base = _backendBaseUrl();
+    const pk = _publishableKey();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (pk) headers['x-publishable-api-key'] = pk;
+
+    const res = await fetch(`${base}/store/feature-flags`, {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      // Don't cache errors — leave window for a healthy retry sooner.
+      return buildBaked;
+    }
+    const body = (await res.json()) as { multi_vendor_pdp?: string };
+    const state = body.multi_vendor_pdp;
+    const enabled = state === 'on' || state === 'shadow';
+    _runtimeFlagCache = { value: enabled, fetchedAt: Date.now() };
+    if (!enabled) return false;
+    return buildBaked;
+  } catch {
+    // Network / parse error — fallback to build-baked.
+    return buildBaked;
+  }
+}
+
+/** Test helper — invalidates the runtime cache. */
+export function _invalidateRuntimeFlagCache(): void {
+  _runtimeFlagCache = null;
 }
 
 /**

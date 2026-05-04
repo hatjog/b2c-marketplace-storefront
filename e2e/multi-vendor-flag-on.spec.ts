@@ -65,8 +65,16 @@ let previousFlagState: MultiVendorFlagState = "on"
  * Story v160-cleanup-12f AC4: Claim token extracted by Step 4 and shared
  * with Steps 5+6. Falls back to process.env.E2E_CLAIM_TOKEN if pre-set
  * (manual override for partial-run scenarios).
+ *
+ * Story v160-cleanup-13b: in v1.6.0 the backend voucher data is fixture-backed
+ * (`src/lib/voucher-fixture-store.ts`) until Mercur 2 native voucher entity
+ * lands (v1.7.0). When no real claim token is captured by Step 4, Steps 5+6
+ * fall back to the deterministic CLAIMED fixture code so the claim page
+ * render contract is exercised end-to-end.
  */
-let sharedClaimToken: string | null = process.env.E2E_CLAIM_TOKEN ?? null
+const E2E_CLAIMED_FIXTURE_CODE = "E2E-CLAIMED-VOUCHER-002"
+let sharedClaimToken: string | null =
+  process.env.E2E_CLAIM_TOKEN ?? E2E_CLAIMED_FIXTURE_CODE
 
 /* ---------------------------------------------------------------------------
  * Setup & teardown
@@ -321,6 +329,13 @@ test("Step 6 — Audit log contains claim_initiated and voucher_downloaded entri
   // Assert audit trail entries
   const auditTrail = page.locator('[data-testid="audit-trail-molecule"]')
   await expect(auditTrail).toBeVisible({ timeout: 10_000 })
+
+  // Story v160-cleanup-13b: VoucherAuditTrail molecule wraps entries in a
+  // collapsed <details> — open it before asserting visibility.
+  const summary = auditTrail.locator("summary").first()
+  if (await summary.count() > 0) {
+    await summary.click()
+  }
 
   // Story v160-cleanup-12f: event type names aligned to Epic 6 / VoucherAuditEventType:
   //   "claimed" (not "claim_initiated") — matches backend + type system.

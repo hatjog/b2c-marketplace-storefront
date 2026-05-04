@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Cart } from '@/components/sections';
+import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('page');
@@ -14,6 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CartPage({}) {
+  // Story v160-cleanup-13c — warm runtime feature-flag cache.
+  await isMultiVendorEnabledRuntime();
   const t = await getTranslations('page');
   return (
     <main id="main-content" className="container grid grid-cols-12">
