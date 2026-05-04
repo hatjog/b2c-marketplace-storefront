@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
 import { CartAddressSection } from '@/components/sections/CartAddressSection/CartAddressSection';
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
@@ -12,6 +13,7 @@ import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 import { listCartPaymentMethods } from '@/lib/data/payment';
 
 export const metadata: Metadata = {
@@ -74,9 +76,12 @@ async function CheckoutPageContent({}) {
           </div>
 
           <div
-            className="lg:sticky lg:top-6 lg:self-start"
+            className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start"
             data-testid="checkout-review-container"
           >
+            {isMultiVendorEnabled() && (
+              <MultiVendorOrderSummary cart={cart} />
+            )}
             <CartReview cart={cart} />
           </div>
         </div>
