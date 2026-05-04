@@ -4,7 +4,7 @@
 - Sprawdzaj faktyczne wersje w `package.json`; nie traktuj tego pliku jako SSOT wersji.
 - Next.js App Router, React, TypeScript, Tailwind 3.
 - Testy jednostkowe używają skryptu `test` z `package.json`.
-- i18n: locales `[locale]/(main)/...` (pl, en, ua, de)
+- i18n: locales `[locale]/(main)/...` — **2 active in v1.6.0: `pl` (default), `en`**. UA/DE deferred to v1.7.0+ (story `v160-cleanup-7-locale-honesty`). `messages/` ships only `pl.json` + `en.json`; `SUPPORTED_LOCALES` in `src/i18n/routing.ts` is the SSOT.
 
 ## Struktura
 - `src/app/[locale]/(main)/` — pages (categories, products, sellers, cart, user, blog, collections, order)
