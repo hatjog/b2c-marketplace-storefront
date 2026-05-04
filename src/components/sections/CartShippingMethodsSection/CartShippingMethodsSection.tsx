@@ -61,6 +61,28 @@ type ShippingProps = {
   availableShippingMethods: AvailableShippingMethod[] | null;
 };
 
+function normalizeAvailableShippingMethods(value: unknown): AvailableShippingMethod[] {
+  if (Array.isArray(value)) {
+    return value as AvailableShippingMethod[];
+  }
+
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+
+  const outer = (value as { shipping_options?: unknown }).shipping_options;
+  if (Array.isArray(outer)) {
+    return outer as AvailableShippingMethod[];
+  }
+
+  if (!outer || typeof outer !== 'object') {
+    return [];
+  }
+
+  const inner = (outer as { shipping_options?: unknown }).shipping_options;
+  return Array.isArray(inner) ? (inner as AvailableShippingMethod[]) : [];
+}
+
 const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShippingMethods }) => {
   const t = useTranslations('checkout');
   const tCommon = useTranslations('common');
@@ -91,7 +113,9 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     return { id, name };
   })();
 
-  const _shippingMethods = availableShippingMethods?.filter(
+  const normalizedShippingMethods = normalizeAvailableShippingMethods(availableShippingMethods);
+
+  const _shippingMethods = normalizedShippingMethods.filter(
     sm => sm.rules?.find((rule: any) => rule.attribute === 'is_return')?.value !== 'true'
   );
 
@@ -122,7 +146,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
         });
       }
     }
-  }, [availableShippingMethods, _shippingMethods, cart.id]);
+  }, [normalizedShippingMethods, _shippingMethods, cart.id]);
 
   const handleSubmit = () => {
     router.push(pathname + '?step=payment', { scroll: false });

@@ -17,7 +17,10 @@ export const listCartShippingMethods = async (cartId: string, _is_return: boolea
   };
 
   return sdk.client
-    .fetch<{ shipping_options: StoreCardShippingMethod[] | null }>(`/store/shipping-options`, {
+    .fetch<
+      | { shipping_options: StoreCardShippingMethod[] | null }
+      | { shipping_options?: { shipping_options?: StoreCardShippingMethod[] | null } | null }
+    >(`/store/shipping-options`, {
       method: 'GET',
       query: {
         cart_id: cartId,
@@ -28,7 +31,21 @@ export const listCartShippingMethods = async (cartId: string, _is_return: boolea
       next,
       cache: 'no-cache'
     })
-    .then(({ shipping_options }) => shipping_options)
+    .then((body) => {
+      if (Array.isArray((body as { shipping_options?: StoreCardShippingMethod[] | null }).shipping_options)) {
+        return (body as { shipping_options: StoreCardShippingMethod[] }).shipping_options
+      }
+
+      const nested = (body as {
+        shipping_options?: { shipping_options?: StoreCardShippingMethod[] | null } | null
+      }).shipping_options
+
+      if (Array.isArray(nested?.shipping_options)) {
+        return nested.shipping_options
+      }
+
+      return null
+    })
     .catch(() => {
       return null;
     });
