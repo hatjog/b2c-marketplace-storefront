@@ -2,11 +2,18 @@ import type { HttpTypes } from '@medusajs/types';
 import * as Sentry from '@sentry/nextjs';
 
 import type { SellerProps } from '@/types/seller';
+import type { MultiVendorPricingFields } from '@/types/product';
 import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpField } from '@/lib/helpers/metadata-utils';
 
-export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null };
+/**
+ * Story cleanup-12c — ListedProduct widened with MultiVendorPricingFields so
+ * that `vendor_offers`, `vendor_count`, and `lowest_price_pln` returned by
+ * the backend middleware (cleanup-12a) flow through the normalizer without
+ * being stripped by spread operations. AC1.
+ */
+export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null } & MultiVendorPricingFields;
 
 const MIN_DESCRIPTION_WORDS = 80;
 

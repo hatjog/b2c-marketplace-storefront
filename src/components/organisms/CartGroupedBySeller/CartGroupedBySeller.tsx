@@ -33,6 +33,7 @@ interface CartGroupedBySellerProps {
   /** Show quantity edit per line item (cart page = true; review = false). */
   change_quantity?: boolean;
   /** Show subtotal per seller group footer (default true on review surfaces). */
+  /** cleanup-12d AC3: defaults to true so cart page always shows per-vendor totals. */
   show_subtotal?: boolean;
 }
 
@@ -40,7 +41,7 @@ export const CartGroupedBySeller = async ({
   cart,
   delete_item = true,
   change_quantity = true,
-  show_subtotal = false,
+  show_subtotal = true,
 }: CartGroupedBySellerProps) => {
   const t = await getTranslations('seller.cart');
 
@@ -70,10 +71,14 @@ export const CartGroupedBySeller = async ({
         return (
           <section
             key={groupKey}
-            data-testid={`cart-grouped-by-seller-${groupKey}`}
+            data-testid="vendor-cart-group"
+            data-seller-id={groupKey}
             className="mb-4 rounded-sm border"
           >
-            <header className="flex items-center justify-between gap-4 border-b p-4">
+            <header
+              data-testid="vendor-group-header"
+              className="flex items-center justify-between gap-4 border-b p-4"
+            >
               <h3 className="heading-xs uppercase">{headerLabel}</h3>
               {group.seller?.handle && (
                 <LocalizedClientLink
@@ -96,7 +101,7 @@ export const CartGroupedBySeller = async ({
             {subtotalFormatted && (
               <footer
                 className="border-t p-4 text-right"
-                data-testid={`cart-group-subtotal-${groupKey}`}
+                data-testid="vendor-group-total"
               >
                 <p className="label-md text-secondary">
                   {t('subtotal_per_seller', { amount: subtotalFormatted })}

@@ -234,8 +234,9 @@ export async function getOrSetCart(countryCode: string) {
   // completion lub cleanup). Defensive: zero crash gdy persistence fails
   // (fail-open Phase A — backend mor-policy retains FM-9 guarantee per
   // ADR-088-reassess).
+  // cleanup-12d AC4 — TOCTOU guard: re-read before write (first-writer-wins).
   const existingSnapshot = readFlagSnapshotFromCart(cart);
-  if (!existingSnapshot) {
+  if (!existingSnapshot && cart) {
     try {
       const snapshot = snapshotFlagAtCartStart();
       const cartUpdateResp = await sdk.store.cart.update(
@@ -315,7 +316,8 @@ export async function addToCart({
   quantity,
   countryCode,
   selectedSellerId,
-  selectedSellerName
+  selectedSellerName,
+  selectedSellerHandle,
 }: {
   variantId: string;
   quantity: number;
@@ -326,6 +328,8 @@ export async function addToCart({
   /** Denormalized seller name dla cart UI (zero extra fetch w cart render);
    *  Story 5.5 — paired z selectedSellerId. */
   selectedSellerName?: string | null;
+  /** cleanup-12d AC1 — seller handle for cart group link. */
+  selectedSellerHandle?: string | null;
 }) {
   if (!variantId) {
     throw new Error('Missing variant ID when adding to cart');
@@ -349,7 +353,9 @@ export async function addToCart({
     selectedSellerId && selectedSellerName
       ? {
           selected_seller_id: selectedSellerId,
-          selected_seller_name: selectedSellerName
+          selected_seller_name: selectedSellerName,
+          // cleanup-12d AC1 — persist handle gdy provided.
+          ...(selectedSellerHandle ? { selected_seller_handle: selectedSellerHandle } : {}),
         }
       : undefined;
 
