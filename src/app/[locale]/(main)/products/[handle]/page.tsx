@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { SalonContextChip, type SalonContextChipSeller } from '@/components/atoms/SalonContextChip/SalonContextChip';
 import { ProductDetailsPage } from '@/components/sections';
 import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
+import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
 import { getGpField } from '@/lib/helpers/metadata-utils';
@@ -63,6 +64,8 @@ export default async function ProductPage({
 }) {
   const { handle, locale } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  // Story v160-cleanup-13c — warm runtime feature-flag cache before sync gates.
+  await isMultiVendorEnabledRuntime();
   // Full product fetch (no field restriction) — variants include calculated_price + inventory_quantity
   const product = await fetchProductForPage(handle, locale);
 

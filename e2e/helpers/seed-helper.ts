@@ -10,6 +10,23 @@
 
 const BACKEND_BASE = process.env.BACKEND_BASE_URL ?? "http://localhost:9002"
 
+// Story v160-cleanup-13a — publishable-api-key is required for /store/* in
+// Mercur 2.1.1. Without it the store routes return 400 not_allowed and the
+// helper sees empty products (false-negative DEFERRED).
+const PUBLISHABLE_KEY =
+  process.env.E2E_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ??
+  // Default seeded BB market publishable key (matches gp-config + .env.local)
+  "pk_73cc512f8b76b8aed24c0dbf855b19388347822946480b8e6207684769ceb0f9"
+
+const STORE_HEADERS: Record<string, string> = {
+  Accept: "application/json",
+  "x-publishable-api-key": PUBLISHABLE_KEY,
+}
+
+// PLN region required by /store/products to compute calculated_price.
+const REGION_ID = process.env.E2E_REGION_ID ?? "reg_pln_pl"
+
 export interface SellerSummary {
   id: string
   handle: string
@@ -21,6 +38,13 @@ export interface ProductSummary {
   handle: string
   title: string
   seller?: { handle: string }
+  /** Multi-vendor resolver fields (cleanup-12a). */
+  vendor_count?: number
+  vendor_offers?: Array<{
+    seller_id: string
+    seller_handle: string
+    seller_name: string
+  }>
 }
 
 /**
@@ -30,7 +54,7 @@ export interface ProductSummary {
 export async function fetchSellers(): Promise<SellerSummary[]> {
   try {
     const res = await fetch(`${BACKEND_BASE}/store/sellers`, {
-      headers: { Accept: "application/json" },
+      headers: STORE_HEADERS,
     })
     if (!res.ok) return []
     const body = (await res.json()) as {
@@ -44,13 +68,15 @@ export async function fetchSellers(): Promise<SellerSummary[]> {
 }
 
 /**
- * Fetch products from the store API (first page).
+ * Fetch products from the store API (first page) with multi-vendor metadata
+ * fields preserved (cleanup-12a contract).
  */
 export async function fetchProducts(): Promise<ProductSummary[]> {
   try {
-    const res = await fetch(`${BACKEND_BASE}/store/products?limit=50`, {
-      headers: { Accept: "application/json" },
-    })
+    const res = await fetch(
+      `${BACKEND_BASE}/store/products?limit=50&region_id=${REGION_ID}&fields=handle,title,vendor_count,vendor_offers,*seller`,
+      { headers: STORE_HEADERS },
+    )
     if (!res.ok) return []
     const body = (await res.json()) as {
       products?: ProductSummary[]
@@ -122,6 +148,29 @@ export async function findProductsFromMultipleSellers(
   minSellerCount: number,
 ): Promise<{ productHandles: string[]; sellerHandles: string[] } | null> {
   const products = await fetchProducts()
+
+  // Story v160-cleanup-13a — preferred path: use the cleanup-12a contract.
+  // Each product carries `vendor_count` and `vendor_offers[]` when ≥2 sellers
+  // are linked. Pick products where vendor_count >= minSellerCount and use
+  // their `vendor_offers` to enumerate distinct seller handles.
+  const overlap = products.filter(
+    (p) => (p.vendor_count ?? 0) >= minSellerCount && Array.isArray(p.vendor_offers),
+  )
+  if (overlap.length > 0) {
+    const productHandles = overlap.map((p) => p.handle).filter(Boolean)
+    const sellerHandles = Array.from(
+      new Set(
+        overlap.flatMap(
+          (p) => p.vendor_offers?.map((o) => o.seller_handle).filter(Boolean) ?? [],
+        ),
+      ),
+    )
+    if (sellerHandles.length >= minSellerCount) {
+      return { productHandles, sellerHandles }
+    }
+  }
+
+  // Fallback (legacy single-seller schema): one product per seller-handle.
   const bySellerHandle = new Map<string, string>()
   for (const p of products) {
     const sellerHandle = p.seller?.handle

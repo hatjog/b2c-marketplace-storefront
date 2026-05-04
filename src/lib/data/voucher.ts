@@ -1,4 +1,4 @@
-import { mercurClient } from '../config';
+import { mercurClient, sdk } from '../config';
 import type {
   VoucherAuditEvent,
   VoucherAuditEventType
@@ -122,19 +122,16 @@ export async function getVoucherByCode(code: string): Promise<VoucherPublicView 
     // Fall through to raw fetch fallback.
   }
 
-  // Fallback A: raw fetch via mercurClient (post-2.6 endpoint contract).
+  // Fallback A: Medusa SDK raw fetch (cleanup-13b backend endpoint).
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}`;
-    const rawClient = mercurClient as unknown as {
-      fetch?: (path: string, init?: RequestInit) => Promise<unknown>;
-    };
-    if (typeof rawClient.fetch === 'function') {
-      const res = (await rawClient.fetch(url, { method: 'GET' })) as { voucher?: VoucherApiPayload } | null;
-      const view = projectAllowlist(res?.voucher ?? (res as VoucherApiPayload));
-      if (view) return view;
-    }
+    const res = (await sdk.client.fetch(url, { method: 'GET' })) as
+      | { voucher?: VoucherApiPayload }
+      | null;
+    const view = projectAllowlist(res?.voucher ?? (res as VoucherApiPayload));
+    if (view) return view;
   } catch {
-    // Endpoint not provisioned (Mercur 2 voucher native endpoint OUT OF 6.1 scope).
+    // Endpoint not provisioned or 404 — fall through.
   }
 
   return null;
@@ -222,22 +219,17 @@ export async function getVoucherEvents(
     // Fall through.
   }
 
-  // Fallback A: raw fetch via mercurClient.
+  // Fallback A: Medusa SDK raw fetch (cleanup-13b backend endpoint).
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}/events`;
-    const rawClient = mercurClient as unknown as {
-      fetch?: (path: string, init?: RequestInit) => Promise<unknown>;
-    };
-    if (typeof rawClient.fetch === 'function') {
-      const res = (await rawClient.fetch(url, { method: 'GET' })) as
-        | { events?: VoucherAuditEventApiPayload[] }
-        | null;
-      const projected = (res?.events ?? [])
-        .map(projectAuditEvent)
-        .filter((e): e is VoucherAuditEvent => e !== null);
-      projected.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
-      return projected;
-    }
+    const res = (await sdk.client.fetch(url, { method: 'GET' })) as
+      | { events?: VoucherAuditEventApiPayload[] }
+      | null;
+    const projected = (res?.events ?? [])
+      .map(projectAuditEvent)
+      .filter((e): e is VoucherAuditEvent => e !== null);
+    projected.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
+    return projected;
   } catch {
     // Endpoint not provisioned (Mercur 2 voucher events endpoint OUT OF 6.3
     // scope). UI shows empty state per AC2.

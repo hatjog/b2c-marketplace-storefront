@@ -13,7 +13,7 @@ import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
+import { isMultiVendorEnabled, isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { listCartPaymentMethods } from '@/lib/data/payment';
 
 export const metadata: Metadata = {
@@ -39,6 +39,8 @@ export default async function CheckoutPage({}) {
 }
 
 async function CheckoutPageContent({}) {
+  // Story v160-cleanup-13c — warm runtime feature-flag cache.
+  await isMultiVendorEnabledRuntime();
   const cart = await retrieveCart();
 
   if (!cart) {
