@@ -20,9 +20,10 @@ import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
  * Seller label render gated; persistence path NIE gated. Default OFF →
  * legacy single-vendor cart UI unchanged. Flag flip ON → seller labels
  * surface retroactively dla items z istniejącym metadata.
+ *
+ * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
+ * Turbopack module-evaluation order issue with barrel imports.
  */
-const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
-
 export const CartItemsProducts = ({
   products,
   currency_code,
@@ -37,6 +38,8 @@ export const CartItemsProducts = ({
   // Filter out items with invalid data (missing prices/variants)
   const validProducts = filterValidCartItems(products);
   const t = useTranslations('seller.cart');
+  // cleanup-12f: evaluate flag inside component body (lazy) to avoid barrel TDZ issue.
+  const mvEnabled = isMultiVendorEnabled();
 
   return (
     <div>
@@ -52,7 +55,7 @@ export const CartItemsProducts = ({
 
         // Story 5.5 — multi-vendor seller label (flag-gated; null when
         // legacy single-vendor flow → label not rendered → zero regression).
-        const selectedSeller = MULTI_VENDOR_PRICING_ENABLED
+        const selectedSeller = mvEnabled
           ? readSelectedSeller(product)
           : null;
 
