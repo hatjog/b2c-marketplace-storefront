@@ -23,6 +23,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { CartItemsProducts } from '@/components/cells';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { listOrderSetSplits } from '@/lib/data/order-sets';
 import { groupLineItemsBySeller } from '@/lib/helpers/cart-vendor-context';
 import { convertToLocale } from '@/lib/helpers/money';
 
@@ -47,6 +48,10 @@ export const CartGroupedBySeller = async ({
 
   const items = cart.items ?? [];
   const groups = groupLineItemsBySeller(items);
+  const splits = cart.id ? await listOrderSetSplits(cart.id) : [];
+  const splitSubtotals = new Map(
+    splits.map((split) => [split.seller_id, split.subtotal])
+  );
 
   if (groups.length === 0) {
     // Caller (CartItems organism) should already have early-returned EmptyCart;
@@ -61,9 +66,13 @@ export const CartGroupedBySeller = async ({
         const headerLabel = group.seller
           ? t('group_header_label', { seller_name: group.seller.name })
           : t('default_seller_group_label');
+        const subtotalMinor =
+          group.seller_id && splitSubtotals.has(group.seller_id)
+            ? splitSubtotals.get(group.seller_id) ?? group.subtotal
+            : group.subtotal;
         const subtotalFormatted = show_subtotal
           ? convertToLocale({
-              amount: group.subtotal,
+              amount: subtotalMinor,
               currency_code: cart.currency_code,
             })
           : null;
