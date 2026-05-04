@@ -13,7 +13,7 @@ export const LOCALE = process.env.E2E_LOCALE ?? "pl"
  * Should contain products from >= 2 sellers in BB market.
  */
 export const TEST_CATEGORY_HANDLE =
-  process.env.E2E_CATEGORY_HANDLE ?? "beauty"
+  process.env.E2E_CATEGORY_HANDLE ?? "twarz-pielegnacja-terapie"
 
 /**
  * Product handle for PDP seller-selector test.
@@ -73,7 +73,7 @@ export function paths(locale = LOCALE) {
   return {
     home: `/${locale}`,
     sellers: `/${locale}/sellers`,
-    category: (handle: string) => `/${locale}/c/${handle}`,
+    category: (handle: string) => `/${locale}/categories/${handle}`,
     product: (handle: string) => `/${locale}/products/${handle}`,
     cart: `/${locale}/cart`,
     checkout: `/${locale}/checkout`,

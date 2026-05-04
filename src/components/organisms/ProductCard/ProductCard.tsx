@@ -95,7 +95,7 @@ export const ProductCard = ({
         'group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
         className
       )}
-      data-testid="product-item"
+      data-testid="product-card"
       data-product-handle={product.handle}
     >
       <div

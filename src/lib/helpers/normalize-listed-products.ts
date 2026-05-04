@@ -95,7 +95,15 @@ export const normalizeListedProducts = (
         seller,
       };
     })
-    .filter(product => product.seller?.store_status === 'ACTIVE' || !product.seller)
+    .filter(product => {
+      // Story v160-cleanup-11 (8.8 follow-up): Mercur 2 uses Seller.status === 'open';
+      // legacy Mercur 1.x used Seller.store_status === 'ACTIVE'. Accept either for
+      // back-compat during migration window.
+      const seller = product.seller as (SellerProps & { status?: string; store_status?: string }) | null | undefined;
+      if (!seller) return true;
+      const isActive = seller.status === 'open' || seller.store_status === 'ACTIVE';
+      return isActive;
+    })
     .filter(product => {
       const failures = checkQualityGate(product);
       if (failures.length > 0 && product.status === 'published') {
