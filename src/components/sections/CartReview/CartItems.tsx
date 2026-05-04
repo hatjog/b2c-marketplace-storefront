@@ -11,16 +11,17 @@ import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
  * grouped sections; else legacy flat grouping by `product.seller`. Review
  * surface passes `delete_item={false}` + `change_quantity={false}` per
  * existing baseline (cart is finalized at review step).
+ *
+ * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
+ * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
  */
-const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
-
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
   const items = cart.items ?? [];
 
   // Story 5.7 — flag-gated grouping by selected seller metadata.
-  if (MULTI_VENDOR_PRICING_ENABLED && hasMultipleSellers(items)) {
+  if (isMultiVendorEnabled() && hasMultipleSellers(items)) {
     return (
       <CartGroupedBySeller
         cart={cart}

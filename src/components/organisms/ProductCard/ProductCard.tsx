@@ -5,8 +5,10 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { LowestPriceBadge } from '@/components/atoms/LowestPriceBadge/LowestPriceBadge';
+import { MultiVendorIndicator } from '@/components/atoms/MultiVendorIndicator/MultiVendorIndicator';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
 import type { MultiVendorPricingFields, Product } from '@/types/product';
@@ -15,6 +17,10 @@ import type { MultiVendorPricingFields, Product } from '@/types/product';
  * Story 5.1 — multi-vendor pricing feature flag.
  * Default OFF (`'false'`) → badge hidden across whole app.
  * Phase B activation (post-v1.6.0) flips this to surface lowest-price prefix.
+ *
+ * cleanup-12f: added missing import for isMultiVendorEnabled (was causing
+ * ReferenceError at SSR module evaluation — ProductCard was calling the function
+ * without importing it).
  */
 const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 

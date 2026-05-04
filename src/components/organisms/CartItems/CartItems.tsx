@@ -14,9 +14,10 @@ import { EmptyCart } from './EmptyCart';
  * `<CartGroupedBySeller>` (sections per seller, alphabetical order).
  * When OFF or no seller metadata → legacy flat grouping by `product.seller`
  * preserved → zero regression vs v1.5.0 baseline.
+ *
+ * cleanup-12f: flag check moved inside component body to avoid Turbopack
+ * module-evaluation order issue with barrel imports (ReferenceError at SSR).
  */
-const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
-
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
@@ -24,7 +25,7 @@ export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (items.length === 0) return <EmptyCart />;
 
   // Story 5.7 — flag-gated grouping by selected seller metadata.
-  if (MULTI_VENDOR_PRICING_ENABLED && hasMultipleSellers(items)) {
+  if (isMultiVendorEnabled() && hasMultipleSellers(items)) {
     return (
       <>
         <CartGroupedBySeller cart={cart} />

@@ -36,8 +36,10 @@ import type { Wishlist } from '@/types/wishlist';
  * introduced in Story 5.1 ProductCard.tsx). Single flag governs both
  * PLP badge + PDP selector for coherent Phase B flip (story 8.3).
  * Default OFF (`'false'`) → selector hidden across whole app.
+ *
+ * cleanup-12f: flag check moved to async function body (lazy eval) to avoid
+ * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
  */
-const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
 export const ProductDetails = async ({
   product,
@@ -74,6 +76,8 @@ export const ProductDetails = async ({
   const vendorOffers =
     (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
   const vendorOfferCount = Array.isArray(vendorOffers) ? vendorOffers.length : -1;
+  // cleanup-12f: evaluate flag inside function body (lazy) to avoid barrel TDZ issue.
+  const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
   const showSellerSelector = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount >= 2;
   const showSoleVendorBadge = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount === 1;
   // Story 5.6 — sibling branch dla `length === 0` empty-state path. Defensive
