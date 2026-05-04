@@ -582,6 +582,7 @@
       "not_found_message": "Unknown voucher",
       "consent_pending_message": "Saving consent. Please come back in a moment.",
       "post_claim_link": "Go to the salon",
+      "pdf_download_cta": "Download voucher PDF",
       "meta_default_title": "BonBeauty voucher",
       "meta_default_description": "Use your BonBeauty voucher at the chosen salon.",
       "offline": {

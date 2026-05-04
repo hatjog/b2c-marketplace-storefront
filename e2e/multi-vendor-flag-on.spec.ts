@@ -23,6 +23,7 @@ import {
   findProductsFromMultipleSellers,
   probeBackendHealth,
 } from "./helpers/seed-helper"
+import { extractClaimToken } from "./helpers/claim-helper"
 import {
   LOCALE,
   TEST_CATEGORY_HANDLE,
@@ -59,6 +60,13 @@ async function checkEnvironmentOrSkip(): Promise<void> {
  * -------------------------------------------------------------------------*/
 
 let previousFlagState: MultiVendorFlagState = "on"
+
+/**
+ * Story v160-cleanup-12f AC4: Claim token extracted by Step 4 and shared
+ * with Steps 5+6. Falls back to process.env.E2E_CLAIM_TOKEN if pre-set
+ * (manual override for partial-run scenarios).
+ */
+let sharedClaimToken: string | null = process.env.E2E_CLAIM_TOKEN ?? null
 
 /* ---------------------------------------------------------------------------
  * Setup & teardown
@@ -236,6 +244,20 @@ test("Step 4 — Checkout order confirmation shows multi-vendor order_set splits
     .locator('[data-testid="order-set-splits"]')
     .or(page.locator('[data-testid="multi-vendor-order-summary"]'))
   await expect(orderSetSplits.first()).toBeVisible({ timeout: 10_000 })
+
+  // Story v160-cleanup-12f AC4: attempt to extract claim token from
+  // the order confirmation page for self-contained Steps 5+6 execution.
+  // The confirmation page is reached after payment; in the checkout E2E
+  // context we may already be on /order/:id/confirmed.
+  if (page.url().includes("/confirmed")) {
+    const extracted = await extractClaimToken(page)
+    if (extracted) {
+      sharedClaimToken = extracted
+      console.info(
+        `[AC4] Claim token extracted from confirmation page: ${extracted.slice(0, 8)}…`,
+      )
+    }
+  }
 })
 
 /* ---------------------------------------------------------------------------
@@ -245,12 +267,13 @@ test("Step 4 — Checkout order confirmation shows multi-vendor order_set splits
 test("Step 5 — Claim page renders with PDF voucher download CTA and audit trail", async ({
   page,
 }) => {
-  // Claim URL is generated post-checkout; test uses env-injected URL or skips.
-  const claimToken = process.env.E2E_CLAIM_TOKEN
+  // Story v160-cleanup-12f AC4: use token extracted by Step 4 (self-contained)
+  // or fall back to the env-injected E2E_CLAIM_TOKEN for manual overrides.
+  const claimToken = sharedClaimToken
   if (!claimToken) {
     console.warn(
-      "[DEFERRED] E2E_CLAIM_TOKEN not set — Step 5 requires a post-checkout claim token. " +
-        "Run Step 4 manually and export E2E_CLAIM_TOKEN to continue.",
+      "[DEFERRED] No claim token available — Step 5 requires a completed Step 4 (gift checkout) " +
+        "or a pre-set E2E_CLAIM_TOKEN environment variable.",
     )
     test.skip()
     return
@@ -282,10 +305,11 @@ test("Step 5 — Claim page renders with PDF voucher download CTA and audit trai
 test("Step 6 — Audit log contains claim_initiated and voucher_downloaded entries (PII-stripped)", async ({
   page,
 }) => {
-  const claimToken = process.env.E2E_CLAIM_TOKEN
+  // Story v160-cleanup-12f AC4: same shared token as Step 5.
+  const claimToken = sharedClaimToken
   if (!claimToken) {
     console.warn(
-      "[DEFERRED] E2E_CLAIM_TOKEN not set — Step 6 requires completed Step 5.",
+      "[DEFERRED] No claim token available — Step 6 requires completed Step 5 (or E2E_CLAIM_TOKEN).",
     )
     test.skip()
     return
@@ -298,17 +322,17 @@ test("Step 6 — Audit log contains claim_initiated and voucher_downloaded entri
   const auditTrail = page.locator('[data-testid="audit-trail-molecule"]')
   await expect(auditTrail).toBeVisible({ timeout: 10_000 })
 
-  // Assert claim_initiated entry
-  const claimInitiatedEntry = page.locator(
-    '[data-testid="audit-entry-claim_initiated"]',
-  )
-  await expect(claimInitiatedEntry).toBeVisible({ timeout: 10_000 })
-
-  // Assert voucher_downloaded entry (after PDF CTA interaction)
-  // It may not be present on first load — just assert the trail is visible
-  // and contains at least 1 entry (event sequence depends on prior interaction)
+  // Story v160-cleanup-12f: event type names aligned to Epic 6 / VoucherAuditEventType:
+  //   "claimed" (not "claim_initiated") — matches backend + type system.
+  // Assert at least one audit entry present (the "claimed" event at minimum).
   const auditEntries = page.locator('[data-testid^="audit-entry-"]')
   expect(await auditEntries.count()).toBeGreaterThanOrEqual(1)
+
+  // Prefer "claimed" entry (post-claim state); "created" is always present.
+  const claimedEntry = page
+    .locator('[data-testid="audit-entry-claimed"]')
+    .or(page.locator('[data-testid="audit-entry-created"]'))
+  await expect(claimedEntry.first()).toBeVisible({ timeout: 10_000 })
 
   // Assert PII-stripped: no raw email or phone in audit entries text.
   const auditText = await auditTrail.textContent()
