@@ -21,6 +21,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 import type {
   AdditionalAttributeProps,
   GpProductMetadata,
@@ -35,8 +36,7 @@ import type { Wishlist } from '@/types/wishlist';
  * PLP badge + PDP selector for coherent Phase B flip (story 8.3).
  * Default OFF (`'false'`) → selector hidden across whole app.
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
+const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
 export const ProductDetails = async ({
   product,

@@ -13,6 +13,7 @@ import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 
 /**
  * Story 5.5 — multi-vendor pricing flag re-used (Story 5.1/5.2 pattern).
@@ -20,8 +21,7 @@ import { convertToLocale } from '@/lib/helpers/money';
  * legacy single-vendor cart UI unchanged. Flag flip ON → seller labels
  * surface retroactively dla items z istniejącym metadata.
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
+const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
 export const CartItemsProducts = ({
   products,

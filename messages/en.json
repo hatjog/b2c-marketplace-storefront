@@ -170,6 +170,10 @@
       "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",
       "review_cart_cta": "Review cart",
       "flag_changed_close_cta": "Close"
+    },
+    "multi_vendor": {
+      "indicator_label": "{count} salons offer this",
+      "indicator_tooltip": "This product is offered by {count} partner salons"
     }
   },
   "footer": {
@@ -499,7 +503,11 @@
     "continue_to_payment": "Continue to payment",
     "choose_delivery_option": "Choose delivery option",
     "place_order": "Place order",
-    "payment_obligation_notice": "Order with obligation to pay"
+    "payment_obligation_notice": "Order with obligation to pay",
+    "order_set_summary": {
+      "heading": "Order split by seller",
+      "unknown_seller": "Seller"
+    }
   },
   "confirmation": {
     "loading": "Loading...",

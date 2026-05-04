@@ -3,6 +3,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { CartItemsHeader, CartItemsProducts } from '@/components/cells';
 import { CartGroupedBySeller } from '@/components/organisms/CartGroupedBySeller/CartGroupedBySeller';
 import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 
 /**
  * Story 5.7 — multi-vendor cart grouping flag (re-uses Story 5.5 pattern).
@@ -11,8 +12,7 @@ import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
  * surface passes `delete_item={false}` + `change_quantity={false}` per
  * existing baseline (cart is finalized at review step).
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
+const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
 
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
