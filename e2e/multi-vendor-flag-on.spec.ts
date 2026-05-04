@@ -323,3 +323,88 @@ test("Step 6 — Audit log contains claim_initiated and voucher_downloaded entri
     expect(auditText).not.toContain(TEST_RECIPIENT.firstName + " " + TEST_RECIPIENT.lastName)
   }
 })
+
+/* ---------------------------------------------------------------------------
+ * Step 7 — Kickoff ↔ audit-log coupling integrity (cleanup-5 / CRIT-7.4)
+ *
+ * Validates that vendors_notified in the kickoff response matches the actual
+ * count of t30_migration audit entries written by the 7.1 dispatcher.
+ * This is the E2E guard against phantom coupling (CRIT-7.4).
+ * -------------------------------------------------------------------------*/
+
+test("Step 7 — Kickoff vendors_notified matches t30 audit-log row count (coupling integrity)", async ({
+  request,
+}) => {
+  // This step is operator-triggered and requires a seeded BB market.
+  // Skip gracefully if backend is not reachable or E2E_ADMIN_TOKEN is absent.
+  const adminToken = process.env.E2E_ADMIN_TOKEN
+  if (!adminToken) {
+    console.warn(
+      "[DEFERRED] E2E_ADMIN_TOKEN not set — Step 7 kickoff coupling assertion deferred. " +
+        "Set E2E_ADMIN_TOKEN and ensure BB market is seeded + GP_FLAG_FLIP_DATE configured.",
+    )
+    test.skip()
+    return
+  }
+
+  const backendBase = process.env.E2E_BACKEND_URL ?? "http://localhost:9002"
+  const adminApiBase = `${backendBase}/admin`
+
+  // --- 1. Capture pre-kickoff audit row count ---
+  const preAuditResp = await request.get(
+    `${adminApiBase}/vendors/notifications/t30/audit`,
+    {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    },
+  )
+  const preAuditData = preAuditResp.ok()
+    ? ((await preAuditResp.json()) as { entries?: unknown[] })
+    : { entries: [] }
+  const preCount = (preAuditData.entries ?? []).length
+
+  // --- 2. Trigger kickoff ---
+  const kickoffResp = await request.post(`${adminApiBase}/operator/kickoff`, {
+    headers: {
+      Authorization: `Bearer ${adminToken}`,
+      "Content-Type": "application/json",
+    },
+    data: {
+      confirm: true,
+      admin_note: "E2E coupling integrity Step 7",
+      override: true,
+    },
+  })
+
+  // Expect 200 or 503 (503 = fixture mode in production — also a valid guard).
+  expect([200, 503]).toContain(kickoffResp.status())
+
+  if (kickoffResp.status() === 503) {
+    // AC3 triggered — fixture mode hard-block is working correctly.
+    const body = (await kickoffResp.json()) as { code?: string }
+    expect(body.code).toBe("T30_FIXTURE_MODE_IN_PRODUCTION")
+    console.warn(
+      "[OK] Step 7: kickoff returned 503 (AC3 fixture-mode hard-block active in production env).",
+    )
+    return
+  }
+
+  const kickoffBody = (await kickoffResp.json()) as {
+    vendors_notified?: number
+  }
+  const vendorsNotified = kickoffBody.vendors_notified ?? 0
+
+  // --- 3. Capture post-kickoff audit row count ---
+  const postAuditResp = await request.get(
+    `${adminApiBase}/vendors/notifications/t30/audit`,
+    {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    },
+  )
+  expect(postAuditResp.ok()).toBe(true)
+  const postAuditData = (await postAuditResp.json()) as { entries?: unknown[] }
+  const postCount = (postAuditData.entries ?? []).length
+
+  // --- 4. Coupling assertion (CRIT-7.4 guard) ---
+  const auditDelta = postCount - preCount
+  expect(auditDelta).toBe(vendorsNotified)
+})
