@@ -178,6 +178,31 @@ export const listProducts = async ({
 const FETCH_LIMIT = 100;
 const PRODUCT_HARD_CAP = 1000;
 
+type SearchProductsResponse = {
+  products: ListedProduct[];
+  nbHits: number;
+  page: number;
+  nbPages: number;
+  hitsPerPage: number;
+  facets: Record<string, any>;
+  processingTimeMS: number;
+};
+
+async function fetchSearchProductsPage({
+  body,
+  headers,
+}: {
+  body: Record<string, unknown>;
+  headers: Record<string, string>;
+}): Promise<SearchProductsResponse> {
+  return sdk.client.fetch<SearchProductsResponse>(`/store/products/search`, {
+    method: 'POST',
+    body,
+    headers,
+    cache: 'no-cache'
+  });
+}
+
 /**
  * Fetches from the custom pipeline endpoint GET /store/products/filtered.
  * Called by listProductsWithSort() when hasCustomFilters() returns true.
@@ -516,46 +541,74 @@ export const searchProducts = async (params: {
   }
 
   const { countryCode: _countryCode, ...bodyParams } = params;
+  const requestedPage = Math.max(0, params.page || 0);
+  const requestedHitsPerPage = Math.max(1, params.hitsPerPage || 12);
+  const baseBody: Record<string, unknown> = {
+    ...bodyParams,
+    ...(currency_code ? { currency_code } : {}),
+    region_id,
+    customer_id,
+    facets,
+    maxValuesPerFacet: 100
+  };
 
-  return sdk.client
-    .fetch<{
-      products: ListedProduct[];
-      nbHits: number;
-      page: number;
-      nbPages: number;
-      hitsPerPage: number;
-      facets: Record<string, any>;
-      processingTimeMS: number;
-    }>(`/store/products/search`, {
-      method: 'POST',
-      body: {
-        ...bodyParams,
-        ...(currency_code ? { currency_code } : {}),
-        region_id,
-        customer_id,
-        facets,
-        maxValuesPerFacet: 100
-      },
-      headers,
-      cache: 'no-cache'
-    })
-    .then((result) => {
-      // Apply quality-gate filter BEFORE pagination signals. Backend nbHits is
-      // pre-filter; using it directly causes pagination drift (deferred-work.md
-      // v1.4.0). Adjust nbHits/nbPages to reflect post-filter counts so the UI
-      // pagination matches the rendered grid.
-      const products = normalizeListedProducts(result.products);
-      const droppedThisPage = result.products.length - products.length;
-      const adjustedNbHits = Math.max(0, result.nbHits - droppedThisPage);
-      const adjustedNbPages = result.hitsPerPage > 0
-        ? Math.max(1, Math.ceil(adjustedNbHits / result.hitsPerPage))
-        : result.nbPages;
+  return fetchSearchProductsPage({
+    body: {
+      ...baseBody,
+      page: 0,
+      hitsPerPage: FETCH_LIMIT,
+    },
+    headers,
+  })
+    .then(async (firstPage) => {
+      if (firstPage.nbHits > 500) {
+        console.warn('[GP] Search product count exceeds 500, consider Algolia migration');
+      }
+
+      if (firstPage.nbHits > PRODUCT_HARD_CAP) {
+        Sentry.captureMessage('[GP] Search product count exceeds 1000, hard cap applied', 'error');
+      }
+
+      const cappedHits = Math.min(firstPage.nbHits, PRODUCT_HARD_CAP);
+      let allProducts = [...firstPage.products];
+
+      if (cappedHits > FETCH_LIMIT) {
+        const totalPages = Math.ceil(cappedHits / FETCH_LIMIT);
+        const remainingPageNums = Array.from({ length: totalPages - 1 }, (_, index) => index + 1);
+        const results = await Promise.allSettled(
+          remainingPageNums.map((pageNum) =>
+            fetchSearchProductsPage({
+              body: {
+                ...baseBody,
+                page: pageNum,
+                hitsPerPage: FETCH_LIMIT,
+              },
+              headers,
+            })
+          )
+        );
+
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            allProducts.push(...result.value.products);
+          } else {
+            console.error('[products] searchProducts parallel fetch failed:', result.reason);
+          }
+        }
+      }
+
+      const normalizedProducts = normalizeListedProducts(allProducts);
+      const exactNbHits = normalizedProducts.length;
+      const start = requestedPage * requestedHitsPerPage;
+      const end = start + requestedHitsPerPage;
 
       return {
-        ...result,
-        products,
-        nbHits: adjustedNbHits,
-        nbPages: adjustedNbPages,
+        ...firstPage,
+        products: normalizedProducts.slice(start, end),
+        nbHits: exactNbHits,
+        nbPages: Math.max(1, Math.ceil(exactNbHits / requestedHitsPerPage)),
+        page: requestedPage,
+        hitsPerPage: requestedHitsPerPage,
       };
     })
     .catch((error) => {
@@ -563,9 +616,9 @@ export const searchProducts = async (params: {
       return {
         products: [],
         nbHits: 0,
-        page: params.page || 0,
+        page: requestedPage,
         nbPages: 0,
-        hitsPerPage: params.hitsPerPage || 12,
+        hitsPerPage: requestedHitsPerPage,
         facets: {},
         processingTimeMS: 0
       };

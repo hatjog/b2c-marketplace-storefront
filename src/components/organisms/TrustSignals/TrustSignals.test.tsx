@@ -1,6 +1,8 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('server-only', () => ({}));
+
 vi.mock('next/link', () => ({
   default: 'a',
 }));
@@ -9,15 +11,28 @@ import { TrustSignals } from './TrustSignals';
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 
+function resolveElement(el: ReactEl): React.ReactNode {
+  if (typeof el.type === 'function') {
+    return el.type(el.props);
+  }
+
+  return el;
+}
+
 function findAll(
   el: React.ReactNode,
   predicate: (el: ReactEl) => boolean,
   results: ReactEl[] = [],
 ): ReactEl[] {
   if (React.isValidElement<Record<string, unknown>>(el)) {
-    const element = el as ReactEl;
-    if (predicate(element)) results.push(element);
-    const children = React.Children.toArray(element.props.children as React.ReactNode);
+    const element = resolveElement(el as ReactEl);
+    if (!React.isValidElement<Record<string, unknown>>(element)) {
+      return results;
+    }
+
+    const resolvedElement = element as ReactEl;
+    if (predicate(resolvedElement)) results.push(resolvedElement);
+    const children = React.Children.toArray(resolvedElement.props.children as React.ReactNode);
     for (const child of children) {
       findAll(child, predicate, results);
     }
@@ -28,8 +43,17 @@ function findAll(
 function findText(el: React.ReactNode, text: string): boolean {
   if (typeof el === 'string') return el.includes(text);
   if (React.isValidElement<Record<string, unknown>>(el)) {
-    const element = el as ReactEl;
-    const children = React.Children.toArray(element.props.children as React.ReactNode);
+    const element = resolveElement(el as ReactEl);
+    if (!React.isValidElement<Record<string, unknown>>(element)) {
+      return false;
+    }
+
+    const resolvedElement = element as ReactEl;
+    const innerHtml = (resolvedElement.props.dangerouslySetInnerHTML as { __html?: string } | undefined)?.__html;
+    if (typeof innerHtml === 'string' && innerHtml.includes(text)) {
+      return true;
+    }
+    const children = React.Children.toArray(resolvedElement.props.children as React.ReactNode);
     return children.some(c => findText(c, text));
   }
   return false;
@@ -102,5 +126,20 @@ describe('TrustSignals', () => {
     const result = TrustSignals({ variant: 'compact', signals }) as ReactEl;
     const checkmarks = findAll(result, el => el.type === 'span' && el.props.children === '✓');
     expect(checkmarks).toHaveLength(3);
+  });
+
+  it('sanitizes partner-controlled HTML in signals', () => {
+    const result = TrustSignals({
+      variant: 'full',
+      signals: ['Safe <strong>signal</strong><script>alert(1)</script>'],
+    }) as ReactEl;
+    const htmlNodes = findAll(
+      result,
+      el => typeof (el.props.dangerouslySetInnerHTML as { __html?: string } | undefined)?.__html === 'string'
+    );
+
+    expect(htmlNodes).toHaveLength(1);
+    expect((htmlNodes[0].props.dangerouslySetInnerHTML as { __html: string }).__html).toContain('<strong>signal</strong>');
+    expect((htmlNodes[0].props.dangerouslySetInnerHTML as { __html: string }).__html).not.toContain('<script>');
   });
 });
