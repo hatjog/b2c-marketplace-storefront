@@ -41,6 +41,7 @@ export type SellerProps = SellerAddress & {
   products?: Product[];
   email?: string;
   phone?: string;
+  status?: 'pending_approval' | 'open' | 'suspended' | 'terminated';
   store_status?: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
   // Enriched metadata fields (from story 6.1 backend endpoint)
   social_links?: SellerSocialLinks | null;

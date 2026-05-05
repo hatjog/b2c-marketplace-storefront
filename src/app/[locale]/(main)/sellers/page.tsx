@@ -17,8 +17,9 @@ export const revalidate = 60;
 
 const DEFAULT_LIMIT = 24;
 const DEFAULT_OFFSET = 0;
-const DEFAULT_SORT: SellerSortKey = 'name_asc';
+const DEFAULT_SORT: SellerSortKey = 'rating_desc';
 const VALID_SORT_KEYS: ReadonlySet<SellerSortKey> = new Set<SellerSortKey>([
+  'rating_desc',
   'name_asc',
   'name_desc'
 ]);

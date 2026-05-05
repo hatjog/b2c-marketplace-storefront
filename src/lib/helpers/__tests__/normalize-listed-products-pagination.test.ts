@@ -20,6 +20,7 @@ import { normalizeListedProducts, type ListedProduct } from '../normalize-listed
 
 function makeProduct(overrides: Partial<ListedProduct> & { id: string }): ListedProduct {
   return {
+    ...overrides,
     id: overrides.id,
     handle: overrides.handle ?? `handle-${overrides.id}`,
     title: overrides.title ?? `Product ${overrides.id}`,
@@ -81,5 +82,43 @@ describe('normalizeListedProducts — pagination invariant (deferred-work.md v1.
 
     const filtered = normalizeListedProducts(inputs);
     expect(filtered.map((p) => p.id)).toEqual(['a', 'c', 'e']);
+  });
+
+  it('prefers a Mercur 2 active seller when seller payload is an array', () => {
+    const inputs: ListedProduct[] = [
+      makeProduct({
+        id: 'mv-1',
+        seller: [
+          {
+            id: 'seller-legacy-inactive',
+            handle: 'legacy-inactive',
+            name: 'Legacy Inactive',
+            description: 'inactive',
+            photo: '',
+            tax_id: '',
+            created_at: '2026-01-01T00:00:00.000Z',
+            store_status: 'INACTIVE',
+          },
+          {
+            id: 'seller-runtime-open',
+            handle: 'runtime-open',
+            name: 'Runtime Open',
+            description: 'open',
+            photo: '',
+            tax_id: '',
+            created_at: '2026-01-01T00:00:00.000Z',
+            status: 'open',
+          },
+        ] as unknown as ListedProduct['seller'],
+      }),
+    ];
+
+    const filtered = normalizeListedProducts(inputs);
+
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].seller).toMatchObject({
+      id: 'seller-runtime-open',
+      status: 'open',
+    });
   });
 });

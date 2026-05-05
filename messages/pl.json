@@ -78,6 +78,7 @@
       "label_city": "Miasto",
       "city_all": "Wszystkie miasta",
       "label_sort": "Sortuj",
+      "sort_rating_desc": "Najwyżej oceniane",
       "sort_name_asc": "Nazwa A-Z",
       "sort_name_desc": "Nazwa Z-A",
       "submit": "Szukaj",

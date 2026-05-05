@@ -33,6 +33,13 @@ import {
  *     `?mode` namespace is verified clean (no collision).
  */
 
+export function normalizePurchaseMode(
+  rawMode: string | null | undefined
+): PurchaseMode {
+  const normalizedMode = rawMode?.trim().toLowerCase();
+  return normalizedMode === 'gift' ? 'gift' : 'self';
+}
+
 export function CheckoutPurchaseMode(): ReactElement {
   const t = useTranslations('seller.checkout');
   const router = useRouter();
@@ -40,7 +47,7 @@ export function CheckoutPurchaseMode(): ReactElement {
   const searchParams = useSearchParams();
 
   const rawMode = searchParams.get('mode');
-  const mode: PurchaseMode = rawMode === 'gift' ? 'gift' : 'self';
+  const mode = normalizePurchaseMode(rawMode);
 
   const handleChange = useCallback(
     (newMode: PurchaseMode): void => {
