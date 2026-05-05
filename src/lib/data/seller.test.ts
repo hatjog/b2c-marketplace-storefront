@@ -21,7 +21,7 @@ vi.mock('../config', () => ({
   }
 }));
 
-import { getSellers } from './seller';
+import { getSellers, searchSellers } from './seller';
 
 const makeSeller = (overrides: Record<string, unknown> = {}) => ({
   handle: 'salon-a',
@@ -131,5 +131,33 @@ describe('getSellers', () => {
     });
     const result = await getSellers();
     expect(result[0].city).toBeNull();
+  });
+
+  it('sorts by avg_rating desc when rating_desc is selected', async () => {
+    mockFetch.mockResolvedValue({
+      sellers: [
+        makeSeller({ handle: 'gamma', name: 'Gamma', avg_rating: 4.2, review_count: 6 }),
+        makeSeller({ handle: 'alpha', name: 'Alpha', avg_rating: 4.8, review_count: 2 }),
+        makeSeller({ handle: 'beta', name: 'Beta', avg_rating: 4.8, review_count: 9 }),
+      ]
+    });
+
+    const result = await searchSellers({ limit: 10, offset: 0, sort: 'rating_desc' });
+
+    expect(result.items.map((seller) => seller.handle)).toEqual(['beta', 'alpha', 'gamma']);
+  });
+
+  it('falls back to name ordering when rating_desc has no rating data', async () => {
+    mockFetch.mockResolvedValue({
+      sellers: [
+        makeSeller({ handle: 'zeta', name: 'Żaneta', avg_rating: undefined, review_count: undefined }),
+        makeSeller({ handle: 'anna', name: 'Anna', avg_rating: undefined, review_count: undefined }),
+        makeSeller({ handle: 'basia', name: 'Basia', avg_rating: undefined, review_count: undefined }),
+      ]
+    });
+
+    const result = await searchSellers({ limit: 10, offset: 0, sort: 'rating_desc' });
+
+    expect(result.items.map((seller) => seller.name)).toEqual(['Anna', 'Basia', 'Żaneta']);
   });
 });

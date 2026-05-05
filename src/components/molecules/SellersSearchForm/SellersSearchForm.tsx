@@ -6,7 +6,7 @@ import type { SellerSortKey } from '@/lib/data/seller';
 
 const CITY_OPTIONS = ['Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Łódź'] as const;
 
-const SORT_OPTIONS: ReadonlyArray<SellerSortKey> = ['name_asc', 'name_desc'];
+const SORT_OPTIONS: ReadonlyArray<SellerSortKey> = ['rating_desc', 'name_asc', 'name_desc'];
 
 export interface SellersSearchFormProps {
   locale: string;

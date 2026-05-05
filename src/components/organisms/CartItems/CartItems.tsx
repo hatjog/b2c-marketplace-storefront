@@ -95,7 +95,9 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
 
 function resolveCartItemSeller(sellerValue: any) {
   if (Array.isArray(sellerValue)) {
-    const activeSeller = sellerValue.find((seller) => seller?.store_status === 'ACTIVE');
+    const activeSeller = sellerValue.find(
+      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE'
+    );
     return activeSeller ?? sellerValue[0] ?? null;
   }
 

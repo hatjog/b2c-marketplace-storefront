@@ -78,6 +78,7 @@
       "label_city": "City",
       "city_all": "All cities",
       "label_sort": "Sort",
+      "sort_rating_desc": "Top rated",
       "sort_name_asc": "Name A-Z",
       "sort_name_desc": "Name Z-A",
       "submit": "Search",

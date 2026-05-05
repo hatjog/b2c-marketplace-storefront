@@ -27,6 +27,14 @@ const PLACEHOLDER_PATTERNS = [
 
 type QualityGateFailure = { criterion: string; detail: string };
 
+function isSellerActive(seller: SellerProps | null | undefined): boolean {
+  if (!seller) {
+    return false;
+  }
+
+  return seller.status === 'open' || seller.store_status === 'ACTIVE';
+}
+
 function normalizeProductAssetReferences(product: ListedProduct, marketId: string): ListedProduct {
   const thumbnail = resolveMarketAssetUrl(product.thumbnail, marketId) ?? product.thumbnail ?? null;
   const images = Array.isArray(product.images)
@@ -54,7 +62,7 @@ function resolveSingleSeller(product: ListedProduct, preferredSellerId?: string)
       }
     }
 
-    const activeSeller = sellerValue.find((seller) => seller?.store_status === 'ACTIVE');
+    const activeSeller = sellerValue.find((seller) => isSellerActive(seller as SellerProps | null | undefined));
     return (activeSeller ?? sellerValue[0] ?? null) as SellerProps | null;
   }
 
@@ -103,13 +111,8 @@ export const normalizeListedProducts = (
       };
     })
     .filter(product => {
-      // Story v160-cleanup-11 (8.8 follow-up): Mercur 2 uses Seller.status === 'open';
-      // legacy Mercur 1.x used Seller.store_status === 'ACTIVE'. Accept either for
-      // back-compat during migration window.
-      const seller = product.seller as (SellerProps & { status?: string; store_status?: string }) | null | undefined;
-      if (!seller) return true;
-      const isActive = seller.status === 'open' || seller.store_status === 'ACTIVE';
-      return isActive;
+      if (!product.seller) return true;
+      return isSellerActive(product.seller);
     })
     .filter(product => {
       const failures = checkQualityGate(product);
