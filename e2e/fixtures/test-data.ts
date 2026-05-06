@@ -13,14 +13,14 @@ export const LOCALE = process.env.E2E_LOCALE ?? "pl"
  * Should contain products from >= 2 sellers in BB market.
  */
 export const TEST_CATEGORY_HANDLE =
-  process.env.E2E_CATEGORY_HANDLE ?? "twarz-pielegnacja-terapie"
+  process.env.E2E_CATEGORY_HANDLE ?? "twarz"
 
 /**
  * Product handle for PDP seller-selector test.
  * Should be available from >= 2 sellers.
  */
 export const TEST_PRODUCT_HANDLE =
-  process.env.E2E_PRODUCT_HANDLE ?? "test-multi-vendor-product"
+  process.env.E2E_PRODUCT_HANDLE ?? "peeling-kwasami"
 
 /**
  * Recipient test data for checkout + claim flow.

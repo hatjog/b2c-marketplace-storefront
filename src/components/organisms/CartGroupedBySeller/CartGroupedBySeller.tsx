@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * CartGroupedBySeller — Story 5.7 multi-vendor cart grouping organism.
  *
@@ -19,7 +21,8 @@
  */
 
 import type { HttpTypes } from '@medusajs/types';
-import { getTranslations } from 'next-intl/server';
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { CartItemsProducts } from '@/components/cells';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -38,20 +41,38 @@ interface CartGroupedBySellerProps {
   show_subtotal?: boolean;
 }
 
-export const CartGroupedBySeller = async ({
+export const CartGroupedBySeller = ({
   cart,
   delete_item = true,
   change_quantity = true,
   show_subtotal = true,
 }: CartGroupedBySellerProps) => {
-  const t = await getTranslations('seller.cart');
+  const t = useTranslations('seller.cart');
+  const [splitSubtotals, setSplitSubtotals] = useState<Map<string, number>>(new Map());
 
   const items = cart.items ?? [];
   const groups = groupLineItemsBySeller(items);
-  const splits = cart.id ? await listOrderSetSplits(cart.id) : [];
-  const splitSubtotals = new Map(
-    splits.map((split) => [split.seller_id, split.subtotal])
-  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!cart.id) {
+      setSplitSubtotals(new Map());
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void listOrderSetSplits(cart.id).then((splits) => {
+      if (!cancelled) {
+        setSplitSubtotals(new Map(splits.map((split) => [split.seller_id, split.subtotal])));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cart.id]);
 
   if (groups.length === 0) {
     // Caller (CartItems organism) should already have early-returned EmptyCart;
