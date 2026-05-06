@@ -36,6 +36,47 @@ import {
  * -------------------------------------------------------------------------*/
 
 const p = paths(LOCALE)
+const ADD_TO_CART_SELECTOR =
+  '[data-testid="product-add-to-cart-button"], [data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")'
+
+async function addProductToCart(
+  page: Parameters<typeof test>[0]["page"],
+  productHandle: string,
+  sellerOptionIndex?: number,
+): Promise<void> {
+  await page.goto(p.product(productHandle))
+  const currentPath = new URL(page.url()).pathname
+
+  if (typeof sellerOptionIndex === "number") {
+    const sellerOptions = page.locator('[data-testid="seller-option"]')
+    await expect(sellerOptions.nth(sellerOptionIndex)).toBeVisible({
+      timeout: 10_000,
+    })
+    await sellerOptions.nth(sellerOptionIndex).click()
+    await expect(sellerOptions.nth(sellerOptionIndex)).toHaveAttribute(
+      "data-selected",
+      "true",
+    )
+  }
+
+  const addToCartBtn = page.locator(ADD_TO_CART_SELECTOR)
+  await expect(addToCartBtn.first()).toBeVisible({ timeout: 10_000 })
+  const serverActionResponse = page.waitForResponse(
+    (response) => {
+      const responseUrl = new URL(response.url())
+      return (
+        response.request().method() === "POST" &&
+        responseUrl.origin === "http://localhost:8000" &&
+        responseUrl.pathname === currentPath
+      )
+    },
+    { timeout: 15_000 },
+  )
+
+  await addToCartBtn.first().click()
+  const response = await serverActionResponse
+  expect(response.ok()).toBeTruthy()
+}
 
 /**
  * Skip the test with a structured DEFERRED notice if the live environment
@@ -187,21 +228,9 @@ test("Step 3 — Cart shows 2 vendor groups with seller headers and per-vendor t
 
   const [handle1, handle2] = seedResult.productHandles
 
-  // Add product 1 to cart
-  await page.goto(p.product(handle1))
-  const addToCartBtn = page.locator(
-    '[data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")',
-  )
-  await expect(addToCartBtn).toBeVisible({ timeout: 10_000 })
-  await addToCartBtn.click()
-
-  // Add product 2 to cart
-  await page.goto(p.product(handle2))
-  const addToCartBtn2 = page.locator(
-    '[data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")',
-  )
-  await expect(addToCartBtn2).toBeVisible({ timeout: 10_000 })
-  await addToCartBtn2.click()
+  // Choose two distinct seller options so cart grouping is deterministic.
+  await addProductToCart(page, handle1, 0)
+  await addProductToCart(page, handle2, 1)
 
   // Navigate to cart
   await page.goto(p.cart)
@@ -235,14 +264,8 @@ test("Step 4 — Checkout order confirmation shows multi-vendor order_set splits
   }
 
   const [handle1, handle2] = seedResult.productHandles
-  for (const handle of [handle1, handle2]) {
-    await page.goto(p.product(handle))
-    const addToCartBtn = page.locator(
-      '[data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")',
-    )
-    await expect(addToCartBtn).toBeVisible({ timeout: 10_000 })
-    await addToCartBtn.click()
-  }
+  await addProductToCart(page, handle1, 0)
+  await addProductToCart(page, handle2, 1)
 
   await page.goto(p.checkout)
   await expect(page).toHaveURL(/checkout/, { timeout: 10_000 })

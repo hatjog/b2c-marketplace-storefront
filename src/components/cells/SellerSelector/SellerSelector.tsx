@@ -33,7 +33,7 @@
  *  - NIE adds tooltip/popover library (Radix-skip per UX-DR19 MVP)
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
@@ -221,6 +221,12 @@ export const SellerSelector = ({
     setSelectedSellerId(sellerId);
     onSelect?.(sellerId);
   };
+
+  useEffect(() => {
+    if (selectedSellerId) {
+      onSelect?.(selectedSellerId);
+    }
+  }, [onSelect, selectedSellerId]);
 
   // Privacy notice shows while the buyer prompt is active or unresolved.
   // Hidden once geolocation resolves (granted / denied / unsupported) — at
