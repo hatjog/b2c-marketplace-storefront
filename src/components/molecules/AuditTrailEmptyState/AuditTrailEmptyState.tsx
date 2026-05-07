@@ -2,19 +2,19 @@
  * AuditTrailEmptyState — empty + first-row state for recipient audit trails
  *
  * Source spec: STORY-6-1-CUSTOM-UI-COMPONENTS sub-story 6.1.b (Tier 1)
- *   §UX-DR1 RecipientAuditTrailTimeline (full component DEFERRED to follow-up)
+ *   §UX-DR1 RecipientAuditTrailTimeline
  *
- * MVP scope (this story):
+ * MVP scope (Story 6.1.b):
  *   - Empty state: helpful illustration-free copy + "what to expect" detail
  *   - Populated state: first TimelineItem visible (proof the slot is wired)
  *
- * NOT in scope: live RSC fetch of audit log entries, skeleton matching final
- * layout (Tier 1 requirement deferred), error state, paginated tail. These
- * land alongside the full RecipientAuditTrailTimeline in a follow-up story.
+ * Full RecipientAuditTrailTimeline component shipped in Story v160-cleanup-53
+ * (TF-130) — see GP/storefront/src/components/molecules/RecipientAuditTrailTimeline/.
  *
  * RSC server component by default per AR-23.
  */
 
+import React from "react"
 import type { FC, ReactNode } from "react"
 import { TimelineItem } from "./TimelineItem"
 

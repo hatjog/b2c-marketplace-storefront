@@ -628,6 +628,31 @@
       "apple_maps_label": "Apple Maps",
       "privacy_notice": "Clicking external map links, you leave BonBeauty. BonBeauty does not share your data with external map providers.",
       "no_coords_helper": "Coordinates not available — link searches address"
+    },
+    "recipient_audit_trail": {
+      "heading": "Voucher history",
+      "footer_note": "This history is visible only to you. Data is processed in accordance with GDPR Art. 15 — you have the right to access the history of operations on your data.",
+      "list_aria_label": "Voucher history entries",
+      "live_region_template": "Showing {visible} of {total} entries",
+      "empty": {
+        "heading": "No entries in voucher history",
+        "body": "Here you will see every change related to this voucher — who, when, and what operation was performed. History will appear with the first action by a vendor or system. Under GDPR Art. 15, you have the right to access this data.",
+        "cta_label": "View claim instructions",
+        "cta_href": "/help/voucher-claim"
+      },
+      "error": {
+        "heading": "Failed to load history",
+        "body": "Check your connection and try again. If the problem persists, please contact us.",
+        "retry_label": "Try again",
+        "support_label": "Contact support",
+        "support_href": "/help/contact"
+      },
+      "pagination": {
+        "show_older": "Show older entries ({remaining} remaining)"
+      },
+      "loading": {
+        "label": "Loading history…"
+      }
     }
   },
   "cross_sell": {
