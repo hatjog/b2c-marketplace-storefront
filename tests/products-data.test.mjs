@@ -98,6 +98,58 @@ describe('products data normalization', () => {
     assert.equal(result[0].seller, null);
     assert.deepEqual(result[1].seller?.reviews, [{ id: 'review-1' }]);
   });
+
+  test('legacy Mercur 1.x store_status bridge: store_status="ACTIVE" still flows through as active', () => {
+    // Coverage for the backward-compat dual-check shim in isSellerActive
+    // (normalize-listed-products.ts). This locks the legacy bridge contract:
+    // API responses still carrying Mercur 1.x store_status='ACTIVE' MUST be treated
+    // as active sellers. Removing this branch is a deliberate v1.7.0+ deprecation.
+    const result = normalizeListedProducts([
+      {
+        id: 'prod-legacy-active',
+        title: 'Legacy active seller product',
+        handle: 'legacy-active',
+        description: longDescription,
+        thumbnail: 'https://cdn.test.com/legacy.jpg',
+        variants: [validVariant],
+        seller: {
+          id: 'seller-legacy',
+          name: 'Legacy seller',
+          handle: 'legacy-seller',
+          description: '',
+          photo: '',
+          tax_id: '',
+          created_at: '2026-03-07T00:00:00.000Z',
+          // legacy Mercur 1.x: only store_status, no Mercur 2 status field
+          store_status: 'ACTIVE',
+        },
+      },
+      {
+        id: 'prod-legacy-suspended',
+        title: 'Legacy suspended seller product',
+        handle: 'legacy-suspended',
+        description: longDescription,
+        thumbnail: 'https://cdn.test.com/legacy2.jpg',
+        variants: [validVariant],
+        seller: {
+          id: 'seller-legacy-susp',
+          name: 'Legacy suspended seller',
+          handle: 'legacy-suspended-seller',
+          description: '',
+          photo: '',
+          tax_id: '',
+          created_at: '2026-03-07T00:00:00.000Z',
+          store_status: 'SUSPENDED',
+        },
+      },
+    ]);
+
+    // Only the legacy-ACTIVE product survives; SUSPENDED is filtered out.
+    assert.deepEqual(
+      result.map(product => product.id),
+      ['prod-legacy-active'],
+    );
+  });
 });
 
 describe('hasCustomFilters', () => {
