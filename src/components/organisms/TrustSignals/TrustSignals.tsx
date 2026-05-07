@@ -1,5 +1,7 @@
+import React from 'react';
 import Link from 'next/link';
 
+import { SanitizedHTML } from '@/components/molecules';
 import { TRUST_SIGNALS_MAX } from '@/lib/constants';
 
 type TrustSignalsProps = {
@@ -21,8 +23,7 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
         {capped.map((signal, i) => (
           <span key={`signal-${i}`} className="inline-flex items-center gap-1 rounded-full bg-[rgba(239,229,210,0.72)] px-3 py-1 text-[13px] text-primary">
             <span>✓</span>{' '}
-            {/* TODO: replace with SanitizedHTML after Story 0.4 */}
-            <span>{signal}</span>
+            <SanitizedHTML html={signal} className="inline" />
           </span>
         ))}
       </div>
@@ -38,8 +39,7 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
       {capped.map((signal, i) => (
         <div key={`signal-${i}`} className="flex items-start gap-2 text-primary">
           <span className="mt-0.5 text-[var(--color-trust)]">✓</span>
-          {/* TODO: replace with SanitizedHTML after Story 0.4 */}
-          <span>{signal}</span>
+          <SanitizedHTML html={signal} className="inline" />
         </div>
       ))}
       {detailsUrl && (

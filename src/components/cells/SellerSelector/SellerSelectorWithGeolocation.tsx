@@ -40,6 +40,10 @@ import { useEffect } from 'react';
 
 import { useCircuitBreaker } from '@/hooks/useCircuitBreaker';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import {
+  isGeolocationDeniedCached,
+  cacheGeolocationDenial,
+} from '@/lib/helpers/geo-denial-cache';
 import type { VendorOfferOption } from '@/types/product';
 
 import { SellerSelector } from './SellerSelector';
@@ -62,15 +66,23 @@ export const SellerSelectorWithGeolocation = ({
   const { status, lat, lng, requestLocation } = useGeolocation();
   const breaker = useCircuitBreaker();
 
-  // Fire once on mount. Hook's `requestLocation` is stable (useCallback) —
-  // the dep array intentionally excludes it to avoid ESLint exhaustive-deps
-  // false-positive churn (the request is genuinely "once at mount").
+  // Fire once on mount — but skip when the user already denied in this session
+  // (cleanup-12c AC5: sessionStorage denial cache prevents SSR re-prompt loop).
+  // Hook's `requestLocation` is stable (useCallback) — dep array intentionally
+  // excludes it to avoid ESLint exhaustive-deps false-positive churn.
   useEffect(() => {
-    if (status === 'idle') {
+    if (status === 'idle' && !isGeolocationDeniedCached()) {
       requestLocation();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Persist denial so new mounts in the same session skip re-prompting (AC5).
+  useEffect(() => {
+    if (status === 'denied') {
+      cacheGeolocationDenial();
+    }
+  }, [status]);
 
   // Half-open auto-resolve: a successful render of SellerSelector while the
   // breaker is in the test state counts as a passing call. Effect runs

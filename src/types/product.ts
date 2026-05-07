@@ -43,6 +43,8 @@ export interface MultiVendorPricingFields {
 export interface VendorOfferOption {
   seller_id: string;
   seller_name: string;
+  /** Storefront seller handle for `/sellers/{handle}` link (cleanup-12d AC1). */
+  seller_handle?: string;
   /** Price in PLN (integer minor units OR formatted display number — consumer decides). */
   price_pln: number;
   /** Optional distance from buyer in km. Story 5.3 computes this client-side

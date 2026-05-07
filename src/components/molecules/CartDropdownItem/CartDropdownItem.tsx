@@ -9,15 +9,16 @@ import {
 import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 
 /**
  * Story 5.5 — multi-vendor pricing flag re-used (Story 5.1/5.2 pattern).
  * Mini-cart line item seller label render gated. Default OFF → legacy
  * cart dropdown unchanged.
+ *
+ * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
+ * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
-
 export const CartDropdownItem = ({
   item,
   currency_code
@@ -27,7 +28,7 @@ export const CartDropdownItem = ({
 }) => {
   const t = useTranslations('seller.cart');
   // Story 5.5 — flag-gated; null gdy single-vendor flow.
-  const selectedSeller = MULTI_VENDOR_PRICING_ENABLED ? readSelectedSeller(item) : null;
+  const selectedSeller = isMultiVendorEnabled() ? readSelectedSeller(item) : null;
   const _original_total = convertToLocale({
     amount: (item.compare_at_unit_price || 0) * item.quantity,
     currency_code

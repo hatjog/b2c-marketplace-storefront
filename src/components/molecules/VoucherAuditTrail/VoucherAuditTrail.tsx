@@ -67,7 +67,7 @@ export async function VoucherAuditTrail({
 
   return (
     <details
-      data-testid="voucher-audit-trail"
+      data-testid="audit-trail-molecule"
       className={['bb-section-shell rounded-sm border border-tertiary p-4', className]
         .filter(Boolean)
         .join(' ')}
@@ -97,7 +97,7 @@ export async function VoucherAuditTrail({
             return (
               <li
                 key={event.id}
-                data-testid={`voucher-audit-event-${event.event_type}`}
+                data-testid={`audit-entry-${event.event_type}`}
                 className="flex items-start gap-3"
               >
                 <span

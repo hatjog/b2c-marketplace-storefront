@@ -78,6 +78,7 @@
       "label_city": "City",
       "city_all": "All cities",
       "label_sort": "Sort",
+      "sort_rating_desc": "Top rated",
       "sort_name_asc": "Name A-Z",
       "sort_name_desc": "Name Z-A",
       "submit": "Search",
@@ -143,7 +144,8 @@
       "no_active_vendors_title": "Salon preparing offer",
       "no_active_vendors_message": "Sellers are updating availability. Check back soon or we will notify you when an offer is available.",
       "back_to_list_cta": "Back to list",
-      "notify_me_cta": "Notify me"
+      "notify_me_cta": "Notify me",
+      "sole_vendor_label": "Sole vendor"
     },
     "status": {
       "pending_approval": "Pending approval",
@@ -170,6 +172,10 @@
       "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",
       "review_cart_cta": "Review cart",
       "flag_changed_close_cta": "Close"
+    },
+    "multi_vendor": {
+      "indicator_label": "{count} salons offer this",
+      "indicator_tooltip": "This product is offered by {count} partner salons"
     }
   },
   "footer": {
@@ -499,7 +505,11 @@
     "continue_to_payment": "Continue to payment",
     "choose_delivery_option": "Choose delivery option",
     "place_order": "Place order",
-    "payment_obligation_notice": "Order with obligation to pay"
+    "payment_obligation_notice": "Order with obligation to pay",
+    "order_set_summary": {
+      "heading": "Order split by seller",
+      "unknown_seller": "Seller"
+    }
   },
   "confirmation": {
     "loading": "Loading...",
@@ -573,6 +583,7 @@
       "not_found_message": "Unknown voucher",
       "consent_pending_message": "Saving consent. Please come back in a moment.",
       "post_claim_link": "Go to the salon",
+      "pdf_download_cta": "Download voucher PDF",
       "meta_default_title": "BonBeauty voucher",
       "meta_default_description": "Use your BonBeauty voucher at the chosen salon.",
       "offline": {

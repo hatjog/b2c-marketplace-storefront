@@ -107,7 +107,22 @@ async function handleClaimPost(req) {
     const body = await req.clone().text();
     const url = req.url;
     const queuedAt = new Date().toISOString();
-    const id = crypto.randomUUID ? crypto.randomUUID() : `q-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // Fail-closed: if crypto.randomUUID is unavailable this browser/SW context
+    // cannot generate a cryptographically safe idempotency key — do NOT fall
+    // back to Math.random (predictable + collidable → enables replay attacks).
+    // Story v160-cleanup-15c AC4.
+    if (!crypto.randomUUID) {
+      // Broadcast the error to all clients so UI can surface "browser unsupported".
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of clients) {
+        client.postMessage({ type: 'GP_VOUCHER_SW_ERROR', error: 'crypto_unavailable' });
+      }
+      return new Response(
+        JSON.stringify({ error: 'crypto_unavailable', message: 'Secure random UUID generation is not available in this browser. Voucher claims require a modern browser.' }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    const id = crypto.randomUUID();
 
     await enqueueClaim({ id, url, body, queuedAt, retryCount: 0 });
 

@@ -7,6 +7,14 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 
 import { CrossSellSection } from '../CrossSellSection';
 
+const isSellerActive = (seller: { status?: string; store_status?: string } | null | undefined) => {
+  if (!seller) {
+    return true;
+  }
+
+  return seller.status === 'open' || seller.store_status === 'ACTIVE';
+};
+
 export const ProductDetailsPage = async ({
   handle,
   locale
@@ -22,20 +30,8 @@ export const ProductDetailsPage = async ({
 
   if (!prod) return NotFound();
 
-  // Story v160-cleanup-11 (8.8 follow-up): accept BOTH Mercur 2 (`status === 'open'`)
-  // and legacy Mercur 1.x (`store_status === 'ACTIVE'`) vocabularies. Without this
-  // dual check, every Mercur 2 PDP returns NotFound because `store_status` is
-  // undefined. Mirrors `normalize-listed-products.ts` filter.
-  if (prod.seller) {
-    const seller = prod.seller as typeof prod.seller & {
-      status?: string;
-      store_status?: string;
-    };
-    const isActive =
-      seller.status === 'open' || seller.store_status === 'ACTIVE';
-    if (!isActive) {
-      return NotFound();
-    }
+  if (!isSellerActive(prod.seller)) {
+    return NotFound();
   }
 
   const product = {

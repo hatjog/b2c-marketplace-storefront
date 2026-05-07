@@ -3,6 +3,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { CartItemsHeader, CartItemsProducts } from '@/components/cells';
 import { CartGroupedBySeller } from '@/components/organisms/CartGroupedBySeller/CartGroupedBySeller';
 import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 
 /**
  * Story 5.7 — multi-vendor cart grouping flag (re-uses Story 5.5 pattern).
@@ -10,17 +11,17 @@ import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
  * grouped sections; else legacy flat grouping by `product.seller`. Review
  * surface passes `delete_item={false}` + `change_quantity={false}` per
  * existing baseline (cart is finalized at review step).
+ *
+ * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
+ * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
-
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
   const items = cart.items ?? [];
 
   // Story 5.7 — flag-gated grouping by selected seller metadata.
-  if (MULTI_VENDOR_PRICING_ENABLED && hasMultipleSellers(items)) {
+  if (isMultiVendorEnabled() && hasMultipleSellers(items)) {
     return (
       <CartGroupedBySeller
         cart={cart}

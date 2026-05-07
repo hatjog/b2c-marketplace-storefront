@@ -95,7 +95,7 @@ export default async function VoucherClaimPage({
 
   return (
     <main
-      data-testid="voucher-claim-page"
+      data-testid="claim-page"
       data-code={voucher.code}
       data-status={voucher.status}
       className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10"
@@ -206,6 +206,16 @@ export default async function VoucherClaimPage({
           >
             {t('post_claim_link')}
           </Link>
+          {/* Story v160-cleanup-12f: PDF download CTA — AC1 testid requirement */}
+          <a
+            href={`/api/voucher/${voucher.code}/pdf`}
+            data-testid="pdf-download-cta"
+            data-event="pdf_download_cta"
+            className="inline-flex min-h-10 items-center gap-2 rounded-sm border border-positive px-4 py-2 text-sm text-positive hover:bg-positive-subtle"
+            download
+          >
+            {t('pdf_download_cta')}
+          </a>
         </section>
       )}
 

@@ -14,6 +14,7 @@ import { VendorBadge } from '@/components/molecules/VendorBadge';
 import {
   NoActiveVendorsFallback,
   SellerSelectorCartBridge,
+  SoleVendorBadge,
 } from '@/components/cells/SellerSelector';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -21,6 +22,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
+import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 import type {
   AdditionalAttributeProps,
   GpProductMetadata,
@@ -34,9 +36,10 @@ import type { Wishlist } from '@/types/wishlist';
  * introduced in Story 5.1 ProductCard.tsx). Single flag governs both
  * PLP badge + PDP selector for coherent Phase B flip (story 8.3).
  * Default OFF (`'false'`) → selector hidden across whole app.
+ *
+ * cleanup-12f: flag check moved to async function body (lazy eval) to avoid
+ * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 export const ProductDetails = async ({
   product,
@@ -65,20 +68,22 @@ export const ProductDetails = async ({
   const gpMeta = getGpMetadata<GpProductMetadata>(product.metadata as Record<string, unknown>);
   const validityPeriod = gpMeta?.validity_period ?? null;
 
-  // Story 5.2 — vendor offers DRAFT schema-only in v1.6.0; backend Phase B
-  // populates this field. Read defensively from metadata; selector hidden
-  // unless flag flipped AND length > 1 per AC4.
+  // cleanup-12c AC1/AC2/AC3/AC4 — explicit 4-branch vendor_offers dispatch.
+  // vendorOfferCount === -1  → undefined / not an array (flag OFF or pre-Phase-B)
+  // vendorOfferCount === 0   → empty array → showNoActiveVendorsFallback (Story 5.6)
+  // vendorOfferCount === 1   → showSoleVendorBadge (closes audit F4 silent length===1 fall-through)
+  // vendorOfferCount >= 2    → showSellerSelector (Story 5.2 / 5.3 / 5.5)
   const vendorOffers =
     (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
-  const showSellerSelector =
-    MULTI_VENDOR_PRICING_ENABLED && Array.isArray(vendorOffers) && vendorOffers.length > 1;
+  const vendorOfferCount = Array.isArray(vendorOffers) ? vendorOffers.length : -1;
+  // cleanup-12f: evaluate flag inside function body (lazy) to avoid barrel TDZ issue.
+  const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
+  const showSellerSelector = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount >= 2;
+  const showSoleVendorBadge = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount === 1;
   // Story 5.6 — sibling branch dla `length === 0` empty-state path. Defensive
   // `Array.isArray()` guard zapobiega cross-contamination z undefined case
   // (undefined → fallthrough do default Medusa flow; flag OFF default w v1.6.0).
-  const showNoActiveVendorsFallback =
-    MULTI_VENDOR_PRICING_ENABLED &&
-    Array.isArray(vendorOffers) &&
-    vendorOffers.length === 0;
+  const showNoActiveVendorsFallback = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount === 0;
 
   return (
     <div className="space-y-4">
@@ -113,6 +118,12 @@ export const ProductDetails = async ({
         // in-progress. Per persona Marta-self transparent komunikat zamiast
         // mylącego default Medusa single-variant flow.
         <NoActiveVendorsFallback backHref={`/${locale}/categories`} />
+      )}
+      {showSoleVendorBadge && vendorOffers && (
+        // cleanup-12c AC3 — sole-vendor explicit branch (audit F4 closed).
+        // Renders a non-interactive badge instead of a 1-option selector
+        // (single-option radio is UX antipattern per Epic-5 F4 audit).
+        <SoleVendorBadge offer={vendorOffers[0]} />
       )}
       {showSellerSelector && vendorOffers && (
         // Story 5.3 — geolocation-aware wrapper consumes useGeolocation

@@ -7,6 +7,7 @@ import {
 } from '@/lib/blog';
 import { buildMedusaUrl } from '@/lib/env';
 import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
+import { getCountryCode } from '@/lib/helpers/country-code';
 import { filterByMarket, filterByMarketOrKeepUntagged, getMarketId } from '@/lib/helpers/market-filter';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import type { BlogPost } from '@/types/blog';
@@ -78,16 +79,20 @@ export async function fetchHomepageProducts({
   const resolvedLimit = Math.max(1, Math.min(limit ?? 4, 24));
   const resolvedSort = mapSortToStorefront(sort ?? 'newest');
 
-  const regionId = await resolveRegionId(locale);
+  // Bug v160-tofix-3: locale ('pl', 'en') must be converted to ISO 3166-1 alpha-2
+  // country code ('pl', 'gb') before passing to /store/products?country_code=.
+  // Passing locale string directly causes 400 for 'en' (no region with country 'en').
+  const countryCode = await getCountryCode(locale);
+  const regionId = await resolveRegionId(countryCode);
 
   const url = buildMedusaUrl('/store/products');
-  url.searchParams.set('country_code', locale);
+  url.searchParams.set('country_code', countryCode);
   if (regionId) url.searchParams.set('region_id', regionId);
   url.searchParams.set('limit', String(resolvedLimit));
   url.searchParams.set('fields', '*variants.calculated_price,*variants,*seller');
 
   const fallbackUrl = buildMedusaUrl('/store/products');
-  fallbackUrl.searchParams.set('country_code', locale);
+  fallbackUrl.searchParams.set('country_code', countryCode);
   if (regionId) fallbackUrl.searchParams.set('region_id', regionId);
   fallbackUrl.searchParams.set('limit', String(resolvedLimit));
 

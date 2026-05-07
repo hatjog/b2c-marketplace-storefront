@@ -14,6 +14,8 @@ interface CartContextInterface {
     selectedSellerId?: string | null;
     /** Story 5.5 — denormalized seller name dla cart UI render. */
     selectedSellerName?: string | null;
+    /** cleanup-12d AC1 — seller handle. */
+    selectedSellerHandle?: string | null;
   }) => Promise<void>;
   removeCartItem: (lineId: string) => Promise<void>;
   updateCartItem: (lineId: string, quantity: number) => Promise<void>;
@@ -30,7 +32,9 @@ interface CartContextInterface {
    */
   selectedSellerId: string | null;
   selectedSellerName: string | null;
-  setSelectedSeller: (ctx: { id: string; name: string } | null) => void;
+  /** cleanup-12d AC1 — seller handle. */
+  selectedSellerHandle: string | null;
+  setSelectedSeller: (ctx: { id: string; name: string; handle?: string | null } | null) => void;
 }
 
 export const CartContext = createContext<CartContextInterface | null>(null);

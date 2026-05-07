@@ -9,6 +9,8 @@ export interface SellerListItem {
   photo_url: string | null;
   city: string | null;
   product_count: number;
+  avg_rating?: number | null;
+  review_count?: number | null;
   /**
    * Story v160-4-2: optional geo coords for SellerMap markers. Mercur 2.1.1
    * `/store/sellers` does not yet expose lat/lng — type augmented as optional;
@@ -30,6 +32,8 @@ type SellerApiItem = {
   photo?: string | null;
   city?: string | null;
   product_count?: number;
+  avg_rating?: number | null;
+  review_count?: number | null;
   lat?: number | null;
   lng?: number | null;
   address?: string | null;
@@ -51,6 +55,8 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
         photo_url: v.photo ?? null,
         city: v.city ?? null,
         product_count: v.product_count ?? 0,
+        avg_rating: typeof v.avg_rating === 'number' ? v.avg_rating : null,
+        review_count: typeof v.review_count === 'number' ? v.review_count : null,
         lat: typeof v.lat === 'number' ? v.lat : null,
         lng: typeof v.lng === 'number' ? v.lng : null,
         address: v.address ?? null
@@ -74,7 +80,7 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
  * cursor"). When backend exposes native query params (story 4.x follow-up)
  * this function migrates to server-side filtering — call sites stay stable.
  */
-export type SellerSortKey = 'name_asc' | 'name_desc';
+export type SellerSortKey = 'rating_desc' | 'name_asc' | 'name_desc';
 
 export interface SearchSellersArgs {
   q?: string;
@@ -188,6 +194,20 @@ export const searchSellers = async ({
         }
       }
     }
+    if (sort === 'rating_desc') {
+      const aRating = typeof a.avg_rating === 'number' ? a.avg_rating : Number.NEGATIVE_INFINITY;
+      const bRating = typeof b.avg_rating === 'number' ? b.avg_rating : Number.NEGATIVE_INFINITY;
+      if (aRating !== bRating) {
+        return bRating - aRating;
+      }
+
+      const aReviewCount = typeof a.review_count === 'number' ? a.review_count : Number.NEGATIVE_INFINITY;
+      const bReviewCount = typeof b.review_count === 'number' ? b.review_count : Number.NEGATIVE_INFINITY;
+      if (aReviewCount !== bReviewCount) {
+        return bReviewCount - aReviewCount;
+      }
+    }
+
     const cmp = a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' });
     return sort === 'name_desc' ? -cmp : cmp;
   });

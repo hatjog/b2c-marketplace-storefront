@@ -12,6 +12,7 @@ import { ProductListing } from '@/components/sections/ProductListing/ProductList
 import { getCategoryByHandle } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
 import { listRegions } from '@/lib/data/regions';
+import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveGpSeoMetadata } from '@/lib/helpers/seo';
@@ -100,6 +101,12 @@ async function Category({
 }) {
   const { category: categoryHandle, locale } = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
+
+  // Story v160-cleanup-13c — warm runtime feature-flag cache before any
+  // downstream sync `isMultiVendorEnabled()` calls inside ProductCard etc.
+  // If backend reports 'off', the sync helpers will return false even when
+  // the build-baked NEXT_PUBLIC_* env says true.
+  await isMultiVendorEnabledRuntime();
 
   const category = await getCategoryByHandle(categoryHandle);
 

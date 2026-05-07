@@ -23,15 +23,19 @@ export function CartProvider({ cart, children }: CartProviderProps) {
   // Story 5.5 — multi-vendor PDP seller selection state.
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [selectedSellerName, setSelectedSellerName] = useState<string | null>(null);
+  // cleanup-12d AC1
+  const [selectedSellerHandle, setSelectedSellerHandle] = useState<string | null>(null);
 
-  const setSelectedSeller = useCallback((ctx: { id: string; name: string } | null) => {
+  const setSelectedSeller = useCallback((ctx: { id: string; name: string; handle?: string | null } | null) => {
     if (ctx === null) {
       setSelectedSellerId(null);
       setSelectedSellerName(null);
+      setSelectedSellerHandle(null);
       return;
     }
     setSelectedSellerId(ctx.id);
     setSelectedSellerName(ctx.name);
+    setSelectedSellerHandle(ctx.handle ?? null);
   }, []);
 
   useEffect(() => {
@@ -129,7 +133,8 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     quantity,
     countryCode,
     selectedSellerId,
-    selectedSellerName
+    selectedSellerName,
+    selectedSellerHandle,
   }: {
     variantId: string;
     quantity: number;
@@ -138,6 +143,8 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     selectedSellerId?: string | null;
     /** Story 5.5 — denormalized seller name dla cart UI render. */
     selectedSellerName?: string | null;
+    /** cleanup-12d AC1 — seller handle. */
+    selectedSellerHandle?: string | null;
   }) => {
     setIsAddingItem(true);
     setIsUpdating(true);
@@ -148,7 +155,8 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         quantity,
         countryCode,
         selectedSellerId,
-        selectedSellerName
+        selectedSellerName,
+        selectedSellerHandle,
       });
       await refreshCart();
     } catch (error) {
@@ -212,6 +220,7 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         isRemovingItem,
         selectedSellerId,
         selectedSellerName,
+        selectedSellerHandle,
         setSelectedSeller
       }}
     >

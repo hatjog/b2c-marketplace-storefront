@@ -2,11 +2,18 @@ import type { HttpTypes } from '@medusajs/types';
 import * as Sentry from '@sentry/nextjs';
 
 import type { SellerProps } from '@/types/seller';
+import type { MultiVendorPricingFields } from '@/types/product';
 import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpField } from '@/lib/helpers/metadata-utils';
 
-export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null };
+/**
+ * Story cleanup-12c — ListedProduct widened with MultiVendorPricingFields so
+ * that `vendor_offers`, `vendor_count`, and `lowest_price_pln` returned by
+ * the backend middleware (cleanup-12a) flow through the normalizer without
+ * being stripped by spread operations. AC1.
+ */
+export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null } & MultiVendorPricingFields;
 
 const MIN_DESCRIPTION_WORDS = 80;
 
@@ -19,6 +26,14 @@ const PLACEHOLDER_PATTERNS = [
 ];
 
 type QualityGateFailure = { criterion: string; detail: string };
+
+function isSellerActive(seller: SellerProps | null | undefined): boolean {
+  if (!seller) {
+    return false;
+  }
+
+  return seller.status === 'open' || seller.store_status === 'ACTIVE';
+}
 
 function normalizeProductAssetReferences(product: ListedProduct, marketId: string): ListedProduct {
   const thumbnail = resolveMarketAssetUrl(product.thumbnail, marketId) ?? product.thumbnail ?? null;
@@ -47,14 +62,7 @@ function resolveSingleSeller(product: ListedProduct, preferredSellerId?: string)
       }
     }
 
-    // Story v160-cleanup-11 (8.8 follow-up): accept Mercur 2 (`status === 'open'`)
-    // OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) so the array-fallback
-    // does not silently promote a SUSPENDED Mercur 2 seller via index-0 default.
-    const activeSeller = sellerValue.find((seller) => {
-      const s = seller as (SellerProps & { status?: string; store_status?: string }) | null | undefined;
-      if (!s) return false;
-      return s.status === 'open' || s.store_status === 'ACTIVE';
-    });
+    const activeSeller = sellerValue.find((seller) => isSellerActive(seller as SellerProps | null | undefined));
     return (activeSeller ?? sellerValue[0] ?? null) as SellerProps | null;
   }
 
@@ -103,13 +111,8 @@ export const normalizeListedProducts = (
       };
     })
     .filter(product => {
-      // Story v160-cleanup-11 (8.8 follow-up): Mercur 2 uses Seller.status === 'open';
-      // legacy Mercur 1.x used Seller.store_status === 'ACTIVE'. Accept either for
-      // back-compat during migration window.
-      const seller = product.seller as (SellerProps & { status?: string; store_status?: string }) | null | undefined;
-      if (!seller) return true;
-      const isActive = seller.status === 'open' || seller.store_status === 'ACTIVE';
-      return isActive;
+      if (!product.seller) return true;
+      return isSellerActive(product.seller);
     })
     .filter(product => {
       const failures = checkQualityGate(product);

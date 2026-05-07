@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * CartGroupedBySeller — Story 5.7 multi-vendor cart grouping organism.
  *
@@ -19,10 +21,12 @@
  */
 
 import type { HttpTypes } from '@medusajs/types';
-import { getTranslations } from 'next-intl/server';
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { CartItemsProducts } from '@/components/cells';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { listOrderSetSplits } from '@/lib/data/order-sets';
 import { groupLineItemsBySeller } from '@/lib/helpers/cart-vendor-context';
 import { convertToLocale } from '@/lib/helpers/money';
 
@@ -33,19 +37,42 @@ interface CartGroupedBySellerProps {
   /** Show quantity edit per line item (cart page = true; review = false). */
   change_quantity?: boolean;
   /** Show subtotal per seller group footer (default true on review surfaces). */
+  /** cleanup-12d AC3: defaults to true so cart page always shows per-vendor totals. */
   show_subtotal?: boolean;
 }
 
-export const CartGroupedBySeller = async ({
+export const CartGroupedBySeller = ({
   cart,
   delete_item = true,
   change_quantity = true,
-  show_subtotal = false,
+  show_subtotal = true,
 }: CartGroupedBySellerProps) => {
-  const t = await getTranslations('seller.cart');
+  const t = useTranslations('seller.cart');
+  const [splitSubtotals, setSplitSubtotals] = useState<Map<string, number>>(new Map());
 
   const items = cart.items ?? [];
   const groups = groupLineItemsBySeller(items);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!cart.id) {
+      setSplitSubtotals(new Map());
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void listOrderSetSplits(cart.id).then((splits) => {
+      if (!cancelled) {
+        setSplitSubtotals(new Map(splits.map((split) => [split.seller_id, split.subtotal])));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cart.id]);
 
   if (groups.length === 0) {
     // Caller (CartItems organism) should already have early-returned EmptyCart;
@@ -60,9 +87,13 @@ export const CartGroupedBySeller = async ({
         const headerLabel = group.seller
           ? t('group_header_label', { seller_name: group.seller.name })
           : t('default_seller_group_label');
+        const subtotalMinor =
+          group.seller_id && splitSubtotals.has(group.seller_id)
+            ? splitSubtotals.get(group.seller_id) ?? group.subtotal
+            : group.subtotal;
         const subtotalFormatted = show_subtotal
           ? convertToLocale({
-              amount: group.subtotal,
+              amount: subtotalMinor,
               currency_code: cart.currency_code,
             })
           : null;
@@ -70,10 +101,14 @@ export const CartGroupedBySeller = async ({
         return (
           <section
             key={groupKey}
-            data-testid={`cart-grouped-by-seller-${groupKey}`}
+            data-testid="vendor-cart-group"
+            data-seller-id={groupKey}
             className="mb-4 rounded-sm border"
           >
-            <header className="flex items-center justify-between gap-4 border-b p-4">
+            <header
+              data-testid="vendor-group-header"
+              className="flex items-center justify-between gap-4 border-b p-4"
+            >
               <h3 className="heading-xs uppercase">{headerLabel}</h3>
               {group.seller?.handle && (
                 <LocalizedClientLink
@@ -96,7 +131,7 @@ export const CartGroupedBySeller = async ({
             {subtotalFormatted && (
               <footer
                 className="border-t p-4 text-right"
-                data-testid={`cart-group-subtotal-${groupKey}`}
+                data-testid="vendor-group-total"
               >
                 <p className="label-md text-secondary">
                   {t('subtotal_per_seller', { amount: subtotalFormatted })}

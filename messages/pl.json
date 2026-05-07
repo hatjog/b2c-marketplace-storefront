@@ -78,6 +78,7 @@
       "label_city": "Miasto",
       "city_all": "Wszystkie miasta",
       "label_sort": "Sortuj",
+      "sort_rating_desc": "Najwyżej oceniane",
       "sort_name_asc": "Nazwa A-Z",
       "sort_name_desc": "Nazwa Z-A",
       "submit": "Szukaj",
@@ -143,7 +144,8 @@
       "no_active_vendors_title": "Salon przygotowuje ofertę",
       "no_active_vendors_message": "Sprzedawcy aktualizują dostępność. Zajrzyj wkrótce lub powiadomimy Cię gdy oferta będzie dostępna.",
       "back_to_list_cta": "Powrót do listy",
-      "notify_me_cta": "Powiadom mnie"
+      "notify_me_cta": "Powiadom mnie",
+      "sole_vendor_label": "Wyłączny sprzedawca"
     },
     "status": {
       "pending_approval": "Oczekuje na zatwierdzenie",
@@ -170,6 +172,10 @@
       "flag_changed_message": "Ustawienia oferty wielosprzedawcowej zostały zmienione w trakcie Twojego zamówienia. Sprawdź zawartość koszyka i spróbuj ponownie.",
       "review_cart_cta": "Przejdź do koszyka",
       "flag_changed_close_cta": "Zamknij"
+    },
+    "multi_vendor": {
+      "indicator_label": "{count} salonów oferuje",
+      "indicator_tooltip": "Ten produkt oferowany przez {count} salonów partnerskich"
     }
   },
   "footer": {
@@ -499,7 +505,11 @@
     "continue_to_payment": "Kontynuuj do płatności",
     "choose_delivery_option": "Wybierz opcję dostawy",
     "place_order": "Złóż zamówienie",
-    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty"
+    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty",
+    "order_set_summary": {
+      "heading": "Podział zamówienia na salony",
+      "unknown_seller": "Salon"
+    }
   },
   "confirmation": {
     "loading": "Ładowanie...",
@@ -573,6 +583,7 @@
       "not_found_message": "Nieznany voucher",
       "consent_pending_message": "Trwa zapis zgody. Wróć za chwilę.",
       "post_claim_link": "Przejdź do salonu",
+      "pdf_download_cta": "Pobierz voucher PDF",
       "meta_default_title": "Voucher BonBeauty",
       "meta_default_description": "Skorzystaj z otrzymanego vouchera w wybranym salonie BonBeauty.",
       "offline": {

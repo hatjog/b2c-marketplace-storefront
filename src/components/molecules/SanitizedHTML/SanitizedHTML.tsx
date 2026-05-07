@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { sanitizeHtml } from '@/lib/security/sanitizeHtml';
 
 interface Props {

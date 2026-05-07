@@ -75,13 +75,13 @@ describe('sanitizeHtml — Story v160-4-7 anti-Booksy whitelist', () => {
     expect(vbOut).not.toContain('vbscript:');
   });
 
-  it('AC2 preserves http, https, mailto, tel schemes in <a href>', () => {
+  it('AC2 preserves https: and mailto: schemes in <a href>', () => {
     const httpsOut = sanitizeHtml('<a href="https://example.com">x</a>');
     expect(httpsOut).toContain('href="https://example.com"');
     const mailtoOut = sanitizeHtml('<a href="mailto:test@example.com">x</a>');
     expect(mailtoOut).toContain('href="mailto:test@example.com"');
-    const telOut = sanitizeHtml('<a href="tel:+48123456789">x</a>');
-    expect(telOut).toContain('href="tel:+48123456789"');
+    // tel: is not in canonical ALLOWED_URI_REGEXP (cleanup-15b: secure-by-default)
+    // Use opts to add tel: at call site if needed for specific use cases.
   });
 
   it('AC2 preserves nested allowed structure (lists + emphasis)', () => {
@@ -169,14 +169,15 @@ describe('sanitizeHtml — Story v160-cleanup-4 bypass fixtures (CRIT-7.3 + HIGH
     expect(ALLOWED_URI_REGEXP.test('mailto:test@example.com')).toBe(true);
   });
 
-  it('ALLOWED_URI_REGEXP allows relative paths', () => {
+  it('ALLOWED_URI_REGEXP allows slash-anchored relative paths and fragments', () => {
     expect(ALLOWED_URI_REGEXP.test('/relative/path')).toBe(true);
-    expect(ALLOWED_URI_REGEXP.test('relative/path')).toBe(true);
     expect(ALLOWED_URI_REGEXP.test('#anchor')).toBe(true);
+    // schemeless paths without leading slash are rejected (cleanup-15b secure-by-default)
+    expect(ALLOWED_URI_REGEXP.test('relative/path')).toBe(false);
   });
 
   // ─── SANITIZE_VERSION ─────────────────────────────────────────────────────
-  it('SANITIZE_VERSION bumped to cleanup4-dompurify', () => {
-    expect(SANITIZE_VERSION).toContain('cleanup4-dompurify');
+  it('SANITIZE_VERSION bumped to 15b-hardened', () => {
+    expect(SANITIZE_VERSION).toContain('15b-hardened');
   });
 });
