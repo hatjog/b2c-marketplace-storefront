@@ -32,8 +32,10 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
                 className="text-ui-fg-subtle"
                 data-testid="order-status"
               >
-                {/* TODO: Check where the statuses should come from */}
-                {/* {formatStatus(order.fulfillment_status)} */}
+                {/* order.fulfillment_status (HttpTypes.StoreOrder) is the source;
+                    display deferred — showStatus prop controls visibility but
+                    rendering is intentionally blank until UX copy is finalised. */}
+                {/* {_formatStatus(order.fulfillment_status)} */}
               </span>
             </Text>
             <Text>
@@ -42,7 +44,7 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
                 className="text-ui-fg-subtle"
                 sata-testid="order-payment-status"
               >
-                {/* {formatStatus(order.payment_status)} */}
+                {/* {_formatStatus(order.payment_status)} */}
               </span>
             </Text>
           </>

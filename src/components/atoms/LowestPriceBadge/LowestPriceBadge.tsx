@@ -21,7 +21,9 @@
  * `--content-secondary` per design tokens v1.5.0). UX spec calls out
  * `--ink-3` token; that family is not yet wired in v1.6.0 design-tokens
  * sweep — `text-secondary` is the closest semantic match (muted body text).
- * TODO: migrate to `--ink-3` once Tier 2 visual sweep lands.
+ * FIXME(v1.7.0+): migrate to `--ink-3` after Tier 2 visual sweep lands
+ * (token not defined in v1.6.0 design-tokens; see specs/proposed/v1.7.0/
+ * cleanup-deferred-from-v160-2026-05-07.md).
  */
 
 import { useTranslations } from 'next-intl';

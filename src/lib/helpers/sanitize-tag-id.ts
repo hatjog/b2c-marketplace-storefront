@@ -5,8 +5,7 @@
  *   1. UUID v4 (Mercur internal IDs)
  *   2. Plain alphanumeric (legacy v1.0–v1.2 IDs)
  *   3. Kebab-case (e.g. `k-beauty`, `naturalny`, `minimalistyczny`) —
- *      BonBeauty homepage StyleSection links require this branch
- *      (regression v1.4.0 deferred-work.md).
+ *      BonBeauty homepage StyleSection links require this branch.
  *   4. Stable config ID `group:value` form (ADR-064).
  *
  * Defense-in-depth:
