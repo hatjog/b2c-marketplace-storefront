@@ -10,6 +10,8 @@ import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-le
 
 import type { SellerListItem } from '@/lib/data/seller';
 
+import { LEAFLET_DEFAULT_ICON_OPTIONS } from './leafletAssets';
+
 /**
  * Story v160-4-2 — interactive seller map (UX-DR15, FR21).
  *
@@ -25,16 +27,14 @@ import type { SellerListItem } from '@/lib/data/seller';
  * directly from a server component.
  */
 
-// Default Leaflet icon Webpack/Turbopack fix — bundler can't resolve Leaflet's
-// reflective `_getIconUrl`. Assets bundled locally under `public/leaflet-assets/`
-// (BSD-2-Clause; LICENSE preserved) — eliminates third-party CDN supply-chain risk,
-// CSP img-src relaxation, and GDPR third-party IP exposure (TF-65, 2026-05-07).
+// Bundler-reflection workaround: Webpack/Turbopack can't resolve Leaflet's
+// `_getIconUrl` so we delete it and merge explicit URLs. Asset URLs are
+// bundled locally (BSD-2-Clause; LICENSE under `public/leaflet-assets/`) —
+// no third-party CDN, eliminating supply-chain risk and third-party IP
+// exposure on every map render (TF-65, 2026-05-07). Path constants live
+// in `./leafletAssets.ts` so tests can runtime-assert them.
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: '/leaflet-assets/marker-icon-2x.png',
-  iconUrl: '/leaflet-assets/marker-icon.png',
-  shadowUrl: '/leaflet-assets/marker-shadow.png'
-});
+L.Icon.Default.mergeOptions(LEAFLET_DEFAULT_ICON_OPTIONS);
 
 const PL_CENTER: [number, number] = [52.0, 19.0];
 const PL_DEFAULT_ZOOM = 6;
