@@ -66,7 +66,7 @@ describe('products data normalization', () => {
           photo: '',
           tax_id: '',
           created_at: '2026-03-07T00:00:00.000Z',
-          store_status: 'ACTIVE',
+          status: 'open',  // Mercur 2 SellerStatus — was store_status: 'ACTIVE' (Mercur 1.5)
           reviews: [null, { id: 'review-1' }]
         }
       },
@@ -85,7 +85,7 @@ describe('products data normalization', () => {
           photo: '',
           tax_id: '',
           created_at: '2026-03-07T00:00:00.000Z',
-          store_status: 'SUSPENDED',
+          status: 'suspended',  // Mercur 2 SellerStatus — was store_status: 'SUSPENDED' (Mercur 1.5)
           reviews: [{ id: 'review-2' }]
         }
       }

@@ -32,7 +32,10 @@ function isSellerActive(seller: SellerProps | null | undefined): boolean {
     return false;
   }
 
-  return seller.status === 'open' || seller.store_status === 'ACTIVE';
+  // noqa: mercur15-drift — backward-compat dual-check: Mercur 2 `seller.status === 'open'` OR
+  // legacy Mercur 1.x `store_status === 'ACTIVE'` shim. Remove store_status branch once all
+  // API responses carry seller.status (Mercur 2 native field).
+  return seller.status === 'open' || seller.store_status === 'ACTIVE'; // noqa: mercur15-drift
 }
 
 function normalizeProductAssetReferences(product: ListedProduct, marketId: string): ListedProduct {

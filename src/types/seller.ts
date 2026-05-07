@@ -42,7 +42,10 @@ export type SellerProps = SellerAddress & {
   email?: string;
   phone?: string;
   status?: 'pending_approval' | 'open' | 'suspended' | 'terminated';
-  store_status?: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
+  // store_status: Mercur 1.5 legacy field; Mercur 2 uses seller.status (above).
+  // Retained for backward-compat with API responses that still carry the shim field.
+  // Values updated to Mercur 2 SellerStatus: 'open' | 'suspended' | 'closed' (was 'ACTIVE'|'SUSPENDED'|'INACTIVE').
+  store_status?: 'open' | 'suspended' | 'closed';
   // Enriched metadata fields (from story 6.1 backend endpoint)
   social_links?: SellerSocialLinks | null;
   gallery?: SellerGalleryItem[] | null;
