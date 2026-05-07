@@ -637,7 +637,10 @@ export async function deletePromotionCode(promoId: string) {
     .catch(medusaError);
 }
 
-// TODO: Pass a POJO instead of a form entity here
+// FIXME(v1.7.0): refactor to pass POJO instead of FormData — current signature is
+// a Next.js Server Action bound to <form action={setAddresses}> callers; migrating
+// requires updating all call-sites to useActionState with a POJO payload.
+// See specs/proposed/v1.7.0/cleanup-deferred-from-v160-2026-05-07.md
 export async function setAddresses(currentState: unknown, formData: FormData) {
   try {
     if (!formData) {
