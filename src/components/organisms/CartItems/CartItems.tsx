@@ -94,7 +94,11 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
 
 function resolveCartItemSeller(sellerValue: any) {
   if (Array.isArray(sellerValue)) {
-    const activeSeller = sellerValue.find((seller) => seller?.store_status === 'ACTIVE');
+    // Story v160-cleanup-11 (8.8 follow-up): accept Mercur 2 (`status === 'open'`)
+    // OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) — see normalize-listed-products.ts.
+    const activeSeller = sellerValue.find(
+      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE',
+    );
     return activeSeller ?? sellerValue[0] ?? null;
   }
 

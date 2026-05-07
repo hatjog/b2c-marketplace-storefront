@@ -22,8 +22,20 @@ export const ProductDetailsPage = async ({
 
   if (!prod) return NotFound();
 
-  if (prod.seller && prod.seller.store_status !== 'ACTIVE') {
-    return NotFound();
+  // Story v160-cleanup-11 (8.8 follow-up): accept BOTH Mercur 2 (`status === 'open'`)
+  // and legacy Mercur 1.x (`store_status === 'ACTIVE'`) vocabularies. Without this
+  // dual check, every Mercur 2 PDP returns NotFound because `store_status` is
+  // undefined. Mirrors `normalize-listed-products.ts` filter.
+  if (prod.seller) {
+    const seller = prod.seller as typeof prod.seller & {
+      status?: string;
+      store_status?: string;
+    };
+    const isActive =
+      seller.status === 'open' || seller.store_status === 'ACTIVE';
+    if (!isActive) {
+      return NotFound();
+    }
   }
 
   const product = {

@@ -47,7 +47,14 @@ function resolveSingleSeller(product: ListedProduct, preferredSellerId?: string)
       }
     }
 
-    const activeSeller = sellerValue.find((seller) => seller?.store_status === 'ACTIVE');
+    // Story v160-cleanup-11 (8.8 follow-up): accept Mercur 2 (`status === 'open'`)
+    // OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) so the array-fallback
+    // does not silently promote a SUSPENDED Mercur 2 seller via index-0 default.
+    const activeSeller = sellerValue.find((seller) => {
+      const s = seller as (SellerProps & { status?: string; store_status?: string }) | null | undefined;
+      if (!s) return false;
+      return s.status === 'open' || s.store_status === 'ACTIVE';
+    });
     return (activeSeller ?? sellerValue[0] ?? null) as SellerProps | null;
   }
 
