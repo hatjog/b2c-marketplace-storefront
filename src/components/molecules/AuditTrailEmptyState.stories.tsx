@@ -4,7 +4,8 @@ import { AuditTrailEmptyState } from "./AuditTrailEmptyState/AuditTrailEmptyStat
 
 /**
  * Story 6.1 / Sprint Week 0+ — AuditTrailEmptyState empty + first-row variants.
- * Full RecipientAuditTrailTimeline DEFERRED to follow-up story.
+ * Full RecipientAuditTrailTimeline shipped in Story v160-cleanup-53 (TF-130).
+ * See Molecules/RecipientAuditTrailTimeline stories for the full component.
  */
 const meta: Meta<typeof AuditTrailEmptyState> = {
   title: "Molecules/AuditTrailEmptyState",
