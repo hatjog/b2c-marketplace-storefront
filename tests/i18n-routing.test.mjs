@@ -33,7 +33,12 @@ describe('i18n routing', () => {
     assert.equal(isSupportedLocale(''), false);
   });
 
-  test('isSupportedLocale returns false for de (not in v1.1.0 scope)', () => {
-    assert.equal(isSupportedLocale('de'), false);
+  // cleanup-19: de and ua are now supported locales (SUPPORTED_LOCALES = ['pl','en','ua','de'])
+  test('isSupportedLocale returns true for de (added in v1.6.0 cleanup-19)', () => {
+    assert.equal(isSupportedLocale('de'), true);
+  });
+
+  test('isSupportedLocale returns true for ua (added in v1.6.0 cleanup-19)', () => {
+    assert.equal(isSupportedLocale('ua'), true);
   });
 });

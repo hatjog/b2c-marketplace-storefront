@@ -17,8 +17,13 @@ describe('i18n middleware helpers', () => {
       assert.equal(resolveLang('us', 'en'), 'en');
     });
 
+    // cleanup-19: 'de' is now a supported locale — cookie 'de' is used when URL segment 'us' is unsupported
+    test('uses cookie locale de when URL segment unsupported and de is in SUPPORTED_LOCALES', () => {
+      assert.equal(resolveLang('us', 'de'), 'de');
+    });
+
     test('falls back to default locale pl when URL and cookie both unsupported', () => {
-      assert.equal(resolveLang('us', 'de'), 'pl');
+      assert.equal(resolveLang('us', 'xx'), 'pl');
     });
 
     test('falls back to default locale pl when URL segment empty', () => {
