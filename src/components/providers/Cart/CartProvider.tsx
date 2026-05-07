@@ -21,9 +21,10 @@ export function CartProvider({ cart, children }: CartProviderProps) {
   const [isUpdatingItem, setIsUpdatingItem] = useState(false);
   const [isRemovingItem, setIsRemovingItem] = useState(false);
   // Story 5.5 — multi-vendor PDP seller selection state.
+  // Story v160-cleanup-32 (TF-72) — added selectedSellerHandle for "visit seller" link propagation.
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [selectedSellerName, setSelectedSellerName] = useState<string | null>(null);
-  // cleanup-12d AC1
+  // cleanup-12d AC1 / TF-72
   const [selectedSellerHandle, setSelectedSellerHandle] = useState<string | null>(null);
 
   const setSelectedSeller = useCallback((ctx: { id: string; name: string; handle?: string | null } | null) => {
@@ -143,7 +144,7 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     selectedSellerId?: string | null;
     /** Story 5.5 — denormalized seller name dla cart UI render. */
     selectedSellerName?: string | null;
-    /** cleanup-12d AC1 — seller handle. */
+    /** cleanup-12d AC1 / TF-72 — seller handle for "visit seller" link. */
     selectedSellerHandle?: string | null;
   }) => {
     setIsAddingItem(true);

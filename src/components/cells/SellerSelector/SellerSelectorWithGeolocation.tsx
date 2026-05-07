@@ -64,7 +64,7 @@ export const SellerSelectorWithGeolocation = ({
   className,
 }: SellerSelectorWithGeolocationProps) => {
   const { status, lat, lng, requestLocation } = useGeolocation();
-  const breaker = useCircuitBreaker();
+  const breaker = useCircuitBreaker('sellerSelectorApi');
 
   // Fire once on mount — but skip when the user already denied in this session
   // (cleanup-12c AC5: sessionStorage denial cache prevents SSR re-prompt loop).

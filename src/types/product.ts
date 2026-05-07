@@ -43,7 +43,9 @@ export interface MultiVendorPricingFields {
 export interface VendorOfferOption {
   seller_id: string;
   seller_name: string;
-  /** Storefront seller handle for `/sellers/{handle}` link (cleanup-12d AC1). */
+  /** Storefront seller handle for `/sellers/{handle}` link target
+   *  (cleanup-12d AC1 / TF-72): propagated via cart line-item
+   *  metadata.selected_seller_handle for CartGroupBySeller "visit seller" link. */
   seller_handle?: string;
   /** Price in PLN (integer minor units OR formatted display number — consumer decides). */
   price_pln: number;

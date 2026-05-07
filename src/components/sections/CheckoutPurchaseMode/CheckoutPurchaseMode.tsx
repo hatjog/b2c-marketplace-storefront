@@ -8,6 +8,7 @@ import {
   PurchaseModeToggle,
   type PurchaseMode
 } from '@/components/molecules/PurchaseModeToggle';
+import { parsePurchaseMode, SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 
 /**
  * Story 5.8 — CheckoutPurchaseMode wire-up section.
@@ -47,7 +48,9 @@ export function CheckoutPurchaseMode(): ReactElement {
   const searchParams = useSearchParams();
 
   const rawMode = searchParams.get('mode');
-  const mode = normalizePurchaseMode(rawMode);
+  // TF-74: case-insensitive parse + injection-resistant whitelist via parsePurchaseMode helper.
+  const parsedMode = parsePurchaseMode(rawMode);
+  const mode: PurchaseMode = parsedMode === SelfPurchaseMode.GIFT ? 'gift' : 'self';
 
   const handleChange = useCallback(
     (newMode: PurchaseMode): void => {

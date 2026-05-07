@@ -3,7 +3,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { CartItemsHeader, CartItemsProducts } from '@/components/cells';
 import { CartGroupedBySeller } from '@/components/organisms/CartGroupedBySeller/CartGroupedBySeller';
 import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
+import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 
 /**
  * Story 5.7 — multi-vendor cart grouping flag (re-uses Story 5.5 pattern).
@@ -14,14 +14,19 @@ import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
  *
  * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
  * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
+ *
+ * TF-75 (cleanup-32 synthesis): single helper `getCurrentFlagValue()` from
+ * `@/lib/security/flagAtomicCheck` invoked at render-time (preserves
+ * cleanup-12f TDZ-safe body-scoped pattern).
  */
+
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
   const items = cart.items ?? [];
 
   // Story 5.7 — flag-gated grouping by selected seller metadata.
-  if (isMultiVendorEnabled() && hasMultipleSellers(items)) {
+  if (getCurrentFlagValue() && hasMultipleSellers(items)) {
     return (
       <CartGroupedBySeller
         cart={cart}

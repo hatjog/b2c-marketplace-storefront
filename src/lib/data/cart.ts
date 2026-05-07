@@ -36,6 +36,24 @@ const MVP_FLAG_SNAPSHOT_KEY = 'mvp_flag_snapshot';
 const MVP_FLAG_SNAPSHOT_TS_KEY = 'mvp_flag_snapshot_ts';
 
 /**
+ * TF-73: Module-level mutex for getOrSetCart to prevent TOCTOU race condition.
+ *
+ * Problem: two concurrent addToCart calls for the same session (same server worker)
+ * both call getOrSetCart → both see no cart → both create one → duplicate carts.
+ *
+ * Solution (Opcja B per Story TF-73 OQ#1): Module-level Promise-based lock keyed
+ * by a stable session identifier. In Next.js server actions, each request gets a
+ * server-side execution context; within the same Node.js process, concurrent calls
+ * from the same session can be serialized via this Map.
+ *
+ * Timeout: 5s fallback to prevent lock starvation on unexpected failures.
+ * Note: This protects against same-process concurrent calls. Cross-process/pod
+ * races (multi-replica deployment) still require backend idempotency (future work).
+ */
+const cartCreationLocks = new Map<string, Promise<HttpTypes.StoreCart>>();
+const CART_CREATION_LOCK_TTL_MS = 5_000;
+
+/**
  * Story v160-5-9 — extracts flag snapshot z cart.metadata (Option A).
  * Returns `null` gdy snapshot missing — caller (placeOrder) treats this jako
  * fail-open Phase A per AC2 (backend mor-policy retains FM-9 guarantee).
@@ -206,6 +224,34 @@ export async function retrieveCart(cartId?: string) {
     .catch(() => null);
 }
 
+/**
+ * TF-73: Internal cart creation helper — acquires module-level lock to prevent
+ * TOCTOU duplicate cart creation. Returns existing cart if found, creates new one
+ * if not. Keyed by countryCode as session proxy (reasonable approximation for
+ * same-process concurrent calls).
+ */
+async function createCartIfMissing(countryCode: string): Promise<HttpTypes.StoreCart> {
+  // Re-check cart after acquiring lock — a preceding concurrent call may have created it.
+  let cart = await retrieveCart();
+  if (cart) return cart;
+
+  const region = await getRegion(countryCode);
+  if (!region) {
+    throw new Error(`Region not found for country code: ${countryCode}`);
+  }
+
+  const headers = { ...(await getAuthHeaders()) };
+  const cartResp = await sdk.store.cart.create({ region_id: region.id }, {}, headers);
+  cart = cartResp.cart;
+
+  await setCartId(cart.id);
+
+  const cartCacheTag = await getCacheTag('carts');
+  revalidateTag(cartCacheTag);
+
+  return cart;
+}
+
 export async function getOrSetCart(countryCode: string) {
   const region = await getRegion(countryCode);
 
@@ -220,13 +266,33 @@ export async function getOrSetCart(countryCode: string) {
   };
 
   if (!cart) {
-    const cartResp = await sdk.store.cart.create({ region_id: region.id }, {}, headers);
-    cart = cartResp.cart;
+    // TF-73: Atomic check-then-set via module-level Promise lock.
+    // Key is countryCode (session proxy). If another concurrent call is already
+    // creating a cart, await its result instead of creating another one.
+    const lockKey = `cart-create:${countryCode}`;
+    let lockPromise = cartCreationLocks.get(lockKey);
 
-    await setCartId(cart.id);
+    if (!lockPromise) {
+      // We are the first — acquire lock and create cart.
+      const creationPromise = createCartIfMissing(countryCode).finally(() => {
+        // Release lock after creation (success or failure).
+        cartCreationLocks.delete(lockKey);
+      });
+      // Set timeout to prevent lock starvation.
+      const timeoutPromise = new Promise<HttpTypes.StoreCart>((_, reject) =>
+        setTimeout(
+          () => {
+            cartCreationLocks.delete(lockKey);
+            reject(new Error('[getOrSetCart] cart creation lock timeout'));
+          },
+          CART_CREATION_LOCK_TTL_MS
+        )
+      );
+      lockPromise = Promise.race([creationPromise, timeoutPromise]);
+      cartCreationLocks.set(lockKey, lockPromise);
+    }
 
-    const cartCacheTag = await getCacheTag('carts');
-    revalidateTag(cartCacheTag);
+    cart = await lockPromise;
   }
 
   // Story v160-5-9 — Atomic Flag Check, AC2 cart-start snapshot.
@@ -328,7 +394,8 @@ export async function addToCart({
   /** Denormalized seller name dla cart UI (zero extra fetch w cart render);
    *  Story 5.5 — paired z selectedSellerId. */
   selectedSellerName?: string | null;
-  /** cleanup-12d AC1 — seller handle for cart group link. */
+  /** cleanup-12d AC1 / TF-72 — seller handle for "/sellers/{handle}" link
+   *  in CartGroupBySeller; persisted as cart_item metadata.selected_seller_handle. */
   selectedSellerHandle?: string | null;
 }) {
   if (!variantId) {
@@ -349,12 +416,13 @@ export async function addToCart({
 
   // Story 5.5 — only attach metadata gdy seller context provided. Defensive:
   // empty string treated jako absence (typescript-permissive callers).
+  // TF-72: also include selected_seller_handle when present (enables CartGroupBySeller "visit seller" link).
   const sellerMetadata =
     selectedSellerId && selectedSellerName
       ? {
           selected_seller_id: selectedSellerId,
           selected_seller_name: selectedSellerName,
-          // cleanup-12d AC1 — persist handle gdy provided.
+          // cleanup-12d AC1 / TF-72 — persist handle gdy provided.
           ...(selectedSellerHandle ? { selected_seller_handle: selectedSellerHandle } : {}),
         }
       : undefined;

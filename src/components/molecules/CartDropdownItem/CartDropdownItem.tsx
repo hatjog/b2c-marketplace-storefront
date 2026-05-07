@@ -9,7 +9,7 @@ import {
 import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
+import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 
 /**
  * Story 5.5 — multi-vendor pricing flag re-used (Story 5.1/5.2 pattern).
@@ -18,7 +18,12 @@ import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
  *
  * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
  * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
+ *
+ * TF-75 (cleanup-32 synthesis): single helper `getCurrentFlagValue()` from
+ * `@/lib/security/flagAtomicCheck` invoked at render-time (preserves
+ * cleanup-12f TDZ-safe body-scoped pattern).
  */
+
 export const CartDropdownItem = ({
   item,
   currency_code
@@ -28,7 +33,7 @@ export const CartDropdownItem = ({
 }) => {
   const t = useTranslations('seller.cart');
   // Story 5.5 — flag-gated; null gdy single-vendor flow.
-  const selectedSeller = isMultiVendorEnabled() ? readSelectedSeller(item) : null;
+  const selectedSeller = getCurrentFlagValue() ? readSelectedSeller(item) : null;
   const _original_total = convertToLocale({
     amount: (item.compare_at_unit_price || 0) * item.quantity,
     currency_code

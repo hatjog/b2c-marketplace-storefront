@@ -13,7 +13,7 @@ import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
+import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 
 /**
  * Story 5.5 — multi-vendor pricing flag re-used (Story 5.1/5.2 pattern).
@@ -23,7 +23,12 @@ import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
  *
  * cleanup-12f: flag check moved inside component body (lazy eval) to avoid
  * Turbopack module-evaluation order issue with barrel imports.
+ *
+ * TF-75 (cleanup-32 synthesis): single helper `getCurrentFlagValue()` from
+ * `@/lib/security/flagAtomicCheck` invoked at render-time (preserves
+ * cleanup-12f TDZ-safe body-scoped pattern).
  */
+
 export const CartItemsProducts = ({
   products,
   currency_code,
@@ -38,8 +43,8 @@ export const CartItemsProducts = ({
   // Filter out items with invalid data (missing prices/variants)
   const validProducts = filterValidCartItems(products);
   const t = useTranslations('seller.cart');
-  // cleanup-12f: evaluate flag inside component body (lazy) to avoid barrel TDZ issue.
-  const mvEnabled = isMultiVendorEnabled();
+  // cleanup-12f + TF-75: evaluate flag inside component body via single helper.
+  const mvEnabled = getCurrentFlagValue();
 
   return (
     <div>
