@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export type HeroButton = {
   label?: string | null;
   url?: string | null;
@@ -98,8 +100,13 @@ export function getImageUrl(image: HeroImage, fallback?: string, portalBaseUrl?:
   }
 
   if (fallback) {
-    // TODO(Faza 2): replace with structured logging (Sentry/Portal API) — warn masks upstream seed/backfill issues
-    console.warn('[homepage] image missing, using fallback:', fallback);
+    logger.warn('homepage.image.fallback_used', {
+      source: 'homepage-utils',
+      context: {
+        fallback_url_present: Boolean(fallback),
+        image_kind: typeof image === 'string' ? 'string' : (image == null ? 'null' : 'object'),
+      },
+    });
     return fallback;
   }
   return null;
