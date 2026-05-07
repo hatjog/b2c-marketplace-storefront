@@ -31,7 +31,8 @@ export const StickyAddToCart = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   // Story 5.5 — selectedSellerId/Name from CartContext shared state.
-  const { addToCart, isAddingItem, selectedSellerId, selectedSellerName } = useCartContext();
+  // TF-72: also pull selectedSellerHandle for "visit seller" link propagation.
+  const { addToCart, isAddingItem, selectedSellerId, selectedSellerName, selectedSellerHandle } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
 
@@ -79,8 +80,10 @@ export const StickyAddToCart = ({
         quantity: 1,
         countryCode,
         // Story 5.5 — multi-vendor seller context (null when flag OFF).
+        // TF-72: also propagate handle for "visit seller" link in CartGroupBySeller.
         selectedSellerId,
-        selectedSellerName
+        selectedSellerName,
+        selectedSellerHandle
       });
     } catch {
       toast.error({

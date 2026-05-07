@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types';
 
 import { CartItemsFooter, CartItemsHeader, CartItemsProducts } from '@/components/cells';
 import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
+import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 
 import { CartGroupedBySeller } from '../CartGroupedBySeller/CartGroupedBySeller';
 
@@ -13,15 +14,21 @@ import { EmptyCart } from './EmptyCart';
  * `<CartGroupedBySeller>` (sections per seller, alphabetical order).
  * When OFF or no seller metadata → legacy flat grouping by `product.seller`
  * preserved → zero regression vs v1.5.0 baseline.
+ *
+ * TF-75 (cleanup-32 synthesis): flag read via single helper
+ * `getCurrentFlagValue()` from `@/lib/security/flagAtomicCheck`, invoked
+ * INSIDE component body (not at module scope) to preserve cleanup-12f/13c
+ * Turbopack TDZ-safe pattern.
  */
-const MULTI_VENDOR_PRICING_ENABLED =
-  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
 
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
   const items = cart.items ?? [];
   if (items.length === 0) return <EmptyCart />;
+
+  // cleanup-12f + TF-75: render-time flag read via single helper.
+  const MULTI_VENDOR_PRICING_ENABLED = getCurrentFlagValue();
 
   // Story 5.7 — flag-gated grouping by selected seller metadata.
   if (MULTI_VENDOR_PRICING_ENABLED && hasMultipleSellers(items)) {

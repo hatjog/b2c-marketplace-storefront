@@ -8,8 +8,8 @@ import { LowestPriceBadge } from '@/components/atoms/LowestPriceBadge/LowestPric
 import { MultiVendorIndicator } from '@/components/atoms/MultiVendorIndicator/MultiVendorIndicator';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 import { cn } from '@/lib/utils';
 import type { MultiVendorPricingFields, Product } from '@/types/product';
 
@@ -18,14 +18,13 @@ import type { MultiVendorPricingFields, Product } from '@/types/product';
  * Default OFF (`'false'`) → badge hidden across whole app.
  * Phase B activation (post-v1.6.0) flips this to surface lowest-price prefix.
  *
- * cleanup-12f: added missing import for isMultiVendorEnabled (was causing
- * ReferenceError at SSR module evaluation — ProductCard was calling the function
- * without importing it).
+ * cleanup-12f / 13c: flag read inside component body to avoid Turbopack TDZ
+ * ReferenceError at module-init (SSR evaluation crashed when gate ran at
+ * module scope before bundler hoisting).
  *
- * cleanup-13c: gate moved inside component body so SSR-time runtime cache
- * (warmed by parent server component) is consulted at render-time, not at
- * module-init. Backend tri-state flag toggle now effectively gates this UI
- * without rebuilding.
+ * TF-75 (cleanup-32 synthesis): switched helper to single-compute path
+ * `getCurrentFlagValue()` from `@/lib/security/flagAtomicCheck`, but still
+ * invoked at render-time (NOT module scope) to preserve cleanup-13c TDZ fix.
  */
 
 const PLACEHOLDER_CDN_HOST = 'cdn.example.com';
@@ -75,8 +74,8 @@ export const ProductCard = ({
     return null;
   }
 
-  // cleanup-13c: render-time gate (consults runtime cache when warm).
-  const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
+  // cleanup-13c + TF-75: render-time gate via single helper.
+  const MULTI_VENDOR_PRICING_ENABLED = getCurrentFlagValue();
 
   // Story v160-4-6: build product href with optional `?from=seller:` suffix.
   const fromQuery =

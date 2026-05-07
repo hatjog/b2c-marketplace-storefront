@@ -22,7 +22,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
+import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 import type {
   AdditionalAttributeProps,
   GpProductMetadata,
@@ -39,6 +39,10 @@ import type { Wishlist } from '@/types/wishlist';
  *
  * cleanup-12f: flag check moved to async function body (lazy eval) to avoid
  * Turbopack module-evaluation order issue with barrel imports (TDZ ReferenceError).
+ *
+ * TF-75 (cleanup-32 synthesis): single helper `getCurrentFlagValue()` from
+ * `@/lib/security/flagAtomicCheck` invoked at render-time (preserves
+ * cleanup-12f TDZ-safe body-scoped pattern).
  */
 
 export const ProductDetails = async ({
@@ -76,8 +80,8 @@ export const ProductDetails = async ({
   const vendorOffers =
     (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
   const vendorOfferCount = Array.isArray(vendorOffers) ? vendorOffers.length : -1;
-  // cleanup-12f: evaluate flag inside function body (lazy) to avoid barrel TDZ issue.
-  const MULTI_VENDOR_PRICING_ENABLED = isMultiVendorEnabled();
+  // cleanup-12f + TF-75: evaluate flag inside function body via single helper.
+  const MULTI_VENDOR_PRICING_ENABLED = getCurrentFlagValue();
   const showSellerSelector = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount >= 2;
   const showSoleVendorBadge = MULTI_VENDOR_PRICING_ENABLED && vendorOfferCount === 1;
   // Story 5.6 — sibling branch dla `length === 0` empty-state path. Defensive

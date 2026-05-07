@@ -14,7 +14,8 @@ interface CartContextInterface {
     selectedSellerId?: string | null;
     /** Story 5.5 — denormalized seller name dla cart UI render. */
     selectedSellerName?: string | null;
-    /** cleanup-12d AC1 — seller handle. */
+    /** cleanup-12d AC1 / TF-72 — seller handle for CartGroupBySeller
+     *  "visit seller" link. Persisted as cart_item metadata.selected_seller_handle. */
     selectedSellerHandle?: string | null;
   }) => Promise<void>;
   removeCartItem: (lineId: string) => Promise<void>;
@@ -32,7 +33,7 @@ interface CartContextInterface {
    */
   selectedSellerId: string | null;
   selectedSellerName: string | null;
-  /** cleanup-12d AC1 — seller handle. */
+  /** cleanup-12d AC1 / TF-72 — seller handle for propagation to cart metadata. */
   selectedSellerHandle: string | null;
   setSelectedSeller: (ctx: { id: string; name: string; handle?: string | null } | null) => void;
 }

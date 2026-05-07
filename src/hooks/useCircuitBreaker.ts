@@ -7,6 +7,12 @@
  * Spec: PRD AR45 (resilience NIE blocks render) + AR54 (Phase A2 SMOKE GATE)
  *       persona Marta-self buyer-flow MUSI nie crashować na backend hiccup
  *
+ * Story v160-cleanup-32 (TF-71): moduł-level singleton state Map keyed by
+ * circuit name — fixes per-instance state isolation bug. Two components using
+ * the same circuit name NOW share failures. Thresholds env-configurable via
+ * NEXT_PUBLIC_CB_FAILURE_THRESHOLD + NEXT_PUBLIC_CB_COOLDOWN_MS. First failure
+ * (length === 1) emits structured console.warn.
+ *
  * State machine:
  *  - `closed`    (default) — normal flow; `recordFailure` accumulates
  *                            timestamps in a rolling window.
@@ -17,17 +23,17 @@
  *                  failure → back to `open` with fresh cooldown.
  *
  * Defaults (per Story 5.4 Dev Notes — industry baseline):
- *  - failureThreshold: 3
+ *  - failureThreshold: 3 (override: NEXT_PUBLIC_CB_FAILURE_THRESHOLD)
  *  - windowMs: 10_000 (10 s rolling window)
- *  - cooldownMs: 60_000 (60 s)
+ *  - cooldownMs: 60_000 (60 s; override: NEXT_PUBLIC_CB_COOLDOWN_MS)
  *
  * Why client-side (not server-side):
  *  - Server-side circuit breaker = Mercur 2 middleware territory;
  *    upstream contributes would require fork divergence (out of scope).
  *  - Client breaker protects UX layer; even during backend storms a single
  *    buyer session stays stable.
- *  - Per-instance state (NOT shared across tabs/users) — acceptable for
- *    v1.6.0 scale (10–100 concurrent buyers).
+ *  - Shared per circuit name (TF-71 fix): all hook instances with the same
+ *    name observe the same failures and state transitions.
  *
  * SSR safety:
  *  - Hook does NOT touch `Date.now()` in the render path — only inside
@@ -40,11 +46,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export type CircuitState = 'closed' | 'open' | 'half-open';
 
 export interface CircuitBreakerConfig {
-  /** Number of failures within `windowMs` that trips the circuit. Default 3. */
+  /** Number of failures within `windowMs` that trips the circuit.
+   *  Default: NEXT_PUBLIC_CB_FAILURE_THRESHOLD env var, fallback 3. */
   failureThreshold?: number;
   /** Rolling window in ms for failure accumulation. Default 10_000. */
   windowMs?: number;
-  /** Time in ms the circuit stays open before going half-open. Default 60_000. */
+  /** Time in ms the circuit stays open before going half-open.
+   *  Default: NEXT_PUBLIC_CB_COOLDOWN_MS env var, fallback 60_000. */
   cooldownMs?: number;
 }
 
@@ -54,7 +62,7 @@ export interface UseCircuitBreakerResult {
   /** Failures currently in the rolling window. */
   failureCount: number;
   /** Record a failure event. Trips to `open` once threshold crossed. */
-  recordFailure: () => void;
+  recordFailure: (reason?: string) => void;
   /** Record a success event. In `half-open` closes the circuit. */
   recordSuccess: () => void;
   /** Returns true if a call may proceed (`closed` or `half-open`). */
@@ -63,109 +71,207 @@ export interface UseCircuitBreakerResult {
   reset: () => void;
 }
 
-const DEFAULT_FAILURE_THRESHOLD = 3;
+// ---- Env-configurable defaults (TF-71) ----
+
+function getEnvInt(key: string, defaultValue: number): number {
+  const raw = process.env[key];
+  if (raw) {
+    const parsed = parseInt(raw, 10);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return defaultValue;
+}
+
+function getDefaultFailureThreshold(): number {
+  return getEnvInt('NEXT_PUBLIC_CB_FAILURE_THRESHOLD', 3);
+}
+
+function getDefaultCooldownMs(): number {
+  return getEnvInt('NEXT_PUBLIC_CB_COOLDOWN_MS', 60_000);
+}
+
 const DEFAULT_WINDOW_MS = 10_000;
-const DEFAULT_COOLDOWN_MS = 60_000;
+
+// ---- Module-level singleton state (TF-71 fix) ----
+// Keyed by circuit name. All hook instances with the same name share state.
+
+interface CircuitSingleton {
+  /** Current circuit state. */
+  state: CircuitState;
+  /** Rolling-window failure timestamps. */
+  failures: number[];
+  /** Active cooldown timer handle. */
+  cooldownTimer: ReturnType<typeof setTimeout> | null;
+  /** Subscribers: state-change notifier callbacks. */
+  listeners: Set<() => void>;
+}
+
+const circuitRegistry = new Map<string, CircuitSingleton>();
+
+function getOrCreateCircuit(name: string): CircuitSingleton {
+  let circuit = circuitRegistry.get(name);
+  if (!circuit) {
+    circuit = {
+      state: 'closed',
+      failures: [],
+      cooldownTimer: null,
+      listeners: new Set(),
+    };
+    circuitRegistry.set(name, circuit);
+  }
+  return circuit;
+}
+
+function notifyListeners(circuit: CircuitSingleton): void {
+  for (const listener of circuit.listeners) {
+    listener();
+  }
+}
+
+/**
+ * Reset module-level singleton for a circuit (for testing isolation).
+ * Not exported from module index — only accessible via direct import.
+ */
+export function _resetCircuitSingletonForTest(name: string): void {
+  const circuit = circuitRegistry.get(name);
+  if (circuit) {
+    if (circuit.cooldownTimer !== null) {
+      clearTimeout(circuit.cooldownTimer);
+    }
+    circuitRegistry.delete(name);
+  }
+}
 
 export const useCircuitBreaker = (
+  name: string,
   config: CircuitBreakerConfig = {},
 ): UseCircuitBreakerResult => {
-  const {
-    failureThreshold = DEFAULT_FAILURE_THRESHOLD,
-    windowMs = DEFAULT_WINDOW_MS,
-    cooldownMs = DEFAULT_COOLDOWN_MS,
-  } = config;
+  const failureThreshold = config.failureThreshold ?? getDefaultFailureThreshold();
+  const windowMs = config.windowMs ?? DEFAULT_WINDOW_MS;
+  const cooldownMs = config.cooldownMs ?? getDefaultCooldownMs();
 
-  const [state, setState] = useState<CircuitState>('closed');
-  const [failureCount, setFailureCount] = useState<number>(0);
+  // Local React state mirrors singleton — triggers re-render on change.
+  const [circuitState, setCircuitState] = useState<CircuitState>(() => {
+    return getOrCreateCircuit(name).state;
+  });
+  const [failureCount, setFailureCount] = useState<number>(() => {
+    return getOrCreateCircuit(name).failures.length;
+  });
 
-  // Rolling-window failure timestamps. Held in a ref so successive
-  // recordFailure invocations within the same render cycle accumulate
-  // correctly (state batching could otherwise drop intermediate values).
-  const failureTimestampsRef = useRef<number[]>([]);
-  // Cooldown timer handle; cleared on unmount or reset.
-  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Mounted guard: prevents setState after unmount during async cooldown.
-  const isMountedRef = useRef<boolean>(true);
+  // Keep stable refs for config values used inside callbacks.
+  const failureThresholdRef = useRef(failureThreshold);
+  const windowMsRef = useRef(windowMs);
+  const cooldownMsRef = useRef(cooldownMs);
+  const nameRef = useRef(name);
+  failureThresholdRef.current = failureThreshold;
+  windowMsRef.current = windowMs;
+  cooldownMsRef.current = cooldownMs;
+  nameRef.current = name;
 
-  const clearCooldownTimer = useCallback(() => {
-    if (cooldownTimerRef.current !== null) {
-      clearTimeout(cooldownTimerRef.current);
-      cooldownTimerRef.current = null;
+  // Subscribe to singleton state changes → keep local React state in sync.
+  useEffect(() => {
+    const circuit = getOrCreateCircuit(name);
+
+    // Sync initial state in case another instance changed it before mount.
+    setCircuitState(circuit.state);
+    setFailureCount(circuit.failures.length);
+
+    const listener = () => {
+      const c = getOrCreateCircuit(nameRef.current);
+      setCircuitState(c.state);
+      setFailureCount(c.failures.length);
+    };
+
+    circuit.listeners.add(listener);
+    return () => {
+      circuit.listeners.delete(listener);
+    };
+  }, [name]);
+
+  const scheduleHalfOpen = useCallback((circuitName: string, delay: number) => {
+    const circuit = getOrCreateCircuit(circuitName);
+    if (circuit.cooldownTimer !== null) {
+      clearTimeout(circuit.cooldownTimer);
+    }
+    circuit.cooldownTimer = setTimeout(() => {
+      circuit.cooldownTimer = null;
+      if (circuit.state === 'open') {
+        circuit.state = 'half-open';
+        notifyListeners(circuit);
+      }
+    }, delay);
+  }, []);
+
+  const recordFailure = useCallback((reason?: string) => {
+    const circuit = getOrCreateCircuit(nameRef.current);
+    const now = Date.now();
+    const cutoff = now - windowMsRef.current;
+    // Drop stale timestamps outside the window, then append the new failure.
+    const fresh = circuit.failures.filter((ts) => ts >= cutoff);
+    fresh.push(now);
+    circuit.failures = fresh;
+
+    // TF-71: first failure must emit structured console.warn (not silent).
+    if (fresh.length === 1) {
+      console.warn(
+        `[circuit-breaker] First failure recorded for circuit "${nameRef.current}"`,
+        { circuitName: nameRef.current, reason: reason ?? 'unknown', failureCount: 1 }
+      );
+    }
+
+    let nextState = circuit.state;
+    if (circuit.state === 'half-open') {
+      // Test call failed → re-open with a fresh cooldown.
+      scheduleHalfOpen(nameRef.current, cooldownMsRef.current);
+      nextState = 'open';
+    } else if (circuit.state === 'closed' && fresh.length >= failureThresholdRef.current) {
+      scheduleHalfOpen(nameRef.current, cooldownMsRef.current);
+      nextState = 'open';
+    }
+
+    circuit.state = nextState;
+    notifyListeners(circuit);
+  }, [scheduleHalfOpen]);
+
+  const recordSuccess = useCallback(() => {
+    const circuit = getOrCreateCircuit(nameRef.current);
+    if (circuit.state === 'half-open') {
+      circuit.failures = [];
+      if (circuit.cooldownTimer !== null) {
+        clearTimeout(circuit.cooldownTimer);
+        circuit.cooldownTimer = null;
+      }
+      circuit.state = 'closed';
+      notifyListeners(circuit);
+    } else if (circuit.state === 'closed' && circuit.failures.length > 0) {
+      // Soft reset of stale failures on success in closed state.
+      circuit.failures = [];
+      notifyListeners(circuit);
     }
   }, []);
 
-  const scheduleHalfOpen = useCallback(() => {
-    clearCooldownTimer();
-    cooldownTimerRef.current = setTimeout(() => {
-      cooldownTimerRef.current = null;
-      if (!isMountedRef.current) return;
-      // Atomic transition: only flip if still `open`.
-      setState((prev) => (prev === 'open' ? 'half-open' : prev));
-    }, cooldownMs);
-  }, [clearCooldownTimer, cooldownMs]);
-
-  const recordFailure = useCallback(() => {
-    const now = Date.now();
-    const cutoff = now - windowMs;
-    // Drop stale timestamps outside the window, then append the new failure.
-    const fresh = failureTimestampsRef.current.filter((ts) => ts >= cutoff);
-    fresh.push(now);
-    failureTimestampsRef.current = fresh;
-    setFailureCount(fresh.length);
-
-    setState((prev) => {
-      if (prev === 'half-open') {
-        // Test call failed → re-open with a fresh cooldown.
-        scheduleHalfOpen();
-        return 'open';
-      }
-      if (prev === 'closed' && fresh.length >= failureThreshold) {
-        scheduleHalfOpen();
-        return 'open';
-      }
-      return prev;
-    });
-  }, [windowMs, failureThreshold, scheduleHalfOpen]);
-
-  const recordSuccess = useCallback(() => {
-    setState((prev) => {
-      if (prev === 'half-open') {
-        failureTimestampsRef.current = [];
-        setFailureCount(0);
-        clearCooldownTimer();
-        return 'closed';
-      }
-      // In `closed` state, success acts as a soft reset of stale failures.
-      if (prev === 'closed' && failureTimestampsRef.current.length > 0) {
-        failureTimestampsRef.current = [];
-        setFailureCount(0);
-      }
-      return prev;
-    });
-  }, [clearCooldownTimer]);
-
   const canAttempt = useCallback((): boolean => {
-    return state !== 'open';
-  }, [state]);
+    return circuitState !== 'open';
+  }, [circuitState]);
 
   const reset = useCallback(() => {
-    clearCooldownTimer();
-    failureTimestampsRef.current = [];
-    setFailureCount(0);
-    setState('closed');
-  }, [clearCooldownTimer]);
+    const circuit = getOrCreateCircuit(nameRef.current);
+    if (circuit.cooldownTimer !== null) {
+      clearTimeout(circuit.cooldownTimer);
+      circuit.cooldownTimer = null;
+    }
+    circuit.failures = [];
+    circuit.state = 'closed';
+    notifyListeners(circuit);
+  }, []);
 
-  // Cleanup on unmount: cancel pending cooldown timer + flag unmount.
+  // Cleanup on unmount: do NOT reset singleton (other instances may still use it).
+  // Only remove listener subscription.
   useEffect(() => {
     return () => {
-      isMountedRef.current = false;
-      if (cooldownTimerRef.current !== null) {
-        clearTimeout(cooldownTimerRef.current);
-        cooldownTimerRef.current = null;
-      }
+      // Listener cleanup is handled in the subscription useEffect above.
     };
   }, []);
 
-  return { state, failureCount, recordFailure, recordSuccess, canAttempt, reset };
+  return { state: circuitState, failureCount, recordFailure, recordSuccess, canAttempt, reset };
 };

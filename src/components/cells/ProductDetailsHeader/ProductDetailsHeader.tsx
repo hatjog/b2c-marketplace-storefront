@@ -43,6 +43,7 @@ export const ProductDetailsHeader = ({
   // Story 5.5 — selectedSellerId/Name pulled from CartContext shared state;
   // populated przez SellerSelectorCartBridge gdy multi-vendor flag ON
   // (default OFF → wartości pozostają null → addToCart legacy single-vendor flow).
+  // TF-72: also pull selectedSellerHandle for "visit seller" link propagation.
   const {
     addToCart,
     onAddToCart,
@@ -126,6 +127,7 @@ export const ProductDetailsHeader = ({
         countryCode,
         // Story 5.5 — propagate multi-vendor seller selection;
         // null when flag OFF → metadata not attached → legacy flow.
+        // TF-72: also propagate handle for "visit seller" link in CartGroupBySeller.
         selectedSellerId,
         selectedSellerName,
         // cleanup-12d AC1 — propagate seller handle.
