@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-    // Story 3.2: legacy /[locale]/salony/* → 308 → /[locale]/sellers/* (SEO permanent, method-preserving)
+  // Story 3.2: legacy /[locale]/salony/* → 308 → /[locale]/sellers/* (SEO permanent, method-preserving)
   // Inserted BEFORE resolveLang/auth-guard so redirect short-circuits locale processing.
   // Query params + handle suffix preserved 1:1 via request.nextUrl.search + capture group.
   // 308 (not 301) prevents redirect chain: if locale is not yet in SUPPORTED_LOCALES the

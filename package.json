@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test tests/**/*.test.mjs",
+    "test": "tsx --test tests/**/*.test.mjs && vitest run",
+    "test:node": "tsx --test tests/**/*.test.mjs",
+    "test:vitest": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:flag-on": "playwright test multi-vendor-flag-on.spec",
     "test:e2e:snapshot-off": "playwright test multi-vendor-flag-off-snapshot.spec"

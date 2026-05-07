@@ -1,8 +1,10 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
+import deMessages from './messages/de.json';
 import enMessages from './messages/en.json';
 import plMessages from './messages/pl.json';
+import uaMessages from './messages/ua.json';
 import { loadSlugRedirectsForNext } from './scripts/slug-redirects';
 import { generateLocaleRewrites } from './src/i18n/locale-rewrite-rules';
 import { CSP_DIRECTIVES, resolveCspHeaderName } from './src/lib/security/csp';
@@ -97,7 +99,9 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return generateLocaleRewrites('pl', {
       pl: plMessages.routes,
-      en: enMessages.routes
+      en: enMessages.routes,
+      ua: uaMessages.routes,
+      de: deMessages.routes
     });
   },
   webpack(config) {

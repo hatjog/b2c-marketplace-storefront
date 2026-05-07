@@ -33,6 +33,37 @@ function makeReq(url: string): NextRequest {
 
 const BASE = 'http://localhost:3000';
 
+/**
+ * Helper: follow up to N redirect hops by re-invoking middleware on the
+ * Location header. Returns the full chain of (status, location) tuples plus
+ * the terminal response. A "chain" exists when more than one hop occurs.
+ */
+async function followRedirects(
+  startUrl: string,
+  maxHops: number = 5
+): Promise<{ hops: Array<{ status: number; location: string | null }>; final: Response }> {
+  const hops: Array<{ status: number; location: string | null }> = [];
+  let currentUrl = startUrl;
+  let res: Response | undefined;
+
+  for (let i = 0; i < maxHops; i++) {
+    res = await middleware(makeReq(currentUrl));
+    const status = res.status;
+    const location = res.headers.get('location');
+    if (status >= 300 && status < 400 && location) {
+      hops.push({ status, location });
+      currentUrl = location;
+      continue;
+    }
+    break;
+  }
+
+  if (!res) {
+    throw new Error('middleware never produced a response');
+  }
+  return { hops, final: res };
+}
+
 describe('cleanup-19 — chain-detection: /[locale]/salony → single-hop 308', () => {
   const locales = ['pl', 'en', 'ua', 'de'] as const;
 
@@ -58,19 +89,29 @@ describe('cleanup-19 — chain-detection: /[locale]/salony → single-hop 308', 
         `${BASE}/${locale}/sellers/beauty-slug`
       );
     });
+
+    it(`/${locale}/salony → exactly ONE redirect hop (no 301→307 chain)`, async () => {
+      // True chain detection: re-invoke middleware on the redirect target and
+      // assert the second invocation does NOT issue another redirect.
+      const { hops } = await followRedirects(`${BASE}/${locale}/salony`);
+      // Exactly one hop = single 308; >1 = chain regression
+      expect(hops.length).toBe(1);
+      expect(hops[0]?.status).toBe(308);
+      expect(hops[0]?.location).toBe(`${BASE}/${locale}/sellers`);
+    });
   }
 
-  it('regression guard: /de/salony does NOT produce 307 (chain was eliminated)', async () => {
-    const res = await middleware(makeReq(`${BASE}/de/salony`));
-    // Before fix: would be 301 (chain start); locale-redirect then emitted 307 for /de/sellers
-    // After fix: 308 direct, no second hop
-    expect(res.status).not.toBe(307);
-    expect(res.status).toBe(308);
+  it('regression guard: /de/salony resolves in single hop, no second redirect', async () => {
+    const { hops } = await followRedirects(`${BASE}/de/salony`);
+    // Pre-fix: 2 hops (301 to /de/sellers, then 307 because de unsupported).
+    // Post-fix: 1 hop (308 direct, second invocation on /de/sellers passes through).
+    expect(hops.length).toBe(1);
+    expect(hops[0]?.status).toBe(308);
   });
 
-  it('regression guard: /ua/salony does NOT produce 307', async () => {
-    const res = await middleware(makeReq(`${BASE}/ua/salony`));
-    expect(res.status).not.toBe(307);
-    expect(res.status).toBe(308);
+  it('regression guard: /ua/salony resolves in single hop, no second redirect', async () => {
+    const { hops } = await followRedirects(`${BASE}/ua/salony`);
+    expect(hops.length).toBe(1);
+    expect(hops[0]?.status).toBe(308);
   });
 });
