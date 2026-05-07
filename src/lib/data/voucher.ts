@@ -13,16 +13,15 @@ import type {
  * renders. NEVER move to deny-list (whitelist preserves invariant under
  * future schema additions).
  *
- * Mercur 2 voucher endpoint risk (per Story 2.6):
- *   Native `mercurClient.store.vouchers.byCode({ code })` may NOT be
- *   first-class in Mercur 2.1.1 SDK surface. We try the typed call first
- *   and fall back to a raw `sdk.client.fetch` GET probe. If neither yields
- *   a voucher payload, returns null and the page calls `notFound()`.
- *
- * Backend integration TODO:
- *   Backend voucher endpoint authoring is OUT OF 6.1 scope (per story
- *   boundary). When Story 6.x backend extension lands, swap this layer to
- *   the typed mercurClient call without changing call-sites.
+ * Mercur 2 voucher endpoint strategy (post cleanup-25 / TF-134):
+ *   Path B (primary): typed `mercurClient.store.vouchers.byCode({ code })` —
+ *   first-class in Mercur 2.1.1 SDK surface provisioned by cleanup-25.
+ *   The raw `sdk.client.fetch` fallback is retained as a safety net for
+ *   transient SDK type-surface regressions during Mercur 2.x churn; it is NOT
+ *   a happy-path alternative and carries no fixture-only escape hatch beyond
+ *   the existing `E2E_VOUCHER_FIXTURES` / `E2E_VOUCHER_EVENTS` gating (see
+ *   below). If neither path yields a payload, returns null / empty array and
+ *   the page calls `notFound()` or renders the empty-state copy respectively.
  */
 
 export type VoucherStatus =
@@ -141,8 +140,11 @@ function projectAllowlist(p: VoucherApiPayload | null | undefined): VoucherPubli
 
 /**
  * Fetches a voucher by recipient-facing code. Strips buyer-side PII at the
- * server boundary (AR45 invariant). Returns null when not found OR when the
- * Mercur 2 voucher endpoint is not yet provisioned (Story 6.x backend).
+ * server boundary (AR45 invariant). Returns null when not found.
+ *
+ * Primary path: typed `mercurClient.store.vouchers.byCode({ code })` (cleanup-25).
+ * Fallback: raw `sdk.client.fetch('/store/vouchers/<code>')` (safety net for SDK churn).
+ * E2E escape hatch: known codes in `E2E_VOUCHER_FIXTURES` return fixture data.
  */
 export async function getVoucherByCode(code: string): Promise<VoucherPublicView | null> {
   if (!code || code.length < 3) return null;
@@ -225,9 +227,8 @@ function projectAuditEvent(
  * Fetches the recipient-visible voucher audit trail events. Strategy:
  *   (a) Try typed `mercurClient.store.vouchers.events({ code })`.
  *   (b) Fall back to raw `mercurClient.fetch('/store/vouchers/<code>/events')`.
- *   (c) Returns empty array if neither yields a payload (Mercur 2 native
- *       voucher events endpoint may NOT be first-class in v1.6.0; UI degrades
- *       gracefully via `voucher.audit_trail.empty_state` copy).
+ *   (c) Returns empty array if neither yields a payload; UI degrades
+ *       gracefully via `voucher.audit_trail.empty_state` copy (AC3).
  *
  * Privacy: all surfaces apply `projectAuditEvent()` allowlist BEFORE return,
  * so no buyer-side metadata can reach the React tree (AR45 invariant).
@@ -274,8 +275,7 @@ export async function getVoucherEvents(
     projected.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
     return projected;
   } catch {
-    // Endpoint not provisioned (Mercur 2 voucher events endpoint OUT OF 6.3
-    // scope). UI shows empty state per AC2.
+    // Raw fetch fallback failed. UI shows empty state via audit_trail.empty_state copy.
   }
 
   if (code in E2E_VOUCHER_EVENTS) {

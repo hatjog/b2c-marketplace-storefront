@@ -1,26 +1,33 @@
 'use server';
 
 /**
- * Voucher PII consent Server Actions (STORY-2-1).
+ * Voucher PII consent Server Actions (post-cleanup-25 / cleanup-55).
  *
  * Three actions backing the consent moment UI:
- *   - grantConsent      — active opt-in path; chained Postgres tx (STUB)
- *   - withdrawConsent   — Art. 7(3) symmetric withdrawal (STUB)
+ *   - grantConsent      — active opt-in path; chained Postgres tx (D-66)
+ *   - withdrawConsent   — Art. 7(3) symmetric withdrawal
  *   - pauseRecipient    — SC-3 ambivalence pause (UX-DR5 5-state machine)
  *
- * STUB rationale:
- *   STORY-2-2 (`voucher-pii-pipeline-backend`) owns the actual Medusa endpoint
- *   that performs `BEGIN; INSERT consent; INSERT audit; INSERT delivery_decision; COMMIT`.
- *   That story has NOT yet landed in main as of this story's worktree HEAD,
- *   so the actions here:
- *     1. Build the audit payload via `buildAuditPayload()`.
- *     2. POST to `${MEDUSA_BACKEND_URL}/store/voucher-pii-consent/<verb>` if
- *        the env var is set; otherwise log a TODO and return a deterministic
- *        success/failure response so UI flows can be exercised end-to-end.
- *   When Story 2-2 lands, REMOVE the STUB branch and require the endpoint.
+ * Verb → endpoint table (AC1):
+ *   grant     → POST /store/voucher-pii-consent   (body: action='grant')
+ *   withdraw  → POST /store/voucher-pii-consent   (body: action='withdraw')
+ *   pause     → POST /store/voucher-pii-consent   (body: action='pause')
  *
- * R-NEW-6 — no silent fallback. On audit failure the action returns
- * `{ ok: false, state: 'error-audit-failed' }` and delivery is BLOCKED.
+ * All three verbs route to the same backend endpoint
+ * (`/store/voucher-pii-consent`), provisioned by cleanup-25 / Story 2-2.
+ * The `action` field in the audit payload body discriminates the verb on
+ * the backend. There are no verb-specific sub-paths — OQ #1 verified
+ * against cleanup-25 routes file during dev pickup (2026-05-07).
+ *
+ * R-NEW-6 — no silent fallback. On backend URL missing or audit failure
+ * the action returns `{ ok: false, state: 'error-audit-failed', error: <code> }`
+ * and delivery is BLOCKED. Synthetic audit IDs ('stub-audit-id') are
+ * forbidden; STUB branch removed by cleanup-55 (TF-133).
+ *
+ * Auth: requests carry `Content-Type: application/json` only; the backend
+ * endpoint is scoped to the store API key (OQ #2: publishable-api-key header
+ * injection deferred — backend route verified to accept unauthenticated
+ * store-scoped POST in v1.6.0 dev setup per STAGING-FREE / ADR-066).
  */
 
 import { revalidatePath } from 'next/cache';
@@ -47,9 +54,6 @@ export interface ConsentActionResult {
   error?: string;
 }
 
-const STUB_TODO_MARKER =
-  'STORY-2-2-STUB: backend voucher-pii-consent endpoint not yet provisioned;';
-
 function resolveBackendUrl(): string | null {
   return (
     process.env.MEDUSA_BACKEND_URL ??
@@ -58,27 +62,32 @@ function resolveBackendUrl(): string | null {
   );
 }
 
+/**
+ * Posts a consent audit action to the backend.
+ *
+ * AC1 verb→endpoint contract:
+ *   All verbs → POST ${backendUrl}/store/voucher-pii-consent
+ *   The `action` field in the audit payload body discriminates grant/withdraw/pause.
+ *
+ * When backendUrl is unresolved, returns explicit error (not synthetic success)
+ * per R-NEW-6 / TF-133 fix.
+ */
 async function postAuditAction(
   verb: ConsentAuditAction,
   payload: ReturnType<typeof buildAuditPayload>
 ): Promise<ConsentActionResult> {
   const backendUrl = resolveBackendUrl();
 
-  // STUB branch — STORY-2-2 not yet landed.
+  // AC2: backend URL missing → explicit error (NO STUB success path).
   if (!backendUrl) {
-    // eslint-disable-next-line no-console
-    console.warn(`${STUB_TODO_MARKER} verb=${verb} payload=`, payload);
-    if (verb === 'grant') {
-      return { ok: true, state: 'delivery-decision-recorded', auditId: 'stub-audit-id' };
-    }
-    if (verb === 'withdraw') {
-      return { ok: true, state: 'withdrawn', auditId: 'stub-audit-id' };
-    }
-    return { ok: true, state: 'consent-pending' };
+    return { ok: false, state: 'error-audit-failed', error: 'backend-url-missing' };
   }
 
   try {
-    const response = await fetch(`${backendUrl}/store/voucher-pii-consent/${verb}`, {
+    // AC1: verb→endpoint contract — all verbs route to the single consent endpoint.
+    // The `action` field in `payload` ('grant' | 'withdraw' | 'pause') discriminates
+    // the verb on the backend side. No verb-specific sub-paths exist (OQ #1 resolved).
+    const response = await fetch(`${backendUrl}/store/voucher-pii-consent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -92,14 +101,16 @@ async function postAuditAction(
         error: `backend returned ${response.status}`
       };
     }
-    const json = (await response.json()) as { audit_id?: string };
+    const json = (await response.json()) as { audit_id?: string; consent_audit_id?: string };
+    // Support both `audit_id` (simple) and `consent_audit_id` (Story 2-2 full response).
+    const auditId = json.audit_id ?? json.consent_audit_id;
     if (verb === 'grant') {
-      return { ok: true, state: 'delivery-decision-recorded', auditId: json.audit_id };
+      return { ok: true, state: 'delivery-decision-recorded', auditId };
     }
     if (verb === 'withdraw') {
-      return { ok: true, state: 'withdrawn', auditId: json.audit_id };
+      return { ok: true, state: 'withdrawn', auditId };
     }
-    return { ok: true, state: 'consent-pending', auditId: json.audit_id };
+    return { ok: true, state: 'consent-pending', auditId };
   } catch (error) {
     return {
       ok: false,
