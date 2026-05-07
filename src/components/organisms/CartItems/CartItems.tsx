@@ -101,10 +101,11 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
 
 function resolveCartItemSeller(sellerValue: any) {
   if (Array.isArray(sellerValue)) {
-    // Story v160-cleanup-11 (8.8 follow-up): accept Mercur 2 (`status === 'open'`)
-    // OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) — see normalize-listed-products.ts.
+    // noqa: mercur15-drift — backward-compat shim: Story v160-cleanup-11 (8.8 follow-up): accept
+    // Mercur 2 (`status === 'open'`) OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) — see
+    // normalize-listed-products.ts. Remove store_status branch once all API responses use seller.status.
     const activeSeller = sellerValue.find(
-      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE',
+      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE', // noqa: mercur15-drift
     );
     return activeSeller ?? sellerValue[0] ?? null;
   }

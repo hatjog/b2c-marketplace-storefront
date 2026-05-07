@@ -42,7 +42,15 @@ export type SellerProps = SellerAddress & {
   email?: string;
   phone?: string;
   status?: 'pending_approval' | 'open' | 'suspended' | 'terminated';
-  store_status?: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
+  // store_status: Mercur 1.5 legacy field; Mercur 2 uses seller.status (above).
+  // Transitional union: accepts BOTH legacy Mercur 1.5 uppercase values
+  // ('ACTIVE'/'SUSPENDED'/'INACTIVE') AND Mercur 2 lowercase ('open'/'suspended'/'closed').
+  // Required because backward-compat dual-checks (CartItems, ProductDetailsPage,
+  // normalize-listed-products) compare against legacy uppercase literals — narrowing the
+  // union to lowercase-only would force TS2367 (no-overlap) and silently break the bridge.
+  // Remove legacy half once all API responses guarantee seller.status (Mercur 2 native).
+  // noqa: mercur15-drift — bridge type union (see comment above)
+  store_status?: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE' | 'open' | 'suspended' | 'closed'; // noqa: mercur15-drift
   // Enriched metadata fields (from story 6.1 backend endpoint)
   social_links?: SellerSocialLinks | null;
   gallery?: SellerGalleryItem[] | null;

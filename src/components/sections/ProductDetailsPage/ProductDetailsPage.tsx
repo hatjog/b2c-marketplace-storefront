@@ -7,12 +7,15 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 
 import { CrossSellSection } from '../CrossSellSection';
 
+// noqa: mercur15-drift — backward-compat dual-check: accepts Mercur 2 `seller.status === 'open'`
+// OR legacy Mercur 1.x `store_status === 'ACTIVE'` for API responses that may still carry the
+// Mercur 1.5 store_status shim. Remove store_status branch once all API responses migrate to seller.status.
 const isSellerActive = (seller: { status?: string; store_status?: string } | null | undefined) => {
   if (!seller) {
     return true;
   }
 
-  return seller.status === 'open' || seller.store_status === 'ACTIVE';
+  return seller.status === 'open' || seller.store_status === 'ACTIVE'; // noqa: mercur15-drift
 };
 
 export const ProductDetailsPage = async ({
