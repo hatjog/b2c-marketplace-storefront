@@ -12,7 +12,13 @@
  *
  * NOTE: This module is consumed in client components. It MUST NOT import any
  * server-only modules — keep the barrel exports clean per CLAUDE.md.
+ *
+ * ePrivacy gate (v160-cleanup-34 / TF-80):
+ *   sessionStorage writes are gated on `requireCategory("preferences")`.
+ *   Revocation: clearPreferencesStorage() clears `gp.fsm.*` keys.
  */
+
+import { requireCategory } from '@/lib/consent';
 
 export type TransitionMap<TState extends string, TEvent extends string> = Record<
   TState,
@@ -81,6 +87,8 @@ export function createPersistedStateMachine<TState extends string, TEvent extend
 
   function persist(): void {
     if (!persistTarget) return;
+    // ePrivacy gate (TF-80): skip write if preferences consent not granted.
+    if (!requireCategory('preferences')) return;
     try {
       const payload: PersistedSnapshot<TState, TEvent> = {
         state: snapshot.state,

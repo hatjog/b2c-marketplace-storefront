@@ -7,6 +7,7 @@ import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
 
+import { CookieBanner } from '@/components/cmp';
 import { retrieveCart } from '@/lib/data/cart';
 import { resolveStorefrontBaseUrl, validateStorefrontEnv } from '@/lib/env';
 import { resolveMarketConfig } from '@/lib/portal.server';
@@ -192,6 +193,8 @@ export default async function RootLayout({
         )}
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />
+        {/* ePrivacy CMP banner — Story v160-cleanup-34 (AC2, TF-80) */}
+        <CookieBanner />
       </body>
     </html>
   );

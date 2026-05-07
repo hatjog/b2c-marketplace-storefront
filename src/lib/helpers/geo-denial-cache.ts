@@ -8,7 +8,14 @@
  *
  * Story: v160-cleanup-12c — PDP SellerSelector data wire-up (AC5)
  * Spec: Epic-5 completeness audit F10 — SSR re-prompt loop closed.
+ *
+ * ePrivacy gate (v160-cleanup-34 / TF-80):
+ *   cacheGeolocationDenial() write gated on requireCategory("preferences").
+ *   Read ungated (returns false safely when nothing cached).
+ *   Revocation: clearPreferencesStorage() clears GEO_DENIAL_KEY.
  */
+
+import { requireCategory } from '@/lib/consent';
 
 /**
  * sessionStorage key for geolocation denial cache.
@@ -41,10 +48,12 @@ export function isGeolocationDeniedCached(): boolean {
 
 /**
  * Persists a geolocation denial timestamp to sessionStorage.
- * No-op on server or when sessionStorage is unavailable (private mode).
+ * No-op on server, when sessionStorage is unavailable (private mode),
+ * or when preferences consent has not been granted (ePrivacy TF-80).
  */
 export function cacheGeolocationDenial(): void {
   if (typeof window === 'undefined') return;
+  if (!requireCategory('preferences')) return;
   try {
     window.sessionStorage.setItem(GEO_DENIAL_KEY, String(Date.now()));
   } catch {

@@ -11,7 +11,15 @@
  * Privacy posture (AR45 + Ania persona §3): payloads MUST NOT contain
  * recipient PII beyond what the backend claim contract requires. TTL
  * cleanup at 24h enforces GDPR-aware retention.
+ *
+ * ePrivacy gate (v160-cleanup-34 / TF-80):
+ *   enqueueClaim() gated on requireCategory("preferences") — offline queue
+ *   is a UX continuity feature, not strictly necessary.
+ *   Fallback on false: caller falls back to online-only path (graceful degradation).
+ *   Revocation: clearIdbPreferencesDb() called by clearPreferencesStorage().
  */
+
+import { requireCategory } from '@/lib/consent';
 
 const DB_NAME = 'gp-voucher-offline';
 const DB_VERSION = 1;
@@ -49,7 +57,19 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-export async function enqueueClaim(entry: ClaimQueueEntry): Promise<void> {
+/**
+ * Enqueue a voucher claim for offline replay.
+ * Returns false (no-op) when preferences consent is absent — caller should
+ * fall back to online-only path instead (AC5 graceful degradation).
+ */
+export async function enqueueClaim(entry: ClaimQueueEntry): Promise<boolean> {
+  // ePrivacy gate (TF-80): offline queue is a preferences-category feature.
+  if (!requireCategory('preferences')) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[CMP] enqueueClaim: preferences consent absent — offline queue skipped.');
+    }
+    return false;
+  }
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite');
@@ -57,6 +77,7 @@ export async function enqueueClaim(entry: ClaimQueueEntry): Promise<void> {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+  return true;
 }
 
 export async function listAllClaims(): Promise<ClaimQueueEntry[]> {
