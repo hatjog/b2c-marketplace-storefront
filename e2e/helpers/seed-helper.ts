@@ -24,8 +24,10 @@ const STORE_HEADERS: Record<string, string> = {
   "x-publishable-api-key": PUBLISHABLE_KEY,
 }
 
-// PLN region required by /store/products to compute calculated_price.
-const REGION_ID = process.env.E2E_REGION_ID ?? "reg_pln_pl"
+// Optional explicit region. When absent, prefer country_code=pl because local
+// Medusa seeds generate dynamic region IDs.
+const REGION_ID = process.env.E2E_REGION_ID
+const COUNTRY_CODE = process.env.E2E_COUNTRY_CODE ?? "pl"
 
 export interface SellerSummary {
   id: string
@@ -73,8 +75,11 @@ export async function fetchSellers(): Promise<SellerSummary[]> {
  */
 export async function fetchProducts(): Promise<ProductSummary[]> {
   try {
+    const pricingContext = REGION_ID
+      ? `region_id=${encodeURIComponent(REGION_ID)}`
+      : `country_code=${encodeURIComponent(COUNTRY_CODE)}`
     const res = await fetch(
-      `${BACKEND_BASE}/store/products?limit=50&region_id=${REGION_ID}&fields=handle,title,vendor_count,vendor_offers,*seller`,
+      `${BACKEND_BASE}/store/products?limit=50&${pricingContext}&fields=handle,title,vendor_count,vendor_offers,*seller`,
       { headers: STORE_HEADERS },
     )
     if (!res.ok) return []

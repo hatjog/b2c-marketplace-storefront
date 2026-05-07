@@ -12,7 +12,7 @@ export const LOCALE = process.env.E2E_LOCALE ?? "pl"
  * Category handle used for PLP tests.
  * Should contain products from >= 2 sellers in BB market.
  *
- * BB seed dependency: this exact handle (`twarz-pielegnacja-terapie`) is unique to
+ * BB seed dependency: this exact handle (`twarz-masaze-lifting-manualny`) is unique to
  * the bonbeauty gp-config seed. The operator pre-promote checklist
  * (`specs/operator/pre-promote-smoke-checklist.md` §2) probes a SHORTER handle
  * (`twarz`) for the public-page smoke. If you reseed the BB market and either
@@ -22,7 +22,7 @@ export const LOCALE = process.env.E2E_LOCALE ?? "pl"
  * Story: v160-cleanup-11 (Story 8.8 AC6 follow-up).
  */
 export const TEST_CATEGORY_HANDLE =
-  process.env.E2E_CATEGORY_HANDLE ?? "twarz-pielegnacja-terapie"
+  process.env.E2E_CATEGORY_HANDLE ?? "twarz-masaze-lifting-manualny"
 
 /**
  * Product handle for PDP seller-selector test.

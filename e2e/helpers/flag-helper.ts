@@ -25,14 +25,68 @@ const TEST_HEADERS = {
 
 export type MultiVendorFlagState = "off" | "shadow" | "on"
 
+export class FlagEndpointPreconditionError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly body: string,
+  ) {
+    super(message)
+    this.name = "FlagEndpointPreconditionError"
+  }
+}
+
+async function readFlagStateResponse(): Promise<Response> {
+  return fetch(FLAG_STATUS_URL, {
+    headers: TEST_HEADERS,
+  })
+}
+
+function isPreconditionFailure(status: number, body: string): boolean {
+  return (
+    status === 403 &&
+    (body.includes("test_endpoint_disabled") ||
+      body.includes("x_test_mode_header_required"))
+  )
+}
+
+/**
+ * Probe the test-only flag endpoint before the suite mutates flag state.
+ * Returns a human-readable skip reason when the live test preconditions are
+ * not enabled on the backend.
+ */
+export async function probeFlagEndpoint(): Promise<string | null> {
+  const res = await readFlagStateResponse()
+  if (res.ok) return null
+
+  const body = await res.text()
+  if (isPreconditionFailure(res.status, body)) {
+    return (
+      `Flag endpoint precondition failed: ${res.status} ${res.statusText}. ` +
+      "Run backend with ALLOW_TEST_ENDPOINTS=true and NODE_ENV!=production " +
+      "for Story 8.8 AC6 flag-on E2E, or record a formal BMAD SKIP."
+    )
+  }
+
+  throw new Error(
+    `probeFlagEndpoint: backend returned ${res.status} ${res.statusText} — ${body}`,
+  )
+}
+
 /**
  * Read the current multi-vendor flag state from the backend.
  */
 export async function getFlagState(): Promise<MultiVendorFlagState> {
-  const res = await fetch(FLAG_STATUS_URL, {
-    headers: TEST_HEADERS,
-  })
+  const res = await readFlagStateResponse()
   if (!res.ok) {
+    const body = await res.text()
+    if (isPreconditionFailure(res.status, body)) {
+      throw new FlagEndpointPreconditionError(
+        `getFlagState: flag endpoint precondition failed (${res.status} ${res.statusText})`,
+        res.status,
+        body,
+      )
+    }
     throw new Error(
       `getFlagState: backend returned ${res.status} ${res.statusText}`,
     )
