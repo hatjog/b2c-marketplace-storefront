@@ -13,10 +13,11 @@
  * @see NFR-REL-2 / AC-MV-FLAG-ON-01
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
 import {
   assertFlagState,
   ensureFlagOn,
+  probeFlagEndpoint,
   type MultiVendorFlagState,
 } from "./helpers/flag-helper"
 import {
@@ -39,12 +40,40 @@ const p = paths(LOCALE)
 const ADD_TO_CART_SELECTOR =
   '[data-testid="product-add-to-cart-button"], [data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")'
 
+async function acceptCookieBanner(page: Page): Promise<void> {
+  const consentValue = encodeURIComponent(
+    JSON.stringify({
+      version: 1,
+      ts: new Date().toISOString(),
+      preferences: true,
+      analytics: true,
+      marketing: true,
+    }),
+  )
+  await page.context().addCookies([
+    {
+      name: "_gp_consent_v1",
+      value: consentValue,
+      domain: "localhost",
+      path: "/",
+      sameSite: "Lax",
+      expires: Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60,
+    },
+  ])
+  const acceptAll = page.locator('[data-testid="cookie-banner-accept-all"]')
+  if (await acceptAll.isVisible({ timeout: 1_000 }).catch(() => false)) {
+    await acceptAll.click()
+  }
+}
+
 async function addProductToCart(
-  page: Parameters<typeof test>[0]["page"],
+  page: Page,
   productHandle: string,
   sellerOptionIndex?: number,
 ): Promise<void> {
+  await acceptCookieBanner(page)
   await page.goto(p.product(productHandle))
+  await acceptCookieBanner(page)
   const currentPath = new URL(page.url()).pathname
 
   if (typeof sellerOptionIndex === "number") {
@@ -92,6 +121,13 @@ async function checkEnvironmentOrSkip(): Promise<void> {
         "AC6 E2E live run deferred. " +
         "Blocker: BB market must be materialized per pre-promote-smoke-checklist.md",
     )
+    test.skip()
+  }
+
+  const flagEndpointSkipReason = await probeFlagEndpoint()
+  if (flagEndpointSkipReason) {
+    // eslint-disable-next-line no-console
+    console.warn(`[DEFERRED] ${flagEndpointSkipReason}`)
     test.skip()
   }
 }
@@ -155,7 +191,9 @@ test("Step 1 — PLP renders lowest-price badge and multi-vendor indicator", asy
   page,
 }) => {
   const categoryUrl = p.category(TEST_CATEGORY_HANDLE)
+  await acceptCookieBanner(page)
   await page.goto(categoryUrl)
+  await acceptCookieBanner(page)
 
   // Assert at least one product card is visible
   await expect(page.locator('[data-testid="product-card"]').first()).toBeVisible(
@@ -191,7 +229,9 @@ test("Step 2 — PDP seller selector lists >= 2 sellers with default sort", asyn
   const productHandle = seedResult.productHandles[0]
   const productUrl = p.product(productHandle)
 
+  await acceptCookieBanner(page)
   await page.goto(productUrl)
+  await acceptCookieBanner(page)
 
   // Assert seller selector container is visible
   const sellerSelector = page.locator('[data-testid="seller-selector"]')
@@ -267,7 +307,9 @@ test("Step 4 — Checkout order confirmation shows multi-vendor order_set splits
   await addProductToCart(page, handle1, 0)
   await addProductToCart(page, handle2, 1)
 
+  await acceptCookieBanner(page)
   await page.goto(p.checkout)
+  await acceptCookieBanner(page)
   await expect(page).toHaveURL(/checkout/, { timeout: 10_000 })
 
   // Assert multi-vendor order summary / order_set splits visible.
@@ -311,7 +353,9 @@ test("Step 5 — Claim page renders with PDF voucher download CTA and audit trai
   }
 
   const claimUrl = p.voucher(claimToken)
+  await acceptCookieBanner(page)
   await page.goto(claimUrl)
+  await acceptCookieBanner(page)
 
   // Assert claim page rendered
   await expect(page.locator('[data-testid="claim-page"]')).toBeVisible({
@@ -347,7 +391,9 @@ test("Step 6 — Audit log contains claim_initiated and voucher_downloaded entri
   }
 
   const claimUrl = p.voucher(claimToken)
+  await acceptCookieBanner(page)
   await page.goto(claimUrl)
+  await acceptCookieBanner(page)
 
   // Assert audit trail entries
   const auditTrail = page.locator('[data-testid="audit-trail-molecule"]')
