@@ -26,12 +26,14 @@ import type { SellerListItem } from '@/lib/data/seller';
  */
 
 // Default Leaflet icon Webpack/Turbopack fix — bundler can't resolve Leaflet's
-// reflective `_getIconUrl`. Pin CDN URLs to avoid 404'd marker squares.
+// reflective `_getIconUrl`. Assets bundled locally under `public/leaflet-assets/`
+// (BSD-2-Clause; LICENSE preserved) — eliminates third-party CDN supply-chain risk,
+// CSP img-src relaxation, and GDPR third-party IP exposure (TF-65, 2026-05-07).
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+  iconRetinaUrl: '/leaflet-assets/marker-icon-2x.png',
+  iconUrl: '/leaflet-assets/marker-icon.png',
+  shadowUrl: '/leaflet-assets/marker-shadow.png'
 });
 
 const PL_CENTER: [number, number] = [52.0, 19.0];
