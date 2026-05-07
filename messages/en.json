@@ -632,6 +632,8 @@
     "recipient_audit_trail": {
       "heading": "Voucher history",
       "footer_note": "This history is visible only to you. Data is processed in accordance with GDPR Art. 15 — you have the right to access the history of operations on your data.",
+      "list_aria_label": "Voucher history entries",
+      "live_region_template": "Showing {visible} of {total} entries",
       "empty": {
         "heading": "No entries in voucher history",
         "body": "Here you will see every change related to this voucher — who, when, and what operation was performed. History will appear with the first action by a vendor or system. Under GDPR Art. 15, you have the right to access this data.",

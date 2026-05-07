@@ -33,11 +33,11 @@ import type { RecipientAuditTrailEvent, RecipientAuditTrailTimelineProps } from 
 
 export type { RecipientAuditTrailEvent, RecipientAuditTrailTimelineProps }
 
-function RecipientAuditTrailSkeleton() {
+function RecipientAuditTrailSkeleton({ ariaLabel }: { ariaLabel: string }) {
   return (
     <div
       role="status"
-      aria-label="Ładuję historię…"
+      aria-label={ariaLabel}
       data-testid="recipient-audit-trail-loading"
       className="flex flex-col gap-gp-3"
     >
@@ -69,19 +69,27 @@ export async function RecipientAuditTrailTimeline({
 
   const heading = t("heading")
   const footerNote = t("footer_note")
+  const loadingLabel = t("loading.label")
+  const listAriaLabel = t("list_aria_label")
+  const liveRegionTemplate = t("live_region_template")
+  // Stable id prefix per-instance — derived from data-testid when caller
+  // provides one (deterministic in SSR), else random fallback for unique IDs
+  // when multiple timelines render on the same page.
+  const idPrefix = dataTestId ?? `rat-${Math.random().toString(36).slice(2, 10)}`
+  const headingId = `${idPrefix}-heading`
 
   // Loading skeleton
   if (loading) {
     return (
       <section
-        aria-labelledby="rat-heading"
+        aria-labelledby={headingId}
         data-testid={dataTestId ?? "recipient-audit-trail"}
         className="flex flex-col gap-gp-4"
       >
-        <h2 id="rat-heading" className="text-gp-h4 font-semibold text-gp-neutral-900">
+        <h2 id={headingId} className="text-gp-h4 font-semibold text-gp-neutral-900">
           {heading}
         </h2>
-        <RecipientAuditTrailSkeleton />
+        <RecipientAuditTrailSkeleton ariaLabel={loadingLabel} />
       </section>
     )
   }
@@ -98,11 +106,11 @@ export async function RecipientAuditTrailTimeline({
 
     return (
       <section
-        aria-labelledby="rat-heading"
+        aria-labelledby={headingId}
         data-testid={dataTestId ?? "recipient-audit-trail"}
         className="flex flex-col gap-gp-4"
       >
-        <h2 id="rat-heading" className="text-gp-h4 font-semibold text-gp-neutral-900">
+        <h2 id={headingId} className="text-gp-h4 font-semibold text-gp-neutral-900">
           {heading}
         </h2>
         <RecipientAuditTrailTimelineClient
@@ -126,11 +134,11 @@ export async function RecipientAuditTrailTimeline({
 
     return (
       <section
-        aria-labelledby="rat-heading"
+        aria-labelledby={headingId}
         data-testid={dataTestId ?? "recipient-audit-trail"}
         className="flex flex-col gap-gp-4"
       >
-        <h2 id="rat-heading" className="text-gp-h4 font-semibold text-gp-neutral-900">
+        <h2 id={headingId} className="text-gp-h4 font-semibold text-gp-neutral-900">
           {heading}
         </h2>
         <AuditTrailEmptyState
@@ -141,7 +149,6 @@ export async function RecipientAuditTrailTimeline({
         <a
           href={ctaHref ?? t("empty.cta_href")}
           className="text-gp-body-sm font-medium text-gp-accent-700 underline hover:text-gp-accent-900"
-          aria-label={t("empty.cta_label")}
         >
           {t("empty.cta_label")}
         </a>
@@ -169,8 +176,11 @@ export async function RecipientAuditTrailTimeline({
         events={ordered}
         pageSize={pageSize}
         showOlderLabel={showOlderLabel}
+        listAriaLabel={listAriaLabel}
+        liveRegionTemplate={liveRegionTemplate}
+        idPrefix={idPrefix}
       />
-      <p className="text-gp-body-xs text-gp-neutral-500">{footerNote}</p>
+      <p className="text-gp-body-sm text-gp-neutral-500">{footerNote}</p>
     </section>
   )
 }

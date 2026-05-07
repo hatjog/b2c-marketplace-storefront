@@ -91,7 +91,7 @@ export const TimelineItem: FC<TimelineItemProps> = ({
       <div className="flex flex-1 flex-col gap-gp-0.5 pb-gp-4">
         {actor ? (
           <span
-            className={`inline-flex w-fit items-center rounded-gp-sm px-gp-1.5 py-gp-0.5 text-gp-body-xs font-medium ${ACTOR_TOKENS[actor.type]}`}
+            className={`inline-flex w-fit items-center rounded-gp-sm px-gp-2 py-gp-0.5 text-gp-body-sm font-medium ${ACTOR_TOKENS[actor.type]}`}
             data-actor={actor.type}
           >
             {actor.label ?? ACTOR_LABEL_FALLBACK[actor.type]}

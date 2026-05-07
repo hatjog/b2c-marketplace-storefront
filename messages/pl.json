@@ -632,6 +632,8 @@
     "recipient_audit_trail": {
       "heading": "Historia voucheru",
       "footer_note": "Historia jest widoczna tylko Tobie. Dane są przetwarzane zgodnie z RODO Art. 15 — masz prawo wglądu do historii operacji na Twoich danych.",
+      "list_aria_label": "Wpisy historii voucheru",
+      "live_region_template": "Wyświetlono {visible} z {total} wpisów",
       "empty": {
         "heading": "Brak wpisów w historii voucheru",
         "body": "Tutaj zobaczysz każdą zmianę dotyczącą tego voucheru — kto, kiedy i jaką operację wykonał. Historia pojawi się przy pierwszej akcji vendora lub systemu. Zgodnie z RODO Art. 15, masz prawo wglądu do tych danych.",

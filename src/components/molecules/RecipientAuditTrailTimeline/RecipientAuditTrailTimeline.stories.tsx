@@ -114,30 +114,45 @@ type Story = StoryObj<typeof RecipientAuditTrailTimelineClient>
 // Story 1: Empty state
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Token-driven empty state — mirrors the RSC output exactly (uses gp-* design
+// tokens, no raw Tailwind colors). Storybook lacks next-intl context so the
+// copy is hardcoded here; production rendering goes through the RSC + i18n.
 export const Empty: Story = {
   name: "Empty",
   render: () => (
-    <div className="max-w-lg">
+    <section
+      aria-labelledby="rat-story-empty-heading"
+      data-testid="recipient-audit-trail"
+      className="flex max-w-lg flex-col gap-gp-4"
+    >
+      <h2
+        id="rat-story-empty-heading"
+        className="text-gp-h4 font-semibold text-gp-neutral-900"
+      >
+        Historia voucheru
+      </h2>
       <div
         role="status"
         aria-label="Historia audytu jest pusta"
-        data-testid="audit-trail-empty-state-empty"
+        data-testid="recipient-audit-trail-empty"
         data-state="empty"
-        className="flex flex-col gap-2 rounded-md border border-dashed border-gray-200 bg-gray-50 p-6 text-gray-600"
+        className="flex flex-col gap-gp-2 rounded-gp-md border border-dashed border-gp-neutral-200 bg-gp-neutral-50 p-gp-6 text-gp-neutral-600"
       >
-        <h3 className="font-semibold text-gray-900">Brak wpisów w historii voucheru</h3>
-        <p className="text-sm">
+        <h3 className="text-gp-h4 font-semibold text-gp-neutral-900">
+          Brak wpisów w historii voucheru
+        </h3>
+        <p className="text-gp-body">
           Tutaj zobaczysz każdą zmianę dotyczącą tego voucheru — kto, kiedy i jaką operację
           wykonał. Historia pojawi się przy pierwszej akcji vendora lub systemu.
         </p>
-        <p className="text-xs text-gray-500">
-          Zgodnie z RODO Art. 15, masz prawo wglądu do historii przetwarzania Twoich danych.
-        </p>
-        <a href="/help/voucher-claim" className="text-sm font-medium text-blue-700 underline">
-          Zobacz instrukcje odbioru
-        </a>
       </div>
-    </div>
+      <a
+        href="/help/voucher-claim"
+        className="text-gp-body-sm font-medium text-gp-accent-700 underline hover:text-gp-accent-900"
+      >
+        Zobacz instrukcje odbioru
+      </a>
+    </section>
   ),
 }
 
@@ -145,26 +160,37 @@ export const Empty: Story = {
 // Story 2: Loading skeleton
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Token-driven loading skeleton — mirrors RecipientAuditTrailSkeleton output.
 export const Loading: Story = {
   name: "Loading",
   render: () => (
-    <div className="max-w-lg">
+    <section
+      aria-labelledby="rat-story-loading-heading"
+      data-testid="recipient-audit-trail"
+      className="flex max-w-lg flex-col gap-gp-4"
+    >
+      <h2
+        id="rat-story-loading-heading"
+        className="text-gp-h4 font-semibold text-gp-neutral-900"
+      >
+        Historia voucheru
+      </h2>
       <div
         role="status"
         aria-label="Ładuję historię…"
         data-testid="recipient-audit-trail-loading"
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-gp-3"
       >
         {[1, 2, 3].map((i) => (
-          <div key={i} className="flex gap-3 pl-6">
-            <div className="flex flex-1 flex-col gap-1 pb-4">
-              <div className="h-3 w-24 animate-pulse rounded bg-gray-200" />
-              <div className="h-4 w-48 animate-pulse rounded bg-gray-200" />
+          <div key={i} className="flex gap-gp-3 pl-gp-6">
+            <div className="flex flex-1 flex-col gap-gp-1 pb-gp-4">
+              <div className="h-gp-3 w-24 animate-pulse rounded-gp-sm bg-gp-neutral-200" />
+              <div className="h-gp-4 w-48 animate-pulse rounded-gp-sm bg-gp-neutral-200" />
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   ),
 }
 

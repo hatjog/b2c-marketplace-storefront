@@ -25,7 +25,10 @@ import { describe, expect, it, vi } from "vitest"
 import {
   RecipientAuditTrailErrorState,
   RecipientAuditTrailTimelineView,
+  computePaginationSlice,
+  reduceShowOlder,
 } from "../RecipientAuditTrailTimelineClient"
+import { AuditTrailEmptyState } from "../../AuditTrailEmptyState/AuditTrailEmptyState"
 import { TimelineItem } from "../../AuditTrailEmptyState/TimelineItem"
 import type { RecipientAuditTrailEvent } from "../types"
 
@@ -378,5 +381,163 @@ describe("TimelineItem — backward-compat (no actor)", () => {
     const treeSuccess = callSyncFC(TimelineItem, { title: "T", tone: "success" })
     const toneAttrs2 = collectProps<string>(treeSuccess, "data-tone")
     expect(toneAttrs2).toContain("success")
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// (a) Empty state — AuditTrailEmptyState (sub-component composed by the RSC)
+// AC7(a): heading + role="status" visible
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("AuditTrailEmptyState — empty render (AC7a)", () => {
+  it("renders empty state with role=\"status\"", () => {
+    const tree = callSyncFC(AuditTrailEmptyState, {
+      emptyHeading: "Brak wpisów w historii voucheru",
+      emptyBody: "Tutaj zobaczysz każdą zmianę dotyczącą tego voucheru.",
+      "data-testid": "recipient-audit-trail-empty",
+    })
+    const roles = collectProps<string>(tree, "role")
+    expect(roles).toContain("status")
+    const text = collectText(tree).join(" ")
+    expect(text).toContain("Brak wpisów w historii voucheru")
+    expect(text).toContain("Tutaj zobaczysz każdą zmianę")
+  })
+
+  it("renders override body and heading copy", () => {
+    const tree = callSyncFC(AuditTrailEmptyState, {
+      emptyHeading: "Custom Heading",
+      emptyBody: "Custom Body",
+    })
+    const text = collectText(tree).join(" ")
+    expect(text).toContain("Custom Heading")
+    expect(text).toContain("Custom Body")
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// (c) Pagination interaction — RecipientAuditTrailPopulatedTimeline
+// AC7(c): initial render shows pageSize rows with remaining-count button.
+// State-transition simulation by rendering the View twice with successive props
+// (vitest node env cannot run useState across re-renders without React renderer).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("RecipientAuditTrailPopulatedTimeline — pagination math (AC7c)", () => {
+  it("initial slice (visibleCount = pageSize) returns last pageSize events newest-first", () => {
+    const allEvents = makeEvents(50)
+    const { visibleEvents, remaining, total } = computePaginationSlice(
+      allEvents,
+      20,
+      20,
+    )
+    expect(total).toBe(50)
+    expect(remaining).toBe(30)
+    expect(visibleEvents).toHaveLength(20)
+    expect(visibleEvents[visibleEvents.length - 1]?.id).toBe("ev-50")
+    expect(visibleEvents[0]?.id).toBe("ev-31")
+  })
+
+  it("after one show-older click, slice grows by pageSize (still capped at total)", () => {
+    const allEvents = makeEvents(50)
+    const next = reduceShowOlder(20, 20, 50)
+    expect(next).toBe(40)
+    const { visibleEvents, remaining } = computePaginationSlice(allEvents, 20, next)
+    expect(visibleEvents).toHaveLength(40)
+    expect(remaining).toBe(10)
+  })
+
+  it("after enough clicks, all events are visible and remaining = 0 (button hidden)", () => {
+    const allEvents = makeEvents(50)
+    let count = 20
+    count = reduceShowOlder(count, 20, 50) // 40
+    count = reduceShowOlder(count, 20, 50) // 50 (capped)
+    expect(count).toBe(50)
+    const { remaining } = computePaginationSlice(allEvents, 20, count)
+    expect(remaining).toBe(0)
+    // Render the View with remaining=0 to confirm button is hidden
+    const tree = RecipientAuditTrailTimelineView({
+      visibleEvents: allEvents,
+      total: 50,
+      remaining: 0,
+      showOlderLabel: "x",
+    })
+    expect(findByTestId(tree, "show-older-button")).toBeNull()
+  })
+
+  it("when total <= pageSize the slice is the whole array and remaining = 0", () => {
+    const allEvents = makeEvents(5)
+    const { visibleEvents, remaining } = computePaginationSlice(allEvents, 20, 5)
+    expect(visibleEvents).toHaveLength(5)
+    expect(remaining).toBe(0)
+  })
+
+  it("View renders button BELOW the list per AC4 spec", () => {
+    // The View renders <ol> first, then the button after — verify by the tree
+    // structure: collect children of the wrapping div in order.
+    const events = makeEvents(20)
+    const tree = RecipientAuditTrailTimelineView({
+      visibleEvents: events.slice(15),
+      total: 20,
+      remaining: 15,
+      showOlderLabel: "Pokaż (15 pozostało)",
+    })
+    // tree is a <div>; iterate children, find first index of ol vs button
+    const node = tree as React.ReactElement<{ children: React.ReactNode }>
+    const children = React.Children.toArray(node.props.children) as React.ReactElement[]
+    const olIdx = children.findIndex(
+      (c) => React.isValidElement(c) && c.type === "ol",
+    )
+    const btnIdx = children.findIndex(
+      (c) => React.isValidElement(c) && c.type === "button",
+    )
+    expect(olIdx).toBeGreaterThanOrEqual(0)
+    expect(btnIdx).toBeGreaterThan(olIdx)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// View — locale-safe live region template
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("RecipientAuditTrailTimelineView — i18n templates", () => {
+  it("interpolates {visible}/{total} into liveRegionTemplate", () => {
+    const events = makeEvents(3)
+    const tree = RecipientAuditTrailTimelineView({
+      visibleEvents: events,
+      total: 10,
+      remaining: 7,
+      showOlderLabel: "x",
+      liveRegionTemplate: "Showing {visible} of {total} entries",
+    })
+    const live = findByTestId(tree, "rat-live-region")
+    expect(live).not.toBeNull()
+    const text = collectText(live).join("")
+    expect(text).toBe("Showing 3 of 10 entries")
+  })
+
+  it("uses provided listAriaLabel on <ol>", () => {
+    const tree = RecipientAuditTrailTimelineView({
+      visibleEvents: makeEvents(2),
+      total: 2,
+      remaining: 0,
+      showOlderLabel: "x",
+      listAriaLabel: "Voucher history entries",
+    })
+    const list = findByTestId(tree, "recipient-audit-trail-list")
+    expect(list).not.toBeNull()
+    expect((list!.props as Record<string, unknown>)["aria-label"]).toBe(
+      "Voucher history entries",
+    )
+  })
+
+  it("uses idPrefix to derive list id (avoids cross-instance ID collision)", () => {
+    const tree = RecipientAuditTrailTimelineView({
+      visibleEvents: makeEvents(1),
+      total: 1,
+      remaining: 0,
+      showOlderLabel: "x",
+      idPrefix: "rat-foo",
+    })
+    const list = findByTestId(tree, "recipient-audit-trail-list")
+    expect((list!.props as Record<string, unknown>).id).toBe("rat-foo-events-list")
   })
 })
