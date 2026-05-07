@@ -5,19 +5,31 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock @sentry/nextjs so logger tests never depend on Sentry vendor
+// Mock @sentry/nextjs so logger tests never depend on Sentry vendor.
+// The module is dynamic-imported inside dispatch(); vitest hoists vi.mock
+// and intercepts both static and dynamic imports.
+const captureMessageMock = vi.fn();
 vi.mock('@sentry/nextjs', () => ({
-  captureMessage: vi.fn(),
+  captureMessage: captureMessageMock,
 }));
 
-import * as Sentry from '@sentry/nextjs';
 import { logger, type LogPayload } from '../logger';
+
+// Helper: drain microtasks + macrotask so dynamic import().then(...) callback runs.
+const flushMicrotasks = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  for (let i = 0; i < 10; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.resolve();
+  }
+};
 
 describe('logger', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    captureMessageMock.mockClear();
     // Reset env to clean state
     process.env = { ...originalEnv };
     delete process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -73,6 +85,27 @@ describe('logger', () => {
       expect(arg).not.toMatch(/https?:\/\//);
       expect(arg).not.toMatch(/\/images\//);
     });
+
+    it('does NOT call Sentry.captureMessage when DSN is unset (lock dispatch invariant)', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      logger.warn('no.sentry.warn', { source: 'x' });
+      logger.error('no.sentry.error', { source: 'x' });
+      await flushMicrotasks();
+      expect(captureMessageMock).not.toHaveBeenCalled();
+    });
+
+    it('sanitizes URLs out of error_message defensively', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      logger.error('test.sanitize', {
+        source: 'sanitize-test',
+        error_message: 'fetch failed for https://api.example.com/secret?token=abc123',
+      });
+      const arg = errorSpy.mock.calls[0]?.[0] as string;
+      expect(arg).not.toContain('api.example.com');
+      expect(arg).not.toContain('token=abc123');
+      expect(arg).toContain('[url]');
+    });
   });
 
   describe('Sentry path (DSN set)', () => {
@@ -80,36 +113,43 @@ describe('logger', () => {
       process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://fake@sentry.io/123';
     });
 
-    it('logger.warn calls Sentry.captureMessage with level warning', () => {
+    it('logger.warn calls Sentry.captureMessage with level warning and contexts.gp_log', async () => {
       logger.warn('test.sentry.warn', { source: 'test-module', context: { val: 1 } });
+      await flushMicrotasks();
 
-      expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
-      expect(Sentry.captureMessage).toHaveBeenCalledWith('test.sentry.warn', {
+      expect(captureMessageMock).toHaveBeenCalledTimes(1);
+      expect(captureMessageMock).toHaveBeenCalledWith('test.sentry.warn', {
         level: 'warning',
-        extra: {
-          event_type: 'test.sentry.warn',
-          source: 'test-module',
-          context: { val: 1 },
+        contexts: {
+          gp_log: {
+            event_type: 'test.sentry.warn',
+            source: 'test-module',
+            context: { val: 1 },
+          },
         },
       });
     });
 
-    it('logger.error calls Sentry.captureMessage with level error', () => {
+    it('logger.error calls Sentry.captureMessage with level error', async () => {
       logger.error('test.sentry.error', { source: 'test-module', error_message: 'bad' });
+      await flushMicrotasks();
 
-      expect(Sentry.captureMessage).toHaveBeenCalledWith('test.sentry.error', {
+      expect(captureMessageMock).toHaveBeenCalledWith('test.sentry.error', {
         level: 'error',
-        extra: {
-          event_type: 'test.sentry.error',
-          source: 'test-module',
-          error_message: 'bad',
+        contexts: {
+          gp_log: {
+            event_type: 'test.sentry.error',
+            source: 'test-module',
+            error_message: 'bad',
+          },
         },
       });
     });
 
-    it('does NOT call console.warn when Sentry DSN is set', () => {
+    it('does NOT call console.warn when Sentry DSN is set', async () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       logger.warn('test.no.console', { source: 'x' });
+      await flushMicrotasks();
       expect(warnSpy).not.toHaveBeenCalled();
     });
   });

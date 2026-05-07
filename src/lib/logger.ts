@@ -2,16 +2,23 @@
  * Structured logger wrapper — storefront-side.
  *
  * Dispatch chain (evaluated at call time, no top-level side effects):
- *   1. If `NEXT_PUBLIC_SENTRY_DSN` is set → `Sentry.captureMessage` with structured `extra`.
- *   2. Else if `PORTAL_LOG_ENDPOINT` is set → fire-and-forget POST (TODO: v1.7.0 activate).
+ *   1. If `NEXT_PUBLIC_SENTRY_DSN` is set → lazy-load `@sentry/nextjs` and call
+ *      `Sentry.captureMessage` with structured `contexts.gp_log`.
+ *   2. Else if `NEXT_PUBLIC_PORTAL_LOG_ENDPOINT` is set → fire-and-forget POST
+ *      (TODO: v1.7.0 activate). Note: must be `NEXT_PUBLIC_*` for client bundles.
  *   3. Else → `console.warn` / `console.error` with `JSON.stringify(payload)`.
  *
- * Tree-shake-safe: no module-level Sentry init; lazy `import('@sentry/nextjs')` guard is
- * replaced by a synchronous `require` check below — safe in Next.js App Router bundles.
+ * Tree-shake-safe: no module-level Sentry import; Sentry is loaded via dynamic
+ * `import()` only when the DSN is set, so client bundles without DSN never pull
+ * the @sentry/nextjs runtime. Build-time dead-code elimination on the literal
+ * `process.env.NEXT_PUBLIC_SENTRY_DSN` keeps the unused branch out of bundles
+ * where the DSN is absent at build time.
  *
  * PII policy: payloads MUST NOT contain raw URLs, user IDs, email, vendor IDs, raw filenames
  * from user content, or query strings with PII. Use boolean flags / counts / non-PII enums
- * in `context` instead.
+ * in `context` instead. The wrapper additionally sanitizes `error_message` by stripping
+ * URLs and truncating to a defensive 500 chars; callers should still pass already-sanitized
+ * messages whenever possible.
  *
  * @module lib/logger
  * @see TF-138 / story v160-cleanup-58-structured-logging-storefront
@@ -66,8 +73,6 @@
  * next dedicated story (out of scope for TF-138).
  */
 
-import * as Sentry from '@sentry/nextjs';
-
 export type LogPayload = {
   event_type: string;
   source: string;
@@ -77,19 +82,42 @@ export type LogPayload = {
 
 type EmitInput = Omit<LogPayload, 'event_type'>;
 
+/**
+ * Defensive sanitizer for `error_message`: strips URLs (which may carry tokens
+ * or query strings) and truncates to 500 chars. Callers should still pass
+ * already-sanitized messages; this is belt-and-suspenders.
+ */
+function sanitizeErrorMessage(input: string | undefined): string | undefined {
+  if (!input) return input;
+  const noUrls = input.replace(/https?:\/\/\S+/gi, '[url]');
+  return noUrls.length > 500 ? `${noUrls.slice(0, 500)}…` : noUrls;
+}
+
 function dispatch(level: 'warn' | 'error', event_type: string, input: EmitInput): void {
-  const payload: LogPayload = { event_type, ...input };
+  const payload: LogPayload = {
+    event_type,
+    ...input,
+    ...(input.error_message !== undefined
+      ? { error_message: sanitizeErrorMessage(input.error_message) }
+      : {}),
+  };
 
   if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-    Sentry.captureMessage(event_type, {
-      level: level === 'error' ? 'error' : 'warning',
-      extra: payload as Record<string, unknown>,
+    // Lazy import: only pulled into bundles where the DSN is present at build
+    // time (Next.js inlines NEXT_PUBLIC_* vars and tree-shakes the dead branch
+    // when the literal is falsy). Fire-and-forget; we never await transport.
+    void import('@sentry/nextjs').then((Sentry) => {
+      Sentry.captureMessage(event_type, {
+        level: level === 'error' ? 'error' : 'warning',
+        contexts: { gp_log: payload as unknown as Record<string, unknown> },
+      });
     });
     return;
   }
 
-  // TODO(v1.7.0): if PORTAL_LOG_ENDPOINT → fire-and-forget POST to portal log API
-  // const endpoint = process.env.PORTAL_LOG_ENDPOINT;
+  // TODO(v1.7.0): if NEXT_PUBLIC_PORTAL_LOG_ENDPOINT → fire-and-forget POST to portal log API.
+  // Must be NEXT_PUBLIC_* so the value is inlined into the client bundle by Next.js.
+  // const endpoint = process.env.NEXT_PUBLIC_PORTAL_LOG_ENDPOINT;
   // if (endpoint) { void fetch(endpoint, { method: 'POST', body: JSON.stringify(payload) }); return; }
 
   if (level === 'error') {
