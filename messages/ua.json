@@ -569,7 +569,14 @@
       "redemption_code_label": "Код реалізації",
       "validity_period_label": "Дійсний до",
       "voucher_value_label": "Вартість ваучера",
-      "service_description_label": "Послуга"
+      "service_description_label": "Послуга",
+      "title": "Ваучер BonBeauty",
+      "directions_title": "Як дістатися",
+      "directions_address_label": "Адреса",
+      "directions_google_label": "Google Maps",
+      "directions_apple_label": "Apple Maps",
+      "directions_no_coords_helper": "Координати недоступні — посилання шукає за адресою",
+      "directions_privacy_notice": "Натискаючи посилання зовнішніх карт, ви покидаєте BonBeauty. BonBeauty не передає ваші дані зовнішнім постачальникам карт."
     },
     "claim": {
       "title": "Ваш ваучер",

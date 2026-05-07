@@ -569,7 +569,14 @@
       "redemption_code_label": "Einlösecode",
       "validity_period_label": "Gültig bis",
       "voucher_value_label": "Gutscheinwert",
-      "service_description_label": "Dienstleistung"
+      "service_description_label": "Dienstleistung",
+      "title": "BonBeauty Gutschein",
+      "directions_title": "Anfahrt",
+      "directions_address_label": "Adresse",
+      "directions_google_label": "Google Maps",
+      "directions_apple_label": "Apple Maps",
+      "directions_no_coords_helper": "Koordinaten nicht verfügbar — Link sucht nach Adresse",
+      "directions_privacy_notice": "Durch das Klicken auf externe Kartenlinks verlassen Sie BonBeauty. BonBeauty gibt Ihre Daten nicht an externe Kartenanbieter weiter."
     },
     "claim": {
       "title": "Ihr Gutschein",
