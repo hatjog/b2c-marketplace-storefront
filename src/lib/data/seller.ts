@@ -1,7 +1,8 @@
 import type { SellerProps } from '@/types/seller';
 
 import { haversineKm } from '../helpers/distance';
-import { mercurClient, sdk } from '../config';
+import { fetchSellerById, resolveSellerHandleToId } from '../sdk-adapters/sellers';
+import { mercurClient } from '../config';
 
 export interface SellerListItem {
   handle: string;
@@ -222,33 +223,40 @@ export const searchSellers = async ({
 };
 
 /**
- * Mercur 2.1.1 native `/store/sellers/:id` accepts ID-only (NOT handle). The
- * Mercur 1.5 contract supported handle lookup via `/store/seller/:handle` —
- * Mercur 2 dropped that overload. Until a GP backend extension restores the
- * handle path (story 2.7 follow-up) this fetcher continues to call the
- * legacy path through `sdk.client.fetch`. The path WILL 404 against a fresh
- * Mercur 2 backend; consumers (`/[locale]/sellers/[handle]`) should expect
- * graceful degradation (`null` return) until 2.7 lands the rewrite.
+ * Resolve a seller by handle via Path B (story v160-cleanup-28, TF-51 — Option B).
+ *
+ * Mercur 2.1.1 `/store/sellers/:id` is ID-only; there is no native
+ * `/store/sellers/by-handle/:handle` endpoint. This function implements
+ * Option B: two-step resolution with Next.js `unstable_cache` TTL.
+ *
+ *   1. List `/store/sellers?handle=:handle` (Mercur 2 list supports handle filter)
+ *      → cache handle→id mapping for 10 min via `resolveSellerHandleToId`.
+ *   2. Fetch `/store/sellers/:id` (native Mercur 2 endpoint) via `fetchSellerById`.
+ *
+ * Returns `null` on any error (404, network failure, handle not found).
+ *
+ * Replaces legacy: `sdk.client.fetch('/store/seller/:handle')` (Mercur 1.5 path
+ * that 404s against Mercur 2 backends — TF-51 shape-break).
+ *
+ * @see TF-51 (getSellerByHandle shape-break, Option B chosen)
+ * @see sdk-adapters/sellers.ts (resolveSellerHandleToId, fetchSellerById)
  */
-export const getSellerByHandle = async (handle: string) => {
-  return sdk.client
-    .fetch<{ seller: SellerProps }>(`/store/seller/${handle}`, {
-      query: {
-        fields:
-          '+created_at,+email,+phone,+social_links,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name'
-      },
-      cache: 'no-cache'
-    })
-    .then(({ seller }) => {
-      const response = {
-        ...seller,
-        reviews:
-          seller.reviews
-            ?.filter(item => item !== null)
-            .sort((a, b) => b.created_at.localeCompare(a.created_at)) ?? []
-      };
+export const getSellerByHandle = async (handle: string): Promise<SellerProps | null> => {
+  const SELLER_FIELDS =
+    '+created_at,+email,+phone,+social_links,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name';
 
-      return response as SellerProps;
-    })
-    .catch(() => null);
+  const id = await resolveSellerHandleToId(handle);
+  if (!id) return null;
+
+  const seller = await fetchSellerById(id, SELLER_FIELDS);
+  if (!seller) return null;
+
+  // Sort reviews by created_at desc (preserve existing consumer contract).
+  return {
+    ...seller,
+    reviews:
+      (seller.reviews as Array<{ created_at: string }> | undefined)
+        ?.filter(item => item !== null)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at)) ?? []
+  };
 };
