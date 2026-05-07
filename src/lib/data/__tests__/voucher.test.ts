@@ -19,7 +19,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mockMercurClient: Record<string, unknown> = {};
 const mockSdkFetch = vi.fn();
 
-vi.mock('@/lib/config', () => ({
+// review M5: mock the SUT's actual relative import specifier so the mock
+// remains pinned to `voucher.ts` even if the file is moved (alias-resolution
+// coincidence is not a stable contract).
+vi.mock('../../config', () => ({
   mercurClient: mockMercurClient,
   sdk: {
     client: {
