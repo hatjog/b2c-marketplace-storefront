@@ -19,6 +19,7 @@
 - **Barrel exports leak server modules into client bundles.** Edytując `index.ts` w komponentach trace pełen import chain — nie ciągnij `node:*` ani modułów backendowych do client components.
 - Komponenty client muszą mieć `"use client"` na top. Czyste presentational → server-side default.
 - Tailwind 3: sprawdzaj `tailwind.config.*`, PostCSS config i `globals.css` przed zmianą klas lub theme.
+- **Leaflet marker assets** są bundlowane lokalnie pod `public/leaflet-assets/` (TF-65 — supply-chain + GDPR third-party IP exposure). NIE wprowadzaj URL-i do CDN trzeciej strony (`unpkg.com`, `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`) dla ikon Leaflet — paths SSOT to `src/components/cells/SellerMap/leafletAssets.ts`. CSP `img-src` w `src/lib/security/csp.ts` ma `https:` wildcard; bundling lokalny jest preconditioned future tighten-pass do `'self' data: blob:` + explicit tile origins.
 
 ## Testy
 - `cd GP/storefront && pnpm test` albo węższy wariant zgodny ze skryptami w `package.json`.
