@@ -129,6 +129,24 @@ describe('resolveSellerHandleToId', () => {
     const result = await resolveSellerHandleToId('bonbeauty');
     expect(result).toBeNull();
   });
+
+  // cleanup-28 review AC-1: cache key must include the handle arg, not collapse
+  // distinct handles to a single cache slot. Using a real per-call mock that
+  // returns a handle-specific id verifies the resolver does not memoize
+  // incorrectly within a single test (and that mockSellersQuery is invoked
+  // once per unique handle regardless of `unstable_cache` keying behavior).
+  it('returns distinct ids for distinct handles (cache key includes handle)', async () => {
+    mockSellersQuery.mockImplementation(async (params: { handle: string }) => ({
+      sellers: [makeSeller({ id: `id-${params.handle}`, handle: params.handle })]
+    }));
+
+    const idA = await resolveSellerHandleToId('handle-a');
+    const idB = await resolveSellerHandleToId('handle-b');
+
+    expect(idA).toBe('id-handle-a');
+    expect(idB).toBe('id-handle-b');
+    expect(mockSellersQuery).toHaveBeenCalledTimes(2);
+  });
 });
 
 // ---------------------------------------------------------------------------

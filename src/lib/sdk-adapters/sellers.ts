@@ -72,13 +72,23 @@ type SellerListApiItem = {
 export const resolveSellerHandleToId = unstable_cache(
   async (handle: string): Promise<string | null> => {
     try {
+      // Note: no inner `cache: 'no-cache'` — outer `unstable_cache`
+      // memoizes per-handle for 600s; underlying HTTP cache is harmless
+      // within that window and reduces backend pressure on cache misses.
+      // cleanup-28 review CACHE-2.
       const result = (await mercurClient.store.sellers.query({
         handle,
-        limit: 1,
-        fetchOptions: { cache: 'no-cache' }
+        limit: 1
       })) as { sellers?: SellerListApiItem[] };
       return result?.sellers?.[0]?.id ?? null;
-    } catch {
+    } catch (err) {
+      // cleanup-28 review CACHE-1: surface adapter failures to server logs
+      // / Sentry instead of swallowing silently. Distinguishes "backend
+      // down" from "handle not found" in production diagnostics.
+      console.error('[sdk-adapters/sellers] resolveSellerHandleToId failed', {
+        handle,
+        error: err instanceof Error ? err.message : String(err)
+      });
       return null;
     }
   },
@@ -105,15 +115,26 @@ export async function fetchSellerById(
     // Mercur 2 proxy: `mercurClient.store.sellers.$id.query({ $id: id })`
     // builds URL `/store/sellers/:id` — `$id` segment is substituted from
     // the `$id` key in the params object per @mercurjs/client proxy convention.
+    //
+    // TODO (cleanup-28 review TYPE-1): `$id as any` cast required because
+    // `@mercurjs/client@2.1.1` proxy typings don't expose `$id` segment on
+    // `sellers.store`. Cast point is the single migration boundary; revisit
+    // once Mercur 2 client codegen lands typed proxy support (likely v1.7.0+).
+    // Dropped inner `cache: 'no-cache'` — Next default fetch cache is the
+    // right tier for ID-stable seller-detail reads. cleanup-28 review CACHE-2.
     const result = (await (mercurClient.store.sellers.$id as any).query({
       $id: id,
-      ...(fields ? { fields } : {}),
-      fetchOptions: { cache: 'no-cache' }
+      ...(fields ? { fields } : {})
     })) as { seller?: SellerListApiItem };
     const s = result?.seller;
     if (!s) return null;
     return mapSellerApiToProps(s);
-  } catch {
+  } catch (err) {
+    // cleanup-28 review CACHE-1: log instead of silent swallow.
+    console.error('[sdk-adapters/sellers] fetchSellerById failed', {
+      id,
+      error: err instanceof Error ? err.message : String(err)
+    });
     return null;
   }
 }
