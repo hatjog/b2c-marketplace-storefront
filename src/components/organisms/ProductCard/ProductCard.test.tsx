@@ -82,6 +82,14 @@ const sellerData = {
 // ---------------------------------------------------------------------------
 
 describe('ProductCard — vendor name (AC #1)', () => {
+  it('exposes data-testid="product-card" on the wrapper element (E2E contract — Story v160-cleanup-11)', () => {
+    const result = ProductCard({ product: baseProduct }) as ReactEl
+    expect(result).not.toBeNull()
+    // Wrapper is the top-level element returned by ProductCard.
+    const props = (result.props ?? {}) as Record<string, unknown>
+    expect(props['data-testid']).toBe('product-card')
+  })
+
   it('renders vendor name when seller is present', () => {
     const product = { ...baseProduct, seller: sellerData }
     const result = ProductCard({ product }) as ReactEl

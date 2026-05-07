@@ -2,7 +2,6 @@ import type { HttpTypes } from '@medusajs/types';
 
 import { CartItemsFooter, CartItemsHeader, CartItemsProducts } from '@/components/cells';
 import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
-import { isMultiVendorEnabled } from '@/lib/flags/multiVendorPricing';
 
 import { CartGroupedBySeller } from '../CartGroupedBySeller/CartGroupedBySeller';
 
@@ -14,10 +13,10 @@ import { EmptyCart } from './EmptyCart';
  * `<CartGroupedBySeller>` (sections per seller, alphabetical order).
  * When OFF or no seller metadata → legacy flat grouping by `product.seller`
  * preserved → zero regression vs v1.5.0 baseline.
- *
- * cleanup-12f: flag check moved inside component body to avoid Turbopack
- * module-evaluation order issue with barrel imports (ReferenceError at SSR).
  */
+const MULTI_VENDOR_PRICING_ENABLED =
+  process.env.NEXT_PUBLIC_MULTI_VENDOR_PRICING_ENABLED === 'true';
+
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (!cart) return null;
 
@@ -25,7 +24,7 @@ export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   if (items.length === 0) return <EmptyCart />;
 
   // Story 5.7 — flag-gated grouping by selected seller metadata.
-  if (isMultiVendorEnabled() && hasMultipleSellers(items)) {
+  if (MULTI_VENDOR_PRICING_ENABLED && hasMultipleSellers(items)) {
     return (
       <>
         <CartGroupedBySeller cart={cart} />
@@ -95,8 +94,10 @@ function groupItemsBySeller(cart: HttpTypes.StoreCart) {
 
 function resolveCartItemSeller(sellerValue: any) {
   if (Array.isArray(sellerValue)) {
+    // Story v160-cleanup-11 (8.8 follow-up): accept Mercur 2 (`status === 'open'`)
+    // OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) — see normalize-listed-products.ts.
     const activeSeller = sellerValue.find(
-      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE'
+      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE',
     );
     return activeSeller ?? sellerValue[0] ?? null;
   }
