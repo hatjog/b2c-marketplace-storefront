@@ -44,7 +44,7 @@ const LOCAL_ASSET_PREFIX = '/leaflet-assets/';
 describe('SellerMap assets (TF-65) — supply-chain + CSP + GDPR', () => {
   // Snapshot the global Leaflet default options so the runtime mergeOptions
   // call in this test does not bleed into any other suite.
-  const previousOptions = { ...(L.Icon.Default.prototype as { options?: unknown }).options };
+  const previousOptions = { ...((L.Icon.Default.prototype as unknown as { options?: Record<string, unknown> }).options ?? {}) };
 
   beforeAll(() => {
     delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
@@ -67,7 +67,7 @@ describe('SellerMap assets (TF-65) — supply-chain + CSP + GDPR', () => {
     // AC5(a) — actually exercise the `mergeOptions` call against the live
     // leaflet package and assert on the resulting prototype options.
     const options = (
-      L.Icon.Default.prototype as { options: Record<string, unknown> }
+      L.Icon.Default.prototype as unknown as { options: Record<string, unknown> }
     ).options;
     expect(options.iconUrl).toBe(LEAFLET_ICON_URL);
     expect(options.iconRetinaUrl).toBe(LEAFLET_ICON_RETINA_URL);
@@ -77,7 +77,7 @@ describe('SellerMap assets (TF-65) — supply-chain + CSP + GDPR', () => {
   it('runtime: merged options contain no third-party CDN reference', () => {
     // AC4 + AC5(b) — guard the runtime merged values directly.
     const options = (
-      L.Icon.Default.prototype as { options: Record<string, unknown> }
+      L.Icon.Default.prototype as unknown as { options: Record<string, unknown> }
     ).options;
     for (const key of ['iconUrl', 'iconRetinaUrl', 'shadowUrl'] as const) {
       const value = options[key];

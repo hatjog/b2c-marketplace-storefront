@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -41,7 +42,7 @@ export function ConsentMomentInline({
   autoOpen = true,
   onSkip,
   onResult
-}: ConsentMomentInlineProps): JSX.Element {
+}: ConsentMomentInlineProps): React.ReactElement {
   const t = useTranslations('voucher.consent');
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const purposeId = useId();

@@ -143,7 +143,8 @@ describe('RecipientPausePathToggle — AC-VPII-2.1-07 5-state machine', () => {
   it.each(happyPath)(
     'transitions $from --$event--> $to',
     ({ from, event, to }) => {
-      expect(PAUSE_TRANSITIONS[from][event]).toBe(to);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((PAUSE_TRANSITIONS[from] as any)[event]).toBe(to);
     }
   );
 

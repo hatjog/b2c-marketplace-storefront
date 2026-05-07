@@ -108,7 +108,8 @@ describe('TF-72: selected_seller_handle in cart metadata (AC3)', () => {
   });
 
   it('CartGroupBySeller does NOT render "visit seller" link when handle is missing', () => {
-    const group = { seller_id: 'sel-001', seller: { id: 'sel-001', name: 'Acme Salon' }, items: [], subtotal: 0 };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const group: any = { seller_id: 'sel-001', seller: { id: 'sel-001', name: 'Acme Salon' }, items: [], subtotal: 0 };
     expect(!!group.seller?.handle).toBe(false);
   });
 });

@@ -5,7 +5,8 @@ import sanitizeHtml from 'sanitize-html';
 import { describe, it, expect } from 'vitest';
 
 const { window } = new JSDOM('');
-const purify = DOMPurify(window);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const purify = DOMPurify(window as any);
 
 // Parity config: no transformTags — tests allowlist behavior only.
 // (Production SanitizedHTML.tsx adds rel/target via transformTags; DOMPurify has no equivalent.)

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 import { ensureFlagOn, getFlagState, setFlagState, type MultiVendorFlagState } from './helpers/flag-helper';
 import { findProductsFromMultipleSellers, probeBackendHealth } from './helpers/seed-helper';
@@ -19,7 +19,7 @@ function formatMinorAmount(amount: number, currencyCode: string): string {
   }).format(amount / 100);
 }
 
-async function getCartIdFromCookies(page: Parameters<typeof test>[0]['page']): Promise<string | null> {
+async function getCartIdFromCookies(page: Page): Promise<string | null> {
   const cookies = await page.context().cookies();
   return cookies.find((cookie) => cookie.name === '_medusa_cart_id')?.value ?? null;
 }

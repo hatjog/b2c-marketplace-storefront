@@ -17,6 +17,8 @@ import { describe, expect, it } from "vitest"
 
 import { FlagStateBadge, type FlagState } from "../FlagStateBadge"
 
+type SyncReactEl = React.ReactElement<Record<string, unknown>>
+
 function collectText(node: React.ReactNode, acc: string[] = []): string[] {
   if (typeof node === "string") {
     acc.push(node)
@@ -42,7 +44,7 @@ describe("FlagStateBadge", () => {
 
   it("renders distinct icon glyphs per state (NOT color-only differentiation)", () => {
     const glyphs = STATES.map((state) => {
-      const tree = FlagStateBadge({ state })
+      const tree = FlagStateBadge({ state }) as unknown as SyncReactEl
       const text = collectText(tree).join("")
       // First char is the icon glyph in our copy template
       return text.replace(/\s+/g, "").charAt(0)
@@ -60,27 +62,27 @@ describe("FlagStateBadge", () => {
       ["disabled", "Stan flagi: Wyłączony"],
     ]
     for (const [state, expected] of cases) {
-      const tree = FlagStateBadge({ state })
+      const tree = FlagStateBadge({ state }) as unknown as SyncReactEl
       expect((tree.props as Record<string, unknown>)["aria-label"]).toBe(expected)
     }
   })
 
   it("sets data-state attribute matching the state prop", () => {
     for (const state of STATES) {
-      const tree = FlagStateBadge({ state })
+      const tree = FlagStateBadge({ state }) as unknown as SyncReactEl
       expect((tree.props as Record<string, unknown>)["data-state"]).toBe(state)
     }
   })
 
   it("includes tap-target minimum sizing classes (AC-UI-6.1-09 ≥48×48px)", () => {
-    const tree = FlagStateBadge({ state: "active" })
+    const tree = FlagStateBadge({ state: "active" }) as unknown as SyncReactEl
     const className = (tree.props as Record<string, unknown>).className as string
     expect(className).toMatch(/min-h-gp-tap-target-min/)
     expect(className).toMatch(/min-w-gp-tap-target-min/)
   })
 
   it("supports a custom label override", () => {
-    const tree = FlagStateBadge({ state: "active", label: "Custom" })
+    const tree = FlagStateBadge({ state: "active", label: "Custom" }) as unknown as SyncReactEl
     const text = collectText(tree).join("")
     expect(text).toContain("Custom")
   })

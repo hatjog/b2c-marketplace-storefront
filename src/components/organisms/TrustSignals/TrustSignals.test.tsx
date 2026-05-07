@@ -13,7 +13,8 @@ type ReactEl = React.ReactElement<Record<string, unknown>>;
 
 function resolveElement(el: ReactEl): React.ReactNode {
   if (typeof el.type === 'function') {
-    return el.type(el.props);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (el.type as (props: any) => React.ReactNode)(el.props);
   }
 
   return el;

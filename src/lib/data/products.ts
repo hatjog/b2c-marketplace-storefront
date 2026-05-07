@@ -9,7 +9,6 @@ import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import { sortByRecommended } from '@/lib/helpers/sort-utils';
 import type { SortOptions } from '@/types/product';
-import type { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
 import { getAuthHeaders } from './cookies';

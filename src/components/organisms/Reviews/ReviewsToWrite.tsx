@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import type { HttpTypes } from '@medusajs/types';
 import { isEmpty } from 'lodash';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';

@@ -13,7 +13,7 @@
  * @see NFR-REL-2 / AC-MV-FLAG-ON-01
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
 import {
   assertFlagState,
   ensureFlagOn,
@@ -40,7 +40,7 @@ const ADD_TO_CART_SELECTOR =
   '[data-testid="product-add-to-cart-button"], [data-testid="add-to-cart"], button:has-text("Dodaj do koszyka")'
 
 async function addProductToCart(
-  page: Parameters<typeof test>[0]["page"],
+  page: Page,
   productHandle: string,
   sellerOptionIndex?: number,
 ): Promise<void> {
@@ -62,7 +62,7 @@ async function addProductToCart(
   const addToCartBtn = page.locator(ADD_TO_CART_SELECTOR)
   await expect(addToCartBtn.first()).toBeVisible({ timeout: 10_000 })
   const serverActionResponse = page.waitForResponse(
-    (response) => {
+    (response: import('@playwright/test').Response) => {
       const responseUrl = new URL(response.url())
       return (
         response.request().method() === "POST" &&

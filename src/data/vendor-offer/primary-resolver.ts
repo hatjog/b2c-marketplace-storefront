@@ -57,6 +57,7 @@ export type PrimaryVendorResolution = {
 
 type BatchLoadFn<K, V> = (keys: ReadonlyArray<K>) => Promise<ReadonlyArray<V | Error>>;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface DataLoaderOptions<K, V> {
   batch?: boolean;
   maxBatchSize?: number;
