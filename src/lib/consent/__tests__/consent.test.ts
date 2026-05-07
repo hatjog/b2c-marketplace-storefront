@@ -27,6 +27,12 @@ import {
 
 // ---------------------------------------------------------------------------
 // Cookie simulation
+//
+// NOTE (F10): this mock handles a single cookie name=value pair per `set` call
+// but does NOT preserve multi-cookie ordering, attribute round-tripping, or
+// path/domain scoping. Sufficient for `_gp_consent_v1` round-trips in this
+// suite; broader cookie behaviour should be tested via a dedicated harness
+// (e.g. `tough-cookie`) if future scenarios need it.
 // ---------------------------------------------------------------------------
 
 let cookieStore: Record<string, string> = {};
@@ -248,6 +254,27 @@ describe('acceptAll / rejectAll helpers', () => {
     expect(state?.categories.preferences).toBe(false);
     expect(state?.categories.analytics).toBe(false);
     expect(state?.categories.marketing).toBe(false);
+  });
+});
+
+describe('F2 — setConsent with preferences=false clears pre-existing storage', () => {
+  it('clears sessionStorage preference keys when setConsent disables preferences', () => {
+    sessionStorageStore['_gp_voucher_paused:legacy'] = '1';
+    sessionStorageStore['gp.fsm.legacy'] = '{}';
+    sessionStorageStore['gp_geo_denial_ts'] = '123';
+    sessionStorageStore['unrelated'] = 'keep';
+    setConsent({ preferences: false, analytics: false, marketing: false });
+    expect(sessionStorageMock.getItem('_gp_voucher_paused:legacy')).toBeNull();
+    expect(sessionStorageMock.getItem('gp.fsm.legacy')).toBeNull();
+    expect(sessionStorageMock.getItem('gp_geo_denial_ts')).toBeNull();
+    expect(sessionStorageMock.getItem('unrelated')).toBe('keep');
+  });
+
+  it('does NOT clear preferences storage when setConsent enables preferences', () => {
+    sessionStorageStore['_gp_voucher_paused:keep'] = '1';
+    setConsent({ preferences: true, analytics: false, marketing: false });
+    // Existing key remains because preferences are now consented.
+    expect(sessionStorageMock.getItem('_gp_voucher_paused:keep')).toBe('1');
   });
 });
 

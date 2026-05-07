@@ -39,10 +39,25 @@ function isClient(): boolean {
   return typeof globalThis !== 'undefined' && typeof globalThis.indexedDB !== 'undefined';
 }
 
-function openDb(): Promise<IDBDatabase> {
+/**
+ * Sentinel error: thrown / used to signal that the offline queue is unavailable
+ * because preferences consent has not been granted (F3 — ePrivacy TF-80).
+ * Public functions catch this and return graceful defaults.
+ */
+const NO_CONSENT = Symbol('no-consent');
+
+function openDb(): Promise<IDBDatabase | typeof NO_CONSENT> {
   return new Promise((resolve, reject) => {
     if (!isClient()) {
       reject(new Error('indexedDB not available'));
+      return;
+    }
+    // F3: centralised ePrivacy gate. Every public function that opens the DB
+    // routes through here; without preferences consent, return the sentinel
+    // and let callers degrade gracefully (no DB is opened — `open` would
+    // recreate a deleted DB, breaking the revoke contract).
+    if (!requireCategory('preferences')) {
+      resolve(NO_CONSENT);
       return;
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -63,14 +78,13 @@ function openDb(): Promise<IDBDatabase> {
  * fall back to online-only path instead (AC5 graceful degradation).
  */
 export async function enqueueClaim(entry: ClaimQueueEntry): Promise<boolean> {
-  // ePrivacy gate (TF-80): offline queue is a preferences-category feature.
-  if (!requireCategory('preferences')) {
+  const db = await openDb();
+  if (db === NO_CONSENT) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[CMP] enqueueClaim: preferences consent absent — offline queue skipped.');
     }
     return false;
   }
-  const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite');
     tx.objectStore(STORE).put(entry);
@@ -82,6 +96,7 @@ export async function enqueueClaim(entry: ClaimQueueEntry): Promise<boolean> {
 
 export async function listAllClaims(): Promise<ClaimQueueEntry[]> {
   const db = await openDb();
+  if (db === NO_CONSENT) return [];
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly');
     const req = tx.objectStore(STORE).getAll();
@@ -92,6 +107,7 @@ export async function listAllClaims(): Promise<ClaimQueueEntry[]> {
 
 export async function removeClaim(id: string): Promise<void> {
   const db = await openDb();
+  if (db === NO_CONSENT) return;
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite');
     tx.objectStore(STORE).delete(id);
@@ -102,6 +118,7 @@ export async function removeClaim(id: string): Promise<void> {
 
 export async function incrementRetry(id: string, error: string): Promise<void> {
   const db = await openDb();
+  if (db === NO_CONSENT) return;
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite');
     const store = tx.objectStore(STORE);

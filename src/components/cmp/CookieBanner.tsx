@@ -18,10 +18,31 @@
  */
 
 import { type ReactElement, useEffect, useState } from 'react';
-import { useLocale } from 'next-intl';
 
-import { acceptAll, getConsent, rejectAll } from '@/lib/consent';
+import { acceptAll, getConsent, rejectAll, clearPreferencesStorage } from '@/lib/consent';
 import { ConsentModal } from './ConsentModal';
+
+// Read locale defensively without next-intl context — CookieBanner is mounted in
+// the root `app/layout.tsx` (above the [locale] segment where NextIntlClientProvider
+// lives), so `useLocale()` would throw "No intl context found" at runtime (F1).
+// Fallback chain: `_gp_lang` cookie → <html lang> → 'en'.
+function readLocaleClient(): string {
+  if (typeof document === 'undefined') return 'en';
+  try {
+    const cookieMatch = document.cookie
+      .split(';')
+      .map((c) => c.trim())
+      .find((c) => c.startsWith('_gp_lang='));
+    if (cookieMatch) {
+      const value = decodeURIComponent(cookieMatch.slice('_gp_lang='.length));
+      if (value) return value;
+    }
+  } catch {
+    /* ignore — fall through */
+  }
+  const htmlLang = document.documentElement?.lang;
+  return htmlLang || 'en';
+}
 
 // ---------------------------------------------------------------------------
 // Banner copy (pl / en / ua / de)
@@ -84,29 +105,53 @@ function getCopy(locale: string): BannerCopy {
 // Component
 // ---------------------------------------------------------------------------
 
+// Module-level event name for programmatic reopen (F5: withdrawal as easy as giving).
+export const CONSENT_REOPEN_EVENT = 'gp:consent-reopen';
+
+/** Programmatic reopen of the consent modal (e.g. footer "Cookie settings" link). */
+export function openConsentModal(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(CONSENT_REOPEN_EVENT));
+}
+
 export function CookieBanner(): ReactElement | null {
-  const locale = useLocale();
+  const [locale, setLocale] = useState('en');
   const copy = getCopy(locale);
 
   const [visible, setVisible] = useState(false);
+  const [hasDecision, setHasDecision] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
+    setLocale(readLocaleClient());
     // Show banner only when no consent cookie exists
     const state = getConsent();
     if (!state) {
       setVisible(true);
+    } else {
+      setHasDecision(true);
     }
+
+    // Programmatic reopen handler (F5)
+    function onReopen(): void {
+      setModalOpen(true);
+    }
+    window.addEventListener(CONSENT_REOPEN_EVENT, onReopen);
+    return () => window.removeEventListener(CONSENT_REOPEN_EVENT, onReopen);
   }, []);
 
   function handleAcceptAll(): void {
     acceptAll();
     setVisible(false);
+    setHasDecision(true);
   }
 
   function handleRejectAll(): void {
     rejectAll();
+    // F2: ensure pre-existing storage is cleared on reject (defensive — idempotent)
+    clearPreferencesStorage();
     setVisible(false);
+    setHasDecision(true);
   }
 
   function handleCustomize(): void {
@@ -119,15 +164,40 @@ export function CookieBanner(): ReactElement | null {
     const state = getConsent();
     if (state) {
       setVisible(false);
+      setHasDecision(true);
     }
   }
 
-  if (!visible) return null;
+  // F5: After a decision exists, render a small "Cookie settings" reopen
+  // affordance — withdrawal must be as easy as giving consent (EDPB 05/2020 §117).
+  if (!visible) {
+    if (!hasDecision) return null;
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          data-testid="cookie-settings-reopen"
+          aria-label={copy.customize}
+          className="fixed bottom-4 left-4 z-40 rounded-full border border-tertiary/30 bg-primary px-3 py-2 text-xs font-medium text-tertiary shadow-md hover:bg-tertiary/10"
+        >
+          {copy.customize}
+        </button>
+        {modalOpen && (
+          <ConsentModal
+            locale={locale}
+            onClose={handleModalClose}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>
       <div
         role="region"
+        aria-live="polite"
         aria-label={copy.heading}
         data-testid="cookie-banner"
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-tertiary/20 bg-primary px-4 py-4 shadow-lg sm:px-6"

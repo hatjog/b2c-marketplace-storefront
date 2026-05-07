@@ -82,7 +82,25 @@ function buildCookieString(payload: ConsentCookiePayload, ttlDays: number): stri
   const expires = new Date();
   expires.setDate(expires.getDate() + ttlDays);
   const value = encodeURIComponent(JSON.stringify(payload));
-  return `${CONSENT_COOKIE_NAME}=${value}; Path=/; SameSite=Lax; Expires=${expires.toUTCString()}`;
+  // F4: auto-add Secure on HTTPS contexts. Dev (HTTP) omits the flag — browsers
+  // reject Secure cookies over HTTP. v1.10.0 prod-flip is HTTPS-only by definition.
+  const isSecure =
+    typeof window !== 'undefined' && window.location?.protocol === 'https:';
+  const secureAttr = isSecure ? '; Secure' : '';
+  return `${CONSENT_COOKIE_NAME}=${value}; Path=/; SameSite=Lax${secureAttr}; Expires=${expires.toUTCString()}`;
+}
+
+// F9: in-memory cache for parsed consent state. Invalidated by setConsent/clearConsentCookie.
+let consentCache: { value: ConsentState | null; cookieSig: string } | null = null;
+
+function currentCookieSig(): string {
+  if (!isClient()) return '';
+  // Cheap signature — full cookie value is small and bounded.
+  const match = document.cookie
+    .split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${CONSENT_COOKIE_NAME}=`));
+  return match ?? '';
 }
 
 // ---------------------------------------------------------------------------
@@ -94,18 +112,26 @@ function buildCookieString(payload: ConsentCookiePayload, ttlDays: number): stri
  * Returns null if cookie is absent or malformed (treat as "no consent given").
  */
 export function getConsent(): ConsentState | null {
+  // F9: serve from cache when cookie unchanged.
+  const sig = currentCookieSig();
+  if (consentCache && consentCache.cookieSig === sig) {
+    return consentCache.value;
+  }
   const payload = readConsentCookie();
-  if (!payload) return null;
-  return {
-    version: 1,
-    ts: payload.ts,
-    categories: {
-      necessary: true,
-      preferences: payload.preferences,
-      analytics: payload.analytics,
-      marketing: payload.marketing
-    }
-  };
+  const value: ConsentState | null = !payload
+    ? null
+    : {
+        version: 1,
+        ts: payload.ts,
+        categories: {
+          necessary: true,
+          preferences: payload.preferences,
+          analytics: payload.analytics,
+          marketing: payload.marketing
+        }
+      };
+  consentCache = { value, cookieSig: sig };
+  return value;
 }
 
 /**
@@ -126,6 +152,14 @@ export function setConsent(categories: {
     marketing: categories.marketing
   };
   document.cookie = buildCookieString(payload, COOKIE_TTL_DAYS);
+  // F9: invalidate cache.
+  consentCache = null;
+  // F2: defensive — if preferences is now false, clear any pre-existing
+  // sessionStorage / IndexedDB writes that may pre-date the gate (legacy
+  // upgrade scenario, multi-tab residue, dev test data).
+  if (!categories.preferences) {
+    clearPreferencesStorage();
+  }
 }
 
 /**
@@ -197,6 +231,8 @@ export function revokeCategory(category: Exclude<ConsentCategory, 'necessary'>):
 export function clearConsentCookie(): void {
   if (!isClient()) return;
   document.cookie = `${CONSENT_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  // F9: invalidate cache.
+  consentCache = null;
 }
 
 // ---------------------------------------------------------------------------

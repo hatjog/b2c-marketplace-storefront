@@ -150,8 +150,20 @@ export function ConsentModal({ locale, onClose }: ConsentModalProps): ReactEleme
     if (typeof node.showModal === 'function' && !node.open) {
       try {
         node.showModal();
+        return;
       } catch {
-        /* showModal can throw if already open — non-fatal */
+        /* showModal can throw — fall through to attribute fallback */
+      }
+    }
+    // F6: fallback for browsers without HTMLDialogElement.showModal support
+    // (very old Safari). Set the `open` attribute so the dialog is visible;
+    // role/aria-modal already set on the element. Native focus trap is lost
+    // but the modal remains usable and dismissible via Save/ESC.
+    if (!node.open) {
+      try {
+        node.setAttribute('open', '');
+      } catch {
+        /* ignore */
       }
     }
   }, []);
