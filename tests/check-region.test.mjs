@@ -16,8 +16,9 @@ describe('checkRegion (language-based validation, ADR-046)', () => {
     assert.equal(await checkRegion('us'), false);
   });
 
-  test('de is invalid (not in v1.1.0 supported locales)', async () => {
-    assert.equal(await checkRegion('de'), false);
+  // cleanup-19: 'de' is now a supported locale in v1.6.0
+  test('de is valid (added to SUPPORTED_LOCALES in v1.6.0 cleanup-19)', async () => {
+    assert.equal(await checkRegion('de'), true);
   });
 
   test('empty string is invalid', async () => {

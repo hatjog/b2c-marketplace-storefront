@@ -52,8 +52,8 @@ export function resolveRegion(geoCountry?: string, regionCookie?: string): strin
   return undefined;
 }
 
-// Story 3.2: 301 permanent redirect /[locale]/salony/* → /[locale]/sellers/* (SEO continuity post-3.1 directory removal)
-// allow: salony route preserved for 3.2 redirect source
+// Story 3.2 + cleanup-19: 308 permanent redirect /[locale]/salony/* → /[locale]/sellers/* (SEO continuity, no redirect chain)
+// allow: salony route preserved for 3.2 redirect source; 308 prevents 301→307 chain with locale-redirect branch
 const SALONY_REDIRECT_RE = /^\/([a-z]{2})\/salony(\/.*)?$/;
 
 export async function middleware(request: NextRequest) {
@@ -64,15 +64,18 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Story 3.2: legacy /[locale]/salony/* → 301 → /[locale]/sellers/*
+    // Story 3.2: legacy /[locale]/salony/* → 308 → /[locale]/sellers/* (SEO permanent, method-preserving)
   // Inserted BEFORE resolveLang/auth-guard so redirect short-circuits locale processing.
   // Query params + handle suffix preserved 1:1 via request.nextUrl.search + capture group.
+  // 308 (not 301) prevents redirect chain: if locale is not yet in SUPPORTED_LOCALES the
+  // !isSupportedLocale branch would issue a second 307, causing a 301→307 chain. 308 preserves
+  // method and avoids interaction with the locale-redirect branch for all 4 supported locales.
   const salonyMatch = pathname.match(SALONY_REDIRECT_RE);
   if (salonyMatch) {
     const [, locale, suffix = ''] = salonyMatch;
     const target = new URL(`/${locale}/sellers${suffix}`, request.url);
     target.search = request.nextUrl.search;
-    return NextResponse.redirect(target, 301);
+    return NextResponse.redirect(target, 308);
   }
 
   const urlSegment = pathname.split('/')[1] ?? '';
