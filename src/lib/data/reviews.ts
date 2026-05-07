@@ -1,12 +1,11 @@
 'use server';
 
-import type { HttpTypes } from '@medusajs/types';
 import { revalidatePath } from 'next/cache';
 
 import { fetchQuery } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
 import { getAuthHeaders } from './cookies';
-import type { Order } from './reviews.shared';
+export type { Order } from './reviews.shared';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 

@@ -47,7 +47,7 @@ function findByDataState(
 
 describe("AuditTrailEmptyState", () => {
   it("renders the empty variant with default copy when no firstRow given", () => {
-    const tree = AuditTrailEmptyState({})
+    const tree = AuditTrailEmptyState({}) as unknown as ReactEl
     expect(tree).not.toBeNull()
     const empty = findByDataState(tree, "empty")
     expect(empty).not.toBeNull()
@@ -60,7 +60,7 @@ describe("AuditTrailEmptyState", () => {
     const tree = AuditTrailEmptyState({
       emptyHeading: "Custom heading",
       emptyBody: "Custom body copy",
-    })
+    }) as unknown as ReactEl
     const text = collectText(tree).join(" ")
     expect(text).toContain("Custom heading")
     expect(text).toContain("Custom body copy")
@@ -74,7 +74,7 @@ describe("AuditTrailEmptyState", () => {
         detail: "operator: jan@example.com",
         tone: "success",
       },
-    })
+    }) as unknown as ReactEl
     const populated = findByDataState(tree, "populated")
     expect(populated).not.toBeNull()
     // The TimelineItem child is an element node — vitest runs in `node` env
@@ -96,7 +96,7 @@ describe("AuditTrailEmptyState", () => {
   it("populated variant has aria-label for the timeline list", () => {
     const tree = AuditTrailEmptyState({
       firstRow: { timestamp: "2026-01-01T00:00:00Z", title: "x" },
-    })
+    }) as unknown as ReactEl
     expect((tree.props as Record<string, unknown>)["aria-label"]).toBe(
       "Historia audytu",
     )

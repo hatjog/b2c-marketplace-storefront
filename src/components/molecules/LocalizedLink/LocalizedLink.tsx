@@ -55,7 +55,7 @@ const LocalizedClientLink = ({
 
   return (
     <Link
-      href={getLocalizedHref(href, normalizedLocale)}
+      href={getLocalizedHref(href, normalizedLocale ?? currentLocale)}
       {...props}
     >
       {children}

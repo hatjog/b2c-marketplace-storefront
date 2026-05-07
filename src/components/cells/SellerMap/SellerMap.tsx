@@ -6,7 +6,24 @@ import L from 'leaflet';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import {
+  Circle as CircleBase,
+  MapContainer as MapContainerBase,
+  Marker as MarkerBase,
+  Popup,
+  TileLayer as TileLayerBase,
+  useMap,
+} from 'react-leaflet';
+
+// Cast to any to workaround react-leaflet 4.x / React 19 types mismatch
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MapContainer = MapContainerBase as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TileLayer = TileLayerBase as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Circle = CircleBase as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Marker = MarkerBase as any;
 
 import type { SellerListItem } from '@/lib/data/seller';
 

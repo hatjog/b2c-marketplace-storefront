@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -69,7 +70,7 @@ export function RecipientPausePathToggle({
   initialState = 'default',
   pauseTimeoutMs = DEFAULT_PAUSE_TIMEOUT_MS,
   factory = createPersistedStateMachine
-}: RecipientPausePathToggleProps): JSX.Element {
+}: RecipientPausePathToggleProps): React.ReactElement {
   const t = useTranslations('voucher.consent.pause');
 
   const machine: PersistedStateMachine<PauseState, PauseEvent> = useMemo(

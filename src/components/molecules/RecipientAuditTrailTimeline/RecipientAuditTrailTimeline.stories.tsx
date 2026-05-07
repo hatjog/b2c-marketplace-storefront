@@ -21,6 +21,7 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react"
+import Link from "next/link"
 
 import { RecipientAuditTrailTimelineClient } from "./RecipientAuditTrailTimelineClient"
 import type { RecipientAuditTrailEvent } from "./types"
@@ -146,12 +147,12 @@ export const Empty: Story = {
           wykonał. Historia pojawi się przy pierwszej akcji vendora lub systemu.
         </p>
       </div>
-      <a
+      <Link
         href="/help/voucher-claim"
         className="text-gp-body-sm font-medium text-gp-accent-700 underline hover:text-gp-accent-900"
       >
         Zobacz instrukcje odbioru
-      </a>
+      </Link>
     </section>
   ),
 }

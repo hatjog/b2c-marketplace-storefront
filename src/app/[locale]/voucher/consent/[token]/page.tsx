@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -48,7 +49,7 @@ export async function generateMetadata({ params }: ConsentPageProps): Promise<Me
 
 export default async function VoucherConsentPage({
   params
-}: ConsentPageProps): Promise<JSX.Element> {
+}: ConsentPageProps): Promise<React.ReactElement> {
   const { locale, token } = await params;
   const t = await getTranslations({ locale, namespace: 'voucher.consent' });
   const privacyPolicyHref = `/${locale}/polityka-prywatnosci`;
@@ -63,8 +64,9 @@ export default async function VoucherConsentPage({
 
       {/* No-JS fallback: server-rendered <form> identical to JS path. */}
       <noscript>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <form
-          action={grantConsent}
+          action={grantConsent as any}
           method="POST"
           className="flex flex-col gap-4 rounded-sm border border-tertiary p-4"
         >
@@ -124,8 +126,9 @@ export default async function VoucherConsentPage({
       />
 
       {/* Withdrawal symmetry — per UX-DR30. Always-visible withdraw form. */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <form
-        action={withdrawConsent}
+        action={withdrawConsent as any}
         method="POST"
         className="rounded-sm border border-tertiary p-4"
       >

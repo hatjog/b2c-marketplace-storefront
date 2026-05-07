@@ -212,6 +212,12 @@ export const SellerSelector = ({
     [sellersWithDistance],
   );
 
+  useEffect(() => {
+    if (selectedSellerId) {
+      onSelect?.(selectedSellerId);
+    }
+  }, [onSelect, selectedSellerId]);
+
   // Defensive: caller should gate on length > 1, but never crash on empty.
   if (sellers.length === 0) {
     return null;
@@ -221,12 +227,6 @@ export const SellerSelector = ({
     setSelectedSellerId(sellerId);
     onSelect?.(sellerId);
   };
-
-  useEffect(() => {
-    if (selectedSellerId) {
-      onSelect?.(selectedSellerId);
-    }
-  }, [onSelect, selectedSellerId]);
 
   // Privacy notice shows while the buyer prompt is active or unresolved.
   // Hidden once geolocation resolves (granted / denied / unsupported) — at

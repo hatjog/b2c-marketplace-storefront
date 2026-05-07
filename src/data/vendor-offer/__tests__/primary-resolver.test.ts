@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import type * as ReactModule from 'react';
 
 // `import 'server-only'` lives at the top of the production module — under
 // vitest (Node) we stub it as a no-op module so the import does not bail.
@@ -9,7 +10,7 @@ vi.mock('server-only', () => ({}));
 // memoised across calls within a test by a tiny in-test cache; this mirrors
 // the per-request semantics of React's real implementation.
 vi.mock('react', async () => {
-  const actual = await vi.importActual<typeof import('react')>('react');
+  const actual = await vi.importActual<typeof ReactModule>('react');
   return {
     ...actual,
     cache: <Args extends unknown[], R>(fn: (...args: Args) => R) => {
