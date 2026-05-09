@@ -636,6 +636,31 @@
       "apple_maps_label": "Apple Maps",
       "privacy_notice": "Durch Klicken auf externe Kartenlinks verlassen Sie BonBeauty. BonBeauty gibt Ihre Daten nicht an externe Kartenanbieter weiter.",
       "no_coords_helper": "Koordinaten nicht verfügbar — Link sucht Adresse"
+    },
+    "recipient_audit_trail": {
+      "heading": "Gutscheinverlauf",
+      "footer_note": "Der Verlauf ist nur für Sie sichtbar. Die Daten werden gemäß DSGVO Art. 15 verarbeitet — Sie haben das Recht, den Verlauf der Vorgänge zu Ihren Daten einzusehen.",
+      "list_aria_label": "Einträge im Gutscheinverlauf",
+      "live_region_template": "{visible} von {total} Einträgen angezeigt",
+      "empty": {
+        "heading": "Keine Einträge im Gutscheinverlauf",
+        "body": "Hier sehen Sie jede Änderung zu diesem Gutschein — wer wann welche Aktion ausgeführt hat. Der Verlauf erscheint nach der ersten Aktion durch Vendor oder System. Gemäß DSGVO Art. 15 haben Sie das Recht auf Einsicht in diese Daten.",
+        "cta_label": "Einlöseanleitung ansehen",
+        "cta_href": "/help/voucher-claim"
+      },
+      "error": {
+        "heading": "Verlauf konnte nicht geladen werden",
+        "body": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, kontaktieren Sie uns.",
+        "retry_label": "Erneut versuchen",
+        "support_label": "Support kontaktieren",
+        "support_href": "/help/contact"
+      },
+      "pagination": {
+        "show_older": "Ältere Einträge anzeigen ({remaining} verbleibend)"
+      },
+      "loading": {
+        "label": "Verlauf wird geladen…"
+      }
     }
   },
   "cross_sell": {
