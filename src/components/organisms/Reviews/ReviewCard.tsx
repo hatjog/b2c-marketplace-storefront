@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 import { Card } from '@/components/atoms';
 import { StarIcon } from '@/icons';
-import type { Review } from '@/lib/data/reviews';
+import type { Review } from '@/lib/data/reviews.shared';
 import { cn } from '@/lib/utils';
 
 export const ReviewCard = ({ review }: { review: Review }) => {

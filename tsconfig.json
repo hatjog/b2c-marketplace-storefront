@@ -33,12 +33,13 @@
     "**/*.tsx",
     ".next*/dev/types/**/*.ts",
     ".next*/types/**/*.ts",
+    ".next-bonbeauty-worktree/types/**/*.ts",
     ".next-bonbeauty/types/**/*.ts",
     ".next-bonevent/types/**/*.ts",
     ".next-mercur/types/**/*.ts",
     ".next/types/**/*.ts",
     "next-env.d.ts",
-    ".next-bonbeauty-worktree/types/**/*.ts"
+    ".next-testmarketb/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

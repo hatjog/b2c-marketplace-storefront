@@ -7,6 +7,19 @@ export type OrderReview = {
   rating?: number | null;
 };
 
+export type Review = {
+  id: string;
+  seller: {
+    id: string;
+    name: string;
+    photo: string;
+  };
+  reference: string;
+  customer_note: string;
+  rating: number;
+  updated_at: string;
+};
+
 export type Order = MercurOrderWithOrderGroup & {
   seller: SellerProps;
   reviews: OrderReview[];

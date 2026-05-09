@@ -5,30 +5,10 @@ import { revalidatePath } from 'next/cache';
 import { fetchQuery } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
 import { getAuthHeaders } from './cookies';
-export type { Order } from './reviews.shared';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
-export type Review = {
-  id: string;
-  seller: {
-    id: string;
-    name: string;
-    photo: string;
-  };
-  reference: string;
-  customer_note: string;
-  rating: number;
-  updated_at: string;
-};
-
-export type OrderReview = {
-  created_at?: string | Date | null;
-  customer_note?: string | null;
-  rating?: number | null;
-};
-
-const getReviews = async () => {
+export async function getReviews() {
   const headers = {
     ...(await getAuthHeaders())
   };
@@ -40,9 +20,9 @@ const getReviews = async () => {
   });
 
   return res;
-};
+}
 
-const createReview = async (review: any) => {
+export async function createReview(review: any) {
   const headers = {
     ...(await getAuthHeaders()),
     'Content-Type': 'application/json',
@@ -60,6 +40,4 @@ const createReview = async (review: any) => {
   });
 
   return response.json();
-};
-
-export { getReviews, createReview };
+}

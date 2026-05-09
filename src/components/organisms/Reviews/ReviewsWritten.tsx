@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 
 import { Card, NavigationItem } from '@/components/atoms';
 import { RefreshButton } from '@/components/cells/RefreshButton/RefreshButton';
-import type { Order, Review } from '@/lib/data/reviews';
+import type { Order, Review } from '@/lib/data/reviews.shared';
 
 import { navigation } from './navigation';
 import { OrderCard } from './OrderCard';
