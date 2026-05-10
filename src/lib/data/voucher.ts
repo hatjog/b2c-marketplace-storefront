@@ -316,7 +316,11 @@ export interface VoucherListItem {
   seller_name: string;
   seller_handle: string;
   product_title: string;
-  value_minor: number;
+  /** Voucher face value in minor units (grosze for PLN). Null when the
+   *  backend payload omits both `value_minor` and `value` — consumers MUST
+   *  guard rendering rather than displaying a misleading `0`. Story 2.6
+   *  re-review LOW (L-value_minor-zero). */
+  value_minor: number | null;
   currency_code: string;
   status: VoucherStatus;
   expires_at?: string | null;
@@ -341,14 +345,29 @@ function projectListAllowlist(p: VoucherListApiPayload | null | undefined): Vouc
   if (!p.code || !p.seller_name) return null;
 
   const rawStatus = (p.status ?? 'idle').toLowerCase();
+  // Story 2.6 re-review LOW (L-pending-mapping): drop the wildcard `pending`
+  // → `consent_pending` mapping. The bare upstream status `pending` is
+  // ambiguous (payment-pending vs order-pending vs consent-pending) and
+  // conflating it would display "Oczekuje na zgodę" for unrelated states.
+  // Accept ONLY canonical `consent_pending` / `consent-pending` spellings.
   const status: VoucherStatus =
-    rawStatus === 'consent_pending' || rawStatus === 'consent-pending' || rawStatus === 'pending'
+    rawStatus === 'consent_pending' || rawStatus === 'consent-pending'
       ? 'consent_pending'
       : rawStatus === 'claimed' || rawStatus === 'redeemed'
         ? 'claimed'
         : rawStatus === 'withdrawn' || rawStatus === 'revoked'
           ? 'withdrawn'
           : 'idle';
+
+  // Story 2.6 re-review LOW (L-value_minor-zero): fallback to `null` rather
+  // than `0` so consumers cannot silently display "0 PLN" for vouchers whose
+  // backend payload omits the value fields.
+  const valueMinor: number | null =
+    typeof p.value_minor === 'number'
+      ? p.value_minor
+      : typeof p.value === 'number'
+        ? p.value
+        : null;
 
   return {
     code: String(p.code),
@@ -359,11 +378,7 @@ function projectListAllowlist(p: VoucherListApiPayload | null | undefined): Vouc
     // the seller link (rendering the seller_name as plain text).
     seller_handle: p.seller_handle ? String(p.seller_handle) : '',
     product_title: String(p.product_title ?? ''),
-    value_minor: typeof p.value_minor === 'number'
-      ? p.value_minor
-      : typeof p.value === 'number'
-        ? p.value
-        : 0,
+    value_minor: valueMinor,
     currency_code: String(p.currency_code ?? 'PLN'),
     status,
     expires_at: p.expires_at ?? null,
