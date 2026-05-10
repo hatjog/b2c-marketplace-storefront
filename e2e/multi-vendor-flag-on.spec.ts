@@ -113,6 +113,13 @@ async function addProductToCart(
  * is up, without blocking the build when it is not.
  */
 async function checkEnvironmentOrSkip(): Promise<void> {
+  if (!process.env.E2E_ADMIN_TOKEN) {
+    throw new Error(
+      "E2E_ADMIN_TOKEN is required for the v1.7.0 flag-on E2E suite because Step 7 is a release gate. " +
+        "Provision an operator-scoped token before running pnpm test:e2e:flag-on.",
+    )
+  }
+
   const healthy = await probeBackendHealth()
   if (!healthy) {
     // eslint-disable-next-line no-console
@@ -444,15 +451,13 @@ test("Step 7 — Kickoff vendors_notified matches t30 audit-log row count (coupl
   request,
 }) => {
   // This step is operator-triggered and requires a seeded BB market.
-  // Skip gracefully if backend is not reachable or E2E_ADMIN_TOKEN is absent.
+  // v1.7.0 fail-closed policy: missing operator auth must fail, not skip.
   const adminToken = process.env.E2E_ADMIN_TOKEN
   if (!adminToken) {
-    console.warn(
-      "[DEFERRED] E2E_ADMIN_TOKEN not set — Step 7 kickoff coupling assertion deferred. " +
-        "Set E2E_ADMIN_TOKEN and ensure BB market is seeded + GP_FLAG_FLIP_DATE configured.",
+    throw new Error(
+      "E2E_ADMIN_TOKEN is required for Step 7 operator-authenticated kickoff coupling. " +
+        "Provision an operator-scoped token and ensure BB market is seeded before running pnpm test:e2e:flag-on.",
     )
-    test.skip()
-    return
   }
 
   const backendBase = process.env.E2E_BACKEND_URL ?? "http://localhost:9002"
