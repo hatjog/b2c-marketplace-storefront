@@ -1,3 +1,9 @@
+/**
+ * Story 2.4: force-dynamic — cart state is volatile (voucher availability,
+ * payment methods, pricing). No ISR cache (revalidate=300 banned per prd.md).
+ */
+export const dynamic = 'force-dynamic';
+
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';

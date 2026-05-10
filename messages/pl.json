@@ -530,6 +530,40 @@
     "order_set_summary": {
       "heading": "Podział zamówienia na salony",
       "unknown_seller": "Salon"
+    },
+    "consent": {
+      "required_heading": "Wymagane potwierdzenia",
+      "transactional_label": "Wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia zgodnie z",
+      "transactional_privacy_link": "Polityką prywatności",
+      "transactional_required_error": "Zaznacz zgodę na przetwarzanie danych, aby kontynuować.",
+      "withdrawal_label": "Zapoznałem(-am) się z prawem odstąpienia od umowy i przyjmuję do wiadomości, że prawo to wygasa po wykonaniu usługi za moją uprzednią zgodą. Szczegóły:",
+      "withdrawal_policy_link": "Prawo odstąpienia",
+      "withdrawal_required_error": "Zaznacz potwierdzenie prawa odstąpienia, aby kontynuować.",
+      "withdrawal_status_note": "Stan prawa odstąpienia zmienia się wraz z realizacją usługi. Więcej informacji:",
+      "withdrawal_status_link": "Regulamin"
+    },
+    "validation": {
+      "address": {
+        "first_name_required": "Imię jest wymagane",
+        "last_name_required": "Nazwisko jest wymagane",
+        "address_required": "Adres jest wymagany",
+        "city_required": "Miasto jest wymagane",
+        "postal_code_required": "Kod pocztowy jest wymagany",
+        "country_required": "Kraj jest wymagany",
+        "phone_required": "Numer telefonu jest wymagany",
+        "phone_invalid": "Nieprawidłowy format numeru telefonu",
+        "email_required": "Adres e-mail jest wymagany",
+        "email_invalid": "Nieprawidłowy adres e-mail"
+      },
+      "payment": {
+        "method_required": "Wybierz metodę płatności",
+        "card_required": "Dane karty są wymagane",
+        "unavailable": "Ta metoda płatności jest niedostępna dla aktywnego rynku"
+      },
+      "consent": {
+        "transactional_required": "Wymagana jest zgoda transakcyjna",
+        "withdrawal_required": "Wymagane jest potwierdzenie zapoznania się z polityką cofnięcia zgody"
+      }
     }
   },
   "confirmation": {
@@ -865,5 +899,45 @@
       "privacy_cross_link_note": "Niniejsza polityka dotyczy danych osobowych (RODO Art. 7/17). Prawo odstąpienia od umowy zakupu vouchera (14 dni, Ustawa o prawach konsumenta) jest osobnym tematem — szczegóły znajdziesz w Regulaminie i na stronie Pomoc."
     },
     "cta_blocked_label": "Akcja wstrzymana — wymaga obsługi"
+  },
+  "payment_status": {
+    "page_title": "Status płatności",
+    "page_description": "Sprawdź status swojej płatności.",
+    "loading": "Sprawdzanie statusu płatności...",
+    "last_updated": "Ostatnia aktualizacja: {timestamp}",
+    "last_updated_aria": "Status zaktualizowany o {timestamp}",
+    "order_ref": "Zamówienie: {orderId}",
+    "unavailable_title": "Nie można sprawdzić statusu płatności",
+    "unavailable_body": "Nie udało się pobrać informacji o zamówieniu. Skontaktuj się z obsługą klienta.",
+    "refreshing": "Sprawdzam...",
+    "paid": {
+      "label": "Płatność potwierdzona",
+      "body": "Twoja płatność została potwierdzona. Przejdź dalej, aby zobaczyć szczegóły zamówienia.",
+      "cta": "Przejdź do zamówienia"
+    },
+    "pending_psp_confirmation": {
+      "label": "Weryfikacja płatności",
+      "body": "Zamówienie jest weryfikowane. Może to potrwać kilka minut. Nie zamykaj przeglądarki.",
+      "cta": "Sprawdź status teraz",
+      "secondary_cta": "Skontaktuj się z obsługą",
+      "checking": "Trwa weryfikacja..."
+    },
+    "failed": {
+      "label": "Płatność nieudana",
+      "body": "Płatność nie powiodła się. Spróbuj ponownie lub wróć do koszyka, aby zmienić metodę płatności.",
+      "cta": "Spróbuj ponownie",
+      "secondary_cta": "Skontaktuj się z obsługą"
+    },
+    "support_required": {
+      "label": "Wymagana interwencja",
+      "body": "Zamówienie wymaga działania z naszej strony. Skontaktuj się z obsługą klienta, aby wyjaśnić sytuację.",
+      "cta": "Skontaktuj się z obsługą"
+    },
+    "expired": {
+      "label": "Sesja płatności wygasła",
+      "body": "Poprzednia próba zakupu wygasła i jest zamknięta. Możesz zacząć od nowa.",
+      "cta": "Wróć do koszyka",
+      "secondary_cta": "Skontaktuj się z obsługą"
+    }
   }
 }

@@ -9,12 +9,19 @@ import { CartAddressSection } from '@/components/sections/CartAddressSection/Car
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
 import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
+import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
 import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode/CheckoutPurchaseMode';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { isMultiVendorEnabled, isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { listCartPaymentMethods } from '@/lib/data/payment';
+
+/**
+ * Story 2.4: force-dynamic — cart/checkout payment state is volatile.
+ * No ISR cache allowed (revalidate=300 anti-pattern banned per prd.md §Volatile-state-rendering).
+ */
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Checkout',
@@ -84,6 +91,10 @@ async function CheckoutPageContent({}) {
             {isMultiVendorEnabled() && (
               <MultiVendorOrderSummary cart={cart} />
             )}
+            {/* Story 2.4 AC1: VoucherClaritySurface (condensed) + SellerProofSurface
+                per seller group above CartReview — voucher rules and seller identity
+                visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
+            <CheckoutVoucherSummary cart={cart} />
             <CartReview cart={cart} />
           </div>
         </div>
