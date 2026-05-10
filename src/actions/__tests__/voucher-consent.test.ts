@@ -1,29 +1,26 @@
 /**
- * Tests for voucher-consent Server Actions (cleanup-55 / TF-133).
+ * Tests for voucher-consent Server Actions (cleanup-55 / TF-133 / Story 4.4).
  *
  * AC4: covers 6 scenarios per story spec:
  *  1. grant happy path → delivery-decision-recorded
  *  2. withdraw happy path → withdrawn
  *  3. pause happy path → consent-pending
  *  4. 401/403 auth failure → error-audit-failed (PII-free error string)
- *  5. backend-url-missing (no env var) → error-audit-failed (not synthetic success)
- *  6. network exception (fetch throws) → error-audit-failed
+ *  5. network exception → error-audit-failed
+ *  6. 2xx without audit id → error-audit-failed (missing-audit-id)
  *
  * AC1 (verb→endpoint): all three verbs POST to /store/voucher-pii-consent
  * (single endpoint; action discriminated via body field).
  * AC2: no STUB_TODO_MARKER, no synthetic 'stub-audit-id'.
+ * TF-209: sdk.client.fetch used (auto-injects x-publishable-api-key).
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// next/cache must be mocked before module imports — vitest module cache is
-// populated on first import. The mock factory returns a no-op stub so the
-// Server Action module loads cleanly in test environment.
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn()
 }));
 
-// Stub structured logger so log emission doesn't lazy-load @sentry/nextjs in tests.
 vi.mock('@/lib/logger', () => ({
   logger: {
     warn: vi.fn(),
@@ -31,10 +28,15 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-// We need to control MEDUSA_BACKEND_URL per test; import after env is set.
-// Use vi.resetModules() + dynamic import to isolate env per test group.
-
-const BACKEND_URL = 'http://localhost:9002';
+// Mock sdk.client.fetch — TF-209 migration target.
+const mockSdkFetch = vi.fn();
+vi.mock('@/lib/config', () => ({
+  sdk: {
+    client: {
+      fetch: mockSdkFetch,
+    },
+  },
+}));
 
 function makeFormData(fields: Record<string, string>): FormData {
   const fd = new FormData();
@@ -44,41 +46,26 @@ function makeFormData(fields: Record<string, string>): FormData {
   return fd;
 }
 
-function mockFetchOk(body: Record<string, unknown>, status = 200): void {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn().mockResolvedValue({
-      ok: status >= 200 && status < 300,
-      status,
-      json: () => Promise.resolve(body)
-    })
-  );
+function mockSdkOk(body: Record<string, unknown>): void {
+  mockSdkFetch.mockResolvedValue(body);
 }
 
-function mockFetchStatus(status: number): void {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn().mockResolvedValue({
-      ok: false,
-      status,
-      json: () => Promise.resolve({ error: `backend returned ${status}` })
-    })
-  );
+function mockSdkStatus(status: number): void {
+  mockSdkFetch.mockRejectedValue(Object.assign(new Error(`HTTP ${status}`), { status }));
 }
 
-function mockFetchThrows(message: string): void {
-  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error(message)));
+function mockSdkThrows(message: string): void {
+  mockSdkFetch.mockRejectedValue(new Error(message));
 }
 
-describe('voucher-consent Server Actions — with backend URL', () => {
+describe('voucher-consent Server Actions', () => {
   let grantConsent: (fd: FormData) => Promise<unknown>;
   let withdrawConsent: (fd: FormData) => Promise<unknown>;
   let pauseRecipient: (fd: FormData) => Promise<unknown>;
 
   beforeEach(async () => {
     vi.resetModules();
-    process.env.MEDUSA_BACKEND_URL = BACKEND_URL;
-    delete process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+    mockSdkFetch.mockReset();
     const mod = await import('../voucher-consent');
     grantConsent = mod.grantConsent;
     withdrawConsent = mod.withdrawConsent;
@@ -86,13 +73,12 @@ describe('voucher-consent Server Actions — with backend URL', () => {
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
-    delete process.env.MEDUSA_BACKEND_URL;
+    vi.clearAllMocks();
   });
 
   describe('AC4.1 — grant happy path', () => {
     it('returns delivery-decision-recorded with auditId from backend', async () => {
-      mockFetchOk({ audit_id: 'aud_123' });
+      mockSdkOk({ audit_id: 'aud_123' });
 
       const fd = makeFormData({
         token: 'tok_abc',
@@ -106,24 +92,21 @@ describe('voucher-consent Server Actions — with backend URL', () => {
       expect(result.state).toBe('delivery-decision-recorded');
       expect(result.auditId).toBe('aud_123');
 
-      // AC1: fetch called with POST to /store/voucher-pii-consent (no verb suffix)
-      const fetchMock = vi.mocked(fetch);
-      expect(fetchMock).toHaveBeenCalledOnce();
-      const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
-      expect(url).toBe(`${BACKEND_URL}/store/voucher-pii-consent`);
+      // AC1: sdk.client.fetch called with POST to /store/voucher-pii-consent (TF-209).
+      expect(mockSdkFetch).toHaveBeenCalledOnce();
+      const [path, opts] = mockSdkFetch.mock.calls[0] as [string, { method: string; headers: Record<string, string>; body: Record<string, unknown> }];
+      expect(path).toBe('/store/voucher-pii-consent');
       expect(opts.method).toBe('POST');
 
-      // Body contains action='grant' (verb discrimination via body)
-      const body = JSON.parse(opts.body as string) as { action: string };
-      expect(body.action).toBe('grant');
+      // Body contains action='grant' (verb discrimination via body).
+      expect(opts.body.action).toBe('grant');
 
       // review M2: Idempotency-Key header present, deterministic shape.
-      const headers = opts.headers as Record<string, string>;
-      expect(headers['Idempotency-Key']).toMatch(/^grant:tok_abc:\d+$/);
+      expect(opts.headers['Idempotency-Key']).toMatch(/^grant:tok_abc:\d+$/);
     });
 
     it('also accepts consent_audit_id from Story 2-2 full response shape', async () => {
-      mockFetchOk({ consent_audit_id: 'aud_full_456' });
+      mockSdkOk({ consent_audit_id: 'aud_full_456' });
 
       const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' });
       const result = await grantConsent(fd) as { auditId?: string };
@@ -134,7 +117,7 @@ describe('voucher-consent Server Actions — with backend URL', () => {
 
   describe('AC4.2 — withdraw happy path', () => {
     it('returns withdrawn with auditId', async () => {
-      mockFetchOk({ audit_id: 'aud_withdraw_789' });
+      mockSdkOk({ withdrawal_audit_id: 'aud_withdraw_789' });
 
       const fd = makeFormData({
         token: 'tok_abc',
@@ -148,17 +131,15 @@ describe('voucher-consent Server Actions — with backend URL', () => {
       expect(result.state).toBe('withdrawn');
       expect(result.auditId).toBe('aud_withdraw_789');
 
-      const fetchMock = vi.mocked(fetch);
-      const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
-      expect(url).toBe(`${BACKEND_URL}/store/voucher-pii-consent`);
-      const body = JSON.parse(opts.body as string) as { action: string };
-      expect(body.action).toBe('withdraw');
+      const [path, opts] = mockSdkFetch.mock.calls[0] as [string, { body: Record<string, unknown> }];
+      expect(path).toBe('/store/voucher-pii-consent');
+      expect(opts.body.action).toBe('withdraw');
     });
   });
 
   describe('AC4.3 — pause happy path', () => {
     it('returns consent-pending', async () => {
-      mockFetchOk({ audit_id: 'aud_pause_999' });
+      mockSdkOk({ pause_audit_id: 'aud_pause_999' });
 
       const fd = makeFormData({
         token: 'tok_abc',
@@ -171,17 +152,15 @@ describe('voucher-consent Server Actions — with backend URL', () => {
       expect(result.ok).toBe(true);
       expect(result.state).toBe('consent-pending');
 
-      const fetchMock = vi.mocked(fetch);
-      const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
-      expect(url).toBe(`${BACKEND_URL}/store/voucher-pii-consent`);
-      const body = JSON.parse(opts.body as string) as { action: string };
-      expect(body.action).toBe('pause');
+      const [path, opts] = mockSdkFetch.mock.calls[0] as [string, { body: Record<string, unknown> }];
+      expect(path).toBe('/store/voucher-pii-consent');
+      expect(opts.body.action).toBe('pause');
     });
   });
 
   describe('AC4.4 — 401 / 403 auth failure → graceful PII-free error', () => {
     it('returns error-audit-failed with no PII on 401', async () => {
-      mockFetchStatus(401);
+      mockSdkStatus(401);
 
       const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' });
       const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string };
@@ -189,12 +168,11 @@ describe('voucher-consent Server Actions — with backend URL', () => {
       expect(result.ok).toBe(false);
       expect(result.state).toBe('error-audit-failed');
       expect(result.error).toBe('backend returned 401');
-      // Error string must NOT contain the token or payload
       expect(result.error).not.toContain('tok_abc');
     });
 
     it('returns error-audit-failed on 403', async () => {
-      mockFetchStatus(403);
+      mockSdkStatus(403);
 
       const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' });
       const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string };
@@ -205,16 +183,15 @@ describe('voucher-consent Server Actions — with backend URL', () => {
     });
   });
 
-  describe('AC4.6 — network exception (fetch throws) → error-audit-failed', () => {
+  describe('AC4.5 — network exception → error-audit-failed', () => {
     it('returns generic network-error code without leaking raw message (review M3)', async () => {
-      mockFetchThrows('connect ECONNREFUSED 127.0.0.1:9002');
+      mockSdkThrows('connect ECONNREFUSED 127.0.0.1:9002');
 
       const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' });
       const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string };
 
       expect(result.ok).toBe(false);
       expect(result.state).toBe('error-audit-failed');
-      // review M3: classified code, not raw message — no infra topology leak.
       expect(result.error).toBe('network-error');
       expect(result.error).not.toContain('tok_abc');
       expect(result.error).not.toContain('127.0.0.1');
@@ -223,7 +200,7 @@ describe('voucher-consent Server Actions — with backend URL', () => {
 
   describe('review M4 — 2xx response without audit id → error', () => {
     it('returns missing-audit-id when backend returns empty 200 body', async () => {
-      mockFetchOk({});
+      mockSdkOk({});
 
       const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' });
       const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string };
@@ -233,146 +210,59 @@ describe('voucher-consent Server Actions — with backend URL', () => {
       expect(result.error).toBe('missing-audit-id');
     });
   });
-});
 
-describe('voucher-consent Server Actions — without backend URL (AC4.5 / AC2)', () => {
-  let grantConsent: (fd: FormData) => Promise<unknown>;
-  let withdrawConsent: (fd: FormData) => Promise<unknown>;
-  let pauseRecipient: (fd: FormData) => Promise<unknown>;
-
-  beforeEach(async () => {
-    vi.resetModules();
-    delete process.env.MEDUSA_BACKEND_URL;
-    delete process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
-    const mod = await import('../voucher-consent');
-    grantConsent = mod.grantConsent;
-    withdrawConsent = mod.withdrawConsent;
-    pauseRecipient = mod.pauseRecipient;
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('grant: returns backend-url-missing error — NOT synthetic success', async () => {
-    // AC2: no synthetic auditId='stub-audit-id'; AC4.5: explicit error
-    const fd = makeFormData({ token: 'tok_xyz', locale: 'pl', consent: 'on' });
-    const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string; auditId?: string };
-
-    expect(result.ok).toBe(false);
-    expect(result.state).toBe('error-audit-failed');
-    expect(result.error).toBe('backend-url-missing');
-    expect(result.auditId).toBeUndefined();
-    // AC2: no synthetic stub-audit-id
-    expect(result.auditId).not.toBe('stub-audit-id');
-  });
-
-  it('withdraw: returns backend-url-missing error — NOT synthetic success', async () => {
-    const fd = makeFormData({
-      token: 'tok_xyz',
-      locale: 'pl',
-      compensates_audit_id: 'aud_001'
+  describe('validation edge cases (unchanged behaviour)', () => {
+    it('grantConsent: missing token → error-audit-failed missing-token', async () => {
+      const fd = makeFormData({ locale: 'pl', consent: 'on' });
+      const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string };
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('missing-token');
+      expect(mockSdkFetch).not.toHaveBeenCalled();
     });
-    const result = await withdrawConsent(fd) as { ok: boolean; state: string; error?: string };
 
-    expect(result.ok).toBe(false);
-    expect(result.state).toBe('error-audit-failed');
-    expect(result.error).toBe('backend-url-missing');
+    it('grantConsent: consent not granted → idle state', async () => {
+      const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'false' });
+      const result = await grantConsent(fd) as { ok: boolean; state: string };
+      expect(result.ok).toBe(false);
+      expect(result.state).toBe('idle');
+      expect(mockSdkFetch).not.toHaveBeenCalled();
+    });
+
+    it('withdrawConsent: missing compensates_audit_id → error-audit-failed', async () => {
+      const fd = makeFormData({ token: 'tok_abc', locale: 'pl' });
+      const result = await withdrawConsent(fd) as { ok: boolean; state: string; error?: string };
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('missing-compensates-audit-id');
+      expect(mockSdkFetch).not.toHaveBeenCalled();
+    });
   });
 
-  it('pause: returns backend-url-missing error — NOT synthetic success', async () => {
-    const fd = makeFormData({ token: 'tok_xyz', locale: 'pl', pause_state: 'paused' });
-    const result = await pauseRecipient(fd) as { ok: boolean; state: string; error?: string };
+  describe('review hardening (H4 / I2 / L3)', () => {
+    it('review L3: module does NOT export STUB_TODO_MARKER', async () => {
+      const mod = (await import('../voucher-consent')) as Record<string, unknown>;
+      expect(mod.STUB_TODO_MARKER).toBeUndefined();
+    });
 
-    expect(result.ok).toBe(false);
-    expect(result.state).toBe('error-audit-failed');
-    expect(result.error).toBe('backend-url-missing');
-  });
+    it('review H4 / I2: revalidatePath uses parameterised tag and is skipped on error', async () => {
+      const { revalidatePath } = (await import('next/cache')) as unknown as {
+        revalidatePath: ReturnType<typeof vi.fn>;
+      };
+      revalidatePath.mockClear();
 
-  it('fetch is never called when backend URL is missing', async () => {
-    const fetchSpy = vi.fn();
-    vi.stubGlobal('fetch', fetchSpy);
+      // Error path → no revalidation.
+      mockSdkOk({});
+      const { grantConsent: grant } = await import('../voucher-consent');
+      await grant(makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' }));
+      expect(revalidatePath).not.toHaveBeenCalled();
 
-    const fd = makeFormData({ token: 'tok_xyz', locale: 'pl', consent: 'on' });
-    await grantConsent(fd);
-
-    expect(fetchSpy).not.toHaveBeenCalled();
-  });
-});
-
-describe('voucher-consent — validation edge cases (unchanged behaviour)', () => {
-  let grantConsent: (fd: FormData) => Promise<unknown>;
-  let withdrawConsent: (fd: FormData) => Promise<unknown>;
-
-  beforeEach(async () => {
-    vi.resetModules();
-    process.env.MEDUSA_BACKEND_URL = BACKEND_URL;
-    const mod = await import('../voucher-consent');
-    grantConsent = mod.grantConsent;
-    withdrawConsent = mod.withdrawConsent;
-  });
-
-  afterEach(() => {
-    delete process.env.MEDUSA_BACKEND_URL;
-  });
-
-  it('grantConsent: missing token → error-audit-failed missing-token', async () => {
-    const fd = makeFormData({ locale: 'pl', consent: 'on' });
-    const result = await grantConsent(fd) as { ok: boolean; state: string; error?: string };
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe('missing-token');
-  });
-
-  it('grantConsent: consent not granted → idle state', async () => {
-    const fd = makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'false' });
-    const result = await grantConsent(fd) as { ok: boolean; state: string };
-    expect(result.ok).toBe(false);
-    expect(result.state).toBe('idle');
-  });
-
-  it('withdrawConsent: missing compensates_audit_id → error-audit-failed', async () => {
-    const fd = makeFormData({ token: 'tok_abc', locale: 'pl' });
-    const result = await withdrawConsent(fd) as { ok: boolean; state: string; error?: string };
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe('missing-compensates-audit-id');
-  });
-});
-
-describe('voucher-consent — review hardening (H4 / I2 / L3)', () => {
-  beforeEach(async () => {
-    vi.resetModules();
-    process.env.MEDUSA_BACKEND_URL = BACKEND_URL;
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    delete process.env.MEDUSA_BACKEND_URL;
-  });
-
-  it('review L3: module does NOT export STUB_TODO_MARKER', async () => {
-    const mod = (await import('../voucher-consent')) as Record<string, unknown>;
-    expect(mod.STUB_TODO_MARKER).toBeUndefined();
-  });
-
-  it('review H4 / I2: revalidatePath uses parameterised tag and is skipped on error', async () => {
-    const { revalidatePath } = (await import('next/cache')) as unknown as {
-      revalidatePath: ReturnType<typeof vi.fn>;
-    };
-    revalidatePath.mockClear();
-    // Trigger error path (no audit id).
-    mockFetchOk({});
-    const { grantConsent: grant } = await import('../voucher-consent');
-    await grant(makeFormData({ token: 'tok_abc', locale: 'pl', consent: 'on' }));
-    // I2: error path → no revalidation.
-    expect(revalidatePath).not.toHaveBeenCalled();
-
-    // Now success path → revalidation with parameterised tag (no token literal).
-    mockFetchOk({ audit_id: 'aud_111' });
-    await grant(makeFormData({ token: 'tok_secret_abc', locale: 'pl', consent: 'on' }));
-    expect(revalidatePath).toHaveBeenCalledWith('/[locale]/voucher-pii-consent/[token]', 'page');
-    // H4: token literal must NOT appear in any revalidation tag.
-    for (const call of revalidatePath.mock.calls) {
-      expect(String(call[0])).not.toContain('tok_secret_abc');
-    }
+      // Success path → revalidation with parameterised tag (no token literal).
+      mockSdkFetch.mockReset();
+      mockSdkOk({ audit_id: 'aud_111' });
+      await grant(makeFormData({ token: 'tok_secret_abc', locale: 'pl', consent: 'on' }));
+      expect(revalidatePath).toHaveBeenCalledWith('/[locale]/voucher-pii-consent/[token]', 'page');
+      for (const call of revalidatePath.mock.calls) {
+        expect(String(call[0])).not.toContain('tok_secret_abc');
+      }
+    });
   });
 });
