@@ -385,6 +385,7 @@
     "account_aria": "Kontomenü öffnen",
     "your_account": "Ihr Konto",
     "orders": "Bestellungen",
+    "vouchers": "Gutscheine",
     "messages": "Nachrichten",
     "returns": "Rückgaben",
     "addresses": "Adressen",
@@ -661,6 +662,18 @@
       "loading": {
         "label": "Verlauf wird geladen…"
       }
+    },
+    "recovery": {
+      "title": "Zugang zum Gutschein wiederherstellen",
+      "body": "Verwenden Sie den Link aus Ihrer E-Mail, um den Zugang zu Ihren Gutscheinen wiederherzustellen.",
+      "error_neutral_heading": "Link abgelaufen oder bereits verwendet",
+      "error_neutral": "Fordern Sie einen neuen Wiederherstellungslink an, indem Sie die mit dem Kauf verknüpfte E-Mail-Adresse eingeben.",
+      "email_label": "E-Mail-Adresse",
+      "email_placeholder": "ihre@email.de",
+      "cta_request_new_link": "Wiederherstellungslink senden",
+      "sent_confirmation": "Wenn diese E-Mail-Adresse mit einem Kauf verknüpft ist, senden wir Ihnen einen Wiederherstellungslink.",
+      "meta_title": "Zugangswiederherstlung | BonBeauty",
+      "meta_description": "Stellen Sie den Zugang zu Ihren BonBeauty-Gutscheinen wieder her."
     }
   },
   "cross_sell": {
@@ -673,5 +686,35 @@
     "recommended": "Empfohlen",
     "price_asc": "Preis ↑",
     "price_desc": "Preis ↓"
+  },
+  "account": {
+    "vouchers": {
+      "title": "Meine Gutscheine",
+      "row_cta_open": "Gutschein öffnen",
+      "expires_label": "Läuft ab {date}",
+      "orders_crosslink": "Bestellungen ansehen",
+      "status": {
+        "idle": "Ausstehend",
+        "consent_pending": "Warte auf Zustimmung",
+        "claimed": "Eingelöst",
+        "withdrawn": "Widerrufen"
+      },
+      "empty": {
+        "heading": "Sie haben noch keine Gutscheine",
+        "body": "Kaufen Sie Ihren ersten Gutschein und entdecken Sie BonBeauty Beauty-Salons.",
+        "cta": "Angebote durchsuchen"
+      },
+      "error": {
+        "access_denied_heading": "Anmeldung erforderlich",
+        "access_denied": "Melden Sie sich an, um Ihre Gutscheine zu sehen.",
+        "access_denied_cta": "Anmelden",
+        "unavailable_heading": "Gutscheine nicht verfügbar",
+        "unavailable": "Der Dienst ist vorübergehend nicht verfügbar. Versuchen Sie es später oder kontaktieren Sie den Support.",
+        "unavailable_cta": "Zur Startseite",
+        "failed_heading": "Gutscheine konnten nicht geladen werden",
+        "failed": "Überprüfen Sie Ihre Verbindung und aktualisieren Sie die Seite.",
+        "failed_cta": "Erneut versuchen"
+      }
+    }
   }
 }

@@ -8,6 +8,7 @@ import { Badge, Card, Divider, LogoutButton, NavigationItem } from '@/components
 
 const navigationItems = [
   { key: 'orders', href: '/user/orders' },
+  { key: 'vouchers', href: '/user/vouchers' },
   { key: 'messages', href: '/user/messages' },
   { key: 'returns', href: '/user/returns' },
   { key: 'addresses', href: '/user/addresses' },

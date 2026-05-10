@@ -384,6 +384,7 @@
     "account_aria": "Open account menu",
     "your_account": "Your account",
     "orders": "Orders",
+    "vouchers": "Vouchers",
     "messages": "Messages",
     "returns": "Returns",
     "addresses": "Addresses",
@@ -660,6 +661,18 @@
       "loading": {
         "label": "Loading history…"
       }
+    },
+    "recovery": {
+      "title": "Recover access to your voucher",
+      "body": "Use the link from your email to recover access to your vouchers.",
+      "error_neutral_heading": "Link expired or already used",
+      "error_neutral": "Request a new recovery link by entering the email address associated with your purchase.",
+      "email_label": "Email address",
+      "email_placeholder": "your@email.com",
+      "cta_request_new_link": "Send recovery link",
+      "sent_confirmation": "If this email address is associated with a purchase, we will send you a recovery link.",
+      "meta_title": "Access recovery | BonBeauty",
+      "meta_description": "Recover access to your BonBeauty vouchers."
     }
   },
   "cross_sell": {
@@ -672,5 +685,35 @@
     "recommended": "Recommended",
     "price_asc": "Price ↑",
     "price_desc": "Price ↓"
+  },
+  "account": {
+    "vouchers": {
+      "title": "My vouchers",
+      "row_cta_open": "Open voucher",
+      "expires_label": "Expires {date}",
+      "orders_crosslink": "See orders",
+      "status": {
+        "idle": "Pending",
+        "consent_pending": "Awaiting consent",
+        "claimed": "Claimed",
+        "withdrawn": "Withdrawn"
+      },
+      "empty": {
+        "heading": "You don't have any vouchers yet",
+        "body": "Buy your first voucher and discover BonBeauty beauty salons.",
+        "cta": "Browse offers"
+      },
+      "error": {
+        "access_denied_heading": "Login required",
+        "access_denied": "Log in to see your vouchers.",
+        "access_denied_cta": "Log in",
+        "unavailable_heading": "Vouchers unavailable",
+        "unavailable": "The service is temporarily unavailable. Try again later or contact support.",
+        "unavailable_cta": "Back to home",
+        "failed_heading": "Failed to load vouchers",
+        "failed": "Check your connection and refresh the page.",
+        "failed_cta": "Try again"
+      }
+    }
   }
 }
