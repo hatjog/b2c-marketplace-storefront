@@ -1,12 +1,16 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
-import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumbs, StorefrontI18nLongContentProbe } from '@/components/atoms';
+import {
+  Breadcrumbs,
+  StorefrontI18nLongContentProbe,
+  StorefrontRouteStateSignal
+} from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
@@ -41,9 +45,7 @@ export async function generateMetadata({
     return acc;
   }, {});
 
-  const seo = resolveGpSeoMetadata(
-    cat.metadata as Record<string, unknown> | null | undefined
-  );
+  const seo = resolveGpSeoMetadata(cat.metadata as Record<string, unknown> | null | undefined);
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
   const title = seo.meta_title ?? cat.name;
   // v1.7.0 Story 2.2 re-review fix (HIGH H1'): description fallback resolved
@@ -51,8 +53,7 @@ export async function generateMetadata({
   // EN/UA/DE SERPs and og:description channels.
   const tMeta = await getTranslations('category');
   const description =
-    seo.meta_description ??
-    tMeta('fallback_description', { categoryName: cat.name, siteName });
+    seo.meta_description ?? tMeta('fallback_description', { categoryName: cat.name, siteName });
   const ogImage = seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
   const canonical = `${baseUrl}/${locale}/categories/${categoryHandle}`;
 
@@ -146,7 +147,14 @@ async function Category({
   }));
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="category-detail"
+        surface="category"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="category-detail"
@@ -188,7 +196,10 @@ async function Category({
 
       {/* h1: uses text-primary token per bb-surfaces typography */}
       <h1 className="heading-xl uppercase text-primary">{category.name}</h1>
-      <SanitizedHTML html={category.description} className="mt-4 mb-6 text-sm text-secondary" />
+      <SanitizedHTML
+        html={category.description}
+        className="mb-6 mt-4 text-sm text-secondary"
+      />
 
       {/* Suspense: routing-load fallback (initial page hydration) — aria-label distinguishes
           from submit-load (filter/sort change). Loading skeleton is BonBeauty-aligned. */}

@@ -1,10 +1,11 @@
-import type { Metadata } from 'next';
-import Image from 'next/image';
-import { headers } from 'next/headers';
 import { Suspense } from 'react';
 
+import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import Image from 'next/image';
+
 import NotFound from '@/app/not-found';
-import { Breadcrumbs } from '@/components/atoms';
+import { Breadcrumbs, StorefrontRouteStateSignal } from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { AlgoliaProductsListing } from '@/components/sections/ProductListing/AlgoliaProductsListing';
@@ -86,14 +87,21 @@ const SingleCollectionsPage = async ({
   ];
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="collection-detail"
+        surface="listing"
+      />
       <div className="mb-2 hidden md:block">
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
 
       {collectionPhotoUrl ? (
         <div
-          className="relative mb-6 aspect-[21/9] overflow-hidden rounded-sm bg-quaternary"
+          className="bg-quaternary relative mb-6 aspect-[21/9] overflow-hidden rounded-sm"
           data-testid="collection-cover"
         >
           <Image
@@ -108,7 +116,10 @@ const SingleCollectionsPage = async ({
       ) : null}
 
       <h1 className="heading-xl uppercase">{collection.title}</h1>
-      <SanitizedHTML html={collection.description} className="mt-4 mb-6 text-sm text-secondary" />
+      <SanitizedHTML
+        html={collection.description}
+        className="mb-6 mt-4 text-sm text-secondary"
+      />
 
       <Suspense
         fallback={

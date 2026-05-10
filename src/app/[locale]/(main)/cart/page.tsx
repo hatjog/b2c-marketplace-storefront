@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { Cart } from '@/components/sections';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 
@@ -26,17 +26,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function CartPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function CartPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
   const t = await getTranslations('page');
   return (
-    <main id="main-content" className="container grid grid-cols-12">
+    <main
+      id="main-content"
+      className="container grid grid-cols-12"
+    >
+      <StorefrontRouteStateSignal
+        route="cart"
+        surface="cart"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="cart"

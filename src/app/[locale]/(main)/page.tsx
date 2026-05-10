@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Script from 'next/script';
-import { getTranslations } from 'next-intl/server';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
@@ -98,7 +98,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
 
   return (
-    <main id="main-content" className="bb-page-shell row-start-2 text-primary">
+    <main
+      id="main-content"
+      className="bb-page-shell row-start-2 text-primary"
+    >
+      <StorefrontRouteStateSignal
+        route="home"
+        surface="home"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="home"

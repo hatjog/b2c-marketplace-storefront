@@ -1,4 +1,8 @@
-import { Card, StorefrontI18nLongContentProbe } from '@/components/atoms';
+import {
+  Card,
+  StorefrontI18nLongContentProbe,
+  StorefrontRouteStateSignal
+} from '@/components/atoms';
 import { ProfilePasswordForm } from '@/components/molecules/ProfilePasswordForm/ProfilePasswordForm';
 
 export default async function ResetPasswordPage({
@@ -13,6 +17,10 @@ export default async function ResetPasswordPage({
 
   return (
     <main className="container flex justify-center">
+      <StorefrontRouteStateSignal
+        route="auth-reset-password"
+        surface="auth-forgot-password"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="password-reset"

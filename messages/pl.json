@@ -953,5 +953,93 @@
       "cta": "Wróć do koszyka",
       "secondary_cta": "Skontaktuj się z obsługą"
     }
+  },
+  "storefront_state": {
+    "loading": {
+      "routing_load": {
+        "title": "Ładowanie",
+        "description": "Trwa ładowanie strony...",
+        "action_label": "Czekaj"
+      },
+      "submit_load": {
+        "title": "Przetwarzanie",
+        "description": "Trwa przetwarzanie żądania...",
+        "action_label": "Czekaj"
+      }
+    },
+    "empty": {
+      "initial": {
+        "title": "Brak treści",
+        "description": "Nie ma jeszcze żadnych wyników.",
+        "action_label": "Przeglądaj ofertę",
+        "action_href": "/"
+      },
+      "no_results": {
+        "title": "Brak wyników",
+        "description": "Nie znaleziono wyników dla podanych kryteriów.",
+        "action_label": "Zmień kryteria",
+        "action_href": "/"
+      },
+      "permission_denied": {
+        "title": "Brak dostępu",
+        "description": "Nie masz uprawnień do wyświetlenia tej zawartości.",
+        "action_label": "Zaloguj się",
+        "action_href": "/login"
+      },
+      "load_error": {
+        "title": "Błąd ładowania",
+        "description": "Nie udało się załadować danych.",
+        "action_label": "Spróbuj ponownie",
+        "action_href": "#retry"
+      }
+    },
+    "validation": {
+      "title": "Błąd walidacji",
+      "description": "Sprawdź wprowadzone dane i popraw błędy.",
+      "action_label": "Popraw formularz",
+      "action_href": "#form"
+    },
+    "unavailable": {
+      "title": "Strona chwilowo niedostępna",
+      "description": "Przepraszamy — usługa jest chwilowo niedostępna. Spróbuj ponownie za chwilę.",
+      "action_label": "Sprawdź ponownie",
+      "action_href": "/pomoc"
+    },
+    "access_denied": {
+      "title": "Brak dostępu",
+      "description": "Nie masz uprawnień do wyświetlenia tej strony.",
+      "action_label": "Zaloguj się",
+      "action_href": "/login"
+    },
+    "stale": {
+      "title": "Dane nieaktualne",
+      "description": "Dane mogą być nieaktualne. Odśwież stronę, aby zobaczyć najnowsze informacje.",
+      "action_label": "Odśwież",
+      "action_href": "#refresh"
+    },
+    "pending": {
+      "title": "Oczekiwanie na przetworzenie",
+      "description": "Twoje zamówienie jest aktualnie przetwarzane. Proszę czekać.",
+      "action_label": "Sprawdź status",
+      "action_href": "#status"
+    },
+    "failed": {
+      "title": "Operacja nieudana",
+      "description": "Wystąpił błąd podczas przetwarzania żądania. Spróbuj ponownie lub skontaktuj się z obsługą.",
+      "action_label": "Spróbuj ponownie",
+      "action_href": "#retry"
+    },
+    "retry": {
+      "title": "Ponów próbę",
+      "description": "Ponawiam żądanie...",
+      "action_label": "Anuluj",
+      "action_href": "#retry"
+    },
+    "recovered": {
+      "title": "Udało się",
+      "description": "Operacja zakończyła się powodzeniem.",
+      "action_label": "Kontynuuj",
+      "action_href": "/"
+    }
   }
 }

@@ -1,15 +1,17 @@
-import Link from 'next/link';
-
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { clampRadius, type RadiusOption } from '@/components/atoms/RadiusSelector/clampRadius';
 import { SellerMap } from '@/components/cells/SellerMap';
 import { SellersPagination } from '@/components/cells/SellersPagination/SellersPagination';
-import { clampRadius, type RadiusOption } from '@/components/atoms/RadiusSelector/clampRadius';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SellersSearchForm } from '@/components/molecules/SellersSearchForm/SellersSearchForm';
-import { SellersViewToggle, type SellersView } from '@/components/molecules/SellersViewToggle/SellersViewToggle';
+import {
+  SellersViewToggle,
+  type SellersView
+} from '@/components/molecules/SellersViewToggle/SellersViewToggle';
 import { SellerCard } from '@/components/organisms/seller/SellerCard';
 import { searchSellers, type SellerSortKey } from '@/lib/data/seller';
 import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
@@ -46,9 +48,7 @@ function parseString(raw: string | string[] | undefined, fallback = ''): string 
 
 function parseSort(raw: string | string[] | undefined): SellerSortKey {
   const value = parseString(raw);
-  return VALID_SORT_KEYS.has(value as SellerSortKey)
-    ? (value as SellerSortKey)
-    : DEFAULT_SORT;
+  return VALID_SORT_KEYS.has(value as SellerSortKey) ? (value as SellerSortKey) : DEFAULT_SORT;
 }
 
 function parseView(raw: string | string[] | undefined): SellersView {
@@ -151,9 +151,7 @@ export default async function SellersListPage({
     sort,
     limit,
     offset,
-    ...(nearMeEffective
-      ? { userLat, userLng, radiusKm: radius }
-      : {})
+    ...(nearMeEffective ? { userLat, userLng, radiusKm: radius } : {})
   });
 
   const hasActiveFilters = Boolean(q || city || nearMe);
@@ -174,7 +172,14 @@ export default async function SellersListPage({
     view === 'map' ? { ...preservedParams, view: 'map' } : preservedParams;
 
   return (
-    <main id="main-content" className="container py-8">
+    <main
+      id="main-content"
+      className="container py-8"
+    >
+      <StorefrontRouteStateSignal
+        route="sellers"
+        surface="listing"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="seller-listing"
@@ -186,7 +191,7 @@ export default async function SellersListPage({
         ]}
       />
 
-      <h1 className="mt-6 mb-2 text-2xl font-bold">{t('title')}</h1>
+      <h1 className="mb-2 mt-6 text-2xl font-bold">{t('title')}</h1>
       <p className="mb-4 text-sm text-gray-500">{t('description')}</p>
 
       <SellersViewToggle
@@ -206,12 +211,18 @@ export default async function SellersListPage({
         lng={userLng}
       />
 
-      <p className="mb-4 text-sm text-gray-500" data-testid="sellers-list-results-count">
+      <p
+        className="mb-4 text-sm text-gray-500"
+        data-testid="sellers-list-results-count"
+      >
         {tSearch('results_count', { count: total })}
       </p>
 
       {view === 'map' ? (
-        <div className="mb-6" data-testid="sellers-list-map-view">
+        <div
+          className="mb-6"
+          data-testid="sellers-list-map-view"
+        >
           <SellerMap
             sellers={pageItems}
             locale={locale}
@@ -221,13 +232,19 @@ export default async function SellersListPage({
           />
         </div>
       ) : pageItems.length === 0 ? (
-        <div data-testid="sellers-list-empty" className="py-12 text-center">
-          <h2 className="mb-2 text-lg font-semibold" data-testid="sellers-list-empty-heading">
+        <div
+          data-testid="sellers-list-empty"
+          className="py-12 text-center"
+        >
+          <h2
+            className="mb-2 text-lg font-semibold"
+            data-testid="sellers-list-empty-heading"
+          >
             {nearMe
               ? t('no_results_in_radius', { radius: String(radius) })
               : hasActiveFilters
-              ? tSearch('empty_heading_filtered', { query: q || city })
-              : tSearch('empty_heading')}
+                ? tSearch('empty_heading_filtered', { query: q || city })
+                : tSearch('empty_heading')}
           </h2>
           <p className="mb-6 text-sm text-gray-500">{tSearch('empty_body')}</p>
           {hasActiveFilters && (
@@ -243,7 +260,7 @@ export default async function SellersListPage({
         </div>
       ) : (
         <div
-          className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6"
+          className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6"
           data-testid="sellers-list-grid"
         >
           {pageItems.map(seller => (

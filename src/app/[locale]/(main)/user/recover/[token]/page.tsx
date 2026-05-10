@@ -45,11 +45,12 @@
  */
 
 import React from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { exchangeRecoveryTokenForm } from '@/actions/voucher-recovery';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,11 +109,15 @@ export default async function RecoverPage({
       className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
       data-testid="recover-page"
     >
+      <StorefrontRouteStateSignal
+        route="voucher-recovery"
+        surface="voucher-recovery"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="voucher-recovery"
       />
-      <div className="w-full max-w-lg flex flex-col items-center gap-6 text-center">
+      <div className="flex w-full max-w-lg flex-col items-center gap-6 text-center">
         <h1 className="heading-md text-primary">{t('title')}</h1>
         <p className="text-secondary">{t('body')}</p>
         <form
@@ -121,11 +126,19 @@ export default async function RecoverPage({
           className="flex w-full max-w-sm flex-col gap-3"
           data-testid="recover-continue-form"
         >
-          <input type="hidden" name="token" value={token} />
-          <input type="hidden" name="locale" value={locale} />
+          <input
+            type="hidden"
+            name="token"
+            value={token}
+          />
+          <input
+            type="hidden"
+            name="locale"
+            value={locale}
+          />
           <button
             type="submit"
-            className="min-h-12 rounded-sm bg-action px-6 py-3 text-action-on-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
+            className="min-h-12 rounded-sm bg-action px-6 py-3 font-medium text-action-on-primary focus:outline-none focus:ring-2 focus:ring-action focus:ring-offset-2"
             data-testid="recover-continue-cta"
           >
             {t('continue_cta')}

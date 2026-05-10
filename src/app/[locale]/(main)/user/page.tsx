@@ -1,15 +1,11 @@
-import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { UserNavigation } from '@/components/molecules';
 import { retrieveCustomer } from '@/lib/data/customer';
 
-export default async function UserPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function UserPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const user = await retrieveCustomer();
   const t = await getTranslations({ locale, namespace: 'user' });
@@ -19,7 +15,14 @@ export default async function UserPage({
   }
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="user-account"
+        surface="user-account"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="account"
@@ -27,7 +30,9 @@ export default async function UserPage({
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div className="md:col-span-3">
-          <h1 className="heading-xl uppercase">{t('welcome_heading', { firstName: user.first_name })}</h1>
+          <h1 className="heading-xl uppercase">
+            {t('welcome_heading', { firstName: user.first_name })}
+          </h1>
           <p className="label-md">{t('welcome_subheading')}</p>
         </div>
       </div>
