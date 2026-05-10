@@ -21,7 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RegulaminPage() {
+export default async function RegulaminPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations('legal');
   const tW = await getTranslations('voucher_withdrawal');
 
@@ -150,7 +155,7 @@ export default async function RegulaminPage() {
           </ul>
 
           <a
-            href="/pomoc"
+            href={`/${locale}/pomoc`}
             style={{
               display: 'inline-block',
               color: 'var(--text-primary)',

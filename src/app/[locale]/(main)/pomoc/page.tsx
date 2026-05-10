@@ -7,7 +7,7 @@
  * Covers: how withdrawal works, consent-to-execute, support-review meaning, support contact.
  *
  * SEO: robots noindex/nofollow — pre-prod posture per story constraint.
- * Rendering: force-static (i18n only, no per-market dynamic config needed).
+ * Rendering: dynamic (NOT force-static).
  *
  * IMPORTANT: This page covers consumer-purchase withdrawal (FR64) ONLY.
  * RODO Art. 7/17 recipient-PII consent is handled elsewhere.
@@ -21,6 +21,20 @@
  *        `voucher_withdrawal.legal` for legal page strings.
  *   M7 — `generateMetadata` reads from i18n, not hardcoded PL strings.
  *   L4 — `mailto:` CTA uses Tailwind utility classes + visible focus ring.
+ *
+ * Second-pass review fixes:
+ *   H2 — legacy bare `/pomoc` hrefs in legal pages now interpolate `[locale]`.
+ *   M1 — DOM signal on /pomoc is decoupled from any real voucher. We DELIBERATELY
+ *        emit `state=support-review` + `freshness=missing` so Epic 7 has a stable
+ *        anti-silent-fallback assertion on this surface (the page is informational;
+ *        no real voucher is in scope, so the only honest signal is "no voucher data,
+ *        route through support").
+ *   M2 — drop `force-static` so `data-market` cannot be baked across env flips.
+ *   M3 — remove `logWithdrawalStateEvaluated()` emission; legal-help is a DOM-only
+ *        surface in the Epic 7 contract. Log channel is reserved for real flow
+ *        surfaces (checkout/confirmation/recovery/voucher-card).
+ *   M4 — focus-visible ring uses `--accent` for visible focus on dark CTA.
+ *   L1 — article gains `aria-labelledby` linking to h1 for landmark navigation.
  */
 
 import type { Metadata } from 'next';
@@ -28,10 +42,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 import { VoucherWithdrawalStateCard } from '@/components/molecules/VoucherWithdrawalStateCard';
-import { getWithdrawalState } from '@/lib/helpers/withdrawal-state';
-import { logWithdrawalStateEvaluated } from '@/lib/helpers/withdrawal-state-logger';
+import type { WithdrawalStateResult } from '@/types/voucher';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const tWL = await getTranslations('voucher_withdrawal.legal');
@@ -47,12 +60,20 @@ export default async function PomocPage() {
   const tWL = await getTranslations('voucher_withdrawal.legal');
   const tLegal = await getTranslations('legal');
 
-  // Review fix H3: render the Epic 7 DOM signal on this stable surface so
-  // validators have a deterministic landmark to assert against. The state is
-  // intentionally derived without any backing voucher data — Mercur 2 payload
-  // gaps are documented in `withdrawal-state.ts`. See FOLLOWUP in Dev Notes.
-  const withdrawalResult = getWithdrawalState({});
-  logWithdrawalStateEvaluated(withdrawalResult, 'legal-help');
+  // Review fix M1: the legal-help page has NO voucher in scope, so deriving
+  // a state from `getWithdrawalState({})` would always emit a misleading
+  // "eligible" or env-dependent "support-review" signal. Instead, hard-code
+  // the DOM signal payload to `support-review` + `freshness=missing` so the
+  // Epic 7 gate has a stable, intentional anti-silent-fallback landmark on
+  // this surface: "if you ever see eligible on /pomoc, the helper is wrong".
+  // No log emission on this surface (M3) — Epic 7 log channel is reserved
+  // for release-critical flow surfaces.
+  const withdrawalResult: WithdrawalStateResult = {
+    state: 'support-review',
+    market_id: '',
+    freshness: 'missing',
+    action_blocked: true,
+  };
 
   const states = [
     {
@@ -80,12 +101,14 @@ export default async function PomocPage() {
   return (
     <LegalPageLayout>
       <article
+        aria-labelledby="pomoc-page-title"
         data-testid="pomoc-content"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         {/* Page header */}
         <header style={{ marginBottom: '2.5rem' }}>
           <h1
+            id="pomoc-page-title"
             style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(2rem, 4vw, 3rem)',
@@ -310,7 +333,7 @@ export default async function PomocPage() {
           </p>
           <a
             href={`mailto:${tLegal('contact_email')}`}
-            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-[color:var(--bb-page-bg)]"
             style={{
               background: 'var(--bg-action)',
               color: 'var(--text-on-action)',

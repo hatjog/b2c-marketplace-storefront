@@ -358,6 +358,63 @@ describe('WITHDRAWAL_SURFACES — story Dev Notes contract (review fix L2)', () 
       'unknown',
     ]);
   });
+
+  it('WITHDRAWAL_LOG_SURFACES excludes legal-help (second-pass review fix M5)', async () => {
+    const { WITHDRAWAL_LOG_SURFACES, WITHDRAWAL_SURFACES } = await import(
+      '@/lib/helpers/withdrawal-state-logger'
+    );
+    // legal-help is DOM-signal-only; not a valid log surface
+    expect(WITHDRAWAL_LOG_SURFACES).not.toContain('legal-help');
+    // All log surfaces are a strict subset of DOM surfaces
+    for (const s of WITHDRAWAL_LOG_SURFACES) {
+      expect(WITHDRAWAL_SURFACES as readonly string[]).toContain(s);
+    }
+    // Exact contract: log surfaces are the real-flow ones plus 'unknown'
+    expect(WITHDRAWAL_LOG_SURFACES).toEqual([
+      'checkout',
+      'confirmation-handoff',
+      'voucher-recovery',
+      'voucher-card',
+      'unknown',
+    ]);
+  });
+});
+
+describe('voucher_withdrawal.legal.contact_support_href — locale parity (second-pass review fix H1)', () => {
+  // EN/UA/DE used to ship "/help" which is a 404; align all four locales to /pomoc
+  // until locale-aware route segments (multi-market expansion) re-introduce per-locale variants.
+  for (const locale of ['pl', 'en', 'ua', 'de'] as const) {
+    it(`${locale}.json voucher_withdrawal.legal.contact_support_href === "/pomoc"`, () => {
+      const path = join(process.cwd(), 'messages', `${locale}.json`);
+      const raw = readFileSync(path, 'utf-8');
+      const data = JSON.parse(raw) as {
+        voucher_withdrawal?: { legal?: { contact_support_href?: string } };
+      };
+      expect(data.voucher_withdrawal?.legal?.contact_support_href).toBe('/pomoc');
+    });
+  }
+});
+
+describe('Legal-page hrefs — locale-aware (second-pass review fix H2)', () => {
+  /**
+   * Lightweight string-scan ensures the new and edited legal pages interpolate
+   * the [locale] segment rather than linking to bare /pomoc, /regulamin, etc.
+   * Catches the regression flagged in the second-pass review.
+   */
+  it.each([
+    'src/app/[locale]/(main)/regulamin/page.tsx',
+    'src/app/[locale]/(main)/zasady/page.tsx',
+    'src/app/[locale]/(main)/polityka-prywatnosci/page.tsx',
+  ])('%s contains no bare href="/pomoc" / "/regulamin" / "/zasady"', (relPath) => {
+    const path = join(process.cwd(), relPath);
+    const text = readFileSync(path, 'utf-8');
+    // Match a bare href attribute (string-literal, no template expression)
+    expect(text).not.toMatch(/href=["']\/pomoc["']/);
+    expect(text).not.toMatch(/href=["']\/regulamin["']/);
+    // /zasady has historically been linked locale-bare elsewhere, but this
+    // story did not introduce that pattern. Guard against future drift.
+    expect(text).not.toMatch(/href=["']\/zasady["']/);
+  });
 });
 
 describe('Deferred backing-data documentation (review fix M5)', () => {

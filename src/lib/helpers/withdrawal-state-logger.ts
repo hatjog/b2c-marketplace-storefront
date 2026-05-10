@@ -37,6 +37,11 @@ import { logger } from '@/lib/logger';
  * "Epic 7 Signal Contract" and `WITHDRAWAL_SURFACES` below; a unit test
  * asserts equality.
  *
+ * Second-pass review fix M5: `legal-help` is a DOM-signal-only surface;
+ * log emission MUST NOT use it. The `WITHDRAWAL_LOG_SURFACES` subset below
+ * is the canonical allow-list for log payloads; `WITHDRAWAL_SURFACES` is the
+ * superset that also includes DOM-only surfaces.
+ *
  * @see _bmad-output/releases/v1.7.0/implementation-artifacts/2-9-storefront-legal-help-and-withdrawal-states.md
  */
 export const WITHDRAWAL_SURFACES = [
@@ -51,6 +56,22 @@ export const WITHDRAWAL_SURFACES = [
 export type WithdrawalSurface = (typeof WITHDRAWAL_SURFACES)[number];
 
 /**
+ * Surfaces eligible to emit a structured log line. Second-pass review fix M5:
+ * `legal-help` is excluded — that surface only renders the DOM landmark
+ * without an associated real-voucher evaluation, so emitting a log there
+ * would pollute the Epic 7 evidence channel with build-time / no-voucher noise.
+ */
+export const WITHDRAWAL_LOG_SURFACES = [
+  'checkout',
+  'confirmation-handoff',
+  'voucher-recovery',
+  'voucher-card',
+  'unknown',
+] as const;
+
+export type WithdrawalLogSurface = (typeof WITHDRAWAL_LOG_SURFACES)[number];
+
+/**
  * Emit a structured log line for FR64 withdrawal state evaluation.
  *
  * Call this from Server Components on release-critical paths after resolving
@@ -61,7 +82,7 @@ export type WithdrawalSurface = (typeof WITHDRAWAL_SURFACES)[number];
  */
 export function logWithdrawalStateEvaluated(
   result: WithdrawalStateResult,
-  surface: WithdrawalSurface = 'unknown'
+  surface: WithdrawalLogSurface = 'unknown'
 ): void {
   try {
     // Review fix H4: blocked evaluations escalate to `error` so Epic 7 log
