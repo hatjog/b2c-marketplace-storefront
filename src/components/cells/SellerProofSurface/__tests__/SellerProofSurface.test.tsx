@@ -21,9 +21,10 @@ vi.mock('next-intl/server', () => ({
   getTranslations: vi.fn().mockImplementation((_namespace: string) => {
     return Promise.resolve((key: string, params?: Record<string, unknown>) => {
       const translations: Record<string, string> = {
-        heading_complete: 'Informacje o salonie',
-        heading_partial: 'Informacje o salonie',
-        heading_unavailable: 'Informacje o salonie',
+        // F4 fix: distinct headings per state (AC2 distinct headlines)
+        heading_complete: 'Zweryfikowany salon',
+        heading_partial: 'Salon — informacje wstępne',
+        heading_unavailable: 'Salon — informacje wkrótce',
         verification_label: 'Zweryfikowany salon BonBeauty',
         verification_pending_label: 'Weryfikacja w toku',
         rating_label: 'Ocena',
@@ -53,12 +54,21 @@ vi.mock('next/link', () => ({
     React.createElement('a', { href, ...props }, children),
 }));
 
-// Mock MarketplaceVerificationMark — check it IS rendered in all states
+// Mock MarketplaceVerificationMark — check it IS rendered in all states.
+// F7 fix: previously findAll matched the MarketplaceVerificationMark
+// component element (with `label` prop) rather than the rendered span,
+// so `data-label` was undefined. Now we keep the mock but assertions
+// use the `label` prop directly on the component element.
 vi.mock('@/components/atoms/MarketplaceVerificationMark/MarketplaceVerificationMark', () => ({
-  MarketplaceVerificationMark: ({ label, variant, ...props }: { label: string; variant?: string; [key: string]: unknown }) =>
+  MarketplaceVerificationMark: ({ label, variant, surface, ...props }: { label: string; variant?: string; surface?: string; [key: string]: unknown }) =>
     React.createElement(
       'span',
-      { 'data-testid': 'marketplace-verification-mark', 'data-label': label, 'data-variant': variant, ...props },
+      {
+        'data-testid': props['data-testid'] ?? 'marketplace-verification-mark',
+        'data-label': label,
+        'data-variant': variant,
+        'data-surface': surface,
+      },
       label,
     ),
 }));
@@ -148,8 +158,10 @@ describe('SellerProofSurface — complete state (UX-CMP-3)', () => {
     const el = await SellerProofSurface({ seller: makeCompleteSeller() });
     const marks = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-verification-mark');
     expect(marks.length).toBe(1);
-    // Text label must be present — never icon-only (AC2)
-    const label = marks[0].props['data-label'] as string;
+    // F7 fix: assert on `label` prop directly (component prop), not the
+    // mock-relayed `data-label` (the original test traversed the component
+    // element, which carries `label` not `data-label`).
+    const label = marks[0].props['label'] as string;
     expect(label).toBeTruthy();
     expect(label.trim().length).toBeGreaterThan(0);
   });
@@ -200,7 +212,8 @@ describe('SellerProofSurface — partial state (UX-CMP-3)', () => {
     const el = await SellerProofSurface({ seller: makePartialSeller() });
     const marks = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-verification-mark');
     expect(marks.length).toBe(1);
-    const label = marks[0].props['data-label'] as string;
+    const label = marks[0].props['label'] as string;
+    expect(label).toBeTruthy();
     expect(label.trim().length).toBeGreaterThan(0);
   });
 
@@ -236,7 +249,8 @@ describe('SellerProofSurface — unavailable state (UX-CMP-3)', () => {
     const marks = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-verification-mark');
     expect(marks.length).toBe(1);
     // Text label must be present even in unavailable state — never icon-only
-    const label = marks[0].props['data-label'] as string;
+    const label = marks[0].props['label'] as string;
+    expect(label).toBeTruthy();
     expect(label.trim().length).toBeGreaterThan(0);
   });
 
@@ -287,6 +301,25 @@ describe('SellerProofSurface — all three states are visually + semantically di
     // Should be partial (derived), not whatever a caller might try to override
     expect(el.props['data-variant']).toBe('partial');
   });
+
+  it('all three states have distinct heading copy (F4 fix — AC2 distinct headlines)', async () => {
+    // Translation mock returns different keys per state — assert headings differ.
+    const complete = await SellerProofSurface({ seller: makeCompleteSeller() }) as ReactEl;
+    const partial = await SellerProofSurface({ seller: makePartialSeller() }) as ReactEl;
+    const unavailable = await SellerProofSurface({ seller: makeUnavailableSeller() }) as ReactEl;
+    const headingFor = (root: ReactEl) => {
+      const hs = findAll(root, e => e.props['data-testid'] === 'seller-proof-heading');
+      return getText(hs[0]);
+    };
+    const completeH = headingFor(complete);
+    const partialH = headingFor(partial);
+    const unavailableH = headingFor(unavailable);
+    // All three must be non-empty and distinct from each other
+    expect(completeH).toBeTruthy();
+    expect(partialH).toBeTruthy();
+    expect(unavailableH).toBeTruthy();
+    expect(new Set([completeH, partialH, unavailableH]).size).toBe(3);
+  });
 });
 
 describe('SellerProofSurface — identitySlot composition', () => {
@@ -295,5 +328,39 @@ describe('SellerProofSurface — identitySlot composition', () => {
     const el = await SellerProofSurface({ seller: makeCompleteSeller(), identitySlot });
     const customSlots = findAll(el as ReactEl, e => e.props['data-testid'] === 'custom-identity-slot');
     expect(customSlots.length).toBe(1);
+  });
+});
+
+describe('SellerProofSurface — pending_approval not labelled as verified (F3 fix)', () => {
+  it('pending_approval seller uses verification_pending_label, not verification_label', async () => {
+    const seller: SellerProofData = {
+      ...makeCompleteSeller(),
+      status: 'pending_approval',
+    };
+    const el = await SellerProofSurface({ seller });
+    const marks = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-verification-mark');
+    expect(marks.length).toBe(1);
+    const label = marks[0].props['label'] as string;
+    expect(label).toBe('Weryfikacja w toku');
+    expect(label).not.toBe('Zweryfikowany salon BonBeauty');
+  });
+
+  it('open seller uses verification_label', async () => {
+    const el = await SellerProofSurface({ seller: makeCompleteSeller() });
+    const marks = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-verification-mark');
+    const label = marks[0].props['label'] as string;
+    expect(label).toBe('Zweryfikowany salon BonBeauty');
+  });
+
+  it('suspended seller uses verification_pending_label (defensive)', async () => {
+    const seller: SellerProofData = {
+      ...makeCompleteSeller(),
+      status: 'suspended',
+    };
+    const el = await SellerProofSurface({ seller });
+    const marks = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-verification-mark');
+    const label = marks[0].props['label'] as string;
+    // suspended sellers must NOT carry the verified label
+    expect(label).not.toBe('Zweryfikowany salon BonBeauty');
   });
 });

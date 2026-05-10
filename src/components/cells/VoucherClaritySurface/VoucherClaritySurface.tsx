@@ -23,6 +23,7 @@
 
 import type { ReactNode } from 'react';
 
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
 import { CalendarIcon } from '@/icons';
@@ -35,11 +36,15 @@ export type VoucherClarityStatus = {
   kind: 'pending' | 'unavailable' | 'expired' | 'recovery';
   /** Human-readable status message — never a raw API error or variant code. */
   message: string;
-  /** Exactly one recommended next action per UX-DR18. */
+  /** Exactly one recommended next action per UX-DR18.
+   *  F11 fix: dropped `onClick: string` — strings are not React event handlers,
+   *  and functions cannot cross the server-component boundary. Client interaction
+   *  is wired by wrapping <VoucherClaritySurface> in a 'use client' component
+   *  that intercepts the rendered <Link>/<a> by data-testid; Stories 2.4/2.5/2.6
+   *  add their own client wrappers without needing this hook. */
   nextAction?: {
     href?: string;
     label: string;
-    onClick?: string; // Serializable reference only — client interactions wired via wrapper
   };
 };
 
@@ -143,11 +148,16 @@ export async function VoucherClaritySurface({
   const isNonDefault = variant === 'warning' || variant === 'error';
   const isCondensed = variant === 'condensed';
 
-  // Surface-level classes driven by variant
+  // Surface-level classes driven by variant.
+  // F6 fix: tokenized warning/error surfaces (--color-warning, --color-error,
+  // --bb-icon-bg-error / unavailable from bb-surfaces.css). No raw rgba literals.
+  // F20 fix: condensed gets a tighter card variant — lighter shell for cart row reuse.
   const surfaceClass = cn(
-    'bb-section-shell space-y-4',
-    variant === 'warning' && 'border-[rgba(202,138,4,0.25)] bg-[rgba(254,249,195,0.4)]',
-    variant === 'error' && 'border-[rgba(185,28,28,0.2)] bg-[rgba(254,226,226,0.35)]',
+    variant === 'condensed' ? 'bb-card-muted space-y-3' : 'bb-section-shell space-y-4',
+    variant === 'warning' &&
+      'border-[var(--bb-icon-bg-unavailable)] bg-[var(--bb-icon-bg-unavailable)]',
+    variant === 'error' &&
+      'border-[var(--bb-icon-bg-error)] bg-[var(--bb-icon-bg-error)]',
     className,
   );
 
@@ -159,15 +169,17 @@ export async function VoucherClaritySurface({
       data-variant={variant}
     >
       {/* ─── Status banner for non-default variants ─────────────────────── */}
+      {/* F17 fix: drop redundant aria-live (role=status implies it).
+          F6 fix: tokenized status colors via CSS variables (--color-warning,
+          --color-error, --bb-icon-bg-* from bb-surfaces.css). */}
       {isNonDefault && status && (
         <div
           role="status"
-          aria-live="polite"
           className={cn(
             'flex items-start gap-2 rounded-md px-3 py-2',
             variant === 'warning'
-              ? 'bg-yellow-50 text-yellow-800'
-              : 'bg-red-50 text-red-800',
+              ? 'bg-[var(--bb-icon-bg-unavailable)] text-[color:var(--color-warning)]'
+              : 'bg-[var(--bb-icon-bg-error)] text-[color:var(--color-error)]',
           )}
           data-testid="voucher-clarity-status-banner"
         >
@@ -177,13 +189,13 @@ export async function VoucherClaritySurface({
             {status.nextAction && (
               <>
                 {status.nextAction.href ? (
-                  <a
+                  <Link
                     href={status.nextAction.href}
-                    className="label-sm underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring,#2563eb)]"
+                    className="label-sm underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                     data-testid="voucher-clarity-next-action"
                   >
                     {status.nextAction.label}
-                  </a>
+                  </Link>
                 ) : (
                   <span
                     className="label-sm"
@@ -222,39 +234,46 @@ export async function VoucherClaritySurface({
       )}
 
       {/* ─── Validity ────────────────────────────────────────────────────── */}
+      {/* F13 fix: condensed variant suppresses the validity-help fallback link
+          (cart/checkout summary should not surface help links — Story 2.4 owns
+          its own validity helper). When condensed + missing validity, render
+          plain status text only. */}
       <div className="flex items-start gap-2" data-testid="voucher-clarity-validity">
         <CalendarIcon size={16} aria-hidden="true" className="mt-0.5 flex-shrink-0 text-secondary" />
         <div className="min-w-0 flex-1">
           {validityWording ? (
             <p className="label-md text-primary">{validityWording}</p>
+          ) : isCondensed ? (
+            <p className="label-md text-secondary">{t('validity_to_confirm')}</p>
           ) : (
             <p className="label-md text-secondary">
               {t('validity_to_confirm')}{' '}
-              <a
+              <Link
                 href={VOUCHER_HELP_HREF}
-                className="underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring,#2563eb)]"
+                className="underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
               >
                 {t('validity_help_link')}
-              </a>
+              </Link>
             </p>
           )}
         </div>
       </div>
 
       {/* ─── Realization rules (semantic list) ───────────────────────────── */}
+      {/* F23 fix: aria-labelledby on <ul> references the caption <p> (no duplicate label).
+          F6 fix: trust check icon uses tokenized text-trust class, no hex fallback. */}
       {!isCondensed && realizationRules.length > 0 && (
         <div data-testid="voucher-clarity-rules">
-          <p className="label-sm mb-2 text-secondary">{t('realization_rules_label')}</p>
-          <ul
-            aria-label={t('realization_rules_label')}
-            className="space-y-1"
-          >
+          <p id="voucher-clarity-rules-label" className="label-sm mb-2 text-secondary">
+            {t('realization_rules_label')}
+          </p>
+          <ul aria-labelledby="voucher-clarity-rules-label" className="space-y-1">
             {realizationRules.map((rule, i) => (
               <li
                 key={i}
                 className="label-md flex items-start gap-2 text-primary"
               >
-                <span className="mt-0.5 text-[var(--color-trust,#16a34a)]" aria-hidden="true">
+                <span className="mt-0.5 text-trust" aria-hidden="true">
                   ✓
                 </span>
                 <span>{rule.text}</span>
@@ -273,12 +292,12 @@ export async function VoucherClaritySurface({
             ) : (
               <p className="label-md text-secondary">
                 {t('refund_policy_label')}{' '}
-                <a
+                <Link
                   href={REFUND_HELP_ANCHOR}
-                  className="underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring,#2563eb)]"
+                  className="underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                 >
                   {t('refund_policy_link')}
-                </a>
+                </Link>
               </p>
             )}
           </div>
@@ -291,13 +310,13 @@ export async function VoucherClaritySurface({
       ) : merchantName && merchantHandle ? (
         <div data-testid="voucher-clarity-merchant">
           <p className="label-sm text-secondary">{t('merchant_label')}</p>
-          <a
+          <Link
             href={`/sellers/${merchantHandle}`}
-            className="label-md font-medium text-primary underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring,#2563eb)]"
+            className="label-md font-medium text-primary underline underline-offset-2 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             aria-label={t('merchant_link_aria', { name: merchantName })}
           >
             {merchantName}
-          </a>
+          </Link>
         </div>
       ) : null}
 

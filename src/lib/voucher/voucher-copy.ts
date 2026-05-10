@@ -17,11 +17,27 @@
  *     (Story 2.9 owns the legal copy; this is a stable reference).
  */
 
-/** Canonical legal/help anchor — Story 2.9 owns the content; we reference it. */
+/** Canonical legal/help anchor — Story 2.9 owns the content; we reference it.
+ *  These constants are RELATIVE (no locale prefix) — Next.js next-intl
+ *  middleware will rewrite them to the active locale at request time when
+ *  used inside a localised route. For explicit locale-prefixed builds use
+ *  `voucherHelpHref(locale)` / `refundHelpAnchor(locale)` instead.
+ *  F26 fix: documented and exposed locale-aware variants for cart/checkout/
+ *  recovery surfaces (Stories 2.4/2.5/2.6) that need explicit prefixes. */
 export const REFUND_HELP_ANCHOR = '/zasady#zwroty' as const;
 
 /** Canonical help page href for voucher FAQs. */
 export const VOUCHER_HELP_HREF = '/zasady' as const;
+
+/** Returns the voucher help href explicitly prefixed with the active locale. */
+export function voucherHelpHref(locale: string): string {
+  return `/${locale}${VOUCHER_HELP_HREF}`;
+}
+
+/** Returns the refund help anchor explicitly prefixed with the active locale. */
+export function refundHelpAnchor(locale: string): string {
+  return `/${locale}${REFUND_HELP_ANCHOR}`;
+}
 
 /**
  * Formats a voucher price from minor units (grosz) to display string.
@@ -69,37 +85,49 @@ export function resolveValidityWording(
 }
 
 /**
- * Derives the VoucherClaritySurface variant from product availability state.
+ * VoucherClaritySurface variant.
  *
- * Used by ProductDetails to determine which variant to pass to VoucherClaritySurface.
- * Cart (Story 2.4), checkout (Story 2.4) and recovery (Story 2.6) should also use this
- * helper for consistent state derivation.
+ * F15 fix: split into a base helper (deriveVoucherClarityVariant — usable
+ * by Stories 2.4 cart/checkout, 2.5 confirmation, 2.6 recovery) and a
+ * PDP-flavoured wrapper (derivePdpVoucherClarityVariant) that adds
+ * PDP-specific signals (out-of-stock, region-restricted, vendor-unavailable).
  *
- * @param hasPrice — true if any variant has a calculated_price
- * @param isOutOfStock — true if selected variant has no inventory
- * @param isRegionRestricted — true if product is not purchasable in the current region
- * @param isVendorUnavailable — true when no active vendor offers exist (Story 5.6)
- * @param isExpiredInCatalog — true if the voucher is marked as expired in catalog
+ * Cart/checkout/recovery do NOT see vendor offers or PDP variant inventory
+ * directly — they see line items and order state — so the PDP-flavoured
+ * input shape would force them to pass dummy values forever.
  */
 export type VoucherClarityVariant = 'default' | 'condensed' | 'warning' | 'error';
 
+/** Base derivation — usable from cart, checkout, confirmation, recovery.
+ *  Inputs are the minimum a downstream surface ever sees. */
 export function deriveVoucherClarityVariant(params: {
+  hasPrice: boolean;
+  isExpiredInCatalog?: boolean;
+}): VoucherClarityVariant {
+  const { hasPrice, isExpiredInCatalog } = params;
+  if (isExpiredInCatalog) return 'error';
+  if (!hasPrice) return 'error';
+  return 'default';
+}
+
+/** PDP-flavoured wrapper: adds PDP-only signals (vendor unavailable, region
+ *  restricted, out of stock). Stories 2.4/2.5/2.6 should NOT depend on these. */
+export function derivePdpVoucherClarityVariant(params: {
   hasPrice: boolean;
   isOutOfStock?: boolean;
   isRegionRestricted?: boolean;
   isVendorUnavailable?: boolean;
   isExpiredInCatalog?: boolean;
 }): VoucherClarityVariant {
-  const { hasPrice, isOutOfStock, isRegionRestricted, isVendorUnavailable, isExpiredInCatalog } =
-    params;
-
-  if (isExpiredInCatalog) return 'error';
-  if (!hasPrice) return 'error';
-  if (isVendorUnavailable) return 'warning';
-  if (isRegionRestricted) return 'warning';
-  if (isOutOfStock) return 'warning';
-
-  return 'default';
+  const base = deriveVoucherClarityVariant({
+    hasPrice: params.hasPrice,
+    isExpiredInCatalog: params.isExpiredInCatalog,
+  });
+  if (base === 'error') return 'error';
+  if (params.isVendorUnavailable) return 'warning';
+  if (params.isRegionRestricted) return 'warning';
+  if (params.isOutOfStock) return 'warning';
+  return base;
 }
 
 /**
@@ -107,6 +135,12 @@ export function deriveVoucherClarityVariant(params: {
  *
  * IMPORTANT: Callers MUST NOT override this — the variant must always derive
  * from the actual data to avoid overstating trust (AC2, anti-pattern in story spec).
+ *
+ * F10 fix: removed the unreachable trailing `return 'unavailable'` (after
+ * `if (hasName)` always returns); `hasAddress` is no longer accepted (was
+ * unused in the prior version) — callers should pass it via the surface but
+ * not as a derivation signal. `hasRating`/`hasReviews` allow null for callers
+ * that don't have rating data yet.
  */
 export type SellerProofVariant = 'complete' | 'partial' | 'unavailable';
 
@@ -115,7 +149,9 @@ export function deriveSellerProofVariant(params: {
   hasVerificationStatus: boolean;
   hasRating: boolean | null;
   hasReviews: boolean | null;
-  hasAddress: boolean | null;
+  /** Accepted for API stability with the surface but not used for derivation —
+   *  address presence is a partial-proof point, not a complete-state gate. */
+  hasAddress?: boolean | null;
 }): SellerProofVariant {
   const { hasName, hasVerificationStatus, hasRating, hasReviews } = params;
 
@@ -124,8 +160,6 @@ export function deriveSellerProofVariant(params: {
   // complete = verification + at least some social proof (rating or reviews)
   if (hasVerificationStatus && (hasRating || hasReviews)) return 'complete';
 
-  // partial = has name and either verification OR some proof points but not both
-  if (hasName) return 'partial';
-
-  return 'unavailable';
+  // Otherwise (name present, missing verification OR missing proof) → partial.
+  return 'partial';
 }

@@ -1,4 +1,16 @@
 export { CartItemsFooter } from './CartItemsFooter/CartItemsFooter';
+export { VoucherClaritySurface } from './VoucherClaritySurface/VoucherClaritySurface';
+export type {
+  VoucherClaritySurfaceProps,
+  VoucherClarityVariantProp,
+  VoucherClarityStatus,
+  RealizationRule,
+} from './VoucherClaritySurface/VoucherClaritySurface';
+export { SellerProofSurface } from './SellerProofSurface/SellerProofSurface';
+export type {
+  SellerProofSurfaceProps,
+  SellerProofData,
+} from './SellerProofSurface/SellerProofSurface';
 export { CartItemsHeader } from './CartItemsHeader/CartItemsHeader';
 export { CartItemsProducts } from './CartItemsProducts/CartItemsProducts';
 export { Navbar } from './Navbar/Navbar';
@@ -12,7 +24,5 @@ export { ProductDetailsSeller } from './ProductDetailsSeller/ProductDetailsSelle
 export { ProductDetailsSellerReviews } from './ProductDetailsSellerReviews/ProductDetailsSellerReviews';
 export { ProductDetailsShipping } from './ProductDetailsShipping/ProductDetailsShipping';
 export { ProductPageDetails } from './ProductPageDetails/ProductPageDetails';
-export { SellerProofSurface } from './SellerProofSurface/SellerProofSurface';
 export { SellerReviewTab } from './SellerReviewTab/SellerReviewTab';
-export { VoucherClaritySurface } from './VoucherClaritySurface/VoucherClaritySurface';
 export { WishlistItem } from './WishlistItem/WishlistItem';

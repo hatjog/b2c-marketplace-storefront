@@ -2,6 +2,11 @@ import type { SellerProps } from './seller';
 
 export type GpProductMetadata = {
   validity_period?: string | null;
+  /** F18 fix: typed slot for product-level realization rules — overrides
+   *  market-level `pdp_trust_signals` when present. v1.7.0 backend may not yet
+   *  populate this field; storefront falls back to `pdp_trust_signals` when
+   *  this is missing. Owned by Story 2.9 (legal/help SSOT) post-v1.7.0. */
+  realization_rules?: string[] | null;
   seo?: { meta_title?: string; meta_description?: string; og_image_url?: string } | null;
   has_vendor_pricing?: boolean | null;
   sort_rank?: number | null;

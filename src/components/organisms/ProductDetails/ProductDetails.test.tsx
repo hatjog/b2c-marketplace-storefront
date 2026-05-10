@@ -63,14 +63,31 @@ vi.mock('@/lib/security/flagAtomicCheck', () => ({
 }));
 
 vi.mock('@/lib/voucher/voucher-copy', () => ({
+  // F15 fix: PDP uses `derivePdpVoucherClarityVariant` (PDP-flavoured wrapper);
+  // Stories 2.4/2.5/2.6 will use base `deriveVoucherClarityVariant`.
+  derivePdpVoucherClarityVariant: vi.fn().mockReturnValue('default'),
   deriveVoucherClarityVariant: vi.fn().mockReturnValue('default'),
   resolveValidityWording: vi.fn().mockReturnValue(null),
+}));
+
+// next-intl server mock — ProductDetails now calls getTranslations('voucher.clarity')
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn().mockImplementation(() =>
+    Promise.resolve((key: string) => {
+      const translations: Record<string, string> = {
+        status_pending_heading: 'Voucher tymczasowo niedostępny',
+        status_unavailable_heading: 'Voucher niedostępny',
+        next_action_back_to_list: 'Wróć do listy',
+      };
+      return translations[key] ?? key;
+    }),
+  ),
 }));
 
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
-import { deriveVoucherClarityVariant, resolveValidityWording } from '@/lib/voucher/voucher-copy';
+import { derivePdpVoucherClarityVariant, resolveValidityWording } from '@/lib/voucher/voucher-copy';
 import { VoucherClaritySurface, SellerProofSurface } from '@/components/cells';
 import { ProductDetails } from './ProductDetails';
 
@@ -132,9 +149,9 @@ describe('ProductDetails — VoucherClaritySurface integration (Story 2.3)', () 
     expect(found[0].props.validityWording).toBe('12 miesięcy od daty zakupu');
   });
 
-  it('derives variant via deriveVoucherClarityVariant (single source of truth for Story 2.4)', async () => {
+  it('derives variant via derivePdpVoucherClarityVariant (PDP wrapper; base helper available for Stories 2.4/2.5/2.6)', async () => {
     vi.mocked(getProductPrice).mockReturnValue({ cheapestVariant: null, cheapestPrice: null, variantPrice: null } as never);
-    vi.mocked(deriveVoucherClarityVariant).mockReturnValue('error');
+    vi.mocked(derivePdpVoucherClarityVariant).mockReturnValue('error');
     const product = makeProduct();
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
@@ -145,7 +162,7 @@ describe('ProductDetails — VoucherClaritySurface integration (Story 2.3)', () 
 
   it('passes trust signals as realizationRules to VoucherClaritySurface', async () => {
     vi.mocked(resolvePdpTrustSignals).mockResolvedValue(['Realizacja w salonie', '14-dniowy zwrot']);
-    vi.mocked(deriveVoucherClarityVariant).mockReturnValue('default');
+    vi.mocked(derivePdpVoucherClarityVariant).mockReturnValue('default');
     const product = makeProduct();
 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
@@ -227,8 +244,9 @@ describe('ProductDetails — SellerProofSurface integration (Story 2.3)', () => 
     const result = await ProductDetails({ product: product as never, locale: 'pl' });
 
     const found = findAll(result as ReactEl, el => el.type === SellerProofSurface);
-    const sellerProps = found[0].props.seller as { rating: number; reviewCount: number };
     // Average of 5 + 3 = 4
+    // F8 fix: type-narrow the seller payload before assertion (props is unknown).
+    const sellerProps = found[0].props.seller as { rating?: number; reviewCount?: number };
     expect(sellerProps.rating).toBe(4);
     expect(sellerProps.reviewCount).toBe(2);
   });

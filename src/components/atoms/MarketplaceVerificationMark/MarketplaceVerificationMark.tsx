@@ -19,11 +19,21 @@ import { cn } from '@/lib/utils';
 
 export type VerificationMarkVariant = 'default' | 'compact';
 
+/** Surface context — drives token-bound styling without `!important` overrides.
+ *  - `hero`: white/transparent overlay on hero image (default — original Story 2.2 use case).
+ *  - `page`: solid muted-trust card style for page-level surfaces (PDP, etc.).
+ */
+export type VerificationMarkSurface = 'hero' | 'page';
+
 interface MarketplaceVerificationMarkProps {
   /** Text label — required for a11y; shown in both variants */
   label: string;
   variant?: VerificationMarkVariant;
+  /** Surface context — picks token-bound style (hero overlay vs page card). */
+  surface?: VerificationMarkSurface;
   className?: string;
+  /** Test id override — defaults to `marketplace-verification-mark`. */
+  'data-testid'?: string;
 }
 
 /** Checkmark shield icon — simple inline SVG, no external dependencies.
@@ -57,21 +67,31 @@ function ShieldCheckIcon({ className }: { className?: string }) {
 export function MarketplaceVerificationMark({
   label,
   variant = 'default',
+  surface = 'hero',
   className,
+  'data-testid': dataTestId,
 }: MarketplaceVerificationMarkProps) {
+  // F12 fix: drop role="img"+aria-label in favour of inline text +
+  // aria-hidden icon — single AT announcement, no double-read.
+  // F6/F5 fix: surface-driven token-bound styles, no `!important` overrides.
+  const isPage = surface === 'page';
+  const iconColorClass = isPage ? 'text-trust' : 'text-white/88';
   return (
     <span
-      role="img"
-      aria-label={label}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 backdrop-blur',
+        'inline-flex items-center gap-1.5 rounded-full px-3 py-1',
+        isPage
+          // Page surface: muted trust-channel card (token-bound)
+          ? 'border border-[rgba(22,101,52,0.2)] bg-[rgba(22,101,52,0.08)] text-trust'
+          // Hero overlay surface: glass over hero image (original Story 2.2 use)
+          : 'border border-white/20 bg-white/10 text-white/88 backdrop-blur',
         variant === 'compact' ? 'text-[10px]' : 'text-[11px]',
-        'font-medium uppercase tracking-[0.2em] text-white/88',
+        'font-medium uppercase tracking-[0.2em]',
         className
       )}
-      data-testid="marketplace-verification-mark"
+      data-testid={dataTestId ?? 'marketplace-verification-mark'}
     >
-      <ShieldCheckIcon className="h-3.5 w-3.5 flex-shrink-0 text-white/88" />
+      <ShieldCheckIcon className={cn('h-3.5 w-3.5 flex-shrink-0', iconColorClass)} />
       {/* Text label always rendered — never icon-only per UX-CMP-1 */}
       <span>{label}</span>
     </span>
