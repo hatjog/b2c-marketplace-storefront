@@ -45,6 +45,8 @@ export interface StorefrontStateSignalProps {
   market: string;
   /** Freshness classification from the calling context. */
   freshness: StorefrontFreshness;
+  /** Localized screen-reader status text for live-region states. */
+  statusLabel?: string;
 }
 
 /**
@@ -56,43 +58,19 @@ export interface StorefrontStateSignalProps {
  *   state only; the form component owns aria-busy on its submit button)
  * - unavailable/failed/access_denied: role="status" aria-live="polite"
  */
-function getLiveRegionProps(
-  state: StorefrontStateToken,
-  stateDetail: StorefrontStateDetailToken | null
-): {
+function getLiveRegionProps(state: StorefrontStateToken): {
   role?: string;
   ariaLive?: 'polite' | 'assertive' | 'off';
   ariaAtomic?: boolean;
-  srLabel?: string;
 } {
   switch (state) {
     case 'loading':
-      return stateDetail === 'submit-load'
-        ? { role: 'status', ariaLive: 'polite', ariaAtomic: true, srLabel: 'Przetwarzanie' }
-        : { role: 'status', ariaLive: 'polite', ariaAtomic: true, srLabel: 'Ładowanie strony' };
+      return { role: 'status', ariaLive: 'polite', ariaAtomic: true };
     case 'unavailable':
-      return {
-        role: 'status',
-        ariaLive: 'polite',
-        ariaAtomic: true,
-        srLabel: 'Strona chwilowo niedostępna'
-      };
     case 'failed':
-      return {
-        role: 'status',
-        ariaLive: 'polite',
-        ariaAtomic: true,
-        srLabel: 'Błąd ładowania strony'
-      };
     case 'access_denied':
-      return { role: 'status', ariaLive: 'polite', ariaAtomic: true, srLabel: 'Brak dostępu' };
     case 'pending':
-      return {
-        role: 'status',
-        ariaLive: 'polite',
-        ariaAtomic: true,
-        srLabel: 'Oczekiwanie na przetworzenie'
-      };
+      return { role: 'status', ariaLive: 'polite', ariaAtomic: true };
     default:
       return {};
   }
@@ -103,9 +81,10 @@ export function StorefrontStateSignal({
   state,
   stateDetail,
   market,
-  freshness
+  freshness,
+  statusLabel
 }: StorefrontStateSignalProps) {
-  const liveRegion = getLiveRegionProps(state, stateDetail);
+  const liveRegion = getLiveRegionProps(state);
 
   return (
     <section
@@ -128,7 +107,7 @@ export function StorefrontStateSignal({
         whiteSpace: 'nowrap'
       }}
     >
-      {liveRegion.srLabel && <span>{liveRegion.srLabel}</span>}
+      {statusLabel && <span>{statusLabel}</span>}
     </section>
   );
 }
