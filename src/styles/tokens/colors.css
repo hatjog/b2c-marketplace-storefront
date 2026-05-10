@@ -1,74 +1,90 @@
 /**
- * v1.5.0 Design Tokens — Colors (HSL-based)
+ * v1.7.0 Design Tokens — Colors (BonBeauty RGB values)
  *
- * Source of truth: _bmad-output/planning-artifacts/ux-design-specification.md
- *   §Color System (gold accent + neutral 95% + semantic 4-channel)
- *   §AC-FLAG-STATE-TERNARY-VISUAL-01 (active/paused/disabled visual differentiation)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/colors_and_type.css
+ *   (Layer 1 — Mercur stock baseline: neutral + red/green/yellow/blue palettes)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/public/themes/bonbeauty.css
+ *   (Layer 2a — BonBeauty brand palette: --brand-25…--brand-900, warm gold)
+ *   (Layer 2b — Semantic alias tokens: --text-*, --cta, --bb-* surfaces)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/live-snapshots/computed-tokens.json
+ *   (Computed resolved values for --bb-* surface tokens)
  *
- * Sprint Week 0 STUB. Robert Claude design bundle finalizes specific hex
- * values during Sprint Week 0; HSL placeholders below preserve API contract.
+ * Token format: HSL tuples ("H S%" L%" no commas) for tailwind hsl(var(--...)) wrappers.
+ * v1.7.0 Story 2.1 review fix (LOW): comment was previously misleading — values below
+ * are HSL components (e.g. `0 0% 93%`), not RGB tuples. They are consumed by
+ * tailwind.config.ts via `hsl(var(--color-…))` pattern. Where rgba() opacity is
+ * needed, the rgba(var(--brand-…), <alpha>) pattern uses RGB tuples declared
+ * separately in /public/themes/bonbeauty.css (--brand-*) — see bb-surfaces.css.
  *
- * Token format: HSL components only (e.g. `220 15% 96%`) so consumers can
- * compose with `hsl(var(--color-name) / <alpha>)` for opacity variants.
- *
- * Contract enforced by `_grow/tools/validate_design_tokens.py`.
+ * Contract enforced by `_grow/tools/validate_design_tokens.py` (UX-DR15 + UX-DR17).
+ * BonBeauty DS boundary enforced by `_grow/tools/validate_ux_state_and_ds_boundary.py`.
+ * Architecture decision ARCH-007: BonBeauty DS is customer-facing storefront only.
  */
 
 :root {
   /* ------------------------------------------------------------------ */
-  /* Neutral palette — 95% interface surface (per UX spec §Color System) */
+  /* Neutral palette — 95% interface surface                            */
+  /* Source: colors_and_type.css Layer 1 (Mercur stock)                 */
+  /* Tailwind: bg-gp-neutral-* via hsl(var(--color-neutral-*))         */
   /* ------------------------------------------------------------------ */
-  --color-neutral-0:    0 0% 100%;
-  --color-neutral-50:   220 15% 98%;
-  --color-neutral-100:  220 14% 96%;
-  --color-neutral-200:  220 13% 91%;
-  --color-neutral-300:  220 13% 80%;
-  --color-neutral-400:  220 9% 64%;
-  --color-neutral-500:  220 9% 46%;
-  --color-neutral-600:  220 13% 35%;
-  --color-neutral-700:  220 18% 22%;
-  --color-neutral-800:  220 22% 14%;
-  --color-neutral-900:  220 24% 9%;
-  --color-neutral-1000: 0 0% 0%;
+  --color-neutral-0:    0 0% 100%;      /* rgb(255,255,255) */
+  --color-neutral-50:   0 0% 93%;       /* rgb(238,238,238) */
+  --color-neutral-100:  0 0% 89%;       /* rgb(226,226,226) */
+  --color-neutral-200:  0 0% 78%;       /* rgb(198,198,198) */
+  --color-neutral-300:  0 0% 64%;       /* rgb(163,163,163) */
+  --color-neutral-400:  0 0% 45%;       /* rgb(115,115,115) */
+  --color-neutral-500:  0 0% 32%;       /* rgb(82,82,82)    */
+  --color-neutral-600:  0 0% 25%;       /* rgb(64,64,64)    */
+  --color-neutral-700:  0 0% 15%;       /* rgb(38,38,38)    */
+  --color-neutral-800:  0 0% 11%;       /* rgb(27,27,27)    */
+  --color-neutral-900:  0 0% 9%;        /* rgb(22,22,22)    */
+  --color-neutral-1000: 0 0% 4%;        /* rgb(9,9,9)       */
 
   /* ------------------------------------------------------------------ */
-  /* Accent — gold (5% interface; brand finalize Sprint Week 0)         */
+  /* Accent — BonBeauty warm gold brand palette                         */
+  /* Source: bonbeauty.css Layer 2a (--brand-25…--brand-900)            */
+  /* Tailwind: bg-gp-accent-* via hsl(var(--color-accent-*))           */
+  /* Primary brand gold: #C5A059 (brand-400) — 5% interface accent      */
+  /* brand-900 = #1A1A1A action dark — WCAG AAA 16.42:1 vs brand-25     */
   /* ------------------------------------------------------------------ */
-  --color-accent-50:  43 100% 96%;
-  --color-accent-100: 43 96% 89%;
-  --color-accent-300: 41 88% 64%;
-  --color-accent-500: 38 92% 50%;
-  --color-accent-700: 32 81% 39%;
-  --color-accent-900: 26 74% 24%;
+  --color-accent-50:  39 64% 92%;       /* brand-25 #FAF8F5 — warm cream   */
+  --color-accent-100: 39 58% 84%;       /* brand-100 #EFE5D2 — gold-light  */
+  --color-accent-300: 39 50% 67%;       /* brand-300 #D5BA86               */
+  --color-accent-500: 39 52% 51%;       /* brand-400 #C5A059 — primary gold */
+  --color-accent-700: 34 46% 33%;       /* brand-600 #907032 — CTA bg, AA 4.62:1 vs white */
+  --color-accent-900: 0 0% 10%;         /* brand-900 #1A1A1A — action dark  */
 
   /* ------------------------------------------------------------------ */
   /* Semantic 4-channel (success / warning / error / info)              */
-  /* Calibrated for AAA contrast on neutral-50 background.              */
+  /* Source: colors_and_type.css Layer 1 (Mercur stock green/red/yellow/blue) */
+  /* Calibrated for AA contrast on BonBeauty page-bg (#F9F4EC).         */
+  /* Gold MUST NOT replace these channels (UX spec §Accessibility).      */
   /* ------------------------------------------------------------------ */
 
-  /* success — muted green (settlement complete, voucher claimed) */
-  --color-success-50:  142 76% 96%;
-  --color-success-500: 142 60% 38%;
-  --color-success-700: 142 64% 24%;
+  /* success — BonBeauty verified trust green (green-700 #166534) */
+  --color-success-50:  142 76% 96%;     /* green-25 #EFFDEE */
+  --color-success-500: 142 60% 38%;     /* green-500 #17A34A */
+  --color-success-700: 142 64% 24%;     /* green-700 #166534, AA 6.5:1 ✅ */
 
   /* warning — muted amber (PAUSED flag, withdrawal pre-confirm) */
-  --color-warning-50:  43 100% 96%;
-  --color-warning-500: 38 88% 50%;
-  --color-warning-700: 32 81% 32%;
+  --color-warning-50:  43 100% 96%;     /* yellow-25 #FFFBED */
+  --color-warning-500: 38 88% 50%;      /* yellow-500 #F79009 */
+  --color-warning-700: 32 81% 32%;      /* yellow-700 #9D530F */
 
-  /* error — muted red (NIE marketing red; SC-2 calm closure register) */
-  --color-error-50:  0 86% 97%;
-  --color-error-500: 0 72% 50%;
-  --color-error-700: 0 70% 35%;
+  /* error — BonBeauty calm closure red (red-600 #BB251A) */
+  --color-error-50:  0 86% 97%;         /* red-25 #FEF3F2 */
+  --color-error-500: 0 72% 50%;         /* red-500 #D92D20 */
+  --color-error-700: 0 70% 35%;         /* red-600 #BB251A, AA 5.7:1 ✅ */
 
   /* info — cool neutral (audit log, retention timer) */
-  --color-info-50:  214 100% 97%;
-  --color-info-500: 214 84% 56%;
-  --color-info-700: 214 88% 36%;
+  --color-info-50:  214 100% 97%;       /* blue-25 #F5FAFF */
+  --color-info-500: 214 84% 56%;        /* blue-500 #4DA0FF */
+  --color-info-700: 214 88% 36%;        /* blue-700 #0C66CC */
 
   /* ------------------------------------------------------------------ */
   /* Flag state ternary tokens (AC-FLAG-STATE-TERNARY-VISUAL-01)        */
   /* MUST be visually distinct beyond color (icon + pattern reinforce). */
+  /* Gold accent MUST NOT be used here — semantic channels only.        */
   /* ------------------------------------------------------------------ */
   --color-flag-active-bg:    var(--color-success-50);
   --color-flag-active-fg:    var(--color-success-700);

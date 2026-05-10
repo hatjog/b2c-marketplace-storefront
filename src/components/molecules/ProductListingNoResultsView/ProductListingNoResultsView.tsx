@@ -1,15 +1,27 @@
 import { useTranslations } from 'next-intl';
 
+import { StateCard } from '@/components/molecules/StateCard/StateCard';
+
+/**
+ * ProductListingNoResultsView — empty results state for product listing pages.
+ *
+ * v1.7.0 Story 2.1 review fix (MEDIUM): migrated to the new StateCard primitive
+ * so we have at least one shipping consumer of StateCard. Uses the empty
+ * variant (role="region") per Story 0.9 contract — no error/failure masking.
+ */
 const ProductListingNoResultsView = () => {
   const t = useTranslations('products');
 
   return (
     <div
-      className="my-10 w-full text-center"
+      className="my-10 w-full"
       data-testid="product-listing-no-results-view"
     >
-      <h2 className="heading-lg uppercase text-primary">{t('no_results')}</h2>
-      <p className="mt-4 text-lg">{t('no_results_description')}</p>
+      <StateCard
+        variant="empty"
+        title={t('no_results')}
+        description={t('no_results_description')}
+      />
     </div>
   );
 };

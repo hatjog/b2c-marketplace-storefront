@@ -1,44 +1,67 @@
 /**
- * v1.5.0 Design Tokens — Typography (Display/Heading/Body 8-step scale)
+ * v1.7.0 Design Tokens — Typography (BonBeauty Funnel Display + Inter/JetBrains Mono)
  *
- * Source of truth: _bmad-output/planning-artifacts/ux-design-specification.md
- *   §Typography System (8-step modular scale candidate)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/colors_and_type.css
+ *   (Layer 2b — type families: --font-display, --font-body, --font-mono, --font-ops)
+ *   (Font @font-face: Funnel Display variable font — customer-facing brand face)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/public/themes/bonbeauty.css
+ *   (--font-display: 'Funnel Display' — brand token for storefront)
  *
- * Type families are STUBS — Robert finalizes Sprint Week 0 from candidates
- * (Lora / Playfair Display / Cormorant Garamond / etc.). Body sans-serif
- * candidate: Inter (Sally recommendation).
+ * SCOPE NOTE: Funnel Display is customer-facing storefront ONLY (ARCH-007).
+ *   Admin/vendor/operator panels MUST use --font-ops (Inter) — never Funnel Display.
+ *   GP CLI and backend MUST NOT import these tokens.
  *
- * PL i18n stress-test mandate (CONV-1): all sizes validated z PL sample
- * copy ("to jest TWÓJ voucher", "Salon Marta — Warszawa", PL longer-than-EN
- * ~20-30%).
+ * RUNTIME: layout.tsx loads Funnel Display via next/font/google into --font-funnel-sans.
+ *   The --font-family-display token below mirrors the brand font token for consistency.
+ *   next/font injects the @font-face automatically; no duplication needed here.
+ *
+ * Contract enforced by `_grow/tools/validate_design_tokens.py` (UX-DR15 + UX-DR17).
  */
 
 :root {
-  /* Font families — STUB; Robert Sprint Week 0 bundle finalization */
-  --font-family-serif:     'Lora', 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-family-sans:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  /* ------------------------------------------------------------------
+   * Font families
+   * Funnel Display is the brand face for customer-facing storefront.
+   * Source: colors_and_type.css Layer 2b --font-display, --font-body
+   * next/font variable: --font-funnel-sans (injected by layout.tsx)
+   * ------------------------------------------------------------------ */
+  --font-family-display: 'Funnel Display', var(--font-funnel-sans, system-ui), -apple-system, 'Segoe UI', sans-serif;
+  --font-family-sans:    'Funnel Display', var(--font-funnel-sans, system-ui), -apple-system, 'Segoe UI', sans-serif;
   --font-family-monospace: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* v1.7.0 Story 2.1 review fix (LOW): operational surface fonts (Inter etc.) live in
+     admin/vendor/operator workspaces, NOT in this storefront token file. The previous
+     comment alluded to a `--font-family-ops` here, which would breach ARCH-007 DS scope. */
 
-  /* Font sizes — 8-step modular scale */
-  --font-size-display-1: 3rem;    /* 48px — recipient claim moment hero */
-  --font-size-display-2: 2.25rem; /* 36px — buyer pre-add-to-cart vendor identity */
-  --font-size-h1:        1.875rem;/* 30px — page title */
-  --font-size-h2:        1.5rem;  /* 24px — section title */
-  --font-size-h3:        1.25rem; /* 20px — sub-section title */
-  --font-size-h4:        1.125rem;/* 18px — card title */
-  --font-size-body:      1rem;    /* 16px — default body text */
-  --font-size-body-sm:   0.875rem;/* 14px — captions, audit log timestamps */
+  /* ------------------------------------------------------------------
+   * Font sizes — BonBeauty 8-step modular scale
+   * Source: colors_and_type.css type scale + globals.css heading scale
+   * PL i18n stress-test mandate (CONV-1): sizes validated with PL copy
+   * ------------------------------------------------------------------ */
+  --font-size-display-1: 3.5rem;    /* 56px — hero / claim moment (display-sm) */
+  --font-size-display-2: 4rem;      /* 64px — display-md (rare, flagship hero)  */
+  --font-size-h1:        2.5rem;    /* 40px — heading-xl, page hero title       */
+  --font-size-h2:        2rem;      /* 32px — heading-lg, section title         */
+  --font-size-h3:        1.5rem;    /* 24px — heading-md, subsection            */
+  --font-size-h4:        1rem;      /* 16px — heading-sm, card label            */
+  --font-size-body:      0.875rem;  /* 14px — text-md, default body (BB spec)   */
+  --font-size-body-sm:   0.75rem;   /* 12px — text-sm, captions, meta           */
 
-  /* Font weights */
+  /* ------------------------------------------------------------------
+   * Font weights — BonBeauty scale (Funnel Display variable font)
+   * Source: colors_and_type.css @font-face font-weight: 300 800
+   * ------------------------------------------------------------------ */
   --font-weight-light:    300;
   --font-weight-regular:  400;
   --font-weight-medium:   500;
   --font-weight-semibold: 600;
   --font-weight-bold:     700;
 
-  /* Line heights */
-  --line-height-display: 1.2;  /* Display 1 → H4 (1.2-1.3 range) */
-  --line-height-heading: 1.3;  /* Tight headings */
-  --line-height-body:    1.6;  /* Body Default + Body Small (1.5-1.7) */
-  --line-height-caption: 1.4;  /* Captions */
+  /* ------------------------------------------------------------------
+   * Line heights — BonBeauty spec
+   * Source: colors_and_type.css type scale
+   * ------------------------------------------------------------------ */
+  --line-height-display: 1.14;  /* 64px/72px → 1.125 for display-md */
+  --line-height-heading: 1.2;   /* heading-xl 40/48 → 1.2            */
+  --line-height-body:    1.57;  /* text-md 14/22px → 1.57            */
+  --line-height-caption: 1.5;   /* text-sm 12/18px → 1.5             */
 }

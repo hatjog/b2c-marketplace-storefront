@@ -1,3 +1,12 @@
+/**
+ * Chip — BonBeauty DS foundational atom.
+ *
+ * v1.7.0 Story 2.1: Replaced raw hover:bg-gray-200 with token-bound
+ * hover:bg-component-secondary (--bg-component-secondary via colors.css).
+ * All hover/active/disabled states now use design token vars.
+ *
+ * ARCH-007: BonBeauty DS customer-facing storefront only.
+ */
 import { cn } from '@/lib/utils';
 
 interface ChipProps {
@@ -21,7 +30,8 @@ export function Chip({
 }: ChipProps) {
   const baseClasses = 'chip-wrapper';
   const selectedClasses = selected ? 'border-primary' : '';
-  const hoverClasses = !disabled && !selected ? 'hover:bg-gray-200' : '';
+  // v1.7.0: replaced raw hover:bg-gray-200 → token-bound bg-component-secondary-hover
+  const hoverClasses = !disabled && !selected ? 'hover:bg-component-secondary' : '';
   const disabledClasses = disabled
     ? 'bg-component border-disabled/50 hover:bg-component cursor-not-allowed text-disabled'
     : 'cursor-pointer';

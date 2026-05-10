@@ -1,12 +1,32 @@
 /**
- * v1.5.0 Design Tokens — Aggregator
+ * v1.7.0 Design Tokens — Aggregator
  *
  * Single import surface for all token primitives. Imported once from
  * `src/app/globals.css` so Tailwind's `extend` hooks (in
  * `tailwind.config.ts`) can resolve `var(--token-*)` references at build time.
+ *
+ * Load order (stock → brand → v1.4.0 deltas):
+ *   1. colors.css        — gp-* neutral/accent/semantic RGB palette tokens
+ *   2. spacing.css       — 8px base scale space tokens
+ *   3. typography.css    — Funnel Display + type scale tokens
+ *   4. radii.css         — --radius-* + --bb-radius-* tokens
+ *   5. bb-surfaces.css   — --bb-* surface tokens (page-bg, surfaces, shadows,
+ *                          gradients, text/CTA/gold semantic aliases)
+ *
+ * The brand override layer (/public/themes/bonbeauty.css) is loaded AFTER
+ * this bundle via layout.tsx <link> tag, winning over any defaults here.
+ * This preserves: v1.4.0 deltas > brand layer > stock (ARCH-007).
+ *
+ * Source provenance:
+ *   colors.css      → colors_and_type.css Layer 1+2a
+ *   spacing.css     → colors_and_type.css Layer 2b spacing scale
+ *   typography.css  → colors_and_type.css Layer 2b font families + bonbeauty.css
+ *   radii.css       → colors_and_type.css Layer 2b + bonbeauty.css --bb-radius-*
+ *   bb-surfaces.css → bonbeauty.css + computed-tokens.json --bb-* surfaces
  */
 
 @import "./colors.css";
 @import "./spacing.css";
 @import "./typography.css";
 @import "./radii.css";
+@import "./bb-surfaces.css";
