@@ -23,6 +23,9 @@
  *   `RecipientPausePathToggle` / `VoucherIdleClaimSection` / `VoucherAuditTrail`.
  *   Do NOT conflate the two lifecycles in copy or DOM signals.
  *
+ * Token policy (review fix H1): all colors bind to existing storefront tokens
+ *   declared in `src/styles/tokens/bb-surfaces.css`. No invented `--bb-*` names.
+ *
  * @see FR64 (prd.md line 933); Story 2.9 AC1/AC3
  */
 
@@ -41,45 +44,64 @@ export interface VoucherWithdrawalStateCardProps {
 }
 
 /**
- * Maps an FR64 state token to the BonBeauty token-based visual variant.
- * Variants: "eligible" (neutral), "consent" (info), "blocked" (warning),
- * "refunded" (success), "support" (error — requires attention).
+ * Maps an FR64 state token to BonBeauty token-bound visual hints.
+ * Variants reuse storefront semantic colors (--color-error, --color-warning,
+ * --color-trust, --accent, --text-secondary) and BonBeauty surfaces
+ * (--bb-surface, --bb-surface-muted, --bb-icon-bg-*). No invented tokens.
  */
-function getVariantClasses(state: WithdrawalStateResult['state']): {
-  shell: string;
-  icon: string;
-  badge: string;
+function getVariantStyles(state: WithdrawalStateResult['state']): {
+  borderColor: string;
+  background: string;
+  iconColor: string;
+  iconChar: string;
+  badgeColor: string;
+  badgeBackground: string;
 } {
   switch (state) {
     case 'withdrawal-eligible-before-service-execution':
       return {
-        shell: 'border-[color:var(--bb-border,#D9D7D3)] bg-[color:var(--bb-surface-subtle,rgba(255,252,247,0.8))]',
-        icon: '○',
-        badge: 'bg-[color:var(--bb-info-subtle,#E8F4FD)] text-[color:var(--bb-info,#1A6FA3)]',
+        borderColor: 'var(--bb-border-soft)',
+        background: 'var(--bb-surface)',
+        iconColor: 'var(--text-secondary)',
+        iconChar: '○',
+        badgeColor: 'var(--text-secondary)',
+        badgeBackground: 'var(--bb-surface-muted)',
       };
     case 'consent-to-execute-captured':
       return {
-        shell: 'border-[color:var(--bb-accent,#B8A99A)] bg-[color:var(--bb-surface-warm,rgba(248,244,238,0.9))]',
-        icon: '◎',
-        badge: 'bg-[color:var(--bb-accent-subtle,#F5EFE8)] text-[color:var(--bb-text-secondary,#7A7672)]',
+        borderColor: 'var(--accent)',
+        background: 'var(--bb-surface-strong)',
+        iconColor: 'var(--accent)',
+        iconChar: '◎',
+        badgeColor: 'var(--text-secondary)',
+        badgeBackground: 'var(--bb-skeleton-base)',
       };
     case 'withdrawal-blocked-after-execution':
       return {
-        shell: 'border-[color:var(--bb-warn,#C4933F)] bg-[color:var(--bb-warn-subtle,#FDF6E8)]',
-        icon: '●',
-        badge: 'bg-[color:var(--bb-warn-subtle,#FDF6E8)] text-[color:var(--bb-warn,#C4933F)]',
+        borderColor: 'var(--color-warning)',
+        background: 'var(--bb-icon-bg-unavailable)',
+        iconColor: 'var(--color-warning)',
+        iconChar: '●',
+        badgeColor: 'var(--color-warning)',
+        badgeBackground: 'var(--bb-icon-bg-unavailable)',
       };
     case 'refunded':
       return {
-        shell: 'border-[color:var(--bb-success,#3F8B5A)] bg-[color:var(--bb-success-subtle,#EDF7F1)]',
-        icon: '✓',
-        badge: 'bg-[color:var(--bb-success-subtle,#EDF7F1)] text-[color:var(--bb-success,#3F8B5A)]',
+        borderColor: 'var(--color-trust)',
+        background: 'var(--bb-surface)',
+        iconColor: 'var(--color-trust)',
+        iconChar: '✓',
+        badgeColor: 'var(--color-trust)',
+        badgeBackground: 'var(--bb-surface)',
       };
     case 'support-review':
       return {
-        shell: 'border-[color:var(--bb-error,#C4453F)] bg-[color:var(--bb-error-subtle,#FEF0EF)]',
-        icon: '!',
-        badge: 'bg-[color:var(--bb-error-subtle,#FEF0EF)] text-[color:var(--bb-error,#C4453F)]',
+        borderColor: 'var(--color-error)',
+        background: 'var(--bb-icon-bg-error)',
+        iconColor: 'var(--color-error)',
+        iconChar: '!',
+        badgeColor: 'var(--color-error)',
+        badgeBackground: 'var(--bb-icon-bg-error)',
       };
   }
 }
@@ -104,8 +126,9 @@ export async function VoucherWithdrawalStateCard({
   const label = t(`${keyPrefix}.label`);
   const description = t(`${keyPrefix}.description`);
   const nextAction = t(`${keyPrefix}.next_action`);
+  const blockedLabel = t('cta_blocked_label');
   const isBlocked = ctaBlocked || action_blocked;
-  const variant = getVariantClasses(state);
+  const variant = getVariantStyles(state);
 
   return (
     <section
@@ -116,7 +139,11 @@ export async function VoucherWithdrawalStateCard({
       data-freshness={freshness}
     >
       <div
-        className={`bb-section-shell rounded-md border px-4 py-4 ${variant.shell}`}
+        className="bb-section-shell rounded-md border px-4 py-4"
+        style={{
+          borderColor: variant.borderColor,
+          background: variant.background,
+        }}
         role="status"
         aria-live="polite"
         aria-atomic="true"
@@ -124,13 +151,15 @@ export async function VoucherWithdrawalStateCard({
         {/* Badge row */}
         <div className="mb-2 flex items-center gap-2">
           <span
-            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${variant.badge}`}
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold"
+            style={{ background: variant.badgeBackground, color: variant.iconColor }}
             aria-hidden="true"
           >
-            {variant.icon}
+            {variant.iconChar}
           </span>
           <span
-            className={`rounded px-2 py-0.5 text-xs font-semibold ${variant.badge}`}
+            className="rounded px-2 py-0.5 text-xs font-semibold"
+            style={{ background: variant.badgeBackground, color: variant.badgeColor }}
             data-testid={`withdrawal-state-badge-${state}`}
           >
             {label}
@@ -140,30 +169,42 @@ export async function VoucherWithdrawalStateCard({
         {/* Description */}
         <p
           className="mb-2 text-sm leading-relaxed"
-          style={{ color: 'var(--bb-text-secondary, #7A7672)', fontFamily: 'Inter, sans-serif' }}
+          style={{ color: 'var(--text-secondary)', fontFamily: 'Inter, sans-serif' }}
         >
           {description}
         </p>
 
-        {/* Next action (UX-DR18: one recommended next action) */}
-        <p
-          className="text-sm font-medium"
-          style={{ color: 'var(--bb-text-primary, #1A1A1A)', fontFamily: 'Inter, sans-serif' }}
-          data-testid="withdrawal-next-action"
-        >
-          {nextAction}
-        </p>
-
-        {/* Blocked CTA indicator for release-critical surfaces (AC3) */}
-        {isBlocked && (
-          <div
-            className="mt-3 rounded border border-current px-3 py-2 text-xs"
-            role="alert"
-            aria-live="assertive"
-            data-testid="withdrawal-cta-blocked-indicator"
-            style={{ color: 'var(--bb-error, #C4453F)', borderColor: 'var(--bb-error, #C4453F)', background: 'var(--bb-error-subtle, #FEF0EF)' }}
+        {/* Next action (UX-DR18: exactly one recommended next action).
+            Review fix M1: hidden when CTA is blocked so the alert below
+            holds the SOLE next-action surface — no double-rendering. */}
+        {!isBlocked && (
+          <p
+            className="text-sm font-medium"
+            style={{ color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif' }}
+            data-testid="withdrawal-next-action"
           >
             {nextAction}
+          </p>
+        )}
+
+        {/* Blocked CTA indicator for release-critical surfaces (AC3).
+            Review fix L1: rely on role="alert" implicit aria-live="assertive";
+            no explicit duplicate aria-live attribute. */}
+        {isBlocked && (
+          <div
+            className="mt-3 rounded border px-3 py-2 text-xs"
+            role="alert"
+            data-testid="withdrawal-cta-blocked-indicator"
+            style={{
+              color: 'var(--color-error)',
+              borderColor: 'var(--color-error)',
+              background: 'var(--bb-icon-bg-error)',
+            }}
+          >
+            <strong style={{ display: 'block', marginBottom: '0.25rem' }}>
+              {blockedLabel}
+            </strong>
+            <span data-testid="withdrawal-next-action">{nextAction}</span>
           </div>
         )}
       </div>

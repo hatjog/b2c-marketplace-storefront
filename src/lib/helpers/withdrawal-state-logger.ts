@@ -30,13 +30,25 @@
 import type { WithdrawalStateResult } from '@/types/voucher';
 import { logger } from '@/lib/logger';
 
-export type WithdrawalSurface =
-  | 'checkout'
-  | 'confirmation-handoff'
-  | 'voucher-recovery'
-  | 'voucher-card'
-  | 'legal-help'
-  | 'unknown';
+/**
+ * Allowed values for the `surface` field in the structured log payload.
+ *
+ * Review fix L2: keep this list in sync with the story Dev Notes
+ * "Epic 7 Signal Contract" and `WITHDRAWAL_SURFACES` below; a unit test
+ * asserts equality.
+ *
+ * @see _bmad-output/releases/v1.7.0/implementation-artifacts/2-9-storefront-legal-help-and-withdrawal-states.md
+ */
+export const WITHDRAWAL_SURFACES = [
+  'checkout',
+  'confirmation-handoff',
+  'voucher-recovery',
+  'voucher-card',
+  'legal-help',
+  'unknown',
+] as const;
+
+export type WithdrawalSurface = (typeof WITHDRAWAL_SURFACES)[number];
 
 /**
  * Emit a structured log line for FR64 withdrawal state evaluation.
@@ -52,9 +64,10 @@ export function logWithdrawalStateEvaluated(
   surface: WithdrawalSurface = 'unknown'
 ): void {
   try {
-    const level = result.action_blocked ? 'warn' : 'warn';
-    logger[level]('voucher_withdrawal_state.evaluated', {
-      source: 'storefront',
+    // Review fix H4: blocked evaluations escalate to `error` so Epic 7 log
+    // gates can filter on severity. Unblocked emits at `warn` level.
+    const payload = {
+      source: 'storefront' as const,
       context: {
         state: result.state,
         market_id: result.market_id,
@@ -62,7 +75,12 @@ export function logWithdrawalStateEvaluated(
         action_blocked: result.action_blocked,
         surface,
       },
-    });
+    };
+    if (result.action_blocked) {
+      logger.error('voucher_withdrawal_state.evaluated', payload);
+    } else {
+      logger.warn('voucher_withdrawal_state.evaluated', payload);
+    }
   } catch {
     // Swallow — log emission must never break the render path.
   }

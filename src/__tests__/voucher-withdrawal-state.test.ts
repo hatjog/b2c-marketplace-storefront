@@ -16,7 +16,10 @@
  *   AC-2.9-3 — Missing state → support-review + blocked CTA; DOM signal present
  */
 
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { describe, expect, it, vi } from 'vitest';
 import {
   getWithdrawalState,
   isWithdrawalCriticalActionBlocked,
@@ -202,6 +205,31 @@ describe('isWithdrawalCriticalActionBlocked', () => {
   });
 });
 
+describe('getWithdrawalState — wrong-market guard (review fix H2)', () => {
+  it('returns support-review when market_id is empty string (AC3 wrong-market)', () => {
+    const result = getWithdrawalState({ market_id: '' });
+    expect(result.state).toBe('support-review');
+    expect(result.action_blocked).toBe(true);
+    expect(result.freshness).toBe('missing');
+  });
+
+  it('returns support-review when getMarketId() falls back to empty (no env)', () => {
+    // No market_id provided + dev fallback (NEXT_PUBLIC_PAYLOAD_MARKET_ID unset)
+    // would resolve to "" — must NOT return eligible state.
+    vi.stubEnv('NEXT_PUBLIC_PAYLOAD_MARKET_ID', '');
+    const result = getWithdrawalState({});
+    expect(result.state).toBe('support-review');
+    expect(result.action_blocked).toBe(true);
+    vi.unstubAllEnvs();
+  });
+
+  it('does NOT block when market_id is provided non-empty', () => {
+    const result = getWithdrawalState({ market_id: 'bonbeauty-pl' });
+    expect(result.state).toBe('withdrawal-eligible-before-service-execution');
+    expect(result.action_blocked).toBe(false);
+  });
+});
+
 describe('FR64 state tokens — i18n key mapping contract', () => {
   /**
    * This test asserts that every FR64 state token has a corresponding
@@ -233,4 +261,122 @@ describe('FR64 state tokens — i18n key mapping contract', () => {
       expect(derived).toBe(expectedKey);
     });
   }
+});
+
+describe('voucher_withdrawal i18n — status_token parity across locales (review fix M5)', () => {
+  /**
+   * Each locale's `voucher_withdrawal.state_*.status_token` MUST equal the
+   * canonical kebab-case FR64 token. This guards against silent locale drift
+   * where a translator could change the token value to a localized string.
+   */
+  const expectedTokens: Record<string, string> = {
+    state_withdrawal_eligible_before_service_execution: 'withdrawal-eligible-before-service-execution',
+    state_consent_to_execute_captured: 'consent-to-execute-captured',
+    state_withdrawal_blocked_after_execution: 'withdrawal-blocked-after-execution',
+    state_refunded: 'refunded',
+    state_support_review: 'support-review',
+  };
+
+  for (const locale of ['pl', 'en', 'ua', 'de'] as const) {
+    it(`${locale}.json status_token values match canonical FR64 tokens`, () => {
+      const path = join(process.cwd(), 'messages', `${locale}.json`);
+      const raw = readFileSync(path, 'utf-8');
+      const data = JSON.parse(raw) as {
+        voucher_withdrawal?: Record<string, { status_token?: string }>;
+      };
+      const vw = data.voucher_withdrawal ?? {};
+      for (const [key, expected] of Object.entries(expectedTokens)) {
+        expect(vw[key]?.status_token, `${locale} ${key}.status_token`).toBe(expected);
+      }
+    });
+  }
+});
+
+describe('logWithdrawalStateEvaluated — level escalation (review fix H4)', () => {
+  it('escalates to logger.error when action_blocked=true', async () => {
+    vi.resetModules();
+    const errorSpy = vi.fn();
+    const warnSpy = vi.fn();
+    vi.doMock('@/lib/logger', () => ({
+      logger: { error: errorSpy, warn: warnSpy },
+    }));
+    const { logWithdrawalStateEvaluated } = await import(
+      '@/lib/helpers/withdrawal-state-logger'
+    );
+    logWithdrawalStateEvaluated(
+      {
+        state: 'support-review',
+        market_id: 'bonbeauty-pl',
+        freshness: 'missing',
+        action_blocked: true,
+      },
+      'checkout'
+    );
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
+    vi.doUnmock('@/lib/logger');
+    vi.resetModules();
+  });
+
+  it('emits logger.warn when action_blocked=false', async () => {
+    vi.resetModules();
+    const errorSpy = vi.fn();
+    const warnSpy = vi.fn();
+    vi.doMock('@/lib/logger', () => ({
+      logger: { error: errorSpy, warn: warnSpy },
+    }));
+    const { logWithdrawalStateEvaluated } = await import(
+      '@/lib/helpers/withdrawal-state-logger'
+    );
+    logWithdrawalStateEvaluated(
+      {
+        state: 'withdrawal-eligible-before-service-execution',
+        market_id: 'bonbeauty-pl',
+        freshness: 'current',
+        action_blocked: false,
+      },
+      'voucher-card'
+    );
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+    vi.doUnmock('@/lib/logger');
+    vi.resetModules();
+  });
+});
+
+describe('WITHDRAWAL_SURFACES — story Dev Notes contract (review fix L2)', () => {
+  it('exposes exactly the documented surface tokens', async () => {
+    const { WITHDRAWAL_SURFACES } = await import(
+      '@/lib/helpers/withdrawal-state-logger'
+    );
+    expect(WITHDRAWAL_SURFACES).toEqual([
+      'checkout',
+      'confirmation-handoff',
+      'voucher-recovery',
+      'voucher-card',
+      'legal-help',
+      'unknown',
+    ]);
+  });
+});
+
+describe('Deferred backing-data documentation (review fix M5)', () => {
+  /**
+   * Mercur 2 voucher payload does not yet expose `consent_to_execute_captured`,
+   * `service_executed_at`, `refunded_at`. The helper handles the gap by
+   * conservatively defaulting (no silent progression to refunded/blocked
+   * states based on side-channel inference). This test guards the deferral
+   * documentation in the helper module so it is not silently removed.
+   *
+   * FOLLOWUP: when Story 6.x or Epic 7 wires the backing fields, remove this
+   * test and replace with positive-flow tests against real payloads.
+   */
+  it('helper module JSDoc explicitly lists deferred backing-data fields', () => {
+    const path = join(process.cwd(), 'src', 'lib', 'helpers', 'withdrawal-state.ts');
+    const text = readFileSync(path, 'utf-8');
+    expect(text).toMatch(/Deferred backing-data work/);
+    expect(text).toMatch(/consent_to_execute_captured/);
+    expect(text).toMatch(/service_executed_at/);
+    expect(text).toMatch(/refunded_at/);
+  });
 });

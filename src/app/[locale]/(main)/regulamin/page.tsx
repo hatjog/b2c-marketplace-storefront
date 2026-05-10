@@ -34,7 +34,7 @@ export default async function RegulaminPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 300,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '0.5rem'
             }}
           >
@@ -47,7 +47,7 @@ export default async function RegulaminPage() {
             fontFamily: 'Inter, sans-serif',
             fontSize: '1rem',
             lineHeight: 1.6,
-            color: 'var(--bb-text-primary, #1A1A1A)'
+            color: 'var(--text-primary)'
           }}
         >
           <p
@@ -55,20 +55,20 @@ export default async function RegulaminPage() {
               fontSize: '1.125rem',
               fontWeight: 500,
               marginBottom: '1rem',
-              color: 'var(--bb-text-primary, #1A1A1A)'
+              color: 'var(--text-primary)'
             }}
           >
             {t('coming_soon')}
           </p>
 
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', marginBottom: '1.5rem' }}>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
             {t('coming_soon_description')}
           </p>
 
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', marginBottom: '2.5rem' }}>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem' }}>
             <a
               href={`mailto:${t('contact_email')}`}
-              style={{ color: 'var(--bb-text-primary, #1A1A1A)', textDecoration: 'underline' }}
+              style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}
             >
               {t('contact_email')}
             </a>
@@ -79,7 +79,7 @@ export default async function RegulaminPage() {
         <section
           aria-labelledby="regulamin-withdrawal-heading"
           data-testid="regulamin-withdrawal-section"
-          style={{ marginTop: '2.5rem', borderTop: '1px solid var(--bb-border, #D9D7D3)', paddingTop: '2rem' }}
+          style={{ marginTop: '2.5rem', borderTop: '1px solid var(--bb-border-soft)', paddingTop: '2rem' }}
         >
           <h2
             id="regulamin-withdrawal-heading"
@@ -87,26 +87,26 @@ export default async function RegulaminPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '1rem',
             }}
           >
             {tW('legal.section_title')}
           </h2>
 
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6, marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
             {tW('legal.intro')}
           </p>
 
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6, marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
             {tW('legal.window_body')}
           </p>
 
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6, marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
             {tW('legal.consent_body')}
           </p>
 
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
             {tW('legal.refund_body')}
           </p>
 
@@ -116,7 +116,7 @@ export default async function RegulaminPage() {
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.875rem',
               fontWeight: 600,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '0.5rem',
             }}
           >
@@ -126,7 +126,7 @@ export default async function RegulaminPage() {
             aria-label={tW('legal.five_states_title')}
             style={{
               paddingLeft: '1.5rem',
-              color: 'var(--bb-text-secondary, #7A7672)',
+              color: 'var(--text-secondary)',
               lineHeight: 1.7,
               fontSize: '0.875rem',
               marginBottom: '1.5rem',
@@ -153,7 +153,7 @@ export default async function RegulaminPage() {
             href="/pomoc"
             style={{
               display: 'inline-block',
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               textDecoration: 'underline',
               fontSize: '0.9375rem',
             }}

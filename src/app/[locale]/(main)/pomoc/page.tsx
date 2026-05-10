@@ -11,26 +11,48 @@
  *
  * IMPORTANT: This page covers consumer-purchase withdrawal (FR64) ONLY.
  * RODO Art. 7/17 recipient-PII consent is handled elsewhere.
+ *
+ * Review fixes applied:
+ *   H1 — bind to existing storefront tokens (--text-*, --color-*, --bg-action,
+ *        --bb-surface*, --bb-border-soft); no invented `--bb-*` names.
+ *   H3 — render `VoucherWithdrawalStateCard` so the Epic 7 DOM signal landmark
+ *        exists on a stable, indexable surface.
+ *   M4 — split next-intl handle: `voucher_withdrawal` for `state_*`,
+ *        `voucher_withdrawal.legal` for legal page strings.
+ *   M7 — `generateMetadata` reads from i18n, not hardcoded PL strings.
+ *   L4 — `mailto:` CTA uses Tailwind utility classes + visible focus ring.
  */
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
+import { VoucherWithdrawalStateCard } from '@/components/molecules/VoucherWithdrawalStateCard';
+import { getWithdrawalState } from '@/lib/helpers/withdrawal-state';
+import { logWithdrawalStateEvaluated } from '@/lib/helpers/withdrawal-state-logger';
 
 export const dynamic = 'force-static';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const tWL = await getTranslations('voucher_withdrawal.legal');
   return {
-    title: 'Pomoc — Voucher BonBeauty',
-    description: 'Informacje o prawie odstąpienia od umowy, realizacji voucherów i kontakcie z obsługą BonBeauty.',
+    title: tWL('page_title'),
+    description: tWL('page_description'),
     robots: { index: false, follow: false },
   };
 }
 
 export default async function PomocPage() {
   const t = await getTranslations('voucher_withdrawal');
+  const tWL = await getTranslations('voucher_withdrawal.legal');
   const tLegal = await getTranslations('legal');
+
+  // Review fix H3: render the Epic 7 DOM signal on this stable surface so
+  // validators have a deterministic landmark to assert against. The state is
+  // intentionally derived without any backing voucher data — Mercur 2 payload
+  // gaps are documented in `withdrawal-state.ts`. See FOLLOWUP in Dev Notes.
+  const withdrawalResult = getWithdrawalState({});
+  logWithdrawalStateEvaluated(withdrawalResult, 'legal-help');
 
   const states = [
     {
@@ -68,16 +90,30 @@ export default async function PomocPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 300,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '0.5rem',
             }}
           >
-            Pomoc — voucher BonBeauty
+            {tWL('page_title')}
           </h1>
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', fontSize: '1rem' }}>
-            {t('legal.intro')}
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
+            {tWL('intro')}
           </p>
         </header>
+
+        {/* Epic 7 DOM signal landmark (review fix H3) */}
+        <section
+          aria-labelledby="pomoc-state-signal-heading"
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2
+            id="pomoc-state-signal-heading"
+            className="sr-only"
+          >
+            {tWL('section_title')}
+          </h2>
+          <VoucherWithdrawalStateCard withdrawalResult={withdrawalResult} />
+        </section>
 
         {/* Section 1: Right of withdrawal */}
         <section
@@ -91,11 +127,11 @@ export default async function PomocPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '1rem',
             }}
           >
-            {t('legal.section_title')}
+            {tWL('section_title')}
           </h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -106,14 +142,14 @@ export default async function PomocPage() {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: '1.25rem',
                   fontWeight: 500,
-                  color: 'var(--bb-text-primary, #1A1A1A)',
+                  color: 'var(--text-primary)',
                   marginBottom: '0.5rem',
                 }}
               >
-                {t('legal.window_title')}
+                {tWL('window_title')}
               </h3>
-              <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6 }}>
-                {t('legal.window_body')}
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {tWL('window_body')}
               </p>
             </div>
 
@@ -124,14 +160,14 @@ export default async function PomocPage() {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: '1.25rem',
                   fontWeight: 500,
-                  color: 'var(--bb-text-primary, #1A1A1A)',
+                  color: 'var(--text-primary)',
                   marginBottom: '0.5rem',
                 }}
               >
-                {t('legal.consent_title')}
+                {tWL('consent_title')}
               </h3>
-              <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6 }}>
-                {t('legal.consent_body')}
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {tWL('consent_body')}
               </p>
             </div>
 
@@ -142,14 +178,14 @@ export default async function PomocPage() {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: '1.25rem',
                   fontWeight: 500,
-                  color: 'var(--bb-text-primary, #1A1A1A)',
+                  color: 'var(--text-primary)',
                   marginBottom: '0.5rem',
                 }}
               >
-                {t('legal.post_execution_title')}
+                {tWL('post_execution_title')}
               </h3>
-              <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6 }}>
-                {t('legal.post_execution_body')}
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {tWL('post_execution_body')}
               </p>
             </div>
 
@@ -160,14 +196,14 @@ export default async function PomocPage() {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: '1.25rem',
                   fontWeight: 500,
-                  color: 'var(--bb-text-primary, #1A1A1A)',
+                  color: 'var(--text-primary)',
                   marginBottom: '0.5rem',
                 }}
               >
-                {t('legal.refund_title')}
+                {tWL('refund_title')}
               </h3>
-              <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6 }}>
-                {t('legal.refund_body')}
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {tWL('refund_body')}
               </p>
             </div>
           </div>
@@ -185,26 +221,30 @@ export default async function PomocPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '0.75rem',
             }}
           >
-            {t('legal.five_states_title')}
+            {tWL('five_states_title')}
           </h2>
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', marginBottom: '1rem', lineHeight: 1.6 }}>
-            {t('legal.five_states_intro')}
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
+            {tWL('five_states_intro')}
           </p>
 
           <div
             role="list"
-            aria-label={t('legal.five_states_title')}
+            aria-label={tWL('five_states_title')}
             style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
           >
             {states.map(({ key, token }) => (
               <div
                 key={token}
                 role="listitem"
-                className="bb-section-shell rounded border border-[color:var(--bb-border,#D9D7D3)] bg-[color:var(--bb-surface-subtle,rgba(255,252,247,0.8))] px-4 py-3"
+                className="bb-section-shell rounded px-4 py-3"
+                style={{
+                  borderColor: 'var(--bb-border-soft)',
+                  background: 'var(--bb-surface)',
+                }}
                 data-testid={`withdrawal-state-entry-${token}`}
               >
                 <p
@@ -212,7 +252,7 @@ export default async function PomocPage() {
                     fontFamily: 'Inter, sans-serif',
                     fontSize: '0.875rem',
                     fontWeight: 600,
-                    color: 'var(--bb-text-primary, #1A1A1A)',
+                    color: 'var(--text-primary)',
                     marginBottom: '0.25rem',
                   }}
                 >
@@ -222,7 +262,7 @@ export default async function PomocPage() {
                   style={{
                     fontFamily: 'Inter, sans-serif',
                     fontSize: '0.8125rem',
-                    color: 'var(--bb-text-secondary, #7A7672)',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.5,
                   }}
                 >
@@ -234,9 +274,9 @@ export default async function PomocPage() {
                     marginTop: '0.35rem',
                     fontSize: '0.75rem',
                     padding: '0.1rem 0.4rem',
-                    background: 'var(--bb-surface-code, rgba(0,0,0,0.05))',
+                    background: 'var(--bb-surface-muted)',
                     borderRadius: '3px',
-                    color: 'var(--bb-text-muted, #9A9692)',
+                    color: 'var(--text-muted)',
                     fontFamily: 'monospace',
                   }}
                 >
@@ -259,31 +299,28 @@ export default async function PomocPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
-              color: 'var(--bb-text-primary, #1A1A1A)',
+              color: 'var(--text-primary)',
               marginBottom: '0.75rem',
             }}
           >
-            {t('legal.support_title')}
+            {tWL('support_title')}
           </h2>
-          <p style={{ color: 'var(--bb-text-secondary, #7A7672)', lineHeight: 1.6, marginBottom: '1rem' }}>
-            {t('legal.support_body')}
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
+            {tWL('support_body')}
           </p>
           <a
             href={`mailto:${tLegal('contact_email')}`}
+            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2"
             style={{
-              display: 'inline-block',
-              padding: '0.625rem 1.25rem',
-              background: 'var(--bb-cta, #1A1A1A)',
-              color: 'var(--bb-cta-text, #FFFFFF)',
-              borderRadius: 'var(--bb-radius-sm, 4px)',
+              background: 'var(--bg-action)',
+              color: 'var(--text-on-action)',
+              borderRadius: 'var(--radius-sm)',
               fontFamily: 'Inter, sans-serif',
-              fontSize: '0.9375rem',
-              fontWeight: 500,
               textDecoration: 'none',
             }}
             data-testid="pomoc-contact-cta"
           >
-            {t('legal.contact_support')}
+            {tWL('contact_support')}
           </a>
         </section>
       </article>

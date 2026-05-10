@@ -109,12 +109,24 @@ export function getWithdrawalState(input: VoucherWithdrawalInput = {}): Withdraw
 
   const market_id = inputMarketId ?? getMarketId();
 
-  // Guard: stale or missing state → support-review, action blocked (AC3)
+  // Guard 1: stale or missing freshness → support-review, action blocked (AC3)
   if (freshness === 'stale' || freshness === 'missing') {
     return {
       state: 'support-review',
       market_id,
       freshness,
+      action_blocked: true,
+    };
+  }
+
+  // Guard 2: missing/empty market_id → "wrong-market for the active session"
+  // per AC3 sub-bullet 1. Treated as a non-deterministic state — Epic 7 must
+  // see `freshness: "missing"` and `state: "support-review"`. Review fix H2.
+  if (!market_id) {
+    return {
+      state: 'support-review',
+      market_id: '',
+      freshness: 'missing',
       action_blocked: true,
     };
   }

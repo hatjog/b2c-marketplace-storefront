@@ -822,7 +822,11 @@
         "support": "support-review — stan wymaga weryfikacji przez obsługę"
       },
       "contact_support": "Kontakt z obsługą",
-      "contact_support_href": "/pomoc"
-    }
+      "contact_support_href": "/pomoc",
+      "page_title": "Pomoc — voucher BonBeauty",
+      "page_description": "Informacje o prawie odstąpienia od umowy, realizacji voucherów i kontakcie z obsługą BonBeauty.",
+      "privacy_cross_link_note": "Niniejsza polityka dotyczy danych osobowych (RODO Art. 7/17). Prawo odstąpienia od umowy zakupu vouchera (14 dni, Ustawa o prawach konsumenta) jest osobnym tematem — szczegóły znajdziesz w Regulaminie i na stronie Pomoc."
+    },
+    "cta_blocked_label": "Akcja wstrzymana — wymaga obsługi"
   }
 }
