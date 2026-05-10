@@ -922,7 +922,8 @@
       "body": "Ihre Bestellung wird verifiziert. Dies kann einige Minuten dauern. Bitte schließen Sie Ihren Browser nicht.",
       "cta": "Status jetzt prüfen",
       "secondary_cta": "Support kontaktieren",
-      "checking": "Wird verifiziert..."
+      "checking": "Wird verifiziert...",
+      "extended_wait": "Die Verifizierung dauert länger als gewöhnlich. Wir arbeiten daran. Sie können warten oder den Support kontaktieren."
     },
     "failed": {
       "label": "Zahlung fehlgeschlagen",

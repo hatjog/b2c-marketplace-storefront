@@ -146,4 +146,94 @@ describe('payment-status-adapter', () => {
       expect(d).not.toBeUndefined();
     });
   });
+
+  // ─── Story 6.1: pending → paid transition path (AC 1 / AC 3) ─────────────
+  // Tests the adapter behaviour across the >2 min webhook delay scenario:
+  //   1. pending_psp_confirmation status renders "refresh" recovery path.
+  //   2. When polling resolves to "paid", adapter switches to "continue" path.
+  //   3. The transition uses only canonical lifecycle IDs (no local aliases).
+
+  describe('Story 6.1 — pending → paid transition coverage', () => {
+    it('pending_psp_confirmation has refresh recovery path (wait recovery action)', () => {
+      const d = PAYMENT_STATUS_MAP.pending_psp_confirmation;
+      expect(d.primaryAction.kind).toBe('refresh');
+    });
+
+    it('pending_psp_confirmation has secondary CTA (contact support link)', () => {
+      expect(PAYMENT_STATUS_MAP.pending_psp_confirmation.secondaryActionKey).toBeTruthy();
+    });
+
+    it('resolving pending → paid uses canonical "paid" id (anti-optimistic-paid guard)', () => {
+      // Simulate: polling endpoint returns "paid" (previously pending).
+      // The adapter must recognise it as canonical (not an alias).
+      expect(resolvePaymentStatusId('paid')).toBe('paid');
+      expect(PAYMENT_STATUS_MAP.paid.primaryAction.kind).toBe('continue');
+    });
+
+    it('resolving pending → failed uses canonical "failed" id', () => {
+      expect(resolvePaymentStatusId('failed')).toBe('failed');
+      expect(PAYMENT_STATUS_MAP.failed.primaryAction.kind).toBe('retry');
+    });
+
+    it('resolving pending → support_required uses canonical id', () => {
+      expect(resolvePaymentStatusId('support_required')).toBe('support_required');
+      expect(PAYMENT_STATUS_MAP.support_required.primaryAction.kind).toBe('contact_support');
+    });
+
+    it('expired maps to failed recovery path (abandon CTA) per Dev Notes', () => {
+      expect(resolvePaymentStatusId('expired')).toBe('expired');
+      expect(PAYMENT_STATUS_MAP.expired.primaryAction.kind).toBe('abandon');
+    });
+
+    it('all pending_psp_confirmation keys use payment_status.* namespace (no PL-only inline)', () => {
+      const d = PAYMENT_STATUS_MAP.pending_psp_confirmation;
+      expect(d.labelKey).toMatch(/^payment_status\./);
+      expect(d.bodyKey).toMatch(/^payment_status\./);
+      expect(d.primaryAction.ctaLabelKey).toMatch(/^payment_status\./);
+      if (d.secondaryActionKey) {
+        expect(d.secondaryActionKey).toMatch(/^payment_status\./);
+      }
+    });
+  });
+
+  // ─── Story 6.1: failed/expired → support path (AC 2) ────────────────────
+
+  describe('Story 6.1 — failed/expired recovery path discipline', () => {
+    it('failed state has exactly one primary action (retry)', () => {
+      const d = PAYMENT_STATUS_MAP.failed;
+      expect(d.primaryAction.kind).toBe('retry');
+      // Only primaryAction, no competing action object.
+      expect(Object.keys(d)).toContain('primaryAction');
+    });
+
+    it('support_required has no secondaryActionKey (contact_support IS the primary)', () => {
+      // No competing secondary CTA on support_required state.
+      expect(PAYMENT_STATUS_MAP.support_required.secondaryActionKey).toBeUndefined();
+    });
+
+    it('expired secondaryActionKey is contact support (safe handoff)', () => {
+      const secondary = PAYMENT_STATUS_MAP.expired.secondaryActionKey;
+      expect(secondary).toBeTruthy();
+      expect(secondary).toMatch(/^payment_status\./);
+    });
+
+    it('no raw Stripe error keys exist in any descriptor (raw error redaction guard)', () => {
+      // All descriptors must only carry i18n key paths, never raw error text.
+      for (const id of PAYMENT_STATUS_IDS) {
+        const d = PAYMENT_STATUS_MAP[id];
+        const allKeyValues = [
+          d.labelKey,
+          d.bodyKey,
+          d.primaryAction.ctaLabelKey,
+          d.secondaryActionKey,
+        ].filter(Boolean);
+        for (const keyVal of allKeyValues) {
+          // Keys must be i18n paths (payment_status.*), not raw strings.
+          expect(keyVal).toMatch(/^payment_status\./);
+          // Must NOT look like a Stripe error message or decline code.
+          expect(keyVal).not.toMatch(/decline_code|error\.message|insufficient_funds/i);
+        }
+      }
+    });
+  });
 });

@@ -921,7 +921,8 @@
       "body": "Your order is being verified. This may take a few minutes. Please do not close your browser.",
       "cta": "Check status now",
       "secondary_cta": "Contact support",
-      "checking": "Verifying..."
+      "checking": "Verifying...",
+      "extended_wait": "Verification is taking longer than usual. We are working on it. You can wait or contact support."
     },
     "failed": {
       "label": "Payment failed",

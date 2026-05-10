@@ -3,21 +3,29 @@
 /**
  * PaymentStatusPageContent — client section component.
  *
- * v1.7.0 Story 2.4: Cart, Checkout and Payment Status UX.
+ * v1.7.0 Story 2.4: initial cart, checkout and payment status UX.
+ * v1.7.0 Story 6.1: payment pending, failed and recovery hardening.
  *
- * Fetches live payment/order status from the backend via browser-level proxy
- * route so that:
- *   - Playwright E2E tests can intercept with page.route().
- *   - Status is always fresh (no ISR cache — parent route is force-dynamic).
- *   - Refresh CTA triggers a re-fetch, not a re-render.
+ * 6.1 additions (hardening on top of 2.4 — no rewrites):
+ *   - Backoff polling of `GET /api/v1/orders/:id/payment-status` (reconciliation
+ *     endpoint) so the UI auto-transitions when a delayed Stripe webhook arrives.
+ *     Poll intervals: 5s → 15s → 30s (capped). Stops on terminal states.
+ *   - `last_checked_at` surfaced as visible timestamp (not tooltip).
+ *   - `visibilitychange` pause: polling halts when tab is backgrounded and
+ *     resumes on focus — avoids burning quota for backgrounded users.
+ *   - AbortController cleanup: outstanding fetches aborted on unmount.
+ *   - No-reload state transition: when polling resolves a terminal status,
+ *     the UI updates via state without page refresh or new order creation.
  *
  * Idempotency contract (NFR8 / NFR9):
- *   - Load and Refresh call the STATUS-READ endpoint (/api/v1/orders/[id]).
- *   - Retry CTA calls the RETRY-PAYMENT mutation with a fresh attempt key.
- *   - NO mutation on page load / back-button / second tab.
- *   - No duplicate "Order confirmed" toast on refresh.
+ *   - Initial load and polling call STATUS-READ endpoints only (no mutation).
+ *   - Retry CTA does not leak order/payment identifiers through URL params.
+ *   - Durable backend retry by existing order/payment intent is deferred to
+ *     the payment retry endpoint follow-up; until then duplicate-charge
+ *     prevention stays with the existing checkout/provider idempotency layer.
+ *   - `payment-status` polling endpoint is safe to poll indefinitely.
  *
- * Anti-pattern guards (Story 2.4 spec):
+ * Anti-pattern guards (Story 2.4 preserved):
  *   - Unknown backend status → pending_psp_confirmation (never optimistic paid).
  *   - No voucher delivery copy here (Story 2.5 owns ConfirmationHandoff content).
  *   - `empty` state is NEVER shown; missing order → access_denied or unavailable.
@@ -25,7 +33,7 @@
  * ARCH-007: Customer-facing storefront only.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -33,12 +41,33 @@ import { useRouter } from 'next/navigation';
 import { PaymentStatusPanel } from '@/components/cells/PaymentStatusPanel/PaymentStatusPanel';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 
+/** Polling backoff schedule in ms. Last value is repeated after the list ends.
+ * Jitter: each interval has ±20% randomisation to prevent thundering-herd
+ * when many customers are simultaneously waiting on a delayed Stripe webhook. */
+const POLL_BACKOFF_MS = [5_000, 15_000, 30_000] as const;
+
+/** Apply ±20% uniform jitter to a delay value. */
+function withJitter(delayMs: number): number {
+  const jitter = delayMs * 0.2 * (Math.random() * 2 - 1);
+  return Math.max(1_000, Math.round(delayMs + jitter));
+}
+
+/** Lifecycle statuses that indicate the payment flow has resolved (stop polling). */
+const TERMINAL_STATUSES = new Set(['paid', 'failed', 'support_required', 'expired']);
+
 type OrderStatusData = {
   id: string;
   // R7 review fix: upstream may return number or string; normalize to string at the proxy.
   display_id?: string | number | null;
   payment_status?: string | null;
   updated_at?: string | null;
+};
+
+type PollStatusData = {
+  status: string;
+  last_checked_at: string;
+  recommended_action_key: string;
+  request_id?: string | null;
 };
 
 type Props = {
@@ -58,9 +87,9 @@ type Props = {
  * R1 review fix (second pass): NOT exposed in URL query string — the
  * checkout page has no consumer for the key and embedding it in the URL
  * leaks the orderId via the browser referrer header. The key is generated
- * for diagnostic / logging purposes; the real idempotency surface for
- * payment retries lives in Story 6.1 (durable-retry resilience hardening).
- * Until then, the key is logged client-side only.
+ * for diagnostic / logging purposes. The real idempotency surface for
+ * payment retries is deferred to the backend retry endpoint follow-up.
+ * Until that endpoint exists, the key is logged client-side only.
  */
 export function generateAttemptKey(
   orderId: string,
@@ -88,10 +117,28 @@ export function PaymentStatusPageContent({ orderId }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [fetchError, setFetchError] = useState<'unavailable' | 'access_denied' | null>(null);
   const [retryAttempt, setRetryAttempt] = useState(0);
+  // 6.1: last_checked_at from the polling reconciliation endpoint.
+  const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
   // F19 review fix: stable per-page-load session token used as part of the
   // retry idempotency key so the SAME retry produces the SAME key across
   // network retries within one user attempt.
   const [sessionToken] = useState<string>(() => generateSessionToken());
+
+  // 6.1: Polling state refs (not state to avoid re-render on each tick).
+  const pollAbortRef = useRef<AbortController | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollTickRef = useRef(0);
+  const isPollingRef = useRef(false);
+  // 6.1: Track polling start time for >5-min aria-live announcement (UX-DR9 / PRD Journey 8).
+  const pollStartTimeRef = useRef<number | null>(null);
+  // Tracks whether the extended-wait aria-live announcement has already been emitted.
+  const extendedWaitAnnouncementRef = useRef<'none' | 'extended'>('none');
+  // 6.1: aria-live announcement message for extended wait (>5 min).
+  const [extendedWaitAnnouncement, setExtendedWaitAnnouncement] = useState<string | null>(null);
+  // Track whether tab is visible to pause polling when backgrounded.
+  const isVisibleRef = useRef(true);
+  // Current payment status for polling decisions (ref avoids stale closure).
+  const currentStatusRef = useRef<string>('pending_psp_confirmation');
 
   const fetchOrderStatus = useCallback(
     async (isRefresh = false) => {
@@ -111,14 +158,13 @@ export function PaymentStatusPageContent({ orderId }: Props) {
 
         if (!res.ok) {
           // F1 review fix: distinguish access_denied (401/403) from unavailable (5xx/404).
-          // Per UX-state contract, payment-status MUST NOT show `empty` —
-          // missing-order falls through to `unavailable` or `access_denied`.
           setFetchError(res.status === 401 || res.status === 403 ? 'access_denied' : 'unavailable');
           return;
         }
 
         const data = (await res.json()) as OrderStatusData;
         setOrder(data);
+        currentStatusRef.current = data.payment_status ?? 'pending_psp_confirmation';
       } catch (error) {
         // R21 review fix: surface to client-side diagnostics. UI text stays
         // generic; the breadcrumb helps support recover the actual failure
@@ -134,21 +180,146 @@ export function PaymentStatusPageContent({ orderId }: Props) {
     [orderId],
   );
 
+  // 6.1: Poll the reconciliation endpoint with backoff.
+  // Stops when terminal status reached or component unmounts.
+  const schedulePollTick = useCallback(() => {
+    if (!isPollingRef.current) return;
+
+    const backoffIndex = Math.min(pollTickRef.current, POLL_BACKOFF_MS.length - 1);
+    const delay = POLL_BACKOFF_MS[backoffIndex];
+
+    pollTimerRef.current = setTimeout(async () => {
+      if (!isPollingRef.current) return;
+      // Pause while tab is backgrounded — reschedule at same tick index.
+      if (!isVisibleRef.current) {
+        schedulePollTick();
+        return;
+      }
+
+      const abortCtrl = new AbortController();
+      pollAbortRef.current = abortCtrl;
+
+      try {
+        const res = await fetch(`/api/v1/orders/${orderId}/payment-status`, {
+          cache: 'no-store',
+          signal: abortCtrl.signal,
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as PollStatusData;
+          setLastCheckedAt(data.last_checked_at);
+          setOrder((prev) =>
+            prev ? { ...prev, payment_status: data.status } : prev,
+          );
+          currentStatusRef.current = data.status;
+
+          if (TERMINAL_STATUSES.has(data.status)) {
+            // Terminal state reached — stop polling.
+            isPollingRef.current = false;
+            return;
+          }
+        } else {
+          // 404: order genuinely not found — stop polling and surface error.
+          if (res.status === 404) {
+            isPollingRef.current = false;
+            setFetchError('unavailable');
+            return;
+          }
+          // 401/403: session expired / wrong order — stop and surface access_denied.
+          if (res.status === 401 || res.status === 403) {
+            isPollingRef.current = false;
+            setFetchError('access_denied');
+            return;
+          }
+          // Other errors (5xx, network issues): continue polling with backoff.
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        // Network error: continue polling, next backoff step.
+      }
+
+      pollTickRef.current += 1;
+
+      // PRD Journey 8 / UX-DR9: emit aria-live polite announcement when the
+      // customer has been waiting >5 min so screen readers report progress.
+      if (pollStartTimeRef.current !== null) {
+        const waitedMs = Date.now() - pollStartTimeRef.current;
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (waitedMs > FIVE_MIN_MS && extendedWaitAnnouncementRef.current !== 'extended') {
+          extendedWaitAnnouncementRef.current = 'extended';
+          setExtendedWaitAnnouncement(t('payment_status.pending_psp_confirmation.extended_wait'));
+        }
+      }
+
+      schedulePollTick();
+    }, withJitter(delay));
+  }, [orderId, t]);
+
+  // 6.1: Start polling when status is pending_psp_confirmation.
+  const startPolling = useCallback(() => {
+    if (isPollingRef.current) return;
+    isPollingRef.current = true;
+    pollTickRef.current = 0;
+    pollStartTimeRef.current = Date.now();
+    extendedWaitAnnouncementRef.current = 'none';
+    setExtendedWaitAnnouncement(null);
+    schedulePollTick();
+  }, [schedulePollTick]);
+
+  const stopPolling = useCallback(() => {
+    isPollingRef.current = false;
+    if (pollTimerRef.current !== null) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    if (pollAbortRef.current) {
+      pollAbortRef.current.abort();
+      pollAbortRef.current = null;
+    }
+  }, []);
+
+  // 6.1: visibilitychange handler — pause/resume polling.
+  useEffect(() => {
+    const onVisibility = () => {
+      isVisibleRef.current = document.visibilityState === 'visible';
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  // Initial fetch on mount.
   useEffect(() => {
     void fetchOrderStatus(false);
-    // Only run on mount — orderId is stable for the lifetime of this page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 6.1: Start or stop polling based on current status.
+  useEffect(() => {
+    const status = order?.payment_status ?? null;
+    if (status === 'pending_psp_confirmation') {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+    return stopPolling;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.payment_status]);
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const handleRefresh = useCallback(() => {
-    void fetchOrderStatus(true);
-  }, [fetchOrderStatus]);
+    // Manual refresh re-fetches the full order and resets backoff.
+    stopPolling();
+    pollTickRef.current = 0;
+    void fetchOrderStatus(true).then(() => {
+      if (currentStatusRef.current === 'pending_psp_confirmation') {
+        startPolling();
+      }
+    });
+  }, [fetchOrderStatus, startPolling, stopPolling]);
 
   const handleContinue = useCallback(() => {
     // paid → handoff to confirmation surface (Story 2.5 owns the destination).
-    // No duplicate "Order confirmed" toast — just navigate.
     router.push(`/${locale}/order/${orderId}/confirmed`);
   }, [locale, orderId, router]);
 
@@ -158,7 +329,7 @@ export function PaymentStatusPageContent({ orderId }: Props) {
     // R1 review fix (second pass): the previous implementation embedded
     // `attempt_key` and `order_id` as URL query params, but NO consumer in
     // `/checkout` reads those params. The idempotency-key surface is
-    // therefore decorative until Story 6.1 lands the durable-retry path.
+    // therefore decorative until the backend durable-retry path lands.
     // Until then, we generate the key for client-side diagnostics only and
     // navigate to `/checkout` without leaking `order_id` through the URL
     // (referrer headers, browser history, ad-pixel scripts).
@@ -190,7 +361,6 @@ export function PaymentStatusPageContent({ orderId }: Props) {
   }, [locale, order, router]);
 
   const handleAbandon = useCallback(() => {
-    // expired → abandon checkout / start over.
     router.push(`/${locale}/cart`);
   }, [locale, router]);
 
@@ -217,9 +387,6 @@ export function PaymentStatusPageContent({ orderId }: Props) {
   // ─── Error / not found state ──────────────────────────────────────────────
 
   if (fetchError || !order) {
-    // F1 review fix: route 401/403 to a distinct access_denied surface so the
-    // UI never shows order data the customer is not authorised to see, and
-    // never silently masks an authz failure as "unavailable".
     const isAccessDenied = fetchError === 'access_denied';
     return (
       <StateCard
@@ -252,11 +419,32 @@ export function PaymentStatusPageContent({ orderId }: Props) {
 
   // ─── Payment status panel ─────────────────────────────────────────────────
 
+  // 6.1: Use last_checked_at from polling when available, fall back to
+  // updated_at from the initial order fetch. This surfaces the reconciliation
+  // timestamp (last time the backend checked PSP status) rather than the last
+  // order mutation time — semantically correct for the pending waiting state.
+  const displayTimestamp = lastCheckedAt ?? order.updated_at ?? null;
+
   return (
     <div className="mx-auto max-w-lg" data-testid="payment-status-content">
+      {/* 6.1 / UX-DR9 / PRD Journey 8: polite aria-live region for extended-wait
+          announcements (>5 min). Screen reader announces text change without
+          interrupting current reading. Hidden visually; content is also
+          reflected in the status panel label. */}
+      {extendedWaitAnnouncement && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+          data-testid="payment-status-extended-wait-announcement"
+        >
+          {extendedWaitAnnouncement}
+        </div>
+      )}
       <PaymentStatusPanel
         status={order.payment_status}
-        lastUpdate={order.updated_at}
+        lastUpdate={displayTimestamp}
         orderId={
           order.display_id !== null && order.display_id !== undefined
             ? String(order.display_id)
