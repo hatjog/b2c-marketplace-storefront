@@ -102,9 +102,27 @@ describe('StateCard', () => {
       expect(root.props.role).toBe('region');
     });
 
-    it('has aria-label matching title', () => {
+    // v1.7.0 Story 2.1 review-2 fix (MEDIUM/1): region is named via
+    // aria-labelledby pointing to the heading id (no aria-label on the root).
+    it('names the region via aria-labelledby pointing at the heading', () => {
       const root = render({ variant: 'empty', title: 'Brak wyników' });
-      expect(root.props['aria-label']).toBe('Brak wyników');
+      const headingId = root.props['aria-labelledby'];
+      expect(typeof headingId).toBe('string');
+      expect((headingId as string).length).toBeGreaterThan(0);
+      const heading = findHeadingOfType(root, 'h2');
+      expect(heading?.props.id).toBe(headingId);
+    });
+
+    it('does not also set aria-label (avoid double-announcement)', () => {
+      const root = render({ variant: 'empty', title: 'Brak wyników' });
+      expect(root.props['aria-label']).toBeUndefined();
+    });
+
+    it('uses an externally-provided titleId when supplied', () => {
+      const root = render({ variant: 'empty', title: 'Brak wyników', titleId: 'cart-empty-heading' });
+      expect(root.props['aria-labelledby']).toBe('cart-empty-heading');
+      const heading = findHeadingOfType(root, 'h2');
+      expect(heading?.props.id).toBe('cart-empty-heading');
     });
 
     it('renders title and description text', () => {
@@ -142,9 +160,12 @@ describe('StateCard', () => {
       expect(root.props.role).toBe('alert');
     });
 
-    it('has aria-live=assertive for urgent announcement', () => {
+    // v1.7.0 Story 2.1 review-2 fix (MEDIUM/2): role="alert" implies
+    // aria-live="assertive" + aria-atomic="true" per ARIA spec; explicit aria-live
+    // is removed to prevent double-announcement on some AT (JAWS+IE, NVDA+Firefox).
+    it('does not set explicit aria-live — role="alert" implies assertive', () => {
       const root = render({ variant: 'error', title: 'Błąd serwera' });
-      expect(root.props['aria-live']).toBe('assertive');
+      expect(root.props['aria-live']).toBeUndefined();
     });
 
     it('uses negative surface container classes', () => {
@@ -160,9 +181,12 @@ describe('StateCard', () => {
       expect(root.props.role).toBe('status');
     });
 
-    it('has aria-live=polite for polite announcement', () => {
+    // v1.7.0 Story 2.1 review-2 fix (MEDIUM/2): role="status" implies
+    // aria-live="polite" per ARIA spec; explicit aria-live removed to avoid
+    // double-announcement on some AT.
+    it('does not set explicit aria-live — role="status" implies polite', () => {
       const root = render({ variant: 'unavailable', title: 'Chwilowo niedostępne' });
-      expect(root.props['aria-live']).toBe('polite');
+      expect(root.props['aria-live']).toBeUndefined();
     });
 
     it('uses warning surface container classes', () => {
@@ -245,6 +269,26 @@ describe('StateCard', () => {
       const root = render({ variant: 'unavailable', title: 'X' });
       const wrapper = findStyleWithBgVar(root, '--bb-icon-bg-unavailable');
       expect(wrapper).not.toBeNull();
+    });
+  });
+
+  describe('description programmatic association (review-2 MEDIUM/1)', () => {
+    it('sets aria-describedby pointing at the description element when description is provided', () => {
+      const root = render({
+        variant: 'error',
+        title: 'Błąd',
+        description: 'Spróbuj ponownie za chwilę.',
+      });
+      const descId = root.props['aria-describedby'];
+      expect(typeof descId).toBe('string');
+      const desc = findByProp(root, 'id', descId);
+      expect(desc).not.toBeNull();
+      expect(desc?.type).toBe('p');
+    });
+
+    it('does not set aria-describedby when no description is provided', () => {
+      const root = render({ variant: 'empty', title: 'Brak' });
+      expect(root.props['aria-describedby']).toBeUndefined();
     });
   });
 

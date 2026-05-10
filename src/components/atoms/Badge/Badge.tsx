@@ -38,8 +38,14 @@ const variantClasses: Record<BadgeVariant, string> = {
   brand: '',
   /** muted — neutral surface (neutral-50 bg, neutral-700 text) */
   muted: 'bg-secondary text-primary',
-  /** unavailable — visually and semantically distinct from disabled/error */
-  unavailable: 'bg-disabled text-disabled opacity-60',
+  /** unavailable — visually + semantically distinct from disabled per Story 0.9
+   *  contract. v1.7.0 Story 2.1 review-2 fix (HIGH/2): previously reused the
+   *  `bg-disabled text-disabled opacity-60` surface — i.e. the same antipattern
+   *  the prior review HIGH/3 fixed on Button. Now uses the warning channel
+   *  (matching Button.unavailable + StateCard.unavailable for cross-component
+   *  coherence) and a dashed border as a non-color signal so the state is
+   *  perceivable beyond hue. */
+  unavailable: 'bg-warning-secondary text-warning border border-dashed border-warning',
 };
 
 // Custom bg for brand variant (uses --bb-* token not in Tailwind class directly).

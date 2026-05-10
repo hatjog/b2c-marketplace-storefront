@@ -104,4 +104,67 @@ describe('Chip', () => {
       expect(rendered.props.tabIndex).toBe(0);
     });
   });
+
+  // v1.7.0 Story 2.1 review-2 fix (HIGH/1, WCAG SC 2.1.1): role="button" with
+  // onClick must also accept keyboard activation (Enter / Space).
+  describe('keyboard activation (review-2 HIGH/1, WCAG SC 2.1.1)', () => {
+    it('invokes onSelect on Enter', () => {
+      const onSelect = vi.fn();
+      const rendered = callChip({ value: 'M', onSelect });
+      const handler = rendered.props.onKeyDown as (e: unknown) => void;
+      expect(typeof handler).toBe('function');
+      const event = { key: 'Enter', preventDefault: vi.fn() };
+      handler(event);
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it('invokes onSelect on Space', () => {
+      const onSelect = vi.fn();
+      const rendered = callChip({ value: 'M', onSelect });
+      const handler = rendered.props.onKeyDown as (e: unknown) => void;
+      const event = { key: ' ', preventDefault: vi.fn() };
+      handler(event);
+      expect(onSelect).toHaveBeenCalledTimes(1);
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it('does not invoke onSelect on other keys', () => {
+      const onSelect = vi.fn();
+      const rendered = callChip({ value: 'M', onSelect });
+      const handler = rendered.props.onKeyDown as (e: unknown) => void;
+      const event = { key: 'a', preventDefault: vi.fn() };
+      handler(event);
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('does not register keyboard handler when disabled', () => {
+      const onSelect = vi.fn();
+      const rendered = callChip({ value: 'M', onSelect, disabled: true });
+      expect(rendered.props.onKeyDown).toBeUndefined();
+    });
+
+    it('sets aria-pressed when selected', () => {
+      const rendered = callChip({ value: 'M', selected: true });
+      expect(rendered.props['aria-pressed']).toBe(true);
+    });
+
+    it('sets aria-disabled when disabled', () => {
+      const rendered = callChip({ value: 'M', disabled: true });
+      expect(rendered.props['aria-disabled']).toBe(true);
+    });
+  });
+
+  // v1.7.0 Story 2.1 review-2 fix (MEDIUM/3): color-swatch background only
+  // accepts string `value` (CSS color literal); non-string values are ignored
+  // (no `[object Object]` style leak).
+  describe('color swatch typing (review-2 MEDIUM/3)', () => {
+    it('does not set inline backgroundColor when value is not a string', () => {
+      const rendered = callChip({ value: 42 as unknown as string, color: true });
+      const child = rendered.props.children as ReactEl;
+      const style = (child.props as Record<string, unknown>).style as Record<string, unknown> | undefined;
+      expect(style?.backgroundColor).toBeUndefined();
+    });
+  });
 });

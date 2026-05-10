@@ -1,3 +1,13 @@
+/**
+ * vitest.config.ts
+ *
+ * Vitest pipeline only. The Next.js build path (SWC + tsconfig.jsx="preserve")
+ * is unaffected by these esbuild settings — this config exists solely so unit
+ * tests can call function components and inspect returned JSX without an
+ * undefined `React` global. Do NOT align this with tsconfig.json's
+ * `jsx: "preserve"` — Next.js needs preserve for SWC, vitest needs automatic
+ * for esbuild (review-2 INFO/2 documented divergence).
+ */
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 

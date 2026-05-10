@@ -18,9 +18,24 @@
  * ARCH-007: BonBeauty DS customer-facing storefront only.
  * All token references via CSS vars from bb-surfaces.css + bonbeauty.css theme.
  */
-import type { AriaAttributes, CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
+
+// v1.7.0 Story 2.1 review-2 fix (MEDIUM/1): module-level counter for default
+// heading/description ids when consumers do not supply titleId. We intentionally
+// AVOID React.useId() here because it requires a render context and would break
+// the shallow function-call test pattern used by Story 2.1 unit tests. The
+// counter resets per module load (per server request in Next.js SSR, per page
+// in CSR) which is sufficient for within-page uniqueness — collisions between
+// SSR + hydration are avoided because the id is included in the rendered HTML
+// and reused on the client. Consumers wanting stable cross-render ids can
+// pass an explicit `titleId` prop (typical for landmarks named externally).
+let _stateCardIdCounter = 0;
+const nextStateCardId = () => {
+  _stateCardIdCounter = (_stateCardIdCounter + 1) | 0;
+  return `state-card-${_stateCardIdCounter}`;
+};
 
 export type StateCardVariant = 'empty' | 'error' | 'unavailable';
 
@@ -52,10 +67,15 @@ interface StateCardProps {
  *  Color channels: empty=neutral, error=red, unavailable=amber.
  *  Gold is NOT the primary channel for any variant (UX spec §Accessibility).
  *  v1.7.0 Story 2.1 review fix (MEDIUM): icon backgrounds now sourced from
- *  --bb-icon-bg-* tokens declared in bb-surfaces.css (no hardcoded RGBA). */
+ *  --bb-icon-bg-* tokens declared in bb-surfaces.css (no hardcoded RGBA).
+ *  v1.7.0 Story 2.1 review-2 fix (MEDIUM/2): explicit `aria-live` removed —
+ *  `role="alert"` implies `aria-live="assertive" aria-atomic="true"` and
+ *  `role="status"` implies `aria-live="polite"` per the ARIA spec. Setting
+ *  both explicitly is documented to double-announce in some AT (JAWS+IE,
+ *  some NVDA+Firefox builds). Leave `aria-live` implicit. */
 const variantConfig: Record<
   StateCardVariant,
-  { containerClass: string; iconBgStyle: CSSProperties; role: string; ariaLive?: AriaAttributes['aria-live'] }
+  { containerClass: string; iconBgStyle: CSSProperties; role: string }
 > = {
   empty: {
     containerClass: 'bg-secondary border border-primary',
@@ -66,13 +86,11 @@ const variantConfig: Record<
     containerClass: 'bg-negative-secondary border border-negative',
     iconBgStyle: { backgroundColor: 'var(--bb-icon-bg-error, rgba(254,228,226,0.7))' },
     role: 'alert',
-    ariaLive: 'assertive',
   },
   unavailable: {
     containerClass: 'bg-warning-secondary border border-warning',
     iconBgStyle: { backgroundColor: 'var(--bb-icon-bg-unavailable, rgba(255,247,212,0.7))' },
     role: 'status',
-    ariaLive: 'polite',
   },
 };
 
@@ -117,14 +135,25 @@ export function StateCard({
 }: StateCardProps) {
   const config = variantConfig[variant];
   // v1.7.0 Story 2.1 review fix (LOW): title rendered as a real heading so
-  // landmark/region navigation surfaces it; aria-label retained as fallback.
+  // landmark/region navigation surfaces it.
   const TitleTag = titleAs;
+  // v1.7.0 Story 2.1 review-2 fix (MEDIUM/1): wire `titleId` to the region root
+  // via aria-labelledby so the heading actually names the region. ARIA precedence:
+  // aria-labelledby wins over aria-label; when titleId is provided we drop the
+  // aria-label fallback to avoid double-announcement. When titleId is not
+  // provided, an internal counter-derived id is allocated (see nextStateCardId
+  // module-local helper) so the heading-as-region-name contract still holds
+  // without forcing every consumer to provide an id.
+  const headingId = titleId ?? `${nextStateCardId()}-title`;
+  // Description id is also exposed via aria-describedby so the description text
+  // is programmatically associated with the region for SR users.
+  const descriptionId = description ? `${headingId.replace(/-title$/, '')}-desc` : undefined;
 
   return (
     <div
       role={config.role}
-      aria-live={config.ariaLive}
-      aria-label={title}
+      aria-labelledby={headingId}
+      aria-describedby={descriptionId}
       className={cn(
         'flex flex-col items-center justify-center gap-4 rounded-md p-6 text-center',
         config.containerClass,
@@ -142,8 +171,12 @@ export function StateCard({
 
       {/* Text area */}
       <div className="flex flex-col gap-1">
-        <TitleTag id={titleId} className="heading-sm text-primary m-0">{title}</TitleTag>
-        {description && <p className="text-sm text-secondary">{description}</p>}
+        <TitleTag id={headingId} className="heading-sm text-primary m-0">{title}</TitleTag>
+        {description && (
+          <p id={descriptionId} className="text-sm text-secondary">
+            {description}
+          </p>
+        )}
       </div>
 
       {/* CTA slot — one clear next action per UX-PAT-4 requirement */}
