@@ -671,6 +671,7 @@
       "email_label": "E-Mail-Adresse",
       "email_placeholder": "ihre@email.de",
       "cta_request_new_link": "Wiederherstellungslink senden",
+      "continue_cta": "Wiederherstellung fortsetzen",
       "sent_confirmation": "Wenn diese E-Mail-Adresse mit einem Kauf verknüpft ist, senden wir Ihnen einen Wiederherstellungslink.",
       "meta_title": "Zugangswiederherstlung | BonBeauty",
       "meta_description": "Stellen Sie den Zugang zu Ihren BonBeauty-Gutscheinen wieder her."

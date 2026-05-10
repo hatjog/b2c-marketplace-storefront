@@ -670,6 +670,7 @@
       "email_label": "Email address",
       "email_placeholder": "your@email.com",
       "cta_request_new_link": "Send recovery link",
+      "continue_cta": "Continue recovery",
       "sent_confirmation": "If this email address is associated with a purchase, we will send you a recovery link.",
       "meta_title": "Access recovery | BonBeauty",
       "meta_description": "Recover access to your BonBeauty vouchers."

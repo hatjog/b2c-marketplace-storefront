@@ -34,9 +34,10 @@
  */
 
 import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { sdk } from '@/lib/config';
-import { setAuthToken, getCacheTag } from '@/lib/data/cookies';
+import { setAuthToken, getCacheTag, getAuthHeaders } from '@/lib/data/cookies';
 
 export type RecoveryResult =
   | { ok: true }
@@ -76,8 +77,25 @@ export async function exchangeRecoveryToken(token: string): Promise<RecoveryResu
     const sessionToken = res?.token;
     if (sessionToken) {
       await setAuthToken(sessionToken);
+      // Defensive: revalidateTag('') is a no-op in Next.js but emits a dev
+      // warning; only call when cache_id cookie is present.
       const customerCacheTag = await getCacheTag('customers');
-      revalidateTag(customerCacheTag);
+      if (customerCacheTag) {
+        revalidateTag(customerCacheTag);
+      }
+      return { ok: true };
+    }
+
+    // Set-Cookie fallback: backend may have authenticated the session via
+    // an HTTP-only Set-Cookie response header without echoing the token in
+    // the JSON body (Medusa auth surfaces sometimes do this). Treat the
+    // post-call presence of an authorization header as a successful login.
+    const post = await getAuthHeaders();
+    if ('authorization' in post) {
+      const customerCacheTag = await getCacheTag('customers');
+      if (customerCacheTag) {
+        revalidateTag(customerCacheTag);
+      }
       return { ok: true };
     }
 
@@ -87,6 +105,38 @@ export async function exchangeRecoveryToken(token: string): Promise<RecoveryResu
     // DO NOT log token or error details that could expose token existence.
     return { ok: false, state: 'neutral' };
   }
+}
+
+/**
+ * Form-action wrapper for the recovery exchange.
+ *
+ * Used by the recovery landing route's `<form action={...}>` element so the
+ * token exchange runs only after an explicit user gesture (click "Continue").
+ *
+ * Why: email-security scanners (Microsoft Defender SafeLinks, Google Gmail
+ * link-prefetch, corporate proxies) routinely issue HTTP GET to magic-link
+ * URLs before delivery. If the page auto-exchanged on GET, the scanner would
+ * burn the single-use token and the user would land on the neutral
+ * "expired or used" state. Gating the exchange behind a POST/form-action
+ * prevents that class of false-positive consumption while preserving
+ * single-use semantics and anti-enumeration on the failure side.
+ *
+ * On success: throws via Next.js redirect() to /[locale]/user/vouchers.
+ * On failure: redirect back to the recovery route with `?attempted=1` so
+ *   the page renders the neutral failure state without re-running the
+ *   exchange. The token segment in the URL stays the same (already burnt
+ *   on the backend at this point), but the page no longer re-attempts.
+ */
+export async function exchangeRecoveryTokenForm(formData: FormData): Promise<void> {
+  const token = String(formData.get('token') ?? '');
+  const locale = String(formData.get('locale') ?? 'pl');
+  const result = await exchangeRecoveryToken(token);
+  if (result.ok) {
+    redirect(`/${locale}/user/vouchers`);
+  }
+  // On failure: redirect to the same recovery route with attempted=1 so
+  // the page renders the neutral state without re-running the exchange.
+  redirect(`/${locale}/user/recover/${encodeURIComponent(token)}?attempted=1`);
 }
 
 /**

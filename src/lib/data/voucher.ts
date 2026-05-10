@@ -353,7 +353,11 @@ function projectListAllowlist(p: VoucherListApiPayload | null | undefined): Vouc
   return {
     code: String(p.code),
     seller_name: String(p.seller_name),
-    seller_handle: String(p.seller_handle ?? p.code),
+    // Review LOW: never fall back to voucher.code — that would mis-route
+    // /sellers/<voucher_code> AND leak the voucher code into a seller URL.
+    // When seller_handle is missing, return '' and let the consumer omit
+    // the seller link (rendering the seller_name as plain text).
+    seller_handle: p.seller_handle ? String(p.seller_handle) : '',
     product_title: String(p.product_title ?? ''),
     value_minor: typeof p.value_minor === 'number'
       ? p.value_minor
@@ -388,8 +392,10 @@ export type CustomerVoucherListResult =
 
 export async function listCustomerVouchers(): Promise<CustomerVoucherListResult> {
   // Check auth headers — missing token means access_denied, not empty.
+  // (getAuthHeaders always returns an object — `{}` when no token, the
+  // authorization shape otherwise — so we only need the `in` check.)
   const authHeaders = await getAuthHeaders();
-  if (!authHeaders || !('authorization' in authHeaders)) {
+  if (!('authorization' in authHeaders)) {
     return { state: 'access_denied', vouchers: [] };
   }
 

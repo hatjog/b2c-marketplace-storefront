@@ -34,6 +34,10 @@ interface StateCardProps {
    *  v1.7.0 Story 2.1 review fix (LOW): role="region" without a real heading is
    *  not surfaced by some SRs; promote title to a heading element. */
   titleAs?: HeadingLevel;
+  /** Optional id for the rendered heading element. Pair this with an
+   *  `aria-labelledby` on the parent landmark/region wrapper so screen
+   *  readers can name the region. v1.7.0 Story 2.6 review fix (MEDIUM). */
+  titleId?: string;
   /** Optional supporting explanation */
   description?: string;
   /** Icon node — recommended for visual distinction beyond color */
@@ -104,6 +108,7 @@ export function StateCard({
   variant,
   title,
   titleAs = 'h2',
+  titleId,
   description,
   icon,
   action,
@@ -137,7 +142,7 @@ export function StateCard({
 
       {/* Text area */}
       <div className="flex flex-col gap-1">
-        <TitleTag className="heading-sm text-primary m-0">{title}</TitleTag>
+        <TitleTag id={titleId} className="heading-sm text-primary m-0">{title}</TitleTag>
         {description && <p className="text-sm text-secondary">{description}</p>}
       </div>
 

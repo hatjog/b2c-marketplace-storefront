@@ -67,7 +67,7 @@ export function MagicLinkRecoveryState({
     >
       <label
         htmlFor={`recovery-email-${locale}`}
-        className="text-sm text-secondary sr-only"
+        className="sr-only"
       >
         {t('email_label')}
       </label>
@@ -80,7 +80,7 @@ export function MagicLinkRecoveryState({
         required
         autoComplete="email"
         placeholder={t('email_placeholder')}
-        className="min-h-12 rounded-sm border border-primary bg-surface px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-action"
+        className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-action"
         aria-required="true"
       />
       <button

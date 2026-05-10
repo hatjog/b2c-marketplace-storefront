@@ -135,5 +135,18 @@ describe('MagicLinkRecoveryState', () => {
       expect((card1?.props as { variant?: string })?.variant).toBe('error');
       expect((card2?.props as { variant?: string })?.variant).toBe('error');
     });
+
+    it('passes the SAME i18n key to title and description regardless of failure cause', () => {
+      // The component does not accept a failure-cause prop; the displayed
+      // title/description must therefore be a constant, drawn from the
+      // single neutral i18n key. This guarantees no token-existence info
+      // leaks into the rendered copy under any failure mode (NFR16).
+      const root = render({ locale: 'en' });
+      const card = findByProp(root, 'data-testid', 'magic-link-recovery-state-card');
+      const title = (card?.props as { title?: string })?.title;
+      const description = (card?.props as { description?: string })?.description;
+      expect(title).toBe('Link expired or already used');
+      expect(description).toBe('Request a new recovery link.');
+    });
   });
 });

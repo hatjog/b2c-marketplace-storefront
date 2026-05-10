@@ -5,6 +5,15 @@
  * Placed in (main) route group (same layout as /user/orders) so it benefits
  * from the Header/Footer/market-config context already present in (main)/layout.
  *
+ * Click-to-continue pattern (review fix HIGH-3):
+ *   The token exchange runs ONLY after an explicit user gesture (POST via
+ *   <form action={exchangeRecoveryTokenForm}>). This prevents email-security
+ *   scanners (Microsoft Defender SafeLinks, Google Gmail link-prefetch,
+ *   corporate proxies) from prematurely consuming the single-use token via
+ *   GET prefetch. Compare to the v1.5.0 voucher/consent/[token]/page.tsx
+ *   pattern which similarly gates state-changing actions behind explicit
+ *   user gestures (Server Action triggered by user click).
+ *
  * Security baseline (mirrors voucher/consent/[token]/page.tsx):
  *   - robots: noindex/nofollow — no search-engine indexing of recovery links.
  *   - referrer: no-referrer — token must not appear in Referer header on
@@ -29,24 +38,24 @@
  * /store/auth/customer/token-exchange endpoint (TF-208 / TF-209) for voucher
  * consent / auth alignment, the exchangeRecoveryToken action in
  * src/actions/voucher-recovery.ts should be updated to call that endpoint.
- * This page does NOT need to change — it only calls the action and renders
- * success/failure states.
+ * This page does NOT need to change — it only triggers the action via a
+ * user-initiated form submission and renders success/failure states.
  *
  * ARCH-007: BonBeauty DS boundary — customer-facing storefront only.
  */
 
 import React from 'react';
-import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { MagicLinkRecoveryState } from '@/components/molecules/MagicLinkRecoveryState/MagicLinkRecoveryState';
-import { exchangeRecoveryToken } from '@/actions/voucher-recovery';
+import { exchangeRecoveryTokenForm } from '@/actions/voucher-recovery';
 
 export const dynamic = 'force-dynamic';
 
 interface RecoverPageProps {
   params: Promise<{ locale: string; token: string }>;
+  searchParams?: Promise<{ attempted?: string }>;
 }
 
 export async function generateMetadata({ params }: RecoverPageProps): Promise<Metadata> {
@@ -67,37 +76,70 @@ export async function generateMetadata({ params }: RecoverPageProps): Promise<Me
 /**
  * Server Component entry point.
  *
- * On load: attempts to exchange the opaque token for a customer session.
- *   Success → redirect to /[locale]/user/vouchers (voucher history view).
- *   Failure → render MagicLinkRecoveryState (neutral anti-enumeration error).
+ * Default GET render: shows a "Continue" button that, when clicked, posts
+ *   to the Server Action `exchangeRecoveryTokenForm` (which performs the
+ *   single-use exchange and redirects).
  *
- * The token is read from params and passed to the server action — it is
- * NEVER rendered into the DOM, NEVER passed to client components, NEVER
- * logged. The MagicLinkRecoveryState component receives only `locale`.
+ * After failed exchange (`?attempted=1`): renders the neutral
+ *   MagicLinkRecoveryState — anti-enumeration: same copy regardless of
+ *   actual backend error code.
+ *
+ * The token is read from params and only forwarded to the form as a hidden
+ * input value. It is NEVER rendered into visible DOM, NEVER logged, NEVER
+ * passed to client components beyond the hidden input on the form.
  */
 export default async function RecoverPage({
-  params
+  params,
+  searchParams
 }: RecoverPageProps): Promise<React.ReactElement> {
   const { locale, token } = await params;
+  const search = (await searchParams) ?? {};
+  const attempted = search.attempted === '1';
+  const t = await getTranslations({ locale, namespace: 'voucher.recovery' });
 
-  // Exchange token server-side. On success: sets auth cookie + redirects.
-  // On failure: result.ok === false, render neutral recovery state.
-  const result = await exchangeRecoveryToken(token);
-
-  if (result.ok) {
-    // Session established — redirect to voucher history.
-    // redirect() throws internally in Next.js; no return needed.
-    redirect(`/${locale}/user/vouchers`);
+  // After a failed exchange attempt → render neutral anti-enumeration state.
+  if (attempted) {
+    return (
+      <main
+        className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
+        data-testid="recover-page"
+        aria-label="voucher-recovery"
+      >
+        <div className="w-full max-w-lg">
+          <MagicLinkRecoveryState locale={locale} />
+        </div>
+      </main>
+    );
   }
 
+  // Default: render the click-to-continue form. Token is in a hidden input
+  // (form will POST to the Server Action only on user click — preventing
+  // email-scanner / link-prefetch single-use consumption).
   return (
     <main
       className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
       data-testid="recover-page"
       aria-label="voucher-recovery"
     >
-      <div className="w-full max-w-lg">
-        <MagicLinkRecoveryState locale={locale} />
+      <div className="w-full max-w-lg flex flex-col items-center gap-6 text-center">
+        <h1 className="heading-md text-primary">{t('title')}</h1>
+        <p className="text-secondary">{t('body')}</p>
+        <form
+          action={exchangeRecoveryTokenForm}
+          method="POST"
+          className="flex w-full max-w-sm flex-col gap-3"
+          data-testid="recover-continue-form"
+        >
+          <input type="hidden" name="token" value={token} />
+          <input type="hidden" name="locale" value={locale} />
+          <button
+            type="submit"
+            className="min-h-12 rounded-sm bg-action px-6 py-3 text-action-on-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
+            data-testid="recover-continue-cta"
+          >
+            {t('continue_cta')}
+          </button>
+        </form>
       </div>
     </main>
   );

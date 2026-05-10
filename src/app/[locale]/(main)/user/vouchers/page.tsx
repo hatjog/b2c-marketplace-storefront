@@ -64,9 +64,9 @@ function voucherStatusBadgeClass(status: VoucherStatus): string {
     case 'idle':
       return 'bg-secondary text-primary border border-primary';
     case 'consent_pending':
-      return 'bg-warning-secondary text-warning-on border border-warning';
+      return 'bg-warning-secondary text-warning-on-primary border border-warning';
     case 'claimed':
-      return 'bg-positive-secondary text-positive-on border border-positive';
+      return 'bg-positive-secondary text-positive-on-primary border border-positive';
     case 'withdrawn':
       return 'bg-negative-secondary text-negative border border-negative';
     default:
@@ -102,11 +102,13 @@ interface VoucherRowProps {
 }
 
 function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
-  const statusLabel = t(`status.${voucher.status}` as keyof ReturnType<typeof t>);
+  // Note: avoid `as keyof typeof t` here — `t` is the call signature; its
+  // `keyof` resolves to function-property names, not translation keys.
+  const statusLabel = t(`status.${voucher.status}`);
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-md border border-primary bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-3 rounded-md border border-primary bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
       data-testid="voucher-row"
       data-code={voucher.code}
     >
@@ -156,10 +158,12 @@ interface NamedStateProps {
 async function NamedState({ variant, locale }: NamedStateProps) {
   const t = await getTranslations({ locale, namespace: 'account.vouchers.error' });
 
+  // Casts removed (review LOW): `keyof typeof t` resolves to function-property
+  // names, not translation keys — it was hiding typos rather than catching them.
   const config = {
     access_denied: {
-      title: String(t('access_denied_heading' as keyof typeof t)),
-      description: String(t('access_denied' as keyof typeof t)),
+      title: t('access_denied_heading'),
+      description: t('access_denied'),
       stateVariant: 'error' as const,
       action: (
         <Link
@@ -167,13 +171,13 @@ async function NamedState({ variant, locale }: NamedStateProps) {
           className="min-h-12 inline-flex items-center rounded-sm bg-action px-6 py-3 text-action-on-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
           data-testid="access-denied-login-cta"
         >
-          {String(t('access_denied_cta' as keyof typeof t))}
+          {t('access_denied_cta')}
         </Link>
       ),
     },
     unavailable: {
-      title: String(t('unavailable_heading' as keyof typeof t)),
-      description: String(t('unavailable' as keyof typeof t)),
+      title: t('unavailable_heading'),
+      description: t('unavailable'),
       stateVariant: 'unavailable' as const,
       action: (
         <Link
@@ -181,13 +185,13 @@ async function NamedState({ variant, locale }: NamedStateProps) {
           className="min-h-12 inline-flex items-center rounded-sm border border-primary px-6 py-3 text-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           data-testid="unavailable-back-cta"
         >
-          {String(t('unavailable_cta' as keyof typeof t))}
+          {t('unavailable_cta')}
         </Link>
       ),
     },
     failed: {
-      title: String(t('failed_heading' as keyof typeof t)),
-      description: String(t('failed' as keyof typeof t)),
+      title: t('failed_heading'),
+      description: t('failed'),
       stateVariant: 'error' as const,
       action: (
         <Link
@@ -195,7 +199,7 @@ async function NamedState({ variant, locale }: NamedStateProps) {
           className="min-h-12 inline-flex items-center rounded-sm bg-action px-6 py-3 text-action-on-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
           data-testid="failed-retry-cta"
         >
-          {String(t('failed_cta' as keyof typeof t))}
+          {t('failed_cta')}
         </Link>
       ),
     },

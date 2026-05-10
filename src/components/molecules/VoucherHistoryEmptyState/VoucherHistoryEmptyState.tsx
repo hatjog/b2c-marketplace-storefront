@@ -69,6 +69,7 @@ export function VoucherHistoryEmptyState({
         variant="empty"
         title={t('heading')}
         titleAs="h2"
+        titleId="voucher-empty-heading"
         description={t('body')}
         action={action}
         data-testid="voucher-empty-state-card"
