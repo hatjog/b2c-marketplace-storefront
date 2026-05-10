@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
 
+import { getTranslations } from 'next-intl/server';
+
 import { SellerReviewTab } from '@/components/cells';
 import { TabsContent, TabsList } from '@/components/molecules';
 import { AlgoliaProductsListing } from '@/components/sections/ProductListing/AlgoliaProductsListing';
@@ -10,7 +12,7 @@ import { ProductListingSkeleton } from '../ProductListingSkeleton/ProductListing
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
-export const SellerTabs = ({
+export const SellerTabs = async ({
   tab,
   seller_handle,
   seller_id,
@@ -25,11 +27,16 @@ export const SellerTabs = ({
   countryCode: string;
   currency_code: string;
 }) => {
+  const commonT = await getTranslations('common');
+  const sellerT = await getTranslations('seller.detail');
+  const productsT = await getTranslations('products');
+
   const tabsList = [
-    { label: 'products', link: `/sellers/${seller_handle}/` },
+    { label: sellerT('products_label'), link: `/sellers/${seller_handle}/`, value: 'products' },
     {
-      label: 'reviews',
-      link: `/sellers/${seller_handle}/reviews`
+      label: productsT('reviews'),
+      link: `/sellers/${seller_handle}/reviews`,
+      value: 'reviews'
     }
   ];
 
@@ -71,7 +78,7 @@ export const SellerTabs = ({
         value="reviews"
         activeTab={tab}
       >
-        <Suspense fallback={<div data-testid="seller-tabs-reviews-loading">Loading...</div>}>
+        <Suspense fallback={<div data-testid="seller-tabs-reviews-loading">{commonT('loading')}</div>}>
           <SellerReviewTab seller_handle={seller_handle} />
         </Suspense>
       </TabsContent>

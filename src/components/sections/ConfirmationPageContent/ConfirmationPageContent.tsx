@@ -35,9 +35,9 @@
 import React, { useEffect, useState } from 'react';
 
 import * as Sentry from '@sentry/nextjs';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCode';
 import {
   type ConfirmationHandoffState,
@@ -202,13 +202,13 @@ function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
           {t('gift_cta')}
         </a>
       ) : (
-        <Link
+        <LocalizedClientLink
           href="/categories"
           className="bb-primary-cta rounded-full px-6 py-3"
           data-testid="transfer-cta"
         >
           {t('continue_shopping')}
-        </Link>
+        </LocalizedClientLink>
       )}
     </div>
   );
@@ -274,9 +274,9 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
           <VoucherQrCode code={entitlement.voucher_code} />
         </QrErrorBoundary>
       )}
-      <Link href="/categories" className="bb-primary-cta rounded-full px-6 py-3">
+      <LocalizedClientLink href="/categories" className="bb-primary-cta rounded-full px-6 py-3">
         {t('continue_shopping')}
-      </Link>
+      </LocalizedClientLink>
     </div>
   );
 }
@@ -332,13 +332,13 @@ function PaidDeliveryPendingView({
           {t('order_ref', { orderId: orderRef })}
         </p>
       </div>
-      <Link
-        href="/account/orders"
+      <LocalizedClientLink
+        href="/user/orders"
         className="bb-primary-cta rounded-full px-6 py-3"
         data-testid="go-to-orders-cta"
       >
         {t('go_to_orders')}
-      </Link>
+      </LocalizedClientLink>
     </div>
   );
 }
@@ -417,20 +417,20 @@ function PaymentFailedRetryView() {
         <h1 className="heading-xl">{t('payment_failed_title')}</h1>
         <p className="mt-3 text-secondary">{t('payment_failed_description')}</p>
       </div>
-      <Link
+      <LocalizedClientLink
         href="/checkout"
         className="bb-primary-cta rounded-full px-6 py-3"
         data-testid="retry-cta"
       >
         {t('retry')}
-      </Link>
-      <Link
+      </LocalizedClientLink>
+      <LocalizedClientLink
         href="/cart"
         className="label-md text-secondary underline underline-offset-4"
         data-testid="change-method-cta"
       >
         {t('change_method')}
-      </Link>
+      </LocalizedClientLink>
     </div>
   );
 }
@@ -464,24 +464,24 @@ function SupportRequiredView({ orderRef }: { orderRef: string }) {
         </p>
       </div>
       {/* Primary: account/orders recovery path (Story 2.6 magic-link baseline) */}
-      <Link
-        href="/account/orders"
+      <LocalizedClientLink
+        href="/user/orders"
         className="bb-primary-cta rounded-full px-6 py-3"
         data-testid="recovery-cta"
       >
         {t('recovery_cta')}
-      </Link>
+      </LocalizedClientLink>
       {/* Secondary: support contact — no PII in href (AC3 + NFR22).
-          G8 review-2 fix: `<Link>` (not raw `<a>`) so the next-intl locale
+          G8 review-2 fix: localized navigation so the next-intl locale
           prefix is preserved and the help page renders in the customer's
           chosen language, not the default locale fallback. */}
-      <Link
-        href="/help"
+      <LocalizedClientLink
+        href="/pomoc"
         className="label-md text-secondary underline underline-offset-4"
         data-testid="support-cta"
       >
         {t('support_required_cta')}
-      </Link>
+      </LocalizedClientLink>
     </div>
   );
 }
@@ -632,9 +632,9 @@ export function ConfirmationPageContent({ orderId }: Props) {
         data-testid="order-confirmed-generic"
       >
         <h1 className="heading-xl">{t('generic_title')}</h1>
-        <Link href="/categories" className="bb-primary-cta mt-6 rounded-full px-6 py-3">
+        <LocalizedClientLink href="/categories" className="bb-primary-cta mt-6 rounded-full px-6 py-3">
           {t('continue_shopping')}
-        </Link>
+        </LocalizedClientLink>
       </div>
     );
   }

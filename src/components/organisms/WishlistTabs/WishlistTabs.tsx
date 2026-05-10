@@ -11,11 +11,12 @@ import { ProductsPagination } from '../ProductsPagination/ProductsPagination';
 
 export const WishlistTabs = async ({ tab }: { tab: string }) => {
   const t = await getTranslations('wishlist');
+  const commonT = await getTranslations('common');
 
   const wishlistTabs = [
-    { label: t('all'), link: '/wishlist' },
-    { label: t('products'), link: '/wishlist/products' },
-    { label: t('collections'), link: '/wishlist/collections' }
+    { label: t('all'), link: '/wishlist', value: 'all' },
+    { label: t('products'), link: '/wishlist/products', value: 'products' },
+    { label: t('collections'), link: '/wishlist/collections', value: 'collections' }
   ];
 
   // const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "gb"
@@ -35,7 +36,7 @@ export const WishlistTabs = async ({ tab }: { tab: string }) => {
         value="all"
         activeTab={tab}
       >
-        <Suspense fallback={<>Loading...</>}>
+        <Suspense fallback={<>{commonT('loading')}</>}>
           <div className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4">
             {/* <ProductsList products={products} /> */}
           </div>
@@ -46,7 +47,7 @@ export const WishlistTabs = async ({ tab }: { tab: string }) => {
         value="products"
         activeTab={tab}
       >
-        <Suspense fallback={<>Loading...</>}>
+        <Suspense fallback={<>{commonT('loading')}</>}>
           <div className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4">
             {/* <ProductsList products={products} /> */}
           </div>
@@ -57,7 +58,7 @@ export const WishlistTabs = async ({ tab }: { tab: string }) => {
         value="collections"
         activeTab={tab}
       >
-        <Suspense fallback={<>Loading...</>}>
+        <Suspense fallback={<>{commonT('loading')}</>}>
           <div className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4">
             {/* <ProductsList products={products} /> */}
           </div>

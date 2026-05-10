@@ -3,8 +3,9 @@ import { headers } from 'next/headers';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
@@ -53,7 +54,7 @@ export async function generateMetadata({
       canonical,
       languages: {
         ...languages,
-        'x-default': baseUrl
+        'x-default': `${baseUrl}/${DEFAULT_LOCALE}`
       }
     },
     openGraph: {
@@ -98,6 +99,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <main id="main-content" className="bb-page-shell row-start-2 text-primary">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="home"
+      />
       {/* Organization JSON-LD */}
       <Script
         id="ld-org"

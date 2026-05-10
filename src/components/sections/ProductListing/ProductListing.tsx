@@ -31,7 +31,6 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { sanitizeTagIdList } from '@/lib/helpers/sanitize-tag-id';
 import { resolveMarketConfig } from '@/lib/portal.server';
-import { getTranslations } from 'next-intl/server';
 import { ClearFiltersButton } from './ClearFiltersButton';
 import { ListingRetryButton } from './ListingRetryButton';
 
@@ -148,8 +147,6 @@ export const ProductListing = async ({
 
   // ADR-046: resolve country code from cookie, not from locale URL segment
   const countryCode = await getCountryCode(locale);
-  const t = await getTranslations('filters');
-
   // Fetch market config for storefront filters
   const marketId = getMarketId();
   const storefrontFilters: StorefrontFilterConfig[] = [];

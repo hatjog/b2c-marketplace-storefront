@@ -16,7 +16,7 @@
  * DS boundary (ARCH-007): BonBeauty DS storefront-only.
  */
 import * as React from 'react';
-import { describe, expect, it, vi, beforeAll } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // Mock next-intl useTranslations
 vi.mock('next-intl', () => ({
@@ -64,18 +64,6 @@ function findByProp(node: React.ReactNode, propKey: string, propValue: unknown):
     if (found) return found;
   }
   return null;
-}
-
-function collectText(node: React.ReactNode, acc: string[] = []): string[] {
-  if (typeof node === 'string' || typeof node === 'number') {
-    acc.push(String(node));
-    return acc;
-  }
-  if (Array.isArray(node)) { node.forEach(c => collectText(c, acc)); return acc; }
-  if (React.isValidElement<Record<string, unknown>>(node)) {
-    collectText(node.props.children as React.ReactNode, acc);
-  }
-  return acc;
 }
 
 describe('VoucherHistoryEmptyState', () => {

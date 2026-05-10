@@ -40,6 +40,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 import { VoucherWithdrawalStateCard } from '@/components/molecules/VoucherWithdrawalStateCard';
 import type { WithdrawalStateResult } from '@/types/voucher';
@@ -55,7 +56,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function PomocPage() {
+export default async function PomocPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations('voucher_withdrawal');
   const tWL = await getTranslations('voucher_withdrawal.legal');
   const tLegal = await getTranslations('legal');
@@ -105,6 +111,10 @@ export default async function PomocPage() {
         data-testid="pomoc-content"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
+        <StorefrontI18nLongContentProbe
+          locale={locale}
+          surface="legal-help"
+        />
         {/* Page header */}
         <header style={{ marginBottom: '2.5rem' }}>
           <h1

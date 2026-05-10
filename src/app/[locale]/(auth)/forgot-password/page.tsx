@@ -1,15 +1,30 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { ForgotPasswordForm } from '@/components/molecules/ForgotPasswordForm/ForgotPasswordForm';
 
-export const metadata: Metadata = {
-  title: 'Forgot password',
-  description: 'Create a new password'
+type ForgotPasswordPageProps = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function ForgotPasswordPage() {
+export async function generateMetadata({ params }: ForgotPasswordPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+  return {
+    title: t('forgot_password_heading'),
+    description: t('forgot_password_description'),
+  };
+}
+
+export default async function ForgotPasswordPage({ params }: ForgotPasswordPageProps) {
+  const { locale } = await params;
   return (
-    <main className="container">
+    <main id="main-content" className="container">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="account-recovery"
+      />
       <ForgotPasswordForm />
     </main>
   );

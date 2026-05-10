@@ -12,7 +12,7 @@ import { describe, expect, it, vi } from 'vitest';
 // Mock React's useRef + useCallback to be identity-like so the hook can run
 // outside a renderer.
 vi.mock('react', async () => {
-  const actual = await vi.importActual<typeof import('react')>('react');
+  const actual = await vi.importActual<Record<string, unknown>>('react');
   return {
     ...actual,
     useRef: <T>(initial: T) => ({ current: initial }),

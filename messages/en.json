@@ -427,7 +427,9 @@
     "orders": "Orders",
     "settings": "Settings",
     "no_orders": "No orders",
-    "no_orders_message": "You haven't placed any order yet. Once you do, it will appear here."
+    "no_orders_message": "You haven't placed any order yet. Once you do, it will appear here.",
+    "welcome_heading": "Welcome {firstName}",
+    "welcome_subheading": "Your account is ready to go."
   },
   "blog": {
     "title": "Blog",
@@ -489,11 +491,17 @@
   "page": {
     "cart_title": "Cart",
     "cart_description": "Review the items in your cart and continue to checkout.",
+    "checkout_title": "Checkout",
+    "checkout_description": "Review your order details and complete the purchase securely.",
     "loading": "Loading..."
   },
   "legal": {
     "title_privacy": "Privacy Policy",
     "title_regulamin": "Terms of Service",
+    "title_zasady": "Voucher Terms",
+    "regulamin_description": "BonBeauty terms of service — page in preparation.",
+    "privacy_description": "BonBeauty privacy policy — information about personal data processing under GDPR.",
+    "zasady_description": "BonBeauty voucher redemption terms.",
     "coming_soon": "Page in preparation",
     "coming_soon_description": "The terms of service are being finalized. Please contact us if you have any questions.",
     "contact_email": "kontakt@bonbeauty.pl",
@@ -575,6 +583,8 @@
     }
   },
   "confirmation": {
+    "meta_title": "Order confirmed",
+    "meta_description": "Your BonBeauty order has been received.",
     "loading": "Loading...",
     "not_found": "Order not found",
     "generic_title": "Thank you. Your order has been received.",

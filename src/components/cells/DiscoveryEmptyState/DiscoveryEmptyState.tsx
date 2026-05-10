@@ -20,6 +20,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 
 // v1.7.0 Story 2.2 review fix (MEDIUM M2): VARIANT_MAP and the variant type
@@ -124,13 +125,13 @@ function DefaultCta({
   // the `action` prop (see ProductListing.tsx). This default just sends the
   // user back to /categories so the link is never dead.
   return (
-    <a
+    <LocalizedClientLink
       href="/categories"
       aria-label={label}
       className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-5 py-2 text-sm font-medium text-action-on-primary transition-colors hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
       data-testid={`discovery-empty-cta-${variant}`}
     >
       {label}
-    </a>
+    </LocalizedClientLink>
   );
 }

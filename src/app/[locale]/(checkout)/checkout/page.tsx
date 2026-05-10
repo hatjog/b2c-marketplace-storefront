@@ -2,7 +2,9 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
 import { CartAddressSection } from '@/components/sections/CartAddressSection/CartAddressSection';
@@ -23,12 +25,22 @@ import { listCartPaymentMethods } from '@/lib/data/payment';
  */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Checkout',
-  description: 'My cart page - Checkout'
+type CheckoutPageProps = {
+  params: Promise<{ locale: string }>;
 };
 
-export default async function CheckoutPage({}) {
+export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'page' });
+  return {
+    title: t('checkout_title'),
+    description: t('checkout_description'),
+  };
+}
+
+export default async function CheckoutPage({ params }: CheckoutPageProps) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'page' });
   return (
     <Suspense
       fallback={
@@ -36,16 +48,16 @@ export default async function CheckoutPage({}) {
           className="container flex items-center justify-center"
           data-testid="checkout-page-loading"
         >
-          Loading...
+          {t('loading')}
         </div>
       }
     >
-      <CheckoutPageContent />
+      <CheckoutPageContent locale={locale} />
     </Suspense>
   );
 }
 
-async function CheckoutPageContent({}) {
+async function CheckoutPageContent({ locale }: { locale: string }) {
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
   const cart = await retrieveCart();
@@ -64,6 +76,10 @@ async function CheckoutPageContent({}) {
         className="bb-page-shell"
         data-testid="checkout-page"
       >
+        <StorefrontI18nLongContentProbe
+          locale={locale}
+          surface="checkout"
+        />
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
           <div
             className="flex flex-col gap-4"

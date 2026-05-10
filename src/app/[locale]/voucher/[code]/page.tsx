@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { getVoucherByCode, getVoucherEvents } from '@/lib/data/voucher';
 import { claimVoucher } from '@/actions/voucher-claim';
 import { OfflineBanner } from '@/components/voucher/OfflineBanner';
@@ -101,6 +102,10 @@ export default async function VoucherClaimPage({
       data-status={voucher.status}
       className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10"
     >
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="voucher-claim"
+      />
       <OfflineBanner />
       <header className="flex flex-col gap-2">
         <span

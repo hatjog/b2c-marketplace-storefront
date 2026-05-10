@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { SalonContextChip, type SalonContextChipSeller } from '@/components/atoms/SalonContextChip/SalonContextChip';
 import { ProductDetailsPage } from '@/components/sections';
 import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
@@ -119,6 +120,10 @@ export default async function ProductPage({
 
   return (
     <main id="main-content" className="container">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="pdp"
+      />
       {productSchema ? (
         <script
           type="application/ld+json"

@@ -14,11 +14,11 @@ import { headers } from 'next/headers';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumbs } from '@/components/atoms';
+import { Breadcrumbs, StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
+import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { listProducts } from '@/lib/data/products';
-import { listRegions } from '@/lib/data/regions';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
 
@@ -36,19 +36,10 @@ export async function generateMetadata({
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
-  let languages: Record<string, string> = {};
-  try {
-    const regions = await listRegions();
-    const locales = Array.from(
-      new Set((regions || []).flatMap(r => r.countries?.map(c => c.iso_2) || []))
-    ) as string[];
-    languages = locales.reduce<Record<string, string>>((acc, code) => {
-      acc[toHreflang(code)] = `${baseUrl}/${code}/categories`;
-      return acc;
-    }, {});
-  } catch {
-    languages = { [toHreflang(locale)]: `${baseUrl}/${locale}/categories` };
-  }
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
+    acc[toHreflang(code)] = `${baseUrl}/${code}/categories`;
+    return acc;
+  }, {});
 
   const title = t('page_title');
   const description = t('page_description');
@@ -60,7 +51,7 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical,
-      languages: { ...languages, 'x-default': `${baseUrl}/categories` }
+      languages: { ...languages, 'x-default': `${baseUrl}/pl/categories` }
     },
     robots: { index: true, follow: true },
     openGraph: {
@@ -127,6 +118,10 @@ async function AllCategories({
 
   return (
     <main id="main-content" className="container">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="category-listing"
+      />
       <Script
         id="ld-breadcrumbs-categories"
         type="application/ld+json"

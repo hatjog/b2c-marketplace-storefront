@@ -4,18 +4,20 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumbs } from '@/components/atoms';
+import { Breadcrumbs, StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveZasadySections } from '@/lib/runtime-market-config';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
+  const t = await getTranslations('legal');
   return {
-    title: `Zasady — ${siteName}`,
+    title: t('title_zasady'),
+    description: t('zasady_description'),
     robots: { index: false, follow: false },
   };
 }
@@ -29,18 +31,23 @@ export default async function ZasadyPage({
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
   const tW = await getTranslations('voucher_withdrawal');
+  const tLegal = await getTranslations('legal');
 
   if (!sections) {
-    redirect('/');
+    redirect(`/${locale}`);
   }
 
   return (
     <main id="main-content" className="container mx-auto max-w-[720px] px-4 py-8">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="legal-zasady"
+      />
       <div className="mb-2 hidden md:block">
-        <Breadcrumbs items={[{ path: 'zasady', label: 'Zasady' }]} />
+        <Breadcrumbs items={[{ path: 'zasady', label: tLegal('title_zasady') }]} />
       </div>
 
-      <h1 className="heading-xl mb-8">Zasady</h1>
+      <h1 className="heading-xl mb-8">{tLegal('title_zasady')}</h1>
 
       {sections.map((section, i) => (
         <section key={i} className="border-b border-secondary py-8 last:border-b-0">
@@ -64,13 +71,13 @@ export default async function ZasadyPage({
         <p className="prose text-sm text-secondary mb-4">
           {tW('legal.consent_body')}
         </p>
-        <a
+        <Link
           href={`/${locale}/pomoc`}
           className="text-sm underline"
           data-testid="zasady-pomoc-link"
         >
           {tW('legal.contact_support')} →
-        </a>
+        </Link>
       </section>
     </main>
   );
