@@ -12,5 +12,7 @@ export { ProductDetailsSeller } from './ProductDetailsSeller/ProductDetailsSelle
 export { ProductDetailsSellerReviews } from './ProductDetailsSellerReviews/ProductDetailsSellerReviews';
 export { ProductDetailsShipping } from './ProductDetailsShipping/ProductDetailsShipping';
 export { ProductPageDetails } from './ProductPageDetails/ProductPageDetails';
+export { SellerProofSurface } from './SellerProofSurface/SellerProofSurface';
 export { SellerReviewTab } from './SellerReviewTab/SellerReviewTab';
+export { VoucherClaritySurface } from './VoucherClaritySurface/VoucherClaritySurface';
 export { WishlistItem } from './WishlistItem/WishlistItem';
