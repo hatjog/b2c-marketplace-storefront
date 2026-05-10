@@ -595,7 +595,7 @@
     "last_updated_label": "Last updated: {timestamp}",
     "last_checked_label": "Last checked: {timestamp}",
     "support_required_title": "We need a moment to deliver your voucher",
-    "support_required_description": "We are on it and will be in touch. Your order is registered and safe.",
+    "support_required_description": "Your order is registered and safe. Check your orders or contact us if it is urgent.",
     "support_required_cta": "Contact support",
     "recovery_cta": "Go to my orders",
     "payment_failed_title": "Payment failed",

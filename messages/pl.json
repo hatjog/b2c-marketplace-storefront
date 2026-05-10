@@ -595,7 +595,7 @@
     "last_updated_label": "Ostatnia aktualizacja: {timestamp}",
     "last_checked_label": "Ostatnio sprawdzono: {timestamp}",
     "support_required_title": "Potrzebujemy chwili, aby dostarczyć Twój voucher",
-    "support_required_description": "Zajmiemy się tym i skontaktujemy się z Tobą. Zamówienie jest zarejestrowane i bezpieczne.",
+    "support_required_description": "Twoje zamówienie jest zarejestrowane i bezpieczne. Sprawdź zamówienia lub skontaktuj się z nami, jeśli to pilne.",
     "support_required_cta": "Skontaktuj się z pomocą",
     "recovery_cta": "Przejdź do moich zamówień",
     "payment_failed_title": "Płatność nie powiodła się",

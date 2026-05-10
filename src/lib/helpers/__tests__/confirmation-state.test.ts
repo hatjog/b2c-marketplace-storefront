@@ -166,6 +166,28 @@ describe('getConfirmationHandoffState', () => {
     });
   });
 
+  // --- Defensive input normalisation (F2 review fix) ---
+
+  describe('input normalisation: case + whitespace tolerance', () => {
+    it('normalises uppercase PAID to paid (no false-pending fall-through)', () => {
+      expect(
+        getConfirmationHandoffState({ paymentStatus: 'PAID', entitlements: [active] })
+      ).toBe('paid_delivered');
+    });
+
+    it('normalises whitespace-padded " paid " to paid', () => {
+      expect(
+        getConfirmationHandoffState({ paymentStatus: ' paid ', entitlements: [active] })
+      ).toBe('paid_delivered');
+    });
+
+    it('normalises mixed-case CANCELED to canceled (failed_retry path)', () => {
+      expect(
+        getConfirmationHandoffState({ paymentStatus: 'Canceled' })
+      ).toBe('payment_failed_retry');
+    });
+  });
+
   // --- Anti-patterns (banned behaviours) ---
 
   describe('anti-patterns: banned behaviours', () => {
@@ -198,9 +220,11 @@ describe('getConfirmationState (legacy 3-state bridge)', () => {
     expect(getConfirmationState('canceled')).toBe('error');
   });
 
-  it('returns success for paid (no entitlement defaults to paid_delivery_pending → success bridge)', () => {
-    // paid + no entitlement → paid_delivery_pending → legacy 'success' (was "generic success")
-    expect(getConfirmationState('paid')).toBe('success');
+  it('returns pending for paid + no entitlement (F12 honesty fix: paid_delivery_pending → pending, not success)', () => {
+    // paid + no entitlement → paid_delivery_pending → legacy 'pending'
+    // (F12 review fix: was 'success'; corrected to honour AC2 — never claim
+    // delivery success on the legacy 3-state surface without backend evidence)
+    expect(getConfirmationState('paid')).toBe('pending');
   });
 
   it('returns pending for pending_psp_confirmation', () => {

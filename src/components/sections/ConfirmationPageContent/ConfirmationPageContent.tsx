@@ -98,8 +98,26 @@ function formatVoucherCode(code: string): string {
   return code.replace(/([A-Z0-9]{4})(?=[A-Z0-9])/g, '$1 ').trim();
 }
 
+/**
+ * Map next-intl locale slug → BCP-47 tag for `Intl` formatters (F3 review fix).
+ * Without this, UA/DE silently fell back to `pl-PL` formatting.
+ * Currency stays PLN until multi-currency lands in a separate story.
+ */
+function localeTag(locale: string): string {
+  switch (locale) {
+    case 'en':
+      return 'en-GB';
+    case 'ua':
+      return 'uk-UA';
+    case 'de':
+      return 'de-DE';
+    default:
+      return 'pl-PL';
+  }
+}
+
 function formatAmount(minor: number, locale: string): string {
-  return (minor / 100).toLocaleString(locale === 'en' ? 'en-US' : 'pl-PL', {
+  return (minor / 100).toLocaleString(localeTag(locale), {
     style: 'currency',
     currency: 'PLN',
   });
@@ -109,7 +127,12 @@ function formatAmount(minor: number, locale: string): string {
 function formatTimestamp(isoString: string | null | undefined, locale: string): string | null {
   if (!isoString) return null;
   try {
-    return new Date(isoString).toLocaleString(locale === 'en' ? 'en-GB' : 'pl-PL', {
+    const d = new Date(isoString);
+    // F7 review fix: `new Date('garbage')` does NOT throw — it returns an
+    // Invalid Date whose toLocaleString() emits literal "Invalid Date".
+    // Validate explicitly so malformed upstream timestamps never leak to UI.
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleString(localeTag(locale), {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -137,6 +160,11 @@ function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
     <div
       className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center"
       data-testid="gift-confirmed"
+      // F5 review fix: announce delivered/accepted state once on transition
+      // from paid_delivery_pending so screen readers get a clear handoff
+      // (NFR28 + UX-DR9). No aria-busy here — delivery is complete.
+      role="status"
+      aria-live="polite"
     >
       <span className="bb-pill">BonBeauty</span>
       <h1 className="heading-xl">{t('gift_title')}</h1>
@@ -191,6 +219,10 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
     <div
       className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center"
       data-testid="self-purchase-confirmed"
+      // F5 review fix: announce delivered/accepted state once on transition
+      // from paid_delivery_pending (NFR28 + UX-DR9). No aria-busy.
+      role="status"
+      aria-live="polite"
     >
       <span className="bb-pill">BonBeauty</span>
       <h1 className="heading-xl">{t('active_title')}</h1>
@@ -216,6 +248,9 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
         <p
           data-testid="voucher-code"
           className="rounded-full border border-[rgba(144,112,50,0.18)] px-4 py-2 font-mono text-sm"
+          // F10 review fix: explicit aria-label so screen readers announce
+          // "voucher code: ABCD-1234" with context, not raw character runs.
+          aria-label={`${t('voucher_code_label')}: ${formatVoucherCode(entitlement.voucher_code)}`}
         >
           {formatVoucherCode(entitlement.voucher_code)}
         </p>
@@ -254,7 +289,8 @@ function PaidDeliveryPendingView({
   const t = useTranslations('confirmation');
   const locale = useLocale();
   const formattedTs = formatTimestamp(lastUpdatedAt, locale);
-  const clientTs = new Date().toLocaleString(locale === 'en' ? 'en-GB' : 'pl-PL', {
+  // F3 review fix: route through localeTag so UA/DE don't silently use pl-PL.
+  const clientTs = new Date().toLocaleString(localeTag(locale), {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -347,6 +383,9 @@ function PaymentFailedRetryView() {
   return (
     <div
       className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
+      // F9 review fix: legacy testid kept for E2E stability — covers
+      // payment_failed_retry ONLY. support_required has its own dedicated
+      // testid (`support-required`); never conflate the two.
       data-testid="error-state"
     >
       <div className="bb-section-shell w-full">
@@ -446,7 +485,15 @@ export function ConfirmationPageContent({ orderId }: Props) {
           setLoading(false);
         }
       } catch {
-        // No order/entitlement payload logged — NFR22 + Sentry hygiene
+        // F6 review fix: emit a payload-free Sentry breadcrumb so SRE can see
+        // confirmation-page reachability spikes without violating NFR22.
+        // Message string only — never order id, entitlement, voucher, or any
+        // PII / token data.
+        try {
+          Sentry.captureMessage('confirmation_fetch_failed', 'warning');
+        } catch {
+          // Sentry unavailable in test/SSR — never block the UI on telemetry.
+        }
         if (!cancelled) {
           setFetchError(true);
           setLoading(false);
@@ -461,10 +508,12 @@ export function ConfirmationPageContent({ orderId }: Props) {
   }, [orderId]);
 
   // Loading state — accessible status semantics (NFR28)
+  // F8 review fix: align max-width with other states to prevent full-bleed
+  // text on desktop and visual jank on first paint.
   if (loading && !fetchError) {
     return (
       <div
-        className="bb-section-shell text-center"
+        className="bb-section-shell mx-auto max-w-2xl text-center"
         data-testid="loading"
         role="status"
         aria-live="polite"
@@ -517,6 +566,12 @@ export function ConfirmationPageContent({ orderId }: Props) {
 
   // --- paid_delivered — determine gift vs self-purchase from first entitlement ---
   const entitlement = entitlements[0];
+  // F4 review fix: `order.metadata.buyer_is_recipient` is currently a
+  // dead-input — Story 2.4 F4 stripped `metadata` from the order proxy, so
+  // this defaults to `true` for every paid_delivered order today. The actual
+  // gift discriminator below is `entitlement.status === 'ISSUED'`. The
+  // metadata read is preserved to keep the contract ready when an Epic 7/8
+  // evidence endpoint surfaces buyer_is_recipient as a live signal.
   const buyerIsRecipient = order.metadata?.buyer_is_recipient ?? true;
 
   // Fallback: no usable entitlement despite paid_delivered state (should not happen,

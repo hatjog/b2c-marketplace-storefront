@@ -119,7 +119,10 @@ export function getConfirmationHandoffState(
   input: ConfirmationStateInput,
 ): ConfirmationHandoffState {
   const { paymentStatus, entitlements = [], metadata } = input;
-  const ps = paymentStatus ?? '';
+  // Defensive normalisation (F2 review fix): trim + lowercase so stray
+  // whitespace or casing variants from proxy bypass / direct test injection
+  // don't silently fall through to the safe-default `payment_pending`.
+  const ps = (paymentStatus ?? '').trim().toLowerCase();
 
   // 1. Payment-pending PSP confirmation
   if (PENDING_PSP_STATUSES.has(ps)) {
@@ -171,19 +174,26 @@ export function getConfirmationHandoffState(
  * Used by call-sites that have not yet migrated to getConfirmationHandoffState().
  * Kept to avoid breaking changes until all callers migrate.
  *
- * Mapping:
+ * Mapping (F12 review fix — honesty rule extended to legacy bridge):
  *   paid_delivered        → 'success'
- *   paid_delivery_pending → 'success'  (was "generic success" in v120-3.6)
+ *   paid_delivery_pending → 'pending'  (was 'success' in v120-3.6 — would have
+ *                                      claimed delivery before backend evidence;
+ *                                      'pending' preserves AC2 honesty for any
+ *                                      surviving caller)
  *   payment_pending       → 'pending'
  *   payment_failed_retry  → 'error'
  *   support_required      → 'error'    (conservative; was conflated in old code)
+ *
+ * No live storefront callers remain at v1.7.0 Story 2.5 (verified by repo grep);
+ * bridge retained as a safety net until the deprecated export is removed in a
+ * follow-up cleanup story.
  */
 export function getConfirmationState(paymentStatus: string | undefined): ConfirmationState {
   const handoffState = getConfirmationHandoffState({ paymentStatus });
   switch (handoffState) {
     case 'paid_delivered':
-    case 'paid_delivery_pending':
       return 'success';
+    case 'paid_delivery_pending':
     case 'payment_pending':
       return 'pending';
     case 'payment_failed_retry':
