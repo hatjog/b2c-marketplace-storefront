@@ -8,8 +8,8 @@ export const ReturnMethodsTab = ({
   seller
 }: {
   shippingMethods: ReturnShippingOption[];
-  handleSetReturnMethod: (method: ReturnShippingOption) => void;
-  returnMethod: string;
+  handleSetReturnMethod: (methodId: string) => void;
+  returnMethod: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   seller: any; // upstream: seller shape from Mercur order not fully typed here
 }) => {
@@ -28,7 +28,7 @@ export const ReturnMethodsTab = ({
             </div>
           ) : (
             <ul>
-              {shippingMethods.map((method) => (
+              {shippingMethods.map(method => (
                 <li
                   key={method.id}
                   onClick={() => handleSetReturnMethod(method.id)}

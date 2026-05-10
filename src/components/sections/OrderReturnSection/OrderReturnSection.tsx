@@ -9,7 +9,6 @@ import { StepProgressBar } from '@/components/cells/StepProgressBar/StepProgress
 import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowLeftIcon } from '@/icons';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { createReturnRequest, type ReturnShippingOption } from '@/lib/data/orders';
 
 import { ReturnItemsTab } from './ReturnItemsTab';
@@ -30,7 +29,7 @@ export const OrderReturnSection = ({
   const [tab, setTab] = useState(0);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
   const [error, setError] = useState<boolean>(false);
-  const [returnMethod, setReturnMethod] = useState<any>(null);
+  const [returnMethod, setReturnMethod] = useState<string | null>(null);
   const router = useRouter();
 
   const handleTabChange = (tab: number) => {
@@ -42,8 +41,8 @@ export const OrderReturnSection = ({
     }
   };
 
-  const handleSetReturnMethod = (method: any) => {
-    setReturnMethod(method);
+  const handleSetReturnMethod = (methodId: string) => {
+    setReturnMethod(methodId);
   };
 
   const handleSelectItem = (item: any, reason_id: string = '') => {
