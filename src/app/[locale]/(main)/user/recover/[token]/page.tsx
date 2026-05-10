@@ -48,14 +48,12 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { MagicLinkRecoveryState } from '@/components/molecules/MagicLinkRecoveryState/MagicLinkRecoveryState';
 import { exchangeRecoveryTokenForm } from '@/actions/voucher-recovery';
 
 export const dynamic = 'force-dynamic';
 
 interface RecoverPageProps {
   params: Promise<{ locale: string; token: string }>;
-  searchParams?: Promise<{ attempted?: string }>;
 }
 
 export async function generateMetadata({ params }: RecoverPageProps): Promise<Metadata> {
@@ -89,37 +87,25 @@ export async function generateMetadata({ params }: RecoverPageProps): Promise<Me
  * passed to client components beyond the hidden input on the form.
  */
 export default async function RecoverPage({
-  params,
-  searchParams
+  params
 }: RecoverPageProps): Promise<React.ReactElement> {
   const { locale, token } = await params;
-  const search = (await searchParams) ?? {};
-  const attempted = search.attempted === '1';
   const t = await getTranslations({ locale, namespace: 'voucher.recovery' });
 
-  // After a failed exchange attempt → render neutral anti-enumeration state.
-  if (attempted) {
-    return (
-      <main
-        className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
-        data-testid="recover-page"
-        aria-label="voucher-recovery"
-      >
-        <div className="w-full max-w-lg">
-          <MagicLinkRecoveryState locale={locale} />
-        </div>
-      </main>
-    );
-  }
-
-  // Default: render the click-to-continue form. Token is in a hidden input
+  // Render the click-to-continue form. Token is in a hidden input
   // (form will POST to the Server Action only on user click — preventing
   // email-scanner / link-prefetch single-use consumption).
+  //
+  // Failure path (re-review M-token-persist): the form action redirects to
+  // /[locale]/user/recover (token-less route) on failure so the consumed
+  // token does not persist in URL / browser history / synced history.
+  // The aria-label='voucher-recovery' slug was removed (re-review INFO);
+  // the <main> landmark alone is sufficient and screen readers no longer
+  // announce a non-localized slug.
   return (
     <main
       className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
       data-testid="recover-page"
-      aria-label="voucher-recovery"
     >
       <div className="w-full max-w-lg flex flex-col items-center gap-6 text-center">
         <h1 className="heading-md text-primary">{t('title')}</h1>

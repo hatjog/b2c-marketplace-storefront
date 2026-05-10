@@ -54,6 +54,41 @@ export async function generateMetadata({ params }: VouchersPageProps): Promise<M
 }
 
 // ---------------------------------------------------------------------------
+// Locale-aware date formatter
+// ---------------------------------------------------------------------------
+
+/**
+ * Format a voucher-expiry ISO timestamp for display.
+ *
+ * Story 2.6 re-review LOW (L-tz/date-locale):
+ *   - Locale-specific formatting honors the actual user locale (pl/en/ua/de)
+ *     rather than collapsing all non-EN locales into `pl-PL`.
+ *   - timeZone is pinned to `Europe/Warsaw` so server-side rendering does
+ *     NOT depend on the Node.js process timezone (a UTC server and a CET
+ *     server would otherwise render different calendar dates near midnight).
+ *
+ * Returns the localized date string; on parse failure returns an empty
+ * string so the calling row renders an empty expiry slot rather than NaN.
+ */
+function formatExpiresDate(iso: string, locale: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const bcp47: Record<string, string> = {
+    pl: 'pl-PL',
+    en: 'en-GB',
+    ua: 'uk-UA',
+    de: 'de-DE'
+  };
+  const tag = bcp47[locale] ?? 'pl-PL';
+  return date.toLocaleDateString(tag, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'Europe/Warsaw'
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Status badge helpers
 // ---------------------------------------------------------------------------
 
@@ -110,7 +145,6 @@ function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
     <div
       className="flex flex-col gap-3 rounded-md border border-primary bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
       data-testid="voucher-row"
-      data-code={voucher.code}
     >
       <div className="flex flex-col gap-1">
         <p className="font-medium text-primary">{voucher.product_title || voucher.code}</p>
@@ -123,10 +157,7 @@ function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
           {voucher.expires_at && (
             <span className="text-xs text-secondary">
               {t('expires_label', {
-                date: new Date(voucher.expires_at).toLocaleDateString(
-                  locale === 'en' ? 'en-GB' : 'pl-PL',
-                  { year: 'numeric', month: 'short', day: 'numeric' }
-                )
+                date: formatExpiresDate(voucher.expires_at, locale)
               } as Parameters<typeof t>[1])}
             </span>
           )}

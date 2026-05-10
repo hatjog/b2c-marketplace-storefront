@@ -16,7 +16,10 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
-import { requestVoucherRecoveryLink } from '@/actions/voucher-recovery';
+import {
+  requestVoucherRecoveryLink,
+  requestVoucherRecoveryLinkForm
+} from '@/actions/voucher-recovery';
 
 interface MagicLinkRecoveryStateProps {
   locale: string;
@@ -60,11 +63,22 @@ export function MagicLinkRecoveryState({
       {t('sent_confirmation')}
     </p>
   ) : (
+    // Progressive enhancement (Story 2.6 re-review MEDIUM, M-no-js):
+    //   - `action={requestVoucherRecoveryLinkForm}` is the no-JS path; the
+    //     Server Action handles the request and redirects to the neutral
+    //     `/recover?sent=1` route so JS-disabled clients still complete the
+    //     flow (mirrors v1.5.0 voucher/consent baseline).
+    //   - `onSubmit={handleSubmit}` runs only when JS is available; it
+    //     prevents the navigation, exercises the inline success copy and
+    //     keeps the user on the page.
     <form
+      action={requestVoucherRecoveryLinkForm}
+      method="POST"
       onSubmit={handleSubmit}
       className="flex w-full max-w-sm flex-col gap-3"
       aria-label={t('cta_request_new_link')}
     >
+      <input type="hidden" name="locale" value={locale} />
       <label
         htmlFor={`recovery-email-${locale}`}
         className="sr-only"
