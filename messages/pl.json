@@ -176,6 +176,25 @@
     "multi_vendor": {
       "indicator_label": "{count} salonów oferuje",
       "indicator_tooltip": "Ten produkt oferowany przez {count} salonów partnerskich"
+    },
+    "proof": {
+      "heading_complete": "Informacje o salonie",
+      "heading_partial": "Informacje o salonie",
+      "heading_unavailable": "Informacje o salonie",
+      "verification_label": "Zweryfikowany salon BonBeauty",
+      "verification_pending_label": "Weryfikacja w toku",
+      "rating_label": "Ocena",
+      "rating_aria": "{rating} z 5 na podstawie {count} opinii",
+      "address_label": "Adres",
+      "missing_reviews_label": "Brak dostępnych opinii",
+      "missing_reviews_aria": "Opinie: brak danych",
+      "missing_address_label": "Brak adresu",
+      "partial_note": "Salon nie udostępnił jeszcze pełnych informacji.",
+      "unavailable_body": "Salon nie udostępnił jeszcze pełnych informacji. Możesz przejrzeć ofertę lub skontaktować się z nami.",
+      "unavailable_cta": "Przeglądaj salony partnerskie",
+      "seller_link_aria": "Przejdź do profilu salonu {name}",
+      "seller_detail_link": "Więcej o salonie",
+      "seller_detail_link_aria": "Więcej informacji o salonie {name}"
     }
   },
   "footer": {
@@ -674,6 +693,23 @@
       "sent_confirmation": "Jeśli ten adres e-mail jest powiązany z zakupem, wyślemy Ci link odzyskiwania.",
       "meta_title": "Odzyskiwanie dostępu | BonBeauty",
       "meta_description": "Odzyskaj dostęp do swoich voucherów BonBeauty."
+    },
+    "clarity": {
+      "validity_to_confirm": "Okres ważności zostanie potwierdzony.",
+      "validity_help_link": "Zasady realizacji",
+      "realization_rules_label": "Zasady realizacji",
+      "refund_policy_label": "Polityka zwrotów i anulowania:",
+      "refund_policy_link": "Sprawdź zasady",
+      "merchant_label": "Salon",
+      "merchant_link_aria": "Przejdź do profilu salonu {name}",
+      "status_pending_heading": "Voucher tymczasowo niedostępny",
+      "status_unavailable_heading": "Voucher niedostępny",
+      "status_expired_heading": "Voucher wygasł",
+      "status_recovery_heading": "Problem z zamówieniem",
+      "next_action_choose_variant": "Wybierz inny wariant",
+      "next_action_back_to_list": "Wróć do listy",
+      "next_action_notify_me": "Powiadom mnie",
+      "next_action_contact_salon": "Skontaktuj się z salonem"
     }
   },
   "cross_sell": {

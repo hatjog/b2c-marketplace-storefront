@@ -177,6 +177,25 @@
     "multi_vendor": {
       "indicator_label": "{count} салонів пропонують",
       "indicator_tooltip": "Цей продукт пропонується {count} партнерськими салонами"
+    },
+    "proof": {
+      "heading_complete": "Про цей салон",
+      "heading_partial": "Про цей салон",
+      "heading_unavailable": "Про цей салон",
+      "verification_label": "Перевірений салон BonBeauty",
+      "verification_pending_label": "Перевірка триває",
+      "rating_label": "Оцінка",
+      "rating_aria": "{rating} з 5 на основі {count} відгуків",
+      "address_label": "Адреса",
+      "missing_reviews_label": "Відгуків поки немає",
+      "missing_reviews_aria": "Відгуки: дані недоступні",
+      "missing_address_label": "Адресу не вказано",
+      "partial_note": "Салон ще не надав повну інформацію.",
+      "unavailable_body": "Салон ще не надав повну інформацію. Ви можете переглянути партнерські салони або зв’язатися з нами.",
+      "unavailable_cta": "Переглянути партнерські салони",
+      "seller_link_aria": "Перейти до профілю салону: {name}",
+      "seller_detail_link": "Більше про цей салон",
+      "seller_detail_link_aria": "Більше інформації про салон {name}"
     }
   },
   "footer": {
@@ -675,6 +694,23 @@
       "sent_confirmation": "Якщо ця адреса електронної пошти пов'язана з покупкою, ми надішлемо вам посилання для відновлення.",
       "meta_title": "Відновлення доступу | BonBeauty",
       "meta_description": "Відновіть доступ до своїх ваучерів BonBeauty."
+    },
+    "clarity": {
+      "validity_to_confirm": "Період дії буде підтверджено.",
+      "validity_help_link": "Умови використання",
+      "realization_rules_label": "Як використати",
+      "refund_policy_label": "Повернення та скасування:",
+      "refund_policy_link": "Переглянути правила",
+      "merchant_label": "Салон",
+      "merchant_link_aria": "Перейти до профілю салону {name}",
+      "status_pending_heading": "Ваучер тимчасово недоступний",
+      "status_unavailable_heading": "Ваучер недоступний",
+      "status_expired_heading": "Термін дії ваучера минув",
+      "status_recovery_heading": "Проблема із замовленням",
+      "next_action_choose_variant": "Виберіть інший варіант",
+      "next_action_back_to_list": "Повернутися до списку",
+      "next_action_notify_me": "Повідомити мене",
+      "next_action_contact_salon": "Зв’язатися із салоном"
     }
   },
   "cross_sell": {
