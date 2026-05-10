@@ -25,9 +25,11 @@ type HeroProps = {
   maxHeight?: string | null;
   showSearch?: boolean;
   /** Accessible trust label for MarketplaceVerificationMark (UX-CMP-1).
-   *  Defaults to 'Zweryfikowany marketplace' (PL fallback).
-   *  Pass via i18n key from block/route parent for full locale coverage. */
-  trustMarkLabel?: string;
+   *  REQUIRED — must be a locale-resolved string from the caller
+   *  (typically `getTranslations('category')('trust_mark_label')`).
+   *  v1.7.0 Story 2.2 review fix (MEDIUM M1): no PL default, otherwise EN/UA/DE
+   *  pages would render PL when a future caller forgets to pass this prop. */
+  trustMarkLabel: string;
 };
 
 export const Hero = ({
@@ -37,7 +39,7 @@ export const Hero = ({
   buttons,
   maxHeight = null,
   showSearch = false,
-  trustMarkLabel = 'Zweryfikowany marketplace',
+  trustMarkLabel,
 }: HeroProps) => {
   const sectionStyle = maxHeight ? ({ maxHeight } as CSSProperties) : undefined;
   const contentStyle = maxHeight
@@ -72,17 +74,16 @@ export const Hero = ({
         style={contentStyle}
       >
         <div className="space-y-5">
-          {/* MarketplaceVerificationMark (UX-CMP-1): compact on mobile, default on desktop.
+          {/* MarketplaceVerificationMark (UX-CMP-1): single instance.
+              v1.7.0 Story 2.2 review fix (LOW L5): consolidated from two responsive
+              copies (hidden+inline-flex pair) to one element with a responsive size
+              utility. Idiomatic Tailwind, half the DOM, immune to a future
+              visibility:hidden / display:contents refactor double-announcing.
               Always renders a text label so the trust cue is screen-reader-accessible. */}
           <MarketplaceVerificationMark
             label={trustMarkLabel}
             variant="default"
-            className="hidden sm:inline-flex"
-          />
-          <MarketplaceVerificationMark
-            label={trustMarkLabel}
-            variant="compact"
-            className="inline-flex sm:hidden"
+            className="text-[10px] sm:text-[11px]"
           />
           <h2 className="display-sm max-w-[12ch] text-white md:text-[64px] md:leading-[72px]">
             {heading}

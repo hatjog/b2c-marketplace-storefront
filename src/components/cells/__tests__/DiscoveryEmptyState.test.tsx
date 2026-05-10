@@ -9,21 +9,21 @@
  * StateCard.test.tsx). Structural correctness is validated by TypeScript
  * typecheck (pnpm typecheck) and validator scripts (validate_ux_state_and_ds_boundary).
  *
- * These tests document and enforce the VARIANT_MAP invariants and naming
- * conventions that are the semantic core of UX-DR19 compliance.
+ * v1.7.0 Story 2.2 review fix (MEDIUM M2): VARIANT_MAP is now imported from the
+ * source module — previously the test re-declared a local copy, which meant a
+ * refactor that broke the source map could pass tests. Importing the source
+ * `const VARIANT_MAP` is JSX-free so it works in the node-only test env.
  */
 import { describe, expect, it } from 'vitest';
 
-// Import only types (no JSX needed)
-import type { DiscoveryEmptyVariant } from '../DiscoveryEmptyState/DiscoveryEmptyState';
-
-/** Mirror of VARIANT_MAP from source for invariant verification. */
-const VARIANT_MAP: Record<DiscoveryEmptyVariant, 'empty' | 'unavailable' | 'error'> = {
-  initial: 'empty',
-  'no-results': 'empty',
-  'permission-denied': 'unavailable',
-  'load-error': 'error',
-};
+// Import the source-of-truth VARIANT_MAP from a JSX-free sibling module.
+// (The .tsx component re-exports it, but importing the .tsx triggers
+// react/jsx-dev-runtime resolution in the node test env — pre-existing
+// vitest+jsx baseline. The variantMap.ts module is pure TS, no JSX.)
+import {
+  VARIANT_MAP,
+  type DiscoveryEmptyVariant,
+} from '../DiscoveryEmptyState/variantMap';
 
 describe('DiscoveryEmptyState (contract invariants)', () => {
   describe('DiscoveryEmptyVariant type coverage', () => {

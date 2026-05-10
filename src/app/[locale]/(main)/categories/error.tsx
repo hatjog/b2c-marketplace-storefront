@@ -27,8 +27,11 @@ export default function CategoriesError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log internally — never surface raw error.message to UI per UX-DR18
-    console.error('[categories/error.tsx]', error.digest ?? 'unknown');
+    // Log internally — never surface raw error.message to UI per UX-DR18.
+    // v1.7.0 Story 2.2 review fix (INFO I1): include the full error object
+    // so an on-call engineer can correlate a customer report with browser
+    // console logs (digest leads for grep-ability, error follows).
+    console.error('[categories/error.tsx]', error.digest ?? 'unknown', error);
   }, [error]);
 
   return (

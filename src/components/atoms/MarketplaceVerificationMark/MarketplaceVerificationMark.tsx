@@ -26,12 +26,12 @@ interface MarketplaceVerificationMarkProps {
   className?: string;
 }
 
-/** Checkmark shield icon — simple inline SVG, no external dependencies. */
+/** Checkmark shield icon — simple inline SVG, no external dependencies.
+ *  v1.7.0 Story 2.2 review fix (LOW L4): width/height attributes dropped;
+ *  size is governed by the Tailwind class (h-3.5 w-3.5 = 14px) on the svg. */
 function ShieldCheckIcon({ className }: { className?: string }) {
   return (
     <svg
-      width="16"
-      height="16"
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden="true"

@@ -242,9 +242,15 @@ export const ProductListing = async ({
       pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
       paginatedProducts = response.products;
     }
-  } catch {
-    // load-error state: visually and semantically distinct from no-results (UX-DR19).
+  } catch (err) {
+    // v1.7.0 Story 2.2 review fix (INFO I3): log the underlying error to the
+    // server console so ops have a signal — catch was previously parameterless.
     // Raw API errors / stack traces never surface in UI per UX-DR18.
+    console.error(
+      '[ProductListing] product fetch failed:',
+      err instanceof Error ? err.message : String(err)
+    );
+    // load-error state: visually and semantically distinct from no-results (UX-DR19).
     return (
       <div className="py-8" data-testid="product-listing-error">
         <DiscoveryEmptyState variant="load-error" />

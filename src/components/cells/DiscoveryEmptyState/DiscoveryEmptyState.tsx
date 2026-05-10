@@ -22,11 +22,13 @@ import { useTranslations } from 'next-intl';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 
-export type DiscoveryEmptyVariant =
-  | 'initial'
-  | 'no-results'
-  | 'permission-denied'
-  | 'load-error';
+// v1.7.0 Story 2.2 review fix (MEDIUM M2): VARIANT_MAP and the variant type
+// live in a JSX-free sibling module so contract tests can import the
+// source-of-truth without dragging react/jsx-dev-runtime into the node test env.
+import { VARIANT_MAP, type DiscoveryEmptyVariant } from './variantMap';
+
+export { VARIANT_MAP };
+export type { DiscoveryEmptyVariant };
 
 interface DiscoveryEmptyStateProps {
   variant: DiscoveryEmptyVariant;
@@ -35,18 +37,6 @@ interface DiscoveryEmptyStateProps {
   className?: string;
   'data-testid'?: string;
 }
-
-/** Maps our 4-class variants onto StateCard's 3 semantic variants.
- *  - initial        → empty  (genuinely no data yet)
- *  - no-results     → empty  (filters applied, no match — still an "empty" result state)
- *  - permission-denied → unavailable (item exists but not accessible)
- *  - load-error     → error  (provider/system failure) */
-const VARIANT_MAP = {
-  initial: 'empty',
-  'no-results': 'empty',
-  'permission-denied': 'unavailable',
-  'load-error': 'error',
-} as const;
 
 export function DiscoveryEmptyState({
   variant,
@@ -93,7 +83,20 @@ export function DiscoveryEmptyState({
 
 /**
  * Default CTA per variant — one recommended next action per UX-DR18.
- * Consumers override via `action` prop for custom routing needs.
+ *
+ * Consumers SHOULD override via the `action` prop for context-specific routing
+ * (e.g. ProductListing passes <ClearFiltersButton /> for variant="no-results";
+ * categories/error.tsx passes a button bound to Next's segment-level `reset`
+ * for variant="load-error"). The defaults below are last-resort fallbacks.
+ *
+ * v1.7.0 Story 2.2 review fixes:
+ *   - LOW L3: removed dead `#clear-filters` anchor for the no-results default
+ *     (no element with that id is rendered anywhere). Default now routes to
+ *     `/categories`, matching the other browse-style variants.
+ *   - MEDIUM M3: load-error default still calls `window.location.reload()`
+ *     (last-resort recovery), but JSDoc now strongly recommends consumers pass
+ *     a context-aware `action` (e.g. Next.js `reset()` from an error boundary,
+ *     or `router.refresh()`) to avoid full-page reload side effects.
  */
 function DefaultCta({
   variant,
@@ -116,11 +119,13 @@ function DefaultCta({
     );
   }
 
-  // For initial, no-results, permission-denied — link to categories
-  const href = variant === 'no-results' ? '#clear-filters' : '/categories';
+  // Last-resort fallback for initial / no-results / permission-denied.
+  // For no-results, consumers should pass a real <ClearFiltersButton /> via
+  // the `action` prop (see ProductListing.tsx). This default just sends the
+  // user back to /categories so the link is never dead.
   return (
     <a
-      href={href}
+      href="/categories"
       aria-label={label}
       className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-5 py-2 text-sm font-medium text-action-on-primary transition-colors hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
       data-testid={`discovery-empty-cta-${variant}`}
