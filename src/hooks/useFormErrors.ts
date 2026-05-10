@@ -8,10 +8,20 @@
  *
  * Rules (AC2 / UX-DR17 / UX-DR18):
  *   - Errors are field-linked via aria-describedby.
- *   - On validation failure: focus moves to the first blocking error field.
+ *   - On validation failure: focus moves to the first blocking error field
+ *     IN DOM REGISTRATION ORDER (not the input `errors` object's key order).
  *   - Entered customer data is RETAINED — addresses, name, contact details survive round-trip.
  *   - Payment-card data MUST NOT persist locally (PCI scope discipline per NFR15).
  *   - Raw API errors / validation codes / stack traces never reach the UI.
+ *
+ * R6 review fix (second pass): `focusFirstError` now iterates the registered
+ * refs Map's insertion order (= DOM order) and looks up each field name in
+ * the input `errors` map. The previous implementation iterated the caller's
+ * `errors` object keys, which produced wrong focus order for any caller that
+ * passed keys in a non-DOM sequence.
+ *
+ * R14 review fix (second pass): removed misleading
+ * `react-hooks/exhaustive-deps` disable comments — the deps array is correct.
  *
  * ARCH-007: Customer-facing storefront only.
  */
@@ -46,7 +56,11 @@ export interface UseFormErrorsReturn {
   };
   /**
    * Focuses the first field with an error. Call after form submission fails.
-   * Respects the DOM order of registered refs.
+   *
+   * R6 fix: iterates **registered refs in DOM order** (Map insertion order =
+   * registration order = DOM order). The first registered field that has a
+   * non-null entry in `errors` wins focus. This makes "focus first blocking
+   * error" auditable regardless of how the caller orders the `errors` map.
    */
   focusFirstError: (errors: FieldErrors) => void;
   /**
@@ -64,9 +78,6 @@ export interface UseFormErrorsReturn {
 export function useFormErrors(fieldPrefix = 'field'): UseFormErrorsReturn {
   const fieldRefsRef = useRef<Map<string, HTMLElement | null>>(new Map());
 
-  const getFieldId = (fieldName: string) => `${fieldPrefix}-${fieldName}`;
-  const getErrorId = (fieldName: string) => `${fieldPrefix}-${fieldName}-error`;
-
   const getFieldProps = useCallback(
     (fieldName: string, opts?: { hasError?: boolean }) => {
       const hasError = opts?.hasError === true;
@@ -74,23 +85,21 @@ export function useFormErrors(fieldPrefix = 'field'): UseFormErrorsReturn {
         id: string;
         'aria-invalid'?: true;
         'aria-describedby'?: string;
-      } = { id: getFieldId(fieldName) };
+      } = { id: `${fieldPrefix}-${fieldName}` };
       if (hasError) {
         props['aria-invalid'] = true;
-        props['aria-describedby'] = getErrorId(fieldName);
+        props['aria-describedby'] = `${fieldPrefix}-${fieldName}-error`;
       }
       return props;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fieldPrefix],
   );
 
   const getErrorProps = useCallback(
     (fieldName: string) => ({
-      id: getErrorId(fieldName),
+      id: `${fieldPrefix}-${fieldName}-error`,
       role: 'alert' as const,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fieldPrefix],
   );
 
@@ -102,10 +111,12 @@ export function useFormErrors(fieldPrefix = 'field'): UseFormErrorsReturn {
   );
 
   const focusFirstError = useCallback((errors: FieldErrors) => {
-    // Find the first error field that has a mounted ref, in Map insertion order.
-    // Map insertion order preserves the registration order (= DOM order).
-    for (const [fieldName, error] of Object.entries(errors)) {
-      if (error) {
+    // R6 fix: iterate registered refs (DOM order) and look up each
+    // field name in `errors`. This honours "focus first blocking error"
+    // regardless of caller's input key order.
+    for (const fieldName of fieldRefsRef.current.keys()) {
+      const errorMessage = errors[fieldName];
+      if (errorMessage) {
         const el = fieldRefsRef.current.get(fieldName);
         if (el && typeof el.focus === 'function') {
           el.focus({ preventScroll: false });

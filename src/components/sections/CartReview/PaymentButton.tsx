@@ -34,6 +34,13 @@ type PaymentButtonProps = {
   /**
    * Story 2.4: When true, the button is disabled due to missing consent
    * affirmations (FR60/FR64). Visually distinct from loading/processing state.
+   *
+   * R5 review fix (second pass): consent-block does NOT translate to the
+   * HTML `disabled` attribute — only to a separate `consentBlocked` flag
+   * that the StripePaymentButton / ManualTestPaymentButton handler honours
+   * by surfacing the consent error early instead of submitting. Keeping the
+   * button focusable and clickable means keyboard users can reach the
+   * "show errors" branch via Tab + Enter.
    */
   consentBlocked?: boolean;
 };
@@ -52,7 +59,8 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
     case isStripe(paymentSession?.provider_id):
       return (
         <StripePaymentButton
-          notReady={notReady || consentBlocked}
+          notReady={notReady}
+          consentBlocked={consentBlocked}
           cart={cart}
           data-testid={dataTestId}
         />
@@ -60,7 +68,8 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
     case isManual(paymentSession?.provider_id):
       return (
         <ManualTestPaymentButton
-          notReady={notReady || consentBlocked}
+          notReady={notReady}
+          consentBlocked={consentBlocked}
           data-testid={dataTestId}
         />
       );
@@ -80,10 +89,12 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
 const StripePaymentButton = ({
   cart,
   notReady,
+  consentBlocked = false,
   'data-testid': _dataTestId
 }: {
   cart: HttpTypes.StoreCart;
   notReady: boolean;
+  consentBlocked?: boolean;
   'data-testid'?: string;
 }) => {
   const [submitting, setSubmitting] = useState(false);
@@ -124,6 +135,13 @@ const StripePaymentButton = ({
   }, [card, stripe, elements, cart]);
 
   const handlePayment = async () => {
+    // R5 review fix (second pass): refuse to submit when consent is missing.
+    // The wrapping CartReview surfaces the inline consent error via its
+    // capture-phase handler; this guard ensures the Stripe call never
+    // happens even if some future path bypasses the wrapper.
+    if (consentBlocked) {
+      return;
+    }
     setSubmitting(true);
 
     if (!stripe || !elements || !card || !cart) {
@@ -173,16 +191,24 @@ const StripePaymentButton = ({
       });
   };
 
+  // R5 review fix (second pass): when only consent blocks the submit, keep
+  // the button focusable + clickable but mark `aria-disabled` so the
+  // capture-phase handler in CartReview can surface the inline consent
+  // error. Only `notReady` / Stripe-level `disabled` use HTML `disabled`.
+  const htmlDisabled = disabled || notReady;
+  const ariaDisabled = htmlDisabled || consentBlocked;
   return (
     <>
       <Button
-        disabled={disabled || notReady}
+        disabled={htmlDisabled}
+        aria-disabled={ariaDisabled || undefined}
         onClick={handlePayment}
         loading={submitting}
         aria-busy={submitting || undefined}
         aria-label={submitting ? 'Przesyłanie zamówienia' : undefined}
         className="w-full min-h-11"
         data-testid="stripe-pay-button"
+        data-consent-blocked={consentBlocked ? 'true' : undefined}
       >
         Place order
       </Button>
@@ -202,7 +228,13 @@ const StripePaymentButton = ({
   );
 };
 
-const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
+const ManualTestPaymentButton = ({
+  notReady,
+  consentBlocked = false,
+}: {
+  notReady: boolean;
+  consentBlocked?: boolean;
+}) => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Story v160-5-9 — AC4 modal state.
@@ -227,6 +259,10 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   };
 
   const handlePayment = () => {
+    // R5 review fix (second pass): refuse to submit when consent is missing.
+    if (consentBlocked) {
+      return;
+    }
     onPaymentCompleted();
   };
 
@@ -234,12 +270,14 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
     <>
       <Button
         disabled={notReady}
+        aria-disabled={notReady || consentBlocked || undefined}
         onClick={handlePayment}
         className="w-full min-h-11"
         loading={submitting}
         aria-busy={submitting || undefined}
         aria-label={submitting ? 'Przesyłanie zamówienia' : undefined}
         data-testid="manual-pay-button"
+        data-consent-blocked={consentBlocked ? 'true' : undefined}
       >
         Place order
       </Button>

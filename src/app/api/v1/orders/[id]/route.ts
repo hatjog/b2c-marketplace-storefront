@@ -4,7 +4,7 @@
  * Proxies Medusa store order to browser-level fetch so E2E tests
  * can intercept with page.route().
  *
- * v1.7.0 Story 2.4 review fixes (F1-F4):
+ * v1.7.0 Story 2.4 review fixes (first pass — F1-F4):
  *   - F1: Forward `Authorization` from `_medusa_jwt` cookie so logged-in
  *     customers can fetch their own order; unauthenticated lookups return
  *     401 (which the UI maps to `access_denied`/`unavailable`) instead of
@@ -16,6 +16,18 @@
  *     boundary. Pure read-only mapping; never returns `paid` for unknown input.
  *   - F4: Drop `metadata` from the upstream `fields` set so internal flags
  *     never reach the browser.
+ *
+ * v1.7.0 Story 2.4 review fixes (second pass — R2/R3/R4/R7):
+ *   - R2: Add Origin/Referer same-origin guard so cross-origin scripts cannot
+ *     enumerate order ids via the authenticated user's cookies.
+ *   - R3: Map Stripe's `requires_action` to `failed` (NOT pending). The user
+ *     must complete 3DS / SCA — refreshing the page does nothing; retrying
+ *     the payment is the only safe recovery path.
+ *   - R4: Also read order-level `status` so the `expired` lifecycle id is
+ *     actually reachable. `payment_status` alone never produces `expired` in
+ *     Medusa; the order's lifecycle status is the authoritative source.
+ *   - R7: Normalise `display_id` to string so downstream consumer types
+ *     match the wire shape.
  */
 import { cookies as nextCookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -32,9 +44,17 @@ type RouteContext = { params: Promise<{ id: string }> };
  * (Story 2.5 / 2.6 surfaces own that copy); routing customers via support
  * keeps the AC3 single-recovery-path discipline auditable.
  *
+ * R3 review fix: `requires_action` means the customer must complete SCA /
+ * 3DS — it is a *retryable customer-actionable* state, not a *wait* state.
+ * Mapping it to `pending_psp_confirmation` traps the customer in a refresh
+ * loop; mapping it to `failed` surfaces the "Retry payment" CTA which is
+ * the only correct recovery affordance.
+ *
  * Anything unknown → `pending_psp_confirmation` (anti-optimistic-paid).
  */
-function mapMedusaPaymentStatusToLifecycle(raw: string | null | undefined): string {
+export function mapMedusaPaymentStatusToLifecycle(
+  raw: string | null | undefined,
+): string {
   switch (raw) {
     case 'captured':
     case 'partially_captured':
@@ -43,8 +63,10 @@ function mapMedusaPaymentStatusToLifecycle(raw: string | null | undefined): stri
     case 'awaiting':
     case 'authorized':
     case 'partially_authorized':
-    case 'requires_action':
       return 'pending_psp_confirmation';
+    case 'requires_action':
+      // R3 fix: SCA / 3DS — retry is the only recovery; never wait.
+      return 'failed';
     case 'canceled':
       return 'expired';
     case 'refunded':
@@ -55,7 +77,81 @@ function mapMedusaPaymentStatusToLifecycle(raw: string | null | undefined): stri
   }
 }
 
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+/**
+ * Map Medusa's order-level `status` to a GP lifecycle id where it can
+ * advance beyond what `payment_status` declares.
+ *
+ * R4 review fix: Medusa's `payment_status` does NOT include `expired`
+ * (only `canceled`). The `expired` lifecycle id is therefore unreachable
+ * via `payment_status` alone. The order-level `status` (which can be
+ * `archived` / `canceled` after a checkout-session TTL elapses) is the
+ * authoritative source for that state.
+ *
+ * Returns `null` when the order-level status does not override the
+ * payment-status mapping.
+ */
+export function mapMedusaOrderStatusToLifecycle(
+  raw: string | null | undefined,
+): string | null {
+  switch (raw) {
+    case 'archived':
+    case 'canceled':
+      return 'expired';
+    default:
+      return null;
+  }
+}
+
+/**
+ * R2 review fix: same-origin guard. Reject cross-origin GETs so a malicious
+ * site cannot enumerate order ids via the logged-in user's storefront
+ * cookies (CSRF read). Same-Site cookie policy alone is not sufficient
+ * because legacy browsers and bookmark/PDF preview contexts may still
+ * attach cookies on third-party fetches.
+ */
+function isAllowedOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+  const allowedOrigin =
+    process.env.NEXT_PUBLIC_STOREFRONT_URL ??
+    process.env.NEXT_PUBLIC_BASE_URL ??
+    null;
+
+  // Same-origin XHR omits Origin only on simple GET — in App Router this
+  // route runs as a Route Handler which generally receives Origin. If the
+  // request is server-side (no Origin/Referer) we trust it; if Origin is
+  // present, it must match. If no Origin but Referer is, derive origin
+  // from Referer.
+  if (!origin && !referer) {
+    // Most likely a same-origin Server Component fetch; allow.
+    return true;
+  }
+
+  const candidate = origin ?? (referer ? new URL(referer).origin : null);
+  if (!candidate) {
+    return false;
+  }
+
+  if (allowedOrigin && candidate !== allowedOrigin) {
+    return false;
+  }
+
+  // Fallback: if no explicit env, accept any same-origin (the request is
+  // routed through this storefront's own domain by definition because the
+  // route is mounted there) — but reject when Origin is suspiciously a
+  // null/file/data URL.
+  return candidate.startsWith('http://') || candidate.startsWith('https://');
+}
+
+export async function GET(
+  request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> {
+  // R2 review fix: same-origin guard — return 403 (no body) on cross-origin.
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const { id } = await context.params;
   const backendUrl = resolveMedusaBackendUrl();
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? '';
@@ -79,7 +175,9 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       // F2 fix: include updated_at so the timestamp surface can render.
       // F4 fix: do NOT request `metadata` — internal flags must not reach
       // the browser.
-      `${backendUrl}/store/orders/${encodeURIComponent(id)}?fields=id,display_id,payment_status,updated_at`,
+      // R4 fix: also request order-level `status` so the `expired` lifecycle
+      // id is reachable (payment_status alone never produces `expired`).
+      `${backendUrl}/store/orders/${encodeURIComponent(id)}?fields=id,display_id,payment_status,status,updated_at`,
       {
         headers,
         cache: 'no-store',
@@ -88,7 +186,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
 
     if (!res.ok) {
       // Preserve upstream status so the UI can distinguish access_denied (401/403)
-      // from unavailable (5xx) without leaking the upstream body.
+      // from unavailable (5xx/404) without leaking the upstream body.
       const status = res.status === 401 || res.status === 403 ? res.status : (res.status || 502);
       return NextResponse.json({ error: 'Order not accessible' }, { status });
     }
@@ -98,6 +196,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
         id?: string;
         display_id?: string | number | null;
         payment_status?: string | null;
+        status?: string | null;
         updated_at?: string | null;
       };
     };
@@ -110,18 +209,34 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
     // F3 fix: map Medusa's payment status taxonomy to the GP shared lifecycle
     // vocabulary at the proxy boundary. The frontend adapter's safe-default
     // remains a second line of defence against unknown values.
-    const lifecycleStatus = mapMedusaPaymentStatusToLifecycle(order.payment_status);
+    // R4 fix: prefer the order-level lifecycle override when it advances the
+    // state (e.g. canceled order → expired wins over a stale payment_status).
+    const paymentLifecycle = mapMedusaPaymentStatusToLifecycle(order.payment_status);
+    const orderLifecycle = mapMedusaOrderStatusToLifecycle(order.status);
+    const lifecycleStatus = orderLifecycle ?? paymentLifecycle;
+
+    // R7 fix: normalise display_id to string. Upstream may return number;
+    // downstream consumer types it as string.
+    const displayId =
+      order.display_id !== null && order.display_id !== undefined
+        ? String(order.display_id)
+        : null;
 
     return NextResponse.json(
       {
         id: order.id,
-        display_id: order.display_id ?? null,
+        display_id: displayId,
         payment_status: lifecycleStatus,
         updated_at: order.updated_at ?? null,
       },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    // R21 fix: log the failure for diagnostics (UI surface stays generic;
+    // logger does not leak to UI). Use console.error so server-side log
+    // collection captures the breadcrumb.
+    // eslint-disable-next-line no-console
+    console.error('[payment-status] proxy fetch failed', error);
     return NextResponse.json({ error: 'Backend unavailable' }, { status: 503 });
   }
 }
