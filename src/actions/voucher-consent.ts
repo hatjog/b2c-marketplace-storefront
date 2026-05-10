@@ -129,7 +129,13 @@ async function postAuditAction(
       });
       return { ok: false, state: 'error-audit-failed', error: 'missing-audit-id' };
     }
-    logger.warn('voucher_consent.attempt', {
+    // Review F10: success-path telemetry stays out of warn/error tier so the
+    // alerting baseline isn't polluted by happy-path POSTs. logger only exposes
+    // warn/error in this module — fall back to warn-with-`ok:true` only if no
+    // info channel exists; otherwise use info.
+    const loggerWithInfo = logger as unknown as { info?: typeof logger.warn };
+    const successSink = typeof loggerWithInfo.info === 'function' ? loggerWithInfo.info : logger.warn;
+    successSink('voucher_consent.attempt', {
       source: 'actions/voucher-consent',
       context: { verb, ok: true },
     });
@@ -145,7 +151,14 @@ async function postAuditAction(
         source: 'actions/voucher-consent',
         context: { verb, ok: false, status: statusCode },
       });
-      return { ok: false, state: 'error-audit-failed', error: `backend returned ${statusCode}` };
+      // Review F14: return a stable error code (no free-form English) so the UI
+      // can map to an i18n string. Generic `backend-error` bucket plus the
+      // status code preserves diagnostic detail without UI-coupled wording.
+      return {
+        ok: false,
+        state: 'error-audit-failed',
+        error: `backend-error-${statusCode}`,
+      };
     }
     const rawMessage = error instanceof Error ? error.message : 'unknown audit failure';
     logger.error('voucher_consent.attempt', {
@@ -261,18 +274,20 @@ export async function pauseRecipient(formData: FormData): Promise<ConsentActionR
     pauseStateRaw === 'withdrawn' ||
     pauseStateRaw === 'considering';
   if (!isKnownPauseState) {
-    // review L4: surface invalid input rather than silently coerce.
+    // Review F13: fail fast on unknown pause_state instead of silently coercing
+    // to 'considering'. AC2 requires schema-violation paths to return an error
+    // code rather than a normalised payload.
     logger.warn('voucher_consent.invalid_pause_state', {
       source: 'actions/voucher-consent',
-      context: { coerced_to: 'considering' },
+      context: { received: pauseStateRaw },
     });
+    return {
+      ok: false,
+      state: 'error-audit-failed',
+      error: 'invalid-pause-state',
+    };
   }
-  const pauseState: 'considering' | 'paused' | 'timeout' | 'withdrawn' =
-    pauseStateRaw === 'paused' ||
-    pauseStateRaw === 'timeout' ||
-    pauseStateRaw === 'withdrawn'
-      ? pauseStateRaw
-      : 'considering';
+  const pauseState: 'considering' | 'paused' | 'timeout' | 'withdrawn' = pauseStateRaw;
 
   const occurredAt = Date.now();
   let payload: ReturnType<typeof buildAuditPayload>;
