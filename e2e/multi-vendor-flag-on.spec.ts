@@ -113,13 +113,10 @@ async function addProductToCart(
  * is up, without blocking the build when it is not.
  */
 async function checkEnvironmentOrSkip(): Promise<void> {
-  if (!process.env.E2E_ADMIN_TOKEN) {
-    throw new Error(
-      "E2E_ADMIN_TOKEN is required for the v1.7.0 flag-on E2E suite because Step 7 is a release gate. " +
-        "Provision an operator-scoped token before running pnpm test:e2e:flag-on.",
-    )
-  }
-
+  // Note: E2E_ADMIN_TOKEN is required only by Step 7 (operator-authenticated
+  // kickoff coupling). Steps 1-6 do not depend on it and must remain runnable
+  // in dev environments without an operator token. The fail-closed guard for
+  // missing E2E_ADMIN_TOKEN therefore lives in the Step 7 test body, not here.
   const healthy = await probeBackendHealth()
   if (!healthy) {
     // eslint-disable-next-line no-console
@@ -495,8 +492,27 @@ test("Step 7 — Kickoff vendors_notified matches t30 audit-log row count (coupl
     // AC3 triggered — fixture mode hard-block is working correctly.
     const body = (await kickoffResp.json()) as { code?: string }
     expect(body.code).toBe("T30_FIXTURE_MODE_IN_PRODUCTION")
+
+    // v1.7.0 Story 4.2 fail-closed posture: a 503 fixture-mode response is
+    // valid only when the backend is running with NODE_ENV=production (or
+    // E2E_ALLOW_FIXTURE_MODE explicitly set). In any other release-runtime
+    // smoke run the 503 means kickoff never executed and the coupling
+    // assertion cannot be claimed. Surface a clear FAIL instead of a warn.
+    const backendNodeEnv = process.env.E2E_BACKEND_NODE_ENV ?? process.env.NODE_ENV
+    const allowFixtureMode = process.env.E2E_ALLOW_FIXTURE_MODE === "1"
+    if (backendNodeEnv !== "production" && !allowFixtureMode) {
+      throw new Error(
+        "Step 7: kickoff returned 503 T30_FIXTURE_MODE_IN_PRODUCTION but the " +
+          "release runtime is not production (NODE_ENV=" +
+          String(backendNodeEnv) +
+          "). The kickoff↔audit coupling assertion was not exercised. " +
+          "Set E2E_ALLOW_FIXTURE_MODE=1 only when intentionally exercising " +
+          "the AC3 fixture-mode hard-block in a non-production runtime.",
+      )
+    }
+
     console.warn(
-      "[OK] Step 7: kickoff returned 503 (AC3 fixture-mode hard-block active in production env).",
+      "[OK] Step 7: kickoff returned 503 (AC3 fixture-mode hard-block active).",
     )
     return
   }
