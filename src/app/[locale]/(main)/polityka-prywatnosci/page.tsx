@@ -284,7 +284,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function PolitykaPrywatnosciPage() {
+export default async function PolitykaPrywatnosciPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations('legal');
   const tWL = await getTranslations('voucher_withdrawal.legal');
   const { nodes, lastUpdated } = loadPrivacyPolicyContent();
@@ -347,18 +352,18 @@ export default async function PolitykaPrywatnosciPage() {
           </p>
           <p style={{ marginTop: '0.5rem', fontSize: '0.9375rem' }}>
             <a
-              href="/regulamin"
+              href={`/${locale}/regulamin`}
               style={{ color: 'var(--text-primary)', textDecoration: 'underline', marginRight: '1rem' }}
               data-testid="privacy-link-regulamin"
             >
-              /regulamin
+              {t('title_regulamin')}
             </a>
             <a
-              href="/pomoc"
+              href={`/${locale}/pomoc`}
               style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}
               data-testid="privacy-link-pomoc"
             >
-              /pomoc
+              {tWL('contact_support')}
             </a>
           </p>
         </aside>

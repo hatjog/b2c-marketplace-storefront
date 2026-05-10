@@ -144,9 +144,13 @@ export async function VoucherWithdrawalStateCard({
           borderColor: variant.borderColor,
           background: variant.background,
         }}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
+        // Second-pass review fix L3: when CTA is blocked, the inner role="alert"
+        // owns the announcement (assertive). Drop the outer role="status"
+        // (polite) so screen readers do not double-announce. When NOT blocked,
+        // keep role="status" for informational state surfaces.
+        {...(isBlocked
+          ? {}
+          : { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' })}
       >
         {/* Badge row */}
         <div className="mb-2 flex items-center gap-2">

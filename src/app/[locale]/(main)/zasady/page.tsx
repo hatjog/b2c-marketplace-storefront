@@ -20,7 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ZasadyPage() {
+export default async function ZasadyPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
   const tW = await getTranslations('voucher_withdrawal');
@@ -60,7 +65,7 @@ export default async function ZasadyPage() {
           {tW('legal.consent_body')}
         </p>
         <a
-          href="/pomoc"
+          href={`/${locale}/pomoc`}
           className="text-sm underline"
           data-testid="zasady-pomoc-link"
         >
