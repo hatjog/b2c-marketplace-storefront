@@ -13,10 +13,14 @@ export async function LegalPageLayout({ children, showDisclaimer = true }: Legal
       <div className="bb-page-shell mx-auto max-w-[1200px]">
         {showDisclaimer && (
           <div
-            className="bb-section-shell mb-2 border-[#7A7672]/20 bg-[rgba(255,252,247,0.8)] px-5 py-4"
+            className="bb-section-shell mb-2 px-5 py-4"
+            style={{
+              borderColor: 'var(--bb-border-soft)',
+              background: 'var(--bb-surface)',
+            }}
             data-testid="legal-agent-disclaimer"
           >
-            <p className="text-sm leading-relaxed" style={{ color: '#7A7672' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {t('agent_disclaimer')}
             </p>
           </div>

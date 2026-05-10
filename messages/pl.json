@@ -767,5 +767,66 @@
     "load_error_cta": "Spróbuj ponownie",
     "load_error_status": "Błąd ładowania ofert",
     "error_reset_aria": "Odśwież stronę z ofertami"
+  },
+  "voucher_withdrawal": {
+    "state_withdrawal_eligible_before_service_execution": {
+      "label": "Prawo odstąpienia aktywne",
+      "description": "Voucher zakupiony — usługa nie została jeszcze wykonana. Przysługuje Ci 14-dniowe prawo odstąpienia od umowy zgodnie z Ustawą o prawach konsumenta.",
+      "next_action": "Jeśli chcesz odstąpić, skontaktuj się z obsługą klienta.",
+      "status_token": "withdrawal-eligible-before-service-execution"
+    },
+    "state_consent_to_execute_captured": {
+      "label": "Zgoda na natychmiastowe wykonanie",
+      "description": "Wyraziłeś(-aś) zgodę na natychmiastowe wykonanie usługi przed upływem 14-dniowego terminu odstąpienia. Prawo odstąpienia wygasa z chwilą wykonania usługi.",
+      "next_action": "Sprawdź termin i miejsce realizacji u wybranego salonu.",
+      "status_token": "consent-to-execute-captured"
+    },
+    "state_withdrawal_blocked_after_execution": {
+      "label": "Odstąpienie niemożliwe",
+      "description": "Usługa została wykonana. Prawo odstąpienia od umowy nie przysługuje po wykonaniu usługi za Twoją uprzednią zgodą (art. 38 pkt 1 ustawy o prawach konsumenta).",
+      "next_action": "W razie pytań skontaktuj się z obsługą klienta.",
+      "status_token": "withdrawal-blocked-after-execution"
+    },
+    "state_refunded": {
+      "label": "Zwrot środków",
+      "description": "Zakup vouchera został zwrócony. Środki zostaną zwrócone na konto pierwotnej płatności zgodnie z regulaminem.",
+      "next_action": "Sprawdź swoje konto bankowe lub kartę płatniczą w ciągu 5–14 dni roboczych.",
+      "status_token": "refunded"
+    },
+    "state_support_review": {
+      "label": "Weryfikacja przez obsługę",
+      "description": "Nie można określić stanu vouchera. Działanie zostało wstrzymane w celu ochrony Twoich praw. Skontaktuj się z obsługą, aby wyjaśnić sytuację.",
+      "next_action": "Skontaktuj się z obsługą klienta podając numer zamówienia.",
+      "status_token": "support-review"
+    },
+    "legal": {
+      "section_title": "Prawo odstąpienia od umowy",
+      "intro": "Zgodnie z Ustawą z dnia 30 maja 2014 r. o prawach konsumenta (Dz.U. 2014 poz. 827 z późn. zm.) przysługuje Ci prawo odstąpienia od umowy zawartej na odległość.",
+      "window_title": "Termin 14 dni",
+      "window_body": "Masz prawo odstąpić od umowy w ciągu 14 dni od dnia zakupu vouchera, bez podawania przyczyny, pod warunkiem że usługa nie została jeszcze wykonana.",
+      "consent_title": "Zgoda na natychmiastowe wykonanie",
+      "consent_body": "Jeżeli wyraziłeś(-aś) zgodę na natychmiastowe wykonanie usługi przed upływem 14-dniowego terminu, prawo odstąpienia wygasa z chwilą wykonania usługi (art. 38 pkt 1 ustawy o prawach konsumenta). Udzielenie takiej zgody jest dobrowolne.",
+      "post_execution_title": "Po wykonaniu usługi",
+      "post_execution_body": "Po wykonaniu usługi, na której realizację wyraziłeś(-aś) uprzednią zgodę, prawo odstąpienia nie przysługuje. Stan vouchera zmienia się wtedy na \"po wykonaniu usługi\" (withdrawal-blocked-after-execution).",
+      "refund_title": "Zwrot środków",
+      "refund_body": "W przypadku skutecznego odstąpienia od umowy zwrócimy Ci wszystkie otrzymane od Ciebie płatności niezwłocznie, nie później niż 14 dni od dnia, w którym zostaliśmy poinformowani o Twojej decyzji. Zwrot płatności dokonamy przy użyciu takich samych sposobów płatności, jakie zostały przez Ciebie użyte.",
+      "support_title": "Pomoc i weryfikacja",
+      "support_body": "Jeśli nie możemy automatycznie określić stanu Twojego zamówienia, przekierujemy Cię do obsługi klienta. Nasz zespół wyjaśni sytuację i zaproponuje rozwiązanie. To rozwiązanie (stan support-review) chroni Twoje prawa i zapobiega automatycznym błędom.",
+      "five_states_title": "Pięć stanów vouchera",
+      "five_states_intro": "Każdy voucher może znajdować się w jednym z pięciu stanów związanych z prawem odstąpienia:",
+      "state_list": {
+        "eligible": "withdrawal-eligible-before-service-execution — usługa niewykonana, prawo odstąpienia aktywne",
+        "consent": "consent-to-execute-captured — zgoda na natychmiastowe wykonanie udzielona",
+        "blocked": "withdrawal-blocked-after-execution — usługa wykonana, odstąpienie niemożliwe",
+        "refunded": "refunded — zwrot środków zrealizowany",
+        "support": "support-review — stan wymaga weryfikacji przez obsługę"
+      },
+      "contact_support": "Kontakt z obsługą",
+      "contact_support_href": "/pomoc",
+      "page_title": "Pomoc — voucher BonBeauty",
+      "page_description": "Informacje o prawie odstąpienia od umowy, realizacji voucherów i kontakcie z obsługą BonBeauty.",
+      "privacy_cross_link_note": "Niniejsza polityka dotyczy danych osobowych (RODO Art. 7/17). Prawo odstąpienia od umowy zakupu vouchera (14 dni, Ustawa o prawach konsumenta) jest osobnym tematem — szczegóły znajdziesz w Regulaminie i na stronie Pomoc."
+    },
+    "cta_blocked_label": "Akcja wstrzymana — wymaga obsługi"
   }
 }

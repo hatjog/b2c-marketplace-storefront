@@ -1,5 +1,11 @@
+/**
+ * Story v170-2-9: Zasady page — voucher rules.
+ * Extended with a link to /pomoc for consumer withdrawal info (AC2).
+ */
+
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { Breadcrumbs } from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
@@ -17,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ZasadyPage() {
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
+  const tW = await getTranslations('voucher_withdrawal');
 
   if (!sections) {
     redirect('/');
@@ -36,6 +43,30 @@ export default async function ZasadyPage() {
           <SanitizedHTML html={section.body} className="prose text-sm text-secondary" />
         </section>
       ))}
+
+      {/* Consumer withdrawal note — FR64 (Story v170-2-9) */}
+      <section
+        aria-labelledby="zasady-withdrawal-heading"
+        data-testid="zasady-withdrawal-section"
+        className="border-b border-secondary py-8 last:border-b-0"
+      >
+        <h2 id="zasady-withdrawal-heading" className="mb-4 text-xl font-semibold">
+          {tW('legal.section_title')}
+        </h2>
+        <p className="prose text-sm text-secondary mb-4">
+          {tW('legal.window_body')}
+        </p>
+        <p className="prose text-sm text-secondary mb-4">
+          {tW('legal.consent_body')}
+        </p>
+        <a
+          href="/pomoc"
+          className="text-sm underline"
+          data-testid="zasady-pomoc-link"
+        >
+          {tW('legal.contact_support')} →
+        </a>
+      </section>
     </main>
   );
 }

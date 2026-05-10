@@ -767,5 +767,66 @@
     "load_error_cta": "Try again",
     "load_error_status": "Error loading offers",
     "error_reset_aria": "Reload the offers page"
+  },
+  "voucher_withdrawal": {
+    "state_withdrawal_eligible_before_service_execution": {
+      "label": "Withdrawal right active",
+      "description": "Voucher purchased — service not yet performed. You have a 14-day right of withdrawal under the Consumer Rights Act.",
+      "next_action": "If you wish to withdraw, please contact customer support.",
+      "status_token": "withdrawal-eligible-before-service-execution"
+    },
+    "state_consent_to_execute_captured": {
+      "label": "Immediate execution consent given",
+      "description": "You consented to immediate service execution before the 14-day withdrawal period. Your withdrawal right expires upon service execution.",
+      "next_action": "Check appointment details with your chosen salon.",
+      "status_token": "consent-to-execute-captured"
+    },
+    "state_withdrawal_blocked_after_execution": {
+      "label": "Withdrawal not available",
+      "description": "The service has been performed. The right of withdrawal no longer applies following your prior consent to execute before the cooling-off period ended.",
+      "next_action": "If you have questions, please contact customer support.",
+      "status_token": "withdrawal-blocked-after-execution"
+    },
+    "state_refunded": {
+      "label": "Refunded",
+      "description": "Your voucher purchase has been refunded. Funds will be returned to your original payment method in accordance with our terms.",
+      "next_action": "Check your bank account or payment card within 5–14 business days.",
+      "status_token": "refunded"
+    },
+    "state_support_review": {
+      "label": "Support review required",
+      "description": "We could not determine your voucher status. The action has been paused to protect your rights. Please contact support to clarify.",
+      "next_action": "Contact customer support with your order number.",
+      "status_token": "support-review"
+    },
+    "legal": {
+      "section_title": "Right of Withdrawal",
+      "intro": "Under the Consumer Rights Act you have the right to withdraw from a distance contract.",
+      "window_title": "14-day window",
+      "window_body": "You may withdraw from the contract within 14 days of purchasing the voucher, without giving any reason, provided the service has not yet been performed.",
+      "consent_title": "Consent to immediate execution",
+      "consent_body": "If you consented to immediate service execution before the 14-day period, your right of withdrawal expires when the service is performed. Giving such consent is voluntary.",
+      "post_execution_title": "After service execution",
+      "post_execution_body": "Once the service has been performed following your prior consent, the right of withdrawal no longer applies. The voucher state changes to withdrawal-blocked-after-execution.",
+      "refund_title": "Refunds",
+      "refund_body": "If you successfully exercise your right of withdrawal, we will reimburse all payments received from you without delay and no later than 14 days after we are informed of your decision. We will use the same payment method you used.",
+      "support_title": "Help and review",
+      "support_body": "If we cannot automatically determine the state of your order, we will route you to customer support. Our team will clarify the situation and propose a solution. This support-review state protects your rights and prevents automated errors.",
+      "five_states_title": "Five voucher states",
+      "five_states_intro": "Each voucher can be in one of five states relating to the right of withdrawal:",
+      "state_list": {
+        "eligible": "withdrawal-eligible-before-service-execution — service not performed, withdrawal right active",
+        "consent": "consent-to-execute-captured — consent to immediate execution given",
+        "blocked": "withdrawal-blocked-after-execution — service performed, withdrawal not available",
+        "refunded": "refunded — refund processed",
+        "support": "support-review — state requires support review"
+      },
+      "contact_support": "Contact support",
+      "contact_support_href": "/help",
+      "page_title": "Help — BonBeauty voucher",
+      "page_description": "Information on the right of withdrawal, voucher fulfilment and how to contact BonBeauty support.",
+      "privacy_cross_link_note": "This policy covers personal data (GDPR Art. 7/17). The right of withdrawal from a voucher purchase (14 days, Polish Consumer Rights Act) is a separate topic — details are in the Terms and on the Help page."
+    },
+    "cta_blocked_label": "Action paused — requires support"
   }
 }

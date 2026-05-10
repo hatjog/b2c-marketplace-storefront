@@ -57,7 +57,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: 'clamp(1.25rem, 2vw, 2rem)',
             fontWeight: 400,
-            color: '#1A1A1A',
+            color: 'var(--text-primary)',
             marginTop: '2rem',
             marginBottom: '0.75rem'
           }}
@@ -78,7 +78,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: 'clamp(1.1rem, 1.5vw, 1.625rem)',
             fontWeight: 500,
-            color: '#1A1A1A',
+            color: 'var(--text-primary)',
             marginTop: '1.5rem',
             marginBottom: '0.5rem'
           }}
@@ -118,7 +118,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
               borderCollapse: 'collapse',
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.875rem',
-              color: '#1A1A1A'
+              color: 'var(--text-primary)'
             }}
           >
             <thead>
@@ -130,7 +130,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
                     style={{
                       textAlign: 'left',
                       padding: '0.5rem 0.75rem',
-                      borderBottom: '2px solid #7A7672',
+                      borderBottom: '2px solid var(--text-secondary)',
                       fontWeight: 600,
                       whiteSpace: 'nowrap'
                     }}
@@ -142,7 +142,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             </thead>
             <tbody>
               {body.map((row, rowIdx) => (
-                <tr key={rowIdx} style={{ borderBottom: '1px solid #D9D7D3' }}>
+                <tr key={rowIdx} style={{ borderBottom: '1px solid var(--bb-border-soft)' }}>
                   {row.map((cell, cellIdx) => (
                     <td
                       key={cellIdx}
@@ -174,7 +174,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: 'Inter, sans-serif',
             fontSize: '1rem',
             lineHeight: 1.6,
-            color: '#1A1A1A',
+            color: 'var(--text-primary)',
             paddingLeft: '1.5rem',
             marginTop: '0.5rem',
             marginBottom: '0.75rem',
@@ -205,7 +205,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: 'Inter, sans-serif',
             fontSize: '1rem',
             lineHeight: 1.6,
-            color: '#1A1A1A',
+            color: 'var(--text-primary)',
             paddingLeft: '1.5rem',
             marginTop: '0.5rem',
             marginBottom: '0.75rem'
@@ -235,7 +235,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
           fontFamily: 'Inter, sans-serif',
           fontSize: '1rem',
           lineHeight: 1.6,
-          color: '#1A1A1A',
+          color: 'var(--text-primary)',
           marginTop: '0.5rem',
           marginBottom: '0.5rem'
         }}
@@ -280,12 +280,13 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Polityka Prywatności | BonBeauty',
     description:
       'Polityka prywatności BonBeauty — informacja o przetwarzaniu danych osobowych zgodnie z RODO.',
-    robots: { index: true, follow: true }
+    robots: { index: false, follow: false }
   };
 }
 
 export default async function PolitykaPrywatnosciPage() {
   const t = await getTranslations('legal');
+  const tWL = await getTranslations('voucher_withdrawal.legal');
   const { nodes, lastUpdated } = loadPrivacyPolicyContent();
 
   return (
@@ -297,7 +298,7 @@ export default async function PolitykaPrywatnosciPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 300,
-              color: '#1A1A1A',
+              color: 'var(--text-primary)',
               marginBottom: '0.5rem'
             }}
           >
@@ -307,7 +308,7 @@ export default async function PolitykaPrywatnosciPage() {
             style={{
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.875rem',
-              color: '#7A7672'
+              color: 'var(--text-secondary)'
             }}
           >
             {t('last_updated')}: {lastUpdated}
@@ -315,6 +316,52 @@ export default async function PolitykaPrywatnosciPage() {
         </header>
 
         <div>{nodes}</div>
+
+        {/* Review fix M6: cross-link note disambiguating RODO consent vs.
+            FR64 consumer-purchase withdrawal so a customer landing here
+            looking for "withdrawal" is steered to the right surface. */}
+        <aside
+          aria-labelledby="privacy-vs-consumer-withdrawal-heading"
+          data-testid="privacy-vs-consumer-withdrawal-note"
+          style={{
+            marginTop: '2.5rem',
+            paddingTop: '1.25rem',
+            borderTop: '1px solid var(--bb-border-soft)',
+          }}
+        >
+          <h2
+            id="privacy-vs-consumer-withdrawal-heading"
+            className="sr-only"
+          >
+            {tWL('section_title')}
+          </h2>
+          <p
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '0.9375rem',
+              color: 'var(--text-secondary)',
+              lineHeight: 1.6,
+            }}
+          >
+            {tWL('privacy_cross_link_note')}
+          </p>
+          <p style={{ marginTop: '0.5rem', fontSize: '0.9375rem' }}>
+            <a
+              href="/regulamin"
+              style={{ color: 'var(--text-primary)', textDecoration: 'underline', marginRight: '1rem' }}
+              data-testid="privacy-link-regulamin"
+            >
+              /regulamin
+            </a>
+            <a
+              href="/pomoc"
+              style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}
+              data-testid="privacy-link-pomoc"
+            >
+              /pomoc
+            </a>
+          </p>
+        </aside>
       </article>
     </LegalPageLayout>
   );
