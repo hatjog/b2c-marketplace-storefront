@@ -768,5 +768,62 @@
     "load_error_cta": "Erneut versuchen",
     "load_error_status": "Fehler beim Laden der Angebote",
     "error_reset_aria": "Angebotsseite neu laden"
+  },
+  "voucher_withdrawal": {
+    "state_withdrawal_eligible_before_service_execution": {
+      "label": "Widerrufsrecht aktiv",
+      "description": "Gutschein gekauft — Leistung noch nicht erbracht. Sie haben gemäß Verbraucherrechtegesetz ein 14-tägiges Widerrufsrecht.",
+      "next_action": "Wenn Sie widerrufen möchten, wenden Sie sich bitte an den Kundendienst.",
+      "status_token": "withdrawal-eligible-before-service-execution"
+    },
+    "state_consent_to_execute_captured": {
+      "label": "Zustimmung zur sofortigen Ausführung erteilt",
+      "description": "Sie haben der sofortigen Erbringung der Leistung vor Ablauf der 14-tägigen Widerrufsfrist zugestimmt. Das Widerrufsrecht erlischt mit Erbringung der Leistung.",
+      "next_action": "Prüfen Sie Ihren Termin beim gewählten Salon.",
+      "status_token": "consent-to-execute-captured"
+    },
+    "state_withdrawal_blocked_after_execution": {
+      "label": "Widerruf nicht möglich",
+      "description": "Die Leistung wurde erbracht. Das Widerrufsrecht gilt nicht für bereits erbrachte Leistungen nach Ihrer vorherigen Zustimmung.",
+      "next_action": "Bei Fragen wenden Sie sich bitte an den Kundendienst.",
+      "status_token": "withdrawal-blocked-after-execution"
+    },
+    "state_refunded": {
+      "label": "Rückerstattung",
+      "description": "Der Gutscheinkauf wurde storniert und erstattet. Der Betrag wird gemäß unseren Bedingungen auf das ursprüngliche Zahlungsmittel zurückgebucht.",
+      "next_action": "Prüfen Sie Ihr Bankkonto oder Ihre Zahlungskarte innerhalb von 5–14 Werktagen.",
+      "status_token": "refunded"
+    },
+    "state_support_review": {
+      "label": "Prüfung durch den Support",
+      "description": "Der Status Ihres Gutscheins konnte nicht bestimmt werden. Die Aktion wurde zum Schutz Ihrer Rechte pausiert. Bitte wenden Sie sich an den Support.",
+      "next_action": "Wenden Sie sich mit Ihrer Bestellnummer an den Kundendienst.",
+      "status_token": "support-review"
+    },
+    "legal": {
+      "section_title": "Widerrufsrecht",
+      "intro": "Gemäß dem Verbraucherrechtegesetz haben Sie das Recht, von einem auf Distanz geschlossenen Vertrag zurückzutreten.",
+      "window_title": "14-Tage-Frist",
+      "window_body": "Sie können innerhalb von 14 Tagen ab dem Kaufdatum des Gutscheins ohne Angabe von Gründen vom Vertrag zurücktreten, sofern die Leistung noch nicht erbracht wurde.",
+      "consent_title": "Zustimmung zur sofortigen Ausführung",
+      "consent_body": "Wenn Sie der sofortigen Leistungserbringung vor Ablauf der 14-Tage-Frist zugestimmt haben, erlischt Ihr Widerrufsrecht mit Erbringung der Leistung. Diese Zustimmung ist freiwillig.",
+      "post_execution_title": "Nach der Leistungserbringung",
+      "post_execution_body": "Nach der Leistungserbringung auf Grundlage Ihrer vorherigen Zustimmung gilt das Widerrufsrecht nicht mehr. Der Gutscheinstatus ändert sich auf withdrawal-blocked-after-execution.",
+      "refund_title": "Rückerstattungen",
+      "refund_body": "Bei wirksamen Widerruf erstatten wir alle erhaltenen Zahlungen unverzüglich, spätestens innerhalb von 14 Tagen nach Eingang Ihrer Widerrufserklärung.",
+      "support_title": "Hilfe und Prüfung",
+      "support_body": "Falls wir den Status Ihrer Bestellung nicht automatisch bestimmen können, werden Sie an den Kundendienst weitergeleitet. Der support-review-Status schützt Ihre Rechte.",
+      "five_states_title": "Fünf Gutscheinstatus",
+      "five_states_intro": "Jeder Gutschein kann sich in einem von fünf Status befinden, die mit dem Widerrufsrecht zusammenhängen:",
+      "state_list": {
+        "eligible": "withdrawal-eligible-before-service-execution — Leistung nicht erbracht, Widerrufsrecht aktiv",
+        "consent": "consent-to-execute-captured — Zustimmung zur sofortigen Ausführung erteilt",
+        "blocked": "withdrawal-blocked-after-execution — Leistung erbracht, Widerruf nicht möglich",
+        "refunded": "refunded — Rückerstattung abgeschlossen",
+        "support": "support-review — Status erfordert Support-Prüfung"
+      },
+      "contact_support": "Kundendienst kontaktieren",
+      "contact_support_href": "/help"
+    }
   }
 }

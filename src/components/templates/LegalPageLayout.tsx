@@ -16,7 +16,7 @@ export async function LegalPageLayout({ children, showDisclaimer = true }: Legal
             className="bb-section-shell mb-2 border-[#7A7672]/20 bg-[rgba(255,252,247,0.8)] px-5 py-4"
             data-testid="legal-agent-disclaimer"
           >
-            <p className="text-sm leading-relaxed" style={{ color: '#7A7672' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--bb-text-secondary, #7A7672)' }}>
               {t('agent_disclaimer')}
             </p>
           </div>

@@ -57,7 +57,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: 'clamp(1.25rem, 2vw, 2rem)',
             fontWeight: 400,
-            color: '#1A1A1A',
+            color: 'var(--bb-text-primary, #1A1A1A)',
             marginTop: '2rem',
             marginBottom: '0.75rem'
           }}
@@ -78,7 +78,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: "'Cormorant Garamond', serif",
             fontSize: 'clamp(1.1rem, 1.5vw, 1.625rem)',
             fontWeight: 500,
-            color: '#1A1A1A',
+            color: 'var(--bb-text-primary, #1A1A1A)',
             marginTop: '1.5rem',
             marginBottom: '0.5rem'
           }}
@@ -118,7 +118,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
               borderCollapse: 'collapse',
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.875rem',
-              color: '#1A1A1A'
+              color: 'var(--bb-text-primary, #1A1A1A)'
             }}
           >
             <thead>
@@ -130,7 +130,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
                     style={{
                       textAlign: 'left',
                       padding: '0.5rem 0.75rem',
-                      borderBottom: '2px solid #7A7672',
+                      borderBottom: '2px solid var(--bb-text-secondary, #7A7672)',
                       fontWeight: 600,
                       whiteSpace: 'nowrap'
                     }}
@@ -142,7 +142,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             </thead>
             <tbody>
               {body.map((row, rowIdx) => (
-                <tr key={rowIdx} style={{ borderBottom: '1px solid #D9D7D3' }}>
+                <tr key={rowIdx} style={{ borderBottom: '1px solid var(--bb-border, #D9D7D3)' }}>
                   {row.map((cell, cellIdx) => (
                     <td
                       key={cellIdx}
@@ -174,7 +174,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: 'Inter, sans-serif',
             fontSize: '1rem',
             lineHeight: 1.6,
-            color: '#1A1A1A',
+            color: 'var(--bb-text-primary, #1A1A1A)',
             paddingLeft: '1.5rem',
             marginTop: '0.5rem',
             marginBottom: '0.75rem',
@@ -205,7 +205,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             fontFamily: 'Inter, sans-serif',
             fontSize: '1rem',
             lineHeight: 1.6,
-            color: '#1A1A1A',
+            color: 'var(--bb-text-primary, #1A1A1A)',
             paddingLeft: '1.5rem',
             marginTop: '0.5rem',
             marginBottom: '0.75rem'
@@ -235,7 +235,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
           fontFamily: 'Inter, sans-serif',
           fontSize: '1rem',
           lineHeight: 1.6,
-          color: '#1A1A1A',
+          color: 'var(--bb-text-primary, #1A1A1A)',
           marginTop: '0.5rem',
           marginBottom: '0.5rem'
         }}
@@ -280,7 +280,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Polityka Prywatności | BonBeauty',
     description:
       'Polityka prywatności BonBeauty — informacja o przetwarzaniu danych osobowych zgodnie z RODO.',
-    robots: { index: true, follow: true }
+    robots: { index: false, follow: false }
   };
 }
 
@@ -297,7 +297,7 @@ export default async function PolitykaPrywatnosciPage() {
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 300,
-              color: '#1A1A1A',
+              color: 'var(--bb-text-primary, #1A1A1A)',
               marginBottom: '0.5rem'
             }}
           >
@@ -307,7 +307,7 @@ export default async function PolitykaPrywatnosciPage() {
             style={{
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.875rem',
-              color: '#7A7672'
+              color: 'var(--bb-text-secondary, #7A7672)'
             }}
           >
             {t('last_updated')}: {lastUpdated}
