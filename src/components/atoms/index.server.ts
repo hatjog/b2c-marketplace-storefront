@@ -1,5 +1,8 @@
 export { Avatar } from './Avatar/Avatar';
 export { SkipLink } from './SkipLink/SkipLink';
+// v1.7.0 Story 2.2: BonBeauty trust surface — MarketplaceVerificationMark (UX-CMP-1)
+export { MarketplaceVerificationMark } from './MarketplaceVerificationMark/MarketplaceVerificationMark';
+export type { VerificationMarkVariant } from './MarketplaceVerificationMark/MarketplaceVerificationMark';
 export { Badge } from './Badge/Badge';
 export type { BadgeVariant } from './Badge/Badge';
 export { Button } from './Button/Button';

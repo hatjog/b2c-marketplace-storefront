@@ -4,10 +4,19 @@ import Link from 'next/link';
 
 import { ArrowRightIcon } from '@/icons';
 
+import { MarketplaceVerificationMark } from '@/components/atoms/MarketplaceVerificationMark/MarketplaceVerificationMark';
 import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 
-
+/**
+ * Hero — BonBeauty home hero section.
+ *
+ * v1.7.0 Story 2.2:
+ *   - MarketplaceVerificationMark (UX-CMP-1) added with text label (not icon-only)
+ *   - trustMarkLabel prop: required for a11y (screen-reader-readable trust cue)
+ *   - Hardcoded "BonBeauty" badge replaced with MarketplaceVerificationMark
+ *   - showSearch already present; buttons use token-bound styling (unchanged from 2.1)
+ */
 type HeroProps = {
   image: string;
   heading: string;
@@ -15,9 +24,21 @@ type HeroProps = {
   buttons: { label: string; path: string }[];
   maxHeight?: string | null;
   showSearch?: boolean;
+  /** Accessible trust label for MarketplaceVerificationMark (UX-CMP-1).
+   *  Defaults to 'Zweryfikowany marketplace' (PL fallback).
+   *  Pass via i18n key from block/route parent for full locale coverage. */
+  trustMarkLabel?: string;
 };
 
-export const Hero = ({ image, heading, paragraph, buttons, maxHeight = null, showSearch = false }: HeroProps) => {
+export const Hero = ({
+  image,
+  heading,
+  paragraph,
+  buttons,
+  maxHeight = null,
+  showSearch = false,
+  trustMarkLabel = 'Zweryfikowany marketplace',
+}: HeroProps) => {
   const sectionStyle = maxHeight ? ({ maxHeight } as CSSProperties) : undefined;
   const contentStyle = maxHeight
     ? ({
@@ -51,9 +72,18 @@ export const Hero = ({ image, heading, paragraph, buttons, maxHeight = null, sho
         style={contentStyle}
       >
         <div className="space-y-5">
-          <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.28em] text-white/88 backdrop-blur">
-            BonBeauty
-          </span>
+          {/* MarketplaceVerificationMark (UX-CMP-1): compact on mobile, default on desktop.
+              Always renders a text label so the trust cue is screen-reader-accessible. */}
+          <MarketplaceVerificationMark
+            label={trustMarkLabel}
+            variant="default"
+            className="hidden sm:inline-flex"
+          />
+          <MarketplaceVerificationMark
+            label={trustMarkLabel}
+            variant="compact"
+            className="inline-flex sm:hidden"
+          />
           <h2 className="display-sm max-w-[12ch] text-white md:text-[64px] md:leading-[72px]">
             {heading}
           </h2>

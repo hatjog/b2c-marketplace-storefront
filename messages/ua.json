@@ -717,5 +717,56 @@
         "failed_cta": "Спробувати знову"
       }
     }
+  },
+  "category": {
+    "page_title": "Всі пропозиції",
+    "page_description": "Переглядайте ваучери на beauty-процедури від перевірених салонів.",
+    "breadcrumb_all": "Всі категорії",
+    "loading_aria": "Завантаження категорій...",
+    "results_count": "{count, plural, one {# пропозиція} few {# пропозиції} many {# пропозицій} other {# пропозицій}}",
+    "view_offer_cta": "Переглянути пропозицію",
+    "buy_voucher_cta": "Купити ваучер",
+    "voucher_type_label": "Тип ваучера",
+    "validity_label": "Дійсний",
+    "verified_seller_label": "Перевірений салон",
+    "trust_mark_label": "Перевірений маркетплейс",
+    "loading_new_results": "Завантаження нових результатів...",
+    "loading_page": "Завантаження сторінки...",
+    "filters_cleared": "Фільтри очищено, результати оновлено",
+    "active_filters_label": "Активні фільтри",
+    "filter_results_aria": "Відфільтровані результати"
+  },
+  "discovery": {
+    "search_loading": "Пошук...",
+    "search_results": "Результати пошуку",
+    "active_filters_label": "Активні фільтри",
+    "clear_filters_aria": "Очистити всі фільтри",
+    "filters_cleared_status": "Фільтри очищено",
+    "popular_categories": "Популярні категорії",
+    "popular_salons": "Рекомендовані салони",
+    "featured_offers": "Виділені пропозиції",
+    "no_purchase_heading": "Відкрийте BonBeauty",
+    "no_purchase_body": "Переглядайте ваучери до найкращих салонів краси.",
+    "no_purchase_cta": "Переглянути пропозиції",
+    "listing_load_status": "Завантаження пропозицій"
+  },
+  "discovery_empty": {
+    "initial_headline": "Відкрийте перші пропозиції",
+    "initial_body": "У вас ще немає історії покупок. Почніть з перегляду популярних категорій або салонів.",
+    "initial_cta": "Переглянути категорії",
+    "initial_status": "Немає історії покупок — показуємо рекомендації",
+    "no_results_headline": "Немає результатів за вашими фільтрами",
+    "no_results_body": "Спробуйте очистити фільтри або розширити критерії пошуку.",
+    "no_results_cta": "Очистити фільтри",
+    "no_results_status": "Немає результатів — очистіть фільтри",
+    "permission_denied_headline": "Ця пропозиція недоступна",
+    "permission_denied_body": "Пропозиція може бути обмежена регіонально або недоступна для вашого облікового запису.",
+    "permission_denied_cta": "Повернутися до категорій",
+    "permission_denied_status": "Доступ до пропозиції заборонено",
+    "load_error_headline": "Не вдалося завантажити пропозиції",
+    "load_error_body": "Перевірте підключення до інтернету та спробуйте знову.",
+    "load_error_cta": "Спробувати знову",
+    "load_error_status": "Помилка завантаження пропозицій",
+    "error_reset_aria": "Перезавантажити сторінку з пропозиціями"
   }
 }

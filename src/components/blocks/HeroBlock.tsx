@@ -1,5 +1,12 @@
-import React from 'react';
-import Link from 'next/link';
+/**
+ * HeroBlock — wraps the Hero section for homepage block rendering.
+ *
+ * v1.7.0 Story 2.2:
+ *   - Passes trustMarkLabel (i18n key: category.trust_mark_label) to Hero
+ *     so MarketplaceVerificationMark (UX-CMP-1) is locale-aware.
+ *   - Server component async to use getTranslations.
+ */
+import { getTranslations } from 'next-intl/server';
 
 import { Hero } from '@/components/sections/Hero/Hero';
 
@@ -12,12 +19,15 @@ import {
 
 export type { HeroSectionBlock };
 
-export function HeroBlock({ section }: { section: HeroSectionBlock }) {
+export async function HeroBlock({ section }: { section: HeroSectionBlock }) {
   const heading = section.heading ?? '';
   const paragraph = section.paragraph ?? '';
   const imageUrl = getImageUrl(section.image, '/images/hero/Image.jpg', process.env.PAYLOAD_API_URL);
   const buttons = mapButtons(section.buttons);
   const maxHeight = normalizeOptionalText(section.max_height);
+
+  const t = await getTranslations('category');
+  const trustMarkLabel = t('trust_mark_label');
 
   if (!heading && !paragraph && !imageUrl && buttons.length === 0) {
     return null;
@@ -32,6 +42,7 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
         buttons={buttons}
         maxHeight={maxHeight}
         showSearch={true}
+        trustMarkLabel={trustMarkLabel}
       />
     );
   }
@@ -45,21 +56,6 @@ export function HeroBlock({ section }: { section: HeroSectionBlock }) {
             {heading}
           </h2>
           <p className="mb-8 text-lg">{paragraph}</p>
-          {buttons.length > 0 && (
-            <div className="flex gap-4 font-bold uppercase">
-              {buttons.map(({ label, path }) => (
-                <Link
-                  key={path}
-                  href={path}
-                  className="bg-content group flex rounded-sm border p-4 transition-all duration-300 hover:bg-action hover:text-tertiary"
-                  aria-label={label}
-                  title={label}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </section>

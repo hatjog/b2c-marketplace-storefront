@@ -183,12 +183,18 @@ async function Category({
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
 
-      <h1 className="heading-xl uppercase">{category.name}</h1>
+      {/* h1: uses text-primary token per bb-surfaces typography */}
+      <h1 className="heading-xl uppercase text-primary">{category.name}</h1>
       <SanitizedHTML html={category.description} className="mt-4 mb-6 text-sm text-secondary" />
 
+      {/* Suspense: routing-load fallback (initial page hydration) — aria-label distinguishes
+          from submit-load (filter/sort change). Loading skeleton is BonBeauty-aligned. */}
       <Suspense
         fallback={
-          <div data-testid="category-page-loading">
+          <div
+            data-testid="category-page-loading"
+            aria-label="Ładowanie kategorii..."
+          >
             <ProductListingSkeleton />
           </div>
         }
