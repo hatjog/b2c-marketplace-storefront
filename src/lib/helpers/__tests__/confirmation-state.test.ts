@@ -21,6 +21,7 @@ import { describe, expect, it } from 'vitest';
 import {
   getConfirmationHandoffState,
   getConfirmationState,
+  isSafeClaimUrl,
 } from '../confirmation-state';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -204,6 +205,62 @@ describe('getConfirmationHandoffState', () => {
       expect(result).toBe('paid_delivery_pending');
       expect(result).not.toBe('support_required');
     });
+  });
+});
+
+// ─── isSafeClaimUrl (G1/G3 review-2 fix) ──────────────────────────────────────
+
+describe('isSafeClaimUrl', () => {
+  it('returns the trimmed string for an https URL', () => {
+    expect(isSafeClaimUrl('https://bb.test/claim/xyz')).toBe('https://bb.test/claim/xyz');
+  });
+
+  it('returns the trimmed string for an http URL (local/dev)', () => {
+    expect(isSafeClaimUrl('http://localhost:8000/claim/x')).toBe('http://localhost:8000/claim/x');
+  });
+
+  it('trims whitespace around an otherwise-valid URL', () => {
+    expect(isSafeClaimUrl('  https://bb.test/c  ')).toBe('https://bb.test/c');
+  });
+
+  it('rejects null', () => {
+    expect(isSafeClaimUrl(null)).toBeNull();
+  });
+
+  it('rejects undefined', () => {
+    expect(isSafeClaimUrl(undefined)).toBeNull();
+  });
+
+  it('rejects empty string', () => {
+    expect(isSafeClaimUrl('')).toBeNull();
+  });
+
+  it('rejects whitespace-only string', () => {
+    expect(isSafeClaimUrl('   ')).toBeNull();
+  });
+
+  it('rejects javascript: protocol (XSS surface)', () => {
+    expect(isSafeClaimUrl('javascript:alert(1)')).toBeNull();
+  });
+
+  it('rejects javascript: with whitespace prefix', () => {
+    expect(isSafeClaimUrl('  javascript:alert(1)  ')).toBeNull();
+  });
+
+  it('rejects data: URI', () => {
+    expect(isSafeClaimUrl('data:text/html,<script>alert(1)</script>')).toBeNull();
+  });
+
+  it('rejects vbscript: URI', () => {
+    expect(isSafeClaimUrl('vbscript:msgbox(1)')).toBeNull();
+  });
+
+  it('rejects mailto: URI (not a claim link)', () => {
+    expect(isSafeClaimUrl('mailto:attacker@evil.test')).toBeNull();
+  });
+
+  it('rejects unparseable garbage', () => {
+    expect(isSafeClaimUrl('not a url at all')).toBeNull();
   });
 });
 

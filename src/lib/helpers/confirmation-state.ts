@@ -67,7 +67,7 @@ export interface ConfirmationStateInput {
   /** GP shared lifecycle status from proxy (or raw Medusa value as fallback). */
   paymentStatus: string | null | undefined;
   /** Entitlements array from /api/v1/entitlements?order_id={id}. */
-  entitlements?: Array<{ status: string; voucher_code: string | null; claim_url: string | null }>;
+  entitlements?: Array<{ status: string; voucher_code: string | null; claim_url?: string | null }>;
   /**
    * Optional order metadata for positive delivery-failure evidence.
    * Not in current proxy contract — flagged as additive follow-up.
@@ -188,6 +188,34 @@ export function getConfirmationHandoffState(
  * bridge retained as a safety net until the deprecated export is removed in a
  * follow-up cleanup story.
  */
+/**
+ * Validates an entitlement `claim_url` against an HTTP/HTTPS allow-list so the
+ * value can be assigned to an `<a href>` without becoming an XSS surface
+ * (G1 review-2 fix). Reject anything that fails URL parsing, plus any
+ * non-`http(s):` scheme (`javascript:`, `data:`, `vbscript:`, `mailto:`, …).
+ *
+ * Returns the original (trimmed) string when safe, otherwise `null` so the
+ * caller can render the existing fallback CTA.
+ */
+export function isSafeClaimUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol === 'https:' || u.protocol === 'http:') {
+      return trimmed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** @deprecated Use {@link getConfirmationHandoffState} instead. Retained for
+ * backward compatibility until removed in a follow-up cleanup story
+ * (G10 review-2 fix — surface deprecation in JSDoc; no live callers as of
+ * v1.7.0 Story 2.5). */
 export function getConfirmationState(paymentStatus: string | undefined): ConfirmationState {
   const handoffState = getConfirmationHandoffState({ paymentStatus });
   switch (handoffState) {
