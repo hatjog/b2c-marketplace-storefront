@@ -1,4 +1,5 @@
 import { mercurClient, sdk } from '../config';
+import { getAuthHeaders } from './cookies';
 import type {
   VoucherAuditEvent,
   VoucherAuditEventType
@@ -283,4 +284,172 @@ export async function getVoucherEvents(
   }
 
   return [];
+}
+
+// ---------------------------------------------------------------------------
+// Story 2.6: Customer voucher list (account/recovery view)
+// ---------------------------------------------------------------------------
+
+/**
+ * Server-side allowlist projection for a customer-scoped voucher list item.
+ *
+ * Allowlist: code, seller_name, seller_handle, product_title, value_minor,
+ *   currency_code, status, expires_at.
+ *
+ * NEVER ships: seller_id (routing-only, never displayed per story spec),
+ *   raw buyer PII (email, address, phone), internal token fields,
+ *   salon-user audit details (employee id, station id, honoured_by,
+ *   exception_note author email) or operator notes.
+ *
+ * Story 2.7 PII boundary note:
+ *   listCustomerVouchers() exposes ONLY customer-owned voucher data.
+ *   The salon-user voucher lookup view (Story 2.7) MUST NOT widen this
+ *   projection to include customer email, full name, phone or address.
+ *   The inverse also holds: this projection MUST NOT include any salon-user
+ *   surface fields (employee id, station id, honoured_by, exception_note
+ *   author email). Cross-view PII minimization per NFR17 + FR62.
+ *   If Story 2.7 needs to JOIN voucher + salon-user data, it should do so
+ *   through a dedicated server-side action with its own allowlist.
+ */
+export interface VoucherListItem {
+  code: string;
+  seller_name: string;
+  seller_handle: string;
+  product_title: string;
+  value_minor: number;
+  currency_code: string;
+  status: VoucherStatus;
+  expires_at?: string | null;
+}
+
+type VoucherListApiPayload = {
+  code?: string;
+  seller_id?: string;       // internal routing only — NOT projected to customer
+  seller_name?: string;
+  seller_handle?: string;
+  product_title?: string;
+  value_minor?: number;
+  value?: number;
+  currency_code?: string;
+  status?: string;
+  expires_at?: string | null;
+  // Buyer-side fields are explicitly NOT enumerated (AR45 allowlist pattern).
+};
+
+function projectListAllowlist(p: VoucherListApiPayload | null | undefined): VoucherListItem | null {
+  if (!p) return null;
+  if (!p.code || !p.seller_name) return null;
+
+  const rawStatus = (p.status ?? 'idle').toLowerCase();
+  const status: VoucherStatus =
+    rawStatus === 'consent_pending' || rawStatus === 'consent-pending' || rawStatus === 'pending'
+      ? 'consent_pending'
+      : rawStatus === 'claimed' || rawStatus === 'redeemed'
+        ? 'claimed'
+        : rawStatus === 'withdrawn' || rawStatus === 'revoked'
+          ? 'withdrawn'
+          : 'idle';
+
+  return {
+    code: String(p.code),
+    seller_name: String(p.seller_name),
+    // Review LOW: never fall back to voucher.code — that would mis-route
+    // /sellers/<voucher_code> AND leak the voucher code into a seller URL.
+    // When seller_handle is missing, return '' and let the consumer omit
+    // the seller link (rendering the seller_name as plain text).
+    seller_handle: p.seller_handle ? String(p.seller_handle) : '',
+    product_title: String(p.product_title ?? ''),
+    value_minor: typeof p.value_minor === 'number'
+      ? p.value_minor
+      : typeof p.value === 'number'
+        ? p.value
+        : 0,
+    currency_code: String(p.currency_code ?? 'PLN'),
+    status,
+    expires_at: p.expires_at ?? null,
+  };
+}
+
+/**
+ * Fetches the authenticated customer's voucher list.
+ *
+ * Data layer strategy (Path B primary / Path A safety net — per voucher.ts
+ * doc comment "Mercur 2 voucher endpoint strategy"):
+ *   Path B (primary): typed `mercurClient.store.vouchers` list call.
+ *   Path A (fallback): raw sdk.client.fetch('/store/vouchers') with auth headers.
+ *
+ * Returns { vouchers: VoucherListItem[], state: 'ok' | 'access_denied' |
+ *   'unavailable' | 'failed' } so the calling page can map each to its
+ * distinct UX state (Story 0.9 contract: may_mask_failures: false).
+ *
+ * Story 2.7 PII boundary: see projectListAllowlist doc above.
+ */
+export type CustomerVoucherListResult =
+  | { state: 'ok'; vouchers: VoucherListItem[] }
+  | { state: 'access_denied'; vouchers: [] }
+  | { state: 'unavailable'; vouchers: [] }
+  | { state: 'failed'; vouchers: [] };
+
+export async function listCustomerVouchers(): Promise<CustomerVoucherListResult> {
+  // Check auth headers — missing token means access_denied, not empty.
+  // (getAuthHeaders always returns an object — `{}` when no token, the
+  // authorization shape otherwise — so we only need the `in` check.)
+  const authHeaders = await getAuthHeaders();
+  if (!('authorization' in authHeaders)) {
+    return { state: 'access_denied', vouchers: [] };
+  }
+
+  // Path B (primary): typed mercurClient list call.
+  try {
+    const client = mercurClient as unknown as {
+      store?: {
+        vouchers?: {
+          list?: (args?: Record<string, unknown>) => Promise<{
+            vouchers?: VoucherListApiPayload[];
+          }>;
+        };
+      };
+    };
+    if (client.store?.vouchers?.list) {
+      const res = await client.store.vouchers.list();
+      const items = (res?.vouchers ?? [])
+        .map(projectListAllowlist)
+        .filter((v): v is VoucherListItem => v !== null);
+      return { state: 'ok', vouchers: items };
+    }
+  } catch (err: unknown) {
+    // Distinguish auth (401/403) from other errors.
+    const status = (err as { status?: number })?.status;
+    if (status === 401 || status === 403) {
+      return { state: 'access_denied', vouchers: [] };
+    }
+    if (status === 503 || status === 502) {
+      return { state: 'unavailable', vouchers: [] };
+    }
+    // Fall through to Path A.
+  }
+
+  // Path A (fallback): raw SDK fetch with auth headers.
+  try {
+    const res = await sdk.client.fetch<{ vouchers?: VoucherListApiPayload[] }>(
+      '/store/vouchers',
+      {
+        method: 'GET',
+        headers: authHeaders,
+      }
+    );
+    const items = (res?.vouchers ?? [])
+      .map(projectListAllowlist)
+      .filter((v): v is VoucherListItem => v !== null);
+    return { state: 'ok', vouchers: items };
+  } catch (err: unknown) {
+    const status = (err as { status?: number })?.status;
+    if (status === 401 || status === 403) {
+      return { state: 'access_denied', vouchers: [] };
+    }
+    if (status === 503 || status === 502) {
+      return { state: 'unavailable', vouchers: [] };
+    }
+    return { state: 'failed', vouchers: [] };
+  }
 }

@@ -384,6 +384,7 @@
     "account_aria": "Otwórz menu konta",
     "your_account": "Twoje konto",
     "orders": "Zamówienia",
+    "vouchers": "Vouchery",
     "messages": "Wiadomości",
     "returns": "Zwroty",
     "addresses": "Adresy",
@@ -660,6 +661,19 @@
       "loading": {
         "label": "Ładuję historię…"
       }
+    },
+    "recovery": {
+      "title": "Odzyskaj dostęp do vouchera",
+      "body": "Użyj linku z e-maila, aby odzyskać dostęp do swoich voucherów.",
+      "error_neutral_heading": "Link wygasł lub został już użyty",
+      "error_neutral": "Poproś o nowy link odzyskiwania, podając adres e-mail powiązany z zakupem.",
+      "email_label": "Adres e-mail",
+      "email_placeholder": "twoj@email.pl",
+      "cta_request_new_link": "Wyślij link odzyskiwania",
+      "continue_cta": "Kontynuuj odzyskiwanie",
+      "sent_confirmation": "Jeśli ten adres e-mail jest powiązany z zakupem, wyślemy Ci link odzyskiwania.",
+      "meta_title": "Odzyskiwanie dostępu | BonBeauty",
+      "meta_description": "Odzyskaj dostęp do swoich voucherów BonBeauty."
     }
   },
   "cross_sell": {
@@ -672,5 +686,35 @@
     "recommended": "Polecane",
     "price_asc": "Cena ↑",
     "price_desc": "Cena ↓"
+  },
+  "account": {
+    "vouchers": {
+      "title": "Moje vouchery",
+      "row_cta_open": "Otwórz voucher",
+      "expires_label": "Wygasa {date}",
+      "orders_crosslink": "Zobacz zamówienia",
+      "status": {
+        "idle": "Oczekujący",
+        "consent_pending": "Oczekuje na zgodę",
+        "claimed": "Zrealizowany",
+        "withdrawn": "Wycofany"
+      },
+      "empty": {
+        "heading": "Nie masz jeszcze żadnych voucherów",
+        "body": "Kup swój pierwszy voucher i odkryj salony beauty BonBeauty.",
+        "cta": "Zobacz oferty"
+      },
+      "error": {
+        "access_denied_heading": "Wymagane logowanie",
+        "access_denied": "Zaloguj się, aby zobaczyć swoje vouchery.",
+        "access_denied_cta": "Zaloguj się",
+        "unavailable_heading": "Vouchery niedostępne",
+        "unavailable": "Usługa jest chwilowo niedostępna. Spróbuj ponownie później lub skontaktuj się z pomocą.",
+        "unavailable_cta": "Wróć do strony głównej",
+        "failed_heading": "Nie udało się załadować voucherów",
+        "failed": "Sprawdź połączenie i odśwież stronę.",
+        "failed_cta": "Spróbuj ponownie"
+      }
+    }
   }
 }

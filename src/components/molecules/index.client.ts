@@ -22,5 +22,8 @@ export { SellerInfo } from './SellerInfo/SellerInfo';
 export { SellerReviewList } from './SellerReviewList/SellerReviewList';
 export { SellerScore } from './SellerScore/SellerScore';
 export { UserNavigation } from './UserNavigation/UserNavigation';
+// v1.7.0 Story 2.6: Magic-link recovery state + voucher history empty state (client components)
+export { MagicLinkRecoveryState } from './MagicLinkRecoveryState/MagicLinkRecoveryState';
+export { VoucherHistoryEmptyState } from './VoucherHistoryEmptyState/VoucherHistoryEmptyState';
 export { VendorBadge } from './VendorBadge/index';
 export { VoucherQrCode } from './VoucherQrCode/VoucherQrCode';
