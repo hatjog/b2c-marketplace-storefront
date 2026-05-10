@@ -1,12 +1,35 @@
 'use client';
 
 /**
- * ConfirmationPageContent — client component
+ * ConfirmationPageContent — UX-CMP-4 ConfirmationHandoff (Story 2.5)
  *
  * Fetches order and entitlement data via browser-level API proxy routes
  * so Playwright E2E tests can intercept with page.route().
- * Renders one of: gift confirmation (ISSUED), self-purchase (ACTIVE),
- * pending state, or error state.
+ *
+ * Renders one of five UX-CMP-4 states (getConfirmationHandoffState):
+ *   paid_delivered        — GiftConfirmedView / SelfPurchaseConfirmedView
+ *   paid_delivery_pending — PaidDeliveryPendingView (calm, voucher-first, timestamp)
+ *   payment_pending       — PurchasePendingView (existing, PSP confirmation in flight)
+ *   payment_failed_retry  — PaymentFailedRetryView (renamed from PaymentErrorView)
+ *   support_required      — SupportRequiredView (recovery path, no raw errors)
+ *
+ * PII / URL safety (AC1, AC3, NFR22):
+ *   - Only order.display_id (or fallback to route id) in customer copy.
+ *   - No voucher codes, claim tokens, email, PII in URLs or mailto: hrefs.
+ *   - Sentry captures component stack ONLY — no order/entitlement payloads.
+ *   - console logs excluded for order/entitlement data.
+ *
+ * HONESTY (AC2):
+ *   - paid_delivery_pending ≠ failure.
+ *   - support_required requires positive evidence (delivery_state or proxy).
+ *   - No "success" claimed without backend entitlement evidence.
+ *
+ * Accessibility (NFR28 + UX-DR19):
+ *   - Loading state: role="status" aria-live="polite"
+ *   - Pending states: aria-live="polite" aria-busy
+ *   - Each state has exactly one primary next action.
+ *   - Focus rings via BonBeauty DS (focus-ring fix from Story 2.1).
+ *   - Touch targets >= 44px via bb-primary-cta and padding.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -16,7 +39,12 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCode';
-import { getConfirmationState } from '@/lib/helpers/confirmation-state';
+import {
+  type ConfirmationHandoffState,
+  getConfirmationHandoffState,
+} from '@/lib/helpers/confirmation-state';
+
+// ─── Sentry QR Error Boundary — component stack only, no PII ─────────────────
 
 class QrErrorBoundary extends React.Component<
   { children: React.ReactNode; fallback?: React.ReactNode },
@@ -27,6 +55,7 @@ class QrErrorBoundary extends React.Component<
     return { hasError: true };
   }
   componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // RULE: component stack only — never attach order/entitlement/voucher data
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
   render() {
@@ -34,11 +63,20 @@ class QrErrorBoundary extends React.Component<
   }
 }
 
+// ─── Data shapes (proxy contract) ────────────────────────────────────────────
+
 type OrderData = {
   id: string;
-  display_id?: string;
+  display_id?: string | number | null;
   payment_status?: string;
-  metadata?: { buyer_is_recipient?: boolean };
+  /** ISO timestamp from the proxy (Story 2.4 F2 fix — updated_at included). */
+  updated_at?: string | null;
+  /**
+   * metadata is NOT included in current proxy contract (Story 2.4 F4 fix).
+   * Accepted here as an optional shape so the state machine is ready when
+   * an explicit evidence endpoint (Epic 7/8) exposes delivery_state.
+   */
+  metadata?: { delivery_state?: string; requires_support?: boolean; buyer_is_recipient?: boolean };
 };
 
 type EntitlementData = {
@@ -54,38 +92,86 @@ type Props = {
   orderId: string;
 };
 
+// ─── Utility helpers ──────────────────────────────────────────────────────────
+
 function formatVoucherCode(code: string): string {
-  // Format 12-16 char code as groups of 4 separated by spaces
   return code.replace(/([A-Z0-9]{4})(?=[A-Z0-9])/g, '$1 ').trim();
 }
 
 function formatAmount(minor: number, locale: string): string {
   return (minor / 100).toLocaleString(locale === 'en' ? 'en-US' : 'pl-PL', {
     style: 'currency',
-    currency: 'PLN'
+    currency: 'PLN',
   });
 }
 
+/** Format ISO timestamp as locale-aware short datetime, or null if invalid. */
+function formatTimestamp(isoString: string | null | undefined, locale: string): string | null {
+  if (!isoString) return null;
+  try {
+    return new Date(isoString).toLocaleString(locale === 'en' ? 'en-GB' : 'pl-PL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return null;
+  }
+}
+
+// ─── UX-CMP-4 view components ─────────────────────────────────────────────────
+
+/**
+ * GiftConfirmedView — paid_delivered, gift path (ISSUED entitlement).
+ * Shows voucher value and claim_url CTA (backend-issued, never client-derived).
+ */
 function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
   const t = useTranslations('confirmation');
   const locale = useLocale();
+  // claim_url is a backend-issued single-use link; render as CTA href only.
   const claimUrl = entitlement.claim_url?.trim() || null;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center" data-testid="gift-confirmed">
+    <div
+      className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center"
+      data-testid="gift-confirmed"
+    >
       <span className="bb-pill">BonBeauty</span>
       <h1 className="heading-xl">{t('gift_title')}</h1>
       <div className="bb-section-shell bb-section-shell-strong w-full" data-testid="voucher-card">
-        {entitlement.product_name && <p className="heading-sm" data-testid="product-name">{entitlement.product_name}</p>}
-        {entitlement.salon_name && <p className="label-lg mt-2 text-secondary" data-testid="salon-name">{entitlement.salon_name}</p>}
-        <p className="mt-4 text-[32px] font-medium text-primary" data-testid="face-value">{formatAmount(entitlement.face_value_minor, locale)}</p>
+        {entitlement.product_name && (
+          <p className="heading-sm" data-testid="product-name">
+            {entitlement.product_name}
+          </p>
+        )}
+        {entitlement.salon_name && (
+          <p className="label-lg mt-2 text-secondary" data-testid="salon-name">
+            {entitlement.salon_name}
+          </p>
+        )}
+        <p
+          className="mt-4 text-[32px] font-medium text-primary"
+          data-testid="face-value"
+        >
+          {formatAmount(entitlement.face_value_minor, locale)}
+        </p>
       </div>
       {claimUrl ? (
-        <a href={claimUrl} className="bb-primary-cta rounded-full px-6 py-3" data-testid="transfer-cta">
+        <a
+          href={claimUrl}
+          className="bb-primary-cta rounded-full px-6 py-3"
+          data-testid="transfer-cta"
+        >
           {t('gift_cta')}
         </a>
       ) : (
-        <Link href="/categories" className="bb-primary-cta rounded-full px-6 py-3" data-testid="transfer-cta">
+        <Link
+          href="/categories"
+          className="bb-primary-cta rounded-full px-6 py-3"
+          data-testid="transfer-cta"
+        >
           {t('continue_shopping')}
         </Link>
       )}
@@ -93,18 +179,38 @@ function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
   );
 }
 
+/**
+ * SelfPurchaseConfirmedView — paid_delivered, self-purchase path (ACTIVE entitlement).
+ * Shows in-page voucher code + QR. Voucher code NEVER put in URL.
+ */
 function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
   const t = useTranslations('confirmation');
   const locale = useLocale();
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center" data-testid="self-purchase-confirmed">
+    <div
+      className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center"
+      data-testid="self-purchase-confirmed"
+    >
       <span className="bb-pill">BonBeauty</span>
       <h1 className="heading-xl">{t('active_title')}</h1>
       <div className="bb-section-shell bb-section-shell-strong w-full" data-testid="voucher-card">
-        {entitlement.product_name && <p className="heading-sm" data-testid="product-name">{entitlement.product_name}</p>}
-        {entitlement.salon_name && <p className="label-lg mt-2 text-secondary" data-testid="salon-name">{entitlement.salon_name}</p>}
-        <p className="mt-4 text-[32px] font-medium text-primary" data-testid="face-value">{formatAmount(entitlement.face_value_minor, locale)}</p>
+        {entitlement.product_name && (
+          <p className="heading-sm" data-testid="product-name">
+            {entitlement.product_name}
+          </p>
+        )}
+        {entitlement.salon_name && (
+          <p className="label-lg mt-2 text-secondary" data-testid="salon-name">
+            {entitlement.salon_name}
+          </p>
+        )}
+        <p
+          className="mt-4 text-[32px] font-medium text-primary"
+          data-testid="face-value"
+        >
+          {formatAmount(entitlement.face_value_minor, locale)}
+        </p>
       </div>
       {entitlement.voucher_code && (
         <p
@@ -119,9 +225,7 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
           fallback={
             <div className="bb-card-muted text-center" data-testid="qr-code-fallback">
               <span className="text-xs text-ui-fg-subtle">{t('voucher_code_label')}</span>
-              <p className="mt-2 font-mono">
-                {formatVoucherCode(entitlement.voucher_code)}
-              </p>
+              <p className="mt-2 font-mono">{formatVoucherCode(entitlement.voucher_code)}</p>
             </div>
           }
         >
@@ -135,6 +239,64 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
   );
 }
 
+/**
+ * PaidDeliveryPendingView — paid, entitlement evidence absent.
+ * HONESTY: distinct from failure; delivery is in progress.
+ * Shows timestamp + one CTA. aria-live="polite" aria-busy for screen readers.
+ */
+function PaidDeliveryPendingView({
+  orderRef,
+  lastUpdatedAt,
+}: {
+  orderRef: string;
+  lastUpdatedAt: string | null | undefined;
+}) {
+  const t = useTranslations('confirmation');
+  const locale = useLocale();
+  const formattedTs = formatTimestamp(lastUpdatedAt, locale);
+  const clientTs = new Date().toLocaleString(locale === 'en' ? 'en-GB' : 'pl-PL', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  // Use backend timestamp if available; otherwise show client-side "last checked" label
+  const timestampLabel = formattedTs
+    ? t('last_updated_label', { timestamp: formattedTs })
+    : t('last_checked_label', { timestamp: clientTs });
+
+  return (
+    <div
+      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
+      data-testid="paid-delivery-pending"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div className="bb-section-shell bb-section-shell-strong w-full">
+        <span className="bb-pill mb-4 inline-block">BonBeauty</span>
+        <h1 className="heading-xl">{t('pending_delivery_title')}</h1>
+        <p className="mt-3 text-secondary">{t('pending_delivery_description')}</p>
+        <p className="mt-4 label-sm text-secondary" data-testid="last-updated-label">
+          {timestampLabel}
+        </p>
+        <p className="mt-3 label-md" data-testid="order-ref">
+          {t('order_ref', { orderId: orderRef })}
+        </p>
+      </div>
+      <Link
+        href="/account/orders"
+        className="bb-primary-cta rounded-full px-6 py-3"
+        data-testid="go-to-orders-cta"
+      >
+        {t('go_to_orders')}
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * PurchasePendingView — payment_pending (PSP confirmation in flight).
+ * Distinct from paid_delivery_pending: payment is not yet confirmed.
+ * aria-live="polite" + elapsed-timer for screen reader friendliness.
+ */
 function PurchasePendingView({ orderId }: { orderId: string }) {
   const t = useTranslations('confirmation');
   const [elapsed, setElapsed] = useState(0);
@@ -153,38 +315,105 @@ function PurchasePendingView({ orderId }: { orderId: string }) {
   }, []);
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center" data-testid="pending-state">
+    <div
+      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
+      data-testid="pending-state"
+      aria-live="polite"
+      aria-busy="true"
+    >
       <div className="bb-section-shell bb-section-shell-strong w-full">
-        <h1 className="heading-xl">{t('pending_title')}</h1>
+        <h1 className="heading-xl">{t('payment_pending_title')}</h1>
         {elapsed >= 60 ? (
           <p className="mt-3 text-secondary">{t('pending_ready_soon')}</p>
         ) : (
           <p className="mt-3 text-secondary">{t('pending_safe_close')}</p>
         )}
-        <p className="mt-4 label-md" data-testid="order-ref">{t('order_ref', { orderId })}</p>
+        <p className="mt-4 label-md" data-testid="order-ref">
+          {t('order_ref', { orderId })}
+        </p>
       </div>
     </div>
   );
 }
 
-function PaymentErrorView() {
+/**
+ * PaymentFailedRetryView — payment_failed_retry (explicit payment failure/expiry).
+ * Distinct from support_required: user can retry payment here.
+ * No "delivery failed" copy; this is about payment, not voucher delivery.
+ */
+function PaymentFailedRetryView() {
   const t = useTranslations('confirmation');
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center" data-testid="error-state">
+    <div
+      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
+      data-testid="error-state"
+    >
       <div className="bb-section-shell w-full">
-        <h1 className="heading-xl">{t('error_title')}</h1>
-        <p className="mt-3 text-secondary">{t('error_description')}</p>
+        <h1 className="heading-xl">{t('payment_failed_title')}</h1>
+        <p className="mt-3 text-secondary">{t('payment_failed_description')}</p>
       </div>
-      <Link href="/checkout" className="bb-primary-cta rounded-full px-6 py-3" data-testid="retry-cta">
+      <Link
+        href="/checkout"
+        className="bb-primary-cta rounded-full px-6 py-3"
+        data-testid="retry-cta"
+      >
         {t('retry')}
       </Link>
-      <Link href="/cart" className="label-md text-secondary underline underline-offset-4" data-testid="change-method-cta">
+      <Link
+        href="/cart"
+        className="label-md text-secondary underline underline-offset-4"
+        data-testid="change-method-cta"
+      >
         {t('change_method')}
       </Link>
     </div>
   );
 }
+
+/**
+ * SupportRequiredView — support_required (positive evidence of delivery issue).
+ * DISTINCT from payment_failed_retry: no retry-payment CTA.
+ * Primary action: recovery/account. Secondary: contact support (no PII in mailto).
+ * Customer-safe copy only; no provider names, raw error codes, internal IDs.
+ */
+function SupportRequiredView({ orderRef }: { orderRef: string }) {
+  const t = useTranslations('confirmation');
+
+  return (
+    <div
+      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
+      data-testid="support-required"
+    >
+      <div className="bb-section-shell w-full">
+        <span className="bb-pill mb-4 inline-block">BonBeauty</span>
+        <h1 className="heading-xl">{t('support_required_title')}</h1>
+        <p className="mt-3 text-secondary">{t('support_required_description')}</p>
+        <p className="mt-3 label-md" data-testid="order-ref">
+          {t('order_ref', { orderId: orderRef })}
+        </p>
+      </div>
+      {/* Primary: account/orders recovery path (Story 2.6 magic-link baseline) */}
+      <Link
+        href="/account/orders"
+        className="bb-primary-cta rounded-full px-6 py-3"
+        data-testid="recovery-cta"
+      >
+        {t('recovery_cta')}
+      </Link>
+      {/* Secondary: support contact — no PII in href (AC3 + NFR22) */}
+      <a
+        href="/help"
+        className="label-md text-secondary underline underline-offset-4"
+        data-testid="support-cta"
+      >
+        {t('support_required_cta')}
+      </a>
+    </div>
+  );
+}
+
+// ─── Main client component ────────────────────────────────────────────────────
 
 export function ConfirmationPageContent({ orderId }: Props) {
   const t = useTranslations('confirmation');
@@ -217,6 +446,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
           setLoading(false);
         }
       } catch {
+        // No order/entitlement payload logged — NFR22 + Sentry hygiene
         if (!cancelled) {
           setFetchError(true);
           setLoading(false);
@@ -230,36 +460,73 @@ export function ConfirmationPageContent({ orderId }: Props) {
     };
   }, [orderId]);
 
+  // Loading state — accessible status semantics (NFR28)
   if (loading && !fetchError) {
-    return <div className="bb-section-shell text-center" data-testid="loading">{t('loading')}</div>;
+    return (
+      <div
+        className="bb-section-shell text-center"
+        data-testid="loading"
+        role="status"
+        aria-live="polite"
+      >
+        {t('loading')}
+      </div>
+    );
   }
 
+  // Not found / fetch error
   if (fetchError || !order) {
     return (
-      <div className="bb-section-shell mx-auto max-w-2xl text-center" data-testid="not-found">
+      <div
+        className="bb-section-shell mx-auto max-w-2xl text-center"
+        data-testid="not-found"
+      >
         <h1 className="heading-xl">{t('not_found')}</h1>
       </div>
     );
   }
 
-  const state = getConfirmationState(order.payment_status);
+  // Derive UX-CMP-4 five-state from order + entitlements (single deterministic source)
+  const handoffState: ConfirmationHandoffState = getConfirmationHandoffState({
+    paymentStatus: order.payment_status,
+    entitlements,
+    metadata: order.metadata,
+  });
 
-  if (state === 'error') {
-    return <PaymentErrorView />;
+  const orderRef = String(order.display_id ?? orderId);
+
+  // --- payment_failed_retry ---
+  if (handoffState === 'payment_failed_retry') {
+    return <PaymentFailedRetryView />;
   }
 
-  if (state === 'pending') {
-    return <PurchasePendingView orderId={order.display_id ?? orderId} />;
+  // --- payment_pending (PSP confirmation in flight) ---
+  if (handoffState === 'payment_pending') {
+    return <PurchasePendingView orderId={orderRef} />;
   }
 
-  // SUCCESS state — determine gift vs self-purchase from first entitlement or metadata
+  // --- support_required (positive delivery-failure evidence) ---
+  if (handoffState === 'support_required') {
+    return <SupportRequiredView orderRef={orderRef} />;
+  }
+
+  // --- paid_delivery_pending (paid, entitlement evidence absent — not failure) ---
+  if (handoffState === 'paid_delivery_pending') {
+    return <PaidDeliveryPendingView orderRef={orderRef} lastUpdatedAt={order.updated_at} />;
+  }
+
+  // --- paid_delivered — determine gift vs self-purchase from first entitlement ---
   const entitlement = entitlements[0];
   const buyerIsRecipient = order.metadata?.buyer_is_recipient ?? true;
 
+  // Fallback: no usable entitlement despite paid_delivered state (should not happen,
+  // but defensive — show generic success rather than blank page)
   if (!entitlement) {
-    // No entitlement yet — show generic success
     return (
-      <div className="bb-section-shell bb-section-shell-strong mx-auto max-w-2xl text-center" data-testid="order-confirmed-generic">
+      <div
+        className="bb-section-shell bb-section-shell-strong mx-auto max-w-2xl text-center"
+        data-testid="order-confirmed-generic"
+      >
         <h1 className="heading-xl">{t('generic_title')}</h1>
         <Link href="/categories" className="bb-primary-cta mt-6 rounded-full px-6 py-3">
           {t('continue_shopping')}
