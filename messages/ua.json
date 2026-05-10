@@ -954,5 +954,93 @@
       "cta": "Повернутися до кошика",
       "secondary_cta": "Зв'язатися з підтримкою"
     }
+  },
+  "storefront_state": {
+    "loading": {
+      "routing_load": {
+        "title": "Завантаження",
+        "description": "Завантаження сторінки...",
+        "action_label": "Зачекайте"
+      },
+      "submit_load": {
+        "title": "Обробка",
+        "description": "Обробка запиту...",
+        "action_label": "Зачекайте"
+      }
+    },
+    "empty": {
+      "initial": {
+        "title": "Немає вмісту",
+        "description": "Поки немає жодних результатів.",
+        "action_label": "Переглянути пропозиції",
+        "action_href": "/"
+      },
+      "no_results": {
+        "title": "Немає результатів",
+        "description": "За вказаними критеріями результатів не знайдено.",
+        "action_label": "Змінити критерії",
+        "action_href": "/"
+      },
+      "permission_denied": {
+        "title": "Доступ заборонено",
+        "description": "У вас немає дозволу переглядати цей вміст.",
+        "action_label": "Увійти",
+        "action_href": "/login"
+      },
+      "load_error": {
+        "title": "Помилка завантаження",
+        "description": "Не вдалося завантажити дані.",
+        "action_label": "Спробувати ще раз",
+        "action_href": "#retry"
+      }
+    },
+    "validation": {
+      "title": "Помилка валідації",
+      "description": "Перевірте введені дані та виправте помилки.",
+      "action_label": "Виправити форму",
+      "action_href": "#form"
+    },
+    "unavailable": {
+      "title": "Сторінка тимчасово недоступна",
+      "description": "Перепрошуємо — сервіс тимчасово недоступний. Спробуйте знову за мить.",
+      "action_label": "Спробувати ще раз",
+      "action_href": "/pomoc"
+    },
+    "access_denied": {
+      "title": "Доступ заборонено",
+      "description": "У вас немає дозволу переглядати цю сторінку.",
+      "action_label": "Увійти",
+      "action_href": "/login"
+    },
+    "stale": {
+      "title": "Дані застарілі",
+      "description": "Дані можуть бути застарілими. Оновіть сторінку, щоб побачити актуальну інформацію.",
+      "action_label": "Оновити",
+      "action_href": "#refresh"
+    },
+    "pending": {
+      "title": "Очікування обробки",
+      "description": "Ваше замовлення зараз обробляється. Будь ласка, зачекайте.",
+      "action_label": "Перевірити статус",
+      "action_href": "#status"
+    },
+    "failed": {
+      "title": "Операція не вдалась",
+      "description": "Під час обробки запиту сталася помилка. Спробуйте ще раз або зверніться до підтримки.",
+      "action_label": "Спробувати ще раз",
+      "action_href": "#retry"
+    },
+    "retry": {
+      "title": "Повтор спроби",
+      "description": "Повторення запиту...",
+      "action_label": "Скасувати",
+      "action_href": "#retry"
+    },
+    "recovered": {
+      "title": "Успішно",
+      "description": "Операцію виконано успішно.",
+      "action_label": "Продовжити",
+      "action_href": "/"
+    }
   }
 }

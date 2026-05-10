@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { ConfirmationPageContent } from '@/components/sections/ConfirmationPageContent/ConfirmationPageContent';
 
 type Props = {
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'confirmation' });
   return {
     title: t('meta_title'),
-    description: t('meta_description'),
+    description: t('meta_description')
   };
 }
 
@@ -21,7 +21,14 @@ export default async function OrderConfirmedPage(props: Props) {
   const params = await props.params;
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="confirmation"
+        surface="confirmation"
+      />
       <StorefrontI18nLongContentProbe
         locale={params.locale}
         surface="confirmation-handoff"

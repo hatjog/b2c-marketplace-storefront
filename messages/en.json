@@ -953,5 +953,93 @@
       "cta": "Return to cart",
       "secondary_cta": "Contact support"
     }
+  },
+  "storefront_state": {
+    "loading": {
+      "routing_load": {
+        "title": "Loading",
+        "description": "Loading page...",
+        "action_label": "Wait"
+      },
+      "submit_load": {
+        "title": "Processing",
+        "description": "Processing your request...",
+        "action_label": "Wait"
+      }
+    },
+    "empty": {
+      "initial": {
+        "title": "No content",
+        "description": "No results yet.",
+        "action_label": "Browse offers",
+        "action_href": "/"
+      },
+      "no_results": {
+        "title": "No results",
+        "description": "No results found for the given criteria.",
+        "action_label": "Change criteria",
+        "action_href": "/"
+      },
+      "permission_denied": {
+        "title": "Access denied",
+        "description": "You do not have permission to view this content.",
+        "action_label": "Sign in",
+        "action_href": "/login"
+      },
+      "load_error": {
+        "title": "Load error",
+        "description": "Failed to load data.",
+        "action_label": "Try again",
+        "action_href": "#retry"
+      }
+    },
+    "validation": {
+      "title": "Validation error",
+      "description": "Please check the entered data and correct any errors.",
+      "action_label": "Fix form",
+      "action_href": "#form"
+    },
+    "unavailable": {
+      "title": "Page temporarily unavailable",
+      "description": "We're sorry — the service is temporarily unavailable. Please try again shortly.",
+      "action_label": "Try again",
+      "action_href": "/pomoc"
+    },
+    "access_denied": {
+      "title": "Access denied",
+      "description": "You do not have permission to view this page.",
+      "action_label": "Sign in",
+      "action_href": "/login"
+    },
+    "stale": {
+      "title": "Data outdated",
+      "description": "Data may be outdated. Refresh the page to see the latest information.",
+      "action_label": "Refresh",
+      "action_href": "#refresh"
+    },
+    "pending": {
+      "title": "Awaiting processing",
+      "description": "Your order is currently being processed. Please wait.",
+      "action_label": "Check status",
+      "action_href": "#status"
+    },
+    "failed": {
+      "title": "Operation failed",
+      "description": "An error occurred while processing your request. Please try again or contact support.",
+      "action_label": "Try again",
+      "action_href": "#retry"
+    },
+    "retry": {
+      "title": "Retrying",
+      "description": "Retrying request...",
+      "action_label": "Cancel",
+      "action_href": "#retry"
+    },
+    "recovered": {
+      "title": "Success",
+      "description": "The operation completed successfully.",
+      "action_label": "Continue",
+      "action_href": "/"
+    }
   }
 }

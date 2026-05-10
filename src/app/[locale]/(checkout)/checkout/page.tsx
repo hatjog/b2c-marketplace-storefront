@@ -1,23 +1,23 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
 import { CartAddressSection } from '@/components/sections/CartAddressSection/CartAddressSection';
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
 import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
-import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
 import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode/CheckoutPurchaseMode';
+import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
-import { isMultiVendorEnabled, isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { listCartPaymentMethods } from '@/lib/data/payment';
+import { isMultiVendorEnabled, isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 
 /**
  * Story 2.4: force-dynamic — cart/checkout payment state is volatile.
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
   const t = await getTranslations({ locale, namespace: 'page' });
   return {
     title: t('checkout_title'),
-    description: t('checkout_description'),
+    description: t('checkout_description')
   };
 }
 
@@ -76,6 +76,10 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
         className="bb-page-shell"
         data-testid="checkout-page"
       >
+        <StorefrontRouteStateSignal
+          route="checkout"
+          surface="checkout"
+        />
         <StorefrontI18nLongContentProbe
           locale={locale}
           surface="checkout"
@@ -104,9 +108,7 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start"
             data-testid="checkout-review-container"
           >
-            {isMultiVendorEnabled() && (
-              <MultiVendorOrderSummary cart={cart} />
-            )}
+            {isMultiVendorEnabled() && <MultiVendorOrderSummary cart={cart} />}
             {/* Story 2.4 AC1: VoucherClaritySurface (condensed) + SellerProofSurface
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}

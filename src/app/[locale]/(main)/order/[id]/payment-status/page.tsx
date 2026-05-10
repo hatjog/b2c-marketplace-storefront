@@ -32,7 +32,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { PaymentStatusPageContent } from '@/components/sections/PaymentStatusPageContent/PaymentStatusPageContent';
 
 // CRITICAL: force-dynamic — payment status is volatile; no shared ISR cache.
@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('page_title'),
     description: t('page_description'),
     // No index — payment status pages should not be indexed by search engines.
-    robots: { index: false, follow: false },
+    robots: { index: false, follow: false }
   };
 }
 
@@ -61,6 +61,11 @@ export default async function PaymentStatusPage(props: Props) {
       id="main-content"
       className="container py-8"
     >
+      <StorefrontRouteStateSignal
+        route="payment-status"
+        surface="payment-status"
+        stateInput={{ is_pending: true }}
+      />
       <StorefrontI18nLongContentProbe
         locale={params.locale}
         surface="payment-status"

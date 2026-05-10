@@ -21,9 +21,11 @@
  */
 
 import React from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { MagicLinkRecoveryState } from '@/components/molecules/MagicLinkRecoveryState/MagicLinkRecoveryState';
 
 export const dynamic = 'force-dynamic';
@@ -56,6 +58,11 @@ export default async function RecoverIndexPage({
       className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
       data-testid="recover-index-page"
     >
+      <StorefrontRouteStateSignal
+        route="voucher-recovery"
+        surface="voucher-recovery"
+        stateInput={{ is_pending: true }}
+      />
       <div className="w-full max-w-lg">
         <MagicLinkRecoveryState locale={locale} />
       </div>

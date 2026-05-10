@@ -4,11 +4,15 @@
  */
 
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumbs, StorefrontI18nLongContentProbe } from '@/components/atoms';
+import {
+  Breadcrumbs,
+  StorefrontI18nLongContentProbe,
+  StorefrontRouteStateSignal
+} from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveZasadySections } from '@/lib/runtime-market-config';
@@ -18,15 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('title_zasady'),
     description: t('zasady_description'),
-    robots: { index: false, follow: false },
+    robots: { index: false, follow: false }
   };
 }
 
-export default async function ZasadyPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function ZasadyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
@@ -38,7 +38,14 @@ export default async function ZasadyPage({
   }
 
   return (
-    <main id="main-content" className="container mx-auto max-w-[720px] px-4 py-8">
+    <main
+      id="main-content"
+      className="container mx-auto max-w-[720px] px-4 py-8"
+    >
+      <StorefrontRouteStateSignal
+        route="legal-zasady"
+        surface="legal-zasady"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="legal-zasady"
@@ -50,9 +57,15 @@ export default async function ZasadyPage({
       <h1 className="heading-xl mb-8">{tLegal('title_zasady')}</h1>
 
       {sections.map((section, i) => (
-        <section key={i} className="border-b border-secondary py-8 last:border-b-0">
+        <section
+          key={i}
+          className="border-b border-secondary py-8 last:border-b-0"
+        >
           <h2 className="mb-4 text-xl font-semibold">{section.title}</h2>
-          <SanitizedHTML html={section.body} className="prose text-sm text-secondary" />
+          <SanitizedHTML
+            html={section.body}
+            className="prose text-sm text-secondary"
+          />
         </section>
       ))}
 
@@ -62,15 +75,14 @@ export default async function ZasadyPage({
         data-testid="zasady-withdrawal-section"
         className="border-b border-secondary py-8 last:border-b-0"
       >
-        <h2 id="zasady-withdrawal-heading" className="mb-4 text-xl font-semibold">
+        <h2
+          id="zasady-withdrawal-heading"
+          className="mb-4 text-xl font-semibold"
+        >
           {tW('legal.section_title')}
         </h2>
-        <p className="prose text-sm text-secondary mb-4">
-          {tW('legal.window_body')}
-        </p>
-        <p className="prose text-sm text-secondary mb-4">
-          {tW('legal.consent_body')}
-        </p>
+        <p className="prose mb-4 text-sm text-secondary">{tW('legal.window_body')}</p>
+        <p className="prose mb-4 text-sm text-secondary">{tW('legal.consent_body')}</p>
         <Link
           href={`/${locale}/pomoc`}
           className="text-sm underline"

@@ -10,11 +10,15 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Script from 'next/script';
-import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumbs, StorefrontI18nLongContentProbe } from '@/components/atoms';
+import {
+  Breadcrumbs,
+  StorefrontI18nLongContentProbe,
+  StorefrontRouteStateSignal
+} from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
@@ -117,7 +121,14 @@ async function AllCategories({
   }
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="categories"
+        surface="category"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="category-listing"

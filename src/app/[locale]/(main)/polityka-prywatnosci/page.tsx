@@ -1,11 +1,13 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import type { ReactNode } from 'react';
-import { getTranslations } from 'next-intl/server';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import type { ReactNode } from 'react';
+
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 
 export const dynamic = 'force-static';
@@ -144,7 +146,10 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
             </thead>
             <tbody>
               {body.map((row, rowIdx) => (
-                <tr key={rowIdx} style={{ borderBottom: '1px solid var(--bb-border-soft)' }}>
+                <tr
+                  key={rowIdx}
+                  style={{ borderBottom: '1px solid var(--bb-border-soft)' }}
+                >
                   {row.map((cell, cellIdx) => (
                     <td
                       key={cellIdx}
@@ -184,7 +189,10 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
           }}
         >
           {listItems.map((item, idx) => (
-            <li key={idx} style={{ marginBottom: '0.25rem' }}>
+            <li
+              key={idx}
+              style={{ marginBottom: '0.25rem' }}
+            >
               {renderInline(item)}
             </li>
           ))}
@@ -214,7 +222,10 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
           }}
         >
           {listItems.map((item, idx) => (
-            <li key={idx} style={{ marginBottom: '0.25rem' }}>
+            <li
+              key={idx}
+              style={{ marginBottom: '0.25rem' }}
+            >
               {renderInline(item)}
             </li>
           ))}
@@ -254,7 +265,7 @@ function parseLegalMarkdown(markdown: string): ReactNode[] {
 function loadPrivacyPolicyContent(): { nodes: ReactNode[]; lastUpdated: string } {
   const candidates = [
     join(process.cwd(), '..', '..', 'specs', 'ops', 'privacy-policy-draft-v120.md'),
-    join(process.cwd(), 'specs', 'ops', 'privacy-policy-draft-v120.md'),
+    join(process.cwd(), 'specs', 'ops', 'privacy-policy-draft-v120.md')
   ];
   let content: string | undefined;
   for (const candidate of candidates) {
@@ -266,9 +277,7 @@ function loadPrivacyPolicyContent(): { nodes: ReactNode[]; lastUpdated: string }
     }
   }
   if (!content) {
-    throw new Error(
-      `Privacy policy source file not found. Tried:\n${candidates.join('\n')}`
-    );
+    throw new Error(`Privacy policy source file not found. Tried:\n${candidates.join('\n')}`);
   }
 
   const dateMatch = content.match(/^Data:\s*(.+)$/m);
@@ -287,7 +296,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PolitykaPrywatnosciPage({
-  params,
+  params
 }: {
   params: Promise<{ locale: string }>;
 }) {
@@ -299,6 +308,10 @@ export default async function PolitykaPrywatnosciPage({
   return (
     <LegalPageLayout>
       <article data-testid="privacy-policy-content">
+        <StorefrontRouteStateSignal
+          route="legal-polityka-prywatnosci"
+          surface="legal-polityka-prywatnosci"
+        />
         <StorefrontI18nLongContentProbe
           locale={locale}
           surface="legal-privacy"
@@ -337,7 +350,7 @@ export default async function PolitykaPrywatnosciPage({
           style={{
             marginTop: '2.5rem',
             paddingTop: '1.25rem',
-            borderTop: '1px solid var(--bb-border-soft)',
+            borderTop: '1px solid var(--bb-border-soft)'
           }}
         >
           <h2
@@ -351,7 +364,7 @@ export default async function PolitykaPrywatnosciPage({
               fontFamily: 'Inter, sans-serif',
               fontSize: '0.9375rem',
               color: 'var(--text-secondary)',
-              lineHeight: 1.6,
+              lineHeight: 1.6
             }}
           >
             {tWL('privacy_cross_link_note')}
@@ -359,7 +372,11 @@ export default async function PolitykaPrywatnosciPage({
           <p style={{ marginTop: '0.5rem', fontSize: '0.9375rem' }}>
             <Link
               href={`/${locale}/regulamin`}
-              style={{ color: 'var(--text-primary)', textDecoration: 'underline', marginRight: '1rem' }}
+              style={{
+                color: 'var(--text-primary)',
+                textDecoration: 'underline',
+                marginRight: '1rem'
+              }}
               data-testid="privacy-link-regulamin"
             >
               {t('title_regulamin')}

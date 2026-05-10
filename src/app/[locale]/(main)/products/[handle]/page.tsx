@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
-import { SalonContextChip, type SalonContextChipSeller } from '@/components/atoms/SalonContextChip/SalonContextChip';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import {
+  SalonContextChip,
+  type SalonContextChipSeller
+} from '@/components/atoms/SalonContextChip/SalonContextChip';
 import { ProductDetailsPage } from '@/components/sections';
 import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
-import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getSellerByHandle } from '@/lib/data/seller';
-import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
-import { getGpField } from '@/lib/helpers/metadata-utils';
+import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { getGpField } from '@/lib/helpers/metadata-utils';
+import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
 
 /**
  * Story v160-4-6: parse `?from=seller:{handle}` searchParam, resolve seller
@@ -21,7 +24,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 const SELLER_FROM_RE = /^seller:([a-z0-9-]+)$/;
 
 async function resolveSalonContext(
-  fromParam: string | undefined,
+  fromParam: string | undefined
 ): Promise<SalonContextChipSeller | null> {
   if (!fromParam) return null;
   const match = SELLER_FROM_RE.exec(fromParam);
@@ -79,9 +82,7 @@ export default async function ProductPage({
   const gpVendor =
     getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
-  const seo = resolveGpSeoMetadata(
-    product?.metadata as Record<string, unknown> | null | undefined
-  );
+  const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
   const resolvedDescription =
     seo.meta_description ??
     `${product?.title} — voucher na zabieg w ${gpVendor}. Kup na ${siteName}.`;
@@ -98,14 +99,15 @@ export default async function ProductPage({
   const currencyCode = cheapestVariant?.calculated_price?.currency_code ?? 'PLN';
 
   // Build offers block only when we have a valid price (Google rejects Offer without price)
-  const offers = priceRaw != null
-    ? {
-        '@type': 'Offer' as const,
-        price: (priceRaw / 100).toFixed(2),
-        priceCurrency: currencyCode,
-        availability: 'https://schema.org/InStock' as const // digital vouchers are always available
-      }
-    : undefined;
+  const offers =
+    priceRaw != null
+      ? {
+          '@type': 'Offer' as const,
+          price: (priceRaw / 100).toFixed(2),
+          priceCurrency: currencyCode,
+          availability: 'https://schema.org/InStock' as const // digital vouchers are always available
+        }
+      : undefined;
 
   const productSchema = product
     ? {
@@ -119,7 +121,14 @@ export default async function ProductPage({
     : null;
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="pdp"
+        surface="pdp"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="pdp"

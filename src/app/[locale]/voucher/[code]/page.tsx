@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
-import { getVoucherByCode, getVoucherEvents } from '@/lib/data/voucher';
 import { claimVoucher } from '@/actions/voucher-claim';
-import { OfflineBanner } from '@/components/voucher/OfflineBanner';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { CrossActorSyncBanner } from '@/components/molecules/CrossActorSyncBanner';
 import { VoucherAuditTrail } from '@/components/molecules/VoucherAuditTrail';
 import { VoucherIdleClaimSection } from '@/components/molecules/VoucherIdleClaimSection';
-import { CrossActorSyncBanner } from '@/components/molecules/CrossActorSyncBanner';
+import { OfflineBanner } from '@/components/voucher/OfflineBanner';
+import { getVoucherByCode, getVoucherEvents } from '@/lib/data/voucher';
 
 // Adapter so <form action={...}> matches Next.js Server Action signature
 // (void return). claimVoucher's structured result is consumed via
@@ -74,9 +74,7 @@ function formatValue(minor: number, currency: string, locale: string): string {
   }
 }
 
-export default async function VoucherClaimPage({
-  params
-}: ClaimPageProps) {
+export default async function VoucherClaimPage({ params }: ClaimPageProps) {
   const { locale, code } = await params;
   const t = await getTranslations({ locale, namespace: 'voucher.claim' });
 
@@ -102,6 +100,10 @@ export default async function VoucherClaimPage({
       data-status={voucher.status}
       className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10"
     >
+      <StorefrontRouteStateSignal
+        route="voucher-detail"
+        surface="voucher-detail"
+      />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="voucher-claim"
@@ -138,7 +140,10 @@ export default async function VoucherClaimPage({
         {voucher.product_title && (
           <div className="flex flex-col gap-1">
             <span className="label-md text-secondary">{t('service_label')}</span>
-            <span className="heading-sm" data-testid="voucher-product-title">
+            <span
+              className="heading-sm"
+              data-testid="voucher-product-title"
+            >
               {voucher.product_title}
             </span>
           </div>
@@ -146,7 +151,10 @@ export default async function VoucherClaimPage({
 
         <div className="flex flex-col gap-1">
           <span className="label-md text-secondary">{t('value_label')}</span>
-          <span className="heading-md" data-testid="voucher-value">
+          <span
+            className="heading-md"
+            data-testid="voucher-value"
+          >
             {formattedValue}
           </span>
         </div>
@@ -154,10 +162,11 @@ export default async function VoucherClaimPage({
         {voucher.expires_at && (
           <div className="flex flex-col gap-1">
             <span className="label-md text-secondary">{t('expires_at_label')}</span>
-            <time dateTime={voucher.expires_at} className="text-primary">
-              {new Date(voucher.expires_at).toLocaleDateString(
-                locale === 'en' ? 'en-US' : 'pl-PL'
-              )}
+            <time
+              dateTime={voucher.expires_at}
+              className="text-primary"
+            >
+              {new Date(voucher.expires_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'pl-PL')}
             </time>
           </div>
         )}
@@ -173,8 +182,16 @@ export default async function VoucherClaimPage({
               className="flex flex-col gap-3"
               data-testid="claim-cta-form"
             >
-              <input type="hidden" name="code" value={voucher.code} />
-              <input type="hidden" name="locale" value={locale} />
+              <input
+                type="hidden"
+                name="code"
+                value={voucher.code}
+              />
+              <input
+                type="hidden"
+                name="locale"
+                value={locale}
+              />
               <button
                 type="submit"
                 data-testid="claim-cta-button"
@@ -224,7 +241,7 @@ export default async function VoucherClaimPage({
         <section
           data-testid="voucher-claimed"
           data-event="voucher_claimed"
-          className="flex flex-col gap-3 rounded-sm border border-positive bg-positive-subtle p-4"
+          className="bg-positive-subtle flex flex-col gap-3 rounded-sm border border-positive p-4"
         >
           <span className="heading-sm text-positive">{t('claimed_status')}</span>
           <Link
@@ -239,7 +256,7 @@ export default async function VoucherClaimPage({
             href={`/api/voucher/${voucher.code}/pdf`}
             data-testid="pdf-download-cta"
             data-event="pdf_download_cta"
-            className="inline-flex min-h-10 items-center gap-2 rounded-sm border border-positive px-4 py-2 text-sm text-positive hover:bg-positive-subtle"
+            className="hover:bg-positive-subtle inline-flex min-h-10 items-center gap-2 rounded-sm border border-positive px-4 py-2 text-sm text-positive"
             download
           >
             {t('pdf_download_cta')}
@@ -251,14 +268,17 @@ export default async function VoucherClaimPage({
         <section
           data-testid="voucher-withdrawn"
           data-event="voucher_withdrawn"
-          className="rounded-sm border border-tertiary bg-tertiary-subtle p-4 text-secondary"
+          className="bg-tertiary-subtle rounded-sm border border-tertiary p-4 text-secondary"
         >
           <span className="heading-sm">{t('withdrawn_status')}</span>
         </section>
       )}
 
       {(voucher.status === 'claimed' || voucher.status === 'withdrawn') && (
-        <VoucherAuditTrail events={auditEvents} locale={locale} />
+        <VoucherAuditTrail
+          events={auditEvents}
+          locale={locale}
+        />
       )}
     </main>
   );

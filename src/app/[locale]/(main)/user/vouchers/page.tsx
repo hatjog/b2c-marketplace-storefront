@@ -29,15 +29,16 @@
  */
 
 import React from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { StorefrontRouteStateSignal } from '@/components/atoms';
+import { StateCard } from '@/components/molecules/StateCard/StateCard';
 import { UserNavigation } from '@/components/molecules/UserNavigation/UserNavigation';
 import { VoucherHistoryEmptyState } from '@/components/molecules/VoucherHistoryEmptyState/VoucherHistoryEmptyState';
-import { StateCard } from '@/components/molecules/StateCard/StateCard';
-import { listCustomerVouchers } from '@/lib/data/voucher';
-import type { VoucherListItem, VoucherStatus } from '@/lib/data/voucher';
+import { listCustomerVouchers, type VoucherListItem, type VoucherStatus } from '@/lib/data/voucher';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: VouchersPageProps): Promise<M
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'account.vouchers' });
   return {
-    title: t('title'),
+    title: t('title')
   };
 }
 
@@ -166,7 +167,7 @@ function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
       <div className="flex shrink-0 items-center gap-2">
         <Link
           href={`/${locale}/voucher/${encodeURIComponent(voucher.code)}`}
-          className="min-h-12 inline-flex items-center rounded-sm border border-action px-4 py-2 text-sm text-action font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
+          className="inline-flex min-h-12 items-center rounded-sm border border-action px-4 py-2 text-sm font-medium text-action focus:outline-none focus:ring-2 focus:ring-action focus:ring-offset-2"
           data-testid="voucher-open-link"
         >
           {t('row_cta_open')}
@@ -199,12 +200,12 @@ async function NamedState({ variant, locale }: NamedStateProps) {
       action: (
         <Link
           href={`/${locale}/login`}
-          className="min-h-12 inline-flex items-center rounded-sm bg-action px-6 py-3 text-action-on-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
+          className="inline-flex min-h-12 items-center rounded-sm bg-action px-6 py-3 font-medium text-action-on-primary focus:outline-none focus:ring-2 focus:ring-action focus:ring-offset-2"
           data-testid="access-denied-login-cta"
         >
           {t('access_denied_cta')}
         </Link>
-      ),
+      )
     },
     unavailable: {
       title: t('unavailable_heading'),
@@ -213,12 +214,12 @@ async function NamedState({ variant, locale }: NamedStateProps) {
       action: (
         <Link
           href={`/${locale}`}
-          className="min-h-12 inline-flex items-center rounded-sm border border-primary px-6 py-3 text-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          className="inline-flex min-h-12 items-center rounded-sm border border-primary px-6 py-3 font-medium text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           data-testid="unavailable-back-cta"
         >
           {t('unavailable_cta')}
         </Link>
-      ),
+      )
     },
     failed: {
       title: t('failed_heading'),
@@ -227,13 +228,13 @@ async function NamedState({ variant, locale }: NamedStateProps) {
       action: (
         <Link
           href={`/${locale}/user/vouchers`}
-          className="min-h-12 inline-flex items-center rounded-sm bg-action px-6 py-3 text-action-on-primary font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action"
+          className="inline-flex min-h-12 items-center rounded-sm bg-action px-6 py-3 font-medium text-action-on-primary focus:outline-none focus:ring-2 focus:ring-action focus:ring-offset-2"
           data-testid="failed-retry-cta"
         >
           {t('failed_cta')}
         </Link>
-      ),
-    },
+      )
+    }
   };
 
   const c = config[variant];
@@ -260,6 +261,16 @@ export default async function VouchersPage({
   const t = await getTranslations({ locale, namespace: 'account.vouchers' });
 
   const result = await listCustomerVouchers();
+  const routeStateInput =
+    result.state === 'access_denied'
+      ? { is_access_denied: true }
+      : result.state === 'unavailable'
+        ? { is_unavailable: true }
+        : result.state === 'failed'
+          ? { has_failed: true }
+          : result.vouchers.length === 0
+            ? { is_genuinely_empty: true }
+            : { is_recovered: true };
 
   return (
     <main
@@ -267,6 +278,11 @@ export default async function VouchersPage({
       className="container"
       data-testid="vouchers-page"
     >
+      <StorefrontRouteStateSignal
+        route="user-vouchers"
+        surface="user-vouchers"
+        stateInput={routeStateInput}
+      />
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div
@@ -276,15 +292,24 @@ export default async function VouchersPage({
           <h1 className="heading-md uppercase">{t('title')}</h1>
 
           {result.state === 'access_denied' && (
-            <NamedState variant="access_denied" locale={locale} />
+            <NamedState
+              variant="access_denied"
+              locale={locale}
+            />
           )}
 
           {result.state === 'unavailable' && (
-            <NamedState variant="unavailable" locale={locale} />
+            <NamedState
+              variant="unavailable"
+              locale={locale}
+            />
           )}
 
           {result.state === 'failed' && (
-            <NamedState variant="failed" locale={locale} />
+            <NamedState
+              variant="failed"
+              locale={locale}
+            />
           )}
 
           {result.state === 'ok' && result.vouchers.length === 0 && (
@@ -302,7 +327,10 @@ export default async function VouchersPage({
               aria-label={t('title')}
             >
               {result.vouchers.map(voucher => (
-                <div key={voucher.code} role="listitem">
+                <div
+                  key={voucher.code}
+                  role="listitem"
+                >
                   <VoucherRow
                     voucher={voucher}
                     locale={locale}

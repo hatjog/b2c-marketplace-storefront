@@ -1,6 +1,7 @@
 import { isEmpty } from 'lodash';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { LoginForm, ParcelAccordion, UserNavigation } from '@/components/molecules';
 import { OrdersPagination } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -17,7 +18,18 @@ export default async function UserPage({
   const t = await getTranslations('user');
   const user = await retrieveCustomer();
 
-  if (!user) return <LoginForm />;
+  if (!user) {
+    return (
+      <>
+        <StorefrontRouteStateSignal
+          route="user-orders"
+          surface="user-orders"
+          stateInput={{ is_access_denied: true }}
+        />
+        <LoginForm />
+      </>
+    );
+  }
 
   const orders = await listOrders();
 
@@ -61,6 +73,11 @@ export default async function UserPage({
       className="container"
       data-testid="orders-page"
     >
+      <StorefrontRouteStateSignal
+        route="user-orders"
+        surface="user-orders"
+        stateInput={isEmpty(orders) ? { is_genuinely_empty: true } : { is_recovered: true }}
+      />
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
         <UserNavigation />
         <div

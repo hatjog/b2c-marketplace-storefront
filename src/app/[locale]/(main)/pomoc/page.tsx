@@ -40,9 +40,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
-import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { VoucherWithdrawalStateCard } from '@/components/molecules/VoucherWithdrawalStateCard';
+import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 import type { WithdrawalStateResult } from '@/types/voucher';
 
 export const dynamic = 'force-dynamic';
@@ -52,15 +52,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: tWL('page_title'),
     description: tWL('page_description'),
-    robots: { index: false, follow: false },
+    robots: { index: false, follow: false }
   };
 }
 
-export default async function PomocPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function PomocPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations('voucher_withdrawal');
   const tWL = await getTranslations('voucher_withdrawal.legal');
@@ -78,30 +74,30 @@ export default async function PomocPage({
     state: 'support-review',
     market_id: '',
     freshness: 'missing',
-    action_blocked: true,
+    action_blocked: true
   };
 
   const states = [
     {
       key: 'state_withdrawal_eligible_before_service_execution',
-      token: 'withdrawal-eligible-before-service-execution',
+      token: 'withdrawal-eligible-before-service-execution'
     },
     {
       key: 'state_consent_to_execute_captured',
-      token: 'consent-to-execute-captured',
+      token: 'consent-to-execute-captured'
     },
     {
       key: 'state_withdrawal_blocked_after_execution',
-      token: 'withdrawal-blocked-after-execution',
+      token: 'withdrawal-blocked-after-execution'
     },
     {
       key: 'state_refunded',
-      token: 'refunded',
+      token: 'refunded'
     },
     {
       key: 'state_support_review',
-      token: 'support-review',
-    },
+      token: 'support-review'
+    }
   ] as const;
 
   return (
@@ -111,6 +107,10 @@ export default async function PomocPage({
         data-testid="pomoc-content"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
+        <StorefrontRouteStateSignal
+          route="legal-pomoc"
+          surface="legal-pomoc"
+        />
         <StorefrontI18nLongContentProbe
           locale={locale}
           surface="legal-help"
@@ -124,14 +124,12 @@ export default async function PomocPage({
               fontSize: 'clamp(2rem, 4vw, 3rem)',
               fontWeight: 300,
               color: 'var(--text-primary)',
-              marginBottom: '0.5rem',
+              marginBottom: '0.5rem'
             }}
           >
             {tWL('page_title')}
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
-            {tWL('intro')}
-          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>{tWL('intro')}</p>
         </header>
 
         {/* Epic 7 DOM signal landmark (review fix H3) */}
@@ -161,7 +159,7 @@ export default async function PomocPage({
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
               color: 'var(--text-primary)',
-              marginBottom: '1rem',
+              marginBottom: '1rem'
             }}
           >
             {tWL('section_title')}
@@ -176,7 +174,7 @@ export default async function PomocPage({
                   fontSize: '1.25rem',
                   fontWeight: 500,
                   color: 'var(--text-primary)',
-                  marginBottom: '0.5rem',
+                  marginBottom: '0.5rem'
                 }}
               >
                 {tWL('window_title')}
@@ -194,7 +192,7 @@ export default async function PomocPage({
                   fontSize: '1.25rem',
                   fontWeight: 500,
                   color: 'var(--text-primary)',
-                  marginBottom: '0.5rem',
+                  marginBottom: '0.5rem'
                 }}
               >
                 {tWL('consent_title')}
@@ -212,7 +210,7 @@ export default async function PomocPage({
                   fontSize: '1.25rem',
                   fontWeight: 500,
                   color: 'var(--text-primary)',
-                  marginBottom: '0.5rem',
+                  marginBottom: '0.5rem'
                 }}
               >
                 {tWL('post_execution_title')}
@@ -230,7 +228,7 @@ export default async function PomocPage({
                   fontSize: '1.25rem',
                   fontWeight: 500,
                   color: 'var(--text-primary)',
-                  marginBottom: '0.5rem',
+                  marginBottom: '0.5rem'
                 }}
               >
                 {tWL('refund_title')}
@@ -255,7 +253,7 @@ export default async function PomocPage({
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
               color: 'var(--text-primary)',
-              marginBottom: '0.75rem',
+              marginBottom: '0.75rem'
             }}
           >
             {tWL('five_states_title')}
@@ -276,7 +274,7 @@ export default async function PomocPage({
                 className="bb-section-shell rounded px-4 py-3"
                 style={{
                   borderColor: 'var(--bb-border-soft)',
-                  background: 'var(--bb-surface)',
+                  background: 'var(--bb-surface)'
                 }}
                 data-testid={`withdrawal-state-entry-${token}`}
               >
@@ -286,7 +284,7 @@ export default async function PomocPage({
                     fontSize: '0.875rem',
                     fontWeight: 600,
                     color: 'var(--text-primary)',
-                    marginBottom: '0.25rem',
+                    marginBottom: '0.25rem'
                   }}
                 >
                   {t(`${key}.label`)}
@@ -296,7 +294,7 @@ export default async function PomocPage({
                     fontFamily: 'Inter, sans-serif',
                     fontSize: '0.8125rem',
                     color: 'var(--text-secondary)',
-                    lineHeight: 1.5,
+                    lineHeight: 1.5
                   }}
                 >
                   {t(`${key}.description`)}
@@ -310,7 +308,7 @@ export default async function PomocPage({
                     background: 'var(--bb-surface-muted)',
                     borderRadius: '3px',
                     color: 'var(--text-muted)',
-                    fontFamily: 'monospace',
+                    fontFamily: 'monospace'
                   }}
                 >
                   {token}
@@ -333,7 +331,7 @@ export default async function PomocPage({
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
               color: 'var(--text-primary)',
-              marginBottom: '0.75rem',
+              marginBottom: '0.75rem'
             }}
           >
             {tWL('support_title')}
@@ -343,13 +341,13 @@ export default async function PomocPage({
           </p>
           <a
             href={`mailto:${tLegal('contact_email')}`}
-            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-[color:var(--bb-page-bg)]"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--bb-page-bg)]"
             style={{
               background: 'var(--bg-action)',
               color: 'var(--text-on-action)',
               borderRadius: 'var(--radius-sm)',
               fontFamily: 'Inter, sans-serif',
-              textDecoration: 'none',
+              textDecoration: 'none'
             }}
             data-testid="pomoc-contact-cta"
           >

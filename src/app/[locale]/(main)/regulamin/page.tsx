@@ -7,10 +7,10 @@
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
-import { StorefrontI18nLongContentProbe } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 
 export const dynamic = 'force-static';
@@ -24,11 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RegulaminPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function RegulaminPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations('legal');
   const tW = await getTranslations('voucher_withdrawal');
@@ -36,6 +32,10 @@ export default async function RegulaminPage({
   return (
     <LegalPageLayout>
       <article data-testid="regulamin-content">
+        <StorefrontRouteStateSignal
+          route="legal-regulamin"
+          surface="legal-regulamin"
+        />
         <StorefrontI18nLongContentProbe
           locale={locale}
           surface="legal-regulamin"
@@ -91,7 +91,11 @@ export default async function RegulaminPage({
         <section
           aria-labelledby="regulamin-withdrawal-heading"
           data-testid="regulamin-withdrawal-section"
-          style={{ marginTop: '2.5rem', borderTop: '1px solid var(--bb-border-soft)', paddingTop: '2rem' }}
+          style={{
+            marginTop: '2.5rem',
+            borderTop: '1px solid var(--bb-border-soft)',
+            paddingTop: '2rem'
+          }}
         >
           <h2
             id="regulamin-withdrawal-heading"
@@ -100,7 +104,7 @@ export default async function RegulaminPage({
               fontSize: 'clamp(1.25rem, 2vw, 2rem)',
               fontWeight: 400,
               color: 'var(--text-primary)',
-              marginBottom: '1rem',
+              marginBottom: '1rem'
             }}
           >
             {tW('legal.section_title')}
@@ -129,7 +133,7 @@ export default async function RegulaminPage({
               fontSize: '0.875rem',
               fontWeight: 600,
               color: 'var(--text-primary)',
-              marginBottom: '0.5rem',
+              marginBottom: '0.5rem'
             }}
           >
             {tW('legal.five_states_intro')}
@@ -141,7 +145,7 @@ export default async function RegulaminPage({
               color: 'var(--text-secondary)',
               lineHeight: 1.7,
               fontSize: '0.875rem',
-              marginBottom: '1.5rem',
+              marginBottom: '1.5rem'
             }}
           >
             <li data-testid="withdrawal-state-entry-withdrawal-eligible-before-service-execution">
@@ -153,9 +157,7 @@ export default async function RegulaminPage({
             <li data-testid="withdrawal-state-entry-withdrawal-blocked-after-execution">
               {tW('legal.state_list.blocked')}
             </li>
-            <li data-testid="withdrawal-state-entry-refunded">
-              {tW('legal.state_list.refunded')}
-            </li>
+            <li data-testid="withdrawal-state-entry-refunded">{tW('legal.state_list.refunded')}</li>
             <li data-testid="withdrawal-state-entry-support-review">
               {tW('legal.state_list.support')}
             </li>
@@ -167,7 +169,7 @@ export default async function RegulaminPage({
               display: 'inline-block',
               color: 'var(--text-primary)',
               textDecoration: 'underline',
-              fontSize: '0.9375rem',
+              fontSize: '0.9375rem'
             }}
             data-testid="regulamin-pomoc-link"
           >

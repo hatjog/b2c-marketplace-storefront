@@ -1,14 +1,12 @@
 import React from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { grantConsent, withdrawConsent } from '@/actions/voucher-consent';
+import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { ConsentMomentInline } from '@/components/molecules/ConsentMomentInline';
 import { RecipientPausePathToggle } from '@/components/molecules/RecipientPausePathToggle';
-
-import {
-  grantConsent,
-  withdrawConsent
-} from '@/actions/voucher-consent';
 
 /**
  * Voucher PII consent moment route — STORY-2-1.
@@ -64,6 +62,10 @@ export default async function VoucherConsentPage({
       data-token={token}
       className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10"
     >
+      <StorefrontRouteStateSignal
+        route="voucher-consent"
+        surface="voucher-consent"
+      />
       <h1 className="heading-lg">{t('heading')}</h1>
 
       {/* No-JS fallback: server-rendered <form> identical to JS path. */}

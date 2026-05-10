@@ -954,5 +954,93 @@
       "cta": "Zum Warenkorb zurück",
       "secondary_cta": "Support kontaktieren"
     }
+  },
+  "storefront_state": {
+    "loading": {
+      "routing_load": {
+        "title": "Laden",
+        "description": "Seite wird geladen...",
+        "action_label": "Warten"
+      },
+      "submit_load": {
+        "title": "Verarbeitung",
+        "description": "Anfrage wird verarbeitet...",
+        "action_label": "Warten"
+      }
+    },
+    "empty": {
+      "initial": {
+        "title": "Kein Inhalt",
+        "description": "Noch keine Ergebnisse vorhanden.",
+        "action_label": "Angebote durchsuchen",
+        "action_href": "/"
+      },
+      "no_results": {
+        "title": "Keine Ergebnisse",
+        "description": "Für die angegebenen Kriterien wurden keine Ergebnisse gefunden.",
+        "action_label": "Kriterien ändern",
+        "action_href": "/"
+      },
+      "permission_denied": {
+        "title": "Zugriff verweigert",
+        "description": "Sie haben keine Berechtigung, diesen Inhalt anzuzeigen.",
+        "action_label": "Anmelden",
+        "action_href": "/login"
+      },
+      "load_error": {
+        "title": "Ladefehler",
+        "description": "Daten konnten nicht geladen werden.",
+        "action_label": "Erneut versuchen",
+        "action_href": "#retry"
+      }
+    },
+    "validation": {
+      "title": "Validierungsfehler",
+      "description": "Bitte überprüfen Sie die eingegebenen Daten und korrigieren Sie die Fehler.",
+      "action_label": "Formular korrigieren",
+      "action_href": "#form"
+    },
+    "unavailable": {
+      "title": "Seite vorübergehend nicht verfügbar",
+      "description": "Entschuldigung — der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es gleich erneut.",
+      "action_label": "Erneut versuchen",
+      "action_href": "/pomoc"
+    },
+    "access_denied": {
+      "title": "Zugriff verweigert",
+      "description": "Sie haben keine Berechtigung, diese Seite anzuzeigen.",
+      "action_label": "Anmelden",
+      "action_href": "/login"
+    },
+    "stale": {
+      "title": "Daten veraltet",
+      "description": "Daten könnten veraltet sein. Aktualisieren Sie die Seite, um die neuesten Informationen zu sehen.",
+      "action_label": "Aktualisieren",
+      "action_href": "#refresh"
+    },
+    "pending": {
+      "title": "Warten auf Verarbeitung",
+      "description": "Ihre Bestellung wird derzeit bearbeitet. Bitte warten.",
+      "action_label": "Status prüfen",
+      "action_href": "#status"
+    },
+    "failed": {
+      "title": "Vorgang fehlgeschlagen",
+      "description": "Bei der Verarbeitung Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
+      "action_label": "Erneut versuchen",
+      "action_href": "#retry"
+    },
+    "retry": {
+      "title": "Erneut versuchen",
+      "description": "Anfrage wird wiederholt...",
+      "action_label": "Abbrechen",
+      "action_href": "#retry"
+    },
+    "recovered": {
+      "title": "Erfolgreich",
+      "description": "Der Vorgang wurde erfolgreich abgeschlossen.",
+      "action_label": "Fortfahren",
+      "action_href": "/"
+    }
   }
 }

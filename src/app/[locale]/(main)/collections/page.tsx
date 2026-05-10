@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { headers } from 'next/headers';
+import Image from 'next/image';
 
-import { Breadcrumbs } from '@/components/atoms';
+import { Breadcrumbs, StorefrontRouteStateSignal } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getCollectionPhotoUrl } from '@/lib/collection-media';
 import { listCollections } from '@/lib/data/collections';
@@ -45,7 +45,9 @@ export async function generateMetadata({
   try {
     const regions = await listRegions();
     const locales = Array.from(
-      new Set((regions || []).flatMap(region => region.countries?.map(country => country.iso_2) || []))
+      new Set(
+        (regions || []).flatMap(region => region.countries?.map(country => country.iso_2) || [])
+      )
     ) as string[];
     languages = locales.reduce<Record<string, string>>((acc, code) => {
       acc[toHreflang(code)] = `${baseUrl}/${code}/collections`;
@@ -84,11 +86,7 @@ export async function generateMetadata({
   };
 }
 
-const CollectionsPage = async ({
-  params
-}: {
-  params: Promise<{ locale: string }>;
-}) => {
+const CollectionsPage = async ({ params }: { params: Promise<{ locale: string }> }) => {
   const { locale } = await params;
   const copy = getCollectionsCopy(locale);
   const { collections } = await listCollections();
@@ -101,7 +99,14 @@ const CollectionsPage = async ({
   ];
 
   return (
-    <main id="main-content" className="container">
+    <main
+      id="main-content"
+      className="container"
+    >
+      <StorefrontRouteStateSignal
+        route="collections"
+        surface="listing"
+      />
       <div className="mb-2 hidden md:block">
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
@@ -139,10 +144,12 @@ const CollectionsPage = async ({
                   <div>
                     <h2 className="heading-md max-w-[16ch]">{collection.title}</h2>
                     {collection.metadata?.subtitle ? (
-                      <p className="mt-2 text-sm text-white/80">{String(collection.metadata.subtitle)}</p>
+                      <p className="mt-2 text-sm text-white/80">
+                        {String(collection.metadata.subtitle)}
+                      </p>
                     ) : null}
                   </div>
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/18 bg-white/10 text-xl backdrop-blur transition-colors duration-300 group-hover:bg-white group-hover:text-primary">
+                  <span className="border-white/18 inline-flex h-11 w-11 items-center justify-center rounded-full border bg-white/10 text-xl backdrop-blur transition-colors duration-300 group-hover:bg-white group-hover:text-primary">
                     +
                   </span>
                 </div>

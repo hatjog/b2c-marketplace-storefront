@@ -18,3 +18,8 @@ export { StorefrontI18nLongContentProbe } from './StorefrontI18nLongContentProbe
 export { Skeleton, SkeletonText, SkeletonCard } from './Skeleton/Skeleton';
 export { StarRating } from './StarRating/StarRating';
 export { TabsTrigger } from './TabsTrigger/TabsTrigger';
+// v1.7.0 Story 6.2: Storefront runtime state signal — AC3 DOM landmark
+export { StorefrontStateSignal } from './StorefrontStateSignal/StorefrontStateSignal';
+export type { StorefrontStateSignalProps } from './StorefrontStateSignal/StorefrontStateSignal';
+export { StorefrontRouteStateSignal } from './StorefrontStateSignal/StorefrontRouteStateSignal';
+export type { StorefrontRouteStateSignalProps } from './StorefrontStateSignal/StorefrontRouteStateSignal';
