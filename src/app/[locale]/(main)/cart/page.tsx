@@ -1,9 +1,3 @@
-/**
- * Story 2.4: force-dynamic — cart state is volatile (voucher availability,
- * payment methods, pricing). No ISR cache (revalidate=300 banned per prd.md).
- */
-export const dynamic = 'force-dynamic';
-
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
@@ -11,6 +5,17 @@ import { getTranslations } from 'next-intl/server';
 
 import { Cart } from '@/components/sections';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
+
+/**
+ * Story 2.4: force-dynamic — cart state is volatile (voucher availability,
+ * payment methods, pricing). No ISR cache (revalidate=300 banned per prd.md).
+ *
+ * R24 review fix (second pass): export placed below imports for stylistic
+ * consistency with checkout/page.tsx and the rest of the Next.js app router
+ * convention. Module-level statement order is functionally equivalent
+ * (ES exports are hoisted), but readability matters.
+ */
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('page');

@@ -153,11 +153,25 @@ const Review = ({ cart }: { cart: any }) => {
           </p>
 
           {/* ─── Pay button + consent gate ──────────────────────────────────
-              F5 fix: capture-phase click handler intercepts the user's
-              intent BEFORE the disabled <button> swallows the event, and
-              surfaces the consent error explicitly. Keyboard users reach
-              this surface via the consent block's own checkboxes which
-              individually announce errors via role="alert". */}
+              F5 fix (first pass): capture-phase click handler intercepts
+              the user's intent BEFORE the disabled <button> swallows the
+              event, and surfaces the consent error explicitly.
+              R5 fix (second pass): PaymentButton no longer translates
+              `consentBlocked` to HTML `disabled` — the button is focusable
+              and clickable when only consent is missing, so the capture
+              handler AND the inner click handler (which refuses to submit)
+              both fire reliably for both mouse and keyboard interactions.
+              We also render a preemptive inline notice when consent is
+              missing so the gate state is self-explanatory before any
+              interaction. */}
+          {!consentReady && (
+            <p
+              className="label-sm text-secondary"
+              data-testid="checkout-pay-consent-notice"
+            >
+              {t('consent.required_summary_error')}
+            </p>
+          )}
           <div
             onClickCapture={handlePayAttemptCapture}
             onKeyDownCapture={(e) => {

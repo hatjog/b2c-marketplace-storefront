@@ -87,7 +87,11 @@ export function CheckoutConsentSurface({
 
   const legalHref = `/${locale}/zasady`;
   const privacyHref = `/${locale}/polityka-prywatnosci`;
-  const withdrawalHref = `/${locale}/zasady#prawo-odst%C4%85pienia`;
+  // R17 review fix: use the decoded form of the fragment. The browser
+  // decodes URL fragments before matching `id=` attributes, and the
+  // destination page uses the decoded Polish-text id. Next.js will encode
+  // the fragment on serialization — we just stop pre-encoding it.
+  const withdrawalHref = `/${locale}/zasady#prawo-odstąpienia`;
 
   const showTransError = showErrors && !transactionalConsentChecked;
   const showWithdrawalError = showErrors && !withdrawalAckChecked;

@@ -35,8 +35,11 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
-import type { PaymentStatusId, RecoveryActionKind } from '@/lib/payment/payment-status-adapter';
+import type { PaymentStatusId } from '@/lib/payment/payment-status-adapter';
 import { getPaymentStatusDescriptor, resolvePaymentStatusId } from '@/lib/payment/payment-status-adapter';
+// R18 review fix: pure timestamp formatter is unit-testable independently
+// of the i18n key-returning mock used in the panel tests.
+import { formatLastUpdatedTimestamp } from './formatTimestamp';
 
 export interface PaymentStatusPanelProps {
   /**
@@ -198,19 +201,10 @@ export function PaymentStatusPanel({
     }
   }, [statusId]);
 
-  // Format last update timestamp for display.
-  const formattedTimestamp = lastUpdate
-    ? (() => {
-        try {
-          return new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          }).format(new Date(lastUpdate));
-        } catch {
-          return lastUpdate;
-        }
-      })()
-    : null;
+  // R18 / R22 review fix: pure helper. Returns `null` (not the raw ISO)
+  // when the input is unparseable, so the customer never sees a non-localised
+  // ISO string by accident.
+  const formattedTimestamp = formatLastUpdatedTimestamp(lastUpdate ?? null);
 
   // Primary CTA handler by kind.
   const handlePrimaryAction = () => {
@@ -312,7 +306,10 @@ export function PaymentStatusPanel({
             className="h-4 w-4 rounded-full border-2 border-t-transparent border-[var(--color-warning)] motion-safe:animate-spin"
             aria-hidden="true"
           />
-          <span className="label-sm text-secondary sr-only">
+          {/* R12 review fix: label is visible to sighted users — a bare
+              spinner is ambiguous. UX-DR21 / NFR26: loading state must be
+              announced AND visible. */}
+          <span className="label-sm text-secondary">
             {t('payment_status.pending_psp_confirmation.checking')}
           </span>
         </div>
