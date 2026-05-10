@@ -13,7 +13,7 @@ export default async function ReturnOrderPage({ params }: { params: Promise<{ id
       <OrderReturnSection
         order={order}
         returnReasons={returnReasons}
-        shippingMethods={returnMethods as any}
+        shippingMethods={returnMethods}
       />
     </main>
   );

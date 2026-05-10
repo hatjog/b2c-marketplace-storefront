@@ -9,7 +9,8 @@ import { StepProgressBar } from '@/components/cells/StepProgressBar/StepProgress
 import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowLeftIcon } from '@/icons';
-import { createReturnRequest } from '@/lib/data/orders';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { createReturnRequest, type ReturnShippingOption } from '@/lib/data/orders';
 
 import { ReturnItemsTab } from './ReturnItemsTab';
 import { ReturnMethodsTab } from './ReturnMethodsTab';
@@ -20,9 +21,11 @@ export const OrderReturnSection = ({
   returnReasons,
   shippingMethods
 }: {
-  order: any;
-  returnReasons: any[];
-  shippingMethods: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  order: any; // upstream: MercurOrder shape not yet fully typed in this component
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  returnReasons: any[]; // upstream: Medusa return reason schema open-ended
+  shippingMethods: ReturnShippingOption[];
 }) => {
   const [tab, setTab] = useState(0);
   const [selectedItems, setSelectedItems] = useState<any[]>([]);

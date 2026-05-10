@@ -47,8 +47,9 @@ export type StoreCardShippingMethod = HttpTypes.StoreCartShippingOption & {
   };
 };
 
-type AvailableShippingMethod = StoreCardShippingMethod & {
-  rules: any;
+export type AvailableShippingMethod = StoreCardShippingMethod & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rules: any; // upstream: Medusa shipping option rules schema is open-ended
   price_type: string;
   id: string;
   amount?: number;

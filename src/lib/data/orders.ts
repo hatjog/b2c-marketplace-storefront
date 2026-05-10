@@ -84,12 +84,17 @@ export const getReturns = async () => {
     .catch(err => medusaError(err));
 };
 
-export const retriveReturnMethods = async (order_id: string) => {
+export type ReturnShippingOption = HttpTypes.StoreCartShippingOption & {
+  /** Return-option-specific fields from Medusa return endpoint (superset of StoreCartShippingOption). */
+  [key: string]: unknown;
+};
+
+export const retriveReturnMethods = async (order_id: string): Promise<ReturnShippingOption[]> => {
   const headers = await getAuthHeaders();
 
   return sdk.client
     .fetch<{
-      shipping_options: Array<any>;
+      shipping_options: ReturnShippingOption[];
     }>(`/store/shipping-options/return?order_id=${order_id}`, {
       method: 'GET',
       headers,

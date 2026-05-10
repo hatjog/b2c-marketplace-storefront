@@ -1,4 +1,5 @@
 import { Card, Checkbox } from '@/components/atoms';
+import type { ReturnShippingOption } from '@/lib/data/orders';
 
 export const ReturnMethodsTab = ({
   shippingMethods,
@@ -6,10 +7,11 @@ export const ReturnMethodsTab = ({
   returnMethod,
   seller
 }: {
-  shippingMethods: any;
-  handleSetReturnMethod: (method: any) => void;
+  shippingMethods: ReturnShippingOption[];
+  handleSetReturnMethod: (method: ReturnShippingOption) => void;
   returnMethod: string;
-  seller: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  seller: any; // upstream: seller shape from Mercur order not fully typed here
 }) => {
   const noShippingMethods = !shippingMethods?.length || false;
 
@@ -26,7 +28,7 @@ export const ReturnMethodsTab = ({
             </div>
           ) : (
             <ul>
-              {shippingMethods.map((method: any) => (
+              {shippingMethods.map((method) => (
                 <li
                   key={method.id}
                   onClick={() => handleSetReturnMethod(method.id)}

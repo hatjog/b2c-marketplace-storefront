@@ -578,8 +578,12 @@ export async function applyPromotions(codes: string[]) {
     const { cart } = await sdk.store.cart.update(cartId, { promo_codes: codes }, {}, headers);
     const cartCacheTag = await getCacheTag('carts');
     revalidateTag(cartCacheTag);
-    // @ts-ignore
-    const applied = cart.promotions?.some((promotion: any) => codes.includes(promotion.code));
+    // Medusa StoreCart does not declare `promotions` in its public type but the API
+    // returns it when promotions are active. Narrow locally; do not widen the upstream type.
+    const cartWithPromos = cart as HttpTypes.StoreCart & {
+      promotions?: Array<{ code?: string }>;
+    };
+    const applied = cartWithPromos.promotions?.some(p => typeof p.code === 'string' && codes.includes(p.code));
     return { success: true, applied };
   } catch (error: any) {
     const errorMessage =

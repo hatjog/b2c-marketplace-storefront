@@ -8,6 +8,7 @@ import { claimVoucher } from '@/actions/voucher-claim';
 import { OfflineBanner } from '@/components/voucher/OfflineBanner';
 import { VoucherAuditTrail } from '@/components/molecules/VoucherAuditTrail';
 import { VoucherIdleClaimSection } from '@/components/molecules/VoucherIdleClaimSection';
+import { CrossActorSyncBanner } from '@/components/molecules/CrossActorSyncBanner';
 
 // Adapter so <form action={...}> matches Next.js Server Action signature
 // (void return). claimVoucher's structured result is consumed via
@@ -186,9 +187,31 @@ export default async function VoucherClaimPage({
         <section
           data-testid="voucher-consent-pending"
           data-event="consent_pending_view"
-          className="rounded-sm border border-tertiary p-4 text-secondary"
+          className="flex flex-col gap-3 rounded-sm border border-tertiary p-4 text-secondary"
         >
           <p>{t('consent_pending_message')}</p>
+          {/*
+            AC4 — Cross-actor sync-pending visibility (FM-A discipline).
+            state_owner: salon-user (processes the voucher on their side).
+            source_of_truth: Mercur voucher API (backend authoritative for status).
+            The customer view may lag salon-user's action by up to p95=30s (NFR5/ADR-V170-A2).
+          */}
+          <CrossActorSyncBanner
+            variant="sync_pending"
+            stateOwner="salon-user"
+            sourceOfTruth="Mercur voucher API"
+            message={t('sync_pending_message')}
+            data-testid="voucher-cross-actor-sync-banner"
+            action={
+              <a
+                href={`/${locale}/user/vouchers`}
+                className="text-sm text-action underline-offset-4 hover:underline"
+                data-testid="sync-pending-vouchers-link"
+              >
+                {t('sync_pending_action')}
+              </a>
+            }
+          />
         </section>
       )}
 
