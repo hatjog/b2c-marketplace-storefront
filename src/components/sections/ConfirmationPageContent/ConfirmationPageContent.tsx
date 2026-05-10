@@ -42,6 +42,7 @@ import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCod
 import {
   type ConfirmationHandoffState,
   getConfirmationHandoffState,
+  isSafeClaimUrl,
 } from '@/lib/helpers/confirmation-state';
 
 // ─── Sentry QR Error Boundary — component stack only, no PII ─────────────────
@@ -85,7 +86,10 @@ type EntitlementData = {
   product_name: string | null;
   salon_name: string | null;
   face_value_minor: number;
-  claim_url: string | null;
+  // G9 review-2 fix: proxy passes through upstream verbatim; field may be
+  // absent (undefined), not just explicitly null. Mark optional so adversarial
+  // readers don't rely on `claim_url === null` as a tight discriminator.
+  claim_url?: string | null;
 };
 
 type Props = {
@@ -154,7 +158,10 @@ function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
   const t = useTranslations('confirmation');
   const locale = useLocale();
   // claim_url is a backend-issued single-use link; render as CTA href only.
-  const claimUrl = entitlement.claim_url?.trim() || null;
+  // G1 review-2 fix: validate protocol allow-list (http/https) before binding
+  // to `href` so a compromised upstream cannot inject a `javascript:` /
+  // `data:` URI and pivot to XSS in the customer session origin.
+  const claimUrl = isSafeClaimUrl(entitlement.claim_url);
 
   return (
     <div
@@ -282,18 +289,22 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
 function PaidDeliveryPendingView({
   orderRef,
   lastUpdatedAt,
+  lastCheckedAt,
 }: {
   orderRef: string;
   lastUpdatedAt: string | null | undefined;
+  /** Stable ISO timestamp captured at fetch time — never `new Date()` during
+   * render (G4 review-2 fix). The label asserts "last checked at X"; render
+   * cycles unrelated to a refetch must not drift the displayed time. */
+  lastCheckedAt: string;
 }) {
   const t = useTranslations('confirmation');
   const locale = useLocale();
   const formattedTs = formatTimestamp(lastUpdatedAt, locale);
   // F3 review fix: route through localeTag so UA/DE don't silently use pl-PL.
-  const clientTs = new Date().toLocaleString(localeTag(locale), {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  // G4 review-2 fix: format the *stable* lastCheckedAt captured at fetch time,
+  // so re-renders don't bump the displayed "last checked" value.
+  const clientTs = formatTimestamp(lastCheckedAt, locale) ?? '';
   // Use backend timestamp if available; otherwise show client-side "last checked" label
   const timestampLabel = formattedTs
     ? t('last_updated_label', { timestamp: formattedTs })
@@ -303,8 +314,12 @@ function PaidDeliveryPendingView({
     <div
       className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
       data-testid="paid-delivery-pending"
+      // G5 review-2 fix: keep aria-live="polite" so a state transition is
+      // announced once, but drop aria-busy — no polling/refresh loop is
+      // actually running, so promising an update would mute AT verbosity
+      // without delivering on the promise (NFR28).
+      role="status"
       aria-live="polite"
-      aria-busy="true"
     >
       <div className="bb-section-shell bb-section-shell-strong w-full">
         <span className="bb-pill mb-4 inline-block">BonBeauty</span>
@@ -354,8 +369,12 @@ function PurchasePendingView({ orderId }: { orderId: string }) {
     <div
       className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
       data-testid="pending-state"
+      // G5 review-2 fix: drop aria-busy — the elapsed-timer toggles copy but
+      // does not refetch data; aria-busy="true" without a real update cycle
+      // can suppress AT announcements. role=status + aria-live=polite is the
+      // correct contract for a state announcement on entry (NFR28).
+      role="status"
       aria-live="polite"
-      aria-busy="true"
     >
       <div className="bb-section-shell bb-section-shell-strong w-full">
         <h1 className="heading-xl">{t('payment_pending_title')}</h1>
@@ -387,6 +406,12 @@ function PaymentFailedRetryView() {
       // payment_failed_retry ONLY. support_required has its own dedicated
       // testid (`support-required`); never conflate the two.
       data-testid="error-state"
+      // G6 review-2 fix: announce the failure headline on state transition
+      // (loading → error). Without role/aria-live the heading is only
+      // available via navigation, not on entry (NFR28 + UX-DR9 parity with
+      // pending/delivered).
+      role="status"
+      aria-live="polite"
     >
       <div className="bb-section-shell w-full">
         <h1 className="heading-xl">{t('payment_failed_title')}</h1>
@@ -423,6 +448,12 @@ function SupportRequiredView({ orderRef }: { orderRef: string }) {
     <div
       className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
       data-testid="support-required"
+      // G7 review-2 fix: parity with the other states — without a live region
+      // the support-required heading is only available via heading-level
+      // navigation. AC3 requires this state to be semantically distinct from
+      // payment_failed_retry and not-found, not just visually.
+      role="status"
+      aria-live="polite"
     >
       <div className="bb-section-shell w-full">
         <span className="bb-pill mb-4 inline-block">BonBeauty</span>
@@ -440,14 +471,17 @@ function SupportRequiredView({ orderRef }: { orderRef: string }) {
       >
         {t('recovery_cta')}
       </Link>
-      {/* Secondary: support contact — no PII in href (AC3 + NFR22) */}
-      <a
+      {/* Secondary: support contact — no PII in href (AC3 + NFR22).
+          G8 review-2 fix: `<Link>` (not raw `<a>`) so the next-intl locale
+          prefix is preserved and the help page renders in the customer's
+          chosen language, not the default locale fallback. */}
+      <Link
         href="/help"
         className="label-md text-secondary underline underline-offset-4"
         data-testid="support-cta"
       >
         {t('support_required_cta')}
-      </a>
+      </Link>
     </div>
   );
 }
@@ -460,6 +494,9 @@ export function ConfirmationPageContent({ orderId }: Props) {
   const [entitlements, setEntitlements] = useState<EntitlementData[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  // G4 review-2 fix: stable client-side timestamp captured at fetch time so
+  // the "last checked" label does not drift across unrelated re-renders.
+  const [lastCheckedAt, setLastCheckedAt] = useState<string>(() => new Date().toISOString());
 
   useEffect(() => {
     let cancelled = false;
@@ -472,7 +509,12 @@ export function ConfirmationPageContent({ orderId }: Props) {
         ]);
 
         if (!orderRes.ok) {
-          if (!cancelled) setFetchError(true);
+          if (!cancelled) {
+            // G2 review-2 fix: clear loading alongside the error flag so the
+            // state-machine invariant `loading XOR rest` holds at rest.
+            setFetchError(true);
+            setLoading(false);
+          }
           return;
         }
 
@@ -482,6 +524,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
         if (!cancelled) {
           setOrder(orderData);
           setEntitlements(Array.isArray(entData) ? entData : []);
+          setLastCheckedAt(new Date().toISOString());
           setLoading(false);
         }
       } catch {
@@ -561,7 +604,13 @@ export function ConfirmationPageContent({ orderId }: Props) {
 
   // --- paid_delivery_pending (paid, entitlement evidence absent — not failure) ---
   if (handoffState === 'paid_delivery_pending') {
-    return <PaidDeliveryPendingView orderRef={orderRef} lastUpdatedAt={order.updated_at} />;
+    return (
+      <PaidDeliveryPendingView
+        orderRef={orderRef}
+        lastUpdatedAt={order.updated_at}
+        lastCheckedAt={lastCheckedAt}
+      />
+    );
   }
 
   // --- paid_delivered — determine gift vs self-purchase from first entitlement ---
