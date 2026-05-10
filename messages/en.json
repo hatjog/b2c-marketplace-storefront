@@ -588,7 +588,18 @@
     "error_title": "Payment failed",
     "error_description": "Try again or go back to the cart to change the payment method.",
     "retry": "Try again",
-    "change_method": "Change payment method"
+    "change_method": "Change payment method",
+    "payment_pending_title": "Confirming your payment",
+    "pending_delivery_title": "Your voucher is on its way",
+    "pending_delivery_description": "Payment confirmed — we are sending your voucher to your email address. This usually takes a few minutes.",
+    "last_updated_label": "Last updated: {timestamp}",
+    "last_checked_label": "Last checked: {timestamp}",
+    "support_required_title": "We need a moment to deliver your voucher",
+    "support_required_description": "Your order is registered and safe. Check your orders or contact us if it is urgent.",
+    "support_required_cta": "Contact support",
+    "recovery_cta": "Go to my orders",
+    "payment_failed_title": "Payment failed",
+    "payment_failed_description": "Try again or go back to the cart to change the payment method."
   },
   "voucher": {
     "consent": {

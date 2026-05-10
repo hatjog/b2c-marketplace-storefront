@@ -589,7 +589,18 @@
     "error_title": "Оплата не вдалася",
     "error_description": "Спробуйте знову або поверніться до кошика, щоб змінити метод оплати.",
     "retry": "Спробувати знову",
-    "change_method": "Змінити метод"
+    "change_method": "Змінити метод",
+    "payment_pending_title": "Підтверджуємо вашу оплату",
+    "pending_delivery_title": "Ваучер у дорозі",
+    "pending_delivery_description": "Оплата пройшла — надсилаємо ваучер на вашу електронну пошту. Зазвичай це займає кілька хвилин.",
+    "last_updated_label": "Останнє оновлення: {timestamp}",
+    "last_checked_label": "Востаннє перевірено: {timestamp}",
+    "support_required_title": "Нам потрібна хвилина, щоб доставити ваш ваучер",
+    "support_required_description": "Ваше замовлення зареєстроване та в безпеці. Перевірте замовлення або зв’яжіться з нами, якщо це терміново.",
+    "support_required_cta": "Звернутися до підтримки",
+    "recovery_cta": "Перейти до моїх замовлень",
+    "payment_failed_title": "Оплата не вдалася",
+    "payment_failed_description": "Спробуйте знову або поверніться до кошика, щоб змінити метод оплати."
   },
   "voucher": {
     "consent": {

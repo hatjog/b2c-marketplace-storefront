@@ -589,7 +589,18 @@
     "error_title": "Zahlung fehlgeschlagen",
     "error_description": "Erneut versuchen oder zum Warenkorb zurückkehren, um die Zahlungsmethode zu ändern.",
     "retry": "Erneut versuchen",
-    "change_method": "Zahlungsmethode ändern"
+    "change_method": "Zahlungsmethode ändern",
+    "payment_pending_title": "Wir bestätigen Ihre Zahlung",
+    "pending_delivery_title": "Ihr Gutschein ist unterwegs",
+    "pending_delivery_description": "Zahlung bestätigt — wir senden Ihren Gutschein an Ihre E-Mail-Adresse. Dies dauert in der Regel einige Minuten.",
+    "last_updated_label": "Zuletzt aktualisiert: {timestamp}",
+    "last_checked_label": "Zuletzt geprüft: {timestamp}",
+    "support_required_title": "Wir brauchen einen Moment, um Ihren Gutschein zu liefern",
+    "support_required_description": "Ihre Bestellung ist registriert und sicher. Prüfen Sie Ihre Bestellungen oder kontaktieren Sie uns, wenn es dringend ist.",
+    "support_required_cta": "Support kontaktieren",
+    "recovery_cta": "Zu meinen Bestellungen",
+    "payment_failed_title": "Zahlung fehlgeschlagen",
+    "payment_failed_description": "Erneut versuchen oder zum Warenkorb zurückkehren, um die Zahlungsmethode zu ändern."
   },
   "voucher": {
     "consent": {

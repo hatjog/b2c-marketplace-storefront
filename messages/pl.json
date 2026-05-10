@@ -588,7 +588,18 @@
     "error_title": "Płatność nie powiodła się",
     "error_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności.",
     "retry": "Spróbuj ponownie",
-    "change_method": "Zmień metodę"
+    "change_method": "Zmień metodę",
+    "payment_pending_title": "Potwierdzamy Twoją płatność",
+    "pending_delivery_title": "Voucher jest w drodze",
+    "pending_delivery_description": "Płatność przeszła — wysyłamy voucher na Twój adres e-mail. Może to potrwać kilka minut.",
+    "last_updated_label": "Ostatnia aktualizacja: {timestamp}",
+    "last_checked_label": "Ostatnio sprawdzono: {timestamp}",
+    "support_required_title": "Potrzebujemy chwili, aby dostarczyć Twój voucher",
+    "support_required_description": "Twoje zamówienie jest zarejestrowane i bezpieczne. Sprawdź zamówienia lub skontaktuj się z nami, jeśli to pilne.",
+    "support_required_cta": "Skontaktuj się z pomocą",
+    "recovery_cta": "Przejdź do moich zamówień",
+    "payment_failed_title": "Płatność nie powiodła się",
+    "payment_failed_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności."
   },
   "voucher": {
     "consent": {
