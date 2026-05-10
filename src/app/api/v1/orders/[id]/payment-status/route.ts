@@ -55,8 +55,23 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
     );
 
     if (!res.ok) {
-      const status = res.status === 401 || res.status === 403 ? res.status : (res.status || 502);
-      return NextResponse.json({ error: 'Payment status not accessible' }, { status });
+      // Preserve semantically meaningful status codes:
+      //   401/403 → access_denied (customer navigated to wrong order or session expired)
+      //   404     → order_not_found (explicit shape so polling can surface error vs. keep waiting)
+      //   5xx     → backend unavailable (transient; keep polling)
+      if (res.status === 401 || res.status === 403) {
+        return NextResponse.json(
+          { error: 'access_denied', message: 'Payment status not accessible' },
+          { status: res.status },
+        );
+      }
+      if (res.status === 404) {
+        return NextResponse.json(
+          { error: 'order_not_found', message: 'Order not found' },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json({ error: 'backend_unavailable', message: 'Backend unavailable' }, { status: 502 });
     }
 
     const data = (await res.json()) as {

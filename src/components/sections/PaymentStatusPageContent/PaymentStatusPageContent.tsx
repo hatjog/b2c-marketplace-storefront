@@ -39,8 +39,16 @@ import { useRouter } from 'next/navigation';
 import { PaymentStatusPanel } from '@/components/cells/PaymentStatusPanel/PaymentStatusPanel';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 
-/** Polling backoff schedule in ms. Last value is repeated after the list ends. */
+/** Polling backoff schedule in ms. Last value is repeated after the list ends.
+ * Jitter: each interval has ±20% randomisation to prevent thundering-herd
+ * when many customers are simultaneously waiting on a delayed Stripe webhook. */
 const POLL_BACKOFF_MS = [5_000, 15_000, 30_000] as const;
+
+/** Apply ±20% uniform jitter to a delay value. */
+function withJitter(delayMs: number): number {
+  const jitter = delayMs * 0.2 * (Math.random() * 2 - 1);
+  return Math.max(1_000, Math.round(delayMs + jitter));
+}
 
 /** Lifecycle statuses that indicate the payment flow has resolved (stop polling). */
 const TERMINAL_STATUSES = new Set(['paid', 'failed', 'support_required', 'expired']);
@@ -119,6 +127,12 @@ export function PaymentStatusPageContent({ orderId }: Props) {
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollTickRef = useRef(0);
   const isPollingRef = useRef(false);
+  // 6.1: Track polling start time for >5-min aria-live announcement (UX-DR9 / PRD Journey 8).
+  const pollStartTimeRef = useRef<number | null>(null);
+  // Tracks whether the extended-wait aria-live announcement has already been emitted.
+  const extendedWaitAnnouncementRef = useRef<'none' | 'extended'>('none');
+  // 6.1: aria-live announcement message for extended wait (>5 min).
+  const [extendedWaitAnnouncement, setExtendedWaitAnnouncement] = useState<string | null>(null);
   // Track whether tab is visible to pause polling when backgrounded.
   const isVisibleRef = useRef(true);
   // Current payment status for polling decisions (ref avoids stale closure).
@@ -174,7 +188,7 @@ export function PaymentStatusPageContent({ orderId }: Props) {
 
     pollTimerRef.current = setTimeout(async () => {
       if (!isPollingRef.current) return;
-      // Pause while tab is backgrounded.
+      // Pause while tab is backgrounded — reschedule at same tick index.
       if (!isVisibleRef.current) {
         schedulePollTick();
         return;
@@ -202,6 +216,20 @@ export function PaymentStatusPageContent({ orderId }: Props) {
             isPollingRef.current = false;
             return;
           }
+        } else {
+          // 404: order genuinely not found — stop polling and surface error.
+          if (res.status === 404) {
+            isPollingRef.current = false;
+            setFetchError('unavailable');
+            return;
+          }
+          // 401/403: session expired / wrong order — stop and surface access_denied.
+          if (res.status === 401 || res.status === 403) {
+            isPollingRef.current = false;
+            setFetchError('access_denied');
+            return;
+          }
+          // Other errors (5xx, network issues): continue polling with backoff.
         }
       } catch (err) {
         if ((err as Error).name === 'AbortError') return;
@@ -209,15 +237,30 @@ export function PaymentStatusPageContent({ orderId }: Props) {
       }
 
       pollTickRef.current += 1;
+
+      // PRD Journey 8 / UX-DR9: emit aria-live polite announcement when the
+      // customer has been waiting >5 min so screen readers report progress.
+      if (pollStartTimeRef.current !== null) {
+        const waitedMs = Date.now() - pollStartTimeRef.current;
+        const FIVE_MIN_MS = 5 * 60 * 1000;
+        if (waitedMs > FIVE_MIN_MS && extendedWaitAnnouncementRef.current !== 'extended') {
+          extendedWaitAnnouncementRef.current = 'extended';
+          setExtendedWaitAnnouncement(t('payment_status.pending_psp_confirmation.extended_wait'));
+        }
+      }
+
       schedulePollTick();
-    }, delay);
-  }, [orderId]);
+    }, withJitter(delay));
+  }, [orderId, t]);
 
   // 6.1: Start polling when status is pending_psp_confirmation.
   const startPolling = useCallback(() => {
     if (isPollingRef.current) return;
     isPollingRef.current = true;
     pollTickRef.current = 0;
+    pollStartTimeRef.current = Date.now();
+    extendedWaitAnnouncementRef.current = 'none';
+    setExtendedWaitAnnouncement(null);
     schedulePollTick();
   }, [schedulePollTick]);
 
@@ -382,6 +425,21 @@ export function PaymentStatusPageContent({ orderId }: Props) {
 
   return (
     <div className="mx-auto max-w-lg" data-testid="payment-status-content">
+      {/* 6.1 / UX-DR9 / PRD Journey 8: polite aria-live region for extended-wait
+          announcements (>5 min). Screen reader announces text change without
+          interrupting current reading. Hidden visually; content is also
+          reflected in the status panel label. */}
+      {extendedWaitAnnouncement && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+          data-testid="payment-status-extended-wait-announcement"
+        >
+          {extendedWaitAnnouncement}
+        </div>
+      )}
       <PaymentStatusPanel
         status={order.payment_status}
         lastUpdate={displayTimestamp}

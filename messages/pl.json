@@ -918,7 +918,8 @@
       "body": "Zamówienie jest weryfikowane. Może to potrwać kilka minut. Nie zamykaj przeglądarki.",
       "cta": "Sprawdź status teraz",
       "secondary_cta": "Skontaktuj się z obsługą",
-      "checking": "Trwa weryfikacja..."
+      "checking": "Trwa weryfikacja...",
+      "extended_wait": "Weryfikacja trwa dłużej niż zwykle. Pracujemy nad tym. Możesz poczekać lub skontaktować się z obsługą."
     },
     "failed": {
       "label": "Płatność nieudana",
