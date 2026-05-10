@@ -531,8 +531,13 @@
       "heading": "Podział zamówienia na salony",
       "unknown_seller": "Salon"
     },
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}})",
+      "seller_fallback": "Salon"
+    },
     "consent": {
       "required_heading": "Wymagane potwierdzenia",
+      "required_summary_error": "Aby kontynuować, zaznacz oba wymagane potwierdzenia.",
       "transactional_label": "Wyrażam zgodę na przetwarzanie danych osobowych w celu realizacji zamówienia zgodnie z",
       "transactional_privacy_link": "Polityką prywatności",
       "transactional_required_error": "Zaznacz zgodę na przetwarzanie danych, aby kontynuować.",
@@ -909,6 +914,8 @@
     "order_ref": "Zamówienie: {orderId}",
     "unavailable_title": "Nie można sprawdzić statusu płatności",
     "unavailable_body": "Nie udało się pobrać informacji o zamówieniu. Skontaktuj się z obsługą klienta.",
+    "access_denied_title": "Brak dostępu do tego zamówienia",
+    "access_denied_body": "Nie masz uprawnień do podglądu tego zamówienia. Zaloguj się na konto, z którego zostało złożone, lub skontaktuj się z obsługą.",
     "refreshing": "Sprawdzam...",
     "paid": {
       "label": "Płatność potwierdzona",

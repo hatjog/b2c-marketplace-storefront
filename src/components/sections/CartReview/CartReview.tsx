@@ -15,13 +15,14 @@
  * NFR23: No marketing opt-in bundled (transactional-only v1.7.0).
  */
 
-import { useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 
 import { CheckoutConsentSurface } from '@/components/molecules/CheckoutConsentSurface/CheckoutConsentSurface';
 import { CartSummary } from '@/components/organisms';
 import { PromoCode } from '@/components/organisms/PromoCode/PromoCode';
+import { useFormErrors } from '@/hooks/useFormErrors';
 
 import { CartItems } from './CartItems';
 import PaymentButton from './PaymentButton';
@@ -35,6 +36,14 @@ const Review = ({ cart }: { cart: any }) => {
   const [withdrawalAckChecked, setWithdrawalAckChecked] = useState(false);
   const [showConsentErrors, setShowConsentErrors] = useState(false);
 
+  // F5/F15 review fixes: real heading semantics + first-error focus management.
+  const consentHeadingId = useId();
+  const consentBlockRef = useRef<HTMLDivElement | null>(null);
+
+  // F6 review fix: actually wire useFormErrors so it is no longer dead code.
+  // Used here for consistent focus-first-error semantics on the consent block.
+  const { focusFirstError, registerFieldRef } = useFormErrors('checkout-consent');
+
   const paidByGiftcard = cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0;
 
   const previousStepsCompleted =
@@ -44,10 +53,39 @@ const Review = ({ cart }: { cart: any }) => {
 
   const consentReady = transactionalConsentChecked && withdrawalAckChecked;
 
-  // Show consent errors when user tries to submit without ticking both.
-  const handlePayAttempt = () => {
+  // F5 review fix: surface the consent error AND scroll/focus the consent
+  // block on the user's actual interaction. Disabled <button> elements do
+  // NOT bubble click events in any modern browser, so the previous
+  // `<div onClick>` wrapper around a `disabled` Pay button silently failed.
+  // Now: capture the click in CAPTURE phase before it reaches the button so
+  // that even when the button is disabled (or about to be) we react to the
+  // user's intent.
+  const handlePayAttemptCapture = (e: React.MouseEvent | React.KeyboardEvent) => {
     if (!consentReady) {
+      e.preventDefault();
+      e.stopPropagation();
       setShowConsentErrors(true);
+      const el = consentBlockRef.current;
+      if (el && typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ behavior: 'auto', block: 'center' });
+      }
+      // F6 review fix: route focus through useFormErrors.focusFirstError
+      // so the focus order honours DOM/registration order (transactional
+      // first, then withdrawal). Falls back to direct querySelector lookup
+      // if the registered ref is unavailable (defensive — refs may not
+      // attach if the surface re-renders mid-handler).
+      focusFirstError({
+        transactional: transactionalConsentChecked ? null : 'required',
+        withdrawal: withdrawalAckChecked ? null : 'required',
+      });
+      const firstUnchecked = el?.querySelector<HTMLInputElement>(
+        !transactionalConsentChecked
+          ? '[data-testid="checkout-consent-transactional-checkbox"]'
+          : '[data-testid="checkout-consent-withdrawal-checkbox"]',
+      );
+      if (firstUnchecked && document.activeElement !== firstUnchecked) {
+        firstUnchecked.focus({ preventScroll: false });
+      }
     }
   };
 
@@ -78,12 +116,27 @@ const Review = ({ cart }: { cart: any }) => {
               Must be visible at review step before Pay — NOT modal-only.
               NFR23: transactional only; no marketing consent bundled here. */}
           <div
-            className="bb-section-shell border border-primary rounded-sm p-4 space-y-1"
+            ref={consentBlockRef}
+            className="bb-section-shell bb-section-shell-strong border border-primary rounded-sm p-4 space-y-1"
             data-testid="checkout-review-consent-block"
+            aria-labelledby={consentHeadingId}
           >
-            <p className="label-sm font-medium text-primary mb-3">
+            {/* F15 review fix: real heading element so SR landmark navigation works. */}
+            <h2
+              id={consentHeadingId}
+              className="label-sm font-medium text-primary mb-3"
+            >
               {t('consent.required_heading')}
-            </p>
+            </h2>
+            {showConsentErrors && !consentReady && (
+              <p
+                role="alert"
+                className="label-sm mb-2 text-[var(--color-error)]"
+                data-testid="checkout-consent-block-error"
+              >
+                {t('consent.required_summary_error')}
+              </p>
+            )}
             <CheckoutConsentSurface
               transactionalConsentChecked={transactionalConsentChecked}
               withdrawalAckChecked={withdrawalAckChecked}
@@ -91,6 +144,7 @@ const Review = ({ cart }: { cart: any }) => {
               onWithdrawalAckChange={setWithdrawalAckChecked}
               showErrors={showConsentErrors}
               locale={locale}
+              registerFieldRef={registerFieldRef}
             />
           </div>
 
@@ -98,10 +152,21 @@ const Review = ({ cart }: { cart: any }) => {
             {t('payment_obligation_notice')}
           </p>
 
-          {/* ─── Pay button wrapped in consent gate ─────────────────────── */}
+          {/* ─── Pay button + consent gate ──────────────────────────────────
+              F5 fix: capture-phase click handler intercepts the user's
+              intent BEFORE the disabled <button> swallows the event, and
+              surfaces the consent error explicitly. Keyboard users reach
+              this surface via the consent block's own checkboxes which
+              individually announce errors via role="alert". */}
           <div
-            onClick={!consentReady ? handlePayAttempt : undefined}
+            onClickCapture={handlePayAttemptCapture}
+            onKeyDownCapture={(e) => {
+              if (!consentReady && (e.key === 'Enter' || e.key === ' ')) {
+                handlePayAttemptCapture(e);
+              }
+            }}
             data-testid="checkout-pay-button-wrapper"
+            data-consent-ready={consentReady ? 'true' : 'false'}
           >
             <PaymentButton
               cart={cart}

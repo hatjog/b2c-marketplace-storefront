@@ -532,8 +532,13 @@
       "heading": "Bestellaufteilung nach Verkäufer",
       "unknown_seller": "Verkäufer"
     },
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# Artikel} other {# Artikel}})",
+      "seller_fallback": "Salon"
+    },
     "consent": {
       "required_heading": "Erforderliche Bestätigungen",
+      "required_summary_error": "Bitte bestätigen Sie beide erforderlichen Punkte, um fortzufahren.",
       "transactional_label": "Ich stimme der Verarbeitung meiner personenbezogenen Daten zur Auftragserfüllung gemäß der",
       "transactional_privacy_link": "Datenschutzerklärung",
       "transactional_required_error": "Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung, um fortzufahren.",
@@ -910,6 +915,8 @@
     "order_ref": "Bestellung: {orderId}",
     "unavailable_title": "Zahlungsstatus nicht abrufbar",
     "unavailable_body": "Ihre Bestellinformationen konnten nicht abgerufen werden. Bitte wenden Sie sich an den Kundendienst.",
+    "access_denied_title": "Kein Zugriff auf diese Bestellung",
+    "access_denied_body": "Sie sind nicht berechtigt, diese Bestellung anzuzeigen. Bitte melden Sie sich mit dem Konto an, von dem die Bestellung aufgegeben wurde, oder kontaktieren Sie den Kundendienst.",
     "refreshing": "Überprüfe...",
     "paid": {
       "label": "Zahlung bestätigt",

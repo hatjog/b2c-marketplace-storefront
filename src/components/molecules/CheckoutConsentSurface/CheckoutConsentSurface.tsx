@@ -49,10 +49,24 @@ export interface CheckoutConsentSurfaceProps {
   onWithdrawalAckChange: (checked: boolean) => void;
   /** Whether to show validation error state (both required for submit). */
   showErrors?: boolean;
-  /** Locale for localized links. */
-  locale?: string;
+  /**
+   * Locale for localized links.
+   *
+   * F16 review fix: required prop (no default). Callers MUST pass an active
+   * locale so EN/UA/DE customers do not silently receive PL legal links.
+   * The actual route slugs (`zasady`, `polityka-prywatnosci`) are still
+   * Polish for v1.7.0; locale-aware route slugs are deferred to Story 2.9.
+   */
+  locale: string;
   /** Additional class names. */
   className?: string;
+  /**
+   * Optional ref-callback for focus management (F6/F7 review fix).
+   * Receives the field name ("transactional" | "withdrawal") and the
+   * checkbox element so the parent's useFormErrors hook can register
+   * refs for focus-first-error.
+   */
+  registerFieldRef?: (fieldName: 'transactional' | 'withdrawal') => (el: HTMLElement | null) => void;
 }
 
 export function CheckoutConsentSurface({
@@ -61,8 +75,9 @@ export function CheckoutConsentSurface({
   onTransactionalConsentChange,
   onWithdrawalAckChange,
   showErrors = false,
-  locale = 'pl',
+  locale,
   className,
+  registerFieldRef,
 }: CheckoutConsentSurfaceProps) {
   const t = useTranslations('checkout.consent');
   const transId = useId();
@@ -101,6 +116,7 @@ export function CheckoutConsentSurface({
             aria-describedby={showTransError ? transErrorId : undefined}
             aria-invalid={showTransError || undefined}
             data-testid="checkout-consent-transactional-checkbox"
+            ref={registerFieldRef?.('transactional')}
             className="mt-0.5 size-5 flex-shrink-0 cursor-pointer rounded accent-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           />
           <span className="label-sm text-primary leading-relaxed">
@@ -121,7 +137,7 @@ export function CheckoutConsentSurface({
           <p
             id={transErrorId}
             role="alert"
-            className="label-sm ml-8 text-[var(--color-error,#b91c1c)]"
+            className="label-sm ml-8 text-[var(--color-error)]"
             data-testid="checkout-consent-transactional-error"
           >
             {t('transactional_required_error')}
@@ -147,6 +163,7 @@ export function CheckoutConsentSurface({
             aria-describedby={showWithdrawalError ? withdrawalErrorId : undefined}
             aria-invalid={showWithdrawalError || undefined}
             data-testid="checkout-consent-withdrawal-checkbox"
+            ref={registerFieldRef?.('withdrawal')}
             className="mt-0.5 size-5 flex-shrink-0 cursor-pointer rounded accent-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           />
           <span className="label-sm text-primary leading-relaxed">
@@ -167,7 +184,7 @@ export function CheckoutConsentSurface({
           <p
             id={withdrawalErrorId}
             role="alert"
-            className="label-sm ml-8 text-[var(--color-error,#b91c1c)]"
+            className="label-sm ml-8 text-[var(--color-error)]"
             data-testid="checkout-consent-withdrawal-error"
           >
             {t('withdrawal_required_error')}

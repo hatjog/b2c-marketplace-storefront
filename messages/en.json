@@ -531,8 +531,13 @@
       "heading": "Order split by seller",
       "unknown_seller": "Seller"
     },
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# item} other {# items}})",
+      "seller_fallback": "Salon"
+    },
     "consent": {
       "required_heading": "Required confirmations",
+      "required_summary_error": "Please tick both required confirmations to continue.",
       "transactional_label": "I consent to the processing of my personal data for order fulfillment in accordance with the",
       "transactional_privacy_link": "Privacy Policy",
       "transactional_required_error": "Please confirm data processing consent to continue.",
@@ -909,6 +914,8 @@
     "order_ref": "Order: {orderId}",
     "unavailable_title": "Unable to retrieve payment status",
     "unavailable_body": "We could not retrieve your order information. Please contact customer support.",
+    "access_denied_title": "You don't have access to this order",
+    "access_denied_body": "You are not authorised to view this order. Please sign in with the account it was placed from, or contact support.",
     "refreshing": "Checking...",
     "paid": {
       "label": "Payment confirmed",

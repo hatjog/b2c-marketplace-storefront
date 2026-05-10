@@ -23,13 +23,18 @@ export type FieldErrors = Record<string, string | null | undefined>;
 
 export interface UseFormErrorsReturn {
   /**
-   * Returns props for a form field that has an associated error.
-   * Spreads aria-describedby and aria-invalid onto the input element.
+   * Returns props for a form field. Pass `{ hasError: true }` to surface
+   * `aria-invalid` and `aria-describedby`; pass nothing (or `false`) to
+   * keep the field clean — F7 review fix: never blanket-claim a clean
+   * field is invalid.
    */
-  getFieldProps: (fieldName: string) => {
-    'aria-describedby': string | undefined;
-    'aria-invalid': true | undefined;
+  getFieldProps: (
+    fieldName: string,
+    opts?: { hasError?: boolean },
+  ) => {
     id: string;
+    'aria-invalid'?: true;
+    'aria-describedby'?: string;
   };
   /**
    * Returns props for the error message element associated with a field.
@@ -63,13 +68,18 @@ export function useFormErrors(fieldPrefix = 'field'): UseFormErrorsReturn {
   const getErrorId = (fieldName: string) => `${fieldPrefix}-${fieldName}-error`;
 
   const getFieldProps = useCallback(
-    (fieldName: string) => {
-      const errorId = getErrorId(fieldName);
-      return {
-        id: getFieldId(fieldName),
-        'aria-describedby': errorId,
-        'aria-invalid': true as const,
-      };
+    (fieldName: string, opts?: { hasError?: boolean }) => {
+      const hasError = opts?.hasError === true;
+      const props: {
+        id: string;
+        'aria-invalid'?: true;
+        'aria-describedby'?: string;
+      } = { id: getFieldId(fieldName) };
+      if (hasError) {
+        props['aria-invalid'] = true;
+        props['aria-describedby'] = getErrorId(fieldName);
+      }
+      return props;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [fieldPrefix],

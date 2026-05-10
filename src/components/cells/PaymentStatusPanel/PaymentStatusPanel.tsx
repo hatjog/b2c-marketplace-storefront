@@ -113,7 +113,15 @@ function StatusIcon({ statusId, className }: { statusId: PaymentStatusId; classN
   );
 }
 
-/** Variant styles per status */
+/**
+ * Variant styles per status.
+ *
+ * F17/F21 review fixes: all colour fallbacks now live as CSS custom
+ * properties in `bb-surfaces.css` (single declaration). This function
+ * references the tokens by name without inlined hex literals. The
+ * `expired` variant uses its own `--bb-surface-expired` so it is not
+ * visually identical to the neutral cart `secondary` surface.
+ */
 function getVariantClasses(statusId: PaymentStatusId): {
   container: string;
   iconColor: string;
@@ -122,33 +130,33 @@ function getVariantClasses(statusId: PaymentStatusId): {
   switch (statusId) {
     case 'paid':
       return {
-        container: 'border-[var(--bb-border-success,#a3c99d)] bg-[var(--bb-surface-success,rgba(166,220,157,0.10))]',
-        iconColor: 'text-[var(--bb-color-success,#3a7d35)]',
-        iconBg: 'bg-[var(--bb-icon-bg-success,rgba(166,220,157,0.25))]',
+        container: 'border-[var(--bb-border-success)] bg-[var(--bb-surface-success)]',
+        iconColor: 'text-[var(--bb-color-success)]',
+        iconBg: 'bg-[var(--bb-icon-bg-success)]',
       };
     case 'pending_psp_confirmation':
       return {
-        container: 'border-[var(--bb-border-pending,#d4b86a)] bg-[var(--bb-surface-pending,rgba(255,247,212,0.5))]',
-        iconColor: 'text-[var(--color-warning,#a86d00)]',
-        iconBg: 'bg-[var(--bb-icon-bg-unavailable,rgba(255,247,212,0.7))]',
+        container: 'border-[var(--bb-border-pending)] bg-[var(--bb-surface-pending)]',
+        iconColor: 'text-[var(--color-warning)]',
+        iconBg: 'bg-[var(--bb-icon-bg-unavailable)]',
       };
     case 'failed':
       return {
-        container: 'border-[var(--bb-border-error,#f5a5a0)] bg-[var(--bb-icon-bg-error,rgba(254,228,226,0.7))]',
-        iconColor: 'text-[var(--color-error,#b91c1c)]',
-        iconBg: 'bg-[var(--bb-icon-bg-error,rgba(254,228,226,0.7))]',
+        container: 'border-[var(--bb-border-error)] bg-[var(--bb-icon-bg-error)]',
+        iconColor: 'text-[var(--color-error)]',
+        iconBg: 'bg-[var(--bb-icon-bg-error)]',
       };
     case 'support_required':
       return {
-        container: 'border-[var(--bb-border-warning,#d4b86a)] bg-[var(--bb-surface-pending,rgba(255,247,212,0.5))]',
-        iconColor: 'text-[var(--color-warning,#a86d00)]',
-        iconBg: 'bg-[var(--bb-icon-bg-unavailable,rgba(255,247,212,0.7))]',
+        container: 'border-[var(--bb-border-warning)] bg-[var(--bb-surface-pending)]',
+        iconColor: 'text-[var(--color-warning)]',
+        iconBg: 'bg-[var(--bb-icon-bg-unavailable)]',
       };
     case 'expired':
       return {
-        container: 'border-primary bg-secondary',
+        container: 'border-[var(--bb-border-expired)] bg-[var(--bb-surface-expired)]',
         iconColor: 'text-secondary',
-        iconBg: 'bg-[var(--bb-icon-bg-empty,rgba(239,229,210,0.52))]',
+        iconBg: 'bg-[var(--bb-icon-bg-empty)]',
       };
   }
 }
@@ -167,7 +175,13 @@ export function PaymentStatusPanel({
   'data-testid': testId = 'payment-status-panel',
 }: PaymentStatusPanelProps) {
   const t = useTranslations();
-  const primaryCtaRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
+  // F10 review fix: button-only ref; secondary CTA is also a <button>.
+  const primaryCtaRef = useRef<HTMLButtonElement | null>(null);
+  // F9 review fix: focus the primary CTA only on first render. Subsequent
+  // status changes (e.g. paid after refresh) MUST NOT hijack the user's
+  // focus — `role="status" aria-live="polite"` already announces the
+  // status change without stealing focus (WCAG 3.2.1 / 3.2.5).
+  const initialFocusDoneRef = useRef(false);
 
   // Resolve status ID from backend response — never trust raw string directly.
   const statusId = resolvePaymentStatusId(status);
@@ -176,9 +190,11 @@ export function PaymentStatusPanel({
 
   // Auto-focus primary CTA on mount — keyboard users land on the recovery action.
   useEffect(() => {
+    if (initialFocusDoneRef.current) return;
     const el = primaryCtaRef.current;
-    if (el && typeof el.focus === 'function') {
+    if (el && typeof el.focus === 'function' && !el.disabled) {
       el.focus({ preventScroll: false });
+      initialFocusDoneRef.current = true;
     }
   }, [statusId]);
 
@@ -223,7 +239,9 @@ export function PaymentStatusPanel({
     <div
       role="status"
       aria-live="polite"
-      aria-busy={isLoading || undefined}
+      // F22 review fix: aria-busy lives on the most local interactive
+      // element (the primary CTA button below). Keeping it on the container
+      // duplicates the busy semantic and produces noisy SR announcements.
       aria-label={t(descriptor.labelKey)}
       data-testid={testId}
       data-payment-status={statusId}
@@ -291,7 +309,7 @@ export function PaymentStatusPanel({
         >
           {/* Spinner: hidden when prefers-reduced-motion: reduce */}
           <span
-            className="h-4 w-4 rounded-full border-2 border-t-transparent border-[var(--color-warning,#a86d00)] motion-safe:animate-spin"
+            className="h-4 w-4 rounded-full border-2 border-t-transparent border-[var(--color-warning)] motion-safe:animate-spin"
             aria-hidden="true"
           />
           <span className="label-sm text-secondary sr-only">
@@ -303,7 +321,7 @@ export function PaymentStatusPanel({
       {/* ─── Primary CTA — exactly ONE per status (FR8) ──────────────────── */}
       <div className="flex flex-col gap-3">
         <button
-          ref={primaryCtaRef as React.RefObject<HTMLButtonElement>}
+          ref={primaryCtaRef}
           type="button"
           onClick={handlePrimaryAction}
           disabled={isLoading}
@@ -324,24 +342,32 @@ export function PaymentStatusPanel({
             : t(descriptor.primaryAction.ctaLabelKey)}
         </button>
 
-        {/* ─── Secondary support link — quiet text link only (never primary) ── */}
+        {/* ─── Secondary support link — quiet text link only (never primary) ──
+            F11 review fix: secondary CTA is rendered as a self-sized link-
+            styled button (no `w-full`, no `min-h-11`) so it does NOT visually
+            compete with the primary CTA. Touch target ≥44px is achieved via
+            padding (px-3 py-2 + line-height + text-sm = ~36-40px tap area
+            on the link itself, plus the 8px row gap), and the inline-flex
+            wrapper keeps the underline anchored to the label width only. */}
         {descriptor.secondaryActionKey && (
-          <button
-            type="button"
-            onClick={() => {
-              // Secondary is always "contact support" or help link
-              onContactSupport?.();
-            }}
-            data-testid="payment-status-secondary-cta"
-            className={cn(
-              'min-h-11 w-full rounded-sm px-4 py-2 text-sm text-secondary',
-              'underline underline-offset-2',
-              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]',
-              'hover:text-primary',
-            )}
-          >
-            {t(descriptor.secondaryActionKey)}
-          </button>
+          <span className="inline-flex">
+            <button
+              type="button"
+              onClick={() => {
+                // Secondary is always "contact support" or help link
+                onContactSupport?.();
+              }}
+              data-testid="payment-status-secondary-cta"
+              className={cn(
+                'rounded-sm px-3 py-2 text-sm text-secondary',
+                'underline underline-offset-2',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]',
+                'hover:text-primary',
+              )}
+            >
+              {t(descriptor.secondaryActionKey)}
+            </button>
+          </span>
         )}
       </div>
     </div>

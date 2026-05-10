@@ -114,6 +114,26 @@
   --bb-icon-bg-unavailable: rgba(255, 247, 212, 0.70);  /* yellow-50 tint, warning channel */
 
   /* ------------------------------------------------------------------
+   * Payment status surface tokens — Story 2.4 review fixes F17/F21.
+   * Centralises the colour fallbacks that were previously inlined as
+   * `bg-[var(--bb-…,#hex)]` per-component. Keeps the BonBeauty palette
+   * declared once and prevents drift if the palette changes.
+   * Channels: success (paid), pending (PSP confirmation / support_required),
+   * error (failed) and expired (low-saturation cream-grey, distinct from
+   * neutral cart `secondary`).
+   * ------------------------------------------------------------------ */
+  --bb-color-success:        rgb(58, 125, 53);          /* AA-safe green text on cream tint */
+  --bb-icon-bg-success:      rgba(166, 220, 157, 0.25); /* green-100 tint                   */
+  --bb-surface-success:      rgba(166, 220, 157, 0.10); /* very soft success surface        */
+  --bb-border-success:       rgb(163, 201, 157);        /* low-saturation success border    */
+  --bb-surface-pending:      rgba(255, 247, 212, 0.50); /* warm-yellow pending surface      */
+  --bb-border-pending:       rgb(212, 184, 106);        /* warm-yellow pending border       */
+  --bb-border-warning:       rgb(212, 184, 106);        /* alias for pending border channel */
+  --bb-border-error:         rgb(245, 165, 160);        /* low-saturation error border      */
+  --bb-surface-expired:      rgba(239, 229, 210, 0.32); /* cream-grey, quieter than cart    */
+  --bb-border-expired:       rgba(144, 112, 50, 0.22);  /* gold-tinted hairline             */
+
+  /* ------------------------------------------------------------------
    * font-display alias (theme interop with layout.tsx Funnel_Display var)
    * Source: bonbeauty.css --font-display + computed-tokens.json
    * ------------------------------------------------------------------ */

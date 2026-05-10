@@ -14,6 +14,25 @@
  *
  * ARCH-007: Customer-facing storefront only.
  * Pure computation — no JSX, no UI. Safe for server + client components.
+ *
+ * F25 review fix — cross-vocabulary mapping (UX-state framework ↔ shared
+ * lifecycle state machine) for `customer_payment_status`:
+ *
+ *   UX-state framework state │ shared lifecycle state id (this adapter)
+ *   ─────────────────────────┼──────────────────────────────────────────
+ *   loading                  │ — (rendered by PaymentStatusPageContent before fetch resolves)
+ *   pending                  │ pending_psp_confirmation
+ *   recovered / paid-stable  │ paid
+ *   failed                   │ failed
+ *   retry                    │ failed → user-initiated mutation (CTA only)
+ *   stale                    │ pending_psp_confirmation (with timestamp surfaced)
+ *   unavailable              │ — (rendered by StateCard, no lifecycle id)
+ *   access_denied            │ — (rendered by StateCard, no lifecycle id)
+ *   empty                    │ — illegal on this surface (UX-state contract)
+ *   validation               │ — not applicable (read-only surface)
+ *
+ * support_required and expired are lifecycle-only ids (no UX-state
+ * framework analogue); the panel renders them via the shared mapping.
  */
 
 /**
