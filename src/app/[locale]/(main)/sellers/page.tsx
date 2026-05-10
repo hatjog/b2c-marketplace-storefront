@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { SellerMap } from '@/components/cells/SellerMap';
 import { SellersPagination } from '@/components/cells/SellersPagination/SellersPagination';
 import { clampRadius, type RadiusOption } from '@/components/atoms/RadiusSelector/clampRadius';
@@ -174,6 +175,10 @@ export default async function SellersListPage({
 
   return (
     <main id="main-content" className="container py-8">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="seller-listing"
+      />
       <Breadcrumbs
         items={[
           { label: tSellerPage('home'), href: '/' },

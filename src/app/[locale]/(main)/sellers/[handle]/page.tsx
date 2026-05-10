@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { DirectionsBlock } from '@/components/organisms/DirectionsBlock';
 import { SellerTabs } from '@/components/organisms/SellerTabs/SellerTabs';
@@ -130,6 +131,10 @@ export default async function SellerPage({
 
   return (
     <main id="main-content" className="bb-page-shell">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="seller-detail"
+      />
       <div className="container pt-4">
         <Breadcrumbs
           items={[

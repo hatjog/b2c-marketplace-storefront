@@ -6,7 +6,7 @@ export const TabsList = ({
   activeTab,
   'data-testid': dataTestId
 }: {
-  list: { label: string; link: string }[];
+  list: { label: string; link: string; value?: string }[];
   activeTab: string;
   'data-testid'?: string;
 }) => {
@@ -15,12 +15,12 @@ export const TabsList = ({
       className="flex w-full gap-4"
       data-testid={dataTestId ?? 'tabs-list'}
     >
-      {list.map(({ label, link }) => (
+      {list.map(({ label, link, value }) => (
         <LocalizedClientLink
-          key={label}
+          key={value ?? label}
           href={link}
         >
-          <TabsTrigger isActive={activeTab === label.toLowerCase()}>{label}</TabsTrigger>
+          <TabsTrigger isActive={activeTab === (value ?? label.toLowerCase())}>{label}</TabsTrigger>
         </LocalizedClientLink>
       ))}
     </div>

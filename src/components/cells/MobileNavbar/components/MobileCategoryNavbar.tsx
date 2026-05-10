@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CollapseIcon } from '@/icons';
@@ -28,6 +29,7 @@ export const MobileCategoryNavbar = ({
   onClose
 }: MobileCategoryNavbarProps) => {
   const { category } = useParams<{ category?: string }>();
+  const t = useTranslations('navigation');
   const [selectedCategory, setSelectedCategory] = useState<HttpTypes.StoreProductCategory | null>(
     null
   );
@@ -66,14 +68,14 @@ export const MobileCategoryNavbar = ({
     <>
       <nav
         className="flex flex-col gap-2"
-        aria-label="Mobile category navigation"
+        aria-label={t('category_nav_aria')}
       >
         <LocalizedClientLink
           href="/categories"
           onClick={handleClose}
           className="label-md px-4 py-3 uppercase text-primary transition-colors hover:bg-secondary/10"
         >
-          All Products
+          {t('all_products')}
         </LocalizedClientLink>
 
         {filteredCategories.map(({ id, handle, name, category_children }) => {

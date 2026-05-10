@@ -7,16 +7,19 @@
  */
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 
 export const dynamic = 'force-static';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('legal');
   return {
-    title: 'Regulamin | BonBeauty',
-    description: 'Regulamin BonBeauty — strona w przygotowaniu.',
+    title: t('title_regulamin'),
+    description: t('regulamin_description'),
     robots: { index: false, follow: false }
   };
 }
@@ -33,6 +36,10 @@ export default async function RegulaminPage({
   return (
     <LegalPageLayout>
       <article data-testid="regulamin-content">
+        <StorefrontI18nLongContentProbe
+          locale={locale}
+          surface="legal-regulamin"
+        />
         <header style={{ marginBottom: '2.5rem' }}>
           <h1
             style={{
@@ -154,7 +161,7 @@ export default async function RegulaminPage({
             </li>
           </ul>
 
-          <a
+          <Link
             href={`/${locale}/pomoc`}
             style={{
               display: 'inline-block',
@@ -165,7 +172,7 @@ export default async function RegulaminPage({
             data-testid="regulamin-pomoc-link"
           >
             {tW('legal.contact_support')} →
-          </a>
+          </Link>
         </section>
       </article>
     </LegalPageLayout>

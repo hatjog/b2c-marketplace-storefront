@@ -25,10 +25,6 @@ export async function CategoriesGridBlock({ section }: { section: CategoriesGrid
     hideEmpty,
   });
 
-  if (categories.length === 0) {
-    return null;
-  }
-
   const t = await getTranslations('category');
   // Use CMS-provided heading when available, fall back to i18n key (not hardcoded string).
   // v1.7.0 Story 2.2 re-review fix (LOW L2'): previously fell back to

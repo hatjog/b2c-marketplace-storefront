@@ -24,6 +24,10 @@ describe('toHreflang', () => {
     assert.equal(toHreflang('de'), 'de');
   });
 
+  test('storefront locale ua maps to Ukrainian BCP-47 uk', () => {
+    assert.equal(toHreflang('ua'), 'uk');
+  });
+
   test('unknown code passes through as-is', () => {
     assert.equal(toHreflang('xyz'), 'xyz');
   });

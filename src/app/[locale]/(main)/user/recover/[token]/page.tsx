@@ -48,6 +48,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { exchangeRecoveryTokenForm } from '@/actions/voucher-recovery';
 
 export const dynamic = 'force-dynamic';
@@ -107,6 +108,10 @@ export default async function RecoverPage({
       className="container flex min-h-[60vh] items-center justify-center px-4 py-10"
       data-testid="recover-page"
     >
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="voucher-recovery"
+      />
       <div className="w-full max-w-lg flex flex-col items-center gap-6 text-center">
         <h1 className="heading-md text-primary">{t('title')}</h1>
         <p className="text-secondary">{t('body')}</p>

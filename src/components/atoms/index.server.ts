@@ -13,6 +13,7 @@ export { IconButton } from './IconButton/IconButton';
 export { Label } from './Label/Label';
 export { NavigationItem } from './NavigationItem/NavigationItem';
 export { PaginationButton } from './PaginationButton/PaginationButton';
+export { StorefrontI18nLongContentProbe } from './StorefrontI18nLongContentProbe/StorefrontI18nLongContentProbe';
 // v1.7.0 Story 2.1: BonBeauty-aligned loading skeleton primitives
 export { Skeleton, SkeletonText, SkeletonCard } from './Skeleton/Skeleton';
 export { StarRating } from './StarRating/StarRating';

@@ -427,7 +427,9 @@
     "orders": "Zamówienia",
     "settings": "Ustawienia",
     "no_orders": "Brak zamówień",
-    "no_orders_message": "Nie złożono jeszcze żadnego zamówienia. Gdy złożysz pierwsze, pojawi się tutaj."
+    "no_orders_message": "Nie złożono jeszcze żadnego zamówienia. Gdy złożysz pierwsze, pojawi się tutaj.",
+    "welcome_heading": "Witaj {firstName}",
+    "welcome_subheading": "Twoje konto jest gotowe do działania."
   },
   "blog": {
     "title": "Blog",
@@ -489,11 +491,17 @@
   "page": {
     "cart_title": "Koszyk",
     "cart_description": "Przejrzyj produkty w koszyku i przejdź do kasy.",
+    "checkout_title": "Kasa",
+    "checkout_description": "Sprawdź dane zamówienia i bezpiecznie zakończ zakup.",
     "loading": "Ładowanie..."
   },
   "legal": {
     "title_privacy": "Polityka Prywatności",
     "title_regulamin": "Regulamin",
+    "title_zasady": "Zasady",
+    "regulamin_description": "Regulamin BonBeauty — strona w przygotowaniu.",
+    "privacy_description": "Polityka prywatności BonBeauty — informacja o przetwarzaniu danych osobowych zgodnie z RODO.",
+    "zasady_description": "Zasady realizacji voucherów BonBeauty.",
     "coming_soon": "Strona w przygotowaniu",
     "coming_soon_description": "Regulamin jest w trakcie opracowania. W razie pytań prosimy o kontakt.",
     "contact_email": "kontakt@bonbeauty.pl",
@@ -575,6 +583,8 @@
     }
   },
   "confirmation": {
+    "meta_title": "Zamówienie potwierdzone",
+    "meta_description": "Twoje zamówienie BonBeauty zostało przyjęte.",
     "loading": "Ładowanie...",
     "not_found": "Zamówienie nie zostało znalezione",
     "generic_title": "Dziękujemy! Zamówienie zostało przyjęte.",

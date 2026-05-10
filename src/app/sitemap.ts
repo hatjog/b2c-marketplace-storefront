@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { getSellers } from '@/lib/data/seller';
+import { toHreflang } from '@/lib/helpers/hreflang';
 
 /**
  * Story v160-3-3: Sitemap.xml + canonical SEO continuity for `/sellers/*`.
@@ -43,11 +44,38 @@ import { getSellers } from '@/lib/data/seller';
 export const revalidate = 3600;
 
 const SAFE_FALLBACK_BASE = 'http://localhost:3000';
+const STATIC_LOCALIZED_ROUTES = [
+  '',
+  '/categories',
+  '/regulamin',
+  '/polityka-prywatnosci',
+  '/zasady',
+  '/pomoc',
+  '/sellers',
+] as const;
 
 function resolveBaseUrl(): string {
   const raw = process.env.NEXT_PUBLIC_BASE_URL;
   const candidate = (raw ?? '').trim().replace(/\/$/, '');
   return candidate || SAFE_FALLBACK_BASE;
+}
+
+function localizedUrl(base: string, locale: string, path = ''): string {
+  return `${base}/${locale}${path}`;
+}
+
+function buildAlternates(base: string, path = ''): NonNullable<MetadataRoute.Sitemap[number]['alternates']> {
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, locale) => {
+    acc[toHreflang(locale)] = localizedUrl(base, locale, path);
+    return acc;
+  }, {});
+
+  return {
+    languages: {
+      ...languages,
+      'x-default': localizedUrl(base, DEFAULT_LOCALE, path),
+    },
+  };
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -56,14 +84,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = [];
 
-  // Static list page entries: per locale × `/sellers`
-  for (const locale of SUPPORTED_LOCALES) {
-    entries.push({
-      url: `${base}/${locale}/sellers`,
-      lastModified,
-      changeFrequency: 'weekly',
-      priority: 0.8
-    });
+  // Static localized entries: per active locale with cross-locale alternates.
+  for (const route of STATIC_LOCALIZED_ROUTES) {
+    for (const locale of SUPPORTED_LOCALES) {
+      entries.push({
+        url: localizedUrl(base, locale, route),
+        lastModified,
+        changeFrequency: route === '' ? 'daily' : 'weekly',
+        priority: route === '' ? 1 : route === '/sellers' ? 0.8 : 0.6,
+        alternates: buildAlternates(base, route),
+      });
+    }
   }
 
   // Dynamic detail entries: per locale × per active seller handle
@@ -78,10 +109,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const seller of sellers) {
       if (!seller.handle) continue;
       entries.push({
-        url: `${base}/${locale}/sellers/${seller.handle}`,
+        url: localizedUrl(base, locale, `/sellers/${seller.handle}`),
         lastModified,
         changeFrequency: 'monthly',
-        priority: 0.6
+        priority: 0.6,
+        alternates: buildAlternates(base, `/sellers/${seller.handle}`),
       });
     }
   }

@@ -32,6 +32,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { PaymentStatusPageContent } from '@/components/sections/PaymentStatusPageContent/PaymentStatusPageContent';
 
 // CRITICAL: force-dynamic — payment status is volatile; no shared ISR cache.
@@ -60,6 +61,10 @@ export default async function PaymentStatusPage(props: Props) {
       id="main-content"
       className="container py-8"
     >
+      <StorefrontI18nLongContentProbe
+        locale={params.locale}
+        surface="payment-status"
+      />
       <PaymentStatusPageContent orderId={params.id} />
     </main>
   );

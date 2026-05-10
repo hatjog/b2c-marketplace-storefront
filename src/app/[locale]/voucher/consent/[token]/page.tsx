@@ -33,6 +33,8 @@ interface ConsentPageProps {
   params: Promise<{ locale: string; token: string }>;
 }
 
+type NativeFormAction = (formData: FormData) => void | Promise<void>;
+
 export async function generateMetadata({ params }: ConsentPageProps): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'voucher.consent' });
@@ -53,6 +55,8 @@ export default async function VoucherConsentPage({
   const { locale, token } = await params;
   const t = await getTranslations({ locale, namespace: 'voucher.consent' });
   const privacyPolicyHref = `/${locale}/polityka-prywatnosci`;
+  const grantConsentAction = grantConsent as unknown as NativeFormAction;
+  const withdrawConsentAction = withdrawConsent as unknown as NativeFormAction;
 
   return (
     <main
@@ -64,15 +68,8 @@ export default async function VoucherConsentPage({
 
       {/* No-JS fallback: server-rendered <form> identical to JS path. */}
       <noscript>
-        {/*
-          eslint-disable-next-line @typescript-eslint/no-explicit-any
-          Upstream: React/Next.js `<form action>` types require `(fd: FormData) => void | Promise<void>`;
-          Server Actions that return a structured result (ConsentActionResult) cannot satisfy this
-          without a void-wrapper — and a void-wrapper would suppress the structured result.
-          The no-JS path does not consume the return value; cast is safe and intentional.
-        */}
         <form
-          action={grantConsent as any}
+          action={grantConsentAction}
           method="POST"
           className="flex flex-col gap-4 rounded-sm border border-tertiary p-4"
         >
@@ -132,13 +129,8 @@ export default async function VoucherConsentPage({
       />
 
       {/* Withdrawal symmetry — per UX-DR30. Always-visible withdraw form. */}
-      {/*
-        eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Same upstream constraint as grantConsent above: Next.js form action types
-        require void return; withdrawConsent returns ConsentActionResult.
-      */}
       <form
-        action={withdrawConsent as any}
+        action={withdrawConsentAction}
         method="POST"
         className="rounded-sm border border-tertiary p-4"
       >

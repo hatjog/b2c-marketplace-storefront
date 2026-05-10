@@ -224,17 +224,12 @@ test("StyleSectionBlock: returns null when there are no valid items", () => {
 });
 
 test("HeroBlock: renders fallback image when all content fields are empty but fallback exists", () => {
-  const element = HeroBlock({
-    section: {
-      heading: "",
-      paragraph: "",
-      image: null,
-      buttons: [],
-    },
-  });
+  const source = read("src/components/blocks/HeroBlock.tsx");
 
-  // With hardcoded fallback image, HeroBlock still renders (graceful degradation)
-  assert.ok(element, "HeroBlock should render with fallback image even when content is empty");
+  // Source-based because HeroBlock is an async server component that calls next-intl getTranslations().
+  assert.match(source, /getImageUrl\(section\.image,\s*['"]\/images\/hero\/Image\.jpg['"]/);
+  assert.match(source, /if \(imageUrl\) \{/);
+  assert.match(source, /<Hero[\s\S]*image=\{imageUrl\}/);
 });
 
 test("BannerSection: renders payload label, href and image props", () => {

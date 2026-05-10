@@ -428,7 +428,9 @@
     "orders": "Bestellungen",
     "settings": "Einstellungen",
     "no_orders": "Keine Bestellungen",
-    "no_orders_message": "Sie haben noch keine Bestellung aufgegeben. Sobald Sie es tun, erscheint sie hier."
+    "no_orders_message": "Sie haben noch keine Bestellung aufgegeben. Sobald Sie es tun, erscheint sie hier.",
+    "welcome_heading": "Willkommen, {firstName}",
+    "welcome_subheading": "Ihr Konto ist einsatzbereit."
   },
   "blog": {
     "title": "Blog",
@@ -490,11 +492,17 @@
   "page": {
     "cart_title": "Warenkorb",
     "cart_description": "Überprüfen Sie die Artikel in Ihrem Warenkorb und fahren Sie zur Kasse fort.",
+    "checkout_title": "Kasse",
+    "checkout_description": "Prüfen Sie Ihre Bestelldaten und schließen Sie den Kauf sicher ab.",
     "loading": "Wird geladen..."
   },
   "legal": {
     "title_privacy": "Datenschutzrichtlinie",
     "title_regulamin": "Nutzungsbedingungen",
+    "title_zasady": "Gutscheinbedingungen",
+    "regulamin_description": "BonBeauty Nutzungsbedingungen — Seite in Vorbereitung.",
+    "privacy_description": "BonBeauty Datenschutzrichtlinie — Informationen zur Verarbeitung personenbezogener Daten gemäß DSGVO.",
+    "zasady_description": "BonBeauty Gutschein-Einlösebedingungen.",
     "coming_soon": "Seite in Vorbereitung",
     "coming_soon_description": "Die Nutzungsbedingungen werden noch ausgearbeitet. Bitte kontaktieren Sie uns bei Fragen.",
     "contact_email": "kontakt@bonbeauty.pl",
@@ -576,6 +584,8 @@
     }
   },
   "confirmation": {
+    "meta_title": "Bestellung bestätigt",
+    "meta_description": "Ihre BonBeauty-Bestellung wurde entgegengenommen.",
     "loading": "Wird geladen...",
     "not_found": "Bestellung nicht gefunden",
     "generic_title": "Vielen Dank. Ihre Bestellung wurde entgegengenommen.",

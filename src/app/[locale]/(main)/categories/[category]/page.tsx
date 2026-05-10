@@ -6,13 +6,13 @@ import { notFound } from 'next/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumbs } from '@/components/atoms';
+import { Breadcrumbs, StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
+import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { getCategoryByHandle } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
-import { listRegions } from '@/lib/data/regions';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { toHreflang } from '@/lib/helpers/hreflang';
@@ -36,21 +36,10 @@ export async function generateMetadata({
     return {};
   }
 
-  let languages: Record<string, string> = {};
-  try {
-    const regions = await listRegions();
-    const locales = Array.from(
-      new Set((regions || []).flatMap(r => r.countries?.map(c => c.iso_2) || []))
-    ) as string[];
-    languages = locales.reduce<Record<string, string>>((acc, code) => {
-      acc[toHreflang(code)] = `${baseUrl}/${code}/categories/${categoryHandle}`;
-      return acc;
-    }, {});
-  } catch {
-    languages = {
-      [toHreflang(locale)]: `${baseUrl}/${locale}/categories/${categoryHandle}`
-    };
-  }
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
+    acc[toHreflang(code)] = `${baseUrl}/${code}/categories/${categoryHandle}`;
+    return acc;
+  }, {});
 
   const seo = resolveGpSeoMetadata(
     cat.metadata as Record<string, unknown> | null | undefined
@@ -74,7 +63,7 @@ export async function generateMetadata({
       canonical,
       languages: {
         ...languages,
-        'x-default': `${baseUrl}/categories/${categoryHandle}`
+        'x-default': `${baseUrl}/pl/categories/${categoryHandle}`
       }
     },
     robots: { index: true, follow: true },
@@ -158,6 +147,10 @@ async function Category({
 
   return (
     <main id="main-content" className="container">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="category-detail"
+      />
       <Script
         id="ld-breadcrumbs-category"
         type="application/ld+json"

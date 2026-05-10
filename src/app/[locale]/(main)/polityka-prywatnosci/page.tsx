@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
 
 export const dynamic = 'force-static';
@@ -276,10 +278,10 @@ function loadPrivacyPolicyContent(): { nodes: ReactNode[]; lastUpdated: string }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('legal');
   return {
-    title: 'Polityka Prywatności | BonBeauty',
-    description:
-      'Polityka prywatności BonBeauty — informacja o przetwarzaniu danych osobowych zgodnie z RODO.',
+    title: t('title_privacy'),
+    description: t('privacy_description'),
     robots: { index: false, follow: false }
   };
 }
@@ -297,6 +299,10 @@ export default async function PolitykaPrywatnosciPage({
   return (
     <LegalPageLayout>
       <article data-testid="privacy-policy-content">
+        <StorefrontI18nLongContentProbe
+          locale={locale}
+          surface="legal-privacy"
+        />
         <header style={{ marginBottom: '2rem' }}>
           <h1
             style={{
@@ -351,20 +357,20 @@ export default async function PolitykaPrywatnosciPage({
             {tWL('privacy_cross_link_note')}
           </p>
           <p style={{ marginTop: '0.5rem', fontSize: '0.9375rem' }}>
-            <a
+            <Link
               href={`/${locale}/regulamin`}
               style={{ color: 'var(--text-primary)', textDecoration: 'underline', marginRight: '1rem' }}
               data-testid="privacy-link-regulamin"
             >
               {t('title_regulamin')}
-            </a>
-            <a
+            </Link>
+            <Link
               href={`/${locale}/pomoc`}
               style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}
               data-testid="privacy-link-pomoc"
             >
               {tWL('contact_support')}
-            </a>
+            </Link>
           </p>
         </aside>
       </article>

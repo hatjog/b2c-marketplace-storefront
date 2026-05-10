@@ -11,7 +11,7 @@
  *   - brand variant: variantStyles uses var(--gold-light) and var(--brand-800)
  *   - unavailable: visually distinct (opacity-60 + bg-disabled)
  */
-import * as React from 'react';
+import type * as React from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { Badge } from '../Badge/Badge';
