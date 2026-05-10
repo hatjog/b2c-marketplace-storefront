@@ -17,6 +17,26 @@
  *     (Story 2.9 owns the legal copy; this is a stable reference).
  */
 
+/**
+ * Defensively normalise user-supplied text (e.g. seller names, merchant names)
+ * before threading through aria-labels or visible JSX.
+ *
+ * - Strips C0 control characters (\x00..\x1F) and DEL (\x7F) which AT readers
+ *   may mis-pronounce or which would inject invisible whitespace.
+ * - Trims surrounding whitespace.
+ * - Returns null when the input is null/undefined/empty after sanitisation —
+ *   callers can fall back to placeholder copy.
+ *
+ * Re-review R12 fix: hoisted from SellerProofSurface inline regex so the
+ * VoucherClaritySurface merchant-link aria path uses the same sanitiser.
+ */
+export function cleanText(input: string | null | undefined): string | null {
+  if (typeof input !== 'string') return null;
+  // eslint-disable-next-line no-control-regex
+  const cleaned = input.replace(/[\x00-\x1F\x7F]/g, '').trim();
+  return cleaned.length > 0 ? cleaned : null;
+}
+
 /** Canonical legal/help anchor — Story 2.9 owns the content; we reference it.
  *  These constants are RELATIVE (no locale prefix) — Next.js next-intl
  *  middleware will rewrite them to the active locale at request time when

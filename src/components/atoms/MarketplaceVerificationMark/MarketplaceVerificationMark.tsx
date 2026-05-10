@@ -81,9 +81,13 @@ export function MarketplaceVerificationMark({
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full px-3 py-1',
         isPage
-          // Page surface: muted trust-channel card (token-bound)
-          ? 'border border-[rgba(22,101,52,0.2)] bg-[rgba(22,101,52,0.08)] text-trust'
-          // Hero overlay surface: glass over hero image (original Story 2.2 use)
+          // Page surface: muted trust-channel card (token-bound).
+          // R3 fix: replaced hardcoded rgba() literals with --bb-trust-card-*
+          // tokens from bb-surfaces.css.
+          ? 'border border-[color:var(--bb-trust-card-border)] bg-[color:var(--bb-trust-card-bg)] text-trust'
+          // Hero overlay surface: glass over hero image (original Story 2.2 use).
+          // Tailwind opacity helpers on a neutral colour (white) are acceptable —
+          // they compose against the hero image not the page palette.
           : 'border border-white/20 bg-white/10 text-white/88 backdrop-blur',
         variant === 'compact' ? 'text-[10px]' : 'text-[11px]',
         'font-medium uppercase tracking-[0.2em]',

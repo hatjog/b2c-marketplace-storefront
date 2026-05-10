@@ -189,13 +189,16 @@
       "missing_reviews_label": "No reviews yet",
       "missing_reviews_aria": "Reviews: no data available",
       "missing_address_label": "Address not provided",
-      "partial_note": "This salon has not yet provided all information.",
+      "partial_note": "Full salon profile is being completed.",
       "unavailable_body": "This salon has not yet provided full details. You can browse our partner salons or contact us.",
       "unavailable_cta": "Browse partner salons",
       "seller_link_aria": "View salon profile: {name}",
       "seller_detail_link": "More about this salon",
       "seller_detail_link_aria": "More information about salon {name}",
-      "missing_value_aria": "{label}: not available"
+      "missing_value_aria": "{label}: not available",
+      "partial_cta": "View preliminary salon profile",
+      "partial_cta_aria": "View preliminary salon profile of {name}",
+      "no_handle_fallback_cta": "Browse partner salons"
     }
   },
   "footer": {
@@ -753,14 +756,14 @@
       "refund_policy_link": "View policy",
       "merchant_label": "Salon",
       "merchant_link_aria": "View salon profile: {name}",
-      "status_pending_heading": "Voucher temporarily unavailable",
-      "status_unavailable_heading": "Voucher unavailable",
-      "status_expired_heading": "Voucher expired",
-      "status_recovery_heading": "Order issue",
       "next_action_choose_variant": "Choose another option",
       "next_action_back_to_list": "Back to list",
       "next_action_notify_me": "Notify me",
-      "next_action_contact_salon": "Contact salon"
+      "next_action_contact_salon": "Contact salon",
+      "status_pending_message": "Voucher temporarily unavailable",
+      "status_unavailable_message": "Voucher unavailable",
+      "status_expired_message": "Voucher expired",
+      "status_recovery_message": "Order issue"
     }
   },
   "cross_sell": {
