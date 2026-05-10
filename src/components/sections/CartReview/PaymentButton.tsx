@@ -31,9 +31,14 @@ function isFlagDriftError(error: unknown): boolean {
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart;
   'data-testid': string;
+  /**
+   * Story 2.4: When true, the button is disabled due to missing consent
+   * affirmations (FR60/FR64). Visually distinct from loading/processing state.
+   */
+  consentBlocked?: boolean;
 };
 
-const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': dataTestId }) => {
+const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': dataTestId, consentBlocked = false }) => {
   const notReady =
     !cart ||
     !cart.shipping_address ||
@@ -47,7 +52,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
     case isStripe(paymentSession?.provider_id):
       return (
         <StripePaymentButton
-          notReady={notReady}
+          notReady={notReady || consentBlocked}
           cart={cart}
           data-testid={dataTestId}
         />
@@ -55,7 +60,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
     case isManual(paymentSession?.provider_id):
       return (
         <ManualTestPaymentButton
-          notReady={notReady}
+          notReady={notReady || consentBlocked}
           data-testid={dataTestId}
         />
       );
@@ -64,6 +69,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
         <Button
           disabled
           className="w-full"
+          aria-disabled="true"
         >
           Select a payment method
         </Button>
@@ -173,7 +179,10 @@ const StripePaymentButton = ({
         disabled={disabled || notReady}
         onClick={handlePayment}
         loading={submitting}
-        className="w-full"
+        aria-busy={submitting || undefined}
+        aria-label={submitting ? 'Przesyłanie zamówienia' : undefined}
+        className="w-full min-h-11"
+        data-testid="stripe-pay-button"
       >
         Place order
       </Button>
@@ -226,8 +235,11 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
       <Button
         disabled={notReady}
         onClick={handlePayment}
-        className="w-full"
+        className="w-full min-h-11"
         loading={submitting}
+        aria-busy={submitting || undefined}
+        aria-label={submitting ? 'Przesyłanie zamówienia' : undefined}
+        data-testid="manual-pay-button"
       >
         Place order
       </Button>

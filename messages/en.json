@@ -530,6 +530,45 @@
     "order_set_summary": {
       "heading": "Order split by seller",
       "unknown_seller": "Seller"
+    },
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# item} other {# items}})",
+      "seller_fallback": "Salon"
+    },
+    "consent": {
+      "required_heading": "Required confirmations",
+      "required_summary_error": "Please tick both required confirmations to continue.",
+      "transactional_label": "I consent to the processing of my personal data for order fulfillment in accordance with the",
+      "transactional_privacy_link": "Privacy Policy",
+      "transactional_required_error": "Please confirm data processing consent to continue.",
+      "withdrawal_label": "I have read and acknowledge my right of withdrawal, and accept that this right expires upon service execution with my prior consent. Details:",
+      "withdrawal_policy_link": "Right of Withdrawal",
+      "withdrawal_required_error": "Please confirm the withdrawal acknowledgement to continue.",
+      "withdrawal_status_note": "Your withdrawal right status changes as the service progresses. More information:",
+      "withdrawal_status_link": "Terms & Conditions"
+    },
+    "validation": {
+      "address": {
+        "first_name_required": "First name is required",
+        "last_name_required": "Last name is required",
+        "address_required": "Address is required",
+        "city_required": "City is required",
+        "postal_code_required": "Postal code is required",
+        "country_required": "Country is required",
+        "phone_required": "Phone number is required",
+        "phone_invalid": "Invalid phone number format",
+        "email_required": "Email address is required",
+        "email_invalid": "Invalid email address"
+      },
+      "payment": {
+        "method_required": "Please select a payment method",
+        "card_required": "Card details are required",
+        "unavailable": "This payment method is unavailable for the active market"
+      },
+      "consent": {
+        "transactional_required": "Transactional consent is required",
+        "withdrawal_required": "Acknowledgement of the withdrawal policy is required"
+      }
     }
   },
   "confirmation": {
@@ -865,5 +904,47 @@
       "privacy_cross_link_note": "This policy covers personal data (GDPR Art. 7/17). The right of withdrawal from a voucher purchase (14 days, Polish Consumer Rights Act) is a separate topic — details are in the Terms and on the Help page."
     },
     "cta_blocked_label": "Action paused — requires support"
+  },
+  "payment_status": {
+    "page_title": "Payment status",
+    "page_description": "Check the status of your payment.",
+    "loading": "Checking payment status...",
+    "last_updated": "Last updated: {timestamp}",
+    "last_updated_aria": "Status updated at {timestamp}",
+    "order_ref": "Order: {orderId}",
+    "unavailable_title": "Unable to retrieve payment status",
+    "unavailable_body": "We could not retrieve your order information. Please contact customer support.",
+    "access_denied_title": "You don't have access to this order",
+    "access_denied_body": "You are not authorised to view this order. Please sign in with the account it was placed from, or contact support.",
+    "refreshing": "Checking...",
+    "paid": {
+      "label": "Payment confirmed",
+      "body": "Your payment has been confirmed. Continue to see your order details.",
+      "cta": "Go to order"
+    },
+    "pending_psp_confirmation": {
+      "label": "Payment verification",
+      "body": "Your order is being verified. This may take a few minutes. Please do not close your browser.",
+      "cta": "Check status now",
+      "secondary_cta": "Contact support",
+      "checking": "Verifying..."
+    },
+    "failed": {
+      "label": "Payment failed",
+      "body": "Your payment was unsuccessful. Please try again or return to cart to change your payment method.",
+      "cta": "Try again",
+      "secondary_cta": "Contact support"
+    },
+    "support_required": {
+      "label": "Action required",
+      "body": "Your order requires our attention. Please contact customer support to resolve this.",
+      "cta": "Contact support"
+    },
+    "expired": {
+      "label": "Payment session expired",
+      "body": "Your previous purchase attempt has expired and is closed. You can start over.",
+      "cta": "Return to cart",
+      "secondary_cta": "Contact support"
+    }
   }
 }

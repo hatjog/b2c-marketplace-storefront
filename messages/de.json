@@ -531,6 +531,45 @@
     "order_set_summary": {
       "heading": "Bestellaufteilung nach Verkäufer",
       "unknown_seller": "Verkäufer"
+    },
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# Artikel} other {# Artikel}})",
+      "seller_fallback": "Salon"
+    },
+    "consent": {
+      "required_heading": "Erforderliche Bestätigungen",
+      "required_summary_error": "Bitte bestätigen Sie beide erforderlichen Punkte, um fortzufahren.",
+      "transactional_label": "Ich stimme der Verarbeitung meiner personenbezogenen Daten zur Auftragserfüllung gemäß der",
+      "transactional_privacy_link": "Datenschutzerklärung",
+      "transactional_required_error": "Bitte bestätigen Sie die Einwilligung zur Datenverarbeitung, um fortzufahren.",
+      "withdrawal_label": "Ich habe das Widerrufsrecht gelesen und nehme zur Kenntnis, dass dieses Recht nach Erbringung der Dienstleistung mit meiner vorherigen Zustimmung erlischt. Details:",
+      "withdrawal_policy_link": "Widerrufsrecht",
+      "withdrawal_required_error": "Bitte bestätigen Sie die Kenntnisnahme des Widerrufsrechts, um fortzufahren.",
+      "withdrawal_status_note": "Ihr Widerrufsstatus ändert sich mit dem Fortschritt der Dienstleistung. Mehr Informationen:",
+      "withdrawal_status_link": "Allgemeine Geschäftsbedingungen"
+    },
+    "validation": {
+      "address": {
+        "first_name_required": "Vorname ist erforderlich",
+        "last_name_required": "Nachname ist erforderlich",
+        "address_required": "Adresse ist erforderlich",
+        "city_required": "Stadt ist erforderlich",
+        "postal_code_required": "Postleitzahl ist erforderlich",
+        "country_required": "Land ist erforderlich",
+        "phone_required": "Telefonnummer ist erforderlich",
+        "phone_invalid": "Ungültiges Telefonnummernformat",
+        "email_required": "E-Mail-Adresse ist erforderlich",
+        "email_invalid": "Ungültige E-Mail-Adresse"
+      },
+      "payment": {
+        "method_required": "Bitte wählen Sie eine Zahlungsmethode",
+        "card_required": "Kartendaten sind erforderlich",
+        "unavailable": "Diese Zahlungsmethode ist für den aktiven Markt nicht verfügbar"
+      },
+      "consent": {
+        "transactional_required": "Transaktionszustimmung ist erforderlich",
+        "withdrawal_required": "Bestätigung der Widerrufspolitik ist erforderlich"
+      }
     }
   },
   "confirmation": {
@@ -866,5 +905,47 @@
       "privacy_cross_link_note": "Diese Richtlinie betrifft personenbezogene Daten (DSGVO Art. 7/17). Das Widerrufsrecht beim Gutscheinkauf (14 Tage, polnisches Verbraucherrechtsgesetz) ist ein separates Thema — Details finden Sie in den AGB und auf der Hilfeseite."
     },
     "cta_blocked_label": "Aktion pausiert — Support erforderlich"
+  },
+  "payment_status": {
+    "page_title": "Zahlungsstatus",
+    "page_description": "Überprüfen Sie den Status Ihrer Zahlung.",
+    "loading": "Zahlungsstatus wird überprüft...",
+    "last_updated": "Zuletzt aktualisiert: {timestamp}",
+    "last_updated_aria": "Status aktualisiert um {timestamp}",
+    "order_ref": "Bestellung: {orderId}",
+    "unavailable_title": "Zahlungsstatus nicht abrufbar",
+    "unavailable_body": "Ihre Bestellinformationen konnten nicht abgerufen werden. Bitte wenden Sie sich an den Kundendienst.",
+    "access_denied_title": "Kein Zugriff auf diese Bestellung",
+    "access_denied_body": "Sie sind nicht berechtigt, diese Bestellung anzuzeigen. Bitte melden Sie sich mit dem Konto an, von dem die Bestellung aufgegeben wurde, oder kontaktieren Sie den Kundendienst.",
+    "refreshing": "Überprüfe...",
+    "paid": {
+      "label": "Zahlung bestätigt",
+      "body": "Ihre Zahlung wurde bestätigt. Weiter zu den Bestelldetails.",
+      "cta": "Zur Bestellung"
+    },
+    "pending_psp_confirmation": {
+      "label": "Zahlungsverifizierung",
+      "body": "Ihre Bestellung wird verifiziert. Dies kann einige Minuten dauern. Bitte schließen Sie Ihren Browser nicht.",
+      "cta": "Status jetzt prüfen",
+      "secondary_cta": "Support kontaktieren",
+      "checking": "Wird verifiziert..."
+    },
+    "failed": {
+      "label": "Zahlung fehlgeschlagen",
+      "body": "Ihre Zahlung war nicht erfolgreich. Bitte versuchen Sie es erneut oder kehren Sie zum Warenkorb zurück, um die Zahlungsmethode zu ändern.",
+      "cta": "Erneut versuchen",
+      "secondary_cta": "Support kontaktieren"
+    },
+    "support_required": {
+      "label": "Handlung erforderlich",
+      "body": "Ihre Bestellung erfordert unsere Aufmerksamkeit. Bitte wenden Sie sich an den Kundendienst.",
+      "cta": "Support kontaktieren"
+    },
+    "expired": {
+      "label": "Zahlungssitzung abgelaufen",
+      "body": "Ihr vorheriger Kaufversuch ist abgelaufen und geschlossen. Sie können von vorne beginnen.",
+      "cta": "Zum Warenkorb zurück",
+      "secondary_cta": "Support kontaktieren"
+    }
   }
 }
