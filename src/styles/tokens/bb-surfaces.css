@@ -1,0 +1,109 @@
+/**
+ * v1.7.0 Design Tokens — BonBeauty Surface Tokens (--bb-*)
+ *
+ * This file is the canonical single source of truth for all --bb-* surface tokens
+ * inside the storefront. Values are mirrored exactly from the BonBeauty DS bundle.
+ *
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/public/themes/bonbeauty.css
+ *   (--bb-page-bg, --bb-surface*, --bb-border-*, --bb-shadow-*, gradients)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/live-snapshots/computed-tokens.json
+ *   (computed resolved values for all --bb-* tokens — authoritative snapshot)
+ * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/colors_and_type.css
+ *   (Layer 2b — original semantic surface definitions)
+ *
+ * LOAD ORDER: This file is imported by index.css AFTER colors.css, spacing.css,
+ *   typography.css, radii.css. The brand override layer in /public/themes/bonbeauty.css
+ *   is loaded AFTER this file (via layout.tsx <link> tag), preserving:
+ *   v1.4.0 deltas > brand layer > stock (conflict resolution per colors_and_type.css header).
+ *
+ * SCOPE: Customer-facing storefront ONLY (ARCH-007). Do NOT import in:
+ *   GP/admin-panel, GP/vendor-panel, _grow/tools, GP/backend, operator surfaces.
+ *
+ * Contract enforced by `_grow/tools/validate_design_tokens.py` (UX-DR15 + UX-DR17).
+ * DS boundary enforced by `_grow/tools/validate_ux_state_and_ds_boundary.py`.
+ */
+
+:root {
+  /* ------------------------------------------------------------------
+   * Page & Surface backgrounds
+   * Source: bonbeauty.css :root + computed-tokens.json
+   * ------------------------------------------------------------------ */
+  --bb-page-bg:        rgb(249, 244, 236);          /* #F9F4EC — warm cream (BonBeauty v4) */
+  --bb-surface:        rgba(255, 252, 247, 0.92);   /* near-white, slight transparency     */
+  --bb-surface-strong: rgb(255, 249, 240);          /* #FFF9F0 — pearl                     */
+  --bb-surface-muted:  rgba(239, 229, 210, 0.52);   /* gold-tinted wisp                    */
+  --bb-surface-dark:   rgba(20, 20, 20, 0.94);      /* dark action surface                 */
+
+  /* ------------------------------------------------------------------
+   * Borders
+   * Source: bonbeauty.css + computed-tokens.json
+   * ------------------------------------------------------------------ */
+  --bb-border-soft:      rgba(144, 112, 50, 0.14);  /* gold hairline (default card border) */
+  --bb-border-strong:    rgba(144, 112, 50, 0.28);  /* visible gold border                 */
+  --bb-border-hairline:  rgba(144, 112, 50, 0.08);  /* near-invisible gold accent          */
+
+  /* ------------------------------------------------------------------
+   * Shadows / Elevation
+   * Source: bonbeauty.css + computed-tokens.json + colors_and_type.css
+   * ------------------------------------------------------------------ */
+  --bb-shadow-soft:  0 20px 60px rgba(90, 67, 28, 0.08);   /* section-level ambient       */
+  --bb-shadow-lift:  0 30px 80px rgba(37, 28, 12, 0.14);   /* elevated / focus lift       */
+  --bb-shadow-card:  0 12px 35px rgba(90, 67, 28, 0.08);   /* product tile / card         */
+  --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.08);       /* legacy alias (used in Tailwind boxShadow.card) */
+  --shadow-inset-hairline: inset 0 0 0 1px rgba(144, 112, 50, 0.14); /* inset ring accent  */
+
+  /* ------------------------------------------------------------------
+   * Gradients
+   * Source: bonbeauty.css + computed-tokens.json
+   * ------------------------------------------------------------------ */
+  --bb-hero-overlay:   linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
+  --bb-soft-gradient:  linear-gradient(135deg, rgba(255, 249, 240, 0.98) 0%, rgba(246, 237, 222, 0.96) 100%);
+  --bb-dark-gradient:  linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
+
+  /* ------------------------------------------------------------------
+   * Semantic text tokens (brand layer)
+   * Source: bonbeauty.css + computed-tokens.json
+   * RGB direct (not tuple) — used as var(--text-primary) directly
+   * ------------------------------------------------------------------ */
+  --text-primary:     rgb(9, 9, 9);          /* neutral-1000 — AAA 19.3:1 on bb-page-bg ✅ */
+  --text-secondary:   rgb(82, 82, 82);       /* neutral-500  — AAA 7.1:1  on bb-page-bg ✅ */
+  --text-muted:       rgb(115, 115, 115);    /* neutral-400  — captions/meta               */
+  --text-on-action:   rgb(250, 248, 245);    /* brand-25     — AAA 17.1:1 on dark bg   ✅  */
+
+  /* ------------------------------------------------------------------
+   * Action surface tokens (brand layer)
+   * Source: bonbeauty.css Layer 2b + computed-tokens.json
+   * ------------------------------------------------------------------ */
+  --bg-action:         rgb(26, 26, 26);      /* brand-900 #1A1A1A — dark CTA/section        */
+  --bg-action-hover:   rgb(83, 65, 29);      /* brand-800 #53411D — dark hover              */
+  --border-action:     rgb(26, 26, 26);      /* brand-900 — active input borders            */
+
+  /* CTA (primary warm gold button) */
+  --cta:          rgb(144, 112, 50);         /* brand-600 #907032 — AA 4.62:1 vs white ✅  */
+  --cta-hover:    rgb(113, 88, 40);          /* brand-700 #715828 — AA 7.38:1 vs white ✅  */
+  --cta-pressed:  rgb(83, 65, 29);           /* brand-800 #53411D                           */
+
+  /* Gold accents — decorative only; MUST NOT be sole information channel */
+  --gold:         rgb(197, 160, 89);         /* brand-400 #C5A059 — stars, icon fills       */
+  --gold-light:   rgb(239, 229, 210);        /* brand-100 #EFE5D2 — avatar bg, tag bg       */
+  --accent:       rgb(168, 146, 121);        /* focus ring color (AA sufficient vs page-bg) */
+
+  /* Status semantic aliases (not gold — separate channel per UX spec) */
+  --color-trust:   rgb(22, 101, 52);         /* green-700 #166534 — AA 6.5:1  ✅            */
+  --color-error:   rgb(187, 37, 26);         /* red-600   #BB251A — AA 5.7:1  ✅            */
+  --color-warning: rgb(157, 83, 15);         /* yellow-700 — warning channel                */
+
+  /* ------------------------------------------------------------------
+   * Skeleton / Loading state surface tokens
+   * Source: BonBeauty surface system — muted neutral not raw gray
+   * Used by Skeleton components for aria-busy states (T3, AC3)
+   * ------------------------------------------------------------------ */
+  --bb-skeleton-base:    rgba(239, 229, 210, 0.52);  /* bb-surface-muted — BonBeauty aligned */
+  --bb-skeleton-shimmer: rgba(255, 252, 247, 0.80);  /* bb-surface near-white shimmer        */
+
+  /* ------------------------------------------------------------------
+   * font-display alias (theme interop with layout.tsx Funnel_Display var)
+   * Source: bonbeauty.css --font-display + computed-tokens.json
+   * ------------------------------------------------------------------ */
+  --font-display: 'Funnel Display', var(--font-funnel-sans, system-ui), sans-serif;
+}

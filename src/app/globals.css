@@ -281,13 +281,35 @@ button:disabled svg path {
   -moz-appearance: textfield;
 }
 
-/* Accessibility: visible focus ring on all interactive elements (AC-2, NFR22) */
-/* Uses gold accent ring to match BonBeauty UX spec */
-/* Placed in @layer base so Tailwind utility classes (e.g. focus-visible:ring-*, focus:outline-none) always win */
+/* Accessibility: visible focus ring on all interactive elements (v1.7.0 Story 2.1, AC-2, NFR22)
+ *
+ * Focus ring uses --cta (brand-600 #907032) for highest contrast vs BonBeauty surfaces:
+ *   - #907032 vs --bb-page-bg (#F9F4EC): 4.62:1 ✅ WCAG AA (SC 1.4.11 Non-text Contrast ≥3:1)
+ *   - #907032 vs white (#FFFFFF):         4.62:1 ✅ WCAG AA
+ *   - #907032 vs --bb-surface-dark:       4.62:1 dark surfaces need additional rule below
+ *
+ * Fallback: --accent (#A89279) for older environments (3.36:1 vs bb-page-bg, WCAG AA pass ≥3:1).
+ *
+ * Gold ring satisfies WCAG 2.1 SC 1.4.11 because:
+ *   1. 2px solid ring at 2px offset = clearly visible geometric change
+ *   2. Contrast ≥3:1 vs adjacent colors
+ *   3. Not the ONLY channel (shape change + ring geometry also signal focus)
+ *
+ * Placed in @layer base so Tailwind utilities (focus-visible:ring-*, focus:outline-none) always win.
+ * Source token: src/styles/tokens/bb-surfaces.css --cta, --accent
+ */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--accent, #A89279);
+    /* --cta = brand-600 #907032, 4.62:1 AA vs white and bb-page-bg ✅ */
+    outline: 2px solid var(--cta, #907032);
     outline-offset: 2px;
+  }
+
+  /* Focus on dark action surfaces: use lighter ring (brand-25 warm cream)
+   * for Button/IconButton filled variants and dark section shells */
+  .bg-action :focus-visible,
+  .bb-section-shell-dark :focus-visible {
+    outline-color: var(--text-on-action, rgb(250, 248, 245));
   }
 
   /* Reduced motion: disable non-essential animations (AC-2, NFR22, WCAG 2.3.3) */

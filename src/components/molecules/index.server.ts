@@ -1,4 +1,7 @@
 export { Breadcrumbs } from './Breadcrumbs';
+// v1.7.0 Story 2.1: BonBeauty DS shared state surface (empty/error/unavailable)
+export { StateCard } from './StateCard/StateCard';
+export type { StateCardVariant } from './StateCard/StateCard';
 export { CartDropdownItem } from './CartDropdownItem/CartDropdownItem';
 export { SanitizedHTML } from './SanitizedHTML/SanitizedHTML';
 export { Dropdown } from './Dropdown/Dropdown';
