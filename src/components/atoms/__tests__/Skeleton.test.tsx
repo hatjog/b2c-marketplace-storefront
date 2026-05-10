@@ -43,7 +43,10 @@ describe('Skeleton', () => {
 
     it('has aria-busy="true"', () => {
       const root = renderSkeleton();
-      expect(root.props['aria-busy']).toBe('true');
+      // v1.7.0 Story 2.1 review-2 fix (LOW/3): tolerant assertion — accepts both
+      // string and boolean forms of aria-busy since JSX `aria-busy="true"` yields
+      // string and `aria-busy={true}` yields boolean in props.
+      expect(String(root.props['aria-busy'])).toBe('true');
     });
 
     it('has default aria-label "Ładowanie..."', () => {

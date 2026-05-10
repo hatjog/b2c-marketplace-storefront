@@ -30,7 +30,9 @@ describe('Badge', () => {
       ['warning', 'bg-warning-secondary'],
       ['info', 'bg-blue-50'],
       ['muted', 'bg-secondary'],
-      ['unavailable', 'bg-disabled'],
+      // v1.7.0 Story 2.1 review-2 fix (HIGH/2): unavailable now uses the warning
+      // channel + dashed border (was bg-disabled — same antipattern fixed on Button).
+      ['unavailable', 'bg-warning-secondary'],
     ] as const)('variant=%s wires class %s', (variant, expectedClass) => {
       const rendered = callBadge({ children: 'X', variant });
       expect(String(rendered.props.className)).toContain(expectedClass);
@@ -69,9 +71,31 @@ describe('Badge', () => {
   });
 
   describe('unavailable variant (Story 0.9 contract — visually distinct)', () => {
-    it('includes opacity-60 reduce signal', () => {
+    // v1.7.0 Story 2.1 review-2 fix (HIGH/2): unavailable now uses the warning
+    // channel + dashed border (non-color signal) — same pattern as Button.unavailable.
+    it('uses warning-channel surface (not disabled token)', () => {
       const rendered = callBadge({ children: 'X', variant: 'unavailable' });
-      expect(String(rendered.props.className)).toContain('opacity-60');
+      const className = String(rendered.props.className);
+      expect(className).toContain('bg-warning-secondary');
+      expect(className).toContain('text-warning');
+    });
+
+    it('includes a dashed border as a non-color signal', () => {
+      const rendered = callBadge({ children: 'X', variant: 'unavailable' });
+      expect(String(rendered.props.className)).toContain('border-dashed');
+    });
+
+    it('produces a distinct className from the muted variant', () => {
+      const unavailable = callBadge({ children: 'X', variant: 'unavailable' });
+      const muted = callBadge({ children: 'X', variant: 'muted' });
+      expect(unavailable.props.className).not.toEqual(muted.props.className);
+    });
+
+    it('no longer reuses the bg-disabled/text-disabled disabled-style surface', () => {
+      const rendered = callBadge({ children: 'X', variant: 'unavailable' });
+      const className = String(rendered.props.className);
+      expect(className).not.toContain('bg-disabled');
+      expect(className).not.toContain('text-disabled');
     });
   });
 });

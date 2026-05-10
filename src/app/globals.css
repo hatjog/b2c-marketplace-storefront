@@ -318,6 +318,18 @@ button:disabled svg path {
     outline-offset: 2px;
   }
 
+  /* v1.7.0 Story 2.1 review-2 fix (LOW/1): aria-disabled="true" carries the
+   * "interactive but currently not actionable" semantic (matches Button's
+   * `unavailable` variant). The JS-level onClick guard in Button blocks
+   * synthetic clicks; this CSS rule provides a cross-cutting visual cue
+   * (cursor) for any aria-disabled element so consumers don't have to remember
+   * to add `cursor-not-allowed` per-component. We intentionally do NOT add
+   * pointer-events: none here because that would defeat focusability and the
+   * SR contract that requires aria-disabled elements remain in the tab order. */
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   /* Focus on dark action surfaces: use lighter ring (--text-on-action — warm cream
    * brand-25). 17.1:1 vs #1A1A1A bg ≫ AC3 4.5:1 claim ✅.
    *
