@@ -28,6 +28,8 @@
 
 import type { HttpTypes } from '@medusajs/types';
 
+import { getTranslations } from 'next-intl/server';
+
 import {
   ProductAdditionalAttributes,
   ProductDetailsFooter,
@@ -43,8 +45,10 @@ import {
   SellerSelectorCartBridge,
   SoleVendorBadge,
 } from '@/components/cells/SellerSelector';
-import { TrustSignals } from '@/components/organisms/TrustSignals/TrustSignals';
-import { VoucherValidityInfo } from '@/components/molecules';
+// F9 fix: TrustSignals + VoucherValidityInfo were imported but never used after
+// the Story 2.3 retrofit (VoucherClaritySurface now owns those concerns).
+// Story Dev Notes had claimed they were "consumed as slots inside VoucherClaritySurface"
+// but in fact the new surface fully replaces them. Imports removed.
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -54,7 +58,7 @@ import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtim
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import {
-  deriveVoucherClarityVariant,
+  derivePdpVoucherClarityVariant,
   resolveValidityWording,
   type VoucherClarityVariant,
 } from '@/lib/voucher/voucher-copy';
@@ -127,20 +131,60 @@ export const ProductDetails = async ({
   // ── Story 2.3: Derive VoucherClaritySurface variant from product state ──
   // T4: state-change consistency — variant drives the surface display,
   // not ad-hoc inline conditions scattered through JSX.
-  const { cheapestVariant } = getProductPrice({ product });
-  const hasPrice = cheapestVariant !== null && !!cheapestVariant.calculated_price;
+  // F16 fix: getProductPrice throws on missing product.id — guard so PDP
+  // degrades to error variant instead of bubbling 500 to error.tsx (UX-DR18).
+  let hasPrice = false;
+  try {
+    const { cheapestVariant } = getProductPrice({ product });
+    hasPrice = cheapestVariant !== null && !!cheapestVariant.calculated_price;
+  } catch {
+    hasPrice = false;
+  }
 
-  const voucherVariant: VoucherClarityVariant = deriveVoucherClarityVariant({
+  const voucherVariant: VoucherClarityVariant = derivePdpVoucherClarityVariant({
     hasPrice,
     isVendorUnavailable: showNoActiveVendorsFallback,
   });
 
+  // F2 fix: status messages + next-action labels routed through next-intl
+  // instead of hardcoded PL literals (anti-pattern).
+  const tVoucher = await getTranslations('voucher.clarity');
+  const voucherStatus =
+    voucherVariant === 'warning'
+      ? {
+          kind: 'unavailable' as const,
+          message: tVoucher('status_pending_heading'),
+          nextAction: {
+            href: `/${locale}/categories`,
+            label: tVoucher('next_action_back_to_list'),
+          },
+        }
+      : voucherVariant === 'error'
+        ? {
+            kind: 'expired' as const,
+            message: tVoucher('status_unavailable_heading'),
+            nextAction: {
+              href: `/${locale}/categories`,
+              label: tVoucher('next_action_back_to_list'),
+            },
+          }
+        : undefined;
+
   // Resolve validity wording from voucher-copy.ts (shared with Stories 2.4/2.5/2.6)
   const validityWording = resolveValidityWording(validityPeriod, defaultValidityInfo);
 
-  // Realization rules — sourced from trust signals (market config pdp_trust_signals).
-  // These represent "how/where the voucher can be redeemed" — aligned with UX-DR7.
-  const realizationRules = trustSignals.map((s) => ({ text: s }));
+  // Realization rules — F18 fix: prefer product-level gpMeta.realization_rules
+  // when present (Story 2.9 SSOT direction); fall back to market-config
+  // pdp_trust_signals (existing v1.7.0 path). Both represent "how/where the
+  // voucher can be redeemed" — aligned with UX-DR7.
+  const productRules = Array.isArray(gpMeta?.realization_rules)
+    ? (gpMeta.realization_rules.filter(
+        (s): s is string => typeof s === 'string' && s.trim().length > 0,
+      ) as string[])
+    : null;
+  const realizationRulesSource =
+    productRules && productRules.length > 0 ? productRules : trustSignals;
+  const realizationRules = realizationRulesSource.map((s) => ({ text: s }));
 
   // Seller data for SellerProofSurface
   const seller = product.seller;
@@ -151,7 +195,12 @@ export const ProductDetails = async ({
       ? sellerReviews.reduce((sum: number, r: { rating?: number }) => sum + Number(r?.rating ?? 0), 0) / reviewCount
       : null;
 
-  // VendorBadge as identity slot inside SellerProofSurface
+  // VendorBadge as identity slot inside SellerProofSurface.
+  // F25 note: when products array is missing, fall back to 0; VendorBadge's
+  // current API requires `number`. Promoting productCount to optional is out of
+  // scope for Story 2.3 (touches molecules/VendorBadge ownership) — flagged as
+  // a follow-up. Pluralizer renders "0 produktów" which is technically truthful
+  // when seller has no products yet.
   const sellerIdentitySlot =
     seller?.name && seller?.handle ? (
       <VendorBadge
@@ -160,7 +209,7 @@ export const ProductDetails = async ({
           name: seller.name,
           handle: seller.handle,
           photoUrl: seller.photo || null,
-          productCount: seller.products?.length ?? 0,
+          productCount: Array.isArray(seller.products) ? seller.products.length : 0,
         }}
       />
     ) : null;
@@ -212,27 +261,7 @@ export const ProductDetails = async ({
         merchantName={seller?.name}
         merchantHandle={seller?.handle}
         variant={voucherVariant}
-        status={
-          voucherVariant === 'warning'
-            ? {
-                kind: 'unavailable',
-                message: 'Voucher tymczasowo niedostępny',
-                nextAction: {
-                  href: `/${locale}/categories`,
-                  label: 'Wróć do listy',
-                },
-              }
-            : voucherVariant === 'error'
-              ? {
-                  kind: 'expired',
-                  message: 'Voucher niedostępny',
-                  nextAction: {
-                    href: `/${locale}/categories`,
-                    label: 'Wróć do listy',
-                  },
-                }
-              : undefined
-        }
+        status={voucherStatus}
       />
 
       {/* ── Story 2.3: SellerProofSurface replaces ProductDetailsSeller + standalone VendorBadge ── */}

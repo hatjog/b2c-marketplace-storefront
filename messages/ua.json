@@ -179,9 +179,9 @@
       "indicator_tooltip": "Цей продукт пропонується {count} партнерськими салонами"
     },
     "proof": {
-      "heading_complete": "Про цей салон",
-      "heading_partial": "Про цей салон",
-      "heading_unavailable": "Про цей салон",
+      "heading_complete": "Перевірений салон",
+      "heading_partial": "Салон — попередня інформація",
+      "heading_unavailable": "Салон — інформація скоро",
       "verification_label": "Перевірений салон BonBeauty",
       "verification_pending_label": "Перевірка триває",
       "rating_label": "Оцінка",
@@ -195,7 +195,8 @@
       "unavailable_cta": "Переглянути партнерські салони",
       "seller_link_aria": "Перейти до профілю салону: {name}",
       "seller_detail_link": "Більше про цей салон",
-      "seller_detail_link_aria": "Більше інформації про салон {name}"
+      "seller_detail_link_aria": "Більше інформації про салон {name}",
+      "missing_value_aria": "{label}: даних немає"
     }
   },
   "footer": {

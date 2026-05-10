@@ -178,9 +178,9 @@
       "indicator_tooltip": "Ten produkt oferowany przez {count} salonów partnerskich"
     },
     "proof": {
-      "heading_complete": "Informacje o salonie",
-      "heading_partial": "Informacje o salonie",
-      "heading_unavailable": "Informacje o salonie",
+      "heading_complete": "Zweryfikowany salon",
+      "heading_partial": "Salon — informacje wstępne",
+      "heading_unavailable": "Salon — informacje wkrótce",
       "verification_label": "Zweryfikowany salon BonBeauty",
       "verification_pending_label": "Weryfikacja w toku",
       "rating_label": "Ocena",
@@ -194,7 +194,8 @@
       "unavailable_cta": "Przeglądaj salony partnerskie",
       "seller_link_aria": "Przejdź do profilu salonu {name}",
       "seller_detail_link": "Więcej o salonie",
-      "seller_detail_link_aria": "Więcej informacji o salonie {name}"
+      "seller_detail_link_aria": "Więcej informacji o salonie {name}",
+      "missing_value_aria": "{label}: brak danych"
     }
   },
   "footer": {

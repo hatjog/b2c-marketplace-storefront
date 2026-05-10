@@ -10,7 +10,10 @@ import {
   formatVoucherPrice,
   resolveValidityWording,
   deriveVoucherClarityVariant,
+  derivePdpVoucherClarityVariant,
   deriveSellerProofVariant,
+  voucherHelpHref,
+  refundHelpAnchor,
 } from '../voucher-copy';
 
 describe('formatVoucherPrice', () => {
@@ -59,8 +62,8 @@ describe('resolveValidityWording', () => {
   });
 });
 
-describe('deriveVoucherClarityVariant', () => {
-  it('returns default when product has price and no issues', () => {
+describe('deriveVoucherClarityVariant (base — cart/checkout/recovery shared)', () => {
+  it('returns default when product has price and is not expired', () => {
     expect(deriveVoucherClarityVariant({ hasPrice: true })).toBe('default');
   });
 
@@ -72,26 +75,63 @@ describe('deriveVoucherClarityVariant', () => {
     expect(deriveVoucherClarityVariant({ hasPrice: true, isExpiredInCatalog: true })).toBe('error');
   });
 
+  it('does not accept PDP-only signals (no vendor_unavailable / region / stock)', () => {
+    // F15 fix: base helper signature is intentionally minimal.
+    expect(
+      deriveVoucherClarityVariant({
+        hasPrice: true,
+        // @ts-expect-error PDP signals must not be on the base type
+        isVendorUnavailable: true,
+      }),
+    ).toBe('default');
+  });
+});
+
+describe('derivePdpVoucherClarityVariant (PDP wrapper — F15 fix)', () => {
+  it('returns default when product has price and no PDP issues', () => {
+    expect(derivePdpVoucherClarityVariant({ hasPrice: true })).toBe('default');
+  });
+
+  it('returns error when product has no price', () => {
+    expect(derivePdpVoucherClarityVariant({ hasPrice: false })).toBe('error');
+  });
+
+  it('returns error when voucher is expired in catalog', () => {
+    expect(derivePdpVoucherClarityVariant({ hasPrice: true, isExpiredInCatalog: true })).toBe('error');
+  });
+
   it('returns warning when vendor is unavailable (Story 5.6)', () => {
-    expect(deriveVoucherClarityVariant({ hasPrice: true, isVendorUnavailable: true })).toBe('warning');
+    expect(derivePdpVoucherClarityVariant({ hasPrice: true, isVendorUnavailable: true })).toBe('warning');
   });
 
   it('returns warning when region-restricted', () => {
-    expect(deriveVoucherClarityVariant({ hasPrice: true, isRegionRestricted: true })).toBe('warning');
+    expect(derivePdpVoucherClarityVariant({ hasPrice: true, isRegionRestricted: true })).toBe('warning');
   });
 
   it('returns warning when out of stock', () => {
-    expect(deriveVoucherClarityVariant({ hasPrice: true, isOutOfStock: true })).toBe('warning');
+    expect(derivePdpVoucherClarityVariant({ hasPrice: true, isOutOfStock: true })).toBe('warning');
   });
 
   it('error takes priority over warning (expired before vendor unavailable)', () => {
     expect(
-      deriveVoucherClarityVariant({
+      derivePdpVoucherClarityVariant({
         hasPrice: true,
         isExpiredInCatalog: true,
         isVendorUnavailable: true,
       })
     ).toBe('error');
+  });
+});
+
+describe('voucherHelpHref / refundHelpAnchor (F26 fix — locale-aware helpers)', () => {
+  it('voucherHelpHref prefixes with locale', () => {
+    expect(voucherHelpHref('pl')).toBe('/pl/zasady');
+    expect(voucherHelpHref('en')).toBe('/en/zasady');
+  });
+
+  it('refundHelpAnchor prefixes with locale and preserves anchor', () => {
+    expect(refundHelpAnchor('pl')).toBe('/pl/zasady#zwroty');
+    expect(refundHelpAnchor('de')).toBe('/de/zasady#zwroty');
   });
 });
 
@@ -154,5 +194,30 @@ describe('deriveSellerProofVariant', () => {
         hasAddress: false,
       })
     ).toBe('partial');
+  });
+
+  it('hasAddress is accepted but does NOT promote partial → complete (F10 fix)', () => {
+    // Even with address present, missing rating + reviews keeps it partial
+    expect(
+      deriveSellerProofVariant({
+        hasName: true,
+        hasVerificationStatus: true,
+        hasRating: false,
+        hasReviews: false,
+        hasAddress: true,
+      })
+    ).toBe('partial');
+  });
+
+  it('hasAddress is optional in signature (F10 fix)', () => {
+    // Calling without hasAddress works
+    expect(
+      deriveSellerProofVariant({
+        hasName: true,
+        hasVerificationStatus: true,
+        hasRating: true,
+        hasReviews: true,
+      })
+    ).toBe('complete');
   });
 });
