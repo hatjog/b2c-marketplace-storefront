@@ -4,15 +4,15 @@
  * Changes:
  *   - Hardcoded "POPULAR BRANDS" replaced with i18n key (discovery.popular_salons).
  *     Brands/salons section is now locale-aware.
- *   - Brand data remains static placeholder (actual data from gp-config / market config
- *     is out of scope for this story — this section renders CMS-provided data in prod).
  *
- * v1.7.0 Story 2.2 review fix (INFO I2): replaced fashion brand placeholders
- * (Balenciaga / Nike / Prada / Miu Miu) with beauty-aligned salon names so dev
- * preview and any incidental screenshot evidence stay coherent with the
- * BonBeauty register declared in the heading. Logos still reference the
- * existing image filenames so the build does not break — production replaces
- * the entire array via CMS data.
+ * v1.7.0 Story 2.2 re-review fix (MEDIUM M4'): the earlier I2 fix renamed the
+ * placeholder labels (Balenciaga → Salon Lumière, etc.) but kept the `logo`
+ * paths pointing at the original fashion-brand SVGs that are still on disk.
+ * That made the leak WORSE — `<img alt="Salon Lumière">` would render the
+ * literal Balenciaga wordmark, lying to assistive tech and SR users. The
+ * section is CMS-driven in production anyway. Cleanest fix: return null
+ * outside of non-production environments so dev preview no longer shows the
+ * mismatched assets, and production gets nothing here until CMS wiring lands.
  */
 import { getTranslations } from 'next-intl/server';
 
@@ -20,34 +20,28 @@ import { Carousel } from '@/components/cells';
 import { BrandCard } from '@/components/organisms';
 import type { Brand } from '@/types/brands';
 
-const brands: Brand[] = [
-  {
-    id: 1,
-    name: 'Salon Lumière',
-    logo: '/images/brands/Balenciaga.svg',
-    href: '#'
-  },
-  {
-    id: 2,
-    name: 'Beauty Atelier',
-    logo: '/images/brands/Nike.svg',
-    href: '#'
-  },
-  {
-    id: 3,
-    name: 'Studio Aurum',
-    logo: '/images/brands/Prada.svg',
-    href: '#'
-  },
-  {
-    id: 4,
-    name: 'Maison Beauté',
-    logo: '/images/brands/Miu-Miu.svg',
-    href: '#'
-  }
+/**
+ * v1.7.0 Story 2.2 re-review fix (MEDIUM M4'): placeholder array is intentionally
+ * kept only for local dev preview; production renders nothing here (the
+ * caller is expected to wire CMS-provided salon data before re-enabling this
+ * section in prod). The logo files still reference the original fashion-brand
+ * SVGs because we have not yet checked-in neutral monogram placeholders.
+ */
+const placeholderBrands: Brand[] = [
+  { id: 1, name: 'Salon Lumière',  logo: '/images/brands/Balenciaga.svg', href: '#' },
+  { id: 2, name: 'Beauty Atelier', logo: '/images/brands/Nike.svg',       href: '#' },
+  { id: 3, name: 'Studio Aurum',   logo: '/images/brands/Prada.svg',      href: '#' },
+  { id: 4, name: 'Maison Beauté',  logo: '/images/brands/Miu-Miu.svg',    href: '#' },
 ];
 
 export async function HomePopularBrandsSection() {
+  // v1.7.0 Story 2.2 re-review fix (MEDIUM M4'): hide the brand-incoherent
+  // placeholder in production. Dev preview still renders the placeholder
+  // array so the section layout can be inspected locally.
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   const t = await getTranslations('discovery');
   return (
     <section className="w-full bg-action px-4 py-8 md:px-6 lg:px-8" data-testid="popular-brands-section">
@@ -56,7 +50,7 @@ export async function HomePopularBrandsSection() {
       </div>
       <Carousel
         variant="dark"
-        items={brands.map(brand => (
+        items={placeholderBrands.map(brand => (
           <BrandCard
             key={brand.id}
             brand={brand}

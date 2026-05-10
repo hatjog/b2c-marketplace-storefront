@@ -28,6 +28,10 @@ export async function HeroBlock({ section }: { section: HeroSectionBlock }) {
 
   const t = await getTranslations('category');
   const trustMarkLabel = t('trust_mark_label');
+  // v1.7.0 Story 2.2 re-review fix (HIGH H1'): resolve hero image alt through
+  // i18n instead of the previous hardcoded EN `Hero banner - ${heading}` literal.
+  // ICU interpolation: `category.hero_image_alt` = "Hero banner — {heading}".
+  const imageAlt = t('hero_image_alt', { heading: heading || '' });
 
   if (!heading && !paragraph && !imageUrl && buttons.length === 0) {
     return null;
@@ -43,6 +47,7 @@ export async function HeroBlock({ section }: { section: HeroSectionBlock }) {
         maxHeight={maxHeight}
         showSearch={true}
         trustMarkLabel={trustMarkLabel}
+        imageAlt={imageAlt}
       />
     );
   }

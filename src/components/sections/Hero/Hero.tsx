@@ -30,6 +30,11 @@ type HeroProps = {
    *  v1.7.0 Story 2.2 review fix (MEDIUM M1): no PL default, otherwise EN/UA/DE
    *  pages would render PL when a future caller forgets to pass this prop. */
   trustMarkLabel: string;
+  /** Accessible alt text for the hero background image. REQUIRED.
+   *  v1.7.0 Story 2.2 re-review fix (HIGH H1'): previously hardcoded EN
+   *  `Hero banner - ${heading}` — bled into PL/UA/DE pages. Now caller must
+   *  pass a locale-resolved value (e.g. interpolated from `category.hero_image_alt`). */
+  imageAlt: string;
 };
 
 export const Hero = ({
@@ -40,7 +45,14 @@ export const Hero = ({
   maxHeight = null,
   showSearch = false,
   trustMarkLabel,
+  imageAlt,
 }: HeroProps) => {
+  if (!image) {
+    // v1.7.0 Story 2.2 re-review fix (LOW L5'): defensive early-return when
+    // no image is supplied — HeroBlock guarantees a fallback path, but Hero
+    // should not call <Image src=""> if the consumer ever passes empty.
+    return null;
+  }
   const sectionStyle = maxHeight ? ({ maxHeight } as CSSProperties) : undefined;
   const contentStyle = maxHeight
     ? ({
@@ -60,7 +72,7 @@ export const Hero = ({
           src={safeDecodeURIComponent(image)}
           width={1600}
           height={960}
-          alt={`Hero banner - ${heading}`}
+          alt={imageAlt}
           className="h-full w-full object-cover"
           priority
           fetchPriority="high"
@@ -108,8 +120,14 @@ export const Hero = ({
                 title={label}
               >
                 <span>{label}</span>
+                {/* v1.7.0 Story 2.2 re-review fix (INFO I2'): use className-based
+                    token utility instead of inline rgba(var(--…)) string. The
+                    ArrowRightIcon paints via the `color` prop, so we pass
+                    `currentColor` and let the parent className (`text-primary`)
+                    drive it through the standard CSS inheritance path. */}
                 <ArrowRightIcon
-                  color="rgba(var(--bg-primary))"
+                  color="currentColor"
+                  className="text-primary"
                   aria-hidden
                 />
               </Link>

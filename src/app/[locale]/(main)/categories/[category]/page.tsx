@@ -57,8 +57,13 @@ export async function generateMetadata({
   );
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
   const title = seo.meta_title ?? cat.name;
+  // v1.7.0 Story 2.2 re-review fix (HIGH H1'): description fallback resolved
+  // through i18n instead of the previous hardcoded PL literal that bled into
+  // EN/UA/DE SERPs and og:description channels.
+  const tMeta = await getTranslations('category');
   const description =
-    seo.meta_description ?? `${cat.name} — zabiegi i vouchery na ${siteName}.`;
+    seo.meta_description ??
+    tMeta('fallback_description', { categoryName: cat.name, siteName });
   const ogImage = seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
   const canonical = `${baseUrl}/${locale}/categories/${categoryHandle}`;
 

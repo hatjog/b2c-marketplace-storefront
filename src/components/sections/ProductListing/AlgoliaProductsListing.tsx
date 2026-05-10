@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
+import { DiscoveryEmptyState } from '@/components/cells/DiscoveryEmptyState/DiscoveryEmptyState';
 import {
   ProductListingLoadingView,
   ProductListingNoResultsView,
@@ -94,8 +96,13 @@ const ProductsListing = ({
   const [isLoading, setIsLoading] = useState(true);
   const [count, setCount] = useState(0);
   const [pages, setPages] = useState(1);
+  // v1.7.0 Story 2.2 re-review fix (LOW L3'): distinguish "no-results" (zero
+  // hits) from "load-error" (provider/network failure) so the UI does not
+  // mask a failure as an empty state — UX-DR19 explicitly forbids this mask.
+  const [loadError, setLoadError] = useState(false);
 
   const _searchParams = useSearchParams();
+  const tCategory = useTranslations('category');
 
   useEffect(() => {
     async function fetchProducts() {
@@ -103,6 +110,7 @@ const ProductsListing = ({
 
       try {
         setIsLoading(true);
+        setLoadError(false);
         const result = await searchProducts({
           query: query || undefined,
           page: page - 1,
@@ -116,11 +124,19 @@ const ProductsListing = ({
         setFacets(result.facets);
         setCount(result.nbHits);
         setPages(result.nbPages);
-      } catch {
+      } catch (err) {
+        // v1.7.0 Story 2.2 re-review fix (LOW L3'): log the underlying error to
+        // the browser console so ops have a signal — previously the catch was
+        // parameterless and the failure was silent (mirror I3 fix in ProductListing).
+        console.error(
+          '[AlgoliaProductsListing] search failed:',
+          err instanceof Error ? err.message : String(err)
+        );
         setProducts([]);
         setFacets({});
         setCount(0);
         setPages(0);
+        setLoadError(true);
       } finally {
         setIsLoading(false);
       }
@@ -134,7 +150,10 @@ const ProductsListing = ({
   return (
     <div className="min-h-[70vh]">
       <div className="flex w-full items-center justify-between">
-        <div className="label-md my-4">{`${count} listings`}</div>
+        {/* v1.7.0 Story 2.2 re-review fix (HIGH H1' / LOW L1'): replaced
+            hardcoded EN `${count} listings` with the ICU plural i18n key
+            `category.results_count` that ships PL/EN/UA/DE plurals. */}
+        <div className="label-md my-4">{tCategory('results_count', { count })}</div>
       </div>
       <div className="hidden md:block">
         <ProductListingActiveFilters />
@@ -146,9 +165,17 @@ const ProductsListing = ({
         <div className="flex w-full flex-col">
           {isLoading && <ProductListingLoadingView />}
 
-          {!isLoading && !products.length && <ProductListingNoResultsView />}
+          {/* v1.7.0 Story 2.2 re-review fix (LOW L3'): surface load-error as a
+              distinct state instead of masking it as no-results (UX-DR19). */}
+          {!isLoading && loadError && (
+            <div className="py-6" data-testid="algolia-product-listing-error">
+              <DiscoveryEmptyState variant="load-error" />
+            </div>
+          )}
 
-          {!isLoading && products.length > 0 && (
+          {!isLoading && !loadError && !products.length && <ProductListingNoResultsView />}
+
+          {!isLoading && !loadError && products.length > 0 && (
             <ProductListingProductsView products={products} fromContext={fromContext} />
           )}
 
