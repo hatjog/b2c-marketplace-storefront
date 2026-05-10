@@ -19,8 +19,10 @@
  *
  * Idempotency contract (NFR8 / NFR9):
  *   - Initial load and polling call STATUS-READ endpoints only (no mutation).
- *   - Retry CTA calls the RETRY-PAYMENT mutation with a fresh attempt key.
- *   - NO duplicate order/charge from back-button / second tab.
+ *   - Retry CTA does not leak order/payment identifiers through URL params.
+ *   - Durable backend retry by existing order/payment intent is deferred to
+ *     the payment retry endpoint follow-up; until then duplicate-charge
+ *     prevention stays with the existing checkout/provider idempotency layer.
  *   - `payment-status` polling endpoint is safe to poll indefinitely.
  *
  * Anti-pattern guards (Story 2.4 preserved):
@@ -85,9 +87,9 @@ type Props = {
  * R1 review fix (second pass): NOT exposed in URL query string — the
  * checkout page has no consumer for the key and embedding it in the URL
  * leaks the orderId via the browser referrer header. The key is generated
- * for diagnostic / logging purposes; the real idempotency surface for
- * payment retries lives in Story 6.1 (durable-retry resilience hardening).
- * Until then, the key is logged client-side only.
+ * for diagnostic / logging purposes. The real idempotency surface for
+ * payment retries is deferred to the backend retry endpoint follow-up.
+ * Until that endpoint exists, the key is logged client-side only.
  */
 export function generateAttemptKey(
   orderId: string,
@@ -327,7 +329,7 @@ export function PaymentStatusPageContent({ orderId }: Props) {
     // R1 review fix (second pass): the previous implementation embedded
     // `attempt_key` and `order_id` as URL query params, but NO consumer in
     // `/checkout` reads those params. The idempotency-key surface is
-    // therefore decorative until Story 6.1 lands the durable-retry path.
+    // therefore decorative until the backend durable-retry path lands.
     // Until then, we generate the key for client-side diagnostics only and
     // navigate to `/checkout` without leaking `order_id` through the URL
     // (referrer headers, browser history, ad-pixel scripts).
