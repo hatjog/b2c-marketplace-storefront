@@ -167,7 +167,8 @@ describe('voucher-consent Server Actions', () => {
 
       expect(result.ok).toBe(false);
       expect(result.state).toBe('error-audit-failed');
-      expect(result.error).toBe('backend returned 401');
+      // Review F14: stable error code, not English status text.
+      expect(result.error).toBe('backend-error-401');
       expect(result.error).not.toContain('tok_abc');
     });
 
@@ -179,7 +180,23 @@ describe('voucher-consent Server Actions', () => {
 
       expect(result.ok).toBe(false);
       expect(result.state).toBe('error-audit-failed');
-      expect(result.error).toBe('backend returned 403');
+      expect(result.error).toBe('backend-error-403');
+    });
+  });
+
+  describe('review F13 — pauseRecipient rejects invalid pause_state', () => {
+    it('returns error-audit-failed with code invalid-pause-state', async () => {
+      const fd = makeFormData({
+        token: 'tok_abc',
+        locale: 'pl',
+        pause_state: 'not-a-state',
+        surface: 'js',
+      });
+      const result = await pauseRecipient(fd) as { ok: boolean; state: string; error?: string };
+      expect(result.ok).toBe(false);
+      expect(result.state).toBe('error-audit-failed');
+      expect(result.error).toBe('invalid-pause-state');
+      expect(mockSdkFetch).not.toHaveBeenCalled();
     });
   });
 
