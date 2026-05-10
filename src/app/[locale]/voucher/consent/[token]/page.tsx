@@ -64,7 +64,13 @@ export default async function VoucherConsentPage({
 
       {/* No-JS fallback: server-rendered <form> identical to JS path. */}
       <noscript>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {/*
+          eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Upstream: React/Next.js `<form action>` types require `(fd: FormData) => void | Promise<void>`;
+          Server Actions that return a structured result (ConsentActionResult) cannot satisfy this
+          without a void-wrapper — and a void-wrapper would suppress the structured result.
+          The no-JS path does not consume the return value; cast is safe and intentional.
+        */}
         <form
           action={grantConsent as any}
           method="POST"
@@ -126,7 +132,11 @@ export default async function VoucherConsentPage({
       />
 
       {/* Withdrawal symmetry — per UX-DR30. Always-visible withdraw form. */}
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {/*
+        eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Same upstream constraint as grantConsent above: Next.js form action types
+        require void return; withdrawConsent returns ConsentActionResult.
+      */}
       <form
         action={withdrawConsent as any}
         method="POST"

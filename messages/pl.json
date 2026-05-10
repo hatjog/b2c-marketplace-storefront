@@ -663,6 +663,8 @@
       "expires_at_label": "Ważny do",
       "not_found_message": "Nieznany voucher",
       "consent_pending_message": "Trwa zapis zgody. Wróć za chwilę.",
+      "sync_pending_message": "Stan vouchera może być chwilowo nieaktualizowany — zaktualizuje się automatycznie.",
+      "sync_pending_action": "Przejdź do listy voucherów",
       "post_claim_link": "Przejdź do salonu",
       "pdf_download_cta": "Pobierz voucher PDF",
       "meta_default_title": "Voucher BonBeauty",

@@ -664,6 +664,8 @@
       "expires_at_label": "Gültig bis",
       "not_found_message": "Unbekannter Gutschein",
       "consent_pending_message": "Einwilligung wird gespeichert. Bitte kommen Sie in einem Moment zurück.",
+      "sync_pending_message": "Der Gutscheinstatus kann vorübergehend nicht synchron sein — er wird automatisch aktualisiert.",
+      "sync_pending_action": "Zur Gutscheinliste",
       "post_claim_link": "Zum Salon",
       "pdf_download_cta": "Gutschein PDF herunterladen",
       "meta_default_title": "BonBeauty Gutschein",

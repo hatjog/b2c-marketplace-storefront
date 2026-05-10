@@ -7,9 +7,8 @@ import { CheckCircleSolid, ChevronUpDown, Loader } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { clx, Heading, Text } from '@medusajs/ui';
 import clsx from 'clsx';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
 import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
@@ -47,8 +46,13 @@ export type StoreCardShippingMethod = HttpTypes.StoreCartShippingOption & {
   };
 };
 
-type AvailableShippingMethod = StoreCardShippingMethod & {
-  rules: any;
+type ShippingOptionRule = {
+  attribute?: string;
+  value?: unknown;
+} & Record<string, unknown>;
+
+export type AvailableShippingMethod = StoreCardShippingMethod & {
+  rules?: ShippingOptionRule[]; // upstream: Medusa shipping option rules schema is open-ended
   price_type: string;
   id: string;
   amount?: number;
@@ -100,8 +104,9 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   const fallbackSeller = (() => {
     const sellers = Array.from(
       new Map(
-        (cart.items ?? [])
-          .flatMap(item => (item.product?.seller ? [[item.product.seller.id, item.product.seller.name]] : []))
+        (cart.items ?? []).flatMap(item =>
+          item.product?.seller ? [[item.product.seller.id, item.product.seller.name]] : []
+        )
       ).entries()
     );
 
@@ -116,7 +121,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   const normalizedShippingMethods = normalizeAvailableShippingMethods(availableShippingMethods);
 
   const _shippingMethods = normalizedShippingMethods.filter(
-    sm => sm.rules?.find((rule: any) => rule.attribute === 'is_return')?.value !== 'true'
+    sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true'
   );
 
   useEffect(() => {
@@ -168,9 +173,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
         return setError(res.error?.message);
       }
     } catch (error: any) {
-      setError(
-        error?.message?.replace('Error setting up the request: ', '') || t('error_generic')
-      );
+      setError(error?.message?.replace('Error setting up the request: ', '') || t('error_generic'));
     } finally {
       setIsLoadingPrices(false);
       router.refresh();
@@ -204,7 +207,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     if (!isNaN(amount)) {
       acc[sellerId]?.push({
         ...method,
-        seller_name: sellerName,
+        seller_name: sellerName
       });
     }
 
@@ -273,7 +276,9 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
                             >
                               {({ open }) => (
                                 <>
-                                  <span className="block truncate">{t('choose_delivery_option')}</span>
+                                  <span className="block truncate">
+                                    {t('choose_delivery_option')}
+                                  </span>
                                   <ChevronUpDown
                                     className={clx('transition-rotate duration-200', {
                                       'rotate-180 transform': open

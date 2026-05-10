@@ -2,12 +2,18 @@
 
 import type { HttpTypes } from '@medusajs/types';
 
-import type { StoreCardShippingMethod } from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
+import type {
+  AvailableShippingMethod,
+  StoreCardShippingMethod
+} from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
 import { sdk } from '@/lib/config';
 
 import { getAuthHeaders, getCacheOptions } from './cookies';
 
-export const listCartShippingMethods = async (cartId: string, _is_return: boolean = false) => {
+export const listCartShippingMethods = async (
+  cartId: string,
+  _is_return: boolean = false
+): Promise<AvailableShippingMethod[] | null> => {
   const headers = {
     ...(await getAuthHeaders())
   };
@@ -32,19 +38,25 @@ export const listCartShippingMethods = async (cartId: string, _is_return: boolea
       cache: 'no-cache'
     })
     .then((body) => {
-      if (Array.isArray((body as { shipping_options?: StoreCardShippingMethod[] | null }).shipping_options)) {
-        return (body as { shipping_options: StoreCardShippingMethod[] }).shipping_options
+      if (
+        Array.isArray(
+          (body as { shipping_options?: StoreCardShippingMethod[] | null }).shipping_options
+        )
+      ) {
+        return (body as { shipping_options: AvailableShippingMethod[] }).shipping_options;
       }
 
-      const nested = (body as {
-        shipping_options?: { shipping_options?: StoreCardShippingMethod[] | null } | null
-      }).shipping_options
+      const nested = (
+        body as {
+          shipping_options?: { shipping_options?: StoreCardShippingMethod[] | null } | null;
+        }
+      ).shipping_options;
 
       if (Array.isArray(nested?.shipping_options)) {
-        return nested.shipping_options
+        return nested.shipping_options as AvailableShippingMethod[];
       }
 
-      return null
+      return null;
     })
     .catch(() => {
       return null;
