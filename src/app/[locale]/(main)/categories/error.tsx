@@ -55,10 +55,14 @@ function LoadErrorState({ reset }: { reset: () => void }) {
       titleAs="h1"
       description={t('load_error_body')}
       action={
+        /* v1.7.0 Story 2.2 re-review fix (INFO I1'): dropped redundant aria-label
+           — visible button text ("Spróbuj ponownie") is now the accessible name
+           so voice-control users can activate it by speaking what they see.
+           The old `error_reset_aria` key is left in messages bundles for any
+           future tooltip/title use; no consumer references it currently. */
         <button
           type="button"
           onClick={reset}
-          aria-label={t('error_reset_aria')}
           className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-5 py-2 text-sm font-medium text-action-on-primary transition-colors hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
           data-testid="categories-error-retry"
         >

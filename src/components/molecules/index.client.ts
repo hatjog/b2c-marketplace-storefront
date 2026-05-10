@@ -25,5 +25,8 @@ export { UserNavigation } from './UserNavigation/UserNavigation';
 // v1.7.0 Story 2.6: Magic-link recovery state + voucher history empty state (client components)
 export { MagicLinkRecoveryState } from './MagicLinkRecoveryState/MagicLinkRecoveryState';
 export { VoucherHistoryEmptyState } from './VoucherHistoryEmptyState/VoucherHistoryEmptyState';
+// v1.7.0 Story 2.2 re-review fix (LOW L4'): canonical client-side export for
+// ProductListingLoadingView (also re-exported from index.server.ts for backcompat).
+export { default as ProductListingLoadingView } from './ProductListingLoadingView/ProductListingLoadingView';
 export { VendorBadge } from './VendorBadge/index';
 export { VoucherQrCode } from './VoucherQrCode/VoucherQrCode';

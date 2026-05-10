@@ -10,6 +10,14 @@ export { GalleryCarouselItem } from './GalleryCarouselItem/GalleryCarouselItem';
 export { Modal } from './Modal/Modal';
 export { ParcelAccordion } from './ParcelAccordion/ParcelAccordion';
 export { ProdutMeasurementRow } from './ProdutMeasurementRow/ProdutMeasurementRow';
+// v1.7.0 Story 2.2 re-review fix (LOW L4'): ProductListingLoadingView was made
+// `'use client'` by the prior HIGH H1 fix (so it can call useTranslations).
+// Re-export it from the molecules barrel for backwards compatibility
+// (AlgoliaProductsListing imports it from '@/components/molecules'), but the
+// canonical surface for client components is `molecules/index.client.ts`.
+// Note: Next.js App Router handles client components imported from server
+// barrels — there is no runtime bug — but the SSR boundary moves into the
+// component itself, not the barrel. See storefront CLAUDE.md "Pułapki" note.
 export { default as ProductListingLoadingView } from './ProductListingLoadingView/ProductListingLoadingView';
 export { default as ProductListingNoResultsView } from './ProductListingNoResultsView/ProductListingNoResultsView';
 export { default as ProductListingProductsView } from './ProductListingProductsView/ProductListingProductsView';

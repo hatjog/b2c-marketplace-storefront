@@ -33,6 +33,7 @@ import { sanitizeTagIdList } from '@/lib/helpers/sanitize-tag-id';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { getTranslations } from 'next-intl/server';
 import { ClearFiltersButton } from './ClearFiltersButton';
+import { ListingRetryButton } from './ListingRetryButton';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
@@ -251,9 +252,13 @@ export const ProductListing = async ({
       err instanceof Error ? err.message : String(err)
     );
     // load-error state: visually and semantically distinct from no-results (UX-DR19).
+    // v1.7.0 Story 2.2 re-review fix (MEDIUM M2'): pass an explicit segment-level
+    // retry action so the recovery path uses `router.refresh()` instead of the
+    // DiscoveryEmptyState default `window.location.reload()` (which throws away
+    // client cache, hydration state and scroll position).
     return (
       <div className="py-8" data-testid="product-listing-error">
-        <DiscoveryEmptyState variant="load-error" />
+        <DiscoveryEmptyState variant="load-error" action={<ListingRetryButton />} />
       </div>
     );
   }

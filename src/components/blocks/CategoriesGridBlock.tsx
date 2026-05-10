@@ -30,8 +30,12 @@ export async function CategoriesGridBlock({ section }: { section: CategoriesGrid
   }
 
   const t = await getTranslations('category');
-  // Use CMS-provided heading when available, fall back to i18n key (not hardcoded string)
-  const heading = section.heading ?? t('breadcrumb_all');
+  // Use CMS-provided heading when available, fall back to i18n key (not hardcoded string).
+  // v1.7.0 Story 2.2 re-review fix (LOW L2'): previously fell back to
+  // `category.breadcrumb_all` ("Wszystkie kategorie") which is a breadcrumb
+  // label, not a section heading. Now uses `category.section_heading`
+  // ("Przeglądaj kategorie" / "Browse categories"), purpose-built for this slot.
+  const heading = section.heading ?? t('section_heading');
 
   return (
     <div className="w-full">
