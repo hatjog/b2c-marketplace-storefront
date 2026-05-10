@@ -29,6 +29,10 @@ interface SkeletonProps {
   className?: string;
   /** Screen reader label for this skeleton element */
   'aria-label'?: string;
+  /** v1.7.0 Story 2.1 review fix (LOW): mark as visual-only when nested
+   *  inside a parent that already announces a loading region. Suppresses
+   *  duplicate "Ładowanie..." announcements. */
+  decorative?: boolean;
   'data-testid'?: string;
 }
 
@@ -46,8 +50,28 @@ export function Skeleton({
   rounded = 'sm',
   className,
   'aria-label': ariaLabel = 'Ładowanie...',
+  decorative = false,
   'data-testid': dataTestId,
 }: SkeletonProps) {
+  // v1.7.0 Story 2.1 review fix (LOW): when nested under a parent loading region
+  // (SkeletonText / SkeletonCard already announce status), render as decorative
+  // (aria-hidden) so SR users hear "Ładowanie..." once, not 3-5 times.
+  if (decorative) {
+    return (
+      <div
+        aria-hidden="true"
+        className={cn(
+          'animate-pulse',
+          roundedClasses[rounded],
+          width,
+          height,
+          className
+        )}
+        style={{ backgroundColor: 'var(--bb-skeleton-base, rgba(239,229,210,0.52))' }}
+        data-testid={dataTestId ?? 'skeleton'}
+      />
+    );
+  }
   return (
     <div
       role="status"
@@ -76,27 +100,37 @@ export function Skeleton({
 export function SkeletonText({
   lines = 1,
   className,
+  decorative = false,
   'data-testid': dataTestId,
 }: {
   lines?: number;
   className?: string;
+  /** v1.7.0 Story 2.1 review fix (LOW): suppress role/aria-busy when nested in
+   *  another loading region (e.g., inside SkeletonCard). */
+  decorative?: boolean;
   'data-testid'?: string;
 }) {
+  const containerProps = decorative
+    ? ({ 'aria-hidden': 'true' } as const)
+    : ({
+        role: 'status',
+        'aria-busy': 'true',
+        'aria-label': 'Ładowanie tekstu...',
+      } as const);
   return (
     <div
-      role="status"
-      aria-busy="true"
-      aria-label="Ładowanie tekstu..."
+      {...containerProps}
       className={cn('flex flex-col gap-2', className)}
       data-testid={dataTestId ?? 'skeleton-text'}
     >
-      <span className="sr-only">Ładowanie tekstu...</span>
+      {!decorative && <span className="sr-only">Ładowanie tekstu...</span>}
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
           width={i === lines - 1 && lines > 1 ? 'w-3/4' : 'w-full'}
           height="h-4"
           rounded="sm"
+          decorative
         />
       ))}
     </div>
@@ -127,12 +161,12 @@ export function SkeletonCard({
       data-testid={dataTestId ?? 'skeleton-card'}
     >
       <span className="sr-only">Ładowanie karty produktu...</span>
-      {/* Image area */}
-      <Skeleton height="h-[200px]" rounded="sm" />
-      {/* Title */}
-      <SkeletonText lines={2} />
+      {/* Image area — decorative: parent SkeletonCard already announces loading */}
+      <Skeleton height="h-[200px]" rounded="sm" decorative />
+      {/* Title — decorative SkeletonText (suppress nested status announcement) */}
+      <SkeletonText lines={2} decorative />
       {/* Price */}
-      <Skeleton width="w-1/3" height="h-5" rounded="sm" />
+      <Skeleton width="w-1/3" height="h-5" rounded="sm" decorative />
     </div>
   );
 }

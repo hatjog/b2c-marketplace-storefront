@@ -77,13 +77,18 @@ export function Button({
       loading ? 'button-text-filled' : '',
     ].filter(Boolean).join(' '),
 
-    /** unavailable: muted surface + muted text, not fully disabled (item exists,
-     *  just not actionable right now). Uses aria-disabled rather than HTML disabled
-     *  so screen readers describe the state. */
+    /** unavailable: distinct amber/warning channel surface — item exists but is
+     *  not actionable right now (e.g., sold-out CTA). v1.7.0 Story 2.1 review fix
+     *  (HIGH/3): visually + semantically separated from `disabled` per Story 0.9
+     *  contract — uses warning channel (matching StateCard `unavailable` for
+     *  cross-component coherence) and dashed border as a non-color signal.
+     *  Keeps element focusable (no pointer-events-none) so SR users can land on
+     *  it and read aria-disabled / aria-describedby state. The visible click
+     *  block is enforced via onClick guard at the consumer level — this primitive
+     *  intentionally does NOT trap pointer events so focus and SR semantics work. */
     unavailable: [
-      'bg-disabled text-disabled',
-      'cursor-not-allowed opacity-60',
-      'pointer-events-none',
+      'bg-warning-secondary text-warning border border-warning border-dashed',
+      'cursor-not-allowed',
     ].join(' '),
   };
 
@@ -93,15 +98,30 @@ export function Button({
   };
 
   const isEffectivelyUnavailable = effectiveVariant === 'unavailable';
+  // When marked unavailable, do NOT also set HTML `disabled` — aria-disabled is the
+  // correct semantic per Story 0.9 ("item exists, just not actionable") and HTML
+  // disabled removes the element from the tab order, defeating SR announcement.
+  const htmlDisabled = unavailable ? false : disabled;
+  // Block synthetic clicks while keeping keyboard focus — replaces the previous
+  // `pointer-events-none` heuristic (which broke focus on some browsers).
+  const { onClick: userOnClick, ...restProps } = props;
+  const onClickGuarded = isEffectivelyUnavailable
+    ? (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    : userOnClick;
 
   return (
     <button
-      disabled={disabled}
+      disabled={htmlDisabled}
       aria-disabled={isEffectivelyUnavailable || disabled || undefined}
       aria-busy={loading || undefined}
+      data-state={isEffectivelyUnavailable ? 'unavailable' : disabled ? 'disabled' : undefined}
       className={cn(variantClasses[effectiveVariant], sizeClasses[size], baseClasses, className)}
       data-testid={dataTestId ?? `button-${effectiveVariant}-${size}`}
-      {...props}
+      onClick={onClickGuarded}
+      {...restProps}
     >
       {loading ? <Spinner aria-label="Ładowanie..." role="status" /> : children}
     </button>

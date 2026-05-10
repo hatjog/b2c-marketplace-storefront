@@ -9,10 +9,12 @@
  * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/live-snapshots/computed-tokens.json
  *   (Computed resolved values for --bb-* surface tokens)
  *
- * Token format: RGB tuples ("R, G, B" no parens) for tailwind rgba(var(--…)) wrappers.
- * The gp-* prefixed tokens (--color-neutral-*, --color-accent-*, --color-success-*,
- * --color-warning-*, --color-error-*, --color-info-*) are wired into tailwind.config.ts
- * via hsl(var(--...)) pattern — these use RGB tuples converted to hsl-like representation.
+ * Token format: HSL tuples ("H S%" L%" no commas) for tailwind hsl(var(--...)) wrappers.
+ * v1.7.0 Story 2.1 review fix (LOW): comment was previously misleading — values below
+ * are HSL components (e.g. `0 0% 93%`), not RGB tuples. They are consumed by
+ * tailwind.config.ts via `hsl(var(--color-…))` pattern. Where rgba() opacity is
+ * needed, the rgba(var(--brand-…), <alpha>) pattern uses RGB tuples declared
+ * separately in /public/themes/bonbeauty.css (--brand-*) — see bb-surfaces.css.
  *
  * Contract enforced by `_grow/tools/validate_design_tokens.py` (UX-DR15 + UX-DR17).
  * BonBeauty DS boundary enforced by `_grow/tools/validate_ux_state_and_ds_boundary.py`.

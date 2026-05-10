@@ -18,10 +18,13 @@ const VALID_THEMES = ['bonbeauty'] as const;
 
 validateStorefrontEnv();
 
+// v1.7.0 Story 2.1 review fix (MEDIUM): include weight 700 so Tailwind `font-bold`
+// consumers (Header, SellerHero, TabsTrigger, ReturnMethodsTab, ...) render with the
+// real Funnel Display 700 face rather than synthetic-bolded 600.
 const funnelDisplay = Funnel_Display({
   variable: '--font-funnel-sans',
   subsets: ['latin', 'latin-ext'],
-  weight: ['300', '400', '500', '600']
+  weight: ['300', '400', '500', '600', '700']
 });
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -4,6 +4,12 @@
  * v1.7.0 Story 2.1 AC3: Each variant (empty/error/unavailable) is visually
  * and semantically distinct with one clear next action.
  *
+ * v1.7.0 Story 2.1 review fix (HIGH/2): tests rewritten to call the function
+ * component directly so we inspect the RETURNED React element tree, not the
+ * unrendered JSX wrapper. Previously `<StateCard.../>` produced an element of
+ * type `StateCard` whose props were just the input props — assertions never
+ * reached the actual implementation.
+ *
  * Coverage:
  *   - empty variant: role="region", neutral surface class, icon+title+description
  *   - error variant: role="alert", aria-live="assertive", negative surface
@@ -12,16 +18,21 @@
  *   - custom icon overrides default icon
  *   - data-testid propagated
  *   - aria-label = title for SR
+ *   - icon backgrounds use --bb-icon-bg-* tokens (review MEDIUM fix)
+ *   - title rendered as h2 by default + heading-level prop (review LOW fix)
  *
  * UX-PAT-4 full-state coverage: each variant has distinct semantics.
  * Story 0.9 contract: no empty-as-failure masking (each variant is separate component).
  */
-import React from 'react';
+import * as React from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { StateCard } from '../StateCard/StateCard';
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
+
+const render = (props: Parameters<typeof StateCard>[0]) =>
+  (StateCard as unknown as (p: typeof props) => ReactEl)(props);
 
 function findByProp(
   node: React.ReactNode,
@@ -54,63 +65,90 @@ function collectText(node: React.ReactNode, acc: string[] = []): string[] {
   return acc;
 }
 
+function findHeadingOfType(node: React.ReactNode, target: string | null): ReactEl | null {
+  if (!React.isValidElement<Record<string, unknown>>(node)) return null;
+  const el = node as ReactEl;
+  const type = el.type;
+  if (typeof type === 'string' && /^h[1-6]$/.test(type)) {
+    if (target === null || type === target) return el;
+  }
+  const children = React.Children.toArray(el.props.children as React.ReactNode);
+  for (const child of children) {
+    const found = findHeadingOfType(child, target);
+    if (found) return found;
+  }
+  return null;
+}
+
+function findStyleWithBgVar(node: React.ReactNode, varName: string): ReactEl | null {
+  if (!React.isValidElement<Record<string, unknown>>(node)) return null;
+  const el = node as ReactEl;
+  const style = el.props.style as Record<string, string> | undefined;
+  if (style && typeof style.backgroundColor === 'string' && style.backgroundColor.includes(varName)) {
+    return el;
+  }
+  const children = React.Children.toArray(el.props.children as React.ReactNode);
+  for (const child of children) {
+    const found = findStyleWithBgVar(child, varName);
+    if (found) return found;
+  }
+  return null;
+}
+
 describe('StateCard', () => {
   describe('empty variant', () => {
     it('renders role=region for non-critical empty content', () => {
-      const el = <StateCard variant="empty" title="Brak produktów" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'empty', title: 'Brak produktów' });
       expect(root.props.role).toBe('region');
     });
 
     it('has aria-label matching title', () => {
-      const el = <StateCard variant="empty" title="Brak wyników" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'empty', title: 'Brak wyników' });
       expect(root.props['aria-label']).toBe('Brak wyników');
     });
 
     it('renders title and description text', () => {
-      const el = <StateCard variant="empty" title="Koszyk jest pusty" description="Dodaj produkty, aby kontynuować" />;
-      const text = collectText(el);
+      const root = render({
+        variant: 'empty',
+        title: 'Koszyk jest pusty',
+        description: 'Dodaj produkty, aby kontynuować',
+      });
+      const text = collectText(root);
       expect(text.join(' ')).toContain('Koszyk jest pusty');
       expect(text.join(' ')).toContain('Dodaj produkty, aby kontynuować');
     });
 
     it('renders without description when omitted', () => {
-      const el = <StateCard variant="empty" title="Brak wyników" />;
-      const text = collectText(el);
+      const root = render({ variant: 'empty', title: 'Brak wyników' });
+      const text = collectText(root);
       expect(text.join(' ')).toContain('Brak wyników');
     });
 
     it('uses neutral surface container classes', () => {
-      const el = <StateCard variant="empty" title="test" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'empty', title: 'test' });
       const className = String(root.props.className || '');
       expect(className).toContain('bg-secondary');
     });
 
     it('does not have aria-live (non-critical)', () => {
-      const el = <StateCard variant="empty" title="Brak wyników" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'empty', title: 'Brak wyników' });
       expect(root.props['aria-live']).toBeUndefined();
     });
   });
 
   describe('error variant', () => {
     it('renders role=alert for error state', () => {
-      const el = <StateCard variant="error" title="Wystąpił błąd" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'error', title: 'Wystąpił błąd' });
       expect(root.props.role).toBe('alert');
     });
 
     it('has aria-live=assertive for urgent announcement', () => {
-      const el = <StateCard variant="error" title="Błąd serwera" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'error', title: 'Błąd serwera' });
       expect(root.props['aria-live']).toBe('assertive');
     });
 
     it('uses negative surface container classes', () => {
-      const el = <StateCard variant="error" title="Błąd" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'error', title: 'Błąd' });
       const className = String(root.props.className || '');
       expect(className).toContain('bg-negative-secondary');
     });
@@ -118,20 +156,17 @@ describe('StateCard', () => {
 
   describe('unavailable variant', () => {
     it('renders role=status for unavailable state', () => {
-      const el = <StateCard variant="unavailable" title="Produkt niedostępny" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'unavailable', title: 'Produkt niedostępny' });
       expect(root.props.role).toBe('status');
     });
 
     it('has aria-live=polite for polite announcement', () => {
-      const el = <StateCard variant="unavailable" title="Chwilowo niedostępne" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'unavailable', title: 'Chwilowo niedostępne' });
       expect(root.props['aria-live']).toBe('polite');
     });
 
     it('uses warning surface container classes', () => {
-      const el = <StateCard variant="unavailable" title="Niedostępne" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'unavailable', title: 'Niedostępne' });
       const className = String(root.props.className || '');
       expect(className).toContain('bg-warning-secondary');
     });
@@ -139,54 +174,91 @@ describe('StateCard', () => {
 
   describe('action slot (UX-PAT-4: one clear next action)', () => {
     it('renders action when provided', () => {
-      const action = <button data-testid="cta-button">Przeglądaj</button>;
-      const el = <StateCard variant="empty" title="Brak produktów" action={action} />;
-      const found = findByProp(el, 'data-testid', 'cta-button');
+      const root = render({
+        variant: 'empty',
+        title: 'Brak produktów',
+        action: <button data-testid="cta-button">Przeglądaj</button>,
+      });
+      const found = findByProp(root, 'data-testid', 'cta-button');
       expect(found).not.toBeNull();
     });
 
     it('does not render action wrapper when action is omitted', () => {
-      const el = <StateCard variant="empty" title="Brak produktów" />;
-      // No CTA button testid present
-      const found = findByProp(el, 'data-testid', 'cta-button');
+      const root = render({ variant: 'empty', title: 'Brak produktów' });
+      const found = findByProp(root, 'data-testid', 'cta-button');
       expect(found).toBeNull();
     });
   });
 
   describe('icon slot', () => {
     it('renders custom icon when provided', () => {
-      const customIcon = <svg data-testid="custom-icon" />;
-      const el = <StateCard variant="empty" title="test" icon={customIcon} />;
-      const found = findByProp(el, 'data-testid', 'custom-icon');
+      const root = render({
+        variant: 'empty',
+        title: 'test',
+        icon: <svg data-testid="custom-icon" />,
+      });
+      const found = findByProp(root, 'data-testid', 'custom-icon');
       expect(found).not.toBeNull();
     });
   });
 
   describe('data-testid', () => {
     it('defaults to state-card-{variant}', () => {
-      const el = <StateCard variant="empty" title="test" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'empty', title: 'test' });
       expect(root.props['data-testid']).toBe('state-card-empty');
     });
 
     it('accepts custom data-testid', () => {
-      const el = <StateCard variant="error" title="test" data-testid="custom-state" />;
-      const root = el as ReactEl;
+      const root = render({ variant: 'error', title: 'test', 'data-testid': 'custom-state' });
       expect(root.props['data-testid']).toBe('custom-state');
     });
   });
 
   describe('Story 0.9 contract: no empty-as-failure masking', () => {
     it('empty and error produce different role', () => {
-      const empty = (<StateCard variant="empty" title="Brak" />) as ReactEl;
-      const error = (<StateCard variant="error" title="Błąd" />) as ReactEl;
+      const empty = render({ variant: 'empty', title: 'Brak' });
+      const error = render({ variant: 'error', title: 'Błąd' });
       expect(empty.props.role).not.toBe(error.props.role);
     });
 
     it('error and unavailable produce different container classes', () => {
-      const error = (<StateCard variant="error" title="Błąd" />) as ReactEl;
-      const unavail = (<StateCard variant="unavailable" title="Niedostępne" />) as ReactEl;
+      const error = render({ variant: 'error', title: 'Błąd' });
+      const unavail = render({ variant: 'unavailable', title: 'Niedostępne' });
       expect(error.props.className).not.toBe(unavail.props.className);
+    });
+  });
+
+  describe('icon backgrounds use BonBeauty tokens (review MEDIUM fix)', () => {
+    it('empty variant uses --bb-icon-bg-empty token', () => {
+      const root = render({ variant: 'empty', title: 'X' });
+      const wrapper = findStyleWithBgVar(root, '--bb-icon-bg-empty');
+      expect(wrapper).not.toBeNull();
+    });
+
+    it('error variant uses --bb-icon-bg-error token (no hardcoded RGBA)', () => {
+      const root = render({ variant: 'error', title: 'X' });
+      const wrapper = findStyleWithBgVar(root, '--bb-icon-bg-error');
+      expect(wrapper).not.toBeNull();
+    });
+
+    it('unavailable variant uses --bb-icon-bg-unavailable token', () => {
+      const root = render({ variant: 'unavailable', title: 'X' });
+      const wrapper = findStyleWithBgVar(root, '--bb-icon-bg-unavailable');
+      expect(wrapper).not.toBeNull();
+    });
+  });
+
+  describe('title heading semantics (review LOW fix)', () => {
+    it('renders title as <h2> by default for landmark heading navigation', () => {
+      const root = render({ variant: 'empty', title: 'Brak produktów' });
+      const heading = findHeadingOfType(root, 'h2');
+      expect(heading).not.toBeNull();
+    });
+
+    it('honors titleAs="h3" override', () => {
+      const root = render({ variant: 'error', title: 'Błąd', titleAs: 'h3' });
+      const heading = findHeadingOfType(root, 'h3');
+      expect(heading).not.toBeNull();
     });
   });
 });

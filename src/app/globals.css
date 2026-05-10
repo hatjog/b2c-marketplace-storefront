@@ -146,27 +146,31 @@ body {
 
   .bb-card {
     @apply rounded-[24px] border p-5 md:p-6;
-    background: rgba(255, 255, 255, 0.84);
-    border-color: rgba(144, 112, 50, 0.14);
-    box-shadow: 0 12px 35px rgba(90, 67, 28, 0.08);
+    /* v1.7.0 Story 2.1 review fix: token-bound (review HIGH/MEDIUM-3 — bb-* utilities) */
+    background: var(--bb-surface, rgba(255, 255, 255, 0.84));
+    border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
+    box-shadow: var(--bb-shadow-card, 0 12px 35px rgba(90, 67, 28, 0.08));
     backdrop-filter: blur(12px);
   }
 
   .bb-card-muted {
     @apply rounded-[24px] border p-5 md:p-6;
-    background: rgba(239, 229, 210, 0.42);
-    border-color: rgba(144, 112, 50, 0.14);
+    /* v1.7.0 Story 2.1 review fix: token-bound */
+    background: var(--bb-surface-muted, rgba(239, 229, 210, 0.42));
+    border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
   }
 
   .bb-pill {
     @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.24em];
-    background: rgba(239, 229, 210, 0.9);
-    color: rgba(83, 65, 29, 1);
+    /* v1.7.0 Story 2.1 review fix: token-bound (--gold-light + --brand-800 via rgba tuple) */
+    background: var(--gold-light, rgba(239, 229, 210, 0.9));
+    color: rgba(var(--brand-800, 83, 65, 29), 1);
   }
 
   .bb-eyebrow {
     @apply text-[11px] font-medium uppercase tracking-[0.28em];
-    color: rgba(113, 88, 40, 1);
+    /* v1.7.0 Story 2.1 review fix: token-bound (--brand-700 via rgba tuple) */
+    color: rgba(var(--brand-700, 113, 88, 40), 1);
   }
 
   .bb-meta {
@@ -175,7 +179,8 @@ body {
   }
 
   .bb-divider {
-    border-color: rgba(144, 112, 50, 0.14);
+    /* v1.7.0 Story 2.1 review fix: token-bound */
+    border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
   }
 
   .bb-primary-cta {
@@ -283,10 +288,12 @@ button:disabled svg path {
 
 /* Accessibility: visible focus ring on all interactive elements (v1.7.0 Story 2.1, AC-2, NFR22)
  *
- * Focus ring uses --cta (brand-600 #907032) for highest contrast vs BonBeauty surfaces:
+ * Focus ring uses --cta (brand-600 #907032) for highest contrast vs BonBeauty light surfaces:
  *   - #907032 vs --bb-page-bg (#F9F4EC): 4.62:1 ✅ WCAG AA (SC 1.4.11 Non-text Contrast ≥3:1)
  *   - #907032 vs white (#FFFFFF):         4.62:1 ✅ WCAG AA
- *   - #907032 vs --bb-surface-dark:       4.62:1 dark surfaces need additional rule below
+ *   - #907032 vs --bb-surface-dark (#1A1A1A): ≈3.04:1 — passes SC 1.4.11 minimum but
+ *     is too close to threshold for AC3's "≥4.5:1 ring" claim → dark surfaces use
+ *     --text-on-action (warm cream) instead, which yields 17.1:1 vs #1A1A1A.
  *
  * Fallback: --accent (#A89279) for older environments (3.36:1 vs bb-page-bg, WCAG AA pass ≥3:1).
  *
@@ -295,8 +302,14 @@ button:disabled svg path {
  *   2. Contrast ≥3:1 vs adjacent colors
  *   3. Not the ONLY channel (shape change + ring geometry also signal focus)
  *
+ * v1.7.0 Story 2.1 review fix (HIGH/1): the dark-surface override uses chained selectors
+ *   (`.bg-action:focus-visible`, no descendant space) so a Button rendered with the
+ *   `bg-action` class itself receives the high-contrast cream ring rather than the gold
+ *   ring it inherited via the descendant rule. Both forms (chained + descendant) are
+ *   listed so children of dark shells also win.
+ *
  * Placed in @layer base so Tailwind utilities (focus-visible:ring-*, focus:outline-none) always win.
- * Source token: src/styles/tokens/bb-surfaces.css --cta, --accent
+ * Source token: src/styles/tokens/bb-surfaces.css --cta, --accent, --text-on-action
  */
 @layer base {
   :focus-visible {
@@ -305,10 +318,21 @@ button:disabled svg path {
     outline-offset: 2px;
   }
 
-  /* Focus on dark action surfaces: use lighter ring (brand-25 warm cream)
-   * for Button/IconButton filled variants and dark section shells */
+  /* Focus on dark action surfaces: use lighter ring (--text-on-action — warm cream
+   * brand-25). 17.1:1 vs #1A1A1A bg ≫ AC3 4.5:1 claim ✅.
+   *
+   * Selector list covers BOTH:
+   *   - element ITSELF carrying `.bg-action`/`.bb-section-shell-dark` (chained, no space)
+   *   - any descendant focused inside such an element (descendant, with space)
+   * This closes review HIGH/1: previously only the descendant form was present, so
+   * `<button class="bg-action ...">` (Button variant="filled") missed the override and
+   * received the gold ring — borderline ≈3.0:1 against #1A1A1A. */
+  .bg-action:focus-visible,
   .bg-action :focus-visible,
-  .bb-section-shell-dark :focus-visible {
+  .bb-section-shell-dark:focus-visible,
+  .bb-section-shell-dark :focus-visible,
+  [data-bb-surface="dark"]:focus-visible,
+  [data-bb-surface="dark"] :focus-visible {
     outline-color: var(--text-on-action, rgb(250, 248, 245));
   }
 

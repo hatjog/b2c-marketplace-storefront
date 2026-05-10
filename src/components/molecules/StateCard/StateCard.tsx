@@ -24,10 +24,16 @@ import { cn } from '@/lib/utils';
 
 export type StateCardVariant = 'empty' | 'error' | 'unavailable';
 
+type HeadingLevel = 'h2' | 'h3' | 'h4';
+
 interface StateCardProps {
   variant: StateCardVariant;
   /** Primary message — should be specific, not generic */
   title: string;
+  /** Heading level for the title — defaults to h2 so SR landmark navigation works.
+   *  v1.7.0 Story 2.1 review fix (LOW): role="region" without a real heading is
+   *  not surfaced by some SRs; promote title to a heading element. */
+  titleAs?: HeadingLevel;
   /** Optional supporting explanation */
   description?: string;
   /** Icon node — recommended for visual distinction beyond color */
@@ -40,25 +46,27 @@ interface StateCardProps {
 
 /** Visual + semantic config per variant.
  *  Color channels: empty=neutral, error=red, unavailable=amber.
- *  Gold is NOT the primary channel for any variant (UX spec §Accessibility). */
+ *  Gold is NOT the primary channel for any variant (UX spec §Accessibility).
+ *  v1.7.0 Story 2.1 review fix (MEDIUM): icon backgrounds now sourced from
+ *  --bb-icon-bg-* tokens declared in bb-surfaces.css (no hardcoded RGBA). */
 const variantConfig: Record<
   StateCardVariant,
   { containerClass: string; iconBgStyle: CSSProperties; role: string; ariaLive?: AriaAttributes['aria-live'] }
 > = {
   empty: {
     containerClass: 'bg-secondary border border-primary',
-    iconBgStyle: { backgroundColor: 'var(--bb-surface-muted, rgba(239,229,210,0.52))' },
+    iconBgStyle: { backgroundColor: 'var(--bb-icon-bg-empty, rgba(239,229,210,0.52))' },
     role: 'region',
   },
   error: {
     containerClass: 'bg-negative-secondary border border-negative',
-    iconBgStyle: { backgroundColor: 'rgba(254,228,226,0.7)' },
+    iconBgStyle: { backgroundColor: 'var(--bb-icon-bg-error, rgba(254,228,226,0.7))' },
     role: 'alert',
     ariaLive: 'assertive',
   },
   unavailable: {
     containerClass: 'bg-warning-secondary border border-warning',
-    iconBgStyle: { backgroundColor: 'rgba(255,247,212,0.7)' },
+    iconBgStyle: { backgroundColor: 'var(--bb-icon-bg-unavailable, rgba(255,247,212,0.7))' },
     role: 'status',
     ariaLive: 'polite',
   },
@@ -95,6 +103,7 @@ function DefaultIcon({ variant }: { variant: StateCardVariant }) {
 export function StateCard({
   variant,
   title,
+  titleAs = 'h2',
   description,
   icon,
   action,
@@ -102,6 +111,9 @@ export function StateCard({
   'data-testid': dataTestId,
 }: StateCardProps) {
   const config = variantConfig[variant];
+  // v1.7.0 Story 2.1 review fix (LOW): title rendered as a real heading so
+  // landmark/region navigation surfaces it; aria-label retained as fallback.
+  const TitleTag = titleAs;
 
   return (
     <div
@@ -125,7 +137,7 @@ export function StateCard({
 
       {/* Text area */}
       <div className="flex flex-col gap-1">
-        <p className="heading-sm text-primary">{title}</p>
+        <TitleTag className="heading-sm text-primary m-0">{title}</TitleTag>
         {description && <p className="text-sm text-secondary">{description}</p>}
       </div>
 

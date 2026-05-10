@@ -28,7 +28,9 @@
   --font-family-display: 'Funnel Display', var(--font-funnel-sans, system-ui), -apple-system, 'Segoe UI', sans-serif;
   --font-family-sans:    'Funnel Display', var(--font-funnel-sans, system-ui), -apple-system, 'Segoe UI', sans-serif;
   --font-family-monospace: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  /* --font-family-ops is Inter for operational surfaces (admin/vendor) — NOT this token file */
+  /* v1.7.0 Story 2.1 review fix (LOW): operational surface fonts (Inter etc.) live in
+     admin/vendor/operator workspaces, NOT in this storefront token file. The previous
+     comment alluded to a `--font-family-ops` here, which would breach ARCH-007 DS scope. */
 
   /* ------------------------------------------------------------------
    * Font sizes — BonBeauty 8-step modular scale

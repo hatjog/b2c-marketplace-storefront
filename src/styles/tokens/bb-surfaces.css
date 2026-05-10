@@ -102,6 +102,18 @@
   --bb-skeleton-shimmer: rgba(255, 252, 247, 0.80);  /* bb-surface near-white shimmer        */
 
   /* ------------------------------------------------------------------
+   * StateCard icon-circle background tokens (Story 2.1 review fix MEDIUM)
+   * Used by StateCard variants (empty / error / unavailable) — gives the
+   * icon a subtle tinted halo aligned with the variant's semantic channel.
+   * Each value remains a soft semi-transparent tint of the matching
+   * channel (red-50 / yellow-50 / surface-muted) so contrast vs container
+   * surface is preserved.
+   * ------------------------------------------------------------------ */
+  --bb-icon-bg-empty:       rgba(239, 229, 210, 0.52);  /* matches bb-surface-muted        */
+  --bb-icon-bg-error:       rgba(254, 228, 226, 0.70);  /* red-50 tint, error channel      */
+  --bb-icon-bg-unavailable: rgba(255, 247, 212, 0.70);  /* yellow-50 tint, warning channel */
+
+  /* ------------------------------------------------------------------
    * font-display alias (theme interop with layout.tsx Funnel_Display var)
    * Source: bonbeauty.css --font-display + computed-tokens.json
    * ------------------------------------------------------------------ */

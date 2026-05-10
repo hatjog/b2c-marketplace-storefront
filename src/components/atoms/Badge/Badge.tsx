@@ -42,9 +42,14 @@ const variantClasses: Record<BadgeVariant, string> = {
   unavailable: 'bg-disabled text-disabled opacity-60',
 };
 
-// Custom bg for brand variant (uses --bb-* token not in Tailwind class directly)
+// Custom bg for brand variant (uses --bb-* token not in Tailwind class directly).
+// v1.7.0 Story 2.1 review fix (MEDIUM): text color now sourced from --brand-800 RGB tuple
+// (declared in /public/themes/bonbeauty.css) so retunes propagate. Fallback retained.
 const variantStyles: Partial<Record<BadgeVariant, CSSProperties>> = {
-  brand: { backgroundColor: 'var(--gold-light)', color: 'rgba(83, 65, 29, 1)' },
+  brand: {
+    backgroundColor: 'var(--gold-light, rgba(239, 229, 210, 1))',
+    color: 'rgba(var(--brand-800, 83, 65, 29), 1)',
+  },
 };
 
 export function Badge({
