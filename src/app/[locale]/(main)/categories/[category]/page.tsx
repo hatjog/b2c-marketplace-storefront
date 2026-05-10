@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
+import { getTranslations } from 'next-intl/server';
 
 import { Breadcrumbs } from '@/components/atoms';
 import { SanitizedHTML } from '@/components/molecules';
@@ -101,6 +102,10 @@ async function Category({
 }) {
   const { category: categoryHandle, locale } = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
+  // v1.7.0 Story 2.2 review fix (HIGH H1): Suspense fallback aria-label must
+  // come from i18n — not a hardcoded PL string — so EN/UA/DE SR announcements
+  // match the visible page locale (AC3).
+  const tAccessibility = await getTranslations('accessibility');
 
   // Story v160-cleanup-13c — warm runtime feature-flag cache before any
   // downstream sync `isMultiVendorEnabled()` calls inside ProductCard etc.
@@ -183,12 +188,18 @@ async function Category({
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
 
-      <h1 className="heading-xl uppercase">{category.name}</h1>
+      {/* h1: uses text-primary token per bb-surfaces typography */}
+      <h1 className="heading-xl uppercase text-primary">{category.name}</h1>
       <SanitizedHTML html={category.description} className="mt-4 mb-6 text-sm text-secondary" />
 
+      {/* Suspense: routing-load fallback (initial page hydration) — aria-label distinguishes
+          from submit-load (filter/sort change). Loading skeleton is BonBeauty-aligned. */}
       <Suspense
         fallback={
-          <div data-testid="category-page-loading">
+          <div
+            data-testid="category-page-loading"
+            aria-label={tAccessibility('loading')}
+          >
             <ProductListingSkeleton />
           </div>
         }

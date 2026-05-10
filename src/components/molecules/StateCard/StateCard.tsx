@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 
 export type StateCardVariant = 'empty' | 'error' | 'unavailable';
 
-type HeadingLevel = 'h2' | 'h3' | 'h4';
+type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4';
 
 interface StateCardProps {
   variant: StateCardVariant;

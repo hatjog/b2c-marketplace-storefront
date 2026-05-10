@@ -1,3 +1,15 @@
+/**
+ * ProductListing — v1.7.0 Story 2.2 update.
+ *
+ * Changes:
+ *   - Error state uses DiscoveryEmptyState variant="load-error" (StateCard error)
+ *     instead of raw <p> + inline text — per UX-DR18 (no raw API errors in UI).
+ *   - No-results state uses DiscoveryEmptyState variant="no-results" with
+ *     ClearFiltersButton as the action slot — semantically and visually distinct.
+ *   - Both states have role="alert"/"region", aria-live, and accessible status text.
+ *   - Submit-load (filter/sort change in AlgoliaProductsListing) tracked via
+ *     aria-busy on ProductListingLoadingView (see molecule).
+ */
 import type { HttpTypes } from '@medusajs/types';
 
 import {
@@ -8,6 +20,7 @@ import {
   ProductsPagination
 } from '@/components/organisms';
 import type { StorefrontFilterConfig } from '@/components/cells/DynamicFilterSidebar/DynamicFilterSidebar';
+import { DiscoveryEmptyState } from '@/components/cells/DiscoveryEmptyState/DiscoveryEmptyState';
 import { PRODUCT_LIMIT } from '@/const';
 import { SORT_OPTIONS } from '@/lib/constants';
 import type { SortOption } from '@/lib/constants';
@@ -229,10 +242,18 @@ export const ProductListing = async ({
       pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
       paginatedProducts = response.products;
     }
-  } catch {
+  } catch (err) {
+    // v1.7.0 Story 2.2 review fix (INFO I3): log the underlying error to the
+    // server console so ops have a signal — catch was previously parameterless.
+    // Raw API errors / stack traces never surface in UI per UX-DR18.
+    console.error(
+      '[ProductListing] product fetch failed:',
+      err instanceof Error ? err.message : String(err)
+    );
+    // load-error state: visually and semantically distinct from no-results (UX-DR19).
     return (
-      <div className="py-12 text-center" data-testid="product-listing-error">
-        <p>{t('load_error')}</p>
+      <div className="py-8" data-testid="product-listing-error">
+        <DiscoveryEmptyState variant="load-error" />
       </div>
     );
   }
@@ -259,9 +280,13 @@ export const ProductListing = async ({
           data-testid="product-listing-section"
         >
           {paginatedProducts.length === 0 ? (
-            <div className="bb-section-shell flex flex-col items-center gap-4 py-12" data-testid="empty-state">
-              <p>{t('no_results')}</p>
-              <ClearFiltersButton />
+            /* no-results: semantically distinct from load-error/permission-denied (UX-DR19).
+               ClearFiltersButton is the one recommended next action per UX-DR18. */
+            <div className="py-6" data-testid="product-listing-empty">
+              <DiscoveryEmptyState
+                variant="no-results"
+                action={<ClearFiltersButton />}
+              />
             </div>
           ) : (
             <div

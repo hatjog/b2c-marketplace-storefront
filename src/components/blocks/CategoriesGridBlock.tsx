@@ -1,3 +1,12 @@
+/**
+ * CategoriesGridBlock — v1.7.0 Story 2.2 update.
+ *
+ * Changes:
+ *   - Hardcoded "SHOP BY CATEGORY" fallback replaced with i18n key
+ *     (navigation.all_products) so the section heading is locale-aware.
+ */
+import { getTranslations } from 'next-intl/server';
+
 import { HomeCategories } from '@/components/sections';
 import { fetchHomepageCategories } from '@/lib/homepage/dynamic-blocks';
 
@@ -20,10 +29,14 @@ export async function CategoriesGridBlock({ section }: { section: CategoriesGrid
     return null;
   }
 
+  const t = await getTranslations('category');
+  // Use CMS-provided heading when available, fall back to i18n key (not hardcoded string)
+  const heading = section.heading ?? t('breadcrumb_all');
+
   return (
     <div className="w-full">
       <HomeCategories
-        heading={section.heading ?? 'SHOP BY CATEGORY'}
+        heading={heading}
         categories={categories}
       />
     </div>

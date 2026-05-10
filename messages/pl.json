@@ -716,5 +716,56 @@
         "failed_cta": "Spróbuj ponownie"
       }
     }
+  },
+  "category": {
+    "page_title": "Wszystkie oferty",
+    "page_description": "Przeglądaj vouchery na zabiegi beauty od zweryfikowanych salonów.",
+    "breadcrumb_all": "Wszystkie kategorie",
+    "loading_aria": "Ładowanie kategorii...",
+    "results_count": "{count, plural, one {# oferta} few {# oferty} many {# ofert} other {# ofert}}",
+    "view_offer_cta": "Zobacz ofertę",
+    "buy_voucher_cta": "Kup voucher",
+    "voucher_type_label": "Typ vouchera",
+    "validity_label": "Ważność",
+    "verified_seller_label": "Salon zweryfikowany",
+    "trust_mark_label": "Zweryfikowany marketplace",
+    "loading_new_results": "Ładowanie nowych wyników...",
+    "loading_page": "Ładowanie strony...",
+    "filters_cleared": "Filtry wyczyszczone, wyniki odświeżone",
+    "active_filters_label": "Aktywne filtry",
+    "filter_results_aria": "Wyniki filtrowania"
+  },
+  "discovery": {
+    "search_loading": "Wyszukiwanie...",
+    "search_results": "Wyniki wyszukiwania",
+    "active_filters_label": "Aktywne filtry",
+    "clear_filters_aria": "Wyczyść wszystkie filtry",
+    "filters_cleared_status": "Filtry wyczyszczone",
+    "popular_categories": "Popularne kategorie",
+    "popular_salons": "Polecane salony",
+    "featured_offers": "Wyróżnione oferty",
+    "no_purchase_heading": "Odkryj BonBeauty",
+    "no_purchase_body": "Przeglądaj vouchery do najlepszych salonów beauty.",
+    "no_purchase_cta": "Przeglądaj oferty",
+    "listing_load_status": "Ładowanie ofert"
+  },
+  "discovery_empty": {
+    "initial_headline": "Odkryj pierwsze oferty",
+    "initial_body": "Nie masz jeszcze historii zakupów. Zacznij od przeglądania popularnych kategorii lub salonów.",
+    "initial_cta": "Przeglądaj kategorie",
+    "initial_status": "Brak historii zakupów — pokaż rekomendacje",
+    "no_results_headline": "Brak wyników dla Twoich filtrów",
+    "no_results_body": "Spróbuj wyczyścić filtry lub poszerzyć kryteria wyszukiwania.",
+    "no_results_cta": "Wyczyść filtry",
+    "no_results_status": "Brak wyników — wyczyść filtry",
+    "permission_denied_headline": "Ta oferta jest niedostępna",
+    "permission_denied_body": "Oferta może być ograniczona regionalnie lub niedostępna w Twoim koncie.",
+    "permission_denied_cta": "Wróć do kategorii",
+    "permission_denied_status": "Dostęp do oferty niedozwolony",
+    "load_error_headline": "Nie udało się załadować ofert",
+    "load_error_body": "Sprawdź połączenie z internetem i spróbuj ponownie.",
+    "load_error_cta": "Spróbuj ponownie",
+    "load_error_status": "Błąd ładowania ofert",
+    "error_reset_aria": "Odśwież stronę z ofertami"
   }
 }

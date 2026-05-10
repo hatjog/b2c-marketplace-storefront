@@ -1,5 +1,7 @@
 export { ActiveFilterElement } from './ActiveFilterElement/ActiveFilterElement';
 export { CustomCarousel as Carousel } from './Carousel/Carousel';
+export { DiscoveryEmptyState } from './DiscoveryEmptyState/DiscoveryEmptyState';
+export type { DiscoveryEmptyVariant } from './DiscoveryEmptyState/DiscoveryEmptyState';
 export { CartDropdown } from './CartDropdown/CartDropdown';
 export { CategoryFilter } from './CategoryFilter/CategoryFilter';
 export { DurationFilter } from './DurationFilter/DurationFilter';
