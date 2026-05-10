@@ -664,6 +664,8 @@
       "expires_at_label": "Дійсний до",
       "not_found_message": "Невідомий ваучер",
       "consent_pending_message": "Зберігаємо згоду. Поверніться за мить.",
+      "sync_pending_message": "Статус ваучера може тимчасово не синхронізуватися — він оновиться автоматично.",
+      "sync_pending_action": "Перейти до списку ваучерів",
       "post_claim_link": "Перейти до салону",
       "pdf_download_cta": "Завантажити ваучер PDF",
       "meta_default_title": "Ваучер BonBeauty",
