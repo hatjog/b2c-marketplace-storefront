@@ -58,6 +58,7 @@ import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtim
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import {
+  cleanText,
   derivePdpVoucherClarityVariant,
   resolveValidityWording,
   type VoucherClarityVariant,
@@ -133,27 +134,56 @@ export const ProductDetails = async ({
   // not ad-hoc inline conditions scattered through JSX.
   // F16 fix: getProductPrice throws on missing product.id — guard so PDP
   // degrades to error variant instead of bubbling 500 to error.tsx (UX-DR18).
+  // R18 fix: log the swallowed throw to the server console so silent
+  // degradation does not hide upstream bugs (customer never sees the log).
+  // R7 fix: also capture the formatted price string so VoucherClaritySurface
+  // can render its own price slot (AC1 "voucher value visible"). Previously the
+  // price prop was always undefined and the surface skipped its price block.
   let hasPrice = false;
+  let cheapestVariantInventory: number | null = null;
+  let voucherPriceDisplay: string | null = null;
   try {
-    const { cheapestVariant } = getProductPrice({ product });
+    const { cheapestVariant, cheapestPrice } = getProductPrice({ product });
     hasPrice = cheapestVariant !== null && !!cheapestVariant.calculated_price;
-  } catch {
+    if (cheapestVariant && typeof (cheapestVariant as { inventory_quantity?: number }).inventory_quantity === 'number') {
+      cheapestVariantInventory = (cheapestVariant as { inventory_quantity?: number }).inventory_quantity ?? null;
+    }
+    if (cheapestPrice && typeof cheapestPrice.calculated_price === 'string') {
+      voucherPriceDisplay = cheapestPrice.calculated_price;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[ProductDetails] getProductPrice threw — falling back to error variant', e);
     hasPrice = false;
   }
+
+  // R6 fix: AC3 explicit signals — wire isOutOfStock from product variant data
+  // and isExpiredInCatalog from product status (Medusa lifecycle field).
+  // The PDP helper now exercises all three PDP-only signals it advertises.
+  const isOutOfStock = cheapestVariantInventory === 0;
+  const isExpiredInCatalog =
+    typeof product.status === 'string' && product.status !== 'published';
 
   const voucherVariant: VoucherClarityVariant = derivePdpVoucherClarityVariant({
     hasPrice,
     isVendorUnavailable: showNoActiveVendorsFallback,
+    isOutOfStock,
+    isExpiredInCatalog,
   });
 
   // F2 fix: status messages + next-action labels routed through next-intl
   // instead of hardcoded PL literals (anti-pattern).
+  // R5 fix: i18n keys renamed status_*_heading → status_*_message — the surface
+  // renders this string as flow text inside <div role="status">, not as a
+  // heading, so the semantic name now matches the render path.
+  // R6 fix: error branch now uses the `expired` message key matching its kind
+  // (was mismatched: kind=expired + message=status_unavailable_*).
   const tVoucher = await getTranslations('voucher.clarity');
   const voucherStatus =
     voucherVariant === 'warning'
       ? {
           kind: 'unavailable' as const,
-          message: tVoucher('status_pending_heading'),
+          message: tVoucher('status_pending_message'),
           nextAction: {
             href: `/${locale}/categories`,
             label: tVoucher('next_action_back_to_list'),
@@ -162,7 +192,7 @@ export const ProductDetails = async ({
       : voucherVariant === 'error'
         ? {
             kind: 'expired' as const,
-            message: tVoucher('status_unavailable_heading'),
+            message: tVoucher('status_expired_message'),
             nextAction: {
               href: `/${locale}/categories`,
               label: tVoucher('next_action_back_to_list'),
@@ -256,9 +286,10 @@ export const ProductDetails = async ({
           Story 2.9 owns the legal copy SSOT — we reference it here, not freeze it. */}
       <VoucherClaritySurface
         title={product.title ?? ''}
+        price={voucherPriceDisplay}
         validityWording={validityWording}
         realizationRules={realizationRules}
-        merchantName={seller?.name}
+        merchantName={cleanText(seller?.name)}
         merchantHandle={seller?.handle}
         variant={voucherVariant}
         status={voucherStatus}

@@ -190,13 +190,16 @@
       "missing_reviews_label": "Noch keine Bewertungen",
       "missing_reviews_aria": "Bewertungen: keine Daten verfügbar",
       "missing_address_label": "Adresse nicht angegeben",
-      "partial_note": "Dieser Salon hat noch nicht alle Informationen bereitgestellt.",
+      "partial_note": "Vollständiges Salon-Profil wird ergänzt.",
       "unavailable_body": "Dieser Salon hat noch keine vollständigen Informationen bereitgestellt. Sie können Partnersalons durchsuchen oder uns kontaktieren.",
       "unavailable_cta": "Partnersalons durchsuchen",
       "seller_link_aria": "Salonprofil ansehen: {name}",
       "seller_detail_link": "Mehr über diesen Salon",
       "seller_detail_link_aria": "Weitere Informationen über Salon {name}",
-      "missing_value_aria": "{label}: nicht verfügbar"
+      "missing_value_aria": "{label}: nicht verfügbar",
+      "partial_cta": "Vorläufiges Salon-Profil ansehen",
+      "partial_cta_aria": "Vorläufiges Salon-Profil von {name} ansehen",
+      "no_handle_fallback_cta": "Partner-Salons durchsuchen"
     }
   },
   "footer": {
@@ -754,14 +757,14 @@
       "refund_policy_link": "Richtlinie ansehen",
       "merchant_label": "Salon",
       "merchant_link_aria": "Salonprofil ansehen: {name}",
-      "status_pending_heading": "Gutschein vorübergehend nicht verfügbar",
-      "status_unavailable_heading": "Gutschein nicht verfügbar",
-      "status_expired_heading": "Gutschein abgelaufen",
-      "status_recovery_heading": "Problem mit der Bestellung",
       "next_action_choose_variant": "Andere Option wählen",
       "next_action_back_to_list": "Zurück zur Liste",
       "next_action_notify_me": "Mich benachrichtigen",
-      "next_action_contact_salon": "Salon kontaktieren"
+      "next_action_contact_salon": "Salon kontaktieren",
+      "status_pending_message": "Gutschein vorübergehend nicht verfügbar",
+      "status_unavailable_message": "Gutschein nicht verfügbar",
+      "status_expired_message": "Gutschein abgelaufen",
+      "status_recovery_message": "Problem mit der Bestellung"
     }
   },
   "cross_sell": {

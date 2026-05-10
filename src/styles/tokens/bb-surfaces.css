@@ -93,6 +93,13 @@
   --color-error:   rgb(187, 37, 26);         /* red-600   #BB251A — AA 5.7:1  ✅            */
   --color-warning: rgb(157, 83, 15);         /* yellow-700 — warning channel                */
 
+  /* Trust card surface tokens (Story 2.3 re-review R3) — used by
+   * MarketplaceVerificationMark surface='page' and any future verified-trust
+   * card chip. Border / background derived from --color-trust at low alpha
+   * so we avoid hardcoded rgba() literals in component className strings. */
+  --bb-trust-card-border: rgba(22, 101, 52, 0.20);  /* derived from --color-trust */
+  --bb-trust-card-bg:     rgba(22, 101, 52, 0.08);  /* derived from --color-trust */
+
   /* ------------------------------------------------------------------
    * Skeleton / Loading state surface tokens
    * Source: BonBeauty surface system — muted neutral not raw gray

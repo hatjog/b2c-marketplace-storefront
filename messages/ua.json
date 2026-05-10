@@ -190,13 +190,16 @@
       "missing_reviews_label": "Відгуків поки немає",
       "missing_reviews_aria": "Відгуки: дані недоступні",
       "missing_address_label": "Адресу не вказано",
-      "partial_note": "Салон ще не надав повну інформацію.",
+      "partial_note": "Повний профіль салону доповнюється.",
       "unavailable_body": "Салон ще не надав повну інформацію. Ви можете переглянути партнерські салони або зв’язатися з нами.",
       "unavailable_cta": "Переглянути партнерські салони",
       "seller_link_aria": "Перейти до профілю салону: {name}",
       "seller_detail_link": "Більше про цей салон",
       "seller_detail_link_aria": "Більше інформації про салон {name}",
-      "missing_value_aria": "{label}: даних немає"
+      "missing_value_aria": "{label}: даних немає",
+      "partial_cta": "Переглянути попередній профіль салону",
+      "partial_cta_aria": "Переглянути попередній профіль салону {name}",
+      "no_handle_fallback_cta": "Переглядати партнерські салони"
     }
   },
   "footer": {
@@ -754,14 +757,14 @@
       "refund_policy_link": "Переглянути правила",
       "merchant_label": "Салон",
       "merchant_link_aria": "Перейти до профілю салону {name}",
-      "status_pending_heading": "Ваучер тимчасово недоступний",
-      "status_unavailable_heading": "Ваучер недоступний",
-      "status_expired_heading": "Термін дії ваучера минув",
-      "status_recovery_heading": "Проблема із замовленням",
       "next_action_choose_variant": "Виберіть інший варіант",
       "next_action_back_to_list": "Повернутися до списку",
       "next_action_notify_me": "Повідомити мене",
-      "next_action_contact_salon": "Зв’язатися із салоном"
+      "next_action_contact_salon": "Зв’язатися із салоном",
+      "status_pending_message": "Ваучер тимчасово недоступний",
+      "status_unavailable_message": "Ваучер недоступний",
+      "status_expired_message": "Термін дії ваучера минув",
+      "status_recovery_message": "Проблема із замовленням"
     }
   },
   "cross_sell": {

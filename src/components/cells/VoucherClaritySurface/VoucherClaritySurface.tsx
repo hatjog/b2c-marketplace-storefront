@@ -80,6 +80,11 @@ export interface VoucherClaritySurfaceProps {
   merchantSlot?: ReactNode;
   /** Slot: renders the primary CTA (add-to-cart button from ProductDetailsHeader) */
   ctaSlot?: ReactNode;
+  /** R20/R21 fix: optional instance ID prefix — required when multiple
+   *  VoucherClaritySurface instances render on the same page (e.g. PDP + cart
+   *  drawer combo in Story 2.4). Defaults to a stable static prefix; pass a
+   *  unique value to avoid duplicate `id` attributes in the DOM. */
+  instanceId?: string;
 }
 
 /** Status icon for non-default variants — inline SVG, no external deps. */
@@ -142,8 +147,11 @@ export async function VoucherClaritySurface({
   className,
   merchantSlot,
   ctaSlot,
+  instanceId = 'voucher-clarity',
 }: VoucherClaritySurfaceProps) {
   const t = await getTranslations('voucher.clarity');
+  const headingId = `${instanceId}-heading`;
+  const rulesLabelId = `${instanceId}-rules-label`;
 
   const isNonDefault = variant === 'warning' || variant === 'error';
   const isCondensed = variant === 'condensed';
@@ -152,18 +160,21 @@ export async function VoucherClaritySurface({
   // F6 fix: tokenized warning/error surfaces (--color-warning, --color-error,
   // --bb-icon-bg-error / unavailable from bb-surfaces.css). No raw rgba literals.
   // F20 fix: condensed gets a tighter card variant — lighter shell for cart row reuse.
+  // R4 fix: border now uses the foreground (semantic) token while fill stays
+  // muted — under forced-colors mode the OS preserves foreground colors so the
+  // border remains visible even when the fill is flattened.
   const surfaceClass = cn(
     variant === 'condensed' ? 'bb-card-muted space-y-3' : 'bb-section-shell space-y-4',
     variant === 'warning' &&
-      'border-[var(--bb-icon-bg-unavailable)] bg-[var(--bb-icon-bg-unavailable)]',
+      'border-[color:var(--color-warning)] bg-[color:var(--bb-icon-bg-unavailable)]',
     variant === 'error' &&
-      'border-[var(--bb-icon-bg-error)] bg-[var(--bb-icon-bg-error)]',
+      'border-[color:var(--color-error)] bg-[color:var(--bb-icon-bg-error)]',
     className,
   );
 
   return (
     <section
-      aria-labelledby="voucher-clarity-heading"
+      aria-labelledby={headingId}
       className={surfaceClass}
       data-testid="voucher-clarity-surface"
       data-variant={variant}
@@ -176,10 +187,10 @@ export async function VoucherClaritySurface({
         <div
           role="status"
           className={cn(
-            'flex items-start gap-2 rounded-md px-3 py-2',
+            'flex items-start gap-2 rounded-md border px-3 py-2',
             variant === 'warning'
-              ? 'bg-[var(--bb-icon-bg-unavailable)] text-[color:var(--color-warning)]'
-              : 'bg-[var(--bb-icon-bg-error)] text-[color:var(--color-error)]',
+              ? 'border-[color:var(--color-warning)] bg-[var(--bb-icon-bg-unavailable)] text-[color:var(--color-warning)]'
+              : 'border-[color:var(--color-error)] bg-[var(--bb-icon-bg-error)] text-[color:var(--color-error)]',
           )}
           data-testid="voucher-clarity-status-banner"
         >
@@ -212,7 +223,7 @@ export async function VoucherClaritySurface({
 
       {/* ─── Heading ─────────────────────────────────────────────────────── */}
       <h2
-        id="voucher-clarity-heading"
+        id={headingId}
         className={cn(
           'heading-sm text-primary',
           isNonDefault && 'opacity-80',
@@ -264,10 +275,10 @@ export async function VoucherClaritySurface({
           F6 fix: trust check icon uses tokenized text-trust class, no hex fallback. */}
       {!isCondensed && realizationRules.length > 0 && (
         <div data-testid="voucher-clarity-rules">
-          <p id="voucher-clarity-rules-label" className="label-sm mb-2 text-secondary">
+          <p id={rulesLabelId} className="label-sm mb-2 text-secondary">
             {t('realization_rules_label')}
           </p>
-          <ul aria-labelledby="voucher-clarity-rules-label" className="space-y-1">
+          <ul aria-labelledby={rulesLabelId} className="space-y-1">
             {realizationRules.map((rule, i) => (
               <li
                 key={i}

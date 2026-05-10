@@ -18,6 +18,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 // Mock next-intl server
 vi.mock('next-intl/server', () => ({
+  // R11 fix: SellerProofSurface now calls getLocale() for locale-aware rating
+  // decimal formatting. Mock returns 'pl' to exercise the comma-decimal path.
+  getLocale: vi.fn().mockResolvedValue('pl'),
   getTranslations: vi.fn().mockImplementation((_namespace: string) => {
     return Promise.resolve((key: string, params?: Record<string, unknown>) => {
       const translations: Record<string, string> = {
@@ -42,6 +45,10 @@ vi.mock('next-intl/server', () => ({
         seller_link_aria: params ? `Przejdź do profilu salonu ${params.name}` : '',
         seller_detail_link: 'Więcej o salonie',
         seller_detail_link_aria: params ? `Więcej informacji o salonie ${params.name}` : '',
+        partial_cta: 'Zobacz wstępny profil salonu',
+        partial_cta_aria: params ? `Zobacz wstępny profil salonu ${params.name}` : '',
+        no_handle_fallback_cta: 'Przeglądaj salony partnerskie',
+        missing_value_aria: params ? `${params.label}: brak danych` : '',
       };
       return translations[key] ?? key;
     });
@@ -172,18 +179,19 @@ describe('SellerProofSurface — complete state (UX-CMP-3)', () => {
     expect(identityEls.length).toBe(1);
   });
 
-  it('renders rating proof point for complete state', async () => {
+  it('renders rating proof point for complete state (R11 fix: PL comma-decimal)', async () => {
     const el = await SellerProofSurface({ seller: makeCompleteSeller() });
     const proofPoints = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-points');
     const text = getText(proofPoints[0]);
-    expect(text).toContain('4.7');
+    // R11 fix: PL locale uses comma decimal separator (was hardcoded period via toFixed)
+    expect(text).toContain('4,7');
     expect(text).toContain('32');
   });
 
-  it('rating element has descriptive aria-label (4.7 z 5 na podstawie 32 opinii)', async () => {
+  it('rating element has descriptive aria-label (4,7 z 5 na podstawie 32 opinii)', async () => {
     const el = await SellerProofSurface({ seller: makeCompleteSeller() });
     const proofPoints = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-points');
-    const ratingEls = findAll(proofPoints[0], e => typeof e.props['aria-label'] === 'string' && (e.props['aria-label'] as string).includes('4.7'));
+    const ratingEls = findAll(proofPoints[0], e => typeof e.props['aria-label'] === 'string' && (e.props['aria-label'] as string).includes('4,7'));
     expect(ratingEls.length).toBeGreaterThan(0);
     expect(ratingEls[0].props['aria-label']).toContain('32');
   });
@@ -319,6 +327,49 @@ describe('SellerProofSurface — all three states are visually + semantically di
     expect(partialH).toBeTruthy();
     expect(unavailableH).toBeTruthy();
     expect(new Set([completeH, partialH, unavailableH]).size).toBe(3);
+  });
+});
+
+describe('SellerProofSurface — distinct next action per state (R1/R2 fix)', () => {
+  it('R1: partial state renders distinct CTA testid (seller-proof-partial-cta, not -detail-link)', async () => {
+    const el = await SellerProofSurface({ seller: makePartialSeller() });
+    const partialCta = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-partial-cta');
+    const detailLink = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-detail-link');
+    expect(partialCta.length).toBe(1);
+    expect(detailLink.length).toBe(0);
+    expect(getText(partialCta[0])).toContain('Zobacz wstępny profil salonu');
+  });
+
+  it('R1: complete state still uses seller-proof-detail-link (unchanged)', async () => {
+    const el = await SellerProofSurface({ seller: makeCompleteSeller() });
+    const partialCta = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-partial-cta');
+    const detailLink = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-detail-link');
+    expect(partialCta.length).toBe(0);
+    expect(detailLink.length).toBe(1);
+  });
+
+  it('R2: partial state with name but no handle still renders exactly one CTA (no-handle fallback)', async () => {
+    const seller: SellerProofData = {
+      ...makePartialSeller(),
+      handle: null,
+    };
+    const el = await SellerProofSurface({ seller });
+    const fallback = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-no-handle-fallback');
+    const detailLink = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-detail-link');
+    const partialCta = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-partial-cta');
+    expect(fallback.length).toBe(1);
+    expect(detailLink.length + partialCta.length).toBe(0);
+    expect(getText(fallback[0])).toContain('Przeglądaj salony partnerskie');
+  });
+
+  it('R2: complete state with handle null also falls back (defensive)', async () => {
+    const seller: SellerProofData = {
+      ...makeCompleteSeller(),
+      handle: null,
+    };
+    const el = await SellerProofSurface({ seller });
+    const fallback = findAll(el as ReactEl, e => e.props['data-testid'] === 'seller-proof-no-handle-fallback');
+    expect(fallback.length).toBe(1);
   });
 });
 

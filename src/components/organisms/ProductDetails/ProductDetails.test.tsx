@@ -68,6 +68,11 @@ vi.mock('@/lib/voucher/voucher-copy', () => ({
   derivePdpVoucherClarityVariant: vi.fn().mockReturnValue('default'),
   deriveVoucherClarityVariant: vi.fn().mockReturnValue('default'),
   resolveValidityWording: vi.fn().mockReturnValue(null),
+  // R12 fix: cleanText is now shared between SellerProofSurface and the PDP
+  // merchant-link aria path; surface accepts the sanitised name.
+  cleanText: vi.fn().mockImplementation((s: string | null | undefined) =>
+    typeof s === 'string' && s.trim().length > 0 ? s.trim() : null,
+  ),
 }));
 
 // next-intl server mock — ProductDetails now calls getTranslations('voucher.clarity')
@@ -75,8 +80,9 @@ vi.mock('next-intl/server', () => ({
   getTranslations: vi.fn().mockImplementation(() =>
     Promise.resolve((key: string) => {
       const translations: Record<string, string> = {
-        status_pending_heading: 'Voucher tymczasowo niedostępny',
-        status_unavailable_heading: 'Voucher niedostępny',
+        status_pending_message: 'Voucher tymczasowo niedostępny',
+        status_unavailable_message: 'Voucher niedostępny',
+        status_expired_message: 'Voucher wygasł',
         next_action_back_to_list: 'Wróć do listy',
       };
       return translations[key] ?? key;
