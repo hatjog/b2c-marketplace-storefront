@@ -12,11 +12,13 @@
     "test:vitest": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:flag-on": "playwright test multi-vendor-flag-on.spec",
-    "test:e2e:snapshot-off": "playwright test multi-vendor-flag-off-snapshot.spec"
+    "test:e2e:snapshot-off": "playwright test multi-vendor-flag-off-snapshot.spec",
+    "test:ux-evidence": "playwright test --config playwright.config.ts e2e/ux-evidence"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.1",
     "@hookform/resolvers": "^3.10.0",
+    "@internationalized/date": "^3.12.1",
     "@medusajs/js-sdk": "2.13.4",
     "@medusajs/types": "2.13.4",
     "@medusajs/ui": "^4.0.33",
@@ -53,10 +55,10 @@
     "tailwind-merge": "^2.6.0",
     "talkjs": "^0.37.0",
     "uuid": "^11.0.5",
-    "zod": "^3.24.1",
-    "@internationalized/date": "^3.12.1"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@chromatic-com/storybook": "^3.2.3",
     "@eslint/eslintrc": "^3",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
