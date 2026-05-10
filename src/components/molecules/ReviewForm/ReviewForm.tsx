@@ -12,9 +12,9 @@ import {
   type FieldValues
 } from 'react-hook-form';
 
+import { createReview } from '@/actions/reviews';
 import { Button } from '@/components/atoms';
 import { InteractiveStarRating } from '@/components/atoms/InteractiveStarRating/InteractiveStarRating';
-import { createReview } from '@/lib/data/reviews';
 import type { Order } from '@/lib/data/reviews.shared';
 import { cn } from '@/lib/utils';
 
