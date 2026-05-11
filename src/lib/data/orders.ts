@@ -108,7 +108,7 @@ export const listOrders = async (
   limit: number = 10,
   offset: number = 0,
   filters?: Record<string, any>
-) => {
+): Promise<MercurOrderWithOrderGroup[]> => {
   const headers = {
     ...(await getAuthHeaders())
   };
@@ -117,7 +117,8 @@ export const listOrders = async (
     ...(await getCacheOptions('orders'))
   };
 
-  const hasOrderGroup = (order: MercurOrder): order is MercurOrderWithOrderGroup => Boolean(order.order_group?.id);
+  const hasOrderGroup = (order: MercurOrder): order is MercurOrderWithOrderGroup =>
+    Boolean(order.order_group?.id);
 
   return sdk.client
     .fetch<{
@@ -136,8 +137,19 @@ export const listOrders = async (
       next,
       cache: 'no-cache'
     })
-    .then(({ orders }) => orders.filter(hasOrderGroup))
-    .catch(err => medusaError(err));
+    .then(({ orders }) => (orders ?? []).filter(hasOrderGroup))
+    .catch(err => {
+      const status = err?.response?.status;
+      const message = String(err?.response?.data?.message ?? err?.message ?? '');
+      const emptyOrdersResponse =
+        status === 404 || status === 204 || /no orders|orders not found|not found/i.test(message);
+
+      if (emptyOrdersResponse) {
+        return [];
+      }
+
+      return medusaError(err);
+    });
 };
 
 export const createTransferRequest = async (

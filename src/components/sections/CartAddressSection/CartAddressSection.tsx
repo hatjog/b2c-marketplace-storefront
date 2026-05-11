@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useTransition, type FormEvent } from 'react';
 
 import { CheckCircleSolid } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
@@ -12,6 +12,10 @@ import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import ShippingAddress from '@/components/organisms/ShippingAddress/ShippingAddress';
 import Spinner from '@/icons/spinner';
+import {
+  checkoutAddressPayloadFromFormData,
+  type CheckoutAddressPayload
+} from '@/lib/checkout/address-payload';
 import { setAddresses } from '@/lib/data/cart';
 import compareAddresses from '@/lib/helpers/compare-addresses';
 
@@ -43,7 +47,20 @@ export const CartAddressSection = ({
       : true
   );
 
-  const [message, formAction] = useActionState<string | null, FormData>(setAddresses, null);
+  const [isPending, startTransition] = useTransition();
+  const [message, formAction] = useActionState<string | null, CheckoutAddressPayload>(
+    setAddresses,
+    null
+  );
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const payload = checkoutAddressPayloadFromFormData(new FormData(event.currentTarget));
+    payload.same_as_billing = sameAsBilling;
+    startTransition(() => {
+      formAction(payload);
+    });
+  };
 
   useEffect(() => {
     if (!isAddress && message !== 'success') {
@@ -86,7 +103,7 @@ export const CartAddressSection = ({
           </Text>
         )}
       </div>
-      <form action={formAction}>
+      <form onSubmit={handleSubmit}>
         {isOpen ? (
           <div className="pb-8">
             <ShippingAddress
@@ -100,6 +117,7 @@ export const CartAddressSection = ({
               className="mt-6 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
               data-testid="submit-address-button"
               variant="tonal"
+              disabled={isPending}
             >
               Save
             </Button>

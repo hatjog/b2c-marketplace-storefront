@@ -11,6 +11,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { fetchSellerById, resolveSellerHandleToId } from '../sellers';
+
 // ---- Mock mercurClient + unstable_cache BEFORE module imports ----
 
 // unstable_cache (Next.js server function) is not available in vitest env —
@@ -56,8 +58,6 @@ vi.mock('../../config', () => ({
   }
 }));
 
-import { fetchSellerById, resolveSellerHandleToId } from '../sellers';
-
 // ---------------------------------------------------------------------------
 
 const makeSeller = (overrides: Record<string, unknown> = {}) => ({
@@ -102,15 +102,60 @@ describe('resolveSellerHandleToId', () => {
     );
   });
 
+  it('falls back to unfiltered seller list when handle filter returns empty', async () => {
+    mockSellersQuery.mockResolvedValueOnce({ sellers: [] }).mockResolvedValueOnce({
+      sellers: [
+        makeSeller({ id: 'seller-other', handle: 'other' }),
+        makeSeller({ id: 'seller-city', handle: 'city-beauty' })
+      ]
+    });
+
+    const result = await resolveSellerHandleToId('city-beauty');
+
+    expect(result).toBe('seller-city');
+    expect(mockSellersQuery).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ handle: 'city-beauty', limit: 1 })
+    );
+    expect(mockSellersQuery).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ fetchOptions: { cache: 'no-cache' } })
+    );
+  });
+
+  it('does not accept a mismatched first seller when backend ignores the handle filter', async () => {
+    mockSellersQuery
+      .mockResolvedValueOnce({
+        sellers: [makeSeller({ id: 'seller-other', handle: 'other' })]
+      })
+      .mockResolvedValueOnce({
+        sellers: [makeSeller({ id: 'seller-city', handle: 'city-beauty' })]
+      });
+
+    const result = await resolveSellerHandleToId('city-beauty');
+
+    expect(result).toBe('seller-city');
+  });
+
+  it('normalizes leading slashes and handle casing during resolution', async () => {
+    mockSellersQuery.mockResolvedValue({
+      sellers: [makeSeller({ id: 'seller-city', handle: 'City-Beauty' })]
+    });
+
+    const result = await resolveSellerHandleToId('/city-beauty/');
+
+    expect(result).toBe('seller-city');
+  });
+
   it('returns null when sellers array is empty (handle not found)', async () => {
-    mockSellersQuery.mockResolvedValue({ sellers: [] });
+    mockSellersQuery.mockResolvedValueOnce({ sellers: [] }).mockResolvedValueOnce({ sellers: [] });
 
     const result = await resolveSellerHandleToId('nonexistent');
     expect(result).toBeNull();
   });
 
   it('returns null when sellers key is missing in response', async () => {
-    mockSellersQuery.mockResolvedValue({});
+    mockSellersQuery.mockResolvedValueOnce({}).mockResolvedValueOnce({});
 
     const result = await resolveSellerHandleToId('bonbeauty');
     expect(result).toBeNull();
@@ -174,9 +219,7 @@ describe('fetchSellerById', () => {
 
     await fetchSellerById('seller-abc');
 
-    expect(mockSellersIdQuery).toHaveBeenCalledWith(
-      expect.objectContaining({ $id: 'seller-abc' })
-    );
+    expect(mockSellersIdQuery).toHaveBeenCalledWith(expect.objectContaining({ $id: 'seller-abc' }));
   });
 
   it('passes fields param when provided', async () => {

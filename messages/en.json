@@ -615,6 +615,8 @@
     "payment_failed_description": "Try again or go back to the cart to change the payment method."
   },
   "voucher": {
+    "qr_code_aria_label": "Voucher QR code",
+    "qr_code_label": "Scan at the salon",
     "consent": {
       "heading": "Recipient data processing consent",
       "purpose": "I consent to the processing of recipient data for the purpose of delivering the voucher. Data will be retained for 365 days and may be erased on request in accordance with the GDPR.",

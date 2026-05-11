@@ -615,6 +615,8 @@
     "payment_failed_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności."
   },
   "voucher": {
+    "qr_code_aria_label": "Kod QR vouchera",
+    "qr_code_label": "Zeskanuj w salonie",
     "consent": {
       "heading": "Zgoda na przetwarzanie danych odbiorcy",
       "purpose": "Wyrażam zgodę na przetwarzanie danych odbiorcy w celu dostarczenia vouchera. Dane będą przechowywane przez 365 dni i mogą zostać usunięte na żądanie zgodnie z RODO.",

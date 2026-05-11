@@ -1,7 +1,7 @@
-import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import test, { describe } from 'node:test';
 
 const root = process.cwd();
 const locales = ['pl', 'en', 'ua', 'de'];
@@ -13,9 +13,7 @@ function flatten(value, prefix = '') {
   return Object.entries(value).flatMap(([key, item]) => {
     if (key === '_review' && prefix === '') return [];
     const next = prefix ? `${prefix}.${key}` : key;
-    return item && typeof item === 'object' && !Array.isArray(item)
-      ? flatten(item, next)
-      : [next];
+    return item && typeof item === 'object' && !Array.isArray(item) ? flatten(item, next) : [next];
   });
 }
 
@@ -41,6 +39,17 @@ describe('Story 6.3 storefront i18n hardening', () => {
       assert.equal(typeof messages.confirmation.meta_description, 'string');
       assert.equal(typeof messages.user.welcome_heading, 'string');
       assert.equal(typeof messages.user.welcome_subheading, 'string');
+    }
+  });
+
+  test('voucher QR labels exist at the top-level voucher namespace in every release locale', () => {
+    for (const locale of locales) {
+      const messages = readJson(`messages/${locale}.json`);
+
+      assert.equal(typeof messages.voucher.qr_code_aria_label, 'string');
+      assert.equal(typeof messages.voucher.qr_code_label, 'string');
+      assert.notEqual(messages.voucher.qr_code_aria_label.trim(), '');
+      assert.notEqual(messages.voucher.qr_code_label.trim(), '');
     }
   });
 

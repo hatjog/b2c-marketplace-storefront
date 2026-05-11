@@ -4,10 +4,11 @@ import type { HttpTypes } from '@medusajs/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import medusaError from '@/lib/helpers/medusa-error';
-import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
+import type { CheckoutAddressInput, CheckoutAddressPayload } from '@/lib/checkout/address-payload';
 import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
+import medusaError from '@/lib/helpers/medusa-error';
+import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
 
 import { fetchQuery, sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
@@ -58,7 +59,9 @@ const CART_CREATION_LOCK_TTL_MS = 5_000;
  * Returns `null` gdy snapshot missing — caller (placeOrder) treats this jako
  * fail-open Phase A per AC2 (backend mor-policy retains FM-9 guarantee).
  */
-function readFlagSnapshotFromCart(cart: HttpTypes.StoreCart | null | undefined): FlagSnapshot | null {
+function readFlagSnapshotFromCart(
+  cart: HttpTypes.StoreCart | null | undefined
+): FlagSnapshot | null {
   const metadata = cart?.metadata as Record<string, unknown> | null | undefined;
   if (!metadata) {
     return null;
@@ -280,13 +283,10 @@ export async function getOrSetCart(countryCode: string) {
       });
       // Set timeout to prevent lock starvation.
       const timeoutPromise = new Promise<HttpTypes.StoreCart>((_, reject) =>
-        setTimeout(
-          () => {
-            cartCreationLocks.delete(lockKey);
-            reject(new Error('[getOrSetCart] cart creation lock timeout'));
-          },
-          CART_CREATION_LOCK_TTL_MS
-        )
+        setTimeout(() => {
+          cartCreationLocks.delete(lockKey);
+          reject(new Error('[getOrSetCart] cart creation lock timeout'));
+        }, CART_CREATION_LOCK_TTL_MS)
       );
       lockPromise = Promise.race([creationPromise, timeoutPromise]);
       cartCreationLocks.set(lockKey, lockPromise);
@@ -322,7 +322,10 @@ export async function getOrSetCart(countryCode: string) {
       revalidateTag(cartCacheTag);
     } catch (e) {
       // Fail-open per AC2 — log + proceed; backend mor-policy holds FM-9.
-      console.warn('[atomic-flag-check] cart-start snapshot persistence failed; proceeding fail-open', e);
+      console.warn(
+        '[atomic-flag-check] cart-start snapshot persistence failed; proceeding fail-open',
+        e
+      );
     }
   }
 
@@ -383,7 +386,7 @@ export async function addToCart({
   countryCode,
   selectedSellerId,
   selectedSellerName,
-  selectedSellerHandle,
+  selectedSellerHandle
 }: {
   variantId: string;
   quantity: number;
@@ -423,7 +426,7 @@ export async function addToCart({
           selected_seller_id: selectedSellerId,
           selected_seller_name: selectedSellerName,
           // cleanup-12d AC1 / TF-72 — persist handle gdy provided.
-          ...(selectedSellerHandle ? { selected_seller_handle: selectedSellerHandle } : {}),
+          ...(selectedSellerHandle ? { selected_seller_handle: selectedSellerHandle } : {})
         }
       : undefined;
 
@@ -434,7 +437,9 @@ export async function addToCart({
         currentItem.id,
         {
           quantity: currentItem.quantity + quantity,
-          ...(sellerMetadata ? { metadata: { ...(currentItem.metadata ?? {}), ...sellerMetadata } } : {})
+          ...(sellerMetadata
+            ? { metadata: { ...(currentItem.metadata ?? {}), ...sellerMetadata } }
+            : {})
         },
         {},
         headers
@@ -583,7 +588,9 @@ export async function applyPromotions(codes: string[]) {
     const cartWithPromos = cart as HttpTypes.StoreCart & {
       promotions?: Array<{ code?: string }>;
     };
-    const applied = cartWithPromos.promotions?.some(p => typeof p.code === 'string' && codes.includes(p.code));
+    const applied = cartWithPromos.promotions?.some(
+      p => typeof p.code === 'string' && codes.includes(p.code)
+    );
     return { success: true, applied };
   } catch (error: any) {
     const errorMessage =
@@ -641,53 +648,47 @@ export async function deletePromotionCode(promoId: string) {
     .catch(medusaError);
 }
 
-// FIXME(v1.7.0): refactor to pass POJO instead of FormData — current signature is
-// a Next.js Server Action bound to <form action={setAddresses}> callers; migrating
-// requires updating all call-sites to useActionState with a POJO payload.
-// See specs/proposed/v1.7.0/cleanup-deferred-from-v160-2026-05-07.md
-export async function setAddresses(currentState: unknown, formData: FormData) {
+type StoreUpdateCartAddress = Exclude<
+  HttpTypes.StoreUpdateCart['shipping_address'],
+  string | undefined
+>;
+
+function toStoreCartAddress(address: CheckoutAddressInput): StoreUpdateCartAddress {
+  return {
+    first_name: address.first_name,
+    last_name: address.last_name,
+    address_1: address.address_1,
+    address_2: address.address_2,
+    company: address.company,
+    postal_code: address.postal_code,
+    city: address.city,
+    country_code: address.country_code,
+    province: address.province,
+    phone: address.phone
+  };
+}
+
+export async function setAddresses(currentState: unknown, payload: CheckoutAddressPayload) {
   try {
-    if (!formData) {
-      throw new Error('No form data found when setting addresses');
+    if (!payload) {
+      throw new Error('No address payload found when setting addresses');
     }
     const cartId = await getCartId();
     if (!cartId) {
       throw new Error('No existing cart found when setting addresses');
     }
 
-    const data = {
-      shipping_address: {
-        first_name: formData.get('shipping_address.first_name'),
-        last_name: formData.get('shipping_address.last_name'),
-        address_1: formData.get('shipping_address.address_1'),
-        address_2: '',
-        company: formData.get('shipping_address.company'),
-        postal_code: formData.get('shipping_address.postal_code'),
-        city: formData.get('shipping_address.city'),
-        country_code: formData.get('shipping_address.country_code'),
-        province: formData.get('shipping_address.province'),
-        phone: formData.get('shipping_address.phone')
-      },
-      email: formData.get('email')
-    } as any;
+    const shippingAddress = toStoreCartAddress(payload.shipping_address);
+    const billingAddress =
+      payload.same_as_billing || !payload.billing_address
+        ? shippingAddress
+        : toStoreCartAddress(payload.billing_address);
 
-    // const sameAsBilling = formData.get("same_as_billing")
-    // if (sameAsBilling === "on") data.billing_address = data.shipping_address
-    data.billing_address = data.shipping_address;
-
-    // if (sameAsBilling !== "on")
-    //   data.billing_address = {
-    //     first_name: formData.get("billing_address.first_name"),
-    //     last_name: formData.get("billing_address.last_name"),
-    //     address_1: formData.get("billing_address.address_1"),
-    //     address_2: "",
-    //     company: formData.get("billing_address.company"),
-    //     postal_code: formData.get("billing_address.postal_code"),
-    //     city: formData.get("billing_address.city"),
-    //     country_code: formData.get("billing_address.country_code"),
-    //     province: formData.get("billing_address.province"),
-    //     phone: formData.get("billing_address.phone"),
-    //   }
+    const data: HttpTypes.StoreUpdateCart = {
+      shipping_address: shippingAddress,
+      billing_address: billingAddress,
+      email: payload.email
+    };
 
     await updateCart(data);
     await revalidatePath('/cart');

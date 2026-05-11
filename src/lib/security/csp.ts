@@ -15,20 +15,22 @@
  */
 
 /**
- * 9 CSP directives per D-64 (architecture.md:328).
+ * 10 CSP directives per D-64 (architecture.md:328) plus Stripe Elements
+ * runtime origins required by checkout.
  * Tailwind requires `'unsafe-inline'` for styles only — NOT scripts.
  * `frame-ancestors 'none'` blocks clickjacking.
  */
 export const CSP_DIRECTIVE_LIST: readonly string[] = [
   "default-src 'self'",
-  "script-src 'self'",
+  "script-src 'self' https://js.stripe.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' fonts.gstatic.com",
   "img-src 'self' https: blob: data:",
-  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.mercurjs.com",
+  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.mercurjs.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self'"
 ] as const;
 
 /**
@@ -37,9 +39,7 @@ export const CSP_DIRECTIVE_LIST: readonly string[] = [
  */
 export const CSP_DIRECTIVES: string = CSP_DIRECTIVE_LIST.join('; ');
 
-export type CspHeaderName =
-  | 'Content-Security-Policy'
-  | 'Content-Security-Policy-Report-Only';
+export type CspHeaderName = 'Content-Security-Policy' | 'Content-Security-Policy-Report-Only';
 
 /**
  * Resolves the CSP header name from the `STOREFRONT_CSP_MODE` env var.
@@ -58,7 +58,5 @@ export function resolveCspHeaderName(
   if (resolved === 'report-only') {
     return 'Content-Security-Policy-Report-Only';
   }
-  throw new Error(
-    `STOREFRONT_CSP_MODE must be 'enforce' or 'report-only', got: ${resolved}`
-  );
+  throw new Error(`STOREFRONT_CSP_MODE must be 'enforce' or 'report-only', got: ${resolved}`);
 }
