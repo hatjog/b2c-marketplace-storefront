@@ -32,13 +32,24 @@ export const ProductDetailsHeader = ({
   product,
   countryCode,
   user,
-  wishlist
+  wishlist,
+  initialPrice
 }: {
   product: HttpTypes.StoreProduct & { seller?: SellerProps };
   locale: string;
   countryCode: string;
   user: HttpTypes.StoreCustomer | null;
   wishlist?: Wishlist;
+  initialPrice?: {
+    variantId: string;
+    calculated_price: string;
+    calculated_price_number: number;
+    calculated_price_without_tax_number: number;
+    original_price: string;
+    original_price_number: number;
+    currency_code: string;
+    inventory_quantity: number | null;
+  } | null;
 }) => {
   // Story 5.5 — selectedSellerId/Name pulled from CartContext shared state;
   // populated przez SellerSelectorCartBridge gdy multi-vendor flag ON
@@ -60,14 +71,27 @@ export const ProductDetailsHeader = ({
   const { cheapestVariant, cheapestPrice } = getProductPrice({
     product
   });
+  const fallbackPrice = initialPrice
+    ? {
+        calculated_price: initialPrice.calculated_price,
+        calculated_price_number: initialPrice.calculated_price_number,
+        calculated_price_without_tax_number: initialPrice.calculated_price_without_tax_number,
+        original_price: initialPrice.original_price,
+        original_price_number: initialPrice.original_price_number,
+        currency_code: initialPrice.currency_code,
+      }
+    : null;
+  const fallbackVariant = initialPrice?.variantId
+    ? ({ id: initialPrice.variantId, inventory_quantity: initialPrice.inventory_quantity } as HttpTypes.StoreProductVariant)
+    : null;
 
   // Check if product has any valid prices in current region
-  const hasAnyPrice = cheapestPrice !== null && cheapestVariant !== null;
+  const hasAnyPrice = (cheapestPrice ?? fallbackPrice) !== null && (cheapestVariant ?? fallbackVariant) !== null;
 
   // set default variant
   const selectedVariant = hasAnyPrice
     ? {
-        ...optionsAsKeymap(cheapestVariant.options ?? null),
+        ...optionsAsKeymap((cheapestVariant ?? fallbackVariant)?.options ?? null),
         ...allSearchParams
       }
     : allSearchParams;
@@ -78,21 +102,28 @@ export const ProductDetailsHeader = ({
       options?.every((option: any) =>
         selectedVariant[option.option?.title.toLowerCase() || '']?.includes(option.value)
       )
-    )?.id || '';
+    )?.id || initialPrice?.variantId || '';
 
   // get variant price
-  const { variantPrice } = getProductPrice({
+  const { variantPrice: computedVariantPrice } = getProductPrice({
     product,
     variantId
   });
+  const variantPrice =
+    computedVariantPrice ?? (variantId === initialPrice?.variantId ? fallbackPrice : null);
 
-  const selectedVariantData = product.variants?.find(({ id }) => id === variantId);
+  const selectedVariantData =
+    product.variants?.find(({ id }) => id === variantId) ?? fallbackVariant;
   const variantStock =
     selectedVariantData?.manage_inventory === false
       ? Infinity
-      : (selectedVariantData?.inventory_quantity || 0);
+      : typeof selectedVariantData?.inventory_quantity === 'number'
+        ? selectedVariantData.inventory_quantity
+        : variantId === initialPrice?.variantId
+          ? Infinity
+          : 0;
 
-  const variantHasPrice = !!selectedVariantData?.calculated_price;
+  const variantHasPrice = !!selectedVariantData?.calculated_price || variantId === initialPrice?.variantId;
 
   const isVariantStockMaxLimitReached =
     variantStock !== Infinity &&
@@ -151,7 +182,11 @@ export const ProductDetailsHeader = ({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-3">
-          {product.seller?.name && <span className="bb-pill">{product.seller.name}</span>}
+          {product.seller?.name && (
+            <span className="bb-pill" data-testid="product-details-vendor-badge">
+              {product.seller.name}
+            </span>
+          )}
           <h1 className="heading-lg text-primary" data-testid="product-title">
             {product.title}
           </h1>
@@ -199,7 +234,7 @@ export const ProductDetailsHeader = ({
           size="large"
           data-testid="product-add-to-cart-button"
         >
-          {!hasAnyPrice
+          {!hasAnyPrice || !variantHasPrice
             ? t('not_available_in_region')
             : variantStock && variantHasPrice
               ? t('add_to_cart')

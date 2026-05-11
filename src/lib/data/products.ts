@@ -88,22 +88,31 @@ export const listProducts = async ({
   };
 
   const fields = [
-    '*variants.calculated_price',
-    '+variants.inventory_quantity',
-    '*seller',
-    '*variants',
+    'id',
+    'title',
+    'handle',
+    'description',
+    'thumbnail',
+    'status',
+    'variants.calculated_price',
+    'seller',
+    'seller.id',
+    'seller.name',
+    'seller.handle',
+    'seller.status',
+    'variants',
     ...(includeSellerContext
       ? [
-          '*seller.products',
+          'seller.products',
           // '*seller.reviews' — causes backend 500 (Mercur 2 SellerReview expansion
           // not supported on /store/products; reviews fetched separately on seller page).
-          '*seller.products.variants',
+          'seller.products.variants',
         ]
       : []),
-    '*attribute_values',
-    '*attribute_values.attribute',
-    '*tags',
-    '*images',
+    'attribute_values',
+    'attribute_values.attribute',
+    'tags',
+    'images',
     '+metadata',
   ].join(',');
 
@@ -292,6 +301,13 @@ export const listFilteredProducts = async ({
         error?.message || error,
         { params }
       );
+      if (sellerRatings?.length) {
+        return {
+          response: { products: [], count: 0 },
+          nextPage: null,
+          queryParams: undefined,
+        };
+      }
       // Re-throw: no silent fallback to Medusa native (would give inconsistent counts)
       throw error;
     });

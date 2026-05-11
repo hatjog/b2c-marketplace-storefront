@@ -74,9 +74,27 @@ function normalizeAvailableShippingMethods(value: unknown): AvailableShippingMet
     return [];
   }
 
+  const flattenSellerMap = (candidate: unknown): AvailableShippingMethod[] | null => {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      return null;
+    }
+
+    const values = Object.values(candidate as Record<string, unknown>);
+    if (values.length === 0 || !values.every(Array.isArray)) {
+      return null;
+    }
+
+    return values.flat() as AvailableShippingMethod[];
+  };
+
   const outer = (value as { shipping_options?: unknown }).shipping_options;
   if (Array.isArray(outer)) {
     return outer as AvailableShippingMethod[];
+  }
+
+  const outerSellerMap = flattenSellerMap(outer);
+  if (outerSellerMap) {
+    return outerSellerMap;
   }
 
   if (!outer || typeof outer !== 'object') {
@@ -84,6 +102,11 @@ function normalizeAvailableShippingMethods(value: unknown): AvailableShippingMet
   }
 
   const inner = (outer as { shipping_options?: unknown }).shipping_options;
+  const innerSellerMap = flattenSellerMap(inner);
+  if (innerSellerMap) {
+    return innerSellerMap;
+  }
+
   return Array.isArray(inner) ? (inner as AvailableShippingMethod[]) : [];
 }
 

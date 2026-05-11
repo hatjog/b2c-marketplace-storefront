@@ -41,6 +41,11 @@ export const ProductDetailsPage = async ({
     ...prod,
     seller: prod.seller ?? undefined,
   };
+  const galleryImages = prod.images?.length
+    ? prod.images
+    : prod.thumbnail
+      ? [{ id: `${prod.id}-thumbnail`, url: prod.thumbnail, rank: 0 }]
+      : [];
 
   const hasPrice = prod.variants?.some(v => v.calculated_price);
 
@@ -54,7 +59,7 @@ export const ProductDetailsPage = async ({
           className="bb-section-shell !p-3 md:!p-4"
           data-testid="product-gallery-container"
         >
-          <ProductGallery images={prod?.images || []} />
+          <ProductGallery images={galleryImages} />
         </div>
         <div
           className="space-y-4"

@@ -38,6 +38,19 @@ export const listCartShippingMethods = async (
       cache: 'no-cache'
     })
     .then((body) => {
+      const flattenSellerMap = (candidate: unknown): AvailableShippingMethod[] | null => {
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+          return null;
+        }
+
+        const values = Object.values(candidate as Record<string, unknown>);
+        if (values.length === 0 || !values.every(Array.isArray)) {
+          return null;
+        }
+
+        return values.flat() as AvailableShippingMethod[];
+      };
+
       if (
         Array.isArray(
           (body as { shipping_options?: StoreCardShippingMethod[] | null }).shipping_options
@@ -52,8 +65,18 @@ export const listCartShippingMethods = async (
         }
       ).shipping_options;
 
+      const sellerMap = flattenSellerMap(nested);
+      if (sellerMap) {
+        return sellerMap;
+      }
+
       if (Array.isArray(nested?.shipping_options)) {
         return nested.shipping_options as AvailableShippingMethod[];
+      }
+
+      const nestedSellerMap = flattenSellerMap(nested?.shipping_options);
+      if (nestedSellerMap) {
+        return nestedSellerMap;
       }
 
       return null;

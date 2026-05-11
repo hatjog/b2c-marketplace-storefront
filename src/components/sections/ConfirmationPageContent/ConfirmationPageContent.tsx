@@ -465,7 +465,7 @@ function SupportRequiredView({ orderRef }: { orderRef: string }) {
       </div>
       {/* Primary: account/orders recovery path (Story 2.6 magic-link baseline) */}
       <LocalizedClientLink
-        href="/user/orders"
+        href="/account/orders"
         className="bb-primary-cta rounded-full px-6 py-3"
         data-testid="recovery-cta"
       >
@@ -476,7 +476,7 @@ function SupportRequiredView({ orderRef }: { orderRef: string }) {
           prefix is preserved and the help page renders in the customer's
           chosen language, not the default locale fallback. */}
       <LocalizedClientLink
-        href="/pomoc"
+        href="/help"
         className="label-md text-secondary underline underline-offset-4"
         data-testid="support-cta"
       >

@@ -5,7 +5,7 @@
  * route view, consumable by Story 6.6 / Epic 8 / Epic 9 validators without
  * further DOM mutation:
  *
- *   <section
+ *   <div
  *     data-testid="storefront-state-signal"
  *     data-route="<route-id>"
  *     data-state="<one of 10 canonical tokens>"
@@ -87,7 +87,7 @@ export function StorefrontStateSignal({
   const liveRegion = getLiveRegionProps(state);
 
   return (
-    <section
+    <div
       data-testid="storefront-state-signal"
       data-route={route}
       data-state={state}
@@ -108,6 +108,6 @@ export function StorefrontStateSignal({
       }}
     >
       {statusLabel && <span>{statusLabel}</span>}
-    </section>
+    </div>
   );
 }

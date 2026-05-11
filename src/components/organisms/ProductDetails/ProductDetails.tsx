@@ -142,6 +142,16 @@ export const ProductDetails = async ({
   let hasPrice = false;
   let cheapestVariantInventory: number | null = null;
   let voucherPriceDisplay: string | null = null;
+  let headerInitialPrice: {
+    variantId: string;
+    calculated_price: string;
+    calculated_price_number: number;
+    calculated_price_without_tax_number: number;
+    original_price: string;
+    original_price_number: number;
+    currency_code: string;
+    inventory_quantity: number | null;
+  } | null = null;
   try {
     const { cheapestVariant, cheapestPrice } = getProductPrice({ product });
     hasPrice = cheapestVariant !== null && !!cheapestVariant.calculated_price;
@@ -150,6 +160,18 @@ export const ProductDetails = async ({
     }
     if (cheapestPrice && typeof cheapestPrice.calculated_price === 'string') {
       voucherPriceDisplay = cheapestPrice.calculated_price;
+    }
+    if (cheapestVariant?.id && cheapestPrice && typeof cheapestPrice.calculated_price === 'string') {
+      headerInitialPrice = {
+        variantId: cheapestVariant.id,
+        calculated_price: cheapestPrice.calculated_price,
+        calculated_price_number: cheapestPrice.calculated_price_number,
+        calculated_price_without_tax_number: cheapestPrice.calculated_price_without_tax_number,
+        original_price: cheapestPrice.original_price,
+        original_price_number: cheapestPrice.original_price_number,
+        currency_code: cheapestPrice.currency_code,
+        inventory_quantity: cheapestVariantInventory,
+      };
     }
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -252,6 +274,7 @@ export const ProductDetails = async ({
         countryCode={countryCode}
         user={user}
         wishlist={wishlist}
+        initialPrice={headerInitialPrice}
       />
 
       {showNoActiveVendorsFallback && (

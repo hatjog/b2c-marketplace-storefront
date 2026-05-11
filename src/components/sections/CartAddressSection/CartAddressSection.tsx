@@ -52,11 +52,11 @@ export const CartAddressSection = ({
   }, [isAddress, message, pathname, router]);
 
   useEffect(() => {
-    if (message === 'success' && isOpen) {
+    if (message === 'success') {
       router.replace(`${pathname}?step=delivery`);
       router.refresh();
     }
-  }, [isOpen, message, pathname, router]);
+  }, [message, pathname, router]);
 
   const handleEdit = () => {
     router.replace(pathname + '?step=address');

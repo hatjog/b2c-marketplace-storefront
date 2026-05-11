@@ -90,7 +90,7 @@ function ProofPoint({
       <p className="label-sm text-secondary">{label}</p>
       {missing || !value ? (
         <p
-          className="label-md text-secondary opacity-60"
+          className="label-md text-secondary"
           // R9 fix: drop the `${label}` fallback — duplicating the visible
           // label as aria-label triggers double-announce on the wrapping <p>.
           // When the caller doesn't pass `missingAria`, the visible text alone
@@ -271,7 +271,7 @@ export async function SellerProofSurface({
               <div className="bb-card-muted space-y-0.5">
                 <p className="label-sm text-secondary">{t('rating_label')}</p>
                 <p
-                  className="label-md text-secondary opacity-60"
+                  className="label-md text-secondary"
                   data-testid="seller-proof-missing-rating"
                   aria-label={t('missing_reviews_aria')}
                 >

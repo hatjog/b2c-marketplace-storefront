@@ -19,6 +19,7 @@ const ProductListingProductsView = ({ products, fromContext }: Props) => (
         <li
           key={product.id}
           className="w-full min-w-[250px] lg:w-[calc(25%-1rem)]"
+          data-testid="product-item"
         >
           <ProductCard
             product={product}

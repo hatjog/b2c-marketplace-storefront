@@ -89,7 +89,10 @@ export async function fetchHomepageProducts({
   url.searchParams.set('country_code', countryCode);
   if (regionId) url.searchParams.set('region_id', regionId);
   url.searchParams.set('limit', String(resolvedLimit));
-  url.searchParams.set('fields', '*variants.calculated_price,*variants,*seller');
+  url.searchParams.set(
+    'fields',
+    'id,title,handle,description,thumbnail,status,+metadata,variants,variants.calculated_price,seller,seller.id,seller.name,seller.handle,seller.status,tags,images'
+  );
 
   const fallbackUrl = buildMedusaUrl('/store/products');
   fallbackUrl.searchParams.set('country_code', countryCode);

@@ -288,6 +288,7 @@ export const ProductListing = async ({
               <DiscoveryEmptyState
                 variant="no-results"
                 action={<ClearFiltersButton />}
+                data-testid="empty-state"
               />
             </div>
           ) : (

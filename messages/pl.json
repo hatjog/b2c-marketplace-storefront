@@ -602,7 +602,7 @@
     "error_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności.",
     "retry": "Spróbuj ponownie",
     "change_method": "Zmień metodę",
-    "payment_pending_title": "Potwierdzamy Twoją płatność",
+    "payment_pending_title": "Przygotowujemy Twój voucher",
     "pending_delivery_title": "Voucher jest w drodze",
     "pending_delivery_description": "Płatność przeszła — wysyłamy voucher na Twój adres e-mail. Może to potrwać kilka minut.",
     "last_updated_label": "Ostatnia aktualizacja: {timestamp}",
