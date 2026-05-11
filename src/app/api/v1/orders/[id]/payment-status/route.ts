@@ -30,7 +30,43 @@ import { resolveMedusaBackendUrl } from '@/lib/env';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export function isAllowedOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+  const allowedOrigin =
+    process.env.NEXT_PUBLIC_STOREFRONT_URL ??
+    process.env.NEXT_PUBLIC_BASE_URL ??
+    null;
+
+  if (!origin && !referer) {
+    return true;
+  }
+
+  let candidate: string | null = origin;
+  if (!candidate && referer) {
+    try {
+      candidate = new URL(referer).origin;
+    } catch {
+      return false;
+    }
+  }
+
+  if (!candidate) {
+    return false;
+  }
+
+  if (allowedOrigin && candidate !== allowedOrigin) {
+    return false;
+  }
+
+  return candidate.startsWith('http://') || candidate.startsWith('https://');
+}
+
+export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const { id } = await context.params;
   const backendUrl = resolveMedusaBackendUrl();
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? '';
