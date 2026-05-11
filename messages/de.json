@@ -616,6 +616,8 @@
     "payment_failed_description": "Erneut versuchen oder zum Warenkorb zurückkehren, um die Zahlungsmethode zu ändern."
   },
   "voucher": {
+    "qr_code_aria_label": "QR-Code des Gutscheins",
+    "qr_code_label": "Im Salon scannen",
     "consent": {
       "heading": "Einwilligung zur Verarbeitung von Empfängerdaten",
       "purpose": "Ich willige in die Verarbeitung von Empfängerdaten zur Lieferung des Gutscheins ein. Daten werden 365 Tage aufbewahrt und können auf Antrag gemäß DSGVO gelöscht werden.",

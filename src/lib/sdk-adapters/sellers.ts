@@ -58,6 +58,27 @@ type SellerListApiItem = {
   reviews?: unknown[];
 };
 
+function normalizeSellerHandle(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value
+    .trim()
+    .replace(/^\/+|\/+$/g, '')
+    .toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function pickSellerIdByHandle(
+  sellers: SellerListApiItem[] | undefined,
+  handle: string
+): string | null {
+  const normalizedHandle = normalizeSellerHandle(handle);
+  if (!normalizedHandle || !Array.isArray(sellers)) return null;
+
+  return (
+    sellers.find(seller => normalizeSellerHandle(seller.handle) === normalizedHandle)?.id ?? null
+  );
+}
+
 /**
  * Fetch seller ID by handle using Mercur 2 `/store/sellers?handle=:handle`.
  *
@@ -80,7 +101,13 @@ export const resolveSellerHandleToId = unstable_cache(
         handle,
         limit: 1
       })) as { sellers?: SellerListApiItem[] };
-      return result?.sellers?.[0]?.id ?? null;
+      const filteredId = pickSellerIdByHandle(result?.sellers, handle);
+      if (filteredId) return filteredId;
+
+      const fallback = (await mercurClient.store.sellers.query({
+        fetchOptions: { cache: 'no-cache' }
+      })) as { sellers?: SellerListApiItem[] };
+      return pickSellerIdByHandle(fallback?.sellers, handle);
     } catch (err) {
       // cleanup-28 review CACHE-1: surface adapter failures to server logs
       // / Sentry instead of swallowing silently. Distinguishes "backend
@@ -107,10 +134,7 @@ export const resolveSellerHandleToId = unstable_cache(
  * @returns SellerProps or null on 404/error
  * @see TF-50 (Path B migration), TF-51 (getSellerByHandle resolution)
  */
-export async function fetchSellerById(
-  id: string,
-  fields?: string
-): Promise<SellerProps | null> {
+export async function fetchSellerById(id: string, fields?: string): Promise<SellerProps | null> {
   try {
     // Mercur 2 proxy: `mercurClient.store.sellers.$id.query({ $id: id })`
     // builds URL `/store/sellers/:id` — `$id` segment is substituted from
@@ -156,9 +180,9 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     phone: s.phone ?? undefined,
     status: s.status as SellerProps['status'],
     store_status: s.store_status as SellerProps['store_status'],
-    social_links: s.social_links as SellerProps['social_links'] ?? null,
+    social_links: (s.social_links as SellerProps['social_links']) ?? null,
     gallery: s.gallery ?? null,
-    opening_hours: s.opening_hours as SellerProps['opening_hours'] ?? null,
+    opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? null,
     locations: s.locations ?? null,
     city: s.city ?? undefined,
     address_line: undefined,
