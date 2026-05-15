@@ -54,7 +54,6 @@ export function JournalTeaserBlock({
   posts = DEFAULT_POSTS,
   ctaLabel = 'Czytaj więcej',
   ctaHref = '/blog',
-  locale,
 }: JournalTeaserBlockProps) {
   return (
     <section
@@ -83,7 +82,7 @@ export function JournalTeaserBlock({
           <LocalizedClientLink
             key={post.id}
             href={post.href}
-            className="group flex flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] transition-shadow hover:shadow-[var(--bb-shadow-card)]"
+            className="group flex flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] transition-shadow hover:shadow-[var(--bb-shadow-card,var(--bb-shadow-soft))]"
             style={{ background: 'rgba(255,252,247,0.92)' }}
             data-testid={`journal-card-${post.id}`}
           >
@@ -103,7 +102,7 @@ export function JournalTeaserBlock({
                 {post.excerpt}
               </p>
               {post.readTime && (
-                <span className="text-xs text-[var(--text-muted)]">{post.readTime} min czytania</span>
+                <span className="text-xs text-[var(--text-muted,var(--text-secondary))]">{post.readTime} min czytania</span>
               )}
             </div>
           </LocalizedClientLink>

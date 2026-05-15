@@ -62,7 +62,7 @@ export function MobileBottomNav({
       className={cn(
         // W6-07 variant: mobile-only — hidden on md+ (tablet breakpoint)
         'fixed bottom-0 left-0 right-0 z-[var(--mobile-nav-z,90)] md:hidden',
-        'border-t border-[var(--bb-border-hairline)] bg-[var(--bb-surface)]',
+        'border-t border-[var(--bb-border-hairline,var(--bb-border-soft))] bg-[var(--bb-surface)]',
         'shadow-[var(--bb-shadow-lift)]',
         // Safe area for iOS notch
         'pb-[env(safe-area-inset-bottom,0px)]'

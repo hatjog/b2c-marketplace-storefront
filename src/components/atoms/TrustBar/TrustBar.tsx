@@ -17,16 +17,21 @@ const DEFAULT_ITEMS: TrustItem[] = [
 interface TrustBarProps {
   items?: TrustItem[];
   className?: string;
+  'data-testid'?: string;
 }
 
-export function TrustBar({ items = DEFAULT_ITEMS, className }: TrustBarProps) {
+export function TrustBar({
+  items = DEFAULT_ITEMS,
+  className,
+  'data-testid': dataTestId = 'trust-bar',
+}: TrustBarProps) {
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-[var(--radius-sm)] border border-[var(--bb-border-hairline)] bg-[var(--bb-surface)] px-4 py-2.5',
+        'flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-[var(--radius-sm,12px)] border border-[var(--bb-border-hairline,var(--bb-border-soft))] bg-[var(--bb-surface)] px-4 py-2.5',
         className
       )}
-      data-testid="trust-bar"
+      data-testid={dataTestId}
       aria-label="Gwarancje zakupu"
     >
       {items.map((item) => (

@@ -1,5 +1,6 @@
 'use client';
 
+// @chrome-manifest: W6-04
 /**
  * <CookieBanner> — ePrivacy CMP cookie consent banner (AC2).
  *

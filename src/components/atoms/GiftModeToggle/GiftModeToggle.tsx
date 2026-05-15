@@ -10,12 +10,14 @@ interface GiftModeToggleProps {
   defaultMode?: 'gift' | 'self';
   onModeChange?: (mode: 'gift' | 'self') => void;
   className?: string;
+  'data-testid'?: string;
 }
 
 export function GiftModeToggle({
   defaultMode = 'self',
   onModeChange,
   className,
+  'data-testid': dataTestId = 'gift-mode-toggle',
 }: GiftModeToggleProps) {
   const [mode, setMode] = useState<'gift' | 'self'>(defaultMode);
 
@@ -32,7 +34,7 @@ export function GiftModeToggle({
       )}
       role="group"
       aria-label="Tryb zakupu"
-      data-testid="gift-mode-toggle"
+      data-testid={dataTestId}
     >
       {(['self', 'gift'] as const).map((m) => {
         const active = mode === m;

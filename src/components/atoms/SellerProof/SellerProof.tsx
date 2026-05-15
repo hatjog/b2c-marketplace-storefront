@@ -17,6 +17,7 @@ interface SellerProofProps {
   reviewsCount?: number;
   sellerName?: string;
   className?: string;
+  'data-testid'?: string;
 }
 
 function ProofPoint({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
@@ -37,6 +38,7 @@ export function SellerProof({
   reviewsCount,
   sellerName,
   className,
+  'data-testid': dataTestId = 'seller-proof',
 }: SellerProofProps) {
   const reviewCount = ratingCount ?? reviewsCount;
   return (
@@ -45,7 +47,7 @@ export function SellerProof({
         'flex items-center justify-around gap-4 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-4 py-3 shadow-[var(--bb-shadow-soft)]',
         className
       )}
-      data-testid="seller-proof"
+      data-testid={dataTestId}
       aria-label={sellerName ? `Dowód jakości salonu ${sellerName}` : 'Dowód jakości salonu'}
     >
       {years !== undefined && (

@@ -28,7 +28,7 @@ export function TrustStripBlock({
 }: TrustStripBlockProps) {
   return (
     <section
-      className="border-y border-[var(--bb-border-hairline)] bg-[var(--bb-surface)] py-5"
+      className="border-y border-[var(--bb-border-hairline,var(--bb-border-soft))] bg-[var(--bb-surface)] py-5"
       data-testid="trust-strip"
       aria-label="Gwarancje platformy"
     >

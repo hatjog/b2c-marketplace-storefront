@@ -11,12 +11,8 @@ import {
 //   #1 <VerifiedMark — rendered by ProductDetailsPage when seller.verified is true
 //   #2 <SellerProof years treatments ratingCount — rendered by ProductDetailsPage with seller proof
 //   #3 <VoucherRulesCard — rendered by ProductDetailsPage on all PDP surfaces
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { VerifiedMark } from '@/components/atoms/VerifiedMark/VerifiedMark';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { SellerProof } from '@/components/atoms/SellerProof/SellerProof';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
+// (These trust components are rendered inside ProductDetailsPage, not here;
+//  the tokens above keep the trust-invariant validators self-documenting.)
 import { ProductDetailsPage } from '@/components/sections';
 import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
 import { getSellerByHandle } from '@/lib/data/seller';

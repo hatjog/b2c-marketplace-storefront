@@ -1,3 +1,4 @@
+// @chrome-manifest: W6-04 (renders <CookieBanner> — cookie-banner chrome component)
 import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';

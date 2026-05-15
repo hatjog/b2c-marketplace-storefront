@@ -1,5 +1,8 @@
 // W1-01 layout — Wave 6 chrome: SiteHeader (W6-01) + SiteFooter (W6-02) + MobileBottomNav (W6-07)
 // Story 3.0 Sprint 1 thin slice gate.
+// @chrome-manifest: W6-01
+// @chrome-manifest: W6-02
+// @chrome-manifest: W6-07
 import { Session } from '@talkjs/react';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';

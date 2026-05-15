@@ -17,7 +17,6 @@ export function GiftCTACardBlock({
   body = 'Vouchery na zabiegi beauty — idealny prezent dla bliskich. Realizuj w ponad 200 salonach w Polsce.',
   ctaLabel = 'Kup voucher',
   ctaHref = '/categories/prezenty',
-  locale,
 }: GiftCTACardBlockProps) {
   return (
     <section

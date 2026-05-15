@@ -31,14 +31,16 @@ export function EditorialDarkBandBlock({
   heading = 'Cichy luksus',
   subheading = 'Odkryj wyjątkowe zabiegi w najlepszych salonach',
   vibes = DEFAULT_VIBES,
-  locale,
 }: EditorialDarkBandBlockProps) {
   return (
     <section
-      className="relative overflow-hidden bg-[linear-gradient(var(--bb-dark-gradient,145deg,rgba(26,26,26,0.96)_0%,rgba(56,42,16,0.98)_100%))]"
+      className="relative overflow-hidden"
       data-testid="editorial-dark-band"
       aria-label="Editorial — Cichy luksus"
-      style={{ background: 'var(--bb-dark-gradient)' }}
+      style={{
+        background:
+          'var(--bb-dark-gradient, linear-gradient(145deg,#1a1a1a 0%,#382a10 100%))',
+      }}
     >
       <div className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-20 lg:px-8 lg:py-24">
         {/* Band heading */}

@@ -16,6 +16,7 @@ interface VoucherRulesCardProps {
   refundChannel?: string;
   noShowPolicy?: string;
   className?: string;
+  'data-testid'?: string;
 }
 
 const CHEVRON_DOWN = (
@@ -37,6 +38,7 @@ export function VoucherRulesCard({
   refundChannel = 'Zwrot na kartę lub portfel BonBeauty do 14 dni',
   noShowPolicy = 'Pierwsza nieobecność — ostrzeżenie; druga — brak zwrotu',
   className,
+  'data-testid': dataTestId = 'voucher-rules-card',
 }: VoucherRulesCardProps) {
   const [open, setOpen] = useState(false);
 
@@ -46,7 +48,7 @@ export function VoucherRulesCard({
         'rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)]',
         className
       )}
-      data-testid="voucher-rules-card"
+      data-testid={dataTestId}
     >
       <button
         type="button"
@@ -59,7 +61,7 @@ export function VoucherRulesCard({
       </button>
 
       {open && (
-        <div className="border-t border-[var(--bb-border-hairline)] px-4 pb-4 pt-3 space-y-2 text-xs text-[var(--text-secondary)]">
+        <div className="border-t border-[var(--bb-border-hairline,var(--bb-border-soft))] px-4 pb-4 pt-3 space-y-2 text-xs text-[var(--text-secondary)]">
           <div>
             <span className="font-medium text-[var(--text-primary)]">Ważność:</span>{' '}
             {ttlDays} dni od zakupu
