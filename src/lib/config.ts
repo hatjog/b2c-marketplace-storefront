@@ -2,6 +2,7 @@ import Medusa from '@medusajs/js-sdk';
 import { createClient } from '@mercurjs/client';
 
 import { resolveMedusaBackendUrl } from './env';
+import { stripInternalHeadersForThirdParty } from './security/header-allowlist';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
@@ -53,13 +54,20 @@ export async function fetchQuery(url: string, { method, query, headers, body }: 
     return acc;
   }, '');
 
-  const res = await fetch(`${MEDUSA_BACKEND_URL}${url}${params && `?${params}`}`, {
+  const requestUrl = `${MEDUSA_BACKEND_URL}${url}${params && `?${params}`}`;
+
+  // Story 1.6 (AC3) defense-in-depth: strip internal multi-tenant headers if
+  // the resolved URL ever targets a third-party Stripe host. No-op for the
+  // Medusa backend (keeps x-publishable-api-key) — zero market-isolation impact.
+  const safeHeaders = stripInternalHeadersForThirdParty(requestUrl, {
+    'Content-Type': 'application/json',
+    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+    ...headers
+  });
+
+  const res = await fetch(requestUrl, {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
-      ...headers
-    },
+    headers: safeHeaders as Record<string, string>,
     body: body ? JSON.stringify(body) : null
   });
 
