@@ -56,9 +56,12 @@ export async function fetchQuery(url: string, { method, query, headers, body }: 
 
   const requestUrl = `${MEDUSA_BACKEND_URL}${url}${params && `?${params}`}`;
 
-  // Story 1.6 (AC3) defense-in-depth: strip internal multi-tenant headers if
-  // the resolved URL ever targets a third-party Stripe host. No-op for the
-  // Medusa backend (keeps x-publishable-api-key) — zero market-isolation impact.
+  // Story 1.6 (AC3) defense-in-depth contract. This callsite ALWAYS targets
+  // the Medusa backend (`requestUrl` is `${MEDUSA_BACKEND_URL}${url}`), so the
+  // strip is a guaranteed no-op here and `x-publishable-api-key` keeps flowing
+  // — zero market-isolation impact. The guard is wired in as a forward-looking
+  // contract: any FUTURE callsite that points fetchQuery at a Stripe host
+  // cannot leak internal multi-tenant headers.
   const safeHeaders = stripInternalHeadersForThirdParty(requestUrl, {
     'Content-Type': 'application/json',
     'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
