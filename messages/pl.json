@@ -1043,5 +1043,8 @@
       "action_label": "Kontynuuj",
       "action_href": "/"
     }
+  },
+  "pdp": {
+    "verified_seller": "Zweryfikowany salon"
   }
 }

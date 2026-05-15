@@ -1044,5 +1044,8 @@
       "action_label": "Продовжити",
       "action_href": "/"
     }
+  },
+  "pdp": {
+    "verified_seller": "Перевірений салон"
   }
 }

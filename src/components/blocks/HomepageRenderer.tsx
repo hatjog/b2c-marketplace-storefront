@@ -1,7 +1,11 @@
 import { BannerBlock } from './BannerBlock';
 import { BlogSectionBlock } from './BlogSectionBlock';
 import { CategoriesGridBlock } from './CategoriesGridBlock';
+import { EditorialDarkBandBlock } from './EditorialDarkBandBlock';
+import { GiftCTACardBlock } from './GiftCTACardBlock';
 import { HeroBlock } from './HeroBlock';
+import { JournalTeaserBlock } from './JournalTeaserBlock';
+import { TrustStripBlock } from './TrustStripBlock';
 import {
   isSectionObject,
   type BannerSectionBlock,
@@ -83,6 +87,45 @@ export function HomepageRenderer({
               <BlogSectionBlock
                 key={key}
                 section={section as BlogSectionSectionBlock}
+              />
+            );
+          // v1.8.0 W1-01 home v3 editorial blocks (Story 3.0)
+          case 'editorial_dark_band':
+            return (
+              <EditorialDarkBandBlock
+                key={key}
+                locale={locale}
+                heading={(section as { heading?: string }).heading}
+                subheading={(section as { subheading?: string }).subheading}
+                vibes={(section as { vibes?: Parameters<typeof EditorialDarkBandBlock>[0]['vibes'] }).vibes}
+              />
+            );
+          case 'gift_cta_card':
+            return (
+              <GiftCTACardBlock
+                key={key}
+                locale={locale}
+                heading={(section as { heading?: string }).heading}
+                body={(section as { body?: string }).body}
+                ctaLabel={(section as { ctaLabel?: string }).ctaLabel}
+                ctaHref={(section as { ctaHref?: string }).ctaHref}
+              />
+            );
+          case 'journal_teaser':
+            return (
+              <JournalTeaserBlock
+                key={key}
+                locale={locale}
+                heading={(section as { heading?: string }).heading}
+                posts={(section as { posts?: Parameters<typeof JournalTeaserBlock>[0]['posts'] }).posts}
+              />
+            );
+          case 'trust_strip':
+            return (
+              <TrustStripBlock
+                key={key}
+                verifiedLabel={(section as { verifiedLabel?: string }).verifiedLabel}
+                trustPoints={(section as { trustPoints?: Parameters<typeof TrustStripBlock>[0]['trustPoints'] }).trustPoints}
               />
             );
           default:

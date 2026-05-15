@@ -1,10 +1,13 @@
+// W1-01 layout — Wave 6 chrome: SiteHeader (W6-01) + SiteFooter (W6-02) + MobileBottomNav (W6-07)
+// Story 3.0 Sprint 1 thin slice gate.
 import { Session } from '@talkjs/react';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { SkipLink } from '@/components/atoms';
-import { Footer } from '@/components/organisms';
-import { Header } from '@/components/organisms/Header/Header';
+import { SiteFooter } from '@/components/organisms/SiteFooter/SiteFooter';
+import { SiteHeader } from '@/components/organisms/SiteHeader/SiteHeader';
+import { MobileBottomNav } from '@/components/organisms/MobileBottomNav/MobileBottomNav';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { checkRegion } from '@/lib/helpers/check-region';
 import { resolveMarketConfig } from '@/lib/portal.server';
@@ -33,15 +36,19 @@ export default async function RootLayout({
     return (
       <>
         <SkipLink label={tA11y('skip_to_content')} />
-        <Header
+        {/* W6-01 SiteHeader */}
+        <SiteHeader
           locale={locale}
           marketConfig={marketConfig}
         />
         {children}
-        <Footer
+        {/* W6-02 SiteFooter */}
+        <SiteFooter
           marketConfig={marketConfig}
           locale={locale}
         />
+        {/* W6-07 MobileBottomNav */}
+        <MobileBottomNav locale={locale} />
       </>
     );
 
@@ -52,15 +59,19 @@ export default async function RootLayout({
         userId={user.id}
       >
         <SkipLink label={tA11y('skip_to_content')} />
-        <Header
+        {/* W6-01 SiteHeader */}
+        <SiteHeader
           locale={locale}
           marketConfig={marketConfig}
         />
         {children}
-        <Footer
+        {/* W6-02 SiteFooter */}
+        <SiteFooter
           marketConfig={marketConfig}
           locale={locale}
         />
+        {/* W6-07 MobileBottomNav */}
+        <MobileBottomNav locale={locale} />
       </Session>
     </>
   );

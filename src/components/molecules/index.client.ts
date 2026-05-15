@@ -30,3 +30,6 @@ export { VoucherHistoryEmptyState } from './VoucherHistoryEmptyState/VoucherHist
 export { default as ProductListingLoadingView } from './ProductListingLoadingView/ProductListingLoadingView';
 export { VendorBadge } from './VendorBadge/index';
 export { VoucherQrCode } from './VoucherQrCode/VoucherQrCode';
+// v1.8.0 Story 3.0: Trust Invariant molecule + W6-10 locale switcher
+export { VoucherRulesCard } from './VoucherRulesCard/VoucherRulesCard';
+export { LocaleSwitcher } from './LocaleSwitcher/LocaleSwitcher';

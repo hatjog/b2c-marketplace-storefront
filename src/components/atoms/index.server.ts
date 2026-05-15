@@ -23,3 +23,7 @@ export { StorefrontStateSignal } from './StorefrontStateSignal/StorefrontStateSi
 export type { StorefrontStateSignalProps } from './StorefrontStateSignal/StorefrontStateSignal';
 export { StorefrontRouteStateSignal } from './StorefrontStateSignal/StorefrontRouteStateSignal';
 export type { StorefrontRouteStateSignalProps } from './StorefrontStateSignal/StorefrontRouteStateSignal';
+// v1.8.0 Story 3.0: Trust Invariant atoms + TrustBar
+export { VerifiedMark } from './VerifiedMark/VerifiedMark';
+export { SellerProof } from './SellerProof/SellerProof';
+export { TrustBar } from './TrustBar/TrustBar';

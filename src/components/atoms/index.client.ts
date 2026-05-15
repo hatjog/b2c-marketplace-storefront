@@ -13,3 +13,5 @@ export type { SalonContextChipProps, SalonContextChipSeller } from './SalonConte
 export { SellerStatusBadge } from './SellerStatusBadge/SellerStatusBadge';
 export type { SellerStatusBadgeProps, SellerStatus } from './SellerStatusBadge/SellerStatusBadge';
 export { Textarea } from './Textarea/Textarea';
+// v1.8.0 Story 3.0: GiftModeToggle client atom
+export { GiftModeToggle } from './GiftModeToggle/GiftModeToggle';

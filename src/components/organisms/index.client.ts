@@ -9,3 +9,5 @@ export { ProductsPagination } from './ProductsPagination/ProductsPagination';
 export { ReviewsToWrite } from './Reviews/ReviewsToWrite';
 export { ReviewsWritten } from './Reviews/ReviewsWritten';
 export { SellerFooter } from './SellerFooter/SellerFooter';
+// v1.8.0 Story 3.0: Wave 6 chrome MobileBottomNav (client)
+export { MobileBottomNav } from './MobileBottomNav/MobileBottomNav';

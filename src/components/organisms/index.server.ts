@@ -12,3 +12,6 @@ export { ProductsList } from './ProductsList/ProductsList';
 export { SellerHeading } from './SellerHeading/SellerHeading';
 export { TrustSignals } from './TrustSignals/TrustSignals';
 export { WishlistTabs } from './WishlistTabs/WishlistTabs';
+// v1.8.0 Story 3.0: Wave 6 chrome organisms
+export { SiteHeader } from './SiteHeader/SiteHeader';
+export { SiteFooter } from './SiteFooter/SiteFooter';

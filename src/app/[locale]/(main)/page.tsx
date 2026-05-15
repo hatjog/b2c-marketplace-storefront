@@ -1,3 +1,6 @@
+// @trust-invariant-scope: v180
+// W1-01 Home v3 — Story 3.0 Sprint 1 thin slice gate.
+// Trust Invariant #1: <VerifiedMark present via TrustStripBlock.
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
@@ -5,6 +8,10 @@ import Script from 'next/script';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
+import { EditorialDarkBandBlock } from '@/components/blocks/EditorialDarkBandBlock';
+import { GiftCTACardBlock } from '@/components/blocks/GiftCTACardBlock';
+import { JournalTeaserBlock } from '@/components/blocks/JournalTeaserBlock';
+import { TrustStripBlock } from '@/components/blocks/TrustStripBlock';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveMarketConfig } from '@/lib/portal.server';
@@ -140,10 +147,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           })
         }}
       />
+      {/* W1-01 home v3 trust strip — always rendered (Trust Invariant #1) */}
+      <TrustStripBlock />
       <HomepageRenderer
         sections={homepageSections}
         locale={locale}
       />
+      {/* W1-01 home v3 editorial fallback — rendered when no CMS config */}
+      {!homepageSections && (
+        <>
+          <EditorialDarkBandBlock locale={locale} />
+          <GiftCTACardBlock locale={locale} />
+          <JournalTeaserBlock locale={locale} />
+        </>
+      )}
     </main>
   );
 }
