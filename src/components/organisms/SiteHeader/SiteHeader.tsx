@@ -116,7 +116,10 @@ export const SiteHeader = async ({
 
         {/* slot: nav-primary */}
         <div className="hidden flex-1 items-center justify-center lg:flex">
-          <Navbar />
+          <Navbar
+            categories={categories}
+            parentCategories={parentCategories}
+          />
         </div>
 
         {/* slot: account-actions + locale-switcher */}

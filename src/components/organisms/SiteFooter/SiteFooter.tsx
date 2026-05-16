@@ -67,9 +67,9 @@ export async function SiteFooter({
               </h3>
               <ul className="space-y-2">
                 {links.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.path}>
                     <LocalizedClientLink
-                      href={link.href}
+                      href={link.path}
                       className="text-sm text-[color:rgba(250,248,245,0.75)] transition-colors hover:text-white"
                     >
                       {link.label}
