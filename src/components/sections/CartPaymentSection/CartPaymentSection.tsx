@@ -17,9 +17,10 @@ import {
 import { initiatePaymentSession } from '@/lib/data/cart';
 
 import { isStripe as isStripeFunc, paymentInfoMap } from '../../../lib/constants';
-import PaymentContainer, {
-  StripeCardContainer
-} from '../../organisms/PaymentContainer/PaymentContainer';
+import PaymentContainer from '../../organisms/PaymentContainer/PaymentContainer';
+// Cross-story #A reconcile: krok 4 Stripe renderuje PaymentElement (Story
+// 1.4) zamiast legacy CardElement (StripeCardContainer) — JEDNA ścieżka.
+import StripePaymentElement from './StripePaymentElement';
 
 type StoreCardPaymentMethod = any & {
   service_zone?: {
@@ -46,8 +47,6 @@ const CartPaymentSection = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cardBrand, setCardBrand] = useState<string | null>(null);
-  const [cardComplete, setCardComplete] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
     activeSession?.provider_id ?? ''
   );
@@ -55,6 +54,17 @@ const CartPaymentSection = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+
+  // Story 1.4 AC4/AC7 — client_secret z aktywnej Stripe payment session +
+  // return_url routujący surface Story 1.5 (`/order/:id/payment-status`).
+  // `:id` = cart.id (stabilny identyfikator dostępny przy confirm; order id
+  // powstaje post-payment, Story 1.5 resolve'uje order z payment_intent).
+  const stripeClientSecret = activeSession?.data?.client_secret as string | undefined;
+  const locale = pathname.split('/').filter(Boolean)[0] || 'pl';
+  const paymentStatusReturnUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/${locale}/order/${cart?.id}/payment-status`
+      : `/${locale}/order/${cart?.id}/payment-status`;
 
   const isOpen = searchParams.get('step') === 'payment';
 
@@ -65,10 +75,14 @@ const CartPaymentSection = ({
     setSelectedPaymentMethod(method);
     if (isStripeFunc(method)) {
       const cartHash = await computeCheckoutCartHash(cart);
-      await initiatePaymentSession(cart, {
-        provider_id: method,
-        data: { gp_checkout_cart_hash: cartHash }
-      }, getCheckoutPaymentIdempotencyKey());
+      await initiatePaymentSession(
+        cart,
+        {
+          provider_id: method,
+          data: { gp_checkout_cart_hash: cartHash }
+        },
+        getCheckoutPaymentIdempotencyKey()
+      );
     }
   };
 
@@ -101,10 +115,14 @@ const CartPaymentSection = ({
 
       if (!checkActiveSession) {
         const cartHash = await computeCheckoutCartHash(cart);
-        await initiatePaymentSession(cart, {
-          provider_id: selectedPaymentMethod,
-          data: { gp_checkout_cart_hash: cartHash }
-        }, getCheckoutPaymentIdempotencyKey());
+        await initiatePaymentSession(
+          cart,
+          {
+            provider_id: selectedPaymentMethod,
+            data: { gp_checkout_cart_hash: cartHash }
+          },
+          getCheckoutPaymentIdempotencyKey()
+        );
       }
 
       if (!shouldInputCard) {
@@ -162,22 +180,24 @@ const CartPaymentSection = ({
               >
                 {availablePaymentMethods.map(paymentMethod => (
                   <div key={paymentMethod.id}>
-                    {isStripeFunc(paymentMethod.id) ? (
-                      <StripeCardContainer
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                        paymentInfoMap={paymentInfoMap}
-                        setCardBrand={setCardBrand}
-                        setError={setError}
-                        setCardComplete={setCardComplete}
-                      />
-                    ) : (
-                      <PaymentContainer
-                        paymentInfoMap={paymentInfoMap}
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                      />
-                    )}
+                    <PaymentContainer
+                      paymentInfoMap={paymentInfoMap}
+                      paymentProviderId={paymentMethod.id}
+                      selectedPaymentOptionId={selectedPaymentMethod}
+                    />
+                    {/* Story 1.4 — krok 4 Stripe: PaymentElement (Apple/Google
+                        Pay auto, 3DS natywny) montowany po wyborze metody i
+                        utworzeniu payment session (client_secret dostępny). */}
+                    {isStripeFunc(paymentMethod.id) &&
+                      selectedPaymentMethod === paymentMethod.id &&
+                      stripeClientSecret && (
+                        <StripePaymentElement
+                          cart={cart}
+                          providerId={paymentMethod.id}
+                          clientSecret={stripeClientSecret}
+                          returnUrl={paymentStatusReturnUrl}
+                        />
+                      )}
                   </div>
                 ))}
               </RadioGroup>
@@ -201,17 +221,22 @@ const CartPaymentSection = ({
             data-testid="payment-method-error-message"
           />
 
-          <Button
-            onClick={handleSubmit}
-            variant="tonal"
-            loading={isLoading}
-            disabled={(isStripe && !cardComplete) || (!selectedPaymentMethod && !paidByGiftcard)}
-            className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
-          >
-            {!activeSession && isStripeFunc(selectedPaymentMethod)
-              ? t('enter_card_details')
-              : t('continue_to_review')}
-          </Button>
+          {/* Stripe krok 4: po utworzeniu payment session PaymentElement
+              (StripePaymentElement) ma WŁASNY submit (confirmPayment +
+              return_url) — legacy continue button ukryty, JEDNA ścieżka. */}
+          {!(isStripe && stripeClientSecret) && (
+            <Button
+              onClick={handleSubmit}
+              variant="tonal"
+              loading={isLoading}
+              disabled={!selectedPaymentMethod && !paidByGiftcard}
+              className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
+            >
+              {!activeSession && isStripeFunc(selectedPaymentMethod)
+                ? t('enter_card_details')
+                : t('continue_to_review')}
+            </Button>
+          )}
         </div>
 
         <div className={isOpen ? 'hidden' : 'block'}>
@@ -238,11 +263,7 @@ const CartPaymentSection = ({
                   >
                     {paymentInfoMap[selectedPaymentMethod]?.icon || <CreditCard />}
                   </Container>
-                  <Text>
-                    {isStripeFunc(selectedPaymentMethod) && cardBrand
-                      ? cardBrand
-                      : t('another_step_appears')}
-                  </Text>
+                  <Text>{t('another_step_appears')}</Text>
                 </div>
               </div>
             </div>
