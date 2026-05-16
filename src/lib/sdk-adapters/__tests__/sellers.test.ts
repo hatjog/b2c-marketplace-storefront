@@ -73,7 +73,7 @@ const makeSeller = (overrides: Record<string, unknown> = {}) => ({
   email: 'contact@bonbeauty.pl',
   phone: '+48600000000',
   status: 'open',
-  store_status: 'ACTIVE',
+  store_status: 'ACTIVE', // noqa: mercur15-drift — legacy Mercur 1.x bridge fixture
   social_links: { instagram: '@bonbeauty' },
   gallery: null,
   opening_hours: null,
@@ -276,12 +276,12 @@ describe('fetchSellerById', () => {
 
   it('maps status and store_status correctly', async () => {
     mockSellersIdQuery.mockResolvedValue({
-      seller: makeSeller({ status: 'suspended', store_status: 'SUSPENDED' })
+      seller: makeSeller({ status: 'suspended', store_status: 'SUSPENDED' }) // noqa: mercur15-drift — legacy bridge fixture
     });
 
     const result = await fetchSellerById('seller-abc');
     expect(result?.status).toBe('suspended');
-    expect(result?.store_status).toBe('SUSPENDED');
+    expect(result?.store_status).toBe('SUSPENDED'); // noqa: mercur15-drift — legacy bridge assertion
   });
 
   it('maps social_links when present', async () => {
