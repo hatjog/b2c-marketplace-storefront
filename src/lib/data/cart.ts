@@ -551,11 +551,14 @@ export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: {
     provider_id: string;
+    data?: Record<string, unknown>;
     context?: Record<string, unknown>;
-  }
+  },
+  idempotencyKey?: string
 ) {
   const headers = {
-    ...(await getAuthHeaders())
+    ...(await getAuthHeaders()),
+    ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
   };
 
   return sdk.store.payment

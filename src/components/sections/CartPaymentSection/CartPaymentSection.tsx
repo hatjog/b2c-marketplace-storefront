@@ -10,6 +10,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
+import {
+  computeCheckoutCartHash,
+  getCheckoutPaymentIdempotencyKey
+} from '@/lib/checkout/payment-idempotency';
 import { initiatePaymentSession } from '@/lib/data/cart';
 
 import { isStripe as isStripeFunc, paymentInfoMap } from '../../../lib/constants';
@@ -60,9 +64,11 @@ const CartPaymentSection = ({
     setError(null);
     setSelectedPaymentMethod(method);
     if (isStripeFunc(method)) {
+      const cartHash = await computeCheckoutCartHash(cart);
       await initiatePaymentSession(cart, {
-        provider_id: method
-      });
+        provider_id: method,
+        data: { gp_checkout_cart_hash: cartHash }
+      }, getCheckoutPaymentIdempotencyKey());
     }
   };
 
@@ -94,9 +100,11 @@ const CartPaymentSection = ({
       const checkActiveSession = activeSession?.provider_id === selectedPaymentMethod;
 
       if (!checkActiveSession) {
+        const cartHash = await computeCheckoutCartHash(cart);
         await initiatePaymentSession(cart, {
-          provider_id: selectedPaymentMethod
-        });
+          provider_id: selectedPaymentMethod,
+          data: { gp_checkout_cart_hash: cartHash }
+        }, getCheckoutPaymentIdempotencyKey());
       }
 
       if (!shouldInputCard) {
