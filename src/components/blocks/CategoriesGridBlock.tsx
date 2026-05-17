@@ -20,8 +20,9 @@ export type CategoriesGridSectionBlock = {
 
 export async function CategoriesGridBlock({ section }: { section: CategoriesGridSectionBlock }) {
   const hideEmpty = resolveBooleanFlag(section.hide_empty, false);
+  const resolvedLimit = Math.max(6, Math.min(section.limit ?? 8, 8));
   const categories = await fetchHomepageCategories({
-    limit: section.limit,
+    limit: resolvedLimit,
     hideEmpty,
   });
 

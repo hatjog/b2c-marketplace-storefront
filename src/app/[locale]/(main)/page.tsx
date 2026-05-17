@@ -8,15 +8,56 @@ import Script from 'next/script';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
-import { EditorialDarkBandBlock } from '@/components/blocks/EditorialDarkBandBlock';
-import { GiftCTACardBlock } from '@/components/blocks/GiftCTACardBlock';
-import { JournalTeaserBlock } from '@/components/blocks/JournalTeaserBlock';
 import { TrustStripBlock } from '@/components/blocks/TrustStripBlock';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 export const revalidate = 300;
+
+function buildHomeV3FallbackSections(tHome: Awaited<ReturnType<typeof getTranslations>>) {
+  return [
+    {
+      id: 'home-v3-hero',
+      blockType: 'hero',
+      enabled: true,
+      heading: tHome('heading'),
+      paragraph: tHome('paragraph'),
+      buttons: [],
+    },
+    {
+      id: 'home-v3-categories',
+      blockType: 'categories_grid',
+      enabled: true,
+      limit: 8,
+      hide_empty: false,
+    },
+    {
+      id: 'home-v3-popular',
+      blockType: 'products_carousel',
+      enabled: true,
+      sort: 'newest',
+      limit: 8,
+      show_price: true,
+      show_vendor: true,
+    },
+    {
+      id: 'home-v3-editorial',
+      blockType: 'editorial_dark_band',
+      enabled: true,
+    },
+    {
+      id: 'home-v3-gift',
+      blockType: 'gift_cta_card',
+      enabled: true,
+    },
+    {
+      id: 'home-v3-journal',
+      blockType: 'journal_teaser',
+      enabled: true,
+    },
+  ];
+}
 
 export async function generateMetadata({
   params
@@ -90,12 +131,14 @@ export async function generateMetadata({
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const tHome = await getTranslations({ locale, namespace: 'home_v3.hero' });
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const { marketConfig } = await resolveMarketConfig(marketId);
-  const homepageSections =
+  const homepageSectionsFromConfig =
     Array.isArray(marketConfig.homepage_sections) && marketConfig.homepage_sections.length > 0
       ? marketConfig.homepage_sections
       : null;
+  const homepageSections = homepageSectionsFromConfig ?? buildHomeV3FallbackSections(tHome);
 
   const headersList = await headers();
   const host = headersList.get('host');
@@ -147,20 +190,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           })
         }}
       />
-      {/* W1-01 home v3 trust strip — always rendered (Trust Invariant #1) */}
-      <TrustStripBlock />
       <HomepageRenderer
         sections={homepageSections}
         locale={locale}
       />
-      {/* W1-01 home v3 editorial fallback — rendered when no CMS config */}
-      {!homepageSections && (
-        <>
-          <EditorialDarkBandBlock locale={locale} />
-          <GiftCTACardBlock locale={locale} />
-          <JournalTeaserBlock locale={locale} />
-        </>
-      )}
+      {/* W1-01 home v3 trust strip — rendered as bottom surface (Trust Invariant #1). */}
+      <TrustStripBlock locale={locale} verifiedLabel={tHome('trust_verified_label')} />
     </main>
   );
 }

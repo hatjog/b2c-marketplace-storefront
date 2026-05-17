@@ -39,6 +39,108 @@
     "style_eyebrow": "Editorial discovery",
     "blog_eyebrow": "BonBeauty journal"
   },
+  "home_v3": {
+    "hero": {
+      "heading": "Find the ritual that matches your day.",
+      "paragraph": "Browse verified salons, choose with confidence, and return to suggestions that support your personal rhythm.",
+      "secondary_voucher_cta": "Gift voucher",
+      "trust_verified_label": "Verified marketplace"
+    },
+    "search": {
+      "submit": "Search",
+      "tabs": {
+        "product": "Product",
+        "salons": "Salons",
+        "voucher": "Voucher"
+      },
+      "placeholders": {
+        "product": "What ritual are you looking for?",
+        "salons": "Enter city or salon name",
+        "voucher": "Enter voucher amount"
+      },
+      "aria": {
+        "tablist": "Choose search mode",
+        "product_input": "Product search",
+        "salons_input": "Salon search",
+        "voucher_input": "Voucher search"
+      }
+    },
+    "categories": {
+      "image_alt": "Category {name}"
+    },
+    "popular_now": {
+      "eyebrow": "Popular now",
+      "heading": "Popular now",
+      "empty_state": "We are currently refreshing the popular rituals list. Please check again shortly."
+    },
+    "editorial": {
+      "aria_label": "Editorial — Quiet luxury",
+      "eyebrow": "Editorial pick",
+      "heading": "Quiet luxury",
+      "body": "Five moods you can use as a calm starting point for discovery.",
+      "vibes": {
+        "calm": {
+          "title": "Calm",
+          "subtitle": "Gentle rituals for unwinding"
+        },
+        "energy": {
+          "title": "Energy",
+          "subtitle": "Treatments that restore freshness"
+        },
+        "clarity": {
+          "title": "Clarity",
+          "subtitle": "Clean formulas and light textures"
+        },
+        "warmth": {
+          "title": "Warmth",
+          "subtitle": "Comfort-focused care experiences"
+        },
+        "seasonal": {
+          "title": "Seasonality",
+          "subtitle": "Choices aligned with the season"
+        }
+      }
+    },
+    "gift_cta": {
+      "aria_label": "Gift voucher card",
+      "eyebrow": "Voucher",
+      "heading": "Gift voucher",
+      "body": "Give someone close to you time for self-care in trusted partner salons.",
+      "cta_label": "Explore vouchers"
+    },
+    "journal": {
+      "heading": "Rituals from the journal",
+      "cta_label": "Read rituals",
+      "read_time_minutes": "{count} min read",
+      "posts": {
+        "1": {
+          "category": "Ritual",
+          "title": "How to match a ritual to your week",
+          "excerpt": "A short guide to choosing treatments based on the amount of energy you have today."
+        },
+        "2": {
+          "category": "Salon map",
+          "title": "A calm route: find a salon near you",
+          "excerpt": "How to filter salons by location and return to places that feel reliable."
+        },
+        "3": {
+          "category": "Gift",
+          "title": "A voucher that leaves room to choose",
+          "excerpt": "Why a gift voucher works best when the recipient picks the right time for redemption."
+        }
+      }
+    },
+    "trust_strip": {
+      "aria_label": "Platform trust signals",
+      "verified_label": "Verified marketplace",
+      "points": {
+        "1": "Verified salon profiles",
+        "2": "Customer ratings and feedback",
+        "3": "Secure online payments",
+        "4": "Clear voucher rules"
+      }
+    }
+  },
   "seller": {
     "list": {
       "title": "Partner salons",

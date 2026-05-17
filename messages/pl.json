@@ -39,6 +39,108 @@
     "style_eyebrow": "Odkrywaj style",
     "blog_eyebrow": "Dziennik BonBeauty"
   },
+  "home_v3": {
+    "hero": {
+      "heading": "Znajdź rytuał, który pasuje do Twojego dnia.",
+      "paragraph": "Przeglądaj sprawdzone salony, wybieraj spokojnie i wracaj do propozycji, które budują Twój własny rytm.",
+      "secondary_voucher_cta": "Voucher prezentowy",
+      "trust_verified_label": "Zweryfikowany marketplace"
+    },
+    "search": {
+      "submit": "Szukaj",
+      "tabs": {
+        "product": "Produkt",
+        "salons": "Salony",
+        "voucher": "Voucher"
+      },
+      "placeholders": {
+        "product": "Jakiego rytuału szukasz?",
+        "salons": "Wpisz miasto lub nazwę salonu",
+        "voucher": "Podaj kwotę vouchera"
+      },
+      "aria": {
+        "tablist": "Wybierz sposób wyszukiwania",
+        "product_input": "Wyszukiwanie produktów",
+        "salons_input": "Wyszukiwanie salonów",
+        "voucher_input": "Wyszukiwanie voucherów"
+      }
+    },
+    "categories": {
+      "image_alt": "Kategoria {name}"
+    },
+    "popular_now": {
+      "eyebrow": "Popular now",
+      "heading": "Popularne teraz",
+      "empty_state": "W tej chwili kompletujemy listę popularnych rytuałów. Zajrzyj ponownie za moment."
+    },
+    "editorial": {
+      "aria_label": "Editorial — Cichy luksus",
+      "eyebrow": "Wybór redakcji",
+      "heading": "Cichy luksus",
+      "body": "Pięć nastrojów, od których możesz zacząć spokojne odkrywanie.",
+      "vibes": {
+        "calm": {
+          "title": "Spokój",
+          "subtitle": "Delikatne rytuały na wyciszenie"
+        },
+        "energy": {
+          "title": "Energia",
+          "subtitle": "Zabiegi, które budzą świeżość"
+        },
+        "clarity": {
+          "title": "Czystość",
+          "subtitle": "Przejrzyste formuły i lekkość"
+        },
+        "warmth": {
+          "title": "Ciepło",
+          "subtitle": "Otulające doświadczenia pielęgnacyjne"
+        },
+        "seasonal": {
+          "title": "Sezonowość",
+          "subtitle": "Wybory dopasowane do pory roku"
+        }
+      }
+    },
+    "gift_cta": {
+      "aria_label": "Karta voucheru prezentowego",
+      "eyebrow": "Voucher",
+      "heading": "Voucher prezentowy",
+      "body": "Podaruj bliskiej osobie czas dla siebie w sprawdzonych salonach.",
+      "cta_label": "Zobacz vouchery"
+    },
+    "journal": {
+      "heading": "Rytuały z dziennika",
+      "cta_label": "Czytaj rytuały",
+      "read_time_minutes": "{count} min czytania",
+      "posts": {
+        "1": {
+          "category": "Rytuał",
+          "title": "Jak dobrać rytuał do rytmu tygodnia",
+          "excerpt": "Krótki przewodnik, który pomaga wybrać zabieg zgodnie z tym, ile masz dziś energii."
+        },
+        "2": {
+          "category": "Mapa salonów",
+          "title": "Spokojna trasa: salon blisko Ciebie",
+          "excerpt": "Jak filtrować salony po lokalizacji i wracać do miejsc, które dają Ci komfort."
+        },
+        "3": {
+          "category": "Prezent",
+          "title": "Voucher, który zostawia przestrzeń wyboru",
+          "excerpt": "Dlaczego voucher prezentowy działa najlepiej, gdy odbiorca sam wybiera moment realizacji."
+        }
+      }
+    },
+    "trust_strip": {
+      "aria_label": "Sygnały zaufania platformy",
+      "verified_label": "Zweryfikowany marketplace",
+      "points": {
+        "1": "Zweryfikowane profile salonów",
+        "2": "Oceny klientek i klientów",
+        "3": "Bezpieczne płatności online",
+        "4": "Jasne zasady voucherów"
+      }
+    }
+  },
   "seller": {
     "list": {
       "title": "Salony partnerskie",

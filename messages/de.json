@@ -40,6 +40,108 @@
     "style_eyebrow": "Redaktionelle Entdeckung",
     "blog_eyebrow": "BonBeauty Journal"
   },
+  "home_v3": {
+    "hero": {
+      "heading": "Finden Sie das Ritual, das zu Ihrem Tag passt.",
+      "paragraph": "Durchsuchen Sie verifizierte Salons, wählen Sie in Ruhe und kehren Sie zu Empfehlungen zurück, die Ihren eigenen Rhythmus unterstützen.",
+      "secondary_voucher_cta": "Geschenkgutschein",
+      "trust_verified_label": "Verifizierter Marktplatz"
+    },
+    "search": {
+      "submit": "Suchen",
+      "tabs": {
+        "product": "Produkt",
+        "salons": "Salons",
+        "voucher": "Gutschein"
+      },
+      "placeholders": {
+        "product": "Welches Ritual suchen Sie?",
+        "salons": "Stadt oder Salonname eingeben",
+        "voucher": "Gutscheinbetrag eingeben"
+      },
+      "aria": {
+        "tablist": "Suchmodus auswählen",
+        "product_input": "Produktsuche",
+        "salons_input": "Salonsuche",
+        "voucher_input": "Gutscheinsuche"
+      }
+    },
+    "categories": {
+      "image_alt": "Kategorie {name}"
+    },
+    "popular_now": {
+      "eyebrow": "Popular now",
+      "heading": "Beliebt im Moment",
+      "empty_state": "Wir aktualisieren gerade die Liste beliebter Rituale. Bitte schauen Sie in Kürze erneut vorbei."
+    },
+    "editorial": {
+      "aria_label": "Editorial — Leiser Luxus",
+      "eyebrow": "Redaktionelle Auswahl",
+      "heading": "Leiser Luxus",
+      "body": "Fünf Stimmungen als ruhiger Einstieg in Ihre Entdeckung.",
+      "vibes": {
+        "calm": {
+          "title": "Ruhe",
+          "subtitle": "Sanfte Rituale zum Abschalten"
+        },
+        "energy": {
+          "title": "Energie",
+          "subtitle": "Behandlungen für neue Frische"
+        },
+        "clarity": {
+          "title": "Klarheit",
+          "subtitle": "Klare Formeln und leichte Texturen"
+        },
+        "warmth": {
+          "title": "Wärme",
+          "subtitle": "Pflege mit wohltuendem Gefühl"
+        },
+        "seasonal": {
+          "title": "Saisonalität",
+          "subtitle": "Auswahl passend zur Jahreszeit"
+        }
+      }
+    },
+    "gift_cta": {
+      "aria_label": "Geschenkgutschein-Karte",
+      "eyebrow": "Gutschein",
+      "heading": "Geschenkgutschein",
+      "body": "Schenken Sie einer nahestehenden Person Zeit für sich in verifizierten Partnersalons.",
+      "cta_label": "Gutscheine ansehen"
+    },
+    "journal": {
+      "heading": "Rituale aus dem Journal",
+      "cta_label": "Rituale lesen",
+      "read_time_minutes": "{count} Min. Lesezeit",
+      "posts": {
+        "1": {
+          "category": "Ritual",
+          "title": "So passt ein Ritual in Ihren Wochenrhythmus",
+          "excerpt": "Ein kurzer Leitfaden, um Behandlungen nach Ihrem aktuellen Energielevel auszuwählen."
+        },
+        "2": {
+          "category": "Salonkarte",
+          "title": "Ruhige Route: Salon in Ihrer Nähe",
+          "excerpt": "Wie Sie Salons nach Standort filtern und zu verlässlichen Orten zurückkehren."
+        },
+        "3": {
+          "category": "Geschenk",
+          "title": "Ein Gutschein mit Raum für eigene Wahl",
+          "excerpt": "Warum ein Geschenkgutschein am besten funktioniert, wenn die einlösende Person den Zeitpunkt selbst bestimmt."
+        }
+      }
+    },
+    "trust_strip": {
+      "aria_label": "Vertrauenssignale der Plattform",
+      "verified_label": "Verifizierter Marktplatz",
+      "points": {
+        "1": "Verifizierte Salonprofile",
+        "2": "Bewertungen und Feedback",
+        "3": "Sichere Online-Zahlungen",
+        "4": "Klare Gutscheinregeln"
+      }
+    }
+  },
   "seller": {
     "list": {
       "title": "Partnersalons",
