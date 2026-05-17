@@ -930,7 +930,10 @@
     "paid": {
       "label": "Zahlung bestätigt",
       "body": "Ihre Zahlung wurde bestätigt. Weiter zu den Bestelldetails.",
-      "cta": "Zur Bestellung"
+      "cta": "Zur Bestellung",
+      "label_v180": "Zahlung akzeptiert ✓",
+      "body_v180": "Ihre Zahlung wurde bestätigt. Sie werden in Kürze zu den Bestelldetails weitergeleitet.",
+      "technical_detail": "Zahlung vom PSP genehmigt — Webhook empfangen und verarbeitet."
     },
     "pending_psp_confirmation": {
       "label": "Zahlungsverifizierung",
@@ -949,14 +952,47 @@
     "support_required": {
       "label": "Handlung erforderlich",
       "body": "Ihre Bestellung erfordert unsere Aufmerksamkeit. Bitte wenden Sie sich an den Kundendienst.",
-      "cta": "Support kontaktieren"
+      "cta": "Support kontaktieren",
+      "label_v180": "Kontaktieren Sie uns",
+      "body_v180": "Dieser Fall erfordert eine manuelle Prüfung — Ticket {ticket_id} wurde erstellt. Wir melden uns in Kürze bei Ihnen.",
+      "cta_v180": "E-Mail an Support öffnen",
+      "ticket_missing": "Keine Ticketnummer — bitte kontaktieren Sie support@bonbeauty.pl",
+      "technical_detail": "Fall zur manuellen Prüfung eskaliert — Ticket im Supportsystem erstellt."
     },
     "expired": {
       "label": "Zahlungssitzung abgelaufen",
       "body": "Ihr vorheriger Kaufversuch ist abgelaufen und geschlossen. Sie können von vorne beginnen.",
       "cta": "Zum Warenkorb zurück",
-      "secondary_cta": "Support kontaktieren"
-    }
+      "secondary_cta": "Support kontaktieren",
+      "label_v180": "Ihr Warenkorb wartet noch — kehren Sie zurück und schließen Sie ab",
+      "body_v180": "Ihre Zahlungssitzung ist abgelaufen, aber Ihr Warenkorb ist noch bereit. Ihr Warenkorb wird mindestens 7 Tage gespeichert.",
+      "cta_v180": "Zum Warenkorb zurück",
+      "technical_detail": "Zahlungssitzung nach 10 Minuten ohne PSP-Bestätigung abgelaufen."
+    },
+    "pending_psp": {
+      "label": "Wir prüfen Ihre Zahlung",
+      "body": "Das dauert normalerweise bis zu einer Minute. Sie müssen nichts tun — wir prüfen automatisch.",
+      "countdown": "Erneute Prüfung in {n}s...",
+      "second_tier": "Das dauert etwas länger als gewöhnlich (bereits 90 Sekunden). Das kann bei hoher Auslastung vorkommen — wir prüfen automatisch, Sie müssen nichts tun. Eine E-Mail mit PDF kommt innerhalb von 10 Minuten.",
+      "technical_detail": "Warten auf PSP-Webhook — Backend-Status pending_psp."
+    },
+    "failed_retryable": {
+      "label": "Etwas ist schiefgelaufen — versuchen wir es erneut",
+      "body": "Ihre Zahlung war nicht erfolgreich, aber Sie können es erneut versuchen. Ihr Warenkorb ist noch bereit.",
+      "cta": "Zur Zahlung zurück",
+      "technical_detail": "Zahlung abgelehnt — keine Belastung erfolgt. Erneuter Versuch empfohlen."
+    },
+    "failed_nonretryable": {
+      "label": "Zahlung fehlgeschlagen",
+      "body": "Ihre Zahlung ist fehlgeschlagen — kontaktieren Sie Ihre Bank oder wählen Sie in einer neuen Bestellung eine andere Zahlungsmethode.",
+      "cta": "Support kontaktieren",
+      "technical_detail": "Zahlung dauerhaft von der Bank abgelehnt — Handlung Ihrerseits erforderlich."
+    },
+    "cross_actor": {
+      "for_you": "Was als Nächstes für Sie passiert",
+      "for_us": "Was als Nächstes für uns passiert"
+    },
+    "technical_expand_summary": "Was genau ist passiert?"
   },
   "storefront_state": {
     "loading": {
