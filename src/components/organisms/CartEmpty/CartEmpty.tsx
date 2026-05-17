@@ -9,8 +9,10 @@ export function CartEmpty() {
   const t = useTranslations('cart');
 
   return (
-    <div
+    <section
       className="col-span-12 flex justify-center py-10"
+      role="region"
+      aria-labelledby="cart-empty-heading"
       data-testid="cart-empty"
     >
       <div className="flex w-full max-w-[480px] flex-col items-center rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.82)] px-8 py-10 text-center shadow-[0_16px_40px_rgba(90,67,28,0.08)]">
@@ -51,7 +53,12 @@ export function CartEmpty() {
             />
           </svg>
         </span>
-        <h3 className="heading-lg text-primary">{t('empty_es3_heading')}</h3>
+        <h3
+          id="cart-empty-heading"
+          className="heading-lg text-primary"
+        >
+          {t('empty_es3_heading')}
+        </h3>
         <p className="mt-3 text-lg text-secondary">
           {t('empty_es3_body')}
         </p>
@@ -62,6 +69,6 @@ export function CartEmpty() {
           <Button className="flex w-full items-center justify-center py-3">{t('empty_es3_cta')}</Button>
         </LocalizedClientLink>
       </div>
-    </div>
+    </section>
   );
 }

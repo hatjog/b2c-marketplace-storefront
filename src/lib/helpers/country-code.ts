@@ -4,7 +4,13 @@ const GP_REGION_COOKIE = '_gp_region';
 const LOCALE_TO_COUNTRY: Record<string, string> = {
   pl: 'pl',
   en: 'gb', // English → United Kingdom as default
+  de: 'de',
+  ua: 'ua',
 };
+
+function normalizeLocale(locale: string): string {
+  return locale.trim().toLowerCase().split('-')[0] || 'pl';
+}
 
 function parseRegionCookie(cookieHeader: string | undefined): string | undefined {
   if (!cookieHeader) {
@@ -52,5 +58,6 @@ async function getServerRegionCookie(): Promise<string | undefined> {
  */
 export async function getCountryCode(locale: string): Promise<string> {
   const regionCookie = getClientRegionCookie() ?? (await getServerRegionCookie());
-  return regionCookie || (LOCALE_TO_COUNTRY[locale] ?? 'pl');
+  const localeKey = normalizeLocale(locale);
+  return regionCookie || (LOCALE_TO_COUNTRY[localeKey] ?? 'pl');
 }

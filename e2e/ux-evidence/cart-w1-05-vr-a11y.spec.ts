@@ -6,8 +6,7 @@ import { paths } from '../fixtures/test-data';
 
 const LOCALES = ['pl', 'en', 'ua', 'de'] as const;
 const BREAKPOINTS = [375, 768, 1280] as const;
-const ADD_TO_CART_SELECTOR =
-  '[data-testid="product-add-to-cart-button"], [data-testid="add-to-cart"], button:has-text("Dodaj do koszyka"), button:has-text("Add to cart")';
+const ADD_TO_CART_SELECTOR = '[data-testid="product-add-to-cart-button"]';
 const PRIMARY_PROJECT = 'chromium-ux-mobile-375';
 
 async function acceptCookieBanner(page: Page): Promise<void> {
@@ -45,26 +44,27 @@ async function openEmptyCart(page: Page, locale: (typeof LOCALES)[number]): Prom
   await page.waitForLoadState('networkidle');
 }
 
-async function openDefaultCart(page: Page, locale: (typeof LOCALES)[number]): Promise<boolean> {
+async function openDefaultCart(page: Page, locale: (typeof LOCALES)[number]): Promise<void> {
   await page.context().clearCookies();
   await acceptCookieBanner(page);
 
   const productHandle = await findTestProductHandle();
-  if (!productHandle) {
-    return false;
-  }
+  expect(productHandle, `Seed product handle required for default cart (${locale})`).toBeTruthy();
 
-  await page.goto(paths(locale).product(productHandle));
+  await page.goto(paths(locale).product(productHandle!));
   await page.waitForLoadState('networkidle');
   const addToCartButton = page.locator(ADD_TO_CART_SELECTOR).first();
-  const buttonVisible = await addToCartButton.isVisible({ timeout: 7_000 }).catch(() => false);
-  if (!buttonVisible) {
-    return false;
-  }
+  await expect(
+    addToCartButton,
+    `Missing stable add-to-cart trigger for locale=${locale} selector=${ADD_TO_CART_SELECTOR}`,
+  ).toBeVisible({ timeout: 10_000 });
   await addToCartButton.click();
   await page.goto(paths(locale).cart);
   await page.waitForLoadState('networkidle');
-  return true;
+  await expect(
+    page.locator('[data-testid^="cart-item-"]').first(),
+    `Default cart state not prepared for locale=${locale}`,
+  ).toBeVisible({ timeout: 10_000 });
 }
 
 test.beforeAll(async () => {
@@ -81,10 +81,7 @@ test.describe('W1-05 Cart VR matrix', () => {
       test(`default state snapshot — ${locale} @ ${width}`, async ({ page }, testInfo) => {
         ensureSingleProject(testInfo);
         await page.setViewportSize({ width, height: 1200 });
-        const defaultStateReady = await openDefaultCart(page, locale);
-        if (!defaultStateReady) {
-          test.skip(true, `Cannot prepare default cart state for locale=${locale}.`);
-        }
+        await openDefaultCart(page, locale);
 
         await expect(page).toHaveScreenshot(
           `w1-05-cart-default-${locale}-${width}.png`,
@@ -111,10 +108,7 @@ test.describe('W1-05 Cart a11y smoke', () => {
     test(`axe no serious/critical — default ${locale}`, async ({ page }, testInfo) => {
       ensureSingleProject(testInfo);
       await page.setViewportSize({ width: 375, height: 812 });
-      const defaultStateReady = await openDefaultCart(page, locale);
-      if (!defaultStateReady) {
-        test.skip(true, `Cannot prepare default cart state for locale=${locale}.`);
-      }
+      await openDefaultCart(page, locale);
 
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

@@ -61,8 +61,6 @@ export const CartDropdown = () => {
     }
   }, [cartItemsCount, previousItemCount, pathname]);
 
-  const hasMiniCartDrawer = typeof MiniCartDrawer === 'function';
-
   const onApplyDiscount = async (code: string) => {
     const result = await applyPromotions([code]);
     if (!result.success) {
@@ -89,22 +87,6 @@ export const CartDropdown = () => {
           amount: discountAmount
         }
       : null;
-
-  if (!hasMiniCartDrawer) {
-    return (
-      <button
-        type="button"
-        className="relative"
-        aria-label={t('go_to_cart_aria')}
-        onClick={() => router.push(`/${locale}/cart`)}
-      >
-        <CartIcon size={20} />
-        {Boolean(cartItemsCount) && (
-          <Badge className="absolute -right-2 -top-2 h-4 w-4 p-0">{cartItemsCount}</Badge>
-        )}
-      </button>
-    );
-  }
 
   return (
     <div className="relative">

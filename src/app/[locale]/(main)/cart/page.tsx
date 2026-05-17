@@ -36,28 +36,37 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
   let recommendedProducts: Awaited<ReturnType<typeof listProducts>>['response']['products'] = [];
   let curatedCategories: Array<{ id: string; name: string; handle: string }> = [];
 
-  try {
-    const countryCode = await getCountryCode(locale);
-    const [{ response: recommendedResponse }, { categories }] = await Promise.all([
-      listProducts({
-        countryCode,
-        queryParams: {
-          limit: 8,
-          order: 'created_at'
-        },
-        forceCache: true
-      }),
-      listCategories({ query: { limit: 8 } })
-    ]);
+  const productsPromise = getCountryCode(locale).then(countryCode =>
+    listProducts({
+      countryCode,
+      queryParams: {
+        limit: 8,
+        order: 'created_at'
+      },
+      forceCache: true
+    })
+  );
+  const categoriesPromise = listCategories({ query: { limit: 8 } });
 
-    recommendedProducts = recommendedResponse.products.slice(0, 8);
-    curatedCategories = categories.slice(0, 8).map(category => ({
+  const [productsResult, categoriesResult] = await Promise.allSettled([
+    productsPromise,
+    categoriesPromise
+  ]);
+
+  if (productsResult.status === 'fulfilled') {
+    recommendedProducts = productsResult.value.response.products.slice(0, 8);
+  } else {
+    console.error('[cart] Failed to load recommended products feed:', productsResult.reason);
+  }
+
+  if (categoriesResult.status === 'fulfilled') {
+    curatedCategories = categoriesResult.value.categories.slice(0, 8).map(category => ({
       id: category.id,
       name: category.name,
       handle: category.handle
     }));
-  } catch (error) {
-    console.error('[cart] Failed to load recommendation feeds:', error);
+  } else {
+    console.error('[cart] Failed to load curated categories feed:', categoriesResult.reason);
   }
   const t = await getTranslations('page');
   return (
@@ -65,6 +74,7 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
       id="main-content"
       className="container grid grid-cols-12"
     >
+      <h1 className="sr-only">{t('cart_title')}</h1>
       <StorefrontRouteStateSignal
         route="cart"
         surface="cart"
