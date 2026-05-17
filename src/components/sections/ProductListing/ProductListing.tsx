@@ -31,10 +31,13 @@ import type { SortOption } from '@/lib/constants';
 import { listCategories } from '@/lib/data/categories';
 import type { ProductQueryParams } from '@/lib/data/products';
 import { listProductsWithSort, listProductTags, listSellerCities, searchProducts } from '@/lib/data/products';
+import { getRegion } from '@/lib/data/regions';
 import { getSellers } from '@/lib/data/seller';
+import { applyCategoryPlpSemanticFilters } from '@/lib/helpers/category-plp-semantic-filters';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { parsePurchaseMode } from '@/lib/helpers/parse-purchase-mode';
+import type { SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 import { sanitizeTagIdList } from '@/lib/helpers/sanitize-tag-id';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { ClearFiltersButton } from './ClearFiltersButton';
@@ -115,7 +118,7 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
     sellerRatings,
     page,
     salonHandle: rawSalon && HANDLE_RE.test(rawSalon) ? rawSalon : undefined,
-    availability: rawAvailability === 'in_stock' ? 'in_stock' : undefined,
+    availability: rawAvailability === 'in_stock' ? ('in_stock' as const) : undefined,
     purchaseMode: parsePurchaseMode(rawMode)
   };
 }
@@ -175,6 +178,20 @@ export const ProductListing = async ({
 
   // ADR-046: resolve country code from cookie, not from locale URL segment
   const countryCode = await getCountryCode(locale);
+  const region = await getRegion(countryCode);
+  const currencyCode = (region?.currency_code ?? 'PLN').toUpperCase();
+  const semanticFilters: {
+    salonHandle?: string;
+    availability?: 'in_stock';
+    purchaseMode?: SelfPurchaseMode;
+  } | undefined = categoryPlp
+    ? {
+        salonHandle,
+        availability,
+        purchaseMode,
+      }
+    : undefined;
+
   // Fetch market config for storefront filters
   const marketId = getMarketId();
   const storefrontFilters: StorefrontFilterConfig[] = [];
@@ -252,14 +269,19 @@ export const ProductListing = async ({
     if (query) {
       const searchResult = await searchProducts({
         query,
-        page: page - 1,
-        hitsPerPage: PRODUCT_LIMIT,
+        page: 0,
+        hitsPerPage: 1000,
         countryCode,
       });
 
-      totalFiltered = searchResult.nbHits;
-      pages = searchResult.nbPages;
-      paginatedProducts = searchResult.products;
+      const filteredSearchProducts = categoryPlp
+        ? applyCategoryPlpSemanticFilters(searchResult.products, semanticFilters)
+        : searchResult.products;
+
+      totalFiltered = filteredSearchProducts.length;
+      pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
+      const offset = (page - 1) * PRODUCT_LIMIT;
+      paginatedProducts = filteredSearchProducts.slice(offset, offset + PRODUCT_LIMIT);
     } else {
       const { response } = await listProductsWithSort({
         seller_id,
@@ -272,6 +294,7 @@ export const ProductListing = async ({
         tagIds,
         durations,
         sellerRatings,
+        semanticFilters,
         page,
         limit: PRODUCT_LIMIT,
       });
@@ -300,60 +323,16 @@ export const ProductListing = async ({
     );
   }
 
-  let visibleProducts = paginatedProducts;
-
-  if (categoryPlp && salonHandle) {
-    visibleProducts = visibleProducts.filter(product => {
-      const productSellerHandle =
-        (product as HttpTypes.StoreProduct & { seller?: { handle?: string } }).seller?.handle;
-      return productSellerHandle === salonHandle;
-    });
-  }
-
-  if (categoryPlp && availability === 'in_stock') {
-    visibleProducts = visibleProducts.filter(product =>
-      (product.variants ?? []).some(variant => {
-        const rawVariant = variant as {
-          manage_inventory?: boolean | null;
-          allow_backorder?: boolean | null;
-          inventory_quantity?: number | null;
-        };
-
-        if (rawVariant.manage_inventory === false) return true;
-        if (rawVariant.allow_backorder === true) return true;
-        return (rawVariant.inventory_quantity ?? 0) > 0;
-      })
-    );
-  }
-
-  if (categoryPlp && purchaseMode === 'gift') {
-    visibleProducts = visibleProducts.filter(product => {
-      const metadata = (product.metadata ?? {}) as {
-        gp?: { purchase_mode?: unknown };
-        purchase_mode?: unknown;
-      };
-
-      const explicitMode =
-        typeof metadata?.gp?.purchase_mode === 'string'
-          ? parsePurchaseMode(metadata.gp.purchase_mode)
-          : typeof metadata?.purchase_mode === 'string'
-            ? parsePurchaseMode(metadata.purchase_mode)
-            : null;
-
-      if (!explicitMode) return true;
-      return explicitMode === 'gift';
-    });
-  }
-
-  const effectiveTotal = categoryPlp ? visibleProducts.length : totalFiltered;
-  const showContextualEditorialCta = categoryPlp && effectiveTotal > 0 && effectiveTotal < 10;
+  const visibleProducts = paginatedProducts;
+  const effectiveTotal = totalFiltered;
+  const showContextualEditorialCta = categoryPlp && totalFiltered > 0 && totalFiltered < 10;
   const tCategoryPlp = categoryPlp ? await getTranslations('category_plp') : null;
-  const contextualCtaLabel = tCategoryPlp?.('editorial_cta') ?? 'Zobacz Wybór redakcji';
+  const contextualCtaLabel = tCategoryPlp?.('editorial_cta') ?? '';
 
   return (
     <div className="space-y-6 py-2" data-testid="product-listing-container">
       <div className="bb-section-shell bb-section-shell-strong space-y-4">
-        <ProductListingHeader total={effectiveTotal} />
+        <ProductListingHeader total={effectiveTotal} showSort={!categoryPlp} />
         <div className="hidden md:block">
           <ProductListingActiveFilters />
         </div>
@@ -361,7 +340,12 @@ export const ProductListing = async ({
       <div className={`grid grid-cols-1 gap-6 ${showSidebar ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
         {showSidebar && (
           categoryPlp ? (
-            <CategoryPlpSidebar salons={salonOptions} cities={sidebarCities} />
+            <CategoryPlpSidebar
+              salons={salonOptions}
+              cities={sidebarCities}
+              locale={locale}
+              currencyCode={currencyCode}
+            />
           ) : (
             <ProductSidebar
               filters={storefrontFilters}

@@ -19,6 +19,8 @@ type SalonOption = {
 type CategoryPlpSidebarProps = {
   salons: SalonOption[];
   cities: string[];
+  locale: string;
+  currencyCode: string;
 };
 
 const SORT_OPTIONS = ['recommended', 'price_asc', 'price_desc'] as const;
@@ -29,7 +31,20 @@ function parsePrice(value: string | null, fallback: number) {
   return Math.max(PRICE_MIN, Math.min(PRICE_MAX, parsed));
 }
 
-export function CategoryPlpSidebar({ salons, cities }: CategoryPlpSidebarProps) {
+function formatPrice(value: number, locale: string, currencyCode: string) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currencyCode,
+      currencyDisplay: 'code',
+      maximumFractionDigits: 0,
+    }).format(value);
+  } catch {
+    return `${value} ${currencyCode}`;
+  }
+}
+
+export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: CategoryPlpSidebarProps) {
   const t = useTranslations('category_plp');
   const tSort = useTranslations('sort');
   const searchParams = useSearchParams();
@@ -112,7 +127,7 @@ export function CategoryPlpSidebar({ salons, cities }: CategoryPlpSidebarProps) 
         <div className="space-y-2">
           <label className="flex items-center justify-between text-xs text-secondary" htmlFor="category-plp-min-price">
             <span>{t('price_from')}</span>
-            <span>{minPrice} PLN</span>
+            <span>{formatPrice(minPrice, locale, currencyCode)}</span>
           </label>
           <input
             id="category-plp-min-price"
@@ -126,7 +141,7 @@ export function CategoryPlpSidebar({ salons, cities }: CategoryPlpSidebarProps) 
           />
           <label className="flex items-center justify-between text-xs text-secondary" htmlFor="category-plp-max-price">
             <span>{t('price_to')}</span>
-            <span>{maxPrice} PLN</span>
+            <span>{formatPrice(maxPrice, locale, currencyCode)}</span>
           </label>
           <input
             id="category-plp-max-price"
@@ -206,11 +221,13 @@ export function CategoryPlpSidebar({ salons, cities }: CategoryPlpSidebarProps) 
       </section>
 
       <section className="space-y-3" data-testid="category-plp-filter-mode">
-        <h3 className="label-sm uppercase text-secondary">{t('filter_mode')}</h3>
-        <div className="grid grid-cols-2 gap-2">
+        <h3 id="category-plp-mode-label" className="label-sm uppercase text-secondary">{t('filter_mode')}</h3>
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="category-plp-mode-label">
           <button
             type="button"
             onClick={() => setQueryValue('mode', 'self')}
+            role="radio"
+            aria-checked={selectedMode !== 'gift'}
             className={`rounded-full border px-3 py-2 text-sm ${selectedMode !== 'gift' ? 'border-action bg-action text-action-on-primary' : 'border-[rgba(144,112,50,0.26)] bg-white'}`}
             data-testid="category-plp-mode-self"
           >
@@ -219,6 +236,8 @@ export function CategoryPlpSidebar({ salons, cities }: CategoryPlpSidebarProps) 
           <button
             type="button"
             onClick={() => setQueryValue('mode', 'gift')}
+            role="radio"
+            aria-checked={selectedMode === 'gift'}
             className={`rounded-full border px-3 py-2 text-sm ${selectedMode === 'gift' ? 'border-action bg-action text-action-on-primary' : 'border-[rgba(144,112,50,0.26)] bg-white'}`}
             data-testid="category-plp-mode-gift"
           >

@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { SortDropdown } from '@/components/molecules/SortDropdown/SortDropdown';
 
-export const ProductListingHeader = ({ total }: { total: number }) => {
+export const ProductListingHeader = ({ total, showSort = true }: { total: number; showSort?: boolean }) => {
   const t = useTranslations('navigation');
 
   return (
@@ -16,7 +16,7 @@ export const ProductListingHeader = ({ total }: { total: number }) => {
         <p className="bb-eyebrow">{t('all_products')}</p>
         <div className="heading-lg" data-testid="product-listing-total">{t('listings_count', { count: total })}</div>
       </div>
-      <SortDropdown />
+      {showSort ? <SortDropdown /> : null}
     </div>
   );
 };
