@@ -581,7 +581,8 @@
         "transactional_required": "Transaktionszustimmung ist erforderlich",
         "withdrawal_required": "Bestätigung der Widerrufspolitik ist erforderlich"
       }
-    }
+    },
+    "pay_now": "Bezahlen"
   },
   "confirmation": {
     "meta_title": "Bestellung bestätigt",
@@ -929,7 +930,10 @@
     "paid": {
       "label": "Zahlung bestätigt",
       "body": "Ihre Zahlung wurde bestätigt. Weiter zu den Bestelldetails.",
-      "cta": "Zur Bestellung"
+      "cta": "Zur Bestellung",
+      "label_v180": "Zahlung akzeptiert ✓",
+      "body_v180": "Ihre Zahlung wurde bestätigt. Sie werden in Kürze zu den Bestelldetails weitergeleitet.",
+      "technical_detail": "Zahlung vom PSP genehmigt — Webhook empfangen und verarbeitet."
     },
     "pending_psp_confirmation": {
       "label": "Zahlungsverifizierung",
@@ -948,14 +952,49 @@
     "support_required": {
       "label": "Handlung erforderlich",
       "body": "Ihre Bestellung erfordert unsere Aufmerksamkeit. Bitte wenden Sie sich an den Kundendienst.",
-      "cta": "Support kontaktieren"
+      "cta": "Support kontaktieren",
+      "label_v180": "Kontaktieren Sie uns",
+      "body_v180": "Dieser Fall erfordert eine manuelle Prüfung — Ticket {ticket_id} wurde erstellt. Wir melden uns in Kürze bei Ihnen.",
+      "cta_v180": "E-Mail an Support öffnen",
+      "ticket_missing": "Keine Ticketnummer — bitte kontaktieren Sie support@bonbeauty.pl",
+      "technical_detail": "Fall zur manuellen Prüfung eskaliert — Ticket im Supportsystem erstellt."
     },
     "expired": {
       "label": "Zahlungssitzung abgelaufen",
       "body": "Ihr vorheriger Kaufversuch ist abgelaufen und geschlossen. Sie können von vorne beginnen.",
       "cta": "Zum Warenkorb zurück",
-      "secondary_cta": "Support kontaktieren"
-    }
+      "secondary_cta": "Support kontaktieren",
+      "label_v180": "Ihr Warenkorb wartet noch — kehren Sie zurück und schließen Sie ab",
+      "body_v180": "Ihre Zahlungssitzung ist abgelaufen, aber Ihr Warenkorb ist noch bereit. Ihr Warenkorb wird mindestens 7 Tage gespeichert.",
+      "cta_v180": "Zum Warenkorb zurück",
+      "technical_detail": "Zahlungssitzung nach 10 Minuten ohne PSP-Bestätigung abgelaufen."
+    },
+    "pending_psp": {
+      "label": "Wir prüfen Ihre Zahlung",
+      "body": "Das dauert normalerweise bis zu einer Minute. Sie müssen nichts tun — wir prüfen automatisch.",
+      "countdown": "Erneute Prüfung in {n}s...",
+      "second_tier": "Das dauert etwas länger als gewöhnlich (bereits {elapsed} Sekunden). Das kann bei hoher Auslastung vorkommen — wir prüfen automatisch, Sie müssen nichts tun. Eine E-Mail mit PDF kommt innerhalb von 10 Minuten.",
+      "technical_detail": "Warten auf PSP-Webhook — Backend-Status pending_psp."
+    },
+    "failed_retryable": {
+      "label": "Etwas ist schiefgelaufen — versuchen wir es erneut",
+      "body": "Ihre Zahlung war nicht erfolgreich, aber Sie können es erneut versuchen. Ihr Warenkorb ist noch bereit.",
+      "cta": "Zur Zahlung zurück",
+      "technical_detail": "Zahlung abgelehnt — keine Belastung erfolgt. Erneuter Versuch empfohlen."
+    },
+    "failed_nonretryable": {
+      "label": "Zahlung fehlgeschlagen",
+      "body": "Ihre Zahlung ist fehlgeschlagen — kontaktieren Sie Ihre Bank oder wählen Sie in einer neuen Bestellung eine andere Zahlungsmethode.",
+      "cta": "Support kontaktieren",
+      "technical_detail": "Zahlung dauerhaft von der Bank abgelehnt — Handlung Ihrerseits erforderlich."
+    },
+    "cross_actor": {
+      "for_you": "Was als Nächstes für Sie passiert",
+      "for_us": "Was als Nächstes für uns passiert"
+    },
+    "technical_expand_summary": "Was genau ist passiert?",
+    "mailto_order_label": "Bestellung",
+    "mailto_ticket_label": "Ticket"
   },
   "storefront_state": {
     "loading": {
@@ -1047,5 +1086,67 @@
   },
   "pdp": {
     "verified_seller": "Verifizierter Salon"
+  },
+  "newsletter": {
+    "headline": "Newsletter abonnieren",
+    "subline": "Erhalten Sie die neuesten BonBeauty-News und Angebote.",
+    "email_placeholder": "Ihre E-Mail-Adresse",
+    "submit": "Abonnieren",
+    "legal": "Mit dem Abonnement akzeptieren Sie die Datenschutzerklärung und willigen in den Erhalt von Marketing-E-Mails ein.",
+    "success_title": "Vielen Dank!",
+    "success_message": "Ihre E-Mail-Adresse wurde zum Newsletter hinzugefügt.",
+    "aria_region": "Newsletter abonnieren",
+    "dismiss": "Schließen"
+  },
+  "cookie_banner": {
+    "aria_label": "Cookie-Einstellungen",
+    "description": "Wir verwenden Cookies, um Ihr Erlebnis zu verbessern. Details in der",
+    "privacy_policy": "Datenschutzerklärung",
+    "customize": "Anpassen",
+    "reject_all": "Alle ablehnen",
+    "accept_all": "Alle akzeptieren",
+    "back": "Zurück",
+    "save_preferences": "Einstellungen speichern",
+    "category_necessary": "Notwendig",
+    "category_necessary_desc": "Für den Betrieb der Website erforderlich — immer aktiv.",
+    "category_statistics": "Statistik",
+    "category_statistics_desc": "Helfen uns zu verstehen, wie Sie die Website nutzen.",
+    "category_marketing": "Marketing",
+    "category_marketing_desc": "Dienen der Personalisierung von Werbung.",
+    "category_personalization": "Personalisierung",
+    "category_personalization_desc": "Speichern Ihre Präferenzen."
+  },
+  "modal": {
+    "close": "Schließen"
+  },
+  "toast": {
+    "aria_region": "Benachrichtigungen",
+    "dismiss": "Benachrichtigung schließen"
+  },
+  "mini_cart": {
+    "title": "Warenkorb",
+    "close": "Warenkorb schließen",
+    "aria_label": "Warenkorb",
+    "empty_title": "Ihr Warenkorb ist leer",
+    "empty_cta": "Mit der Redaktionsauswahl beginnen",
+    "remove": "Entfernen",
+    "discount_placeholder": "Rabattcode",
+    "discount": "Rabatt",
+    "apply": "Anwenden",
+    "subtotal": "Zwischensumme",
+    "total": "Gesamt",
+    "shipping_estimate": "Versandkosten werden an der Kasse berechnet.",
+    "checkout": "Zur Kasse",
+    "continue_shopping": "Weiter einkaufen"
+  },
+  "search_overlay": {
+    "aria_label": "Produkte suchen",
+    "placeholder": "Wonach suchen Sie?",
+    "close": "Schließen",
+    "recent_searches": "Letzte Suchanfragen",
+    "popular_products": "Beliebte Produkte",
+    "suggestions": "Vorschläge",
+    "loading": "Laden…",
+    "no_results": "Keine Ergebnisse"
   }
 }

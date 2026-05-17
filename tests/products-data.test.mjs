@@ -99,7 +99,7 @@ describe('products data normalization', () => {
     assert.deepEqual(result[1].seller?.reviews, [{ id: 'review-1' }]);
   });
 
-  test('legacy Mercur 1.x store_status bridge: store_status="ACTIVE" still flows through as active', () => {
+  test('legacy Mercur 1.x store_status bridge: store_status="ACTIVE" still flows through as active', () => { // noqa: mercur15-drift — legacy bridge test name
     // Coverage for the backward-compat dual-check shim in isSellerActive
     // (normalize-listed-products.ts). This locks the legacy bridge contract:
     // API responses still carrying Mercur 1.x store_status='ACTIVE' MUST be treated
@@ -121,7 +121,7 @@ describe('products data normalization', () => {
           tax_id: '',
           created_at: '2026-03-07T00:00:00.000Z',
           // legacy Mercur 1.x: only store_status, no Mercur 2 status field
-          store_status: 'ACTIVE',
+          store_status: 'ACTIVE', // noqa: mercur15-drift — legacy Mercur 1.x bridge fixture
         },
       },
       {
@@ -139,12 +139,12 @@ describe('products data normalization', () => {
           photo: '',
           tax_id: '',
           created_at: '2026-03-07T00:00:00.000Z',
-          store_status: 'SUSPENDED',
+          store_status: 'SUSPENDED', // noqa: mercur15-drift — legacy Mercur 1.x bridge fixture
         },
       },
     ]);
 
-    // Only the legacy-ACTIVE product survives; SUSPENDED is filtered out.
+    // Only the legacy-ACTIVE product survives; SUSPENDED is filtered out. // noqa: mercur15-drift — assertion label
     assert.deepEqual(
       result.map(product => product.id),
       ['prod-legacy-active'],

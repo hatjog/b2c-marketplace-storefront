@@ -360,3 +360,24 @@ button:disabled svg path {
     }
   }
 }
+
+/* Wave 6 chrome (Story 3.1) — slide-in animation dla MiniCartDrawer (W6-08) /
+ * SearchOverlay (W6-09). prefers-reduced-motion globalnie neutralizuje
+ * animation-duration (patrz @media reduce powyżej + motion-safe: gating). */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -33,7 +33,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
-import { PaymentStatusPageContent } from '@/components/sections/PaymentStatusPageContent/PaymentStatusPageContent';
+import { PaymentStatusV180 } from '@/components/sections/PaymentStatusV180/PaymentStatusV180';
 
 // CRITICAL: force-dynamic — payment status is volatile; no shared ISR cache.
 export const dynamic = 'force-dynamic';
@@ -70,7 +70,7 @@ export default async function PaymentStatusPage(props: Props) {
         locale={params.locale}
         surface="payment-status"
       />
-      <PaymentStatusPageContent orderId={params.id} />
+      <PaymentStatusV180 orderId={params.id} />
     </main>
   );
 }

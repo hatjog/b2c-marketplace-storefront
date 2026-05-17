@@ -580,7 +580,8 @@
         "transactional_required": "Wymagana jest zgoda transakcyjna",
         "withdrawal_required": "Wymagane jest potwierdzenie zapoznania się z polityką cofnięcia zgody"
       }
-    }
+    },
+    "pay_now": "Zapłać"
   },
   "confirmation": {
     "meta_title": "Zamówienie potwierdzone",
@@ -928,7 +929,10 @@
     "paid": {
       "label": "Płatność potwierdzona",
       "body": "Twoja płatność została potwierdzona. Przejdź dalej, aby zobaczyć szczegóły zamówienia.",
-      "cta": "Przejdź do zamówienia"
+      "cta": "Przejdź do zamówienia",
+      "label_v180": "Płatność zaakceptowana ✓",
+      "body_v180": "Twoja płatność została potwierdzona. Za chwilę przeniesiemy Cię do szczegółów zamówienia.",
+      "technical_detail": "Płatność zatwierdzona przez PSP — webhook odebrany i przetworzony."
     },
     "pending_psp_confirmation": {
       "label": "Weryfikacja płatności",
@@ -947,14 +951,49 @@
     "support_required": {
       "label": "Wymagana interwencja",
       "body": "Zamówienie wymaga działania z naszej strony. Skontaktuj się z obsługą klienta, aby wyjaśnić sytuację.",
-      "cta": "Skontaktuj się z obsługą"
+      "cta": "Skontaktuj się z obsługą",
+      "label_v180": "Skontaktuj się z nami",
+      "body_v180": "Sprawa wymaga manualnej weryfikacji — ticket {ticket_id} utworzony. Skontaktujemy się z Tobą wkrótce.",
+      "cta_v180": "Otwórz email do support",
+      "ticket_missing": "Brak numeru ticketu — skontaktuj się z support@bonbeauty.pl",
+      "technical_detail": "Sprawa eskalowana do weryfikacji manualnej — ticket utworzony w systemie wsparcia."
     },
     "expired": {
       "label": "Sesja płatności wygasła",
       "body": "Poprzednia próba zakupu wygasła i jest zamknięta. Możesz zacząć od nowa.",
       "cta": "Wróć do koszyka",
-      "secondary_cta": "Skontaktuj się z obsługą"
-    }
+      "secondary_cta": "Skontaktuj się z obsługą",
+      "label_v180": "Twój koszyk wciąż czeka — wróć i dokończ",
+      "body_v180": "Sesja płatności wygasła, ale Twój koszyk jest wciąż gotowy. Koszyk zostanie zachowany przez co najmniej 7 dni.",
+      "cta_v180": "Wróć do koszyka",
+      "technical_detail": "Sesja płatności wygasła po 10 minutach braku potwierdzenia PSP."
+    },
+    "pending_psp": {
+      "label": "Sprawdzamy Twoją płatność",
+      "body": "To zwykle trwa do minuty. Nie musisz nic robić — sprawdzamy automatycznie.",
+      "countdown": "Sprawdzamy ponownie za {n}s...",
+      "second_tier": "Trwa trochę dłużej niż zwykle (już {elapsed} sekund). To czasem zdarza się przy wysokim ruchu — sprawdzamy automatycznie, nie musisz nic robić. Mail z PDF dojdzie najpóźniej w 10 minut.",
+      "technical_detail": "Oczekiwanie na webhook PSP — status pending_psp po stronie backend."
+    },
+    "failed_retryable": {
+      "label": "Coś poszło nie tak — spróbujmy ponownie",
+      "body": "Płatność nie powiodła się, ale możesz spróbować ponownie. Twój koszyk jest wciąż gotowy.",
+      "cta": "Wróć do płatności",
+      "technical_detail": "Płatność odrzucona — brak obciążenia konta. Retry zalecany."
+    },
+    "failed_nonretryable": {
+      "label": "Płatność nie powiodła się",
+      "body": "Płatność nie powiodła się — skontaktuj się z bankiem albo wybierz inną metodę płatności w nowym zamówieniu.",
+      "cta": "Kontakt z support",
+      "technical_detail": "Płatność trwale odrzucona przez bank — wymagane działanie z Twojej strony."
+    },
+    "cross_actor": {
+      "for_you": "Co dalej dla Ciebie",
+      "for_us": "Co dalej dla nas"
+    },
+    "technical_expand_summary": "Co dokładnie się stało?",
+    "mailto_order_label": "Zamówienie",
+    "mailto_ticket_label": "Ticket"
   },
   "storefront_state": {
     "loading": {
@@ -1046,5 +1085,67 @@
   },
   "pdp": {
     "verified_seller": "Zweryfikowany salon"
+  },
+  "newsletter": {
+    "headline": "Zapisz się do newslettera",
+    "subline": "Otrzymuj informacje o nowościach i promocjach BonBeauty.",
+    "email_placeholder": "Twój adres e-mail",
+    "submit": "Zapisz się",
+    "legal": "Zapisując się, akceptujesz Politykę prywatności i wyrażasz zgodę na otrzymywanie e-maili marketingowych.",
+    "success_title": "Dziękujemy!",
+    "success_message": "Twój adres e-mail został zapisany do newslettera.",
+    "aria_region": "Zapisz się do newslettera",
+    "dismiss": "Zamknij"
+  },
+  "cookie_banner": {
+    "aria_label": "Ustawienia plików cookie",
+    "description": "Używamy plików cookie, aby poprawić Twoje doświadczenia. Szczegóły znajdziesz w",
+    "privacy_policy": "Polityce prywatności",
+    "customize": "Dostosuj",
+    "reject_all": "Odrzuć wszystkie",
+    "accept_all": "Akceptuj wszystkie",
+    "back": "Wstecz",
+    "save_preferences": "Zapisz ustawienia",
+    "category_necessary": "Niezbędne",
+    "category_necessary_desc": "Wymagane do działania strony — zawsze aktywne.",
+    "category_statistics": "Statystyczne",
+    "category_statistics_desc": "Pomagają nam zrozumieć, jak korzystasz ze strony.",
+    "category_marketing": "Marketingowe",
+    "category_marketing_desc": "Służą do personalizacji reklam.",
+    "category_personalization": "Personalizacja",
+    "category_personalization_desc": "Zapamiętują Twoje preferencje."
+  },
+  "modal": {
+    "close": "Zamknij"
+  },
+  "toast": {
+    "aria_region": "Powiadomienia",
+    "dismiss": "Zamknij powiadomienie"
+  },
+  "mini_cart": {
+    "title": "Koszyk",
+    "close": "Zamknij koszyk",
+    "aria_label": "Koszyk",
+    "empty_title": "Twój koszyk jest pusty",
+    "empty_cta": "Zacznij od Wyboru redakcji",
+    "remove": "Usuń",
+    "discount_placeholder": "Kod rabatowy",
+    "discount": "Rabat",
+    "apply": "Zastosuj",
+    "subtotal": "Suma częściowa",
+    "total": "Razem",
+    "shipping_estimate": "Koszt dostawy obliczany przy kasie.",
+    "checkout": "Przejdź do kasy",
+    "continue_shopping": "Kontynuuj zakupy"
+  },
+  "search_overlay": {
+    "aria_label": "Wyszukaj produkty",
+    "placeholder": "Czego szukasz?",
+    "close": "Zamknij",
+    "recent_searches": "Ostatnie wyszukiwania",
+    "popular_products": "Popularne produkty",
+    "suggestions": "Sugestie",
+    "loading": "Ładowanie…",
+    "no_results": "Brak wyników"
   }
 }
