@@ -972,7 +972,7 @@
       "label": "Checking your payment",
       "body": "This usually takes up to a minute. You do not need to do anything — we are checking automatically.",
       "countdown": "Checking again in {n}s...",
-      "second_tier": "This is taking a bit longer than usual (already 90 seconds). This sometimes happens during high traffic — we are checking automatically, you do not need to do anything. An email with PDF will arrive within 10 minutes.",
+      "second_tier": "This is taking a bit longer than usual (already {elapsed} seconds). This sometimes happens during high traffic — we are checking automatically, you do not need to do anything. An email with PDF will arrive within 10 minutes.",
       "technical_detail": "Waiting for PSP webhook — backend status pending_psp."
     },
     "failed_retryable": {
@@ -991,7 +991,9 @@
       "for_you": "What is next for you",
       "for_us": "What is next for us"
     },
-    "technical_expand_summary": "What exactly happened?"
+    "technical_expand_summary": "What exactly happened?",
+    "mailto_order_label": "Order",
+    "mailto_ticket_label": "Ticket"
   },
   "storefront_state": {
     "loading": {

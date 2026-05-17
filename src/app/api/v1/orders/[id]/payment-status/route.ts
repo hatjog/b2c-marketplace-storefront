@@ -115,6 +115,8 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       last_checked_at?: string;
       recommended_action_key?: string;
       request_id?: string;
+      failure_code?: string | null;
+      ticket_id?: string | null;
     };
 
     return NextResponse.json(
@@ -123,6 +125,8 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
         last_checked_at: data.last_checked_at ?? new Date().toISOString(),
         recommended_action_key: data.recommended_action_key ?? 'wait',
         request_id: data.request_id ?? null,
+        failure_code: data.failure_code ?? null,
+        ticket_id: data.ticket_id ?? null,
       },
       { status: 200 },
     );

@@ -8,6 +8,7 @@
  * cross-actor section per UX SSOT.
  *
  * Presentational only — no client directive, no hooks.
+ * Labels (labelForYou/labelForUs) are passed from parent with i18n context (M4 fix).
  */
 
 import React from 'react';
@@ -15,12 +16,18 @@ import React from 'react';
 export interface CrossActorHandoffProps {
   forYou: string;
   forUs: string;
+  /** Localized label for "Co dalej dla Ciebie:" — passed from parent useTranslations context */
+  labelForYou?: string;
+  /** Localized label for "Co dalej dla nas:" — passed from parent useTranslations context */
+  labelForUs?: string;
   'data-testid'?: string;
 }
 
 export function CrossActorHandoff({
   forYou,
   forUs,
+  labelForYou = 'Co dalej dla Ciebie:',
+  labelForUs = 'Co dalej dla nas:',
   'data-testid': testId = 'cross-actor-handoff',
 }: CrossActorHandoffProps): React.ReactElement {
   return (
@@ -30,11 +37,11 @@ export function CrossActorHandoff({
     >
       <div className="space-y-1.5">
         <p>
-          <span className="font-medium text-primary">Co dalej dla Ciebie:</span>{' '}
+          <span className="font-medium text-primary">{labelForYou}</span>{' '}
           {forYou}
         </p>
         <p>
-          <span className="font-medium text-primary">Co dalej dla nas:</span>{' '}
+          <span className="font-medium text-primary">{labelForUs}</span>{' '}
           {forUs}
         </p>
       </div>

@@ -8,12 +8,13 @@
  * 6 states: paid | pending_psp | failed_retryable | failed_nonretryable | expired | support_required
  *
  * Key behaviors:
- *   - Auto-poll every 5s while pending_psp (via usePaymentStatusPoll)
+ *   - Auto-poll every 5s while pending_psp (via usePaymentStatusPoll → createPaymentStatusPoller)
  *   - Auto-redirect to confirmed after 2s on paid (cancelled on reduced-motion or focus)
- *   - aria-live="assertive" for failed_nonretryable + support_required
- *   - Countdown "Sprawdzamy ponownie za {n}s..." visible during polling
- *   - Second-tier message after 90s of pending
- *   - CrossActorHandoff on every state
+ *   - role="alert" (assertive) for failed_nonretryable + support_required
+ *   - role="status" (polite) for paid / pending / expired / failed_retryable
+ *   - Countdown "Sprawdzamy ponownie za {n}s..." visual; SR announces on 5s tick
+ *   - Second-tier message after 90s of pending with dynamic elapsed counter
+ *   - CrossActorHandoff on every state (local molecule pending Epic 0 ratification)
  *   - <details> technical section per state
  *
  * ARCH-007: Customer-facing storefront only.
@@ -21,17 +22,36 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import type { BackendPaymentStatusResponse, PaymentStatusV180 } from '@/lib/payment/payment-status-v180-adapter';
 import { resolveStatusFromResponse } from '@/lib/payment/payment-status-v180-adapter';
+import { COUNTDOWN_SECONDS } from '@/lib/payment/payment-status-poller';
+import {
+  buildSupportMailto,
+  getAriaLiveRole,
+  getCtaPath,
+  hasPrimaryCta,
+} from '@/lib/payment/payment-status-v180-config';
 import { usePaymentStatusPoll } from '@/hooks/usePaymentStatusPoll';
 
 export interface PaymentStatusV180Props {
   orderId: string;
 }
+
+// ─── LP2 pulse animation (UX SSOT LP2: opacity 0.6→1.0→0.6 loop 1.4s) ────────
+
+const LP2_PULSE_CSS = `
+@keyframes lp2-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1.0; }
+}
+.lp2-pulse-anim {
+  animation: lp2-pulse 1.4s ease-in-out infinite;
+}
+`;
 
 // ─── Status Icons ────────────────────────────────────────────────────────────
 
@@ -50,10 +70,7 @@ function IconPulse({ className, reducedMotion }: { className?: string; reducedMo
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      className={[
-        className,
-        !reducedMotion ? 'animate-pulse motion-reduce:animate-none' : '',
-      ].filter(Boolean).join(' ')}
+      className={[className, !reducedMotion ? 'lp2-pulse-anim' : ''].filter(Boolean).join(' ')}
     >
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
       <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -97,7 +114,7 @@ function IconSupport({ className }: { className?: string }) {
   );
 }
 
-// ─── Variant styles per state ─────────────────────────────────────────────────
+// ─── Variant container styles per state ───────────────────────────────────────
 
 function getContainerClasses(status: PaymentStatusV180): string {
   switch (status) {
@@ -108,11 +125,13 @@ function getContainerClasses(status: PaymentStatusV180): string {
     case 'failed_retryable':
       return 'border-[var(--bb-border-warning,#d97706)] bg-[var(--bb-icon-bg-error,#fef3c7)]';
     case 'failed_nonretryable':
-      return 'border-[var(--bb-border-error)] bg-[var(--bb-icon-bg-error,#fef2f2)]';
+      return 'border-[var(--bb-border-error)] bg-[var(--bb-icon-bg-error,#fef5f5)]';
     case 'expired':
       return 'border-[var(--bb-border-expired)] bg-[var(--bb-surface-expired,#f5f4f2)]';
     case 'support_required':
       return 'border-[var(--bb-border-warning)] bg-[var(--bb-surface-pending,#faf9f7)]';
+    default:
+      return 'border-[var(--bb-border-pending)] bg-stone-50';
   }
 }
 
@@ -120,6 +139,7 @@ function getContainerClasses(status: PaymentStatusV180): string {
 
 export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
 
   const [status, setStatus] = useState<PaymentStatusV180 | null>(null);
@@ -127,7 +147,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const ctaRef = useRef<HTMLAnchorElement | HTMLButtonElement | null>(null);
+  const ctaRef = useRef<HTMLAnchorElement | null>(null);
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Detect prefers-reduced-motion
@@ -178,7 +198,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
     [],
   );
 
-  const { countdown, isSecondTier } = usePaymentStatusPoll({
+  const { countdown, isSecondTier, secondsTotalElapsed } = usePaymentStatusPoll({
     orderId,
     enabled: status === 'pending_psp' && !loading,
     onStatusChange: handleStatusChange,
@@ -190,9 +210,9 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
     if (reducedMotion) return;
 
     redirectTimerRef.current = setTimeout(() => {
-      // Cancel if CTA has focus (user is about to click)
+      // Cancel if CTA has focus (user is about to click — no surprise navigation)
       if (document.activeElement === ctaRef.current) return;
-      router.push(`/order/${orderId}/confirmed`);
+      router.push(`/${locale}/order/${orderId}/confirmed`);
     }, 2_000);
 
     return () => {
@@ -201,7 +221,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
         redirectTimerRef.current = null;
       }
     };
-  }, [status, reducedMotion, orderId, router]);
+  }, [status, reducedMotion, orderId, locale, router]);
 
   if (loading) {
     return (
@@ -212,7 +232,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
         data-testid="payment-status-v180-loading"
       >
         <span
-          className="h-8 w-8 rounded-full border-4 border-t-transparent border-[var(--color-warning)] motion-safe:animate-spin"
+          className="h-8 w-8 rounded-full border-4 border-t-transparent border-[var(--state-pending,#7E4510)] motion-safe:animate-spin"
           aria-hidden="true"
         />
         <span className="sr-only">{t('payment_status.loading')}</span>
@@ -233,31 +253,35 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
     );
   }
 
-  const isAssertive = status === 'failed_nonretryable' || status === 'support_required';
+  const ariaRole = getAriaLiveRole(status);
+  const isAssertive = ariaRole === 'alert';
   const ticketId = responseData.ticket_id ?? null;
   const failureCode = responseData.failure_code ?? null;
 
   const supportEmail = 'support@bonbeauty.pl';
-  const supportMailto = ticketId
-    ? `mailto:${supportEmail}?subject=Ticket ${ticketId}&body=Zamówienie: ${orderId}%0ATicket: ${ticketId}`
-    : `mailto:${supportEmail}?body=Zamówienie: ${orderId}`;
+  const orderLabel = t('payment_status.mailto_order_label');
+  const ticketLabel = t('payment_status.mailto_ticket_label');
+
+  const supportMailto = buildSupportMailto(supportEmail, ticketId, orderId, orderLabel, ticketLabel);
 
   // ─── State content ──────────────────────────────────────────────────────────
 
   const renderIcon = () => {
+    // LP2: pending_psp hero 64px desktop / 48px mobile; other states 48px
+    // Semantic color tokens per UX-DR2 (AC3/AC6)
     switch (status) {
       case 'paid':
-        return <IconCheck className="h-6 w-6 text-[var(--bb-color-success,#16a34a)]" />;
+        return <IconCheck className="h-full w-full text-[var(--state-paid,#166534)]" />;
       case 'pending_psp':
-        return <IconPulse className="h-6 w-6 text-[var(--color-warning,#d97706)]" reducedMotion={reducedMotion} />;
+        return <IconPulse className="h-full w-full text-[var(--state-pending,#7E4510)]" reducedMotion={reducedMotion} />;
       case 'failed_retryable':
-        return <IconWarning className="h-6 w-6 text-[var(--color-warning,#d97706)]" />;
+        return <IconWarning className="h-full w-full text-[var(--state-pending,#7E4510)]" />;
       case 'failed_nonretryable':
-        return <IconError className="h-6 w-6 text-[var(--color-error,#dc2626)]" />;
+        return <IconError className="h-full w-full text-[var(--state-failed,#BB251A)]" />;
       case 'expired':
-        return <IconCart className="h-6 w-6 text-secondary" />;
+        return <IconCart className="h-full w-full text-secondary" />;
       case 'support_required':
-        return <IconSupport className="h-6 w-6 text-[var(--color-warning,#d97706)]" />;
+        return <IconSupport className="h-full w-full text-[var(--state-pending,#7E4510)]" />;
     }
   };
 
@@ -302,6 +326,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       case 'pending_psp':
         return t('payment_status.pending_psp.technical_detail');
       case 'failed_retryable':
+        // failure_code is display-only in technical section — never in body (AC6 / raw-provider-error-redaction)
         return failureCode
           ? `Stripe error: ${failureCode} — retry recommended`
           : t('payment_status.failed_retryable.technical_detail');
@@ -321,8 +346,8 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       case 'paid':
         return (
           <a
-            ref={ctaRef as React.RefObject<HTMLAnchorElement>}
-            href={`/order/${orderId}/confirmed`}
+            ref={ctaRef}
+            href={`/${locale}/order/${orderId}/confirmed`}
             data-testid="payment-status-v180-cta"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -332,9 +357,11 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       case 'pending_psp':
         return null;
       case 'failed_retryable':
+        // Navigation contract for Story 1.7 FR1.8 — passes orderId + retry_count
+        // (Story 1.7 implements the actual retry endpoint; this story owns CTA + nav only)
         return (
           <a
-            href="/checkout"
+            href={`/${locale}/checkout?order_id=${encodeURIComponent(orderId)}&retry_count=1`}
             data-testid="payment-status-v180-cta"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -354,7 +381,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       case 'expired':
         return (
           <a
-            href="/cart"
+            href={`/${locale}/cart`}
             data-testid="payment-status-v180-cta"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -366,8 +393,9 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
           <div className="space-y-3">
             {!ticketId && (
               <p
-                className="text-sm text-[var(--color-error,#dc2626)]"
+                className="text-sm text-[var(--state-failed,#BB251A)]"
                 data-testid="payment-status-v180-ticket-missing"
+                role="alert"
               >
                 {t('payment_status.support_required.ticket_missing')}
               </p>
@@ -377,7 +405,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
                 className="select-text font-mono text-sm text-secondary"
                 data-testid="payment-status-v180-ticket-id"
               >
-                Ticket: {ticketId}
+                {ticketLabel}: <span className="font-semibold">{ticketId}</span>
               </p>
             )}
             <a
@@ -419,77 +447,118 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       <CrossActorHandoff
         forYou={forYou}
         forUs={forUs}
+        labelForYou={t('payment_status.cross_actor.for_you')}
+        labelForUs={t('payment_status.cross_actor.for_us')}
         data-testid="cross-actor-handoff"
       />
     );
   };
 
+  const headingText = renderHeading();
+
   return (
-    <div
-      role="status"
-      aria-live={isAssertive ? 'assertive' : 'polite'}
-      data-payment-status={status}
-      data-testid="payment-status-v180"
-      className={[
-        'mx-auto max-w-[560px] space-y-5 rounded-sm border p-6',
-        getContainerClasses(status),
-      ].join(' ')}
-    >
-      {/* ─── Hero icon + heading ─────────────────────────────────────────────── */}
-      <div className="flex items-start gap-4">
-        <div
-          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white/60"
-          aria-hidden="true"
-        >
-          {renderIcon()}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="heading-sm text-primary" data-testid="payment-status-v180-heading">
-            {renderHeading()}
-          </h1>
-        </div>
-      </div>
+    <>
+      {/* LP2 pulse animation keyframes (pending_psp only) */}
+      {status === 'pending_psp' && !reducedMotion && (
+        <style dangerouslySetInnerHTML={{ __html: LP2_PULSE_CSS }} />
+      )}
 
-      {/* ─── Body copy ───────────────────────────────────────────────────────── */}
-      <p className="label-md text-primary" data-testid="payment-status-v180-body">
-        {renderBody()}
-      </p>
-
-      {/* ─── Pending poll countdown ──────────────────────────────────────────── */}
-      {status === 'pending_psp' && (
-        <div aria-live="polite" data-testid="payment-status-v180-countdown">
-          <p className="text-sm text-secondary">
-            {t('payment_status.pending_psp.countdown', { n: String(countdown) })}
-          </p>
-          {isSecondTier && (
-            <p
-              className="mt-2 text-sm text-secondary"
-              data-testid="payment-status-v180-second-tier"
-            >
-              {t('payment_status.pending_psp.second_tier')}
-            </p>
-          )}
+      {/* Narrow live region for state announcement — assertive or polite */}
+      {/* scope: h1 text only, not the whole card, to avoid AT spam (M5 fix) */}
+      {isAssertive ? (
+        <div role="alert" className="sr-only" aria-atomic="true" data-testid="payment-status-v180-live-region">
+          {headingText}
+        </div>
+      ) : (
+        <div role="status" aria-live="polite" className="sr-only" aria-atomic="true" data-testid="payment-status-v180-live-region">
+          {headingText}
         </div>
       )}
 
-      {/* ─── Primary CTA ─────────────────────────────────────────────────────── */}
-      {renderCta()}
+      <div
+        data-payment-status={status}
+        data-testid="payment-status-v180"
+        className={[
+          'mx-auto max-w-[560px] space-y-5 rounded-sm border p-6',
+          getContainerClasses(status),
+        ].join(' ')}
+      >
+        {/* ─── Hero icon + heading ─────────────────────────────────────────────── */}
+        <div className="flex items-start gap-4">
+          {/* LP2: 64px desktop / 48px mobile (M3 fix) */}
+          <div
+            className="flex h-12 w-12 md:h-16 md:w-16 flex-shrink-0 items-center justify-center rounded-full bg-white/60"
+            aria-hidden="true"
+          >
+            {renderIcon()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="heading-sm text-primary" data-testid="payment-status-v180-heading">
+              {headingText}
+            </h1>
+            {/* AC2: timestamp microcopy — when last checked (M1 fix) */}
+            {responseData.last_checked_at && (
+              <p className="mt-1 text-xs text-secondary" data-testid="payment-status-v180-timestamp">
+                {t('payment_status.last_updated', {
+                  timestamp: new Date(responseData.last_checked_at).toLocaleTimeString(
+                    locale === 'pl' ? 'pl-PL' : 'en-GB',
+                    { hour: '2-digit', minute: '2-digit' }
+                  )
+                })}
+              </p>
+            )}
+          </div>
+        </div>
 
-      {/* ─── Technical details (expandable) ─────────────────────────────────── */}
-      <details data-testid={`technical-detail-${status}`}>
-        <summary
-          className="cursor-pointer select-none text-sm text-secondary hover:text-primary"
-          aria-expanded="false"
-        >
-          {t('payment_status.technical_expand_summary')}
-        </summary>
-        <p className="mt-2 text-sm text-secondary">
-          {renderTechnicalDetail()}
+        {/* ─── Body copy ───────────────────────────────────────────────────────── */}
+        <p className="label-md text-primary" data-testid="payment-status-v180-body">
+          {renderBody()}
         </p>
-      </details>
 
-      {/* ─── Cross-actor handoff ─────────────────────────────────────────────── */}
-      {renderCrossActor()}
-    </div>
+        {/* ─── Pending poll countdown (LP4) ────────────────────────────────────── */}
+        {status === 'pending_psp' && (
+          <div data-testid="payment-status-v180-countdown">
+            {/* Visual countdown — aria-hidden to avoid per-second AT spam */}
+            <p className="text-sm text-secondary" aria-hidden="true">
+              {t('payment_status.pending_psp.countdown', { n: String(countdown) })}
+            </p>
+            {/* SR-only: announce only on poll tick (when countdown resets to 5s) — M5 fix */}
+            {countdown === COUNTDOWN_SECONDS && (
+              <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+                {t('payment_status.pending_psp.countdown', { n: String(COUNTDOWN_SECONDS) })}
+              </span>
+            )}
+            {/* AC5/EDP9 second-tier with dynamic elapsed counter — M9 fix */}
+            {isSecondTier && (
+              <p
+                className="mt-2 text-sm text-secondary"
+                data-testid="payment-status-v180-second-tier"
+              >
+                {t('payment_status.pending_psp.second_tier', { elapsed: String(secondsTotalElapsed) })}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ─── Primary CTA ─────────────────────────────────────────────────────── */}
+        {renderCta()}
+
+        {/* ─── Technical details (expandable, default collapsed) ───────────────── */}
+        {/* aria-expanded removed — native <details> communicates state to AT (M6 fix) */}
+        <details data-testid={`technical-detail-${status}`}>
+          <summary
+            className="cursor-pointer select-none text-sm text-secondary hover:text-primary"
+          >
+            {t('payment_status.technical_expand_summary')}
+          </summary>
+          <p className="mt-2 text-sm text-secondary">
+            {renderTechnicalDetail()}
+          </p>
+        </details>
+
+        {/* ─── Cross-actor handoff (Trust Invariant #5) ────────────────────────── */}
+        {renderCrossActor()}
+      </div>
+    </>
   );
 }

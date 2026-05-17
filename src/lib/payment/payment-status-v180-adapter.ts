@@ -82,23 +82,16 @@ export function resolvePaymentStatusV180(
 }
 
 /**
- * Resolves status from full backend response, using failure_code to
- * differentiate retryable vs non-retryable failures.
+ * Resolves status from full backend response.
+ *
+ * Backend owns failure classification (stripe_failure_codes.yaml) — FE consumes
+ * the resolved `status` field directly. failure_code is display-only (technical detail).
+ * Per story Dev Notes: "ta story KONSUMUJE state z backend response, NIE re-mapuje".
  */
 export function resolveStatusFromResponse(
-  response: Pick<BackendPaymentStatusResponse, 'status' | 'failure_code'>,
+  response: Pick<BackendPaymentStatusResponse, 'status'>,
 ): PaymentStatusV180 {
-  const base = resolvePaymentStatusV180(response.status);
-
-  // If backend returned legacy 'failed' and there IS a failure_code, treat as non-retryable
-  if (
-    (response.status === 'failed' || base === 'failed_retryable') &&
-    response.failure_code
-  ) {
-    return 'failed_nonretryable';
-  }
-
-  return base;
+  return resolvePaymentStatusV180(response.status);
 }
 
 /** Terminal states — polling stops when reached. */

@@ -972,7 +972,7 @@
       "label": "Sprawdzamy Twoją płatność",
       "body": "To zwykle trwa do minuty. Nie musisz nic robić — sprawdzamy automatycznie.",
       "countdown": "Sprawdzamy ponownie za {n}s...",
-      "second_tier": "Trwa trochę dłużej niż zwykle (już 90 sekund). To czasem zdarza się przy wysokim ruchu — sprawdzamy automatycznie, nie musisz nic robić. Mail z PDF dojdzie najpóźniej w 10 minut.",
+      "second_tier": "Trwa trochę dłużej niż zwykle (już {elapsed} sekund). To czasem zdarza się przy wysokim ruchu — sprawdzamy automatycznie, nie musisz nic robić. Mail z PDF dojdzie najpóźniej w 10 minut.",
       "technical_detail": "Oczekiwanie na webhook PSP — status pending_psp po stronie backend."
     },
     "failed_retryable": {
@@ -991,7 +991,9 @@
       "for_you": "Co dalej dla Ciebie",
       "for_us": "Co dalej dla nas"
     },
-    "technical_expand_summary": "Co dokładnie się stało?"
+    "technical_expand_summary": "Co dokładnie się stało?",
+    "mailto_order_label": "Zamówienie",
+    "mailto_ticket_label": "Ticket"
   },
   "storefront_state": {
     "loading": {
