@@ -1147,5 +1147,39 @@
     "suggestions": "Sugestie",
     "loading": "Ładowanie…",
     "no_results": "Brak wyników"
+  },
+  "categories_index": {
+    "metadata_title": "Kategorie",
+    "metadata_description": "Przeglądaj kategorie zabiegów i znajdź najlepszy rytuał beauty oraz wellness.",
+    "breadcrumbs": {
+      "home": "Strona główna",
+      "current": "Kategorie"
+    },
+    "breadcrumbs_aria_label": "Nawigacja okruszkowa",
+    "hero": {
+      "eyebrow": "BonBeauty",
+      "title": "Kategorie.",
+      "intro": "Przeglądaj rytuały beauty i wellness od zaufanych salonów. Wybierz kierunek i przejdź do szczegółowej listy ofert."
+    },
+    "featured": {
+      "eyebrow": "Najpopularniejsze",
+      "title": "Top 3 kierunki.",
+      "count_label": "podkategorii"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "popular": "Najczęściej kupowane",
+      "new": "Nowości",
+      "offers": "Promocje",
+      "premium": "Premium"
+    },
+    "filters_aria_label": "Filtry kategorii",
+    "grid": {
+      "title": "Wszystkie kategorie",
+      "description": "Szybko filtruj i przejdź do kategorii, która najlepiej pasuje do Twoich potrzeb.",
+      "image_alt": "Kategoria",
+      "missing_image": "Brak zdjęcia kategorii",
+      "count_label": "podkategorii"
+    }
   }
 }

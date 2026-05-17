@@ -1147,5 +1147,39 @@
     "suggestions": "Suggestions",
     "loading": "Loading…",
     "no_results": "No results"
+  },
+  "categories_index": {
+    "metadata_title": "Categories",
+    "metadata_description": "Browse service categories and find the best beauty and wellness ritual.",
+    "breadcrumbs": {
+      "home": "Home",
+      "current": "Categories"
+    },
+    "breadcrumbs_aria_label": "Breadcrumb navigation",
+    "hero": {
+      "eyebrow": "BonBeauty",
+      "title": "Categories.",
+      "intro": "Browse beauty and wellness rituals from trusted salons. Pick a direction and open the detailed listing."
+    },
+    "featured": {
+      "eyebrow": "Most popular",
+      "title": "Top 3 picks.",
+      "count_label": "subcategories"
+    },
+    "filters": {
+      "all": "All",
+      "popular": "Most booked",
+      "new": "New",
+      "offers": "Deals",
+      "premium": "Premium"
+    },
+    "filters_aria_label": "Category filters",
+    "grid": {
+      "title": "All categories",
+      "description": "Filter quickly and jump to the category that best matches your needs.",
+      "image_alt": "Category",
+      "missing_image": "Missing category image",
+      "count_label": "subcategories"
+    }
   }
 }

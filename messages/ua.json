@@ -1148,5 +1148,39 @@
     "suggestions": "Підказки",
     "loading": "Завантаження…",
     "no_results": "Немає результатів"
+  },
+  "categories_index": {
+    "metadata_title": "Категорії",
+    "metadata_description": "Переглядайте категорії послуг і знайдіть найкращий ритуал краси та wellness.",
+    "breadcrumbs": {
+      "home": "Головна",
+      "current": "Категорії"
+    },
+    "breadcrumbs_aria_label": "Навігація breadcrumbs",
+    "hero": {
+      "eyebrow": "BonBeauty",
+      "title": "Категорії.",
+      "intro": "Переглядайте beauty та wellness ритуали від перевірених салонів. Оберіть напрям і відкрийте детальний список пропозицій."
+    },
+    "featured": {
+      "eyebrow": "Найпопулярніше",
+      "title": "Топ 3 напрямки.",
+      "count_label": "підкатегорій"
+    },
+    "filters": {
+      "all": "Усі",
+      "popular": "Найчастіше обирають",
+      "new": "Новинки",
+      "offers": "Акції",
+      "premium": "Преміум"
+    },
+    "filters_aria_label": "Фільтри категорій",
+    "grid": {
+      "title": "Усі категорії",
+      "description": "Швидко фільтруйте та переходьте до категорії, що найкраще відповідає вашим потребам.",
+      "image_alt": "Категорія",
+      "missing_image": "Немає зображення категорії",
+      "count_label": "підкатегорій"
+    }
   }
 }

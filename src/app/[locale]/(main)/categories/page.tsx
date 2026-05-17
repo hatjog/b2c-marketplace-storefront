@@ -1,196 +1,242 @@
-/**
- * Categories (All Products) page — v1.7.0 Story 2.2 update.
- *
- * Changes:
- *   - Hardcoded "All Products" replaced with i18n keys (category.page_title)
- *   - Breadcrumbs label localized
- *   - Loading skeleton wrapper gets data-testid for routing-load detection
- *   - WCAG: h1 text-primary, Suspense loading wraps Skeleton with aria-busy
- */
-import { Suspense } from 'react';
+import type { Metadata } from "next"
+import { headers } from "next/headers"
+import { HttpTypes } from "@medusajs/types"
 
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
-import { headers } from 'next/headers';
-import Script from 'next/script';
-
+import { listRegions } from "@/lib/data/regions"
+import { listCategories } from "@/lib/data/categories"
+import { toHreflang } from "@/lib/helpers/hreflang"
 import {
-  Breadcrumbs,
-  StorefrontI18nLongContentProbe,
-  StorefrontRouteStateSignal
-} from '@/components/atoms';
-import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
-import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
-import { listProducts } from '@/lib/data/products';
-import { getCountryCode } from '@/lib/helpers/country-code';
-import { toHreflang } from '@/lib/helpers/hreflang';
+  AllCategoriesGrid,
+  CategoriesHero,
+  CategoryFilterChips,
+  FeaturedCategoriesStrip,
+} from "@/components/sections/CategoriesIndex"
+import { CATEGORY_FILTER_ORDER, FEATURED_CATEGORY_HANDLES } from "@/data/categories-featured"
+import {
+  CategoryFilterId,
+  getCategoriesIndexCopy,
+} from "@/lib/i18n/categories-index-copy"
 
-export const revalidate = 60;
+export const revalidate = 300
 
-export async function generateMetadata({
-  params
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations('category');
-  const headersList = await headers();
-  const host = headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+interface CategoriesPageProps {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ filter?: string }>
+}
 
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
-    acc[toHreflang(code)] = `${baseUrl}/${code}/categories`;
-    return acc;
-  }, {});
+interface DisplayCategory {
+  id: string
+  handle: string
+  name: string
+  rank: number
+  metadata: Record<string, unknown>
+  subcategoryCount: number
+}
 
-  const title = t('page_title');
-  const description = t('page_description');
-  const canonical = `${baseUrl}/${locale}/categories`;
-  const ogImage = `${baseUrl}/B2C_Storefront_Open_Graph.png`;
+const FILTER_SET = new Set<CategoryFilterId>(["all", "popular", "new", "offers", "premium"])
+
+function normalizeFilter(filterParam: string | undefined): CategoryFilterId {
+  if (!filterParam) {
+    return "all"
+  }
+
+  return FILTER_SET.has(filterParam as CategoryFilterId)
+    ? (filterParam as CategoryFilterId)
+    : "all"
+}
+
+function toDisplayCategories(categories: HttpTypes.StoreProductCategory[]): DisplayCategory[] {
+  return categories
+    .filter((category) => Boolean(category?.id && category?.handle && category?.name))
+    .map((category) => {
+      const rankValue =
+        typeof category.rank === "number"
+          ? category.rank
+          : Number.parseInt(String(category.rank ?? "999"), 10)
+
+      const safeRank = Number.isFinite(rankValue) ? rankValue : 999
+      const childCount = Array.isArray(category.category_children)
+        ? category.category_children.length
+        : 0
+
+      return {
+        id: String(category.id),
+        handle: String(category.handle),
+        name: String(category.name),
+        rank: safeRank,
+        metadata:
+          category.metadata && typeof category.metadata === "object"
+            ? (category.metadata as Record<string, unknown>)
+            : {},
+        subcategoryCount: childCount,
+      }
+    })
+    .sort((a, b) => a.rank - b.rank)
+}
+
+function metadataBoolean(value: unknown): boolean {
+  if (value === true || value === 1) {
+    return true
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase()
+    return normalized === "true" || normalized === "1" || normalized === "yes"
+  }
+
+  return false
+}
+
+function selectFeaturedCategories(categories: DisplayCategory[]): DisplayCategory[] {
+  const curated = FEATURED_CATEGORY_HANDLES.map((handle) =>
+    categories.find((category) => category.handle === handle)
+  ).filter((category): category is DisplayCategory => Boolean(category))
+
+  if (curated.length >= 3) {
+    return curated.slice(0, 3)
+  }
+
+  const fallback = categories.filter(
+    (category) => !curated.some((curatedCategory) => curatedCategory.id === category.id)
+  )
+
+  return [...curated, ...fallback].slice(0, 3)
+}
+
+function applyFilter(categories: DisplayCategory[], filter: CategoryFilterId): DisplayCategory[] {
+  if (filter === "all") {
+    return categories
+  }
+
+  if (filter === "popular") {
+    const popular = categories.filter((category) => category.rank <= 3)
+    return popular.length > 0 ? popular : categories.slice(0, Math.min(8, categories.length))
+  }
+
+  if (filter === "new") {
+    const byMetadata = categories.filter((category) => metadataBoolean(category.metadata.is_new))
+    if (byMetadata.length > 0) {
+      return byMetadata
+    }
+
+    return [...categories].reverse().slice(0, Math.min(8, categories.length))
+  }
+
+  if (filter === "offers") {
+    const withOffers = categories.filter((category) => metadataBoolean(category.metadata.has_offer))
+    return withOffers.length > 0 ? withOffers : categories.slice(0, Math.min(8, categories.length))
+  }
+
+  const premium = categories.filter((category) => metadataBoolean(category.metadata.premium))
+  if (premium.length > 0) {
+    return premium
+  }
+
+  return categories.filter((_, index) => index % 2 === 0)
+}
+
+async function buildAlternateLanguages(baseUrl: string, locale: string) {
+  try {
+    const regions = await listRegions()
+    const locales = Array.from(
+      new Set((regions || []).flatMap((region) => region.countries?.map((country) => country.iso_2) || []))
+    ) as string[]
+
+    return locales.reduce<Record<string, string>>((acc, code) => {
+      acc[toHreflang(code)] = `${baseUrl}/${code}/categories`
+      return acc
+    }, {})
+  } catch {
+    return { [toHreflang(locale)]: `${baseUrl}/${locale}/categories` }
+  }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const copy = getCategoriesIndexCopy(locale)
+
+  const headersList = await headers()
+  const host = headersList.get("host")
+  const protocol = headersList.get("x-forwarded-proto") || "https"
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
+  const languages = await buildAlternateLanguages(baseUrl, locale)
+  const canonical = `${baseUrl}/${locale}/categories`
 
   return {
-    title,
-    description,
+    title: copy.metadataTitle,
+    description: copy.metadataDescription,
     alternates: {
       canonical,
-      languages: { ...languages, 'x-default': `${baseUrl}/pl/categories` }
+      languages: {
+        ...languages,
+        "x-default": `${baseUrl}/categories`,
+      },
     },
     robots: { index: true, follow: true },
     openGraph: {
-      title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty'}`,
-      description,
+      title: copy.metadataTitle,
+      description: copy.metadataDescription,
       url: canonical,
-      siteName: process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty',
-      type: 'website',
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }]
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || "Storefront",
+      type: "website",
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty'}`,
-      description,
-      images: [ogImage]
-    }
-  };
+  }
 }
 
-async function AllCategories({
-  params,
-  searchParams
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const { locale } = await params;
-  const resolvedSearchParams = (await searchParams) ?? {};
-  const t = await getTranslations('category');
-  const tAccessibility = await getTranslations('accessibility');
+export default async function CategoriesPage({ params, searchParams }: CategoriesPageProps) {
+  const { locale } = await params
+  const { filter: filterParam } = await searchParams
+  const activeFilter = normalizeFilter(filterParam)
+  const copy = getCategoriesIndexCopy(locale)
 
-  const breadcrumbsItems = [
-    {
-      path: '/categories',
-      label: t('page_title')
-    }
-  ];
+  const { categories } = await listCategories({
+    query: {
+      include_ancestors_tree: true,
+      include_descendants_tree: true,
+      limit: 120,
+    },
+  })
 
-  let itemList: Array<{ '@type': string; position: number; url: string; name: string }> = [];
-  const headersList = await headers();
-  const host = headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
-
-  try {
-    const countryCode = await getCountryCode(locale);
-
-    const {
-      response: { products: jsonLdProducts }
-    } = await listProducts({
-      countryCode,
-      queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' }
-    });
-
-    itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({
-      '@type': 'ListItem',
-      position: idx + 1,
-      url: `${baseUrl}/${locale}/products/${p.handle}`,
-      name: p.title
-    }));
-  } catch (error) {
-    console.warn('Categories structured data fetch failed:', error);
-  }
+  const mappedCategories = toDisplayCategories(categories)
+  const featuredCategories = selectFeaturedCategories(mappedCategories)
+  const filteredCategories = applyFilter(mappedCategories, activeFilter)
+  const filterChips = CATEGORY_FILTER_ORDER.map((filterId) => ({
+    id: filterId,
+    label: copy.filters[filterId],
+  }))
 
   return (
-    <main
-      id="main-content"
-      className="container"
-    >
-      <StorefrontRouteStateSignal
-        route="categories"
-        surface="category"
+    <main className="container" data-testid="categories-index-page">
+      <CategoriesHero
+        breadcrumbsHome={copy.breadcrumbsHome}
+        breadcrumbsCurrent={copy.breadcrumbsCurrent}
+        breadcrumbsAriaLabel={copy.breadcrumbsAriaLabel}
+        eyebrow={copy.heroEyebrow}
+        title={copy.heroTitle}
+        intro={copy.heroIntro}
       />
-      <StorefrontI18nLongContentProbe
-        locale={locale}
-        surface="category-listing"
-      />
-      <Script
-        id="ld-breadcrumbs-categories"
-        type="application/ld+json"
-        // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              {
-                '@type': 'ListItem',
-                position: 1,
-                name: t('page_title'),
-                item: `${baseUrl}/${locale}/categories`
-              }
-            ]
-          })
-        }}
-      />
-      <Script
-        id="ld-itemlist-categories"
-        type="application/ld+json"
-        // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            itemListElement: itemList
-          })
-        }}
-      />
-      <div className="mb-2 hidden md:block">
-        <Breadcrumbs items={breadcrumbsItems} />
-      </div>
 
-      {/* h1: uses text-primary token (heading-xl) per bb-surfaces typography */}
-      <h1 className="heading-xl uppercase text-primary">{t('page_title')}</h1>
+      <FeaturedCategoriesStrip
+        eyebrow={copy.featuredEyebrow}
+        title={copy.featuredTitle}
+        countLabel={copy.featuredCountLabel}
+        categories={featuredCategories}
+      />
 
-      {/* Suspense: routing-load fallback distinguishes initial page hydration
-          from submit-load (filter/sort change). aria-label uses i18n. */}
-      <Suspense
-        fallback={
-          <div
-            data-testid="all-categories-page-loading"
-            aria-label={tAccessibility('loading')}
-          >
-            <ProductListingSkeleton />
-          </div>
-        }
-      >
-        <ProductListing
-          showSidebar
-          locale={locale}
-          searchParams={resolvedSearchParams}
-        />
-      </Suspense>
+      <CategoryFilterChips
+        chips={filterChips}
+        activeFilter={activeFilter}
+        ariaLabel={copy.filtersAriaLabel}
+      />
+
+      <AllCategoriesGrid
+        title={copy.allCategoriesTitle}
+        description={copy.allCategoriesDescription}
+        imageAltPrefix={copy.categoryImageAlt}
+        imageMissingLabel={copy.categoryImageMissing}
+        countLabel={copy.gridCountLabel}
+        categories={filteredCategories}
+      />
     </main>
-  );
+  )
 }
-
-export default AllCategories;
