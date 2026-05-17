@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { HttpTypes } from "@medusajs/types"
+import type { HttpTypes } from "@medusajs/types"
 
 import { listRegions } from "@/lib/data/regions"
 import { listCategories } from "@/lib/data/categories"
@@ -13,8 +13,8 @@ import {
 } from "@/components/sections/CategoriesIndex"
 import { CATEGORY_FILTER_ORDER, FEATURED_CATEGORY_HANDLES } from "@/data/categories-featured"
 import {
-  CategoryFilterId,
   getCategoriesIndexCopy,
+  type CategoryFilterId,
 } from "@/lib/i18n/categories-index-copy"
 import { StorefrontI18nLongContentProbe } from "@/components/atoms"
 
