@@ -1,0 +1,8 @@
+surface: storefront/cart/empty
+extends: empty-states#pattern-3-empty-cart
+overrides:
+  body_pl: "Zacznij od Wyboru redakcji"
+  cta_target: "/#editorial-selection"
+rationale: >-
+  Story 3.5 W1-05 Cart: empty state must reuse ES3 contract and route users
+  to W1-01 editorial section.

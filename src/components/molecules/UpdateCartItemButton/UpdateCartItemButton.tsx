@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { useCartContext } from '@/components/providers';
@@ -15,6 +16,7 @@ export const UpdateCartItemButton = ({
   quantity: number;
   lineItemId: string;
 }) => {
+  const t = useTranslations('cart');
   const { updateCartItem, isUpdatingItem } = useCartContext();
   const [pendingQuantity, setPendingQuantity] = useState(quantity);
   const debounceTimerRef = useRef<NodeJS.Timeout>(null);
@@ -51,9 +53,9 @@ export const UpdateCartItemButton = ({
         const errorMessage =
           error instanceof Error
             ? error.message.replace('Error setting up the request: ', '')
-            : 'Failed to update quantity';
+            : t('quantity_update_failed_fallback');
         toast.error({
-          title: 'Error updating cart',
+          title: t('quantity_update_failed_title'),
           description: errorMessage
         });
       }
@@ -64,12 +66,16 @@ export const UpdateCartItemButton = ({
   const isIncreaseDisabled = isUpdatingItem || !lineItemId;
 
   return (
-    <div className="mt-2 flex items-center gap-4">
+    <div
+      className="mt-2 flex items-center gap-4"
+      aria-live="polite"
+    >
       <Button
         variant="tonal"
         className="flex h-8 w-8 items-center justify-center"
         disabled={isDecreaseDisabled}
         onClick={() => handleQuantityChange(pendingQuantity - 1)}
+        aria-label={t('quantity_decrease_aria')}
       >
         -
       </Button>
@@ -87,6 +93,7 @@ export const UpdateCartItemButton = ({
         className="flex h-8 w-8 items-center justify-center"
         disabled={isIncreaseDisabled}
         onClick={() => handleQuantityChange(pendingQuantity + 1)}
+        aria-label={t('quantity_increase_aria')}
       >
         +
       </Button>

@@ -34,6 +34,7 @@ export function EditorialDarkBandBlock({
 }: EditorialDarkBandBlockProps) {
   return (
     <section
+      id="editorial-selection"
       className="relative overflow-hidden"
       data-testid="editorial-dark-band"
       aria-label="Editorial — Cichy luksus"
