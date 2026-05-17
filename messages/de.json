@@ -973,7 +973,7 @@
       "label": "Wir prüfen Ihre Zahlung",
       "body": "Das dauert normalerweise bis zu einer Minute. Sie müssen nichts tun — wir prüfen automatisch.",
       "countdown": "Erneute Prüfung in {n}s...",
-      "second_tier": "Das dauert etwas länger als gewöhnlich (bereits 90 Sekunden). Das kann bei hoher Auslastung vorkommen — wir prüfen automatisch, Sie müssen nichts tun. Eine E-Mail mit PDF kommt innerhalb von 10 Minuten.",
+      "second_tier": "Das dauert etwas länger als gewöhnlich (bereits {elapsed} Sekunden). Das kann bei hoher Auslastung vorkommen — wir prüfen automatisch, Sie müssen nichts tun. Eine E-Mail mit PDF kommt innerhalb von 10 Minuten.",
       "technical_detail": "Warten auf PSP-Webhook — Backend-Status pending_psp."
     },
     "failed_retryable": {
@@ -992,7 +992,9 @@
       "for_you": "Was als Nächstes für Sie passiert",
       "for_us": "Was als Nächstes für uns passiert"
     },
-    "technical_expand_summary": "Was genau ist passiert?"
+    "technical_expand_summary": "Was genau ist passiert?",
+    "mailto_order_label": "Bestellung",
+    "mailto_ticket_label": "Ticket"
   },
   "storefront_state": {
     "loading": {
