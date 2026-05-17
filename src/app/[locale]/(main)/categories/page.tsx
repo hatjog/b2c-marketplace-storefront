@@ -16,6 +16,7 @@ import {
   CategoryFilterId,
   getCategoriesIndexCopy,
 } from "@/lib/i18n/categories-index-copy"
+import { StorefrontI18nLongContentProbe } from "@/components/atoms"
 
 export const revalidate = 300
 
@@ -207,6 +208,11 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
 
   return (
     <main className="container" data-testid="categories-index-page">
+      <StorefrontI18nLongContentProbe
+        locale={locale}
+        surface="category-listing"
+      />
+
       <CategoriesHero
         breadcrumbsHome={copy.breadcrumbsHome}
         breadcrumbsCurrent={copy.breadcrumbsCurrent}
