@@ -928,7 +928,10 @@
     "paid": {
       "label": "Płatność potwierdzona",
       "body": "Twoja płatność została potwierdzona. Przejdź dalej, aby zobaczyć szczegóły zamówienia.",
-      "cta": "Przejdź do zamówienia"
+      "cta": "Przejdź do zamówienia",
+      "label_v180": "Płatność zaakceptowana ✓",
+      "body_v180": "Twoja płatność została potwierdzona. Za chwilę przeniesiemy Cię do szczegółów zamówienia.",
+      "technical_detail": "Płatność zatwierdzona przez PSP — webhook odebrany i przetworzony."
     },
     "pending_psp_confirmation": {
       "label": "Weryfikacja płatności",
@@ -947,14 +950,47 @@
     "support_required": {
       "label": "Wymagana interwencja",
       "body": "Zamówienie wymaga działania z naszej strony. Skontaktuj się z obsługą klienta, aby wyjaśnić sytuację.",
-      "cta": "Skontaktuj się z obsługą"
+      "cta": "Skontaktuj się z obsługą",
+      "label_v180": "Skontaktuj się z nami",
+      "body_v180": "Sprawa wymaga manualnej weryfikacji — ticket {ticket_id} utworzony. Skontaktujemy się z Tobą wkrótce.",
+      "cta_v180": "Otwórz email do support",
+      "ticket_missing": "Brak numeru ticketu — skontaktuj się z support@bonbeauty.pl",
+      "technical_detail": "Sprawa eskalowana do weryfikacji manualnej — ticket utworzony w systemie wsparcia."
     },
     "expired": {
       "label": "Sesja płatności wygasła",
       "body": "Poprzednia próba zakupu wygasła i jest zamknięta. Możesz zacząć od nowa.",
       "cta": "Wróć do koszyka",
-      "secondary_cta": "Skontaktuj się z obsługą"
-    }
+      "secondary_cta": "Skontaktuj się z obsługą",
+      "label_v180": "Twój koszyk wciąż czeka — wróć i dokończ",
+      "body_v180": "Sesja płatności wygasła, ale Twój koszyk jest wciąż gotowy. Koszyk zostanie zachowany przez co najmniej 7 dni.",
+      "cta_v180": "Wróć do koszyka",
+      "technical_detail": "Sesja płatności wygasła po 10 minutach braku potwierdzenia PSP."
+    },
+    "pending_psp": {
+      "label": "Sprawdzamy Twoją płatność",
+      "body": "To zwykle trwa do minuty. Nie musisz nic robić — sprawdzamy automatycznie.",
+      "countdown": "Sprawdzamy ponownie za {n}s...",
+      "second_tier": "Trwa trochę dłużej niż zwykle (już 90 sekund). To czasem zdarza się przy wysokim ruchu — sprawdzamy automatycznie, nie musisz nic robić. Mail z PDF dojdzie najpóźniej w 10 minut.",
+      "technical_detail": "Oczekiwanie na webhook PSP — status pending_psp po stronie backend."
+    },
+    "failed_retryable": {
+      "label": "Coś poszło nie tak — spróbujmy ponownie",
+      "body": "Płatność nie powiodła się, ale możesz spróbować ponownie. Twój koszyk jest wciąż gotowy.",
+      "cta": "Wróć do płatności",
+      "technical_detail": "Płatność odrzucona — brak obciążenia konta. Retry zalecany."
+    },
+    "failed_nonretryable": {
+      "label": "Płatność nie powiodła się",
+      "body": "Płatność nie powiodła się — skontaktuj się z bankiem albo wybierz inną metodę płatności w nowym zamówieniu.",
+      "cta": "Kontakt z support",
+      "technical_detail": "Płatność trwale odrzucona przez bank — wymagane działanie z Twojej strony."
+    },
+    "cross_actor": {
+      "for_you": "Co dalej dla Ciebie",
+      "for_us": "Co dalej dla nas"
+    },
+    "technical_expand_summary": "Co dokładnie się stało?"
   },
   "storefront_state": {
     "loading": {

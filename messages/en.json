@@ -928,7 +928,10 @@
     "paid": {
       "label": "Payment confirmed",
       "body": "Your payment has been confirmed. Continue to see your order details.",
-      "cta": "Go to order"
+      "cta": "Go to order",
+      "label_v180": "Payment accepted ✓",
+      "body_v180": "Your payment has been confirmed. You will be redirected to your order details shortly.",
+      "technical_detail": "Payment approved by PSP — webhook received and processed."
     },
     "pending_psp_confirmation": {
       "label": "Payment verification",
@@ -947,14 +950,47 @@
     "support_required": {
       "label": "Action required",
       "body": "Your order requires our attention. Please contact customer support to resolve this.",
-      "cta": "Contact support"
+      "cta": "Contact support",
+      "label_v180": "Contact us",
+      "body_v180": "This matter requires manual verification — ticket {ticket_id} created. We will contact you shortly.",
+      "cta_v180": "Open email to support",
+      "ticket_missing": "No ticket number — please contact support@bonbeauty.pl",
+      "technical_detail": "Case escalated for manual verification — ticket created in support system."
     },
     "expired": {
       "label": "Payment session expired",
       "body": "Your previous purchase attempt has expired and is closed. You can start over.",
       "cta": "Return to cart",
-      "secondary_cta": "Contact support"
-    }
+      "secondary_cta": "Contact support",
+      "label_v180": "Your cart is still waiting — come back and finish",
+      "body_v180": "Your payment session expired, but your cart is still ready. Your cart will be kept for at least 7 days.",
+      "cta_v180": "Return to cart",
+      "technical_detail": "Payment session expired after 10 minutes without PSP confirmation."
+    },
+    "pending_psp": {
+      "label": "Checking your payment",
+      "body": "This usually takes up to a minute. You do not need to do anything — we are checking automatically.",
+      "countdown": "Checking again in {n}s...",
+      "second_tier": "This is taking a bit longer than usual (already 90 seconds). This sometimes happens during high traffic — we are checking automatically, you do not need to do anything. An email with PDF will arrive within 10 minutes.",
+      "technical_detail": "Waiting for PSP webhook — backend status pending_psp."
+    },
+    "failed_retryable": {
+      "label": "Something went wrong — let us try again",
+      "body": "Your payment was unsuccessful, but you can try again. Your cart is still ready.",
+      "cta": "Return to payment",
+      "technical_detail": "Payment declined — no charge made. Retry recommended."
+    },
+    "failed_nonretryable": {
+      "label": "Payment failed",
+      "body": "Your payment failed — please contact your bank or choose a different payment method in a new order.",
+      "cta": "Contact support",
+      "technical_detail": "Payment permanently declined by bank — action required on your end."
+    },
+    "cross_actor": {
+      "for_you": "What is next for you",
+      "for_us": "What is next for us"
+    },
+    "technical_expand_summary": "What exactly happened?"
   },
   "storefront_state": {
     "loading": {
