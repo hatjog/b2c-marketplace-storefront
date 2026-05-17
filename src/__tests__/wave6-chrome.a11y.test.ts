@@ -43,7 +43,9 @@ describe('W6-03 NewsletterSlot a11y', () => {
   it('modal placement is a labelled dialog with ESC dismiss', () => {
     expect(src).toMatch(/role="dialog"/);
     expect(src).toMatch(/aria-modal="true"/);
-    expect(src).toMatch(/e\.key === 'Escape'/);
+    expect(src).toMatch(/useFocusTrap/);
+    expect(src).toMatch(/onEscape: onDismiss/);
+    expect(src).toMatch(/lockScroll: true/);
   });
   it('uses next-intl translations only (no hardcoded user strings)', () => {
     expect(src).toMatch(/useTranslations\('newsletter'\)/);
@@ -99,14 +101,13 @@ describe('W6-06 ToastAlert a11y', () => {
   it('cites the Wave 6 manifest', () => {
     expect(src).toMatch(/@chrome-manifest:\s*W6-06/);
   });
-  it('viewport is a polite aria-live log region', () => {
-    expect(src).toMatch(/role="log"/);
-    expect(src).toMatch(/aria-live="polite"/);
-    expect(src).toMatch(/aria-atomic="true"/);
-  });
-  it('error severity escalates to role=alert / assertive', () => {
+  it('uses a single canonical live-region strategy (no nested aria-live)', () => {
+    expect(src).toMatch(/role="region"/);
     expect(src).toMatch(/isError \? 'alert' : 'status'/);
-    expect(src).toMatch(/isError \? 'assertive' : 'polite'/);
+    expect(src).not.toMatch(/aria-live=/);
+  });
+  it('error severity escalates to role=alert', () => {
+    expect(src).toMatch(/isError \? 'alert' : 'status'/);
   });
   it('every toast has a keyboard-dismissible close button', () => {
     expect(src).toMatch(/aria-label=\{t\('dismiss'\)\}/);
@@ -151,8 +152,13 @@ describe('W6-09 SearchOverlay a11y', () => {
   it('input follows the ARIA combobox + listbox pattern', () => {
     expect(src).toMatch(/role="combobox"/);
     expect(src).toMatch(/aria-autocomplete="list"/);
+    expect(src).toMatch(/aria-activedescendant/);
     expect(src).toMatch(/role="listbox"/);
     expect(src).toMatch(/role="option"/);
+    expect(src).toMatch(/ArrowDown/);
+    expect(src).toMatch(/ArrowUp/);
+    expect(src).toMatch(/event\.key === 'Enter'/);
+    expect(src).not.toMatch(/role="option"[^\\n]*>\\s*<button/);
   });
   it('autofocuses the search input on open', () => {
     expect(src).toMatch(/inputRef\.current\?\.focus\(\)/);

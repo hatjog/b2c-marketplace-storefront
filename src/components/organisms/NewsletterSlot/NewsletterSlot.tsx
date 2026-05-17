@@ -15,10 +15,11 @@
 //   modal-popup    — overlay triggered (exit-intent / timed) z ESC dismiss
 //   success        — stan po submit (potwierdzenie)
 
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 import { cn } from '@/lib/utils';
 
 export type NewsletterSlotVariant =
@@ -37,12 +38,13 @@ export interface NewsletterSlotProps {
 
 export function NewsletterSlot({
   variant = 'inline-body',
-  locale: _locale,
+  locale,
   onSubmit,
   onDismiss,
   className,
 }: NewsletterSlotProps) {
   const t = useTranslations('newsletter');
+  const inputId = useId();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(variant === 'success');
   const [pending, setPending] = useState(false);
@@ -62,6 +64,12 @@ export function NewsletterSlot({
   const isSuccess = submitted || variant === 'success';
   const isModal = variant === 'modal-popup';
   const isFooter = variant === 'inline-footer';
+  const modalOpen = isModal && !isSuccess;
+  const modalRef = useFocusTrap<HTMLDivElement>({
+    active: modalOpen,
+    onEscape: onDismiss,
+    lockScroll: true,
+  });
 
   const successView = (
     <div
@@ -86,7 +94,7 @@ export function NewsletterSlot({
     >
       <div className="flex-1 space-y-2">
         <label
-          htmlFor="newsletter-slot-email"
+          htmlFor={inputId}
           className="block text-sm font-[var(--font-weight-medium)] text-[var(--text-primary)]"
         >
           {t('headline')}
@@ -95,7 +103,7 @@ export function NewsletterSlot({
           <p className="text-sm text-[var(--text-secondary)]">{t('subline')}</p>
         )}
         <input
-          id="newsletter-slot-email"
+          id={inputId}
           type="email"
           required
           aria-required="true"
@@ -130,6 +138,7 @@ export function NewsletterSlot({
       aria-label={t('aria_region')}
       data-testid="newsletter-slot"
       data-variant={variant}
+      lang={locale}
       className={cn(
         'w-full',
         !isFooter &&
@@ -148,19 +157,21 @@ export function NewsletterSlot({
     </section>
   );
 
-  if (isModal && !isSuccess) {
+  if (modalOpen) {
     return (
       <div
-        className="fixed inset-0 z-[300] flex items-center justify-center bg-[rgba(9,9,9,0.6)] p-4"
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('aria_region')}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') onDismiss?.();
-        }}
+        className="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--bb-overlay-backdrop)] p-4"
         data-testid="newsletter-slot-modal-overlay"
       >
-        <div className="w-full max-w-md">
+        <div
+          ref={modalRef}
+          className="w-full max-w-md"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('aria_region')}
+          tabIndex={-1}
+          lang={locale}
+        >
           <div className="relative">
             <button
               type="button"

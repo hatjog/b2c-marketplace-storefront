@@ -14,6 +14,8 @@ export const BREAKPOINTS = [
 export const LOCALES = ['pl', 'en', 'ua', 'de'] as const;
 
 export const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
+export const WAVE6_REQUIRE_PREVIEW_HARNESS =
+  process.env.WAVE6_REQUIRE_PREVIEW_HARNESS === '1';
 
 export async function setViewport(page: Page, breakpoint: typeof BREAKPOINTS[number]) {
   await page.setViewportSize({ width: breakpoint.width, height: breakpoint.height });

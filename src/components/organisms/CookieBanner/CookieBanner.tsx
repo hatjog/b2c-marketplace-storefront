@@ -53,6 +53,7 @@ export function CookieBanner({
   className,
 }: CookieBannerProps) {
   const t = useTranslations('cookie_banner');
+  const [isOpen, setIsOpen] = useState(true);
   const [step, setStep] = useState<'banner' | 'sub-modal'>('banner');
   const [prefs, setPrefs] = useState<CookiePreferences>({
     necessary: true,
@@ -70,6 +71,26 @@ export function CookieBanner({
   function toggle(key: CategoryKey) {
     setPrefs((p) => ({ ...p, [key]: !p[key] }));
   }
+
+  function handleAcceptAll() {
+    onAcceptAll?.();
+    setStep('banner');
+    setIsOpen(false);
+  }
+
+  function handleRejectAll() {
+    onRejectAll?.();
+    setStep('banner');
+    setIsOpen(false);
+  }
+
+  function handleSavePreferences() {
+    onCustomize?.(prefs);
+    setStep('banner');
+    setIsOpen(false);
+  }
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -121,13 +142,13 @@ export function CookieBanner({
             </Button>
             <Button
               variant="tonal"
-              onClick={onRejectAll}
+              onClick={handleRejectAll}
               data-testid="cookie-banner-reject-all"
             >
               {t('reject_all')}
             </Button>
             <Button
-              onClick={onAcceptAll}
+              onClick={handleAcceptAll}
               data-testid="cookie-banner-accept-all"
             >
               {t('accept_all')}
@@ -138,7 +159,7 @@ export function CookieBanner({
 
       {step === 'sub-modal' && (
         <div
-          className="fixed inset-0 z-[var(--cookie-banner-z,200)] flex items-center justify-center bg-[rgba(9,9,9,0.6)] p-4"
+          className="fixed inset-0 z-[var(--cookie-banner-z,200)] flex items-center justify-center bg-[var(--bb-overlay-backdrop)] p-4"
           aria-hidden={false}
         >
           <div
@@ -214,7 +235,7 @@ export function CookieBanner({
                 {t('back')}
               </Button>
               <Button
-                onClick={() => onCustomize?.(prefs)}
+                onClick={handleSavePreferences}
                 data-testid="cookie-banner-save"
               >
                 {t('save_preferences')}
