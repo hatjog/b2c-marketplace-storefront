@@ -996,6 +996,50 @@
         "failed": "Перевірте з'єднання та оновіть сторінку.",
         "failed_cta": "Спробувати знову"
       }
+    },
+    "layout": {
+      "a11y": {
+        "skip_to_main": "Перейти до вмісту акаунта"
+      },
+      "hero": {
+        "aria_label": "Заголовок акаунта",
+        "eyebrow": "Акаунт",
+        "greeting": "Ласкаво просимо!",
+        "greeting_with_name": "Привіт, {name}",
+        "subtitle": "Керуйте замовленнями, ваучерами та налаштуваннями."
+      },
+      "quick_actions": {
+        "aria_label": "Швидкі дії"
+      },
+      "content": {
+        "aria_label": "Вміст акаунта"
+      },
+      "sidebar": {
+        "aria_label": "Бічна панель акаунта"
+      },
+      "nav": {
+        "aria_label": "Навігація акаунта",
+        "items": {
+          "dashboard": "Огляд",
+          "order_history": "Замовлення",
+          "order_detail": "Деталі замовлення",
+          "active_vouchers": "Активні ваучери",
+          "used_vouchers": "Використані та прострочені ваучери",
+          "addresses": "Адреси",
+          "payment_methods": "Способи оплати",
+          "notifications": "Сповіщення",
+          "loyalty": "Програма лояльності",
+          "referrals": "Рекомендації",
+          "profile": "Дані профілю",
+          "password": "Пароль і безпека",
+          "delete_account": "Видалити акаунт"
+        }
+      },
+      "snapshot": {
+        "heading": "Зведення акаунта",
+        "loading_aria": "Завантаження зведення акаунта",
+        "empty": "Наразі немає даних для відображення."
+      }
     }
   },
   "category": {

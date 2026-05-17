@@ -995,6 +995,50 @@
         "failed": "Sprawdź połączenie i odśwież stronę.",
         "failed_cta": "Spróbuj ponownie"
       }
+    },
+    "layout": {
+      "a11y": {
+        "skip_to_main": "Przejdź do głównej treści konta"
+      },
+      "hero": {
+        "aria_label": "Nagłówek konta",
+        "eyebrow": "Konto",
+        "greeting": "Witaj!",
+        "greeting_with_name": "Cześć, {name}",
+        "subtitle": "Zarządzaj zamówieniami, voucherami i ustawieniami."
+      },
+      "quick_actions": {
+        "aria_label": "Szybkie akcje"
+      },
+      "content": {
+        "aria_label": "Treść konta"
+      },
+      "sidebar": {
+        "aria_label": "Panel konta"
+      },
+      "nav": {
+        "aria_label": "Nawigacja konta",
+        "items": {
+          "dashboard": "Przegląd",
+          "order_history": "Zamówienia",
+          "order_detail": "Szczegóły zamówienia",
+          "active_vouchers": "Aktywne vouchery",
+          "used_vouchers": "Zużyte i wygasłe vouchery",
+          "addresses": "Adresy",
+          "payment_methods": "Metody płatności",
+          "notifications": "Powiadomienia",
+          "loyalty": "Program lojalnościowy",
+          "referrals": "Polecenia",
+          "profile": "Dane profilu",
+          "password": "Hasło i bezpieczeństwo",
+          "delete_account": "Usuń konto"
+        }
+      },
+      "snapshot": {
+        "heading": "Skrót konta",
+        "loading_aria": "Ładowanie skrótu konta",
+        "empty": "Brak danych do wyświetlenia."
+      }
     }
   },
   "category": {

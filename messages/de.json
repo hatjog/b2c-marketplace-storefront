@@ -996,6 +996,50 @@
         "failed": "Überprüfen Sie Ihre Verbindung und aktualisieren Sie die Seite.",
         "failed_cta": "Erneut versuchen"
       }
+    },
+    "layout": {
+      "a11y": {
+        "skip_to_main": "Zum Kontoinhalt springen"
+      },
+      "hero": {
+        "aria_label": "Konto-Header",
+        "eyebrow": "Konto",
+        "greeting": "Willkommen!",
+        "greeting_with_name": "Hallo, {name}",
+        "subtitle": "Verwalte Bestellungen, Gutscheine und Einstellungen."
+      },
+      "quick_actions": {
+        "aria_label": "Schnellaktionen"
+      },
+      "content": {
+        "aria_label": "Kontoinhalt"
+      },
+      "sidebar": {
+        "aria_label": "Konto-Seitenleiste"
+      },
+      "nav": {
+        "aria_label": "Kontonavigation",
+        "items": {
+          "dashboard": "Übersicht",
+          "order_history": "Bestellungen",
+          "order_detail": "Bestelldetails",
+          "active_vouchers": "Aktive Gutscheine",
+          "used_vouchers": "Verwendete & abgelaufene Gutscheine",
+          "addresses": "Adressen",
+          "payment_methods": "Zahlungsmethoden",
+          "notifications": "Benachrichtigungen",
+          "loyalty": "Treueprogramm",
+          "referrals": "Empfehlungen",
+          "profile": "Profildaten",
+          "password": "Passwort & Sicherheit",
+          "delete_account": "Konto löschen"
+        }
+      },
+      "snapshot": {
+        "heading": "Kontoübersicht",
+        "loading_aria": "Kontoübersicht wird geladen",
+        "empty": "Noch keine Daten zum Anzeigen."
+      }
     }
   },
   "category": {

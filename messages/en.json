@@ -995,6 +995,50 @@
         "failed": "Check your connection and refresh the page.",
         "failed_cta": "Try again"
       }
+    },
+    "layout": {
+      "a11y": {
+        "skip_to_main": "Skip to account content"
+      },
+      "hero": {
+        "aria_label": "Account header",
+        "eyebrow": "Account",
+        "greeting": "Welcome!",
+        "greeting_with_name": "Hi, {name}",
+        "subtitle": "Manage your orders, vouchers and settings."
+      },
+      "quick_actions": {
+        "aria_label": "Quick actions"
+      },
+      "content": {
+        "aria_label": "Account content"
+      },
+      "sidebar": {
+        "aria_label": "Account sidebar"
+      },
+      "nav": {
+        "aria_label": "Account navigation",
+        "items": {
+          "dashboard": "Overview",
+          "order_history": "Orders",
+          "order_detail": "Order details",
+          "active_vouchers": "Active vouchers",
+          "used_vouchers": "Used & expired vouchers",
+          "addresses": "Addresses",
+          "payment_methods": "Payment methods",
+          "notifications": "Notifications",
+          "loyalty": "Loyalty programme",
+          "referrals": "Referrals",
+          "profile": "Profile details",
+          "password": "Password & security",
+          "delete_account": "Delete account"
+        }
+      },
+      "snapshot": {
+        "heading": "Account snapshot",
+        "loading_aria": "Loading account snapshot",
+        "empty": "Nothing to show yet."
+      }
     }
   },
   "category": {
