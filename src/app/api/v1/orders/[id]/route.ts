@@ -36,6 +36,10 @@ import { resolveMedusaBackendUrl } from '@/lib/env';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
+function coerceNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
 /**
  * Map Medusa's `OrderPaymentStatus` enum to a GP shared lifecycle state id.
  *
@@ -52,9 +56,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  *
  * Anything unknown → `pending_psp_confirmation` (anti-optimistic-paid).
  */
-export function mapMedusaPaymentStatusToLifecycle(
-  raw: string | null | undefined,
-): string {
+export function mapMedusaPaymentStatusToLifecycle(raw: string | null | undefined): string {
   switch (raw) {
     case 'captured':
     case 'partially_captured':
@@ -90,9 +92,7 @@ export function mapMedusaPaymentStatusToLifecycle(
  * Returns `null` when the order-level status does not override the
  * payment-status mapping.
  */
-export function mapMedusaOrderStatusToLifecycle(
-  raw: string | null | undefined,
-): string | null {
+export function mapMedusaOrderStatusToLifecycle(raw: string | null | undefined): string | null {
   switch (raw) {
     case 'archived':
     case 'canceled':
@@ -113,9 +113,7 @@ function isAllowedOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
   const allowedOrigin =
-    process.env.NEXT_PUBLIC_STOREFRONT_URL ??
-    process.env.NEXT_PUBLIC_BASE_URL ??
-    null;
+    process.env.NEXT_PUBLIC_STOREFRONT_URL ?? process.env.NEXT_PUBLIC_BASE_URL ?? null;
 
   // Same-origin XHR omits Origin only on simple GET — in App Router this
   // route runs as a Route Handler which generally receives Origin. If the
@@ -143,10 +141,7 @@ function isAllowedOrigin(request: NextRequest): boolean {
   return candidate.startsWith('http://') || candidate.startsWith('https://');
 }
 
-export async function GET(
-  request: NextRequest,
-  context: RouteContext,
-): Promise<NextResponse> {
+export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
   // R2 review fix: same-origin guard — return 403 (no body) on cross-origin.
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -164,7 +159,7 @@ export async function GET(
   const token = cookies.get('_medusa_jwt')?.value;
 
   const headers: Record<string, string> = {
-    'x-publishable-api-key': publishableKey,
+    'x-publishable-api-key': publishableKey
   };
   if (token) {
     headers.authorization = `Bearer ${token}`;
@@ -177,17 +172,17 @@ export async function GET(
       // the browser.
       // R4 fix: also request order-level `status` so the `expired` lifecycle
       // id is reachable (payment_status alone never produces `expired`).
-      `${backendUrl}/store/orders/${encodeURIComponent(id)}?fields=id,display_id,payment_status,status,updated_at`,
+      `${backendUrl}/store/orders/${encodeURIComponent(id)}?fields=id,display_id,payment_status,status,updated_at,email,customer_id,currency_code,item_total,shipping_total,tax_total,total,*items,+items.metadata,*shipping_methods`,
       {
         headers,
-        cache: 'no-store',
+        cache: 'no-store'
       }
     );
 
     if (!res.ok) {
       // Preserve upstream status so the UI can distinguish access_denied (401/403)
       // from unavailable (5xx/404) without leaking the upstream body.
-      const status = res.status === 401 || res.status === 403 ? res.status : (res.status || 502);
+      const status = res.status === 401 || res.status === 403 ? res.status : res.status || 502;
       return NextResponse.json({ error: 'Order not accessible' }, { status });
     }
 
@@ -198,6 +193,26 @@ export async function GET(
         payment_status?: string | null;
         status?: string | null;
         updated_at?: string | null;
+        email?: string | null;
+        customer_id?: string | null;
+        currency_code?: string | null;
+        item_total?: number | null;
+        shipping_total?: number | null;
+        tax_total?: number | null;
+        total?: number | null;
+        items?: Array<{
+          id?: string | null;
+          title?: string | null;
+          quantity?: number | null;
+          subtotal?: number | null;
+          total?: number | null;
+          unit_price?: number | null;
+          metadata?: Record<string, unknown> | null;
+        }>;
+        shipping_methods?: Array<{
+          id?: string | null;
+          name?: string | null;
+        }>;
       };
     };
 
@@ -218,9 +233,7 @@ export async function GET(
     // R7 fix: normalise display_id to string. Upstream may return number;
     // downstream consumer types it as string.
     const displayId =
-      order.display_id !== null && order.display_id !== undefined
-        ? String(order.display_id)
-        : null;
+      order.display_id !== null && order.display_id !== undefined ? String(order.display_id) : null;
 
     return NextResponse.json(
       {
@@ -228,6 +241,30 @@ export async function GET(
         display_id: displayId,
         payment_status: lifecycleStatus,
         updated_at: order.updated_at ?? null,
+        email: order.email ?? null,
+        customer_id: order.customer_id ?? null,
+        currency_code: order.currency_code ?? null,
+        item_total: coerceNumber(order.item_total),
+        shipping_total: coerceNumber(order.shipping_total),
+        tax_total: coerceNumber(order.tax_total),
+        total: coerceNumber(order.total),
+        items: Array.isArray(order.items)
+          ? order.items.map(item => ({
+              id: item.id ?? null,
+              title: item.title ?? null,
+              quantity: coerceNumber(item.quantity),
+              subtotal: coerceNumber(item.subtotal),
+              total: coerceNumber(item.total),
+              unit_price: coerceNumber(item.unit_price),
+              metadata: item.metadata ?? null
+            }))
+          : [],
+        shipping_methods: Array.isArray(order.shipping_methods)
+          ? order.shipping_methods.map(method => ({
+              id: method.id ?? null,
+              name: method.name ?? null
+            }))
+          : []
       },
       { status: 200 }
     );

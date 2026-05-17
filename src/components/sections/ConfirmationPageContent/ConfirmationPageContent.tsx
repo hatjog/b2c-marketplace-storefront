@@ -1,112 +1,67 @@
 'use client';
 
-/**
- * ConfirmationPageContent — UX-CMP-4 ConfirmationHandoff (Story 2.5)
- *
- * Fetches order and entitlement data via browser-level API proxy routes
- * so Playwright E2E tests can intercept with page.route().
- *
- * Renders one of five UX-CMP-4 states (getConfirmationHandoffState):
- *   paid_delivered        — GiftConfirmedView / SelfPurchaseConfirmedView
- *   paid_delivery_pending — PaidDeliveryPendingView (calm, voucher-first, timestamp)
- *   payment_pending       — PurchasePendingView (existing, PSP confirmation in flight)
- *   payment_failed_retry  — PaymentFailedRetryView (renamed from PaymentErrorView)
- *   support_required      — SupportRequiredView (recovery path, no raw errors)
- *
- * PII / URL safety (AC1, AC3, NFR22):
- *   - Only order.display_id (or fallback to route id) in customer copy.
- *   - No voucher codes, claim tokens, email, PII in URLs or mailto: hrefs.
- *   - Sentry captures component stack ONLY — no order/entitlement payloads.
- *   - console logs excluded for order/entitlement data.
- *
- * HONESTY (AC2):
- *   - paid_delivery_pending ≠ failure.
- *   - support_required requires positive evidence (delivery_state or proxy).
- *   - No "success" claimed without backend entitlement evidence.
- *
- * Accessibility (NFR28 + UX-DR19):
- *   - Loading state: role="status" aria-live="polite"
- *   - Pending states: aria-live="polite" aria-busy
- *   - Each state has exactly one primary next action.
- *   - Focus rings via BonBeauty DS (focus-ring fix from Story 2.1).
- *   - Touch targets >= 44px via bb-primary-cta and padding.
- */
+import { useEffect, useMemo, useState } from 'react';
 
-import React, { useEffect, useState } from 'react';
-
-import * as Sentry from '@sentry/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCode';
 import {
-  type ConfirmationHandoffState,
-  getConfirmationHandoffState,
-  isSafeClaimUrl,
-} from '@/lib/helpers/confirmation-state';
+  buildConfirmationStepperState,
+  getGeneratingElapsedSeconds,
+  isSecondTierGenerating,
+  maskEmail,
+  normalizeVoucherPipelineStatus,
+  shouldStopConfirmationPolling
+} from '@/lib/confirmation/order-confirmed-stepper';
 
-// ─── Sentry QR Error Boundary — component stack only, no PII ─────────────────
+type OrderItem = {
+  id: string | null;
+  title: string | null;
+  quantity: number;
+  subtotal: number;
+  total: number;
+  unit_price: number;
+  metadata: Record<string, unknown> | null;
+};
 
-class QrErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback?: React.ReactNode },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // RULE: component stack only — never attach order/entitlement/voucher data
-    Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
-  }
-  render() {
-    return this.state.hasError ? (this.props.fallback ?? null) : this.props.children;
-  }
-}
-
-// ─── Data shapes (proxy contract) ────────────────────────────────────────────
+type ShippingMethod = {
+  id: string | null;
+  name: string | null;
+};
 
 type OrderData = {
   id: string;
-  display_id?: string | number | null;
-  payment_status?: string;
-  /** ISO timestamp from the proxy (Story 2.4 F2 fix — updated_at included). */
-  updated_at?: string | null;
-  /**
-   * metadata is NOT included in current proxy contract (Story 2.4 F4 fix).
-   * Accepted here as an optional shape so the state machine is ready when
-   * an explicit evidence endpoint (Epic 7/8) exposes delivery_state.
-   */
-  metadata?: { delivery_state?: string; requires_support?: boolean; buyer_is_recipient?: boolean };
+  display_id: string | null;
+  payment_status: string | null;
+  updated_at: string | null;
+  email: string | null;
+  customer_id: string | null;
+  currency_code: string | null;
+  item_total: number;
+  shipping_total: number;
+  tax_total: number;
+  total: number;
+  items: OrderItem[];
+  shipping_methods: ShippingMethod[];
+};
+
+type PaymentStatusData = {
+  status?: string;
+  last_checked_at?: string;
+  recommended_action_key?: string;
 };
 
 type EntitlementData = {
-  status: string;
-  voucher_code: string | null;
-  product_name: string | null;
-  salon_name: string | null;
-  face_value_minor: number;
-  // G9 review-2 fix: proxy passes through upstream verbatim; field may be
-  // absent (undefined), not just explicitly null. Mark optional so adversarial
-  // readers don't rely on `claim_url === null` as a tight discriminator.
-  claim_url?: string | null;
+  status?: string;
+  recipient_name?: string | null;
+  recipient_email?: string | null;
 };
 
 type Props = {
   orderId: string;
 };
 
-// ─── Utility helpers ──────────────────────────────────────────────────────────
-
-function formatVoucherCode(code: string): string {
-  return code.replace(/([A-Z0-9]{4})(?=[A-Z0-9])/g, '$1 ').trim();
-}
-
-/**
- * Map next-intl locale slug → BCP-47 tag for `Intl` formatters (F3 review fix).
- * Without this, UA/DE silently fell back to `pl-PL` formatting.
- * Currency stays PLN until multi-currency lands in a separate story.
- */
 function localeTag(locale: string): string {
   switch (locale) {
     case 'en':
@@ -120,530 +75,575 @@ function localeTag(locale: string): string {
   }
 }
 
-function formatAmount(minor: number, locale: string): string {
-  return (minor / 100).toLocaleString(localeTag(locale), {
+function formatMoney(value: number, currencyCode: string | null, locale: string): string {
+  const currency = (currencyCode ?? 'PLN').toUpperCase();
+  return new Intl.NumberFormat(localeTag(locale), {
     style: 'currency',
-    currency: 'PLN',
+    currency
+  }).format(value / 100);
+}
+
+function formatTime(iso: string | null | undefined, locale: string): string | null {
+  if (!iso) return null;
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return new Intl.DateTimeFormat(localeTag(locale), {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).format(parsed);
+}
+
+function readString(metadata: Record<string, unknown> | null, keys: string[]): string | null {
+  if (!metadata) return null;
+
+  for (const key of keys) {
+    const value = metadata[key];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  return null;
+}
+
+function isGiftOrder(order: OrderData, entitlements: EntitlementData[]): boolean {
+  if (entitlements.some(ent => String(ent.status ?? '').toUpperCase() === 'ISSUED')) {
+    return true;
+  }
+
+  return order.items.some(item => {
+    const purchaseMode = readString(item.metadata, ['purchase_mode', 'gift_mode']);
+    if (purchaseMode && purchaseMode.toLowerCase() === 'gift') {
+      return true;
+    }
+
+    const recipientName = readString(item.metadata, ['recipient_name', 'gift_recipient_name']);
+    const recipientEmail = readString(item.metadata, ['recipient_email', 'gift_recipient_email']);
+
+    return Boolean(recipientName || recipientEmail);
   });
 }
 
-/** Format ISO timestamp as locale-aware short datetime, or null if invalid. */
-function formatTimestamp(isoString: string | null | undefined, locale: string): string | null {
-  if (!isoString) return null;
-  try {
-    const d = new Date(isoString);
-    // F7 review fix: `new Date('garbage')` does NOT throw — it returns an
-    // Invalid Date whose toLocaleString() emits literal "Invalid Date".
-    // Validate explicitly so malformed upstream timestamps never leak to UI.
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleString(localeTag(locale), {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return null;
+function resolveRecipient(
+  order: OrderData,
+  entitlements: EntitlementData[]
+): { name: string | null; email: string | null } {
+  for (const ent of entitlements) {
+    if (ent.recipient_name || ent.recipient_email) {
+      return {
+        name: ent.recipient_name ?? null,
+        email: ent.recipient_email ?? null
+      };
+    }
   }
+
+  for (const item of order.items) {
+    const name = readString(item.metadata, ['recipient_name', 'gift_recipient_name']);
+    const email = readString(item.metadata, ['recipient_email', 'gift_recipient_email']);
+    if (name || email) {
+      return { name, email };
+    }
+  }
+
+  return { name: null, email: null };
 }
 
-// ─── UX-CMP-4 view components ─────────────────────────────────────────────────
+function resolveDeliveryMethod(order: OrderData): 'email' | 'scheduled' | 'physical' {
+  for (const item of order.items) {
+    const metadataMethod = readString(item.metadata, [
+      'delivery_method',
+      'voucher_delivery_method',
+      'delivery_type'
+    ]);
 
-/**
- * GiftConfirmedView — paid_delivered, gift path (ISSUED entitlement).
- * Shows voucher value and claim_url CTA (backend-issued, never client-derived).
- */
-function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
-  const t = useTranslations('confirmation');
-  const locale = useLocale();
-  // claim_url is a backend-issued single-use link; render as CTA href only.
-  // G1 review-2 fix: validate protocol allow-list (http/https) before binding
-  // to `href` so a compromised upstream cannot inject a `javascript:` /
-  // `data:` URI and pivot to XSS in the customer session origin.
-  const claimUrl = isSafeClaimUrl(entitlement.claim_url);
+    if (metadataMethod) {
+      const normalized = metadataMethod.toLowerCase();
+      if (normalized.includes('sched')) return 'scheduled';
+      if (normalized.includes('physical') || normalized.includes('courier')) return 'physical';
+      if (normalized.includes('email') || normalized.includes('mail')) return 'email';
+    }
+  }
 
-  return (
-    <div
-      className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center"
-      data-testid="gift-confirmed"
-      // F5 review fix: announce delivered/accepted state once on transition
-      // from paid_delivery_pending so screen readers get a clear handoff
-      // (NFR28 + UX-DR9). No aria-busy here — delivery is complete.
-      role="status"
-      aria-live="polite"
-    >
-      <span className="bb-pill">BonBeauty</span>
-      <h1 className="heading-xl">{t('gift_title')}</h1>
-      <div className="bb-section-shell bb-section-shell-strong w-full" data-testid="voucher-card">
-        {entitlement.product_name && (
-          <p className="heading-sm" data-testid="product-name">
-            {entitlement.product_name}
-          </p>
-        )}
-        {entitlement.salon_name && (
-          <p className="label-lg mt-2 text-secondary" data-testid="salon-name">
-            {entitlement.salon_name}
-          </p>
-        )}
-        <p
-          className="mt-4 text-[32px] font-medium text-primary"
-          data-testid="face-value"
-        >
-          {formatAmount(entitlement.face_value_minor, locale)}
-        </p>
-      </div>
-      {claimUrl ? (
-        <a
-          href={claimUrl}
-          className="bb-primary-cta rounded-full px-6 py-3"
-          data-testid="transfer-cta"
-        >
-          {t('gift_cta')}
-        </a>
-      ) : (
-        <LocalizedClientLink
-          href="/categories"
-          className="bb-primary-cta rounded-full px-6 py-3"
-          data-testid="transfer-cta"
-        >
-          {t('continue_shopping')}
-        </LocalizedClientLink>
-      )}
-    </div>
-  );
+  const shippingName = order.shipping_methods[0]?.name?.toLowerCase() ?? '';
+  if (
+    shippingName.includes('kurier') ||
+    shippingName.includes('courier') ||
+    shippingName.includes('ship')
+  ) {
+    return 'physical';
+  }
+
+  return 'email';
 }
-
-/**
- * SelfPurchaseConfirmedView — paid_delivered, self-purchase path (ACTIVE entitlement).
- * Shows in-page voucher code + QR. Voucher code NEVER put in URL.
- */
-function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
-  const t = useTranslations('confirmation');
-  const locale = useLocale();
-
-  return (
-    <div
-      className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center"
-      data-testid="self-purchase-confirmed"
-      // F5 review fix: announce delivered/accepted state once on transition
-      // from paid_delivery_pending (NFR28 + UX-DR9). No aria-busy.
-      role="status"
-      aria-live="polite"
-    >
-      <span className="bb-pill">BonBeauty</span>
-      <h1 className="heading-xl">{t('active_title')}</h1>
-      <div className="bb-section-shell bb-section-shell-strong w-full" data-testid="voucher-card">
-        {entitlement.product_name && (
-          <p className="heading-sm" data-testid="product-name">
-            {entitlement.product_name}
-          </p>
-        )}
-        {entitlement.salon_name && (
-          <p className="label-lg mt-2 text-secondary" data-testid="salon-name">
-            {entitlement.salon_name}
-          </p>
-        )}
-        <p
-          className="mt-4 text-[32px] font-medium text-primary"
-          data-testid="face-value"
-        >
-          {formatAmount(entitlement.face_value_minor, locale)}
-        </p>
-      </div>
-      {entitlement.voucher_code && (
-        <p
-          data-testid="voucher-code"
-          className="rounded-full border border-[rgba(144,112,50,0.18)] px-4 py-2 font-mono text-sm"
-          // F10 review fix: explicit aria-label so screen readers announce
-          // "voucher code: ABCD-1234" with context, not raw character runs.
-          aria-label={`${t('voucher_code_label')}: ${formatVoucherCode(entitlement.voucher_code)}`}
-        >
-          {formatVoucherCode(entitlement.voucher_code)}
-        </p>
-      )}
-      {entitlement.voucher_code && (
-        <QrErrorBoundary
-          fallback={
-            <div className="bb-card-muted text-center" data-testid="qr-code-fallback">
-              <span className="text-xs text-ui-fg-subtle">{t('voucher_code_label')}</span>
-              <p className="mt-2 font-mono">{formatVoucherCode(entitlement.voucher_code)}</p>
-            </div>
-          }
-        >
-          <VoucherQrCode code={entitlement.voucher_code} />
-        </QrErrorBoundary>
-      )}
-      <LocalizedClientLink href="/categories" className="bb-primary-cta rounded-full px-6 py-3">
-        {t('continue_shopping')}
-      </LocalizedClientLink>
-    </div>
-  );
-}
-
-/**
- * PaidDeliveryPendingView — paid, entitlement evidence absent.
- * HONESTY: distinct from failure; delivery is in progress.
- * Shows timestamp + one CTA. aria-live="polite" aria-busy for screen readers.
- */
-function PaidDeliveryPendingView({
-  orderRef,
-  lastUpdatedAt,
-  lastCheckedAt,
-}: {
-  orderRef: string;
-  lastUpdatedAt: string | null | undefined;
-  /** Stable ISO timestamp captured at fetch time — never `new Date()` during
-   * render (G4 review-2 fix). The label asserts "last checked at X"; render
-   * cycles unrelated to a refetch must not drift the displayed time. */
-  lastCheckedAt: string;
-}) {
-  const t = useTranslations('confirmation');
-  const locale = useLocale();
-  const formattedTs = formatTimestamp(lastUpdatedAt, locale);
-  // F3 review fix: route through localeTag so UA/DE don't silently use pl-PL.
-  // G4 review-2 fix: format the *stable* lastCheckedAt captured at fetch time,
-  // so re-renders don't bump the displayed "last checked" value.
-  const clientTs = formatTimestamp(lastCheckedAt, locale) ?? '';
-  // Use backend timestamp if available; otherwise show client-side "last checked" label
-  const timestampLabel = formattedTs
-    ? t('last_updated_label', { timestamp: formattedTs })
-    : t('last_checked_label', { timestamp: clientTs });
-
-  return (
-    <div
-      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
-      data-testid="paid-delivery-pending"
-      // G5 review-2 fix: keep aria-live="polite" so a state transition is
-      // announced once, but drop aria-busy — no polling/refresh loop is
-      // actually running, so promising an update would mute AT verbosity
-      // without delivering on the promise (NFR28).
-      role="status"
-      aria-live="polite"
-    >
-      <div className="bb-section-shell bb-section-shell-strong w-full">
-        <span className="bb-pill mb-4 inline-block">BonBeauty</span>
-        <h1 className="heading-xl">{t('pending_delivery_title')}</h1>
-        <p className="mt-3 text-secondary">{t('pending_delivery_description')}</p>
-        <p className="mt-4 label-sm text-secondary" data-testid="last-updated-label">
-          {timestampLabel}
-        </p>
-        <p className="mt-3 label-md" data-testid="order-ref">
-          {t('order_ref', { orderId: orderRef })}
-        </p>
-      </div>
-      <LocalizedClientLink
-        href="/user/orders"
-        className="bb-primary-cta rounded-full px-6 py-3"
-        data-testid="go-to-orders-cta"
-      >
-        {t('go_to_orders')}
-      </LocalizedClientLink>
-    </div>
-  );
-}
-
-/**
- * PurchasePendingView — payment_pending (PSP confirmation in flight).
- * Distinct from paid_delivery_pending: payment is not yet confirmed.
- * aria-live="polite" + elapsed-timer for screen reader friendliness.
- */
-function PurchasePendingView({ orderId }: { orderId: string }) {
-  const t = useTranslations('confirmation');
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsed((e) => {
-        if (e >= 60) {
-          clearInterval(timer);
-          return e;
-        }
-        return e + 3;
-      });
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div
-      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
-      data-testid="pending-state"
-      // G5 review-2 fix: drop aria-busy — the elapsed-timer toggles copy but
-      // does not refetch data; aria-busy="true" without a real update cycle
-      // can suppress AT announcements. role=status + aria-live=polite is the
-      // correct contract for a state announcement on entry (NFR28).
-      role="status"
-      aria-live="polite"
-    >
-      <div className="bb-section-shell bb-section-shell-strong w-full">
-        <h1 className="heading-xl">{t('payment_pending_title')}</h1>
-        {elapsed >= 60 ? (
-          <p className="mt-3 text-secondary">{t('pending_ready_soon')}</p>
-        ) : (
-          <p className="mt-3 text-secondary">{t('pending_safe_close')}</p>
-        )}
-        <p className="mt-4 label-md" data-testid="order-ref">
-          {t('order_ref', { orderId })}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/**
- * PaymentFailedRetryView — payment_failed_retry (explicit payment failure/expiry).
- * Distinct from support_required: user can retry payment here.
- * No "delivery failed" copy; this is about payment, not voucher delivery.
- */
-function PaymentFailedRetryView() {
-  const t = useTranslations('confirmation');
-
-  return (
-    <div
-      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
-      // F9 review fix: legacy testid kept for E2E stability — covers
-      // payment_failed_retry ONLY. support_required has its own dedicated
-      // testid (`support-required`); never conflate the two.
-      data-testid="error-state"
-      // G6 review-2 fix: announce the failure headline on state transition
-      // (loading → error). Without role/aria-live the heading is only
-      // available via navigation, not on entry (NFR28 + UX-DR9 parity with
-      // pending/delivered).
-      role="status"
-      aria-live="polite"
-    >
-      <div className="bb-section-shell w-full">
-        <h1 className="heading-xl">{t('payment_failed_title')}</h1>
-        <p className="mt-3 text-secondary">{t('payment_failed_description')}</p>
-      </div>
-      <LocalizedClientLink
-        href="/checkout"
-        className="bb-primary-cta rounded-full px-6 py-3"
-        data-testid="retry-cta"
-      >
-        {t('retry')}
-      </LocalizedClientLink>
-      <LocalizedClientLink
-        href="/cart"
-        className="label-md text-secondary underline underline-offset-4"
-        data-testid="change-method-cta"
-      >
-        {t('change_method')}
-      </LocalizedClientLink>
-    </div>
-  );
-}
-
-/**
- * SupportRequiredView — support_required (positive evidence of delivery issue).
- * DISTINCT from payment_failed_retry: no retry-payment CTA.
- * Primary action: recovery/account. Secondary: contact support (no PII in mailto).
- * Customer-safe copy only; no provider names, raw error codes, internal IDs.
- */
-function SupportRequiredView({ orderRef }: { orderRef: string }) {
-  const t = useTranslations('confirmation');
-
-  return (
-    <div
-      className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center"
-      data-testid="support-required"
-      // G7 review-2 fix: parity with the other states — without a live region
-      // the support-required heading is only available via heading-level
-      // navigation. AC3 requires this state to be semantically distinct from
-      // payment_failed_retry and not-found, not just visually.
-      role="status"
-      aria-live="polite"
-    >
-      <div className="bb-section-shell w-full">
-        <span className="bb-pill mb-4 inline-block">BonBeauty</span>
-        <h1 className="heading-xl">{t('support_required_title')}</h1>
-        <p className="mt-3 text-secondary">{t('support_required_description')}</p>
-        <p className="mt-3 label-md" data-testid="order-ref">
-          {t('order_ref', { orderId: orderRef })}
-        </p>
-      </div>
-      {/* Primary: account/orders recovery path (Story 2.6 magic-link baseline) */}
-      <LocalizedClientLink
-        href="/account/orders"
-        className="bb-primary-cta rounded-full px-6 py-3"
-        data-testid="recovery-cta"
-      >
-        {t('recovery_cta')}
-      </LocalizedClientLink>
-      {/* Secondary: support contact — no PII in href (AC3 + NFR22).
-          G8 review-2 fix: localized navigation so the next-intl locale
-          prefix is preserved and the help page renders in the customer's
-          chosen language, not the default locale fallback. */}
-      <LocalizedClientLink
-        href="/help"
-        className="label-md text-secondary underline underline-offset-4"
-        data-testid="support-cta"
-      >
-        {t('support_required_cta')}
-      </LocalizedClientLink>
-    </div>
-  );
-}
-
-// ─── Main client component ────────────────────────────────────────────────────
 
 export function ConfirmationPageContent({ orderId }: Props) {
   const t = useTranslations('confirmation');
+  const locale = useLocale();
+
   const [order, setOrder] = useState<OrderData | null>(null);
   const [entitlements, setEntitlements] = useState<EntitlementData[]>([]);
+  const [statusData, setStatusData] = useState<PaymentStatusData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
-  // G4 review-2 fix: stable client-side timestamp captured at fetch time so
-  // the "last checked" label does not drift across unrelated re-renders.
-  const [lastCheckedAt, setLastCheckedAt] = useState<string>(() => new Date().toISOString());
+  const [error, setError] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [generatingStartedAtMs, setGeneratingStartedAtMs] = useState<number | null>(null);
+  const [nowMs, setNowMs] = useState(Date.now());
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
+    async function loadInitialData() {
       try {
-        const [orderRes, entRes] = await Promise.all([
-          fetch(`/api/v1/orders/${orderId}`),
-          fetch(`/api/v1/entitlements?order_id=${orderId}`),
+        const [orderRes, statusRes, entitlementsRes] = await Promise.all([
+          fetch(`/api/v1/orders/${orderId}`, { cache: 'no-store' }),
+          fetch(`/api/v1/orders/${orderId}/payment-status`, { cache: 'no-store' }),
+          fetch(`/api/v1/entitlements?order_id=${orderId}`, { cache: 'no-store' })
         ]);
 
         if (!orderRes.ok) {
           if (!cancelled) {
-            // G2 review-2 fix: clear loading alongside the error flag so the
-            // state-machine invariant `loading XOR rest` holds at rest.
-            setFetchError(true);
+            setError(true);
             setLoading(false);
           }
           return;
         }
 
         const orderData = (await orderRes.json()) as OrderData;
-        const entData = entRes.ok ? ((await entRes.json()) as EntitlementData[]) : [];
+        const entitlementsData = entitlementsRes.ok
+          ? ((await entitlementsRes.json()) as EntitlementData[])
+          : [];
+
+        const fallbackStatus: PaymentStatusData = {
+          status: orderData.payment_status ?? 'paid',
+          last_checked_at: orderData.updated_at ?? new Date().toISOString(),
+          recommended_action_key: 'wait'
+        };
+
+        const statusPayload = statusRes.ok
+          ? ((await statusRes.json()) as PaymentStatusData)
+          : fallbackStatus;
 
         if (!cancelled) {
           setOrder(orderData);
-          setEntitlements(Array.isArray(entData) ? entData : []);
-          setLastCheckedAt(new Date().toISOString());
+          setEntitlements(Array.isArray(entitlementsData) ? entitlementsData : []);
+          setStatusData(statusPayload);
           setLoading(false);
         }
       } catch {
-        // F6 review fix: emit a payload-free Sentry breadcrumb so SRE can see
-        // confirmation-page reachability spikes without violating NFR22.
-        // Message string only — never order id, entitlement, voucher, or any
-        // PII / token data.
-        try {
-          Sentry.captureMessage('confirmation_fetch_failed', 'warning');
-        } catch {
-          // Sentry unavailable in test/SSR — never block the UI on telemetry.
-        }
         if (!cancelled) {
-          setFetchError(true);
+          setError(true);
           setLoading(false);
         }
       }
     }
 
-    void load();
+    void loadInitialData();
+
     return () => {
       cancelled = true;
     };
   }, [orderId]);
 
-  // Loading state — accessible status semantics (NFR28)
-  // F8 review fix: align max-width with other states to prevent full-bleed
-  // text on desktop and visual jank on first paint.
-  if (loading && !fetchError) {
+  const stepperState = useMemo(
+    () => buildConfirmationStepperState(statusData?.status),
+    [statusData?.status]
+  );
+
+  useEffect(() => {
+    if (stepperState.activeStepId === 'voucher_generating') {
+      setGeneratingStartedAtMs(current => current ?? Date.now());
+      return;
+    }
+
+    setGeneratingStartedAtMs(null);
+  }, [stepperState.activeStepId]);
+
+  useEffect(() => {
+    if (stepperState.activeStepId !== 'voucher_generating') {
+      return;
+    }
+
+    const ticker = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1_000);
+
+    return () => {
+      window.clearInterval(ticker);
+    };
+  }, [stepperState.activeStepId]);
+
+  useEffect(() => {
+    if (!statusData) {
+      return;
+    }
+
+    const normalizedStatus = normalizeVoucherPipelineStatus(statusData.status);
+    if (shouldStopConfirmationPolling(normalizedStatus)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const poller = window.setInterval(async () => {
+      try {
+        const res = await fetch(`/api/v1/orders/${orderId}/payment-status`, { cache: 'no-store' });
+        if (!res.ok || cancelled) return;
+
+        const payload = (await res.json()) as PaymentStatusData;
+        if (!cancelled) {
+          setStatusData(payload);
+        }
+      } catch {
+        // fail-soft: keep the current visible state and continue polling
+      }
+    }, 5_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(poller);
+    };
+  }, [orderId, statusData]);
+
+  const elapsedSeconds = generatingStartedAtMs
+    ? getGeneratingElapsedSeconds(generatingStartedAtMs, nowMs)
+    : 0;
+
+  const countdownSeconds = Math.max(0, 30 - elapsedSeconds);
+  const showSecondTier =
+    stepperState.activeStepId === 'voucher_generating' && isSecondTierGenerating(elapsedSeconds);
+
+  if (loading) {
     return (
-      <div
-        className="bb-section-shell mx-auto max-w-2xl text-center"
-        data-testid="loading"
+      <section
+        className="bb-section-shell mx-auto max-w-5xl"
+        data-testid="order-confirmed-loading"
         role="status"
         aria-live="polite"
       >
-        {t('loading')}
-      </div>
+        <div className="space-y-4">
+          <div className="h-8 w-64 animate-pulse rounded bg-stone-200 motion-reduce:animate-none" />
+          <div className="h-4 w-96 animate-pulse rounded bg-stone-200 motion-reduce:animate-none" />
+          <div className="h-40 animate-pulse rounded bg-stone-100 motion-reduce:animate-none" />
+        </div>
+      </section>
     );
   }
 
-  // Not found / fetch error
-  if (fetchError || !order) {
+  if (error || !order) {
     return (
-      <div
-        className="bb-section-shell mx-auto max-w-2xl text-center"
-        data-testid="not-found"
+      <section
+        className="bb-section-shell mx-auto max-w-3xl"
+        data-testid="order-confirmed-error"
       >
         <h1 className="heading-xl">{t('not_found')}</h1>
-      </div>
+        <p className="mt-3 text-secondary">{t('error_description')}</p>
+      </section>
     );
   }
 
-  // Derive UX-CMP-4 five-state from order + entitlements (single deterministic source)
-  const handoffState: ConfirmationHandoffState = getConfirmationHandoffState({
-    paymentStatus: order.payment_status,
-    entitlements,
-    metadata: order.metadata,
-  });
+  const isGift = isGiftOrder(order, entitlements);
+  const recipient = resolveRecipient(order, entitlements);
+
+  const heroSubcopy = isGift
+    ? t('hero_sub_gift', {
+        recipient: recipient.name ?? maskEmail(recipient.email ?? order.email)
+      })
+    : t('hero_sub_self', {
+        email: maskEmail(order.email)
+      });
 
   const orderRef = String(order.display_id ?? orderId);
+  const isGuest = !order.customer_id;
+  const deliveryMethod = resolveDeliveryMethod(order);
+  const lastUpdated = formatTime(statusData?.last_checked_at ?? order.updated_at, locale);
 
-  // --- payment_failed_retry ---
-  if (handoffState === 'payment_failed_retry') {
-    return <PaymentFailedRetryView />;
-  }
+  const onCopyOrderId = async () => {
+    try {
+      await navigator.clipboard.writeText(orderRef);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2_000);
+    } catch {
+      setCopied(false);
+    }
+  };
 
-  // --- payment_pending (PSP confirmation in flight) ---
-  if (handoffState === 'payment_pending') {
-    return <PurchasePendingView orderId={orderRef} />;
-  }
-
-  // --- support_required (positive delivery-failure evidence) ---
-  if (handoffState === 'support_required') {
-    return <SupportRequiredView orderRef={orderRef} />;
-  }
-
-  // --- paid_delivery_pending (paid, entitlement evidence absent — not failure) ---
-  if (handoffState === 'paid_delivery_pending') {
-    return (
-      <PaidDeliveryPendingView
-        orderRef={orderRef}
-        lastUpdatedAt={order.updated_at}
-        lastCheckedAt={lastCheckedAt}
-      />
-    );
-  }
-
-  // --- paid_delivered — determine gift vs self-purchase from first entitlement ---
-  const entitlement = entitlements[0];
-  // F4 review fix: `order.metadata.buyer_is_recipient` is currently a
-  // dead-input — Story 2.4 F4 stripped `metadata` from the order proxy, so
-  // this defaults to `true` for every paid_delivered order today. The actual
-  // gift discriminator below is `entitlement.status === 'ISSUED'`. The
-  // metadata read is preserved to keep the contract ready when an Epic 7/8
-  // evidence endpoint surfaces buyer_is_recipient as a live signal.
-  const buyerIsRecipient = order.metadata?.buyer_is_recipient ?? true;
-
-  // Fallback: no usable entitlement despite paid_delivered state (should not happen,
-  // but defensive — show generic success rather than blank page)
-  if (!entitlement) {
-    return (
-      <div
-        className="bb-section-shell bb-section-shell-strong mx-auto max-w-2xl text-center"
-        data-testid="order-confirmed-generic"
+  return (
+    <div
+      className="mx-auto max-w-6xl space-y-8"
+      data-testid="order-confirmed-w1-07"
+    >
+      <header
+        className="bb-section-shell bb-section-shell-strong"
+        data-testid="order-confirmed-hero"
       >
-        <h1 className="heading-xl">{t('generic_title')}</h1>
-        <LocalizedClientLink href="/categories" className="bb-primary-cta mt-6 rounded-full px-6 py-3">
-          {t('continue_shopping')}
-        </LocalizedClientLink>
-      </div>
-    );
-  }
+        <h1 className="heading-xl text-primary">{t('hero_title')}</h1>
+        <p className="mt-3 text-secondary">{heroSubcopy}</p>
+      </header>
 
-  // Gift path: ISSUED status or buyer_is_recipient=false
-  if (!buyerIsRecipient || entitlement.status === 'ISSUED') {
-    return <GiftConfirmedView entitlement={entitlement} />;
-  }
+      <section
+        className="bb-section-shell"
+        data-testid="voucher-stepper-section"
+        aria-labelledby="voucher-stepper-heading"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2
+            id="voucher-stepper-heading"
+            className="heading-sm text-primary"
+          >
+            {t('stepper_title')}
+          </h2>
+          {lastUpdated && (
+            <p
+              className="text-xs text-secondary"
+              data-testid="voucher-stepper-last-updated"
+            >
+              {t('last_checked_label', { timestamp: lastUpdated })}
+            </p>
+          )}
+        </div>
 
-  // Self-purchase path: ACTIVE status + buyer_is_recipient=true
-  return <SelfPurchaseConfirmedView entitlement={entitlement} />;
+        <div
+          className="sr-only"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {t(`status_${stepperState.activeStepId ?? 'completed'}`)}
+        </div>
+
+        <ol
+          className="grid grid-cols-1 gap-4 md:grid-cols-4"
+          data-testid="voucher-stepper"
+          role="list"
+        >
+          {stepperState.steps.map(step => {
+            const isActive = step.state === 'active';
+            const isDone = step.state === 'done';
+
+            return (
+              <li
+                key={step.id}
+                className={[
+                  'rounded-sm border p-4 outline-none',
+                  isDone ? 'border-emerald-200 bg-emerald-50' : '',
+                  isActive ? 'border-amber-300 bg-amber-50' : '',
+                  step.state === 'future' ? 'border-stone-200 bg-white' : ''
+                ].join(' ')}
+                data-step-id={step.id}
+                data-step-state={step.state}
+                tabIndex={0}
+              >
+                <p className="label-sm text-secondary">
+                  {step.id === 'paid' ? t('step_paid_label') : null}
+                  {step.id === 'voucher_generating' ? t('step_generating_label') : null}
+                  {step.id === 'email_sent' ? t('step_sent_label') : null}
+                  {step.id === 'recipient_opened' ? t('step_opened_label') : null}
+                </p>
+                <p className="mt-1 text-sm font-medium text-primary">
+                  {isDone ? t('step_done') : null}
+                  {isActive ? t('step_active') : null}
+                  {step.state === 'future' ? t('step_future') : null}
+                </p>
+                <p className="mt-2 text-xs text-secondary">
+                  {step.id === 'paid' ? t('step_paid_eta') : null}
+                  {step.id === 'voucher_generating' ? t('step_generating_eta') : null}
+                  {step.id === 'email_sent' ? t('step_sent_eta') : null}
+                  {step.id === 'recipient_opened' ? t('step_opened_eta') : null}
+                </p>
+                {step.id === 'voucher_generating' && isActive && (
+                  <p
+                    className="mt-2 text-xs text-secondary"
+                    data-testid="voucher-generating-countdown"
+                    aria-live="off"
+                  >
+                    {t('generating_countdown', { seconds: String(countdownSeconds) })}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+
+        {showSecondTier && (
+          <p
+            className="mt-4 rounded-sm border border-stone-200 bg-stone-50 p-3 text-sm text-secondary"
+            data-testid="voucher-second-tier"
+          >
+            {t('second_tier_message', { elapsed: String(elapsedSeconds) })}
+          </p>
+        )}
+      </section>
+
+      <section
+        className="bb-section-shell"
+        data-testid="order-summary-section"
+        aria-labelledby="order-summary-heading"
+      >
+        <h2
+          id="order-summary-heading"
+          className="heading-sm text-primary"
+        >
+          {t('summary_title')}
+        </h2>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+          <p
+            className="font-medium text-primary"
+            data-testid="order-summary-id"
+          >
+            {t('summary_order_id', { orderId: orderRef })}
+          </p>
+          <button
+            type="button"
+            className="rounded-full border border-stone-300 px-3 py-1 text-xs text-primary"
+            onClick={onCopyOrderId}
+          >
+            {copied ? t('summary_copied') : t('summary_copy')}
+          </button>
+        </div>
+
+        <div
+          className="mt-5 space-y-3"
+          data-testid="order-summary-items"
+        >
+          {order.items.length === 0 && (
+            <p className="text-sm text-secondary">{t('summary_empty')}</p>
+          )}
+          {order.items.map(item => (
+            <article
+              key={item.id ?? `${item.title}-${item.quantity}`}
+              className="rounded-sm border border-stone-200 p-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-medium text-primary">
+                  {item.title ?? t('summary_item_fallback')}
+                </p>
+                <p className="text-sm text-primary">
+                  {formatMoney(item.total, order.currency_code, locale)}
+                </p>
+              </div>
+              <p className="mt-1 text-xs text-secondary">
+                {t('summary_item_quantity', { quantity: String(item.quantity) })}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <div
+          className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"
+          data-testid="order-summary-meta"
+        >
+          <div className="rounded-sm border border-stone-200 p-3">
+            <p className="text-xs text-secondary">{t('summary_delivery_method')}</p>
+            <p className="mt-1 text-sm font-medium text-primary">
+              {deliveryMethod === 'email' ? t('delivery_email') : null}
+              {deliveryMethod === 'scheduled' ? t('delivery_scheduled') : null}
+              {deliveryMethod === 'physical' ? t('delivery_physical') : null}
+            </p>
+          </div>
+
+          <div className="rounded-sm border border-stone-200 p-3">
+            <dl className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <dt className="text-secondary">{t('summary_subtotal')}</dt>
+                <dd className="text-primary">
+                  {formatMoney(order.item_total, order.currency_code, locale)}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-secondary">{t('summary_fees')}</dt>
+                <dd className="text-primary">
+                  {formatMoney(order.shipping_total + order.tax_total, order.currency_code, locale)}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between border-t border-stone-200 pt-2 font-medium">
+                <dt className="text-primary">{t('summary_total')}</dt>
+                <dd className="text-primary">
+                  {formatMoney(order.total, order.currency_code, locale)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="bb-section-shell"
+        data-testid="what-next-section"
+        aria-labelledby="what-next-heading"
+      >
+        <h2
+          id="what-next-heading"
+          className="heading-sm text-primary"
+        >
+          {t('next_title')}
+        </h2>
+
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <article className="rounded-sm border border-stone-200 p-4">
+            <h3 className="text-sm font-medium text-primary">{t('next_for_you_title')}</h3>
+            <p className="mt-2 text-sm text-secondary">{t('next_for_you_body')}</p>
+            <LocalizedClientLink
+              href="/user/orders"
+              className="mt-3 inline-block text-sm underline underline-offset-4"
+            >
+              {t('next_for_you_cta')}
+            </LocalizedClientLink>
+          </article>
+
+          <article className="rounded-sm border border-stone-200 p-4">
+            <h3 className="text-sm font-medium text-primary">{t('next_for_recipient_title')}</h3>
+            <p className="mt-2 text-sm text-secondary">{t('next_for_recipient_body')}</p>
+            <LocalizedClientLink
+              href="/pomoc"
+              className="mt-3 inline-block text-sm underline underline-offset-4"
+            >
+              {t('next_for_recipient_cta')}
+            </LocalizedClientLink>
+          </article>
+
+          <article className="rounded-sm border border-stone-200 p-4">
+            <h3 className="text-sm font-medium text-primary">{t('next_for_salon_title')}</h3>
+            <p className="mt-2 text-sm text-secondary">{t('next_for_salon_body')}</p>
+            <LocalizedClientLink
+              href="/user/orders"
+              className="mt-3 inline-block text-sm underline underline-offset-4"
+            >
+              {t('next_for_salon_cta')}
+            </LocalizedClientLink>
+          </article>
+        </div>
+      </section>
+
+      <section
+        className="bb-section-shell"
+        data-testid="cross-actor-handoff-section"
+      >
+        <CrossActorHandoff
+          forYou={t('cross_actor_for_you')}
+          forUs={t('cross_actor_for_us')}
+          labelForYou={t('cross_actor_label_for_you')}
+          labelForUs={t('cross_actor_label_for_us')}
+        />
+      </section>
+
+      {isGuest && (
+        <section
+          className="bb-section-shell"
+          data-testid="guest-account-teaser"
+        >
+          <h2 className="heading-sm text-primary">{t('guest_teaser_title')}</h2>
+          <p className="mt-2 text-secondary">{t('guest_teaser_body')}</p>
+          <LocalizedClientLink
+            href="/register"
+            className="bb-primary-cta mt-4 inline-flex rounded-full px-6 py-3"
+          >
+            {t('guest_teaser_cta')}
+          </LocalizedClientLink>
+        </section>
+      )}
+    </div>
+  );
 }
