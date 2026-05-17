@@ -1047,5 +1047,67 @@
   },
   "pdp": {
     "verified_seller": "Перевірений салон"
+  },
+  "newsletter": {
+    "headline": "Підпишіться на розсилку",
+    "subline": "Отримуйте новини та акції BonBeauty.",
+    "email_placeholder": "Ваша електронна адреса",
+    "submit": "Підписатися",
+    "legal": "Підписуючись, ви приймаєте Політику конфіденційності та надаєте згоду на отримання маркетингових листів.",
+    "success_title": "Дякуємо!",
+    "success_message": "Вашу електронну адресу додано до розсилки.",
+    "aria_region": "Підписка на розсилку",
+    "dismiss": "Закрити"
+  },
+  "cookie_banner": {
+    "aria_label": "Налаштування файлів cookie",
+    "description": "Ми використовуємо файли cookie для покращення взаємодії. Деталі в",
+    "privacy_policy": "Політиці конфіденційності",
+    "customize": "Налаштувати",
+    "reject_all": "Відхилити всі",
+    "accept_all": "Прийняти всі",
+    "back": "Назад",
+    "save_preferences": "Зберегти налаштування",
+    "category_necessary": "Необхідні",
+    "category_necessary_desc": "Потрібні для роботи сайту — завжди активні.",
+    "category_statistics": "Статистичні",
+    "category_statistics_desc": "Допомагають зрозуміти, як ви користуєтеся сайтом.",
+    "category_marketing": "Маркетингові",
+    "category_marketing_desc": "Використовуються для персоналізації реклами.",
+    "category_personalization": "Персоналізація",
+    "category_personalization_desc": "Запам'ятовують ваші вподобання."
+  },
+  "modal": {
+    "close": "Закрити"
+  },
+  "toast": {
+    "aria_region": "Сповіщення",
+    "dismiss": "Закрити сповіщення"
+  },
+  "mini_cart": {
+    "title": "Кошик",
+    "close": "Закрити кошик",
+    "aria_label": "Кошик",
+    "empty_title": "Ваш кошик порожній",
+    "empty_cta": "Почніть з Вибору редакції",
+    "remove": "Видалити",
+    "discount_placeholder": "Промокод",
+    "discount": "Знижка",
+    "apply": "Застосувати",
+    "subtotal": "Проміжна сума",
+    "total": "Разом",
+    "shipping_estimate": "Вартість доставки розраховується при оформленні.",
+    "checkout": "Перейти до оформлення",
+    "continue_shopping": "Продовжити покупки"
+  },
+  "search_overlay": {
+    "aria_label": "Пошук товарів",
+    "placeholder": "Що ви шукаєте?",
+    "close": "Закрити",
+    "recent_searches": "Останні запити",
+    "popular_products": "Популярні товари",
+    "suggestions": "Підказки",
+    "loading": "Завантаження…",
+    "no_results": "Немає результатів"
   }
 }

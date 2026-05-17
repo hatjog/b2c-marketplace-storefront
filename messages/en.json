@@ -1082,5 +1082,67 @@
   },
   "pdp": {
     "verified_seller": "Verified salon"
+  },
+  "newsletter": {
+    "headline": "Subscribe to our newsletter",
+    "subline": "Get the latest BonBeauty news and offers.",
+    "email_placeholder": "Your email address",
+    "submit": "Subscribe",
+    "legal": "By subscribing you accept the Privacy Policy and consent to receive marketing emails.",
+    "success_title": "Thank you!",
+    "success_message": "Your email has been added to the newsletter.",
+    "aria_region": "Subscribe to newsletter",
+    "dismiss": "Close"
+  },
+  "cookie_banner": {
+    "aria_label": "Cookie settings",
+    "description": "We use cookies to improve your experience. Details in the",
+    "privacy_policy": "Privacy Policy",
+    "customize": "Customize",
+    "reject_all": "Reject all",
+    "accept_all": "Accept all",
+    "back": "Back",
+    "save_preferences": "Save preferences",
+    "category_necessary": "Necessary",
+    "category_necessary_desc": "Required for the site to work — always on.",
+    "category_statistics": "Statistics",
+    "category_statistics_desc": "Help us understand how you use the site.",
+    "category_marketing": "Marketing",
+    "category_marketing_desc": "Used to personalize advertising.",
+    "category_personalization": "Personalization",
+    "category_personalization_desc": "Remember your preferences."
+  },
+  "modal": {
+    "close": "Close"
+  },
+  "toast": {
+    "aria_region": "Notifications",
+    "dismiss": "Dismiss notification"
+  },
+  "mini_cart": {
+    "title": "Cart",
+    "close": "Close cart",
+    "aria_label": "Cart",
+    "empty_title": "Your cart is empty",
+    "empty_cta": "Start with Editor's picks",
+    "remove": "Remove",
+    "discount_placeholder": "Discount code",
+    "discount": "Discount",
+    "apply": "Apply",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "shipping_estimate": "Shipping calculated at checkout.",
+    "checkout": "Go to checkout",
+    "continue_shopping": "Continue shopping"
+  },
+  "search_overlay": {
+    "aria_label": "Search products",
+    "placeholder": "What are you looking for?",
+    "close": "Close",
+    "recent_searches": "Recent searches",
+    "popular_products": "Popular products",
+    "suggestions": "Suggestions",
+    "loading": "Loading…",
+    "no_results": "No results"
   }
 }

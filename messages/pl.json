@@ -1082,5 +1082,67 @@
   },
   "pdp": {
     "verified_seller": "Zweryfikowany salon"
+  },
+  "newsletter": {
+    "headline": "Zapisz się do newslettera",
+    "subline": "Otrzymuj informacje o nowościach i promocjach BonBeauty.",
+    "email_placeholder": "Twój adres e-mail",
+    "submit": "Zapisz się",
+    "legal": "Zapisując się, akceptujesz Politykę prywatności i wyrażasz zgodę na otrzymywanie e-maili marketingowych.",
+    "success_title": "Dziękujemy!",
+    "success_message": "Twój adres e-mail został zapisany do newslettera.",
+    "aria_region": "Zapisz się do newslettera",
+    "dismiss": "Zamknij"
+  },
+  "cookie_banner": {
+    "aria_label": "Ustawienia plików cookie",
+    "description": "Używamy plików cookie, aby poprawić Twoje doświadczenia. Szczegóły znajdziesz w",
+    "privacy_policy": "Polityce prywatności",
+    "customize": "Dostosuj",
+    "reject_all": "Odrzuć wszystkie",
+    "accept_all": "Akceptuj wszystkie",
+    "back": "Wstecz",
+    "save_preferences": "Zapisz ustawienia",
+    "category_necessary": "Niezbędne",
+    "category_necessary_desc": "Wymagane do działania strony — zawsze aktywne.",
+    "category_statistics": "Statystyczne",
+    "category_statistics_desc": "Pomagają nam zrozumieć, jak korzystasz ze strony.",
+    "category_marketing": "Marketingowe",
+    "category_marketing_desc": "Służą do personalizacji reklam.",
+    "category_personalization": "Personalizacja",
+    "category_personalization_desc": "Zapamiętują Twoje preferencje."
+  },
+  "modal": {
+    "close": "Zamknij"
+  },
+  "toast": {
+    "aria_region": "Powiadomienia",
+    "dismiss": "Zamknij powiadomienie"
+  },
+  "mini_cart": {
+    "title": "Koszyk",
+    "close": "Zamknij koszyk",
+    "aria_label": "Koszyk",
+    "empty_title": "Twój koszyk jest pusty",
+    "empty_cta": "Zacznij od Wyboru redakcji",
+    "remove": "Usuń",
+    "discount_placeholder": "Kod rabatowy",
+    "discount": "Rabat",
+    "apply": "Zastosuj",
+    "subtotal": "Suma częściowa",
+    "total": "Razem",
+    "shipping_estimate": "Koszt dostawy obliczany przy kasie.",
+    "checkout": "Przejdź do kasy",
+    "continue_shopping": "Kontynuuj zakupy"
+  },
+  "search_overlay": {
+    "aria_label": "Wyszukaj produkty",
+    "placeholder": "Czego szukasz?",
+    "close": "Zamknij",
+    "recent_searches": "Ostatnie wyszukiwania",
+    "popular_products": "Popularne produkty",
+    "suggestions": "Sugestie",
+    "loading": "Ładowanie…",
+    "no_results": "Brak wyników"
   }
 }

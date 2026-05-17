@@ -1047,5 +1047,67 @@
   },
   "pdp": {
     "verified_seller": "Verifizierter Salon"
+  },
+  "newsletter": {
+    "headline": "Newsletter abonnieren",
+    "subline": "Erhalten Sie die neuesten BonBeauty-News und Angebote.",
+    "email_placeholder": "Ihre E-Mail-Adresse",
+    "submit": "Abonnieren",
+    "legal": "Mit dem Abonnement akzeptieren Sie die Datenschutzerklärung und willigen in den Erhalt von Marketing-E-Mails ein.",
+    "success_title": "Vielen Dank!",
+    "success_message": "Ihre E-Mail-Adresse wurde zum Newsletter hinzugefügt.",
+    "aria_region": "Newsletter abonnieren",
+    "dismiss": "Schließen"
+  },
+  "cookie_banner": {
+    "aria_label": "Cookie-Einstellungen",
+    "description": "Wir verwenden Cookies, um Ihr Erlebnis zu verbessern. Details in der",
+    "privacy_policy": "Datenschutzerklärung",
+    "customize": "Anpassen",
+    "reject_all": "Alle ablehnen",
+    "accept_all": "Alle akzeptieren",
+    "back": "Zurück",
+    "save_preferences": "Einstellungen speichern",
+    "category_necessary": "Notwendig",
+    "category_necessary_desc": "Für den Betrieb der Website erforderlich — immer aktiv.",
+    "category_statistics": "Statistik",
+    "category_statistics_desc": "Helfen uns zu verstehen, wie Sie die Website nutzen.",
+    "category_marketing": "Marketing",
+    "category_marketing_desc": "Dienen der Personalisierung von Werbung.",
+    "category_personalization": "Personalisierung",
+    "category_personalization_desc": "Speichern Ihre Präferenzen."
+  },
+  "modal": {
+    "close": "Schließen"
+  },
+  "toast": {
+    "aria_region": "Benachrichtigungen",
+    "dismiss": "Benachrichtigung schließen"
+  },
+  "mini_cart": {
+    "title": "Warenkorb",
+    "close": "Warenkorb schließen",
+    "aria_label": "Warenkorb",
+    "empty_title": "Ihr Warenkorb ist leer",
+    "empty_cta": "Mit der Redaktionsauswahl beginnen",
+    "remove": "Entfernen",
+    "discount_placeholder": "Rabattcode",
+    "discount": "Rabatt",
+    "apply": "Anwenden",
+    "subtotal": "Zwischensumme",
+    "total": "Gesamt",
+    "shipping_estimate": "Versandkosten werden an der Kasse berechnet.",
+    "checkout": "Zur Kasse",
+    "continue_shopping": "Weiter einkaufen"
+  },
+  "search_overlay": {
+    "aria_label": "Produkte suchen",
+    "placeholder": "Wonach suchen Sie?",
+    "close": "Schließen",
+    "recent_searches": "Letzte Suchanfragen",
+    "popular_products": "Beliebte Produkte",
+    "suggestions": "Vorschläge",
+    "loading": "Laden…",
+    "no_results": "Keine Ergebnisse"
   }
 }
