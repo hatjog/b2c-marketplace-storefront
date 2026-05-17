@@ -4,6 +4,8 @@
 import { getTranslations } from 'next-intl/server';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { FEATURED_CATEGORY_HANDLES } from '@/data/categories-featured';
+import { listCategories } from '@/lib/data/categories';
 
 interface VibeCard {
   id: string;
@@ -20,7 +22,98 @@ interface EditorialDarkBandBlockProps {
   locale: string;
 }
 
-function buildDefaultVibes(t: Awaited<ReturnType<typeof getTranslations>>): VibeCard[] {
+type VibeCurationPreset = {
+  id: string;
+  translationKey: 'calm' | 'energy' | 'clarity' | 'warmth' | 'seasonal';
+  preferredHandles: readonly string[];
+  fallbackFilter: 'premium' | 'popular' | 'new' | 'offers';
+  mode?: 'gift';
+};
+
+const VIBE_CURATION_PRESETS: readonly VibeCurationPreset[] = [
+  {
+    id: 'calm',
+    translationKey: 'calm',
+    preferredHandles: ['pielegnacja-twarzy', 'facial-care'],
+    fallbackFilter: 'premium',
+  },
+  {
+    id: 'energy',
+    translationKey: 'energy',
+    preferredHandles: ['masaz', 'massage'],
+    fallbackFilter: 'popular',
+  },
+  {
+    id: 'clarity',
+    translationKey: 'clarity',
+    preferredHandles: ['facial-care', 'pielegnacja-twarzy'],
+    fallbackFilter: 'new',
+  },
+  {
+    id: 'warmth',
+    translationKey: 'warmth',
+    preferredHandles: ['rytualy-spa', 'spa-rituals'],
+    fallbackFilter: 'offers',
+  },
+  {
+    id: 'seasonal',
+    translationKey: 'seasonal',
+    preferredHandles: ['rytualy-spa', 'spa-rituals'],
+    fallbackFilter: 'popular',
+    mode: 'gift',
+  },
+];
+
+function resolveCuratedHref(
+  preset: VibeCurationPreset,
+  availableHandles: Set<string>,
+): string {
+  const matchedHandle = [...preset.preferredHandles, ...FEATURED_CATEGORY_HANDLES].find((handle) =>
+    availableHandles.has(handle),
+  );
+
+  if (matchedHandle) {
+    const params = new URLSearchParams();
+    if (preset.mode) {
+      params.set('mode', preset.mode);
+    }
+    const query = params.toString();
+    return query
+      ? `/categories/${matchedHandle}?${query}`
+      : `/categories/${matchedHandle}`;
+  }
+
+  const fallbackParams = new URLSearchParams();
+  fallbackParams.set('filter', preset.fallbackFilter);
+  if (preset.mode) {
+    fallbackParams.set('mode', preset.mode);
+  }
+  return `/categories?${fallbackParams.toString()}`;
+}
+
+async function buildDefaultVibes(t: Awaited<ReturnType<typeof getTranslations>>): Promise<VibeCard[]> {
+  const { categories } = await listCategories({
+    query: {
+      include_ancestors_tree: true,
+      include_descendants_tree: true,
+      limit: 120,
+    },
+  });
+  const availableHandles = new Set(
+    categories
+      .map((category) => String(category?.handle ?? '').trim())
+      .filter((handle) => handle.length > 0),
+  );
+
+  return VIBE_CURATION_PRESETS.map((preset) => ({
+    id: preset.id,
+    title: t(`editorial.vibes.${preset.translationKey}.title`),
+    subtitle: t(`editorial.vibes.${preset.translationKey}.subtitle`),
+    href: resolveCuratedHref(preset, availableHandles),
+  }));
+}
+
+function buildFallbackVibes(t: Awaited<ReturnType<typeof getTranslations>>): VibeCard[] {
   return [
     {
       id: 'calm',
@@ -50,7 +143,7 @@ function buildDefaultVibes(t: Awaited<ReturnType<typeof getTranslations>>): Vibe
       id: 'seasonal',
       title: t('editorial.vibes.seasonal.title'),
       subtitle: t('editorial.vibes.seasonal.subtitle'),
-      href: '/categories?mode=gift',
+      href: '/categories?filter=popular&mode=gift',
     },
   ];
 }
@@ -64,7 +157,7 @@ export async function EditorialDarkBandBlock({
   const t = await getTranslations({ locale, namespace: 'home_v3' });
   const resolvedHeading = heading ?? t('editorial.heading');
   const resolvedSubheading = subheading ?? t('editorial.body');
-  const resolvedVibes = vibes ?? buildDefaultVibes(t);
+  const resolvedVibes = vibes ?? (await buildDefaultVibes(t).catch(() => buildFallbackVibes(t)));
 
   return (
     <section

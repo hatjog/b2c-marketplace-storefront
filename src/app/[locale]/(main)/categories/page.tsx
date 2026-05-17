@@ -4,6 +4,7 @@ import type { HttpTypes } from "@medusajs/types"
 
 import { listRegions } from "@/lib/data/regions"
 import { listCategories } from "@/lib/data/categories"
+import { parsePurchaseMode } from "@/lib/helpers/parse-purchase-mode"
 import { toHreflang } from "@/lib/helpers/hreflang"
 import {
   AllCategoriesGrid,
@@ -22,7 +23,7 @@ export const revalidate = 300
 
 interface CategoriesPageProps {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ filter?: string }>
+  searchParams: Promise<{ filter?: string; mode?: string; query?: string }>
 }
 
 interface DisplayCategory {
@@ -136,6 +137,64 @@ function applyFilter(categories: DisplayCategory[], filter: CategoryFilterId): D
   return categories.filter((_, index) => index % 2 === 0)
 }
 
+function normalizeQuery(queryParam: string | undefined): string | null {
+  if (!queryParam) {
+    return null
+  }
+
+  const normalized = queryParam.trim().slice(0, 120)
+  return normalized.length > 0 ? normalized : null
+}
+
+function resolveCategoryPurchaseMode(metadata: Record<string, unknown>): "self" | "gift" | "both" {
+  const gpMetadata = metadata.gp
+  const gpMode =
+    gpMetadata && typeof gpMetadata === "object"
+      ? (gpMetadata as Record<string, unknown>).purchase_mode
+      : undefined
+  const rootMode = metadata.purchase_mode
+  const rawMode =
+    typeof gpMode === "string" ? gpMode : typeof rootMode === "string" ? rootMode : null
+
+  if (!rawMode) {
+    return "both"
+  }
+
+  const normalized = rawMode.trim().toLowerCase()
+  if (normalized === "self" || normalized === "gift" || normalized === "both") {
+    return normalized
+  }
+
+  return "both"
+}
+
+function applyDiscoveryFilters(
+  categories: DisplayCategory[],
+  mode: "self" | "gift",
+  queryParam: string | undefined
+) {
+  const query = normalizeQuery(queryParam)?.toLowerCase()
+
+  return categories.filter((category) => {
+    const categoryMode = resolveCategoryPurchaseMode(category.metadata)
+    if (mode === "gift" && categoryMode === "self") {
+      return false
+    }
+
+    if (mode === "self" && categoryMode === "gift") {
+      return false
+    }
+
+    if (!query) {
+      return true
+    }
+
+    const name = category.name.toLowerCase()
+    const handle = category.handle.toLowerCase()
+    return name.includes(query) || handle.includes(query)
+  })
+}
+
 async function buildAlternateLanguages(baseUrl: string, locale: string) {
   try {
     const regions = await listRegions()
@@ -186,8 +245,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function CategoriesPage({ params, searchParams }: CategoriesPageProps) {
   const { locale } = await params
-  const { filter: filterParam } = await searchParams
+  const { filter: filterParam, mode: modeParam, query: queryParam } = await searchParams
+  const requestedMode = parsePurchaseMode(modeParam)
   const activeFilter = normalizeFilter(filterParam)
+  const effectiveFilter = !filterParam && requestedMode === "gift" ? "offers" : activeFilter
   const copy = getCategoriesIndexCopy(locale)
 
   const { categories } = await listCategories({
@@ -200,7 +261,8 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
 
   const mappedCategories = toDisplayCategories(categories)
   const featuredCategories = selectFeaturedCategories(mappedCategories)
-  const filteredCategories = applyFilter(mappedCategories, activeFilter)
+  const filteredByPrimaryFilter = applyFilter(mappedCategories, effectiveFilter)
+  const filteredCategories = applyDiscoveryFilters(filteredByPrimaryFilter, requestedMode, queryParam)
   const filterChips = CATEGORY_FILTER_ORDER.map((filterId) => ({
     id: filterId,
     label: copy.filters[filterId],
@@ -231,7 +293,7 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
 
       <CategoryFilterChips
         chips={filterChips}
-        activeFilter={activeFilter}
+        activeFilter={effectiveFilter}
         ariaLabel={copy.filtersAriaLabel}
       />
 

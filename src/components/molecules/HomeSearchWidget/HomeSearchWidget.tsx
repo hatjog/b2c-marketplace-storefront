@@ -4,7 +4,9 @@ import { useCallback, useMemo, useState, type FormEvent, type KeyboardEvent } fr
 
 import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { isSupportedLocale } from '@/i18n/routing';
 
 type SearchTabId = 'product' | 'salons' | 'voucher';
 
@@ -16,9 +18,34 @@ type SearchTabConfig = {
 };
 
 const TAB_ORDER: SearchTabId[] = ['product', 'salons', 'voucher'];
+const ABSOLUTE_OR_SPECIAL_HREF = /^(?:[a-z][a-z\d+\-.]*:|\/\/)/i;
+
+function getLocalizedHref(href: string, locale: string) {
+  if (!href || ABSOLUTE_OR_SPECIAL_HREF.test(href) || href.startsWith('#')) {
+    return href;
+  }
+
+  const match = href.match(/^([^?#]*)(.*)$/);
+  const path = match?.[1] ?? href;
+  const suffix = match?.[2] ?? '';
+
+  if (!path || path === '/') {
+    return `/${locale}${suffix}`;
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const firstSegment = normalizedPath.split('/')[1];
+
+  if (isSupportedLocale(firstSegment)) {
+    return `${normalizedPath}${suffix}`;
+  }
+
+  return `/${locale}${normalizedPath}${suffix}`;
+}
 
 export function HomeSearchWidget() {
   const t = useTranslations('home_v3.search');
+  const locale = useLocale();
   const router = useRouter();
 
   const tabs: SearchTabConfig[] = useMemo(
@@ -91,7 +118,8 @@ export function HomeSearchWidget() {
           params.set('query', value);
         }
         const query = params.toString();
-        router.push(query ? `/categories?${query}` : '/categories');
+        const target = query ? `/categories?${query}` : '/categories';
+        router.push(getLocalizedHref(target, locale));
         return;
       }
 
@@ -101,7 +129,8 @@ export function HomeSearchWidget() {
           params.set('q', value);
         }
         const query = params.toString();
-        router.push(query ? `/sellers?${query}` : '/sellers');
+        const target = query ? `/sellers?${query}` : '/sellers';
+        router.push(getLocalizedHref(target, locale));
         return;
       }
 
@@ -110,12 +139,10 @@ export function HomeSearchWidget() {
       if (value.length > 0) {
         params.set('query', value);
       }
-      router.push(`/categories?${params.toString()}`);
+      router.push(getLocalizedHref(`/categories?${params.toString()}`, locale));
     },
-    [activeTab, router, values]
+    [activeTab, locale, router, values]
   );
-
-  const activeConfig = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
 
   return (
     <div
@@ -158,34 +185,42 @@ export function HomeSearchWidget() {
         role="search"
         className="flex flex-col gap-3 sm:flex-row"
       >
-        <div
-          id={`home-search-panel-${activeTab}`}
-          role="tabpanel"
-          aria-labelledby={`home-search-tab-${activeTab}`}
-          className="flex-1"
-        >
-          <label
-            htmlFor="home-search-input"
-            className="sr-only"
-          >
-            {activeConfig.ariaLabel}
-          </label>
-          <input
-            id="home-search-input"
-            type={activeTab === 'voucher' ? 'number' : 'search'}
-            min={activeTab === 'voucher' ? 0 : undefined}
-            inputMode={activeTab === 'voucher' ? 'numeric' : 'search'}
-            value={values[activeTab]}
-            onChange={(event) =>
-              setValues((prev) => ({
-                ...prev,
-                [activeTab]: event.target.value,
-              }))
-            }
-            placeholder={activeConfig.placeholder}
-            className="min-h-[48px] w-full rounded-[14px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] px-4 text-sm text-primary outline-none transition-shadow placeholder:text-secondary focus:shadow-[0_0_0_2px_var(--accent)]"
-          />
-        </div>
+        {tabs.map((tab) => {
+          const isActive = tab.id === activeTab;
+          const inputId = `home-search-input-${tab.id}`;
+          return (
+            <div
+              key={tab.id}
+              id={`home-search-panel-${tab.id}`}
+              role="tabpanel"
+              aria-labelledby={`home-search-tab-${tab.id}`}
+              hidden={!isActive}
+              className={clsx('flex-1', !isActive && 'hidden')}
+            >
+              <label
+                htmlFor={inputId}
+                className="sr-only"
+              >
+                {tab.ariaLabel}
+              </label>
+              <input
+                id={inputId}
+                type={tab.id === 'voucher' ? 'number' : 'search'}
+                min={tab.id === 'voucher' ? 0 : undefined}
+                inputMode={tab.id === 'voucher' ? 'numeric' : 'search'}
+                value={values[tab.id]}
+                onChange={(event) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    [tab.id]: event.target.value,
+                  }))
+                }
+                placeholder={tab.placeholder}
+                className="min-h-[48px] w-full rounded-[14px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] px-4 text-sm text-primary outline-none transition-shadow placeholder:text-secondary focus:shadow-[0_0_0_2px_var(--accent)]"
+              />
+            </div>
+          );
+        })}
 
         <button
           type="submit"

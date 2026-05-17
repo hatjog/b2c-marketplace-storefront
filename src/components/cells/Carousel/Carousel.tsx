@@ -23,8 +23,14 @@ export const CustomCarousel = ({
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const applyPreference = () => setPrefersReducedMotion(mediaQuery.matches);
     applyPreference();
-    mediaQuery.addEventListener('change', applyPreference);
-    return () => mediaQuery.removeEventListener('change', applyPreference);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', applyPreference);
+      return () => mediaQuery.removeEventListener('change', applyPreference);
+    }
+
+    mediaQuery.addListener(applyPreference);
+    return () => mediaQuery.removeListener(applyPreference);
   }, []);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({

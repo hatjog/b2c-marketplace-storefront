@@ -15,6 +15,10 @@ import { resolveMarketConfig } from '@/lib/portal.server';
 
 export const revalidate = 300;
 
+function isSectionObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function buildHomeV3FallbackSections(tHome: Awaited<ReturnType<typeof getTranslations>>) {
   return [
     {
@@ -139,6 +143,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       ? marketConfig.homepage_sections
       : null;
   const homepageSections = homepageSectionsFromConfig ?? buildHomeV3FallbackSections(tHome);
+  const trustStripSection = homepageSections.find(
+    (section) =>
+      isSectionObject(section) &&
+      section.blockType === 'trust_strip' &&
+      section.enabled === true
+  ) as
+    | {
+        verifiedLabel?: string;
+        trustPoints?: Parameters<typeof TrustStripBlock>[0]['trustPoints'];
+      }
+    | undefined;
+  const homepageSectionsWithoutTrustStrip = homepageSections.filter(
+    (section) => !(isSectionObject(section) && section.blockType === 'trust_strip')
+  );
 
   const headersList = await headers();
   const host = headersList.get('host');
@@ -191,11 +209,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         }}
       />
       <HomepageRenderer
-        sections={homepageSections}
+        sections={homepageSectionsWithoutTrustStrip}
         locale={locale}
       />
-      {/* W1-01 home v3 trust strip — rendered as bottom surface (Trust Invariant #1). */}
-      <TrustStripBlock locale={locale} verifiedLabel={tHome('trust_verified_label')} />
+      {/* W1-01 home v3 trust strip — always rendered exactly once at bottom surface. */}
+      <TrustStripBlock
+        locale={locale}
+        verifiedLabel={trustStripSection?.verifiedLabel ?? tHome('trust_verified_label')}
+        trustPoints={trustStripSection?.trustPoints}
+      />
     </main>
   );
 }
