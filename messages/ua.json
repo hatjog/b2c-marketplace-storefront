@@ -1182,5 +1182,28 @@
       "missing_image": "Немає зображення категорії",
       "count_label": "підкатегорій"
     }
+  },
+  "category_plp": {
+    "hero_eyebrow": "Категорія",
+    "filters_aria": "Фільтри категорії",
+    "filters_title": "Фільтри",
+    "clear_filters": "Очистити фільтри",
+    "filter_price": "Ціна",
+    "price_from": "Від",
+    "price_to": "До",
+    "filter_salon": "Салон",
+    "all_salons": "Усі салони",
+    "filter_location": "Локація",
+    "filter_rating": "Рейтинг",
+    "filter_availability": "Доступність",
+    "availability_in_stock": "Доступно зараз",
+    "filter_mode": "Режим",
+    "mode_self": "Для себе",
+    "mode_gift": "На подарунок",
+    "filter_sort": "Сортування",
+    "empty_heading": "Нічого не знайдено",
+    "empty_body": "Перевірте запит або перегляньте рекомендоване.",
+    "editorial_cta": "Переглянути редакторський вибір",
+    "subcategory_count": "{count, plural, one {# підкатегорія} few {# підкатегорії} many {# підкатегорій} other {# підкатегорії}}"
   }
 }

@@ -1181,5 +1181,28 @@
       "missing_image": "Brak zdjęcia kategorii",
       "count_label": "podkategorii"
     }
+  },
+  "category_plp": {
+    "hero_eyebrow": "Kategoria",
+    "filters_aria": "Filtry kategorii",
+    "filters_title": "Filtry",
+    "clear_filters": "Wyczyść filtry",
+    "filter_price": "Cena",
+    "price_from": "Od",
+    "price_to": "Do",
+    "filter_salon": "Salon",
+    "all_salons": "Wszystkie salony",
+    "filter_location": "Lokalizacja",
+    "filter_rating": "Ocena",
+    "filter_availability": "Dostępność",
+    "availability_in_stock": "Dostępne teraz",
+    "filter_mode": "Tryb",
+    "mode_self": "Dla siebie",
+    "mode_gift": "Na prezent",
+    "filter_sort": "Sortuj",
+    "empty_heading": "Nic nie znaleźliśmy",
+    "empty_body": "Sprawdź wpisaną frazę albo zobacz polecane",
+    "editorial_cta": "Zobacz Wybór redakcji",
+    "subcategory_count": "{count, plural, one {# podkategoria} few {# podkategorie} many {# podkategorii} other {# podkategorii}}"
   }
 }

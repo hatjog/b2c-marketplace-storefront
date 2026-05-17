@@ -101,6 +101,7 @@ async function Category({
   // come from i18n — not a hardcoded PL string — so EN/UA/DE SR announcements
   // match the visible page locale (AC3).
   const tAccessibility = await getTranslations('accessibility');
+  const tPlp = await getTranslations('category_plp');
 
   // Story v160-cleanup-13c — warm runtime feature-flag cache before any
   // downstream sync `isMultiVendorEnabled()` calls inside ProductCard etc.
@@ -118,6 +119,7 @@ async function Category({
   // Collect category IDs: parent + all children (products live in leaf categories)
   const childIds = (category.category_children || []).map((c: { id: string }) => c.id);
   const categoryIds = childIds.length > 0 ? [category.id, ...childIds] : category.id;
+  const subcategoryCount = category.category_children?.length ?? 0;
 
   const breadcrumbsItems = [
     {
@@ -150,6 +152,7 @@ async function Category({
     <main
       id="main-content"
       className="container"
+      data-testid="category-plp-page"
     >
       <StorefrontRouteStateSignal
         route="category-detail"
@@ -194,12 +197,25 @@ async function Category({
         <Breadcrumbs items={breadcrumbsItems} />
       </div>
 
-      {/* h1: uses text-primary token per bb-surfaces typography */}
-      <h1 className="heading-xl uppercase text-primary">{category.name}</h1>
-      <SanitizedHTML
-        html={category.description}
-        className="mb-6 mt-4 text-sm text-secondary"
-      />
+      <section
+        className="bb-section-shell bb-section-shell-soft mb-6 space-y-3"
+        data-testid="category-plp-hero"
+      >
+        <p className="bb-eyebrow">{tPlp('hero_eyebrow')}</p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <h1 className="heading-xl uppercase text-primary">{category.name}</h1>
+          <p
+            className="text-sm text-secondary"
+            data-testid="category-plp-subcategory-count"
+          >
+            {tPlp('subcategory_count', { count: subcategoryCount })}
+          </p>
+        </div>
+        <SanitizedHTML
+          html={category.description}
+          className="text-sm text-secondary"
+        />
+      </section>
 
       {/* Suspense: routing-load fallback (initial page hydration) — aria-label distinguishes
           from submit-load (filter/sort change). Loading skeleton is BonBeauty-aligned. */}
@@ -216,6 +232,7 @@ async function Category({
         <ProductListing
           category_id={categoryIds}
           showSidebar
+          categoryPlp
           locale={locale}
           searchParams={resolvedSearchParams}
         />

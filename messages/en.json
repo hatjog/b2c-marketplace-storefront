@@ -1181,5 +1181,28 @@
       "missing_image": "Missing category image",
       "count_label": "subcategories"
     }
+  },
+  "category_plp": {
+    "hero_eyebrow": "Category",
+    "filters_aria": "Category filters",
+    "filters_title": "Filters",
+    "clear_filters": "Clear filters",
+    "filter_price": "Price",
+    "price_from": "From",
+    "price_to": "To",
+    "filter_salon": "Salon",
+    "all_salons": "All salons",
+    "filter_location": "Location",
+    "filter_rating": "Rating",
+    "filter_availability": "Availability",
+    "availability_in_stock": "In stock now",
+    "filter_mode": "Mode",
+    "mode_self": "Self",
+    "mode_gift": "Gift",
+    "filter_sort": "Sort",
+    "empty_heading": "We couldn't find anything",
+    "empty_body": "Check your query or explore curated picks.",
+    "editorial_cta": "See Editor's choice",
+    "subcategory_count": "{count, plural, one {# subcategory} other {# subcategories}}"
   }
 }
