@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { RadioGroup } from '@headlessui/react';
 import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
 import { Container, Heading, Text } from '@medusajs/ui';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
@@ -54,13 +54,15 @@ const CartPaymentSection = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  // L-2 fix: useLocale() zamiast parsowania pathname (defensywne wobec
+  // schematów i18n routing bez prefiksu locale w ścieżce).
+  const locale = useLocale();
 
   // Story 1.4 AC4/AC7 — client_secret z aktywnej Stripe payment session +
   // return_url routujący surface Story 1.5 (`/order/:id/payment-status`).
   // `:id` = cart.id (stabilny identyfikator dostępny przy confirm; order id
   // powstaje post-payment, Story 1.5 resolve'uje order z payment_intent).
   const stripeClientSecret = activeSession?.data?.client_secret as string | undefined;
-  const locale = pathname.split('/').filter(Boolean)[0] || 'pl';
   const paymentStatusReturnUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/${locale}/order/${cart?.id}/payment-status`
@@ -83,6 +85,12 @@ const CartPaymentSection = ({
         },
         getCheckoutPaymentIdempotencyKey()
       );
+      // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
+      // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
+      // router.refresh() wymusza ponowny render RSC → cart.payment_collection
+      // .payment_sessions[].data.client_secret staje się dostępny → guard
+      // stripeClientSecret spełniony → <StripePaymentElement> może się zamontować.
+      router.refresh();
     }
   };
 
@@ -192,8 +200,6 @@ const CartPaymentSection = ({
                       selectedPaymentMethod === paymentMethod.id &&
                       stripeClientSecret && (
                         <StripePaymentElement
-                          cart={cart}
-                          providerId={paymentMethod.id}
                           clientSecret={stripeClientSecret}
                           returnUrl={paymentStatusReturnUrl}
                         />

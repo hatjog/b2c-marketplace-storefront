@@ -580,7 +580,8 @@
         "transactional_required": "Wymagana jest zgoda transakcyjna",
         "withdrawal_required": "Wymagane jest potwierdzenie zapoznania się z polityką cofnięcia zgody"
       }
-    }
+    },
+    "pay_now": "Zapłać"
   },
   "confirmation": {
     "meta_title": "Zamówienie potwierdzone",

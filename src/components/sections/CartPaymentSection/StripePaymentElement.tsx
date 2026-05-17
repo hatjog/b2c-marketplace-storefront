@@ -24,22 +24,18 @@
  *   PaymentElement (brak osobnego przycisku) — wallet detection po stronie
  *   urządzenia klienta ze wsparciem wallet + HTTPS.
  */
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Text } from '@medusajs/ui';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import type { Stripe, StripeElements, StripePaymentElementOptions } from '@stripe/stripe-js';
+import { useTranslations } from 'next-intl';
 
 // Import bezpośrednio z modułu komponentu (NIE barrel `@/components/atoms`):
 // barrel re-eksportuje index.server → server-only leak do client componentu
 // (anti-pattern z storefront/CLAUDE.md "Barrel exports leak server modules").
 import { Button } from '@/components/atoms/Button/Button';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
-import {
-  computeCheckoutCartHash,
-  getCheckoutPaymentIdempotencyKey
-} from '@/lib/checkout/payment-idempotency';
-import { initiatePaymentSession } from '@/lib/data/cart';
 import { getPaymentElementAppearanceRuntime } from '@/lib/stripe/appearance';
 import {
   getEnabledPaymentMethodTypes,
@@ -48,8 +44,8 @@ import {
 } from '@/lib/stripe/client';
 
 type StripePaymentElementProps = {
-  cart: any;
-  providerId: string;
+  cart?: any;
+  providerId?: string;
   /** Stripe PaymentIntent client_secret z aktywnej payment session. */
   clientSecret: string;
   /** `/order/:id/payment-status` (Story 1.5 surface) — ta story tylko routuje. */
@@ -77,32 +73,27 @@ export function buildPaymentElementOptions(
 }
 
 /**
- * AC7 — czysty submit handler: idempotentny refresh PaymentIntent przez
- * Medusa Store API (reuse Story 1.3 `payment-idempotency.ts` UUID —
- * NIE re-implementacja FE dedup) → `confirmPayment({ elements,
+ * AC7 — czysty submit handler: `confirmPayment({ elements,
  * confirmParams: { return_url } })`. 3DS challenge renderowany natywnie
  * przez Stripe. Zwraca `{ error }` gdy klient-side walidacja nie przeszła
  * (NIE silent — caller pokazuje komunikat); sukces/3DS = redirect Stripe.
+ *
+ * M-4 fix: initiatePaymentSession NIE jest wywoływany w submit. Sesja płatności
+ * jest już aktywna (stworzona w CartPaymentSection.setPaymentMethod, skąd pochodzi
+ * clientSecret). Wywołanie refresh PI przed confirm powodowało mismatch —
+ * jeśli backend zwróciłby nowy client_secret, instancja Elements (zbudowana
+ * ze starym secretem) confirmowałaby zły PaymentIntent.
  */
 export async function submitStripePayment(args: {
   stripe: Stripe | null;
   elements: StripeElements | null;
-  cart: any;
-  providerId: string;
   returnUrl: string;
 }): Promise<{ error?: string }> {
-  const { stripe, elements, cart, providerId, returnUrl } = args;
+  const { stripe, elements, returnUrl } = args;
   if (!stripe || !elements) {
     return { error: PAYMENT_NOT_AVAILABLE_MESSAGE };
   }
   try {
-    const cartHash = await computeCheckoutCartHash(cart);
-    await initiatePaymentSession(
-      cart,
-      { provider_id: providerId, data: { gp_checkout_cart_hash: cartHash } },
-      getCheckoutPaymentIdempotencyKey()
-    );
-
     const { error: confirmError } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: returnUrl }
@@ -122,36 +113,33 @@ export async function submitStripePayment(args: {
  * Deleguje do czystego `submitStripePayment` (testowalność AC7).
  */
 function PaymentElementForm({
-  cart,
-  providerId,
   enabledMethods,
   returnUrl
 }: {
-  cart: any;
-  providerId: string;
   enabledMethods: readonly string[];
   returnUrl: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
+  const t = useTranslations('checkout');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const options = buildPaymentElementOptions(enabledMethods);
 
+  // L-5: cart i providerId usunięte z deps — initiatePaymentSession przeniesione
+  // do setPaymentMethod w CartPaymentSection (fix M-4). Deps są teraz minimalne.
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     const { error: submitError } = await submitStripePayment({
       stripe,
       elements,
-      cart,
-      providerId,
       returnUrl
     });
     if (submitError) setError(submitError);
     setIsLoading(false);
-  }, [stripe, elements, cart, providerId, returnUrl]);
+  }, [stripe, elements, returnUrl]);
 
   return (
     <div
@@ -173,7 +161,7 @@ function PaymentElementForm({
         data-testid="stripe-payment-element-submit"
         className="mt-4 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
       >
-        Zapłać
+        {t('pay_now')}
       </Button>
     </div>
   );
@@ -186,13 +174,16 @@ function PaymentElementForm({
  * message (NIE crash, NIE silent).
  */
 export default function StripePaymentElement({
-  cart,
-  providerId,
   clientSecret,
   returnUrl
 }: StripePaymentElementProps) {
   const stripePromise = getStripePromise();
   const enabledMethods = getEnabledPaymentMethodTypes();
+  // L-4 fix: memoizuj appearance — getPaymentElementAppearanceRuntime() wywołuje
+  // getComputedStyle przy każdym renderze wrappera, co powoduje elements.update()
+  // w react-stripe-js. Theme CSS jest synchronicznie załadowany w <head> (AC6),
+  // więc puste deps [] są poprawne — wartości tokenów nie zmieniają się po mountu.
+  const appearance = useMemo(() => getPaymentElementAppearanceRuntime(), []);
 
   if (!stripePromise || !enabledMethods || !clientSecret) {
     return (
@@ -208,11 +199,9 @@ export default function StripePaymentElement({
   return (
     <Elements
       stripe={stripePromise}
-      options={{ clientSecret, appearance: getPaymentElementAppearanceRuntime() }}
+      options={{ clientSecret, appearance }}
     >
       <PaymentElementForm
-        cart={cart}
-        providerId={providerId}
         enabledMethods={enabledMethods}
         returnUrl={returnUrl}
       />

@@ -14,18 +14,31 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { BONBEAUTY_APPEARANCE_FALLBACK, getPaymentElementAppearanceRuntime } from '../appearance';
 
-/** Wyciąga deklaracje `--token: value;` z bloku `:root` pliku theme. */
-function loadThemeRootVars(themeFile: string): Record<string, string> {
-  const css = readFileSync(path.resolve(__dirname, '../../../../public/themes', themeFile), 'utf8');
-  const rootBlock = css.match(/:root\s*\{([\s\S]*?)\}/);
+/**
+ * Wyciąga deklaracje `--token: value;` ze WSZYSTKICH bloków `:root` w pliku CSS.
+ * M-1 fix: poprzednia wersja używała `match()` (tylko pierwszy blok) — bonbeauty.css
+ * ma DWA bloki `:root` (paleta + tokeny semantyczne); `matchAll` z flagą `g` ładuje oba.
+ */
+function loadCssVars(filePath: string): Record<string, string> {
+  const css = readFileSync(filePath, 'utf8');
   const vars: Record<string, string> = {};
-  if (rootBlock) {
+  for (const rootBlock of css.matchAll(/:root\s*\{([\s\S]*?)\}/g)) {
     for (const decl of rootBlock[1].split(';')) {
       const m = decl.match(/\s*(--[\w-]+)\s*:\s*([^;]+)/);
       if (m) vars[m[1]] = m[2].trim();
     }
   }
   return vars;
+}
+
+/** Ładuje plik theme z public/themes/<name>. */
+function loadThemeVars(themeFile: string): Record<string, string> {
+  return loadCssVars(path.resolve(__dirname, '../../../../public/themes', themeFile));
+}
+
+/** Ładuje plik tokenów z src/styles/tokens/<name>. */
+function loadTokenVars(tokenFile: string): Record<string, string> {
+  return loadCssVars(path.resolve(__dirname, '../../../styles/tokens', tokenFile));
 }
 
 function setRootVars(vars: Record<string, string>) {
@@ -40,8 +53,9 @@ afterEach(() => {
 
 describe('getPaymentElementAppearanceRuntime — AC3 token mapping', () => {
   it('maps all 4 BonBeauty DS tokens to Stripe appearance.variables', () => {
+    // H-1 fix: --color-brand-primary nie istnieje w DS; realny token to --cta.
     setRootVars({
-      '--color-brand-primary': '#123456',
+      '--cta': '#123456',
       '--radius-md': '12px',
       '--font-display': 'Custom Display',
       '--space-2': '6px'
@@ -107,35 +121,52 @@ describe('getPaymentElementAppearanceRuntime — AC5 fail-loud fallback', () => 
 });
 
 describe('getPaymentElementAppearanceRuntime — AC8 snapshot per market theme', () => {
-  it('BonBeauty theme (active gate v1.8.0): font from theme, rest fallback', () => {
-    setRootVars(loadThemeRootVars('bonbeauty.css'));
+  it('BonBeauty theme (active gate v1.8.0): wszystkie 4 tokeny resolved z warstw DS', () => {
+    // M-1 fix: załaduj wszystkie warstwy CSS aktywne w produkcyjnym DOM —
+    // nie tylko plik theme, ale też globalne tokeny z globals.css chain.
+    // Kolejność: ogólne tokeny (radii, spacing) + override theme (bonbeauty).
+    setRootVars(loadTokenVars('radii.css'));
+    setRootVars(loadTokenVars('spacing.css'));
+    setRootVars(loadThemeVars('bonbeauty.css'));
 
     const appearance = getPaymentElementAppearanceRuntime();
 
-    // bonbeauty.css definiuje --font-display ('Funnel Display'), NIE definiuje
-    // pozostałych 3 tokenów → AC5 fallback gałąź dla nich (deterministyczne).
+    // Wszystkie 4 tokeny resolved z rzeczywistych warstw DS:
+    //   --cta         → colorPrimary  (bonbeauty.css semantic token)
+    //   --radius-md   → borderRadius  (radii.css: 12px)
+    //   --font-display → fontFamily   (bonbeauty.css: 'Funnel Display')
+    //   --space-2     → spacingUnit   (spacing.css: 0.5rem)
+    expect(appearance.variables?.colorPrimary).toBe('rgb(144, 112, 50)');
+    expect(appearance.variables?.borderRadius).toBe('12px');
+    expect(appearance.variables?.fontFamily).toContain('Funnel Display');
+    expect(appearance.variables?.spacingUnit).toBe('0.5rem');
+    // AC5 anti-pattern: żadne zmienne nie są pustym stringiem.
+    for (const v of Object.values(appearance.variables ?? {})) {
+      expect(String(v).trim()).not.toBe('');
+    }
+    // Pełny snapshot jako kontrakt regresji.
     expect(appearance).toMatchInlineSnapshot(`
       {
         "rules": {
           ".Input": {
-            "border": "1px solid #907032",
-            "borderRadius": "8px",
-            "padding": "4px",
+            "border": "1px solid rgb(144, 112, 50)",
+            "borderRadius": "12px",
+            "padding": "0.5rem",
           },
           ".Input:focus": {
-            "boxShadow": "0 0 0 1px #907032",
+            "boxShadow": "0 0 0 1px rgb(144, 112, 50)",
             "outline": "none",
           },
           ".Label": {
-            "fontFamily": ""Funnel Display", ui-sans-serif, system-ui, sans-serif",
+            "fontFamily": "'Funnel Display', ui-sans-serif, system-ui, sans-serif",
           },
         },
         "theme": "flat",
         "variables": {
-          "borderRadius": "8px",
-          "colorPrimary": "#907032",
-          "fontFamily": ""Funnel Display", ui-sans-serif, system-ui, sans-serif",
-          "spacingUnit": "4px",
+          "borderRadius": "12px",
+          "colorPrimary": "rgb(144, 112, 50)",
+          "fontFamily": "'Funnel Display', ui-sans-serif, system-ui, sans-serif",
+          "spacingUnit": "0.5rem",
         },
       }
     `);

@@ -16,24 +16,22 @@ import * as React from 'react';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+// Wrapper component wywołuje useMemo — mock passthrough dla testów funkcyjnych.
+vi.mock('react', async (importOriginal) => {
+  const actual = await importOriginal() as typeof import('react');
+  return { ...actual, useMemo: (fn: () => unknown) => fn() };
+});
+
 import StripePaymentElement, {
   buildPaymentElementOptions,
   submitStripePayment
 } from '../StripePaymentElement';
 
-const initiatePaymentSession = vi.fn().mockResolvedValue({});
-const getCheckoutPaymentIdempotencyKey = vi.fn().mockReturnValue('idem-uuid-1');
-const computeCheckoutCartHash = vi.fn().mockResolvedValue('carthash');
-
-vi.mock('@/lib/data/cart', () => ({
-  initiatePaymentSession: (...a: unknown[]) => initiatePaymentSession(...a)
-}));
-vi.mock('@/lib/checkout/payment-idempotency', () => ({
-  getCheckoutPaymentIdempotencyKey: () => getCheckoutPaymentIdempotencyKey(),
-  computeCheckoutCartHash: (...a: unknown[]) => computeCheckoutCartHash(...a)
-}));
 vi.mock('@/lib/stripe/appearance', () => ({
   getPaymentElementAppearanceRuntime: () => ({ theme: 'flat' })
+}));
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key
 }));
 vi.mock('@stripe/react-stripe-js', () => ({
   Elements: ({ children }: { children: React.ReactNode }) =>
@@ -79,9 +77,7 @@ describe('buildPaymentElementOptions — AC1 / D6', () => {
 });
 
 describe('submitStripePayment — AC7', () => {
-  const cart = { id: 'cart_1', currency_code: 'pln' };
-
-  it('refreshes PaymentIntent idempotently then confirmPayment with return_url', async () => {
+  it('confirmPayment z return_url (M-4: bez re-inicjalizacji session w submit)', async () => {
     const confirmPayment = vi.fn().mockResolvedValue({});
     const stripe = { confirmPayment } as any;
     const elements = { __el: true } as any;
@@ -89,18 +85,10 @@ describe('submitStripePayment — AC7', () => {
     const res = await submitStripePayment({
       stripe,
       elements,
-      cart,
-      providerId: 'pp_stripe_stripe',
       returnUrl: 'https://shop.test/pl/order/cart_1/payment-status'
     });
 
     expect(res).toEqual({});
-    // AC7 — Idempotency-Key reuse (Story 1.3), NIE re-implementacja.
-    expect(initiatePaymentSession).toHaveBeenCalledWith(
-      cart,
-      { provider_id: 'pp_stripe_stripe', data: { gp_checkout_cart_hash: 'carthash' } },
-      'idem-uuid-1'
-    );
     // AC7 — confirmPayment args + return_url (Story 1.5 surface).
     expect(confirmPayment).toHaveBeenCalledWith({
       elements,
@@ -115,8 +103,6 @@ describe('submitStripePayment — AC7', () => {
     const res = await submitStripePayment({
       stripe,
       elements: {} as any,
-      cart,
-      providerId: 'pp_stripe_stripe',
       returnUrl: '/pl/order/cart_1/payment-status'
     });
     expect(res.error).toBe('card_declined');
@@ -126,12 +112,9 @@ describe('submitStripePayment — AC7', () => {
     const res = await submitStripePayment({
       stripe: null,
       elements: null,
-      cart,
-      providerId: 'pp_stripe_stripe',
       returnUrl: '/x'
     });
     expect(res.error).toBe('Payment is not available for this market');
-    expect(initiatePaymentSession).not.toHaveBeenCalled();
   });
 });
 

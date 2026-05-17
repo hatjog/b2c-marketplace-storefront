@@ -581,7 +581,8 @@
         "transactional_required": "Transaktionszustimmung ist erforderlich",
         "withdrawal_required": "Bestätigung der Widerrufspolitik ist erforderlich"
       }
-    }
+    },
+    "pay_now": "Bezahlen"
   },
   "confirmation": {
     "meta_title": "Bestellung bestätigt",

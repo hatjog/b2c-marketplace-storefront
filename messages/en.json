@@ -580,7 +580,8 @@
         "transactional_required": "Transactional consent is required",
         "withdrawal_required": "Acknowledgement of the withdrawal policy is required"
       }
-    }
+    },
+    "pay_now": "Pay"
   },
   "confirmation": {
     "meta_title": "Order confirmed",

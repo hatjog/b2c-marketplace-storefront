@@ -11,10 +11,15 @@
  * (`public/themes/<market>.css` załadowany synchronicznie w <head>).
  *
  * AC3 — mapowanie 4 tokenów BonBeauty DS → Stripe `appearance.variables`:
- *   --color-brand-primary → variables.colorPrimary
- *   --radius-md           → variables.borderRadius
- *   --font-display        → variables.fontFamily
- *   --space-2             → variables.spacingUnit
+ *   --cta         → variables.colorPrimary  (bonbeauty.css semantic alias)
+ *   --radius-md   → variables.borderRadius  (src/styles/tokens/radii.css)
+ *   --font-display → variables.fontFamily   (bonbeauty.css semantic alias)
+ *   --space-2     → variables.spacingUnit   (src/styles/tokens/spacing.css)
+ *
+ * Uwaga: architektura D7 specyfikowała `--color-brand-primary`, ale token
+ * ten nie istnieje w BonBeauty DS. Realny token koloru marki to `--cta`
+ * (rgb(144,112,50) = #907032, brand-600). Zmiana odnotowana w Dev Agent
+ * Record (review fix H-1) — reconcile do realnego DS, NIE cicha zmiana.
  *
  * AC5 — fail-loud, NIE silent: gdy computed value pusty/whitespace (theme
  * CSS jeszcze niezaładowany w momencie init PaymentElement), używamy
@@ -29,25 +34,25 @@ import type { Appearance } from '@stripe/stripe-js';
 /**
  * BonBeauty DS v2.x defaults — deterministyczny fallback (AC5).
  *
- * Wartości wyprowadzone z `public/themes/bonbeauty.css`:
- *   colorPrimary  = brand-600 #907032 (semantic `--cta`, 4.62:1 AA vs white)
- *   borderRadius  = 8px  (BonBeauty DS input md radius — pola formularza)
- *   fontFamily    = 'Funnel Display' (`--font-display`) z sans-serif fallback
- *   spacingUnit   = 4px  (BonBeauty DS base spacing unit — `--space-2` skala)
+ * Wartości zsynchronizowane z realnymi tokenami DS (fix M-2):
+ *   colorPrimary  = #907032 (=`--cta` = brand-600, 4.62:1 AA vs white)
+ *   borderRadius  = 12px    (=`--radius-md` z src/styles/tokens/radii.css)
+ *   fontFamily    = 'Funnel Display' (=`--font-display`) + sans-serif fallback
+ *   spacingUnit   = 0.5rem  (=`--space-2` = 8px, z src/styles/tokens/spacing.css)
  *
  * Te wartości są kontraktem fallbacku, NIE placeholderem: jeśli theme CSS
  * jest gotowy, computed values nadpisują je per token niezależnie.
  */
 export const BONBEAUTY_APPEARANCE_FALLBACK = {
   colorPrimary: '#907032',
-  borderRadius: '8px',
+  borderRadius: '12px',
   fontFamily: '"Funnel Display", ui-sans-serif, system-ui, sans-serif',
-  spacingUnit: '4px'
+  spacingUnit: '0.5rem'
 } as const;
 
 /** Token CSS → klucz Stripe `appearance.variables` (AC3 kontrakt 1:1). */
 const TOKEN_MAP = [
-  { cssVar: '--color-brand-primary', variable: 'colorPrimary' },
+  { cssVar: '--cta', variable: 'colorPrimary' },
   { cssVar: '--radius-md', variable: 'borderRadius' },
   { cssVar: '--font-display', variable: 'fontFamily' },
   { cssVar: '--space-2', variable: 'spacingUnit' }
