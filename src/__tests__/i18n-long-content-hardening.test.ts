@@ -59,5 +59,7 @@ describe('Story 6.3 i18n long-content hardening', () => {
     expect(source).toContain('data-locale={locale}');
     expect(source).toContain('data-surface={surface}');
     expect(source).toContain('data-overflow-strategy={overflowStrategy}');
+    expect(source).toContain('hidden');
+    expect(source).not.toContain('aria-live');
   });
 });

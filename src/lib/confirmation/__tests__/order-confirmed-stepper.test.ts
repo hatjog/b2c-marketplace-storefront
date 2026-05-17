@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildConfirmationStepperState,
+  deriveVoucherPipelineStatus,
   getGeneratingElapsedSeconds,
   isSecondTierGenerating,
   maskEmail,
+  normalizeEntitlementPipelineStatus,
   normalizeVoucherPipelineStatus,
   shouldStopConfirmationPolling
 } from '../order-confirmed-stepper';
@@ -21,6 +23,12 @@ describe('order-confirmed-stepper', () => {
   it('maps pending payment aliases to pending_payment', () => {
     expect(normalizeVoucherPipelineStatus('pending_psp_confirmation')).toBe('pending_payment');
     expect(normalizeVoucherPipelineStatus('pending_psp')).toBe('pending_payment');
+  });
+
+  it('maps entitlement statuses to voucher pipeline stages', () => {
+    expect(normalizeEntitlementPipelineStatus('ISSUED')).toBe('email_sent');
+    expect(normalizeEntitlementPipelineStatus('ACTIVE')).toBe('recipient_opened');
+    expect(normalizeEntitlementPipelineStatus('unknown')).toBeNull();
   });
 
   it('builds fail-soft stepper when backend step2-4 signal is missing', () => {
@@ -52,9 +60,17 @@ describe('order-confirmed-stepper', () => {
   });
 
   it('stops polling at email_sent and recipient_opened', () => {
+    expect(shouldStopConfirmationPolling('voucher_issued')).toBe(true);
     expect(shouldStopConfirmationPolling('email_sent')).toBe(true);
     expect(shouldStopConfirmationPolling('recipient_opened')).toBe(true);
     expect(shouldStopConfirmationPolling('voucher_generating')).toBe(false);
+  });
+
+  it('derives pipeline status from entitlements before payment proxy status', () => {
+    expect(deriveVoucherPipelineStatus('pending_psp_confirmation', [{ status: 'ISSUED' }])).toBe(
+      'email_sent'
+    );
+    expect(deriveVoucherPipelineStatus('paid', [{ status: 'ACTIVE' }])).toBe('recipient_opened');
   });
 
   it('tracks elapsed seconds and second-tier threshold', () => {

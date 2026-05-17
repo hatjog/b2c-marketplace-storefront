@@ -8,10 +8,10 @@ import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/Cros
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import {
   buildConfirmationStepperState,
+  deriveVoucherPipelineStatus,
   getGeneratingElapsedSeconds,
   isSecondTierGenerating,
   maskEmail,
-  normalizeVoucherPipelineStatus,
   shouldStopConfirmationPolling
 } from '@/lib/confirmation/order-confirmed-stepper';
 
@@ -35,8 +35,9 @@ type OrderData = {
   display_id: string | null;
   payment_status: string | null;
   updated_at: string | null;
-  email: string | null;
   customer_id: string | null;
+  masked_email: string | null;
+  is_guest_checkout: boolean;
   currency_code: string | null;
   item_total: number;
   shipping_total: number;
@@ -56,6 +57,10 @@ type EntitlementData = {
   status?: string;
   recipient_name?: string | null;
   recipient_email?: string | null;
+  issued_at?: string | null;
+  updated_at?: string | null;
+  created_at?: string | null;
+  opened_at?: string | null;
 };
 
 type Props = {
@@ -76,11 +81,19 @@ function localeTag(locale: string): string {
 }
 
 function formatMoney(value: number, currencyCode: string | null, locale: string): string {
-  const currency = (currencyCode ?? 'PLN').toUpperCase();
-  return new Intl.NumberFormat(localeTag(locale), {
-    style: 'currency',
-    currency
-  }).format(value / 100);
+  const currency = (currencyCode ?? '').trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(currency)) {
+    return '—';
+  }
+
+  try {
+    return new Intl.NumberFormat(localeTag(locale), {
+      style: 'currency',
+      currency
+    }).format(value / 100);
+  } catch {
+    return '—';
+  }
 }
 
 function formatTime(iso: string | null | undefined, locale: string): string | null {
@@ -188,7 +201,9 @@ export function ConfirmationPageContent({ orderId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [generatingStartedAtMs, setGeneratingStartedAtMs] = useState<number | null>(null);
+  const [fallbackGeneratingStartedAtMs, setFallbackGeneratingStartedAtMs] = useState<number | null>(
+    null
+  );
   const [nowMs, setNowMs] = useState(Date.now());
 
   useEffect(() => {
@@ -246,18 +261,33 @@ export function ConfirmationPageContent({ orderId }: Props) {
     };
   }, [orderId]);
 
-  const stepperState = useMemo(
-    () => buildConfirmationStepperState(statusData?.status),
-    [statusData?.status]
+  const pipelineStatus = useMemo(
+    () => deriveVoucherPipelineStatus(statusData?.status, entitlements),
+    [statusData?.status, entitlements]
   );
+
+  const stepperState = useMemo(() => buildConfirmationStepperState(pipelineStatus), [pipelineStatus]);
+
+  const generatingAnchorMs = useMemo(() => {
+    if (pipelineStatus !== 'voucher_generating') {
+      return null;
+    }
+
+    const trustedAnchor = order?.updated_at ? Date.parse(order.updated_at) : Number.NaN;
+    if (Number.isFinite(trustedAnchor)) {
+      return trustedAnchor;
+    }
+
+    return fallbackGeneratingStartedAtMs;
+  }, [pipelineStatus, order?.updated_at, fallbackGeneratingStartedAtMs]);
 
   useEffect(() => {
     if (stepperState.activeStepId === 'voucher_generating') {
-      setGeneratingStartedAtMs(current => current ?? Date.now());
+      setFallbackGeneratingStartedAtMs(current => current ?? Date.now());
       return;
     }
 
-    setGeneratingStartedAtMs(null);
+    setFallbackGeneratingStartedAtMs(null);
   }, [stepperState.activeStepId]);
 
   useEffect(() => {
@@ -279,8 +309,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
       return;
     }
 
-    const normalizedStatus = normalizeVoucherPipelineStatus(statusData.status);
-    if (shouldStopConfirmationPolling(normalizedStatus)) {
+    if (shouldStopConfirmationPolling(pipelineStatus)) {
       return;
     }
 
@@ -288,12 +317,25 @@ export function ConfirmationPageContent({ orderId }: Props) {
 
     const poller = window.setInterval(async () => {
       try {
-        const res = await fetch(`/api/v1/orders/${orderId}/payment-status`, { cache: 'no-store' });
-        if (!res.ok || cancelled) return;
+        const [statusRes, entitlementsRes] = await Promise.all([
+          fetch(`/api/v1/orders/${orderId}/payment-status`, { cache: 'no-store' }),
+          fetch(`/api/v1/entitlements?order_id=${orderId}`, { cache: 'no-store' })
+        ]);
 
-        const payload = (await res.json()) as PaymentStatusData;
+        if (cancelled) return;
+
+        const payload = statusRes.ok ? ((await statusRes.json()) as PaymentStatusData) : null;
+        const entitlementPayload = entitlementsRes.ok
+          ? ((await entitlementsRes.json()) as EntitlementData[])
+          : null;
+
         if (!cancelled) {
-          setStatusData(payload);
+          if (payload) {
+            setStatusData(payload);
+          }
+          if (Array.isArray(entitlementPayload)) {
+            setEntitlements(entitlementPayload);
+          }
         }
       } catch {
         // fail-soft: keep the current visible state and continue polling
@@ -304,10 +346,10 @@ export function ConfirmationPageContent({ orderId }: Props) {
       cancelled = true;
       window.clearInterval(poller);
     };
-  }, [orderId, statusData]);
+  }, [orderId, pipelineStatus, statusData]);
 
-  const elapsedSeconds = generatingStartedAtMs
-    ? getGeneratingElapsedSeconds(generatingStartedAtMs, nowMs)
+  const elapsedSeconds = generatingAnchorMs
+    ? getGeneratingElapsedSeconds(generatingAnchorMs, nowMs)
     : 0;
 
   const countdownSeconds = Math.max(0, 30 - elapsedSeconds);
@@ -345,17 +387,20 @@ export function ConfirmationPageContent({ orderId }: Props) {
 
   const isGift = isGiftOrder(order, entitlements);
   const recipient = resolveRecipient(order, entitlements);
+  const fallbackMaskedEmail = order.masked_email ?? maskEmail(null);
+  const paidTimestamp = formatTime(order.updated_at, locale);
+  const recipientDisplay = recipient.name ?? (recipient.email ? maskEmail(recipient.email) : fallbackMaskedEmail);
 
   const heroSubcopy = isGift
     ? t('hero_sub_gift', {
-        recipient: recipient.name ?? maskEmail(recipient.email ?? order.email)
+        recipient: recipientDisplay
       })
     : t('hero_sub_self', {
-        email: maskEmail(order.email)
+        email: fallbackMaskedEmail
       });
 
   const orderRef = String(order.display_id ?? orderId);
-  const isGuest = !order.customer_id;
+  const isGuest = order.is_guest_checkout;
   const deliveryMethod = resolveDeliveryMethod(order);
   const lastUpdated = formatTime(statusData?.last_checked_at ?? order.updated_at, locale);
 
@@ -414,9 +459,10 @@ export function ConfirmationPageContent({ orderId }: Props) {
         </div>
 
         <ol
-          className="grid grid-cols-1 gap-4 md:grid-cols-4"
+          className="grid grid-cols-1 gap-4 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 md:grid-cols-4"
           data-testid="voucher-stepper"
           role="list"
+          tabIndex={0}
         >
           {stepperState.steps.map(step => {
             const isActive = step.state === 'active';
@@ -433,10 +479,10 @@ export function ConfirmationPageContent({ orderId }: Props) {
                 ].join(' ')}
                 data-step-id={step.id}
                 data-step-state={step.state}
-                tabIndex={0}
+                aria-current={isActive ? 'step' : undefined}
               >
                 <p className="label-sm text-secondary">
-                  {step.id === 'paid' ? t('step_paid_label') : null}
+                  {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}
                   {step.id === 'recipient_opened' ? t('step_opened_label') : null}
@@ -452,6 +498,14 @@ export function ConfirmationPageContent({ orderId }: Props) {
                   {step.id === 'email_sent' ? t('step_sent_eta') : null}
                   {step.id === 'recipient_opened' ? t('step_opened_eta') : null}
                 </p>
+                {step.id === 'paid' && paidTimestamp && (
+                  <p
+                    className="mt-2 text-xs text-secondary"
+                    data-testid="voucher-step-paid-timestamp"
+                  >
+                    {t('step_paid_timestamp', { timestamp: paidTimestamp })}
+                  </p>
+                )}
                 {step.id === 'voucher_generating' && isActive && (
                   <p
                     className="mt-2 text-xs text-secondary"
@@ -597,7 +651,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
             <h3 className="text-sm font-medium text-primary">{t('next_for_recipient_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_recipient_body')}</p>
             <LocalizedClientLink
-              href="/pomoc"
+              href={t('next_for_recipient_href')}
               className="mt-3 inline-block text-sm underline underline-offset-4"
             >
               {t('next_for_recipient_cta')}

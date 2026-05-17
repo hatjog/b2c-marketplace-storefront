@@ -32,12 +32,17 @@
 import { cookies as nextCookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { maskEmail } from '@/lib/confirmation/order-confirmed-stepper';
 import { resolveMedusaBackendUrl } from '@/lib/env';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 function coerceNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+export function isGuestCheckout(customerId: string | null | undefined): boolean {
+  return !customerId;
 }
 
 /**
@@ -241,8 +246,9 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
         display_id: displayId,
         payment_status: lifecycleStatus,
         updated_at: order.updated_at ?? null,
-        email: order.email ?? null,
         customer_id: order.customer_id ?? null,
+        masked_email: maskEmail(order.email ?? null),
+        is_guest_checkout: isGuestCheckout(order.customer_id),
         currency_code: order.currency_code ?? null,
         item_total: coerceNumber(order.item_total),
         shipping_total: coerceNumber(order.shipping_total),

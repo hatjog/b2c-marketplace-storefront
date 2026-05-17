@@ -7,6 +7,10 @@ export type VoucherPipelineStatus =
   | 'recipient_opened'
   | 'unknown';
 
+export type EntitlementSignal = {
+  status?: string | null;
+};
+
 export type StepState = 'done' | 'active' | 'future';
 
 export interface ConfirmationStep {
@@ -33,6 +37,23 @@ const STATUS_ALIASES: Record<string, VoucherPipelineStatus> = {
   voucher_issued: 'voucher_issued',
   email_sent: 'email_sent',
   recipient_opened: 'recipient_opened'
+};
+
+const ENTITLEMENT_STATUS_ALIASES: Record<string, VoucherPipelineStatus> = {
+  issued: 'email_sent',
+  delivered: 'email_sent',
+  sent: 'email_sent',
+  email_sent: 'email_sent',
+  queued: 'voucher_generating',
+  active: 'recipient_opened',
+  opened: 'recipient_opened',
+  recipient_opened: 'recipient_opened',
+  partially_redeemed: 'recipient_opened',
+  redeemed: 'recipient_opened',
+  redeemed_partial: 'recipient_opened',
+  redeemed_full: 'recipient_opened',
+  settled: 'recipient_opened',
+  closed: 'recipient_opened'
 };
 
 const STEP_ORDER: readonly ConfirmationStep['id'][] = [
@@ -76,6 +97,37 @@ export function normalizeVoucherPipelineStatus(
   if (!rawStatus) return 'unknown';
   const normalized = rawStatus.trim().toLowerCase();
   return STATUS_ALIASES[normalized] ?? 'unknown';
+}
+
+export function normalizeEntitlementPipelineStatus(
+  rawStatus: string | null | undefined
+): VoucherPipelineStatus | null {
+  if (!rawStatus) return null;
+  const normalized = rawStatus.trim().toLowerCase();
+  return ENTITLEMENT_STATUS_ALIASES[normalized] ?? null;
+}
+
+export function deriveVoucherPipelineStatus(
+  paymentStatusRaw: string | null | undefined,
+  entitlements: EntitlementSignal[]
+): VoucherPipelineStatus {
+  const entitlementStatuses = entitlements
+    .map(entitlement => normalizeEntitlementPipelineStatus(entitlement.status))
+    .filter((status): status is VoucherPipelineStatus => Boolean(status));
+
+  if (entitlementStatuses.includes('recipient_opened')) {
+    return 'recipient_opened';
+  }
+  if (entitlementStatuses.includes('email_sent')) {
+    return 'email_sent';
+  }
+
+  const paymentStatus = normalizeVoucherPipelineStatus(paymentStatusRaw);
+  if (paymentStatus === 'voucher_issued') {
+    return 'email_sent';
+  }
+
+  return paymentStatus;
 }
 
 function getActiveIndex(status: VoucherPipelineStatus): number | null {
@@ -141,7 +193,7 @@ export function buildConfirmationStepperState(
 }
 
 export function shouldStopConfirmationPolling(status: VoucherPipelineStatus): boolean {
-  return status === 'email_sent' || status === 'recipient_opened';
+  return status === 'voucher_issued' || status === 'email_sent' || status === 'recipient_opened';
 }
 
 export function getGeneratingElapsedSeconds(generatingStartedAtMs: number, nowMs: number): number {
