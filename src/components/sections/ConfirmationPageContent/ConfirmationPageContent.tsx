@@ -39,11 +39,13 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { VoucherQrCode } from '@/components/molecules/VoucherQrCode/VoucherQrCode';
+import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import {
   type ConfirmationHandoffState,
   getConfirmationHandoffState,
   isSafeClaimUrl,
 } from '@/lib/helpers/confirmation-state';
+import type { VoucherRulesData } from '@/lib/voucher/voucher-rules';
 
 // ─── Sentry QR Error Boundary — component stack only, no PII ─────────────────
 
@@ -86,6 +88,7 @@ type EntitlementData = {
   product_name: string | null;
   salon_name: string | null;
   face_value_minor: number;
+  voucherRules?: VoucherRulesData | null;
   // G9 review-2 fix: proxy passes through upstream verbatim; field may be
   // absent (undefined), not just explicitly null. Mark optional so adversarial
   // readers don't rely on `claim_url === null` as a tight discriminator.
@@ -210,6 +213,13 @@ function GiftConfirmedView({ entitlement }: { entitlement: EntitlementData }) {
           {t('continue_shopping')}
         </LocalizedClientLink>
       )}
+      <VoucherRulesCard
+        rules={entitlement.voucherRules}
+        locale={locale}
+        defaultOpen
+        data-testid="confirmation-voucher-rules-card"
+        className="w-full max-w-2xl text-left"
+      />
     </div>
   );
 }
@@ -277,6 +287,13 @@ function SelfPurchaseConfirmedView({ entitlement }: { entitlement: EntitlementDa
       <LocalizedClientLink href="/categories" className="bb-primary-cta rounded-full px-6 py-3">
         {t('continue_shopping')}
       </LocalizedClientLink>
+      <VoucherRulesCard
+        rules={entitlement.voucherRules}
+        locale={locale}
+        defaultOpen
+        data-testid="confirmation-voucher-rules-card"
+        className="w-full max-w-2xl text-left"
+      />
     </div>
   );
 }

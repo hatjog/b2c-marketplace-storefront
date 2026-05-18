@@ -1,3 +1,4 @@
+// @trust-invariant-scope: v180
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
@@ -7,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
+import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import { CartAddressSection } from '@/components/sections/CartAddressSection/CartAddressSection';
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
 import CartReview from '@/components/sections/CartReview/CartReview';
@@ -109,6 +111,12 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             data-testid="checkout-review-container"
           >
             {isMultiVendorEnabled() && <MultiVendorOrderSummary cart={cart} />}
+            {/* Trust Invariant #3: <VoucherRulesCard stays visible even when
+                seller grouping drops every item due to missing seller.id. */}
+            <VoucherRulesCard
+              locale={locale}
+              data-testid="checkout-voucher-rules-card"
+            />
             {/* Story 2.4 AC1: VoucherClaritySurface (condensed) + SellerProofSurface
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
