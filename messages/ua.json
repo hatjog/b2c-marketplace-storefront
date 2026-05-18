@@ -1424,5 +1424,326 @@
     "empty_body": "Перевірте запит або перегляньте рекомендоване.",
     "editorial_cta": "Переглянути редакторський вибір",
     "subcategory_count": "{count, plural, one {# підкатегорія} few {# підкатегорії} many {# підкатегорій} other {# підкатегорії}}"
+  },
+  "account_write": {
+    "common": {
+      "form_error": "Перевірте виділені поля.",
+      "inline_success": "Поле збережено після виходу.",
+      "cancel": "Скасувати",
+      "save": "Зберегти зміни",
+      "saving": "Збереження…",
+      "deleting": "Видалення…",
+      "delete": "Видалити",
+      "submitting": "Надсилання…",
+      "edit": "Редагувати"
+    },
+    "breadcrumbs": {
+      "account": "Account",
+      "orders": "Orders",
+      "return_request": "Return request",
+      "return_success": "Return status",
+      "addresses": "Saved addresses",
+      "reviews_to_write": "Reviews to write",
+      "written_reviews": "Written reviews",
+      "settings": "Settings"
+    },
+    "quick_actions": {
+      "orders": "Orders",
+      "orders_desc": "Return to order history and track next steps.",
+      "addresses": "Addresses",
+      "addresses_desc": "Update delivery and billing details.",
+      "reviews": "Reviews to write",
+      "reviews_desc": "Finish pending reviews without leaving Account Hub.",
+      "written_reviews": "Written reviews",
+      "written_reviews_desc": "Edit or delete published reviews.",
+      "settings": "Settings",
+      "settings_desc": "Manage profile, security and privacy.",
+      "return_request": "Return request",
+      "return_request_desc": "Review the return request you just sent."
+    },
+    "snapshot": {
+      "orders": "Orders",
+      "addresses": "Addresses",
+      "reviews": "Reviews"
+    },
+    "return_request": {
+      "hero": {
+        "eyebrow": "Wave 2 · Returns",
+        "title": "Start a return request without losing context.",
+        "description": "Choose the reason, attach photos and leave a note for the salon. Validation runs on the client and server before the request is sent."
+      },
+      "progress": {
+        "title": "3-step return flow",
+        "description": "Progress stays visible while preserving keyboard order.",
+        "step_reason": "Reason",
+        "step_evidence": "Evidence",
+        "step_submit": "Sent"
+      },
+      "form": {
+        "title": "Return request form",
+        "description": "All fields follow UX-DR23: blur feedback, localized errors and pending-state protection against duplicate submits.",
+        "reason_label": "Why are you returning this order?",
+        "photos_label": "Upload photos",
+        "photos_help": "Add up to 3 JPG, PNG or WEBP files. Max 5 MB each.",
+        "comment_label": "Additional note",
+        "submit": "Send return request"
+      },
+      "handoff_message": "The salon has 7 days to decide. We will notify you by email.",
+      "success": {
+        "submitted": "Return request submitted. The seller review starts now and the timeline is already available.",
+        "go_to_summary": "Open return timeline"
+      },
+      "errors": {
+        "order_required": "Missing order reference.",
+        "reason_required": "Choose a return reason.",
+        "comment_too_long": "Your note can contain up to 500 characters.",
+        "photo_required": "Add at least one supporting photo.",
+        "photo_limit": "Upload no more than 3 photos.",
+        "photo_size": "Each file must be smaller than 5 MB.",
+        "photo_type": "Only JPG, PNG and WEBP files are supported.",
+        "generic": "We could not submit the return request. Try again in a moment."
+      }
+    },
+    "return_success": {
+      "hero": {
+        "eyebrow": "Wave 2 · Return confirmed",
+        "title": "Your request is in the decision queue.",
+        "description": "Order {orderId} is now visible to the salon and support. The next steps stay transparent for every actor."
+      },
+      "badge": {
+        "pending": "Awaiting vendor decision"
+      },
+      "timeline": {
+        "title": "Return lifecycle",
+        "description": "Status uses semantic state colors and never relies on color only.",
+        "submitted": {
+          "title": "Request recorded",
+          "body": "We stored your reason, attachments and note and notified the salon."
+        },
+        "vendor_review": {
+          "title": "Salon reviews the request",
+          "body": "The salon has up to 7 days to accept, reject or request more context."
+        },
+        "payout": {
+          "title": "Refund or pickup arranged",
+          "body": "Once approved, support monitors refund or collection details and keeps you updated by email."
+        }
+      },
+      "handoff": {
+        "title": "What happens next for each actor",
+        "description": "Cross-actor handoff keeps the customer, vendor and support aligned.",
+        "for_customer_label": "What happens next for you:",
+        "for_vendor_label": "What happens next for the salon:",
+        "for_customer": "Watch your inbox and return timeline. If more proof is needed, you can respond without restarting the flow.",
+        "for_vendor": "The salon reviews the evidence, records a decision and confirms pickup or refund details.",
+        "for_support_label": "What happens next for support:",
+        "for_platform_label": "What happens next for BonBeauty:",
+        "for_support": "Support steps in when the case needs mediation, deadline follow-up or policy clarification.",
+        "for_platform": "BonBeauty tracks SLA timing, keeps the audit trail and makes sure the outcome reaches every actor."
+      }
+    },
+    "addresses": {
+      "hero": {
+        "eyebrow": "Wave 2 · Address book",
+        "title": "Keep delivery details ready for the next order.",
+        "description": "Add, edit and delete addresses inside a focus-trapped panel with keyboard-safe controls and 44px targets."
+      },
+      "actions": {
+        "add": "Add address"
+      },
+      "empty": {
+        "title": "No saved addresses yet",
+        "description": "ES8 empty state for saved addresses.",
+        "body": "Save an address to speed up checkout and avoid retyping delivery details on the next order."
+      },
+      "list": {
+        "title": "Saved addresses",
+        "description": "Review delivery details, update them inline and remove outdated entries with confirmation.",
+        "default_label": "Saved address",
+        "no_phone": "Phone not provided"
+      },
+      "form": {
+        "create_title": "Add address",
+        "edit_title": "Edit address",
+        "address_name": "Address label",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "company": "Company",
+        "address_line": "Street and number",
+        "city": "City",
+        "postal_code": "Postal code",
+        "province": "Region / province",
+        "phone": "Phone number",
+        "country": "Country",
+        "errors": {
+          "address_name_required": "Enter an address label.",
+          "first_name_required": "Enter the first name.",
+          "last_name_required": "Enter the last name.",
+          "address_required": "Enter the street and number.",
+          "city_required": "Enter the city.",
+          "country_required": "Choose a country.",
+          "postal_code_required": "Enter the postal code.",
+          "phone_required": "Enter the phone number.",
+          "generic": "We could not save the address. Try again."
+        },
+        "success": {
+          "created": "Address added.",
+          "updated": "Address updated.",
+          "deleted": "Address deleted."
+        }
+      },
+      "delete": {
+        "title": "Delete this address?",
+        "description": "The address will be removed from your account after confirmation."
+      }
+    },
+    "reviews_to_write": {
+      "hero": {
+        "eyebrow": "Wave 2 · Reviews to write",
+        "title": "You still have a few salons to review.",
+        "description": "Pending reviews stay grouped by order so you can complete feedback without hunting for the right booking."
+      },
+      "empty": {
+        "title": "No reviews waiting",
+        "description": "ES7 gentle empty state for review prompts.",
+        "body": "You are caught up. When a new order becomes eligible for review, it will appear here.",
+        "cta": "Go to written reviews"
+      },
+      "list": {
+        "title": "Orders waiting for feedback",
+        "description": "Open written reviews to finish the form and compare your published feedback.",
+        "order_label": "Order {id}"
+      },
+      "actions": {
+        "write": "Write review",
+        "compare": "See written reviews"
+      }
+    },
+    "written_reviews": {
+      "hero": {
+        "eyebrow": "Wave 2 · Published reviews",
+        "title": "Manage the feedback you already sent.",
+        "description": "Edit tone, update rating or delete a review with confirmation and accessible mutation feedback."
+      },
+      "empty": {
+        "title": "No written reviews yet",
+        "description": "Published reviews will appear here after submission.",
+        "body": "Use the reviews-to-write list when you are ready to share feedback."
+      },
+      "list": {
+        "title": "My written reviews",
+        "description": "Changes never surface raw backend errors. Each mutation reports a localized result.",
+        "unknown_seller": "Salon",
+        "rating": "{rating}/5",
+        "no_note": "No additional note.",
+        "updated_at": "Updated: {date}"
+      },
+      "form": {
+        "title": "Edit review",
+        "rating_label": "Rating",
+        "note_label": "Review note",
+        "errors": {
+          "rating_required": "Choose a rating.",
+          "note_too_long": "Your note can contain up to 300 characters.",
+          "review_id_required": "Missing review reference.",
+          "order_id_required": "Missing order reference.",
+          "generic": "We could not update the review. Try again."
+        },
+        "success": {
+          "updated": "Review updated.",
+          "deleted": "Review deleted."
+        }
+      },
+      "delete": {
+        "title": "Delete review?",
+        "description": "This removes the published review from your account view after confirmation."
+      }
+    },
+    "settings": {
+      "hero": {
+        "eyebrow": "Wave 2 · Account settings",
+        "title": "Keep profile, security and privacy controls in one hub.",
+        "description": "Desktop uses anchored section navigation, while mobile keeps the same landmarks without overflow."
+      },
+      "nav": {
+        "title": "Sections",
+        "description": "Jump between profile, security, notifications, payments and GDPR privacy."
+      },
+      "sections": {
+        "profile": "Profile",
+        "security": "Security",
+        "notifications": "Notifications",
+        "payments": "Payments",
+        "privacy": "GDPR privacy"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Update personal contact details with blur-based success feedback.",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "phone": "Phone",
+        "email": "Email",
+        "locale": "Preferred locale",
+        "errors": {
+          "first_name_required": "Enter the first name.",
+          "last_name_required": "Enter the last name.",
+          "phone_required": "Enter the phone number.",
+          "email_required": "Email is required.",
+          "email_invalid": "Enter a valid email address.",
+          "locale_required": "Choose a preferred locale.",
+          "generic": "We could not update the profile. Try again."
+        },
+        "success": {
+          "updated": "Profile updated."
+        }
+      },
+      "security": {
+        "title": "Security",
+        "description": "Use a password reset handoff instead of exposing raw auth errors in the UI.",
+        "new_password": "New password",
+        "confirm_password": "Confirm password",
+        "errors": {
+          "password_too_short": "Use at least 8 characters.",
+          "password_mismatch": "Passwords must match.",
+          "generic": "We could not start the reset flow. Try again."
+        },
+        "success": {
+          "reset_email_sent": "Reset email sent. Complete the password change from your inbox."
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Choose which updates should continue through the account team request intake for this release.",
+        "email_updates": "Email order updates",
+        "sms_updates": "SMS shipment updates",
+        "product_news": "Product and editorial news",
+        "success": {
+          "request_received": "Notification preference request received."
+        }
+      },
+      "payments": {
+        "title": "Payments",
+        "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
+        "default_card": "Preferred payment note",
+        "invoices_by_email": "Send invoices by email",
+        "success": {
+          "request_received": "Payment preference request received."
+        }
+      },
+      "privacy": {
+        "title": "GDPR privacy",
+        "description": "Privacy actions are represented as intake requests until dedicated backend automation is available.",
+        "request_intake_notice": "This release records the request and hands it off safely. It does not claim that export or deletion is already complete.",
+        "export_request": "Request personal data export",
+        "delete_request": "Request account deletion review",
+        "errors": {
+          "generic": "We could not record the privacy request. Try again."
+        },
+        "success": {
+          "export_request_received": "Data export request received.",
+          "delete_request_received": "Account deletion request received."
+        }
+      }
+    }
   }
 }

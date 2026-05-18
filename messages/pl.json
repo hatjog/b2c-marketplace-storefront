@@ -1423,5 +1423,326 @@
     "empty_body": "Sprawdź wpisaną frazę albo zobacz polecane",
     "editorial_cta": "Zobacz Wybór redakcji",
     "subcategory_count": "{count, plural, one {# podkategoria} few {# podkategorie} many {# podkategorii} other {# podkategorii}}"
+  },
+  "account_write": {
+    "common": {
+      "form_error": "Sprawdź wyróżnione pola.",
+      "inline_success": "Pole zapisane po opuszczeniu.",
+      "cancel": "Anuluj",
+      "save": "Zapisz zmiany",
+      "saving": "Zapisywanie…",
+      "deleting": "Usuwanie…",
+      "delete": "Usuń",
+      "submitting": "Wysyłanie…",
+      "edit": "Edytuj"
+    },
+    "breadcrumbs": {
+      "account": "Konto",
+      "orders": "Zamówienia",
+      "return_request": "Wniosek o zwrot",
+      "return_success": "Status zwrotu",
+      "addresses": "Zapisane adresy",
+      "reviews_to_write": "Opinie do napisania",
+      "written_reviews": "Moje opinie",
+      "settings": "Ustawienia"
+    },
+    "quick_actions": {
+      "orders": "Zamówienia",
+      "orders_desc": "Wróć do historii zamówień i sprawdź kolejne kroki.",
+      "addresses": "Adresy",
+      "addresses_desc": "Zaktualizuj dane dostawy i rozliczeń.",
+      "reviews": "Opinie do napisania",
+      "reviews_desc": "Dokończ oczekujące opinie bez wychodzenia z Account Hub.",
+      "written_reviews": "Moje opinie",
+      "written_reviews_desc": "Edytuj lub usuń opublikowane opinie.",
+      "settings": "Ustawienia",
+      "settings_desc": "Zarządzaj profilem, bezpieczeństwem i prywatnością.",
+      "return_request": "Wniosek o zwrot",
+      "return_request_desc": "Przejrzyj właśnie wysłany wniosek o zwrot."
+    },
+    "snapshot": {
+      "orders": "Zamówienia",
+      "addresses": "Adresy",
+      "reviews": "Opinie"
+    },
+    "return_request": {
+      "hero": {
+        "eyebrow": "Wave 2 · Zwroty",
+        "title": "Rozpocznij zwrot bez utraty kontekstu.",
+        "description": "Wybierz powód, dodaj zdjęcia i zostaw notatkę dla salonu. Walidacja działa po stronie klienta i serwera, zanim wyślesz zgłoszenie."
+      },
+      "progress": {
+        "title": "3-etapowy flow zwrotu",
+        "description": "Postęp pozostaje widoczny i nie zaburza kolejności focusa.",
+        "step_reason": "Powód",
+        "step_evidence": "Dowody",
+        "step_submit": "Wysłano"
+      },
+      "form": {
+        "title": "Formularz zwrotu",
+        "description": "Wszystkie pola spełniają UX-DR23: feedback po blur, zlokalizowane błędy i ochrona przed podwójnym wysłaniem.",
+        "reason_label": "Dlaczego zwracasz to zamówienie?",
+        "photos_label": "Dodaj zdjęcia",
+        "photos_help": "Dodaj maksymalnie 3 pliki JPG, PNG albo WEBP. Każdy do 5 MB.",
+        "comment_label": "Dodatkowa notatka",
+        "submit": "Wyślij wniosek o zwrot"
+      },
+      "handoff_message": "Salon ma 7 dni na decyzję, powiadomimy mailem.",
+      "success": {
+        "submitted": "Wniosek o zwrot został wysłany. Etap weryfikacji przez salon już się rozpoczął.",
+        "go_to_summary": "Otwórz oś czasu zwrotu"
+      },
+      "errors": {
+        "order_required": "Brakuje numeru zamówienia.",
+        "reason_required": "Wybierz powód zwrotu.",
+        "comment_too_long": "Notatka może mieć maksymalnie 500 znaków.",
+        "photo_required": "Dodaj co najmniej jedno zdjęcie.",
+        "photo_limit": "Możesz dodać maksymalnie 3 zdjęcia.",
+        "photo_size": "Każdy plik musi mieć mniej niż 5 MB.",
+        "photo_type": "Obsługiwane są tylko pliki JPG, PNG i WEBP.",
+        "generic": "Nie udało się wysłać wniosku o zwrot. Spróbuj ponownie."
+      }
+    },
+    "return_success": {
+      "hero": {
+        "eyebrow": "Wave 2 · Zwrot zgłoszony",
+        "title": "Twoje zgłoszenie czeka na decyzję salonu.",
+        "description": "Zamówienie {orderId} jest już widoczne dla salonu i supportu. Kolejne kroki pozostają przejrzyste dla każdego aktora."
+      },
+      "badge": {
+        "pending": "Oczekiwanie na decyzję salonu"
+      },
+      "timeline": {
+        "title": "Lifecycle zwrotu",
+        "description": "Status używa semantycznych kolorów i nigdy nie opiera się wyłącznie na kolorze.",
+        "submitted": {
+          "title": "Wniosek zapisany",
+          "body": "Zapisaliśmy powód, załączniki i notatkę oraz powiadomiliśmy salon."
+        },
+        "vendor_review": {
+          "title": "Salon analizuje zgłoszenie",
+          "body": "Salon ma do 7 dni na akceptację, odrzucenie albo prośbę o doprecyzowanie."
+        },
+        "payout": {
+          "title": "Zwrot środków lub odbiór",
+          "body": "Po akceptacji support monitoruje zwrot środków albo odbiór i informuje Cię mailowo."
+        }
+      },
+      "handoff": {
+        "title": "Co dalej dla każdego aktora",
+        "description": "Cross-actor handoff utrzymuje spójność dla klienta, salonu i supportu.",
+        "for_customer_label": "Co dalej dla Ciebie:",
+        "for_vendor_label": "Co dalej dla salonu:",
+        "for_customer": "Śledź skrzynkę mailową i timeline zwrotu. Jeśli potrzebne będą dodatkowe materiały, odpowiesz bez restartu flow.",
+        "for_vendor": "Salon ocenia materiały, zapisuje decyzję i potwierdza odbiór albo zwrot środków.",
+        "for_support_label": "Co dalej dla supportu:",
+        "for_platform_label": "Co dalej dla BonBeauty:",
+        "for_support": "Support włącza się przy mediacji, przekroczeniu SLA albo potrzebie doprecyzowania zasad.",
+        "for_platform": "BonBeauty pilnuje czasu SLA, ścieżki audytowej i dostarczenia wyniku do wszystkich stron."
+      }
+    },
+    "addresses": {
+      "hero": {
+        "eyebrow": "Wave 2 · Książka adresowa",
+        "title": "Miej dane dostawy gotowe przed kolejnym zamówieniem.",
+        "description": "Dodawaj, edytuj i usuwaj adresy w panelu z trap-focus, obsługą klawiatury i targetami 44 px."
+      },
+      "actions": {
+        "add": "Dodaj adres"
+      },
+      "empty": {
+        "title": "Nie masz jeszcze zapisanych adresów",
+        "description": "ES8 empty state dla zapisanych adresów.",
+        "body": "Zapisz adres, aby przyspieszyć checkout i nie wpisywać ponownie danych dostawy przy następnym zamówieniu."
+      },
+      "list": {
+        "title": "Zapisane adresy",
+        "description": "Przeglądaj dane dostawy, aktualizuj je inline i usuwaj nieaktualne wpisy po potwierdzeniu.",
+        "default_label": "Zapisany adres",
+        "no_phone": "Brak numeru telefonu"
+      },
+      "form": {
+        "create_title": "Dodaj adres",
+        "edit_title": "Edytuj adres",
+        "address_name": "Etykieta adresu",
+        "first_name": "Imię",
+        "last_name": "Nazwisko",
+        "company": "Firma",
+        "address_line": "Ulica i numer",
+        "city": "Miasto",
+        "postal_code": "Kod pocztowy",
+        "province": "Region / województwo",
+        "phone": "Telefon",
+        "country": "Kraj",
+        "errors": {
+          "address_name_required": "Podaj etykietę adresu.",
+          "first_name_required": "Podaj imię.",
+          "last_name_required": "Podaj nazwisko.",
+          "address_required": "Podaj ulicę i numer.",
+          "city_required": "Podaj miasto.",
+          "country_required": "Wybierz kraj.",
+          "postal_code_required": "Podaj kod pocztowy.",
+          "phone_required": "Podaj numer telefonu.",
+          "generic": "Nie udało się zapisać adresu. Spróbuj ponownie."
+        },
+        "success": {
+          "created": "Adres został dodany.",
+          "updated": "Adres został zaktualizowany.",
+          "deleted": "Adres został usunięty."
+        }
+      },
+      "delete": {
+        "title": "Usunąć ten adres?",
+        "description": "Adres zostanie usunięty z konta po potwierdzeniu."
+      }
+    },
+    "reviews_to_write": {
+      "hero": {
+        "eyebrow": "Wave 2 · Opinie do napisania",
+        "title": "Masz jeszcze kilka salonów do ocenienia.",
+        "description": "Oczekujące opinie są grupowane per zamówienie, dzięki czemu szybko dokończysz feedback bez szukania właściwej rezerwacji."
+      },
+      "empty": {
+        "title": "Brak oczekujących opinii",
+        "description": "ES7 delikatny empty state dla promptów opinii.",
+        "body": "Wszystko masz już nadrobione. Gdy nowe zamówienie będzie gotowe do opinii, pojawi się tutaj.",
+        "cta": "Przejdź do moich opinii"
+      },
+      "list": {
+        "title": "Zamówienia czekające na opinię",
+        "description": "Otwórz listę zapisanych opinii, aby dokończyć formularz i porównać opublikowany feedback.",
+        "order_label": "Zamówienie {id}"
+      },
+      "actions": {
+        "write": "Napisz opinię",
+        "compare": "Zobacz moje opinie"
+      }
+    },
+    "written_reviews": {
+      "hero": {
+        "eyebrow": "Wave 2 · Opublikowane opinie",
+        "title": "Zarządzaj feedbackiem, który już wysłałaś lub wysłałeś.",
+        "description": "Edytuj ton wypowiedzi, zaktualizuj ocenę albo usuń opinię z potwierdzeniem i dostępnym komunikatem mutacji."
+      },
+      "empty": {
+        "title": "Nie masz jeszcze napisanych opinii",
+        "description": "Opublikowane opinie pojawią się tutaj po wysłaniu.",
+        "body": "Skorzystaj z listy opinii do napisania, kiedy będziesz gotowa lub gotowy na feedback."
+      },
+      "list": {
+        "title": "Moje opinie",
+        "description": "Zmiany nigdy nie pokazują surowych błędów backendu. Każda mutacja raportuje zlokalizowany wynik.",
+        "unknown_seller": "Salon",
+        "rating": "Ocena {rating}/5",
+        "no_note": "Brak dodatkowej notatki.",
+        "updated_at": "Aktualizacja: {date}"
+      },
+      "form": {
+        "title": "Edytuj opinię",
+        "rating_label": "Ocena",
+        "note_label": "Treść opinii",
+        "errors": {
+          "rating_required": "Wybierz ocenę.",
+          "note_too_long": "Notatka może mieć maksymalnie 300 znaków.",
+          "review_id_required": "Brakuje identyfikatora opinii.",
+          "order_id_required": "Brakuje identyfikatora zamówienia.",
+          "generic": "Nie udało się zaktualizować opinii. Spróbuj ponownie."
+        },
+        "success": {
+          "updated": "Opinia została zaktualizowana.",
+          "deleted": "Opinia została usunięta."
+        }
+      },
+      "delete": {
+        "title": "Usunąć opinię?",
+        "description": "Po potwierdzeniu opublikowana opinia zniknie z widoku konta."
+      }
+    },
+    "settings": {
+      "hero": {
+        "eyebrow": "Wave 2 · Ustawienia konta",
+        "title": "Zbierz profil, bezpieczeństwo i prywatność w jednym hubie.",
+        "description": "Desktop korzysta z zakotwiczonej nawigacji sekcji, a mobile zachowuje te same landmarki bez overflow."
+      },
+      "nav": {
+        "title": "Sekcje",
+        "description": "Skocz do profilu, bezpieczeństwa, powiadomień, płatności i prywatności RODO."
+      },
+      "sections": {
+        "profile": "Profil",
+        "security": "Bezpieczeństwo",
+        "notifications": "Powiadomienia",
+        "payments": "Płatności",
+        "privacy": "Prywatność RODO"
+      },
+      "profile": {
+        "title": "Profil",
+        "description": "Aktualizuj dane kontaktowe z feedbackiem sukcesu po blur.",
+        "first_name": "Imię",
+        "last_name": "Nazwisko",
+        "phone": "Telefon",
+        "email": "E-mail",
+        "locale": "Preferowany język",
+        "errors": {
+          "first_name_required": "Podaj imię.",
+          "last_name_required": "Podaj nazwisko.",
+          "phone_required": "Podaj numer telefonu.",
+          "email_required": "E-mail jest wymagany.",
+          "email_invalid": "Podaj poprawny adres e-mail.",
+          "locale_required": "Wybierz język.",
+          "generic": "Nie udało się zaktualizować profilu. Spróbuj ponownie."
+        },
+        "success": {
+          "updated": "Profil został zaktualizowany."
+        }
+      },
+      "security": {
+        "title": "Bezpieczeństwo",
+        "description": "Zamiast surowych błędów auth UI uruchamia kontrolowany handoff resetu hasła.",
+        "new_password": "Nowe hasło",
+        "confirm_password": "Potwierdź hasło",
+        "errors": {
+          "password_too_short": "Użyj co najmniej 8 znaków.",
+          "password_mismatch": "Hasła muszą być identyczne.",
+          "generic": "Nie udało się uruchomić resetu hasła. Spróbuj ponownie."
+        },
+        "success": {
+          "reset_email_sent": "Wysłaliśmy mail resetujący hasło. Dokończ zmianę z poziomu skrzynki."
+        }
+      },
+      "notifications": {
+        "title": "Powiadomienia",
+        "description": "Wybierz aktualizacje, które mają przejść przez intake request dla tego release’u.",
+        "email_updates": "Powiadomienia mailowe o zamówieniach",
+        "sms_updates": "SMS o wysyłce",
+        "product_news": "Nowości produktowe i redakcyjne",
+        "success": {
+          "request_received": "Otrzymaliśmy prośbę o aktualizację powiadomień."
+        }
+      },
+      "payments": {
+        "title": "Płatności",
+        "description": "Zapisz preferencje płatnicze bez udawania, że nieobsługiwane mutacje backendowe są już zakończone.",
+        "default_card": "Notatka o preferowanej płatności",
+        "invoices_by_email": "Wysyłaj faktury mailem",
+        "success": {
+          "request_received": "Otrzymaliśmy prośbę o aktualizację preferencji płatniczych."
+        }
+      },
+      "privacy": {
+        "title": "Prywatność RODO",
+        "description": "Akcje prywatności są reprezentowane jako intake request do czasu wdrożenia pełnej automatyzacji backendowej.",
+        "request_intake_notice": "Ten release zapisuje zgłoszenie i przekazuje je dalej w bezpieczny sposób. Nie udaje, że eksport lub usunięcie konta zostały już wykonane.",
+        "export_request": "Poproś o eksport danych osobowych",
+        "delete_request": "Poproś o przegląd usunięcia konta",
+        "errors": {
+          "generic": "Nie udało się zapisać wniosku prywatności. Spróbuj ponownie."
+        },
+        "success": {
+          "export_request_received": "Wniosek o eksport danych został przyjęty.",
+          "delete_request_received": "Wniosek o usunięcie konta został przyjęty."
+        }
+      }
+    }
   }
 }
