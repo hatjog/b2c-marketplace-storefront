@@ -87,7 +87,10 @@ function normalizeTextNode(node: LexicalNode): BlogInlineNode {
 }
 
 function safeRichTextHref(href: string): string | null {
-  if (href.startsWith('/') || href.startsWith('#')) return href;
+  // Allow single-slash paths (e.g. /internal/path) and anchors (#section)
+  // but NOT protocol-relative URLs (//evil.example)
+  if (href.startsWith('#')) return href;
+  if (href.startsWith('/') && !href.startsWith('//')) return href;
   if (/^https?:\/\//i.test(href)) return href;
   if (/^mailto:/i.test(href)) return href;
   return null;
