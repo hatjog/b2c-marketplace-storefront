@@ -36,10 +36,13 @@ test('W2-14 baseline index defines 12 desktop recipient entries across 4 locales
   assert.deepEqual([...states].sort(), ['active', 'already_redeemed', 'expired']);
 });
 
-test('W2-14 storefront visual smoke spec exists for active state across breakpoints', () => {
+test('W2-14 storefront visual smoke spec covers active and desktop state matrix', () => {
   const source = read('tests/visual-regression/w2-14-voucher-recipient.spec.ts');
 
   assert.match(source, /E2E-RECIPIENT-ACTIVE-001/);
+  assert.match(source, /E2E-RECIPIENT-EXPIRED-001/);
+  assert.match(source, /E2E-RECIPIENT-REDEEMED-001/);
   assert.match(source, /for \(const locale of LOCALES\)/);
   assert.match(source, /for \(const bp of BREAKPOINTS\)/);
+  assert.match(source, /DESKTOP_STATES/);
 });

@@ -103,22 +103,29 @@ function renderRefundLine(
   policy: VoucherRecipientPolicyView | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>,
 ) {
-  if (!policy?.refund_channel) {
-    return t('rules.refund_fallback');
+  switch (policy?.refund_channel) {
+    case 'original_payment':
+    case 'store_credit':
+    case 'bank_transfer':
+      return t(`rules.refund_channel_values.${policy.refund_channel}`);
+    default:
+      return t('rules.refund_fallback');
   }
-
-  return t(`rules.refund_channel_values.${policy.refund_channel}`);
 }
 
 function renderNoShowLine(
   policy: VoucherRecipientPolicyView | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>,
 ) {
-  if (!policy?.no_show_policy) {
-    return t('rules.no_show_fallback');
+  switch (policy?.no_show_policy) {
+    case 'charge_full':
+    case 'charge_partial':
+    case 'no_charge':
+    case 'forfeit_voucher':
+      return t(`rules.no_show_values.${policy.no_show_policy}`);
+    default:
+      return t('rules.no_show_fallback');
   }
-
-  return t(`rules.no_show_values.${policy.no_show_policy}`);
 }
 
 function FooterLinks({

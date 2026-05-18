@@ -65,8 +65,8 @@ export interface VoucherRecipientPolicyView {
     cutoff_hours: number | null;
     fee_pct: number | null;
   } | null;
-  refund_channel?: string | null;
-  no_show_policy?: string | null;
+  refund_channel?: 'original_payment' | 'store_credit' | 'bank_transfer' | null;
+  no_show_policy?: 'charge_full' | 'charge_partial' | 'no_charge' | 'forfeit_voucher' | null;
 }
 
 export interface VoucherRecipientView {
@@ -110,6 +110,9 @@ type VoucherApiPayload = {
   sender_disclosure_allowed?: boolean | null;
   sender_disclosure_opt_in?: boolean | null;
   pdf_url?: string | null;
+  is_public_entry_confirmed?: boolean | null;
+  public_entry_confirmed?: boolean | null;
+  gift_entry_confirmed?: boolean | null;
   seller_address?: string | null;
   seller_phone?: string | null;
   seller_hours?: string | null;
@@ -370,8 +373,17 @@ function buildSellerAddress(payload: VoucherApiPayload): string | null {
   );
 }
 
-function normalizeRecipientState(rawStatus: string | null | undefined): VoucherRecipientState {
+function normalizeRecipientState(rawStatus: string | null | undefined): VoucherRecipientState | null {
   const normalized = (rawStatus ?? '').trim().toLowerCase();
+  if (
+    normalized === 'active' ||
+    normalized === 'issued' ||
+    normalized === 'available' ||
+    normalized === 'ready'
+  ) {
+    return 'active';
+  }
+
   if (
     normalized === 'redeemed' ||
     normalized === 'claimed' ||
@@ -394,7 +406,36 @@ function normalizeRecipientState(rawStatus: string | null | undefined): VoucherR
     return 'expired';
   }
 
-  return 'active';
+  return null;
+}
+
+function normalizeRefundChannel(
+  value: string | null | undefined
+): VoucherRecipientPolicyView['refund_channel'] {
+  const normalized = (value ?? '').trim().toLowerCase();
+  if (
+    normalized === 'original_payment' ||
+    normalized === 'store_credit' ||
+    normalized === 'bank_transfer'
+  ) {
+    return normalized;
+  }
+  return null;
+}
+
+function normalizeNoShowPolicy(
+  value: string | null | undefined
+): VoucherRecipientPolicyView['no_show_policy'] {
+  const normalized = (value ?? '').trim().toLowerCase();
+  if (
+    normalized === 'charge_full' ||
+    normalized === 'charge_partial' ||
+    normalized === 'no_charge' ||
+    normalized === 'forfeit_voucher'
+  ) {
+    return normalized;
+  }
+  return null;
 }
 
 function projectRecipientAllowlist(
@@ -404,7 +445,17 @@ function projectRecipientAllowlist(
     return null;
   }
 
-  const state = normalizeRecipientState(payload.status);
+  const normalizedState = normalizeRecipientState(payload.status);
+  const isPublicEntryConfirmed = pickBoolean(
+    payload.is_public_entry_confirmed,
+    payload.public_entry_confirmed,
+    payload.gift_entry_confirmed,
+  );
+  const state: VoucherRecipientState =
+    normalizedState === 'active' && !isPublicEntryConfirmed
+      ? 'expired'
+      : normalizedState ?? 'expired';
+  const publicEntryVisible = normalizedState === null ? false : isPublicEntryConfirmed;
   const sellerAddress = buildSellerAddress(payload);
   const sellerPhone = pickString(payload.seller_phone, payload.seller?.phone);
   const sellerHours = pickString(payload.seller_hours, payload.seller?.opening_hours);
@@ -440,7 +491,7 @@ function projectRecipientAllowlist(
     seller_city: sellerCity,
     seller_lat: sellerLat,
     seller_lng: sellerLng,
-    is_public_entry_confirmed: true,
+    is_public_entry_confirmed: publicEntryVisible,
     policy_snapshot: payload.policy_snapshot
       ? {
           extension: payload.policy_snapshot.extension
@@ -457,8 +508,8 @@ function projectRecipientAllowlist(
                 fee_pct: pickNumber(payload.policy_snapshot.cancellation.fee_pct),
               }
             : null,
-          refund_channel: pickString(payload.policy_snapshot.refund_channel),
-          no_show_policy: pickString(payload.policy_snapshot.no_show?.policy),
+          refund_channel: normalizeRefundChannel(payload.policy_snapshot.refund_channel),
+          no_show_policy: normalizeNoShowPolicy(payload.policy_snapshot.no_show?.policy),
         }
       : null,
   };

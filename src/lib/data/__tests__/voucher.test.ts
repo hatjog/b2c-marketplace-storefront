@@ -310,6 +310,7 @@ describe('getVoucherRecipientByCode', () => {
           voucher: {
             ...VALID_VOUCHER_PAYLOAD,
             status: 'ACTIVE',
+            is_public_entry_confirmed: true,
             sender_name: 'Anna',
             sender_disclosure_allowed: true,
             seller_address: 'ul. Testowa 1, Warszawa',
@@ -324,6 +325,51 @@ describe('getVoucherRecipientByCode', () => {
     expect(result?.sender_name).toBe('Anna');
     expect(result?.is_public_entry_confirmed).toBe(true);
     expect(result).not.toHaveProperty('buyer_email');
+  });
+
+  it('fail-softs unknown recipient statuses and active payloads without public entry proof', async () => {
+    for (const payload of [
+      { status: 'pending_kyc', is_public_entry_confirmed: true },
+      { status: 'active', is_public_entry_confirmed: false },
+      { status: 'issued' },
+    ]) {
+      mockMercurClient.store = {
+        vouchers: {
+          byCode: vi.fn().mockResolvedValue({
+            voucher: {
+              ...VALID_VOUCHER_PAYLOAD,
+              ...payload,
+            },
+          }),
+        },
+      };
+
+      const result = await getVoucherRecipientByCode(REAL_CODE);
+      expect(result?.state, JSON.stringify(payload)).toBe('expired');
+      expect(result?.is_public_entry_confirmed, JSON.stringify(payload)).toBe(false);
+    }
+  });
+
+  it('normalizes unknown recipient policy enum values to safe fallbacks', async () => {
+    mockMercurClient.store = {
+      vouchers: {
+        byCode: vi.fn().mockResolvedValue({
+          voucher: {
+            ...VALID_VOUCHER_PAYLOAD,
+            status: 'active',
+            is_public_entry_confirmed: true,
+            policy_snapshot: {
+              refund_channel: 'vendor_wallet',
+              no_show: { policy: 'manual_review' },
+            },
+          },
+        }),
+      },
+    };
+
+    const result = await getVoucherRecipientByCode(REAL_CODE);
+    expect(result?.policy_snapshot?.refund_channel).toBeNull();
+    expect(result?.policy_snapshot?.no_show_policy).toBeNull();
   });
 
   it('maps redeemed and expired backend states to recipient states', async () => {
