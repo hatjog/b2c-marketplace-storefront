@@ -108,6 +108,7 @@ export default async function SellerPage({
     notFound();
   }
 
+  const tDetail = await getTranslations('seller.detail');
   const tShared = await getTranslations('seller.shared');
 
   const user = await retrieveCustomer();

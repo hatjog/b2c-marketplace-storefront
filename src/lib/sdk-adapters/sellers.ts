@@ -40,6 +40,10 @@ type SellerListApiItem = {
   lat?: number | null;
   lng?: number | null;
   address?: string | null;
+  address_line?: string | null;
+  postal_code?: string | null;
+  country_code?: string | null;
+  district?: string | null;
   email?: string | null;
   phone?: string | null;
   status?: string | null;
@@ -54,6 +58,8 @@ type SellerListApiItem = {
     country_code?: string | null;
   }> | null;
   tax_id?: string | null;
+  regon?: string | null;
+  krs?: string | null;
   created_at?: string;
   reviews?: unknown[];
 };
@@ -77,6 +83,31 @@ function pickSellerIdByHandle(
   return (
     sellers.find(seller => normalizeSellerHandle(seller.handle) === normalizedHandle)?.id ?? null
   );
+}
+
+function pickSellerByHandle(
+  sellers: SellerListApiItem[] | undefined,
+  handle: string
+): SellerListApiItem | null {
+  const normalizedHandle = normalizeSellerHandle(handle);
+  if (!normalizedHandle || !Array.isArray(sellers)) return null;
+
+  return sellers.find(seller => normalizeSellerHandle(seller.handle) === normalizedHandle) ?? null;
+}
+
+async function querySellersByHandle(
+  handle: string,
+  options?: { fields?: string; useNoCache?: boolean }
+): Promise<SellerListApiItem | null> {
+  const query = {
+    handle,
+    limit: 1,
+    ...(options?.fields ? { fields: options.fields } : {}),
+    ...(options?.useNoCache ? { fetchOptions: { cache: 'no-cache' as const } } : {})
+  };
+
+  const result = (await mercurClient.store.sellers.query(query)) as { sellers?: SellerListApiItem[] };
+  return pickSellerByHandle(result?.sellers, handle);
 }
 
 /**
@@ -163,10 +194,31 @@ export async function fetchSellerById(id: string, fields?: string): Promise<Sell
   }
 }
 
+export async function fetchSellerSummaryByHandle(
+  handle: string,
+  fields?: string
+): Promise<SellerProps | null> {
+  try {
+    const seller =
+      (await querySellersByHandle(handle, { fields })) ??
+      (await querySellersByHandle(handle, { fields, useNoCache: true }));
+
+    return seller ? mapSellerApiToProps(seller) : null;
+  } catch (err) {
+    console.error('[sdk-adapters/sellers] fetchSellerSummaryByHandle failed', {
+      handle,
+      error: err instanceof Error ? err.message : String(err)
+    });
+    return null;
+  }
+}
+
 /**
  * Map Mercur 2 seller API item to GP `SellerProps` domain type.
  */
 function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
+  const primaryLocation = Array.isArray(s.locations) ? (s.locations.find(Boolean) ?? null) : null;
+
   return {
     id: s.id,
     name: s.name,
@@ -185,8 +237,13 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? null,
     locations: s.locations ?? null,
     city: s.city ?? undefined,
-    address_line: undefined,
-    postal_code: undefined,
-    country_code: undefined
+    address_line: s.address_line ?? primaryLocation?.address_line ?? undefined,
+    postal_code: s.postal_code ?? primaryLocation?.postal_code ?? undefined,
+    country_code: s.country_code ?? primaryLocation?.country_code ?? undefined,
+    district: s.district ?? primaryLocation?.district ?? null,
+    lat: typeof s.lat === 'number' ? s.lat : null,
+    lng: typeof s.lng === 'number' ? s.lng : null,
+    regon: s.regon ?? null,
+    krs: s.krs ?? null
   };
 }
