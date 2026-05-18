@@ -5,7 +5,7 @@
 //   #2 <SellerProof — seller proof >=3 proof points (years + rating + ratingCount)
 //   #3 <VoucherRulesCard — voucher rules clarity on PDP
 
-import NotFound from '@/app/not-found';
+import { notFound } from 'next/navigation';
 import { SellerProof } from '@/components/atoms/SellerProof/SellerProof';
 import { TrustBar } from '@/components/atoms/TrustBar/TrustBar';
 import { VerifiedMark } from '@/components/atoms/VerifiedMark/VerifiedMark';
@@ -53,11 +53,11 @@ export const ProductDetailsPage = async ({
   // memoized payload here, so listProducts() runs once per render.
   const prod = await fetchProductForDetailPage(handle, countryCode);
 
-  if (!prod) return NotFound();
-
-  if (!isSellerActive(prod.seller)) {
-    return NotFound();
-  }
+  // notFound() throws — if prod is null, execution stops here.
+  // W5-05: Next.js notFound() triggers the nearest not-found.tsx boundary,
+  // exposing data-testid="product-not-found" via products/[handle]/not-found.tsx.
+  if (!prod) notFound();
+  if (!isSellerActive(prod.seller)) notFound();
 
   const product = {
     ...prod,
