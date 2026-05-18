@@ -221,6 +221,162 @@
       "context_chip_back": "Zurück zum Salon",
       "context_chip_close": "Schließen"
     },
+    "directory_v180": {
+      "meta_title": "Salonverzeichnis | BonBeauty",
+      "meta_description": "Durchsuchen Sie verifizierte BonBeauty Salons nach Lage, Leistungskategorie und Vertrauenssignalen.",
+      "title": "Salons im Takt Ihres Alltags.",
+      "intro": "Vergleichen Sie verifizierte Salons nach Stadtteil, Spezialisierung und Vertrauenssignalen, bevor Sie Ihren Termin auswählen.",
+      "verified_badge": "Verifizierter Salon",
+      "view_offers_cta": "Angebote ansehen",
+      "results_count": "{count} Salons gefunden",
+      "empty_title": "Kein Salon passt zu diesen Filtern.",
+      "empty_body": "Versuchen Sie einen anderen Ort, eine andere Kategorie oder Sortierung, um die Liste zu erweitern.",
+      "clear_filters": "Filter löschen",
+      "trust_years": "{count} Jahre",
+      "trust_treatments": "{count} Behandlungen",
+      "trust_reviews": "{count} Bewertungen",
+      "filters": {
+        "location_label": "Standort",
+        "location_aria": "Salons nach Standort filtern",
+        "location_all": "Alle Standorte",
+        "category_label": "Leistungskategorie",
+        "category_aria": "Salons nach Leistungskategorie filtern",
+        "category_all": "Alle Kategorien",
+        "sort_label": "Sortierung",
+        "sort_aria": "Salons sortieren",
+        "sort_rating": "Beste Bewertung",
+        "sort_name": "Name A-Z",
+        "sort_treatments": "Meiste Behandlungen",
+        "apply": "Filter anwenden"
+      },
+      "mobile_toggle": {
+        "list": "Liste",
+        "map": "Karte",
+        "aria": "Salon-Ansicht auswählen"
+      },
+      "map": {
+        "title": "Kartenplatzhalter für Standorte",
+        "badge": "map placeholder"
+      }
+    },
+    "detail_v180": {
+      "meta_fallback_title": "Salon nicht gefunden | BonBeauty",
+      "meta_default_description": "BonBeauty Salonprofil mit Angeboten, Standort und Vertrauenssignalen.",
+      "meta_title": "{name} | BonBeauty Salon",
+      "meta_description": "Prüfen Sie Angebote, Standort und rechtliche Angaben von {name} im Stadtteil {district}.",
+      "verified_badge": "Verifizierter BonBeauty Salon",
+      "cta_view_offers": "Angebote ansehen",
+      "trust": {
+        "aria": "Vertrauensübersicht des Salons",
+        "years_label": "Erfahrung",
+        "years_value": "{count} Jahre aktiv",
+        "treatments_label": "Durchgeführte Behandlungen",
+        "treatments_value": "{count} Behandlungen",
+        "reviews_label": "Bewertungsvolumen",
+        "reviews_value": "{count} Bewertungen",
+        "verified_label": "Verifizierung",
+        "verified_value": "Identität geprüft"
+      },
+      "tabs": {
+        "aria": "Informationsbereiche des Salons",
+        "offers": "Angebote",
+        "about": "Über uns",
+        "location": "Standort",
+        "reviews": "Bewertungen",
+        "policy": "Salonregeln"
+      },
+      "offers": {
+        "heading": "Verfügbare Angebote",
+        "empty": "Dieser Salon hat noch keine Angebote veröffentlicht.",
+        "cta": "Angebot öffnen"
+      },
+      "about": {
+        "heading": "Über den Salon",
+        "fallback": "Der Salon hat noch keine vollständige Beschreibung hinzugefügt."
+      },
+      "location": {
+        "heading": "Standort",
+        "phone": "Telefon",
+        "hours": "Öffnungszeiten",
+        "map_title": "Standort-Kartenplatzhalter",
+        "map_badge": "Adressvorschau"
+      },
+      "reviews": {
+        "heading": "Bewertungen",
+        "summary": "Verfügbare Kundenbewertungen: {count}.",
+        "link": "Alle Bewertungen öffnen",
+        "empty": "Für diesen Salon wurden noch keine Bewertungen veröffentlicht.",
+        "rating": "Bewertung {rating} / 5"
+      },
+      "policy": {
+        "heading": "Salonregeln",
+        "fallback": "Der Salon hat noch keine Regel-Details veröffentlicht."
+      },
+      "legal": {
+        "heading": "Rechtliche Verkäuferangaben",
+        "nip": "NIP",
+        "regon": "REGON",
+        "krs": "KRS"
+      },
+      "bottom_cta": {
+        "caption": "Bereit, das Angebot zu vergleichen?",
+        "label": "Angebote ansehen"
+      }
+    },
+    "reviews_v180": {
+      "meta": {
+        "fallbackTitle": "Salonbewertungen | BonBeauty",
+        "fallbackDescription": "Salonbewertungen, Bewertungsübersicht und verifizierte Besuche auf BonBeauty.",
+        "title": "Bewertungen für {name} | BonBeauty",
+        "description": "Lesen Sie {count} Bewertungen über {name}, inklusive Bewertungsverteilung und Antworten des Salons."
+      },
+      "breadcrumbs": {
+        "reviews": "Bewertungen"
+      },
+      "backToSeller": "Zurück zum Salonprofil",
+      "verifiedBadge": "Verifizierte Besuche",
+      "title": "Bewertungen für {name}",
+      "intro": "Verifizierte Besuche, Bewertungsverteilung und Antworten des Salons an einem Ort.",
+      "summary": {
+        "eyebrow": "Durchschnittsbewertung",
+        "noRating": "Noch keine Bewertung",
+        "ratingLabel": "{count, plural, one {# Bewertung} other {# Bewertungen}}",
+        "ratingLine": "{rating} / 5"
+      },
+      "filters": {
+        "heading": "Nach Bewertung filtern",
+        "clear": "Filter löschen",
+        "aria": "Bewertungen nach Sternen filtern",
+        "ratingChip": "{rating} Sterne"
+      },
+      "list": {
+        "heading": "Alle Bewertungen",
+        "results": "{count, plural, one {# Ergebnis} other {# Ergebnisse}}",
+        "verifiedVisit": "Verifizierter Besuch",
+        "ratingAria": "Bewertung {rating} von 5",
+        "ratingVisible": "{rating}/5",
+        "expand": "Mehr anzeigen",
+        "replyLabel": "Antwort des Salons"
+      },
+      "sort": {
+        "aria": "Bewertungssortierung",
+        "newest": "Neueste",
+        "highest": "Höchste",
+        "lowest": "Niedrigste"
+      },
+      "empty": {
+        "title": "Noch keine Bewertungen",
+        "body": "Dieser Salon hat noch keine Bewertungen veröffentlicht. Kehren Sie zum Angebot zurück oder melden Sie sich an, damit Sie nach Ihrem ersten Besuch leichter wiederkommen.",
+        "loggedInCta": "Salonangebot ansehen",
+        "guestCta": "Anmelden"
+      },
+      "pagination": {
+        "aria": "Pagination der Salonbewertungen",
+        "status": "Seite {page} von {totalPages}",
+        "previous": "Zurück",
+        "next": "Mehr anzeigen"
+      }
+    },
     "shared": {
       "home": "Startseite",
       "salons": "Salons",
@@ -634,6 +790,101 @@
   "routes": {
     "terms_of_service": "/nutzungsbedingungen",
     "privacy_policy": "/datenschutzrichtlinie"
+  },
+  "collections_editorial_v180": {
+    "meta": {
+      "title": "Kollektionen | BonBeauty",
+      "description": "Editorial Discovery durch BonBeauty-Kollektionen: Auswahl der Redaktion, saisonale Rituale und empfohlene Geschenke."
+    },
+    "breadcrumbs": {
+      "home": "Startseite",
+      "collections": "Kollektionen"
+    },
+    "hero": {
+      "eyebrow": "Redaktionelle Entdeckung",
+      "title": "Kollektionen von Hand kuratiert, nicht gerankt.",
+      "body": "Entdecken Sie thematische Shortlists des BonBeauty-Teams. Jede Kollektion hat eine klare Perspektive und gibt sich nicht als algorithmische Personalisierung aus.",
+      "cta": "Hervorgehobene Kollektion öffnen",
+      "noAlgorithm": "Ohne Algorithmus"
+    },
+    "featured": {
+      "label": "Hervorgehobene Kollektion",
+      "itemCount": "{count, plural, one {# Element} other {# Elemente}}"
+    },
+    "buckets": {
+      "aria": "Kategorien der Editorial-Discovery-Kollektionen",
+      "editorial": {
+        "eyebrow": "Auswahl der Redaktion",
+        "title": "Ein Einstieg in die BonBeauty-Entdeckung",
+        "body": "Kollektionen, die auf Entscheidungsqualität statt auf kurzfristige Nachfrage zielen."
+      },
+      "seasonal": {
+        "eyebrow": "Saisonal",
+        "title": "Rituale für einen bestimmten Moment im Jahr",
+        "body": "Auswahlen für Regeneration, Ruhe oder ein schnelles Refresh, wenn sich der Wochenrhythmus ändert."
+      },
+      "recommended": {
+        "eyebrow": "Empfohlen",
+        "title": "Kollektionen für einfachere Geschenkentscheidungen",
+        "body": "Shortlists für Menschen, die schnell entscheiden möchten, ohne die Absicht zu verlieren."
+      }
+    },
+    "grid": {
+      "title": "Alle Kollektionen durchsuchen",
+      "body": "Jede Karte öffnet eine eigene Editorial-Seite mit Intro, Zitat, kuratierter Item-Liste und verwandten Kollektionen.",
+      "cardAria": "Kollektion {title} öffnen",
+      "itemCount": "{count, plural, one {# Element} other {# Elemente}}"
+    },
+    "bucketLabel": {
+      "editorial": "Auswahl der Redaktion",
+      "seasonal": "Saisonal",
+      "recommended": "Empfohlen"
+    },
+    "detail": {
+      "meta": {
+        "fallbackTitle": "Kollektion | BonBeauty",
+        "fallbackDescription": "Editorial-Kollektion auf BonBeauty.",
+        "title": "{title} | BonBeauty Kollektion",
+        "description": "{title} enthält {count} kuratierte Elemente in einer BonBeauty-Editorial-Kollektion."
+      },
+      "breadcrumbs": {
+        "home": "Startseite",
+        "collections": "Kollektionen"
+      },
+      "eyebrow": "Kollektionsmodus",
+      "calloutLabel": "Editorial-Notiz",
+      "quoteLabel": "Warum diese Kollektion",
+      "toolbar": {
+        "title": "Kuratierten Elemente",
+        "count": "{count, plural, one {# Element} other {# Elemente}}",
+        "sortAria": "Sortierung der Kollektionselemente",
+        "sort": {
+          "curated": "Redaktionelle Reihenfolge",
+          "title-asc": "Titel A-Z",
+          "title-desc": "Titel Z-A"
+        }
+      },
+      "empty": {
+        "title": "Hier ist noch nichts",
+        "body": "Diese Kollektion ist für die nächste Shortlist bereit, aber die Redaktion hat noch keine Elemente veröffentlicht.",
+        "cta": "Zurück zu den Kollektionen"
+      },
+      "grid": {
+        "cardAria": "Element {title} öffnen",
+        "curatedLabel": "Redaktionelle Reihenfolge",
+        "cta": "Details ansehen"
+      },
+      "related": {
+        "title": "Verwandte Kollektionen",
+        "body": "Wenn diese Richtung zu Ihrer Stimmung passt, finden Sie hier weitere redaktionelle Entdeckungspfade.",
+        "cardAria": "Verwandte Kollektion {title} öffnen"
+      },
+      "bucketLabel": {
+        "editorial": "Auswahl der Redaktion",
+        "seasonal": "Saisonal",
+        "recommended": "Empfohlen"
+      }
+    }
   },
   "wishlist": {
     "all": "Alle",

@@ -220,6 +220,162 @@
       "context_chip_back": "Back to salon",
       "context_chip_close": "Close"
     },
+    "directory_v180": {
+      "meta_title": "Salon directory | BonBeauty",
+      "meta_description": "Browse verified BonBeauty salons by location, service category and trust signals.",
+      "title": "Salons near your routine.",
+      "intro": "Compare verified salons by district, service focus and trust signals before you choose where to book.",
+      "verified_badge": "Verified salon",
+      "view_offers_cta": "View offers",
+      "results_count": "{count} salons found",
+      "empty_title": "No salons match these filters.",
+      "empty_body": "Try another location, category or sort order to widen the list.",
+      "clear_filters": "Clear filters",
+      "trust_years": "{count} years",
+      "trust_treatments": "{count} treatments",
+      "trust_reviews": "{count} reviews",
+      "filters": {
+        "location_label": "Location",
+        "location_aria": "Filter salons by location",
+        "location_all": "All locations",
+        "category_label": "Service category",
+        "category_aria": "Filter salons by service category",
+        "category_all": "All categories",
+        "sort_label": "Sort",
+        "sort_aria": "Sort salons",
+        "sort_rating": "Best rated",
+        "sort_name": "Name A-Z",
+        "sort_treatments": "Most treatments",
+        "apply": "Apply filters"
+      },
+      "mobile_toggle": {
+        "list": "List",
+        "map": "Map",
+        "aria": "Choose seller view"
+      },
+      "map": {
+        "title": "Map preview placeholder",
+        "badge": "map placeholder"
+      }
+    },
+    "detail_v180": {
+      "meta_fallback_title": "Salon not found | BonBeauty",
+      "meta_default_description": "BonBeauty salon profile with offers, location and trust information.",
+      "meta_title": "{name} | BonBeauty salon",
+      "meta_description": "Check offers, location and legal details for {name} in {district}.",
+      "verified_badge": "Verified BonBeauty salon",
+      "cta_view_offers": "View offers",
+      "trust": {
+        "aria": "Seller trust summary",
+        "years_label": "Experience",
+        "years_value": "{count} years active",
+        "treatments_label": "Completed treatments",
+        "treatments_value": "{count} treatments",
+        "reviews_label": "Review volume",
+        "reviews_value": "{count} reviews",
+        "verified_label": "Verification",
+        "verified_value": "Identity checked"
+      },
+      "tabs": {
+        "aria": "Seller information sections",
+        "offers": "Offers",
+        "about": "About",
+        "location": "Location",
+        "reviews": "Reviews",
+        "policy": "Salon policy"
+      },
+      "offers": {
+        "heading": "Available offers",
+        "empty": "This salon has not published offers yet.",
+        "cta": "Open offer"
+      },
+      "about": {
+        "heading": "About the salon",
+        "fallback": "The salon has not added a full description yet."
+      },
+      "location": {
+        "heading": "Location",
+        "phone": "Phone",
+        "hours": "Opening hours",
+        "map_title": "Location map placeholder",
+        "map_badge": "address preview"
+      },
+      "reviews": {
+        "heading": "Reviews",
+        "summary": "{count} customer reviews available for this salon.",
+        "link": "Open all reviews",
+        "empty": "No reviews have been published yet.",
+        "rating": "Rating {rating} / 5"
+      },
+      "policy": {
+        "heading": "Salon policy",
+        "fallback": "The salon has not published policy details yet."
+      },
+      "legal": {
+        "heading": "Legal seller details",
+        "nip": "NIP",
+        "regon": "REGON",
+        "krs": "KRS"
+      },
+      "bottom_cta": {
+        "caption": "Ready to compare the offer?",
+        "label": "View offers"
+      }
+    },
+    "reviews_v180": {
+      "meta": {
+        "fallbackTitle": "Seller reviews | BonBeauty",
+        "fallbackDescription": "Seller reviews, rating summary and verified visits on BonBeauty.",
+        "title": "{name} reviews | BonBeauty",
+        "description": "Read {count} reviews about {name}, including rating breakdown and salon replies."
+      },
+      "breadcrumbs": {
+        "reviews": "Reviews"
+      },
+      "backToSeller": "Back to salon profile",
+      "verifiedBadge": "Verified visits",
+      "title": "Reviews for {name}",
+      "intro": "Verified visits, rating distribution and salon replies in one place.",
+      "summary": {
+        "eyebrow": "Average rating",
+        "noRating": "No rating yet",
+        "ratingLabel": "{count, plural, one {# review} other {# reviews}}",
+        "ratingLine": "{rating} / 5"
+      },
+      "filters": {
+        "heading": "Filter by rating",
+        "clear": "Clear filter",
+        "aria": "Filter reviews by rating",
+        "ratingChip": "{rating} stars"
+      },
+      "list": {
+        "heading": "All reviews",
+        "results": "{count, plural, one {# result} other {# results}}",
+        "verifiedVisit": "Verified visit",
+        "ratingAria": "Rating {rating} out of 5",
+        "ratingVisible": "{rating}/5",
+        "expand": "Show more",
+        "replyLabel": "Salon reply"
+      },
+      "sort": {
+        "aria": "Review sorting",
+        "newest": "Newest",
+        "highest": "Highest",
+        "lowest": "Lowest"
+      },
+      "empty": {
+        "title": "No reviews yet",
+        "body": "This salon has not published any reviews yet. Return to the offer or sign in so it is easier to come back after your first visit.",
+        "loggedInCta": "View salon offer",
+        "guestCta": "Sign in"
+      },
+      "pagination": {
+        "aria": "Salon reviews pagination",
+        "status": "Page {page} of {totalPages}",
+        "previous": "Previous",
+        "next": "Load more"
+      }
+    },
     "shared": {
       "home": "Home",
       "salons": "Salons",
@@ -633,6 +789,101 @@
   "routes": {
     "terms_of_service": "/terms-of-service",
     "privacy_policy": "/privacy-policy"
+  },
+  "collections_editorial_v180": {
+    "meta": {
+      "title": "Collections | BonBeauty",
+      "description": "Editorial discovery through BonBeauty collections: editor’s choice, seasonal rituals and recommended gifts."
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "collections": "Collections"
+    },
+    "hero": {
+      "eyebrow": "Editorial discovery",
+      "title": "Collections arranged by hand, not by ranking.",
+      "body": "Browse thematic shortlists prepared by the BonBeauty team. Each collection has a clear point of view and does not pretend to be algorithmic personalization.",
+      "cta": "Open featured collection",
+      "noAlgorithm": "No algorithm"
+    },
+    "featured": {
+      "label": "Featured collection",
+      "itemCount": "{count, plural, one {# item} other {# items}}"
+    },
+    "buckets": {
+      "aria": "Editorial discovery collection categories",
+      "editorial": {
+        "eyebrow": "Editor’s choice",
+        "title": "A starting point for discovering BonBeauty",
+        "body": "Collections built around decision quality rather than short-term demand."
+      },
+      "seasonal": {
+        "eyebrow": "Seasonal",
+        "title": "Rituals tied to a specific moment of the year",
+        "body": "Selections for recovery, rest or a quick refresh when your weekly rhythm changes."
+      },
+      "recommended": {
+        "eyebrow": "Recommended",
+        "title": "Collections that simplify gifting decisions",
+        "body": "Shortlists for people who want to decide quickly without giving up intent."
+      }
+    },
+    "grid": {
+      "title": "Browse every collection",
+      "body": "Each card opens a dedicated editorial page with an intro, a quote, a curated item list and related collections.",
+      "cardAria": "Open collection {title}",
+      "itemCount": "{count, plural, one {# item} other {# items}}"
+    },
+    "bucketLabel": {
+      "editorial": "Editor’s choice",
+      "seasonal": "Seasonal",
+      "recommended": "Recommended"
+    },
+    "detail": {
+      "meta": {
+        "fallbackTitle": "Collection | BonBeauty",
+        "fallbackDescription": "Editorial collection on BonBeauty.",
+        "title": "{title} | BonBeauty collection",
+        "description": "{title} contains {count} curated items in a BonBeauty editorial collection."
+      },
+      "breadcrumbs": {
+        "home": "Home",
+        "collections": "Collections"
+      },
+      "eyebrow": "Collection mode",
+      "calloutLabel": "Editorial note",
+      "quoteLabel": "Why this collection",
+      "toolbar": {
+        "title": "Curated items",
+        "count": "{count, plural, one {# item} other {# items}}",
+        "sortAria": "Collection item sorting",
+        "sort": {
+          "curated": "Editorial order",
+          "title-asc": "Title A-Z",
+          "title-desc": "Title Z-A"
+        }
+      },
+      "empty": {
+        "title": "Nothing here yet",
+        "body": "This collection is ready for the next shortlist, but the editorial team has not published any items yet.",
+        "cta": "Back to collections"
+      },
+      "grid": {
+        "cardAria": "Open item {title}",
+        "curatedLabel": "Curated order",
+        "cta": "View details"
+      },
+      "related": {
+        "title": "Related collections",
+        "body": "If this direction matches your mood, these are the next editorial paths worth exploring.",
+        "cardAria": "Open related collection {title}"
+      },
+      "bucketLabel": {
+        "editorial": "Editor’s choice",
+        "seasonal": "Seasonal",
+        "recommended": "Recommended"
+      }
+    }
   },
   "wishlist": {
     "all": "All",

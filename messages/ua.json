@@ -221,6 +221,162 @@
       "context_chip_back": "Повернутися до салону",
       "context_chip_close": "Закрити"
     },
+    "directory_v180": {
+      "meta_title": "Каталог салонів | BonBeauty",
+      "meta_description": "Переглядайте перевірені салони BonBeauty за локацією, категорією послуг і сигналами довіри.",
+      "title": "Салони поруч із вашим ритмом.",
+      "intro": "Порівнюйте перевірені салони за районом, спеціалізацією та сигналами довіри перед тим, як забронювати візит.",
+      "verified_badge": "Перевірений салон",
+      "view_offers_cta": "Переглянути пропозиції",
+      "results_count": "Знайдено {count} салонів",
+      "empty_title": "Жоден салон не відповідає цим фільтрам.",
+      "empty_body": "Спробуйте іншу локацію, категорію або порядок сортування, щоб розширити список.",
+      "clear_filters": "Очистити фільтри",
+      "trust_years": "{count} років",
+      "trust_treatments": "{count} процедур",
+      "trust_reviews": "{count} відгуків",
+      "filters": {
+        "location_label": "Локація",
+        "location_aria": "Фільтрувати салони за локацією",
+        "location_all": "Усі локації",
+        "category_label": "Категорія послуг",
+        "category_aria": "Фільтрувати салони за категорією послуг",
+        "category_all": "Усі категорії",
+        "sort_label": "Сортування",
+        "sort_aria": "Сортувати салони",
+        "sort_rating": "Найкращий рейтинг",
+        "sort_name": "Назва А-Я",
+        "sort_treatments": "Найбільше процедур",
+        "apply": "Застосувати фільтри"
+      },
+      "mobile_toggle": {
+        "list": "Список",
+        "map": "Карта",
+        "aria": "Вибрати вигляд салонів"
+      },
+      "map": {
+        "title": "Плейсхолдер карти локацій",
+        "badge": "map placeholder"
+      }
+    },
+    "detail_v180": {
+      "meta_fallback_title": "Салон не знайдено | BonBeauty",
+      "meta_default_description": "Профіль салону BonBeauty з пропозиціями, локацією та сигналами довіри.",
+      "meta_title": "{name} | салон BonBeauty",
+      "meta_description": "Перевірте пропозиції, локацію та юридичні дані салону {name} у районі {district}.",
+      "verified_badge": "Перевірений салон BonBeauty",
+      "cta_view_offers": "Переглянути пропозиції",
+      "trust": {
+        "aria": "Підсумок довіри до салону",
+        "years_label": "Досвід",
+        "years_value": "{count} років роботи",
+        "treatments_label": "Проведені процедури",
+        "treatments_value": "{count} процедур",
+        "reviews_label": "Обсяг відгуків",
+        "reviews_value": "{count} відгуків",
+        "verified_label": "Перевірка",
+        "verified_value": "Особу підтверджено"
+      },
+      "tabs": {
+        "aria": "Розділи інформації про салон",
+        "offers": "Пропозиції",
+        "about": "Про нас",
+        "location": "Локація",
+        "reviews": "Відгуки",
+        "policy": "Правила салону"
+      },
+      "offers": {
+        "heading": "Доступні пропозиції",
+        "empty": "Цей салон ще не опублікував пропозицій.",
+        "cta": "Відкрити пропозицію"
+      },
+      "about": {
+        "heading": "Про салон",
+        "fallback": "Салон ще не додав повного опису."
+      },
+      "location": {
+        "heading": "Локація",
+        "phone": "Телефон",
+        "hours": "Години роботи",
+        "map_title": "Плейсхолдер карти локації",
+        "map_badge": "попередній перегляд адреси"
+      },
+      "reviews": {
+        "heading": "Відгуки",
+        "summary": "Доступно відгуків клієнтів: {count}.",
+        "link": "Відкрити всі відгуки",
+        "empty": "У цього салону ще немає опублікованих відгуків.",
+        "rating": "Рейтинг {rating} / 5"
+      },
+      "policy": {
+        "heading": "Правила салону",
+        "fallback": "Салон ще не опублікував деталі правил."
+      },
+      "legal": {
+        "heading": "Юридичні дані продавця",
+        "nip": "NIP",
+        "regon": "REGON",
+        "krs": "KRS"
+      },
+      "bottom_cta": {
+        "caption": "Готові порівняти пропозицію?",
+        "label": "Переглянути пропозиції"
+      }
+    },
+    "reviews_v180": {
+      "meta": {
+        "fallbackTitle": "Відгуки про салон | BonBeauty",
+        "fallbackDescription": "Відгуки про салон, підсумок рейтингу та підтверджені візити на BonBeauty.",
+        "title": "Відгуки про {name} | BonBeauty",
+        "description": "Прочитайте {count} відгуків про {name}, перегляньте розподіл оцінок і відповіді салону."
+      },
+      "breadcrumbs": {
+        "reviews": "Відгуки"
+      },
+      "backToSeller": "Повернутися до профілю салону",
+      "verifiedBadge": "Підтверджені візити",
+      "title": "Відгуки про {name}",
+      "intro": "Підтверджені візити, розподіл оцінок і відповіді салону в одному місці.",
+      "summary": {
+        "eyebrow": "Середня оцінка",
+        "noRating": "Оцінок ще немає",
+        "ratingLabel": "{count, plural, one {# відгук} few {# відгуки} many {# відгуків} other {# відгуків}}",
+        "ratingLine": "{rating} / 5"
+      },
+      "filters": {
+        "heading": "Фільтр за оцінкою",
+        "clear": "Очистити фільтр",
+        "aria": "Фільтрувати відгуки за оцінкою",
+        "ratingChip": "{rating} зірок"
+      },
+      "list": {
+        "heading": "Усі відгуки",
+        "results": "{count, plural, one {# результат} few {# результати} many {# результатів} other {# результатів}}",
+        "verifiedVisit": "Підтверджений візит",
+        "ratingAria": "Оцінка {rating} з 5",
+        "ratingVisible": "{rating}/5",
+        "expand": "Показати більше",
+        "replyLabel": "Відповідь салону"
+      },
+      "sort": {
+        "aria": "Сортування відгуків",
+        "newest": "Найновіші",
+        "highest": "Найвищі",
+        "lowest": "Найнижчі"
+      },
+      "empty": {
+        "title": "Відгуків ще немає",
+        "body": "Цей салон ще не опублікував відгуків. Поверніться до пропозиції або увійдіть, щоб легше повернутися після першого візиту.",
+        "loggedInCta": "Переглянути пропозицію салону",
+        "guestCta": "Увійти"
+      },
+      "pagination": {
+        "aria": "Пагінація відгуків салону",
+        "status": "Сторінка {page} з {totalPages}",
+        "previous": "Попередні",
+        "next": "Показати більше"
+      }
+    },
     "shared": {
       "home": "Головна сторінка",
       "salons": "Салони",
@@ -634,6 +790,101 @@
   "routes": {
     "terms_of_service": "/umovy-vykorystannia",
     "privacy_policy": "/polityka-konfidentsiinosti"
+  },
+  "collections_editorial_v180": {
+    "meta": {
+      "title": "Колекції | BonBeauty",
+      "description": "Editorial discovery через колекції BonBeauty: вибір редакції, сезонні ритуали та рекомендовані подарунки."
+    },
+    "breadcrumbs": {
+      "home": "Головна сторінка",
+      "collections": "Колекції"
+    },
+    "hero": {
+      "eyebrow": "Редакційне відкриття",
+      "title": "Колекції, зібрані вручну, а не ранжовані алгоритмом.",
+      "body": "Переглядайте тематичні shortlist-и команди BonBeauty. Кожна колекція має власну точку зору і не маскується під алгоритмічну персоналізацію.",
+      "cta": "Відкрити вибрану колекцію",
+      "noAlgorithm": "Без алгоритму"
+    },
+    "featured": {
+      "label": "Вибрана колекція",
+      "itemCount": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}}"
+    },
+    "buckets": {
+      "aria": "Категорії колекцій editorial discovery",
+      "editorial": {
+        "eyebrow": "Вибір редакції",
+        "title": "Точка входу в відкриття BonBeauty",
+        "body": "Колекції, побудовані навколо якості рішення, а не короткострокового попиту."
+      },
+      "seasonal": {
+        "eyebrow": "Сезонні",
+        "title": "Ритуали під конкретний момент року",
+        "body": "Добірки для відновлення, відпочинку або швидкого оновлення, коли змінюється ритм тижня."
+      },
+      "recommended": {
+        "eyebrow": "Рекомендовані",
+        "title": "Колекції для простішого вибору подарунка",
+        "body": "Shortlist-и для тих, хто хоче вирішити швидко, але свідомо."
+      }
+    },
+    "grid": {
+      "title": "Перегляньте всі колекції",
+      "body": "Кожна картка веде на окрему editorial-сторінку з intro, цитатою, curated-списком позицій і пов’язаними колекціями.",
+      "cardAria": "Відкрити колекцію {title}",
+      "itemCount": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}}"
+    },
+    "bucketLabel": {
+      "editorial": "Вибір редакції",
+      "seasonal": "Сезонні",
+      "recommended": "Рекомендовані"
+    },
+    "detail": {
+      "meta": {
+        "fallbackTitle": "Колекція | BonBeauty",
+        "fallbackDescription": "Editorial collection на BonBeauty.",
+        "title": "{title} | колекція BonBeauty",
+        "description": "{title} містить {count} curated-позицій у editorial collection BonBeauty."
+      },
+      "breadcrumbs": {
+        "home": "Головна сторінка",
+        "collections": "Колекції"
+      },
+      "eyebrow": "Режим колекції",
+      "calloutLabel": "Редакційна нотатка",
+      "quoteLabel": "Чому саме ця колекція",
+      "toolbar": {
+        "title": "Кураторовані позиції",
+        "count": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}}",
+        "sortAria": "Сортування позицій у колекції",
+        "sort": {
+          "curated": "Редакційний порядок",
+          "title-asc": "Назва А-Я",
+          "title-desc": "Назва Я-А"
+        }
+      },
+      "empty": {
+        "title": "Тут ще нічого немає",
+        "body": "Ця колекція готова до наступного shortlist-у, але редакція ще не опублікувала позиції.",
+        "cta": "Повернутися до колекцій"
+      },
+      "grid": {
+        "cardAria": "Відкрити позицію {title}",
+        "curatedLabel": "Редакційний порядок",
+        "cta": "Переглянути деталі"
+      },
+      "related": {
+        "title": "Пов’язані колекції",
+        "body": "Якщо цей напрямок збігається з вашим настроєм, тут знайдете наступні editorial-шляхи відкриття.",
+        "cardAria": "Відкрити пов’язану колекцію {title}"
+      },
+      "bucketLabel": {
+        "editorial": "Вибір редакції",
+        "seasonal": "Сезонні",
+        "recommended": "Рекомендовані"
+      }
+    }
   },
   "wishlist": {
     "all": "Всі",

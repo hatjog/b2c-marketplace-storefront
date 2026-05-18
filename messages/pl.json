@@ -220,6 +220,162 @@
       "context_chip_back": "Wróć do salonu",
       "context_chip_close": "Zamknij"
     },
+    "directory_v180": {
+      "meta_title": "Katalog salonów | BonBeauty",
+      "meta_description": "Przeglądaj zweryfikowane salony BonBeauty według lokalizacji, kategorii usług i sygnałów zaufania.",
+      "title": "Salony blisko Twojego rytmu.",
+      "intro": "Porównaj zweryfikowane salony po dzielnicy, specjalizacji i sygnałach zaufania zanim zdecydujesz, gdzie zarezerwować wizytę.",
+      "verified_badge": "Zweryfikowany salon",
+      "view_offers_cta": "Zobacz oferty",
+      "results_count": "Znaleziono {count} salonów",
+      "empty_title": "Żaden salon nie pasuje do tych filtrów.",
+      "empty_body": "Zmień lokalizację, kategorię albo sortowanie, aby poszerzyć listę wyników.",
+      "clear_filters": "Wyczyść filtry",
+      "trust_years": "{count} lat",
+      "trust_treatments": "{count} zabiegów",
+      "trust_reviews": "{count} opinii",
+      "filters": {
+        "location_label": "Lokalizacja",
+        "location_aria": "Filtruj salony po lokalizacji",
+        "location_all": "Wszystkie lokalizacje",
+        "category_label": "Kategoria usług",
+        "category_aria": "Filtruj salony po kategorii usług",
+        "category_all": "Wszystkie kategorie",
+        "sort_label": "Sort",
+        "sort_aria": "Sortuj salony",
+        "sort_rating": "Najlepiej oceniane",
+        "sort_name": "Nazwa A-Z",
+        "sort_treatments": "Najwięcej zabiegów",
+        "apply": "Zastosuj filtry"
+      },
+      "mobile_toggle": {
+        "list": "Lista",
+        "map": "Mapa",
+        "aria": "Wybierz widok salonów"
+      },
+      "map": {
+        "title": "Placeholder mapy lokalizacji",
+        "badge": "map placeholder"
+      }
+    },
+    "detail_v180": {
+      "meta_fallback_title": "Nie znaleziono salonu | BonBeauty",
+      "meta_default_description": "Profil salonu BonBeauty z ofertami, lokalizacją i sygnałami zaufania.",
+      "meta_title": "{name} | salon BonBeauty",
+      "meta_description": "Sprawdź oferty, lokalizację i dane prawne salonu {name} w dzielnicy {district}.",
+      "verified_badge": "Zweryfikowany salon BonBeauty",
+      "cta_view_offers": "Zobacz oferty",
+      "trust": {
+        "aria": "Podsumowanie zaufania do salonu",
+        "years_label": "Doświadczenie",
+        "years_value": "{count} lat działalności",
+        "treatments_label": "Wykonane zabiegi",
+        "treatments_value": "{count} zabiegów",
+        "reviews_label": "Skala opinii",
+        "reviews_value": "{count} opinii",
+        "verified_label": "Weryfikacja",
+        "verified_value": "Tożsamość sprawdzona"
+      },
+      "tabs": {
+        "aria": "Sekcje informacji o salonie",
+        "offers": "Oferty",
+        "about": "O nas",
+        "location": "Lokalizacja",
+        "reviews": "Opinie",
+        "policy": "Regulamin salonu"
+      },
+      "offers": {
+        "heading": "Dostępne oferty",
+        "empty": "Ten salon nie opublikował jeszcze ofert.",
+        "cta": "Otwórz ofertę"
+      },
+      "about": {
+        "heading": "O salonie",
+        "fallback": "Salon nie dodał jeszcze pełnego opisu."
+      },
+      "location": {
+        "heading": "Lokalizacja",
+        "phone": "Telefon",
+        "hours": "Godziny otwarcia",
+        "map_title": "Placeholder mapy lokalizacji",
+        "map_badge": "podgląd adresu"
+      },
+      "reviews": {
+        "heading": "Opinie",
+        "summary": "Dostępnych opinii klientek i klientów: {count}.",
+        "link": "Otwórz wszystkie opinie",
+        "empty": "Ten salon nie ma jeszcze opublikowanych opinii.",
+        "rating": "Ocena {rating} / 5"
+      },
+      "policy": {
+        "heading": "Regulamin salonu",
+        "fallback": "Salon nie opublikował jeszcze szczegółów regulaminu."
+      },
+      "legal": {
+        "heading": "Dane prawne sprzedawcy",
+        "nip": "NIP",
+        "regon": "REGON",
+        "krs": "KRS"
+      },
+      "bottom_cta": {
+        "caption": "Chcesz porównać ofertę?",
+        "label": "Zobacz oferty"
+      }
+    },
+    "reviews_v180": {
+      "meta": {
+        "fallbackTitle": "Opinie salonu | BonBeauty",
+        "fallbackDescription": "Opinie o salonie BonBeauty, podsumowanie ocen i zweryfikowanych wizyt.",
+        "title": "Opinie o {name} | BonBeauty",
+        "description": "Przeczytaj {count} opinii o salonie {name}, sprawdź rozkład ocen i odpowiedzi salonu."
+      },
+      "breadcrumbs": {
+        "reviews": "Opinie"
+      },
+      "backToSeller": "Wróć do profilu salonu",
+      "verifiedBadge": "Zweryfikowane wizyty",
+      "title": "Opinie o {name}",
+      "intro": "Zweryfikowane wizyty, rozkład ocen i odpowiedzi salonu w jednym miejscu.",
+      "summary": {
+        "eyebrow": "Średnia ocena",
+        "noRating": "Brak ocen",
+        "ratingLabel": "{count, plural, one {# opinia} few {# opinie} many {# opinii} other {# opinii}}",
+        "ratingLine": "{rating} / 5"
+      },
+      "filters": {
+        "heading": "Filtruj po ocenie",
+        "clear": "Wyczyść filtr",
+        "aria": "Filtruj opinie według oceny",
+        "ratingChip": "{rating} gwiazdek"
+      },
+      "list": {
+        "heading": "Wszystkie opinie",
+        "results": "{count, plural, one {# wynik} few {# wyniki} many {# wyników} other {# wyników}}",
+        "verifiedVisit": "Zweryfikowana wizyta",
+        "ratingAria": "Ocena {rating} z 5",
+        "ratingVisible": "{rating}/5",
+        "expand": "Pokaż więcej",
+        "replyLabel": "Odpowiedź salonu"
+      },
+      "sort": {
+        "aria": "Sortowanie opinii",
+        "newest": "Najnowsze",
+        "highest": "Najwyższe",
+        "lowest": "Najniższe"
+      },
+      "empty": {
+        "title": "Jeszcze brak opinii",
+        "body": "Ten salon nie ma jeszcze opublikowanych opinii. Wróć do oferty lub zaloguj się, aby szybciej wrócić do zakupu po pierwszej wizycie.",
+        "loggedInCta": "Zobacz ofertę salonu",
+        "guestCta": "Zaloguj się"
+      },
+      "pagination": {
+        "aria": "Paginacja opinii salonu",
+        "status": "Strona {page} z {totalPages}",
+        "previous": "Poprzednie",
+        "next": "Pokaż więcej"
+      }
+    },
     "shared": {
       "home": "Strona główna",
       "salons": "Salony",
@@ -633,6 +789,101 @@
   "routes": {
     "terms_of_service": "/regulamin",
     "privacy_policy": "/polityka-prywatnosci"
+  },
+  "collections_editorial_v180": {
+    "meta": {
+      "title": "Kolekcje | BonBeauty",
+      "description": "Editorial discovery przez kolekcje BonBeauty: wybór redakcji, sezonowe rytuały i polecane prezenty."
+    },
+    "breadcrumbs": {
+      "home": "Strona główna",
+      "collections": "Kolekcje"
+    },
+    "hero": {
+      "eyebrow": "Odkrywanie redakcyjne",
+      "title": "Kolekcje ułożone ręcznie, nie przez ranking.",
+      "body": "Przeglądaj tematyczne shortlisty przygotowane przez zespół BonBeauty. Każda kolekcja ma własny punkt widzenia i nie udaje algorytmicznej personalizacji.",
+      "cta": "Otwórz wyróżnioną kolekcję",
+      "noAlgorithm": "Bez algorytmu"
+    },
+    "featured": {
+      "label": "Wyróżniona kolekcja",
+      "itemCount": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}"
+    },
+    "buckets": {
+      "aria": "Kategorie kolekcji editorial discovery",
+      "editorial": {
+        "eyebrow": "Wybór redakcji",
+        "title": "Punkt startu do odkrywania BonBeauty",
+        "body": "Kolekcje budowane wokół jakości decyzji, nie wokół chwilowego popytu."
+      },
+      "seasonal": {
+        "eyebrow": "Sezonowe",
+        "title": "Rytuały zszyte z momentem roku",
+        "body": "Zestawienia pod regenerację, odpoczynek lub szybkie odświeżenie, kiedy zmienia się rytm tygodnia."
+      },
+      "recommended": {
+        "eyebrow": "Polecane",
+        "title": "Kolekcje do prostszego wyboru prezentu",
+        "body": "Shortlisty dla osób, które chcą podjąć decyzję szybko, ale nadal świadomie."
+      }
+    },
+    "grid": {
+      "title": "Przeglądaj wszystkie kolekcje",
+      "body": "Każda karta prowadzi do osobnej strony editorial z intro, cytatem, listą kuratorowanych pozycji i powiązanymi kolekcjami.",
+      "cardAria": "Otwórz kolekcję {title}",
+      "itemCount": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}"
+    },
+    "bucketLabel": {
+      "editorial": "Wybór redakcji",
+      "seasonal": "Sezonowe",
+      "recommended": "Polecane"
+    },
+    "detail": {
+      "meta": {
+        "fallbackTitle": "Kolekcja | BonBeauty",
+        "fallbackDescription": "Editorial collection w BonBeauty.",
+        "title": "{title} | kolekcja BonBeauty",
+        "description": "{title} zawiera {count} kuratorowanych pozycji w editorial collection BonBeauty."
+      },
+      "breadcrumbs": {
+        "home": "Strona główna",
+        "collections": "Kolekcje"
+      },
+      "eyebrow": "Tryb kolekcji",
+      "calloutLabel": "Notatka redakcyjna",
+      "quoteLabel": "Dlaczego ta kolekcja",
+      "toolbar": {
+        "title": "Kuratorowane pozycje",
+        "count": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "sortAria": "Sortowanie pozycji w kolekcji",
+        "sort": {
+          "curated": "Kolejność redakcyjna",
+          "title-asc": "Tytuł A-Z",
+          "title-desc": "Tytuł Z-A"
+        }
+      },
+      "empty": {
+        "title": "Jeszcze nic tu nie ma",
+        "body": "Ta kolekcja jest gotowa na kolejną shortlistę, ale redakcja nie opublikowała jeszcze pozycji.",
+        "cta": "Wróć do kolekcji"
+      },
+      "grid": {
+        "cardAria": "Otwórz pozycję {title}",
+        "curatedLabel": "Kolejność redakcyjna",
+        "cta": "Zobacz szczegóły"
+      },
+      "related": {
+        "title": "Powiązane kolekcje",
+        "body": "Jeśli ten kierunek jest bliski Twojemu nastrojowi, tu znajdziesz kolejne editorial ścieżki odkrywania.",
+        "cardAria": "Otwórz powiązaną kolekcję {title}"
+      },
+      "bucketLabel": {
+        "editorial": "Wybór redakcji",
+        "seasonal": "Sezonowe",
+        "recommended": "Polecane"
+      }
+    }
   },
   "wishlist": {
     "all": "Wszystkie",
