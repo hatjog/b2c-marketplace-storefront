@@ -1,0 +1,2 @@
+surface: storefront/w5-07/es1-empty-wishlist
+extends: empty-states#pattern-1-empty-wishlist

@@ -1,0 +1,2 @@
+surface: storefront/w5-07/es3-empty-cart
+extends: empty-states#pattern-3-empty-cart

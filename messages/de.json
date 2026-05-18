@@ -1148,5 +1148,261 @@
     "suggestions": "Vorschläge",
     "loading": "Laden…",
     "no_results": "Keine Ergebnisse"
+  },
+  "wave5_help": {
+    "meta_title": "BonBeauty Hilfe",
+    "meta_description": "BonBeauty Hilfeoberfläche für Gutscheine, Bestellungen, Zahlungen und ruhige Recovery-Pfade.",
+    "eyebrow": "Hilfecenter",
+    "title": "Ein ruhiger Pfad, wenn Sie Unterstützung brauchen",
+    "description": "Dies ist eine Pre-Production-Fallback-Oberfläche mit typed source marker, bis das Dokument `pomoc` noch nicht aus Payload veröffentlicht wird. Sie bündelt die häufigsten Fragen zu Bestellungen, Gutscheinen, Zahlungen und sicheren nächsten Schritten.",
+    "search_label": "Antworten durchsuchen",
+    "search_placeholder": "Zum Beispiel: Gutschein wiederherstellen oder Zahlung prüfen",
+    "no_results": "Wir konnten dieses Thema nicht finden. Der nächste sinnvolle Schritt liegt in der Kontaktkarte oder in den Links darunter.",
+    "topics_title": "Häufige Fragen",
+    "contact_card_title": "Wenn Sie ohne Rätselraten weitergehen möchten",
+    "contact_card_body": "Prüfen Sie zuerst Status und Rechtsdokumente und schreiben Sie uns dann asynchron. Wenn die Situation dringend ist, fügen Sie die Bestellnummer und die request_id aus der Fehleroberfläche hinzu.",
+    "contact_card_primary": "Support kontaktieren",
+    "contact_card_secondary": "Regeln und Fristen prüfen",
+    "related_links_title": "Verwandte Vertrauenspfade",
+    "related_links": {
+      "terms": "AGB und Rückgaben",
+      "privacy": "Datenschutz",
+      "rules": "Einlösebedingungen",
+      "status": "Plattformstatus"
+    },
+    "topics": {
+      "orders": {
+        "title": "Bestellungen und Bestätigungen",
+        "description": "Was zu tun ist, wenn Sie den Zahlungsstatus oder die Bestellnummer brauchen.",
+        "entries": {
+          "1": {
+            "question": "Wo finde ich meine Bestellnummer?",
+            "answer": "Sie steht in der Kauf-E-Mail und auf der Zahlungsstatus-Seite. Wenn sie fehlt, kontaktieren Sie den Support mit der beim Kauf verwendeten E-Mail-Adresse."
+          },
+          "2": {
+            "question": "Was tun, wenn die Zahlung festzustecken scheint?",
+            "answer": "Prüfen Sie zuerst, ob die Statusseite eine größere Unterbrechung zeigt. Wenn es nur Ihre Bestellung betrifft, nutzen Sie Retry oder senden Sie die request_id an den Support."
+          }
+        }
+      },
+      "vouchers": {
+        "title": "Gutscheine und Zugriffs-Wiederherstellung",
+        "description": "Hilfe bei Einlösung, erneutem Öffnen des Links und beim Verstehen des Gutscheinstatus.",
+        "entries": {
+          "1": {
+            "question": "Mein Gutscheinlink ist abgelaufen. Was jetzt?",
+            "answer": "Öffnen Sie ihn erneut aus der Bestell-E-Mail oder kontaktieren Sie den Support mit der Bestellnummer. Das Team prüft, ob ein Refresh des Links oder eine manuelle Prüfung nötig ist."
+          },
+          "2": {
+            "question": "Ich sehe eine Nachricht zur Support-Prüfung. Ist das ein Fehler?",
+            "answer": "Nein. Das ist ein sicherer Recovery-Pfad, wenn dem System nicht genug Daten für eine automatische Entscheidung vorliegen."
+          }
+        }
+      },
+      "appointments": {
+        "title": "Termine und Leistungserbringung",
+        "description": "Wie Sie die Phase vor der Einlösung vom Zustand nach der erbrachten Leistung unterscheiden.",
+        "entries": {
+          "1": {
+            "question": "Kann ich nach erbrachter Leistung widerrufen?",
+            "answer": "Nach erbrachter Leistung auf Basis vorheriger Zustimmung erlischt das Widerrufsrecht. Details stehen in den AGB und Einlösebedingungen."
+          },
+          "2": {
+            "question": "Verschiebt BonBeauty Termine?",
+            "answer": "Nein. BonBeauty betreibt die Plattform und unterstützt Recovery, aber der Salon bestätigt den konkreten Termin und die Leistungserbringung."
+          }
+        }
+      },
+      "payments": {
+        "title": "Zahlungen und technische Unterbrechungen",
+        "description": "Wie Sie erkennen, ob das Problem lokal oder plattformweit ist.",
+        "entries": {
+          "1": {
+            "question": "Woran erkenne ich ein globales Problem?",
+            "answer": "Wenn die Fehleroberfläche zu status.bonbeauty.pl führt und das gleiche Signal nach dem Neuladen wieder erscheint, behandeln Sie es zunächst als systemweites Problem."
+          },
+          "2": {
+            "question": "Wann ist Retry sinnvoll?",
+            "answer": "Retry ist nach einem temporären 500-Fehler oder nach Rückkehr der Verbindung aus dem Offline-Modus sinnvoll."
+          }
+        }
+      },
+      "returns": {
+        "title": "Rückgaben und Verbraucherrechte",
+        "description": "Der nächste Pfad zu Widerrufsregeln, Erstattung und Supportkontakt.",
+        "entries": {
+          "1": {
+            "question": "Wie lange dauert eine Erstattung nach erfolgreichem Widerruf?",
+            "answer": "Nach bestätigtem Widerruf geht die Rückzahlung auf die ursprüngliche Zahlungsmethode innerhalb der in den Bedingungen beschriebenen Frist zurück."
+          },
+          "2": {
+            "question": "Wie bereite ich eine Support-Anfrage vor?",
+            "answer": "Am hilfreichsten sind Bestellnummer, Kauf-E-Mail und eine kurze Beschreibung dessen, was Sie aktuell auf der Status- oder Fehleroberfläche sehen."
+          }
+        }
+      },
+      "support": {
+        "title": "Kontakt und Supportpfade",
+        "description": "Wann Self-Service, asynchroner Support und dringender Kontakt sinnvoll sind.",
+        "entries": {
+          "1": {
+            "question": "Wann reicht Self-Service aus?",
+            "answer": "Wenn Sie nur den Plattformstatus prüfen, Rechtsdokumente öffnen oder sehen möchten, ob das Problem nach einigen Minuten verschwindet."
+          },
+          "2": {
+            "question": "Wann sollte ich eine Anfrage als dringend markieren?",
+            "answer": "Wenn der Kauf nahe an einem Geschenktermin liegt, eine Zahlung doppelt wirkt oder eine blockierende request_id aus der Fehleroberfläche vorliegt."
+          }
+        }
+      }
+    }
+  },
+  "wave5_errors": {
+    "not_found": {
+      "meta_title": "Diese Seite ist hier nicht",
+      "meta_description": "Empathische BonBeauty-404-Oberfläche mit sicherem Rückweg.",
+      "title": "Diese Seite ist hier nicht",
+      "primary_cta": "Zur Startseite",
+      "secondary_cta": "Suche verwenden",
+      "generic": {
+        "eyebrow": "404 · Seite nicht gefunden",
+        "body": "Das kann ein älterer Link oder ein Pfad sein, der sich bereits geändert hat. Am schnellsten kommen Sie über Startseite oder Kategorien zurück."
+      },
+      "product": {
+        "eyebrow": "404 · Produkt nicht mehr verfügbar",
+        "body": "Diese Produktkarte ist im aktuellen Angebot nicht mehr verfügbar. Wir führen Sie zurück zu aktuellen Entdeckungspfaden."
+      },
+      "seller": {
+        "eyebrow": "404 · Anbieterprofil nicht verfügbar",
+        "body": "Dieses Anbieterprofil kann derzeit nicht geöffnet werden. Sie können zum Verzeichnis zurückkehren oder die Suche nutzen."
+      }
+    },
+    "runtime": {
+      "technical_details": "Technische Details anzeigen",
+      "status_link": "Plattformstatus prüfen",
+      "support_title": "Drei Supportpfade",
+      "support": {
+        "self_service": {
+          "label": "Self-Service",
+          "description": "Status und Rechtsdokumente helfen, ein systemweites Problem von einem lokalen zu trennen."
+        },
+        "async": {
+          "label": "Asynchroner Support",
+          "description": "Senden Sie Bestellnummer und request_id, und wir melden uns mit einem konkreten nächsten Schritt."
+        },
+        "panic": {
+          "label": "Dringender Kontakt",
+          "description": "Wenn der Einlösetermin nah ist oder eine Zahlung riskant wirkt, markieren Sie die Anfrage als dringend."
+        }
+      },
+      "server-error": {
+        "eyebrow": "500 · Auf unserer Seite ist etwas fehlgeschlagen",
+        "title": "Wir können diese Seite gerade nicht abschließen",
+        "body": "Das sieht nach einem lokalen Anwendungsfehler aus. Sie können es erneut versuchen und bei Wiederholung die Details an den Support senden.",
+        "primary_cta": "Erneut versuchen",
+        "suggested_action": "Aktualisieren Sie die Oberfläche und senden Sie die request_id an den Support, wenn der Fehler zurückkehrt."
+      },
+      "service-unavailable": {
+        "eyebrow": "503 · Vorübergehende Systemunterbrechung",
+        "title": "Der Dienst ist vorübergehend nicht verfügbar",
+        "body": "Das Signal weist eher auf ein systemweites als auf ein lokales Problem hin. Prüfen Sie zuerst den Status und kehren Sie danach zurück.",
+        "primary_cta": "Später aktualisieren",
+        "suggested_action": "Prüfen Sie die Statusseite und kehren Sie zurück, sobald der Dienst wieder stabil ist."
+      },
+      "offline": {
+        "eyebrow": "Offline · Keine Netzwerkverbindung",
+        "title": "Für den Kauf ist eine Netzwerkverbindung nötig",
+        "body": "Das Gerät scheint offline zu sein. Wir setzen den Kauf nicht still im Hintergrund fort und tun auch nicht so, als wäre dies nur ein leerer Zustand.",
+        "primary_cta": "Nach Wiederherstellung erneut versuchen",
+        "secondary_cta": "Hilfe öffnen",
+        "suggested_action": "Stellen Sie die Netzwerkverbindung wieder her und versuchen Sie es erst dann erneut."
+      }
+    }
+  },
+  "wave5_empty_states": {
+    "meta_title": "Katalog leerer Zustände",
+    "meta_description": "Reference catalogue ES1–ES8 für BonBeauty Empty States.",
+    "title": "Katalog leerer Zustände",
+    "description": "Reference surface für die Muster ES1–ES8. Jedes Beispiel verweist per `extends:` auf die SSOT und führt zum nächsten sinnvollen Wertpfad.",
+    "patterns": {
+      "ES1": {
+        "title": "Ihre Sammlung wartet",
+        "body": "Speichern Sie Produkte, zu denen Sie für einen ruhigeren Vergleich zurückkehren möchten.",
+        "cta": "Empfehlungen ansehen",
+        "cta_href": "/categories"
+      },
+      "ES2": {
+        "title": "Hier ist noch nichts",
+        "body": "Nach dem ersten Kauf erscheinen hier Bestellungen, Gutscheine oder Rückgaben.",
+        "cta": "Kategorien durchsuchen",
+        "cta_href": "/categories"
+      },
+      "ES3": {
+        "title": "Ihr Warenkorb wartet",
+        "body": "Beginnen Sie mit den redaktionellen Empfehlungen und fügen Sie nur hinzu, was Sie wirklich vergleichen möchten.",
+        "cta": "Redaktionelle Auswahl",
+        "cta_href": "/collections"
+      },
+      "ES4": {
+        "title": "Wir konnten nichts finden",
+        "body": "Das ist ein echter Null-Ergebnis-Zustand und kein Providerfehler. Leeren Sie Filter oder kehren Sie zu empfohlenen Pfaden zurück.",
+        "cta": "Filter löschen",
+        "cta_href": "/categories"
+      },
+      "ES5": {
+        "title": "Noch keine Bewertungen",
+        "body": "Die erste ruhige Bewertung hilft der nächsten Person ohne Druck zu entscheiden.",
+        "cta": "Bewertung schreiben",
+        "cta_href": "/user"
+      },
+      "ES6": {
+        "title": "Postfach ist leer",
+        "body": "Bestellnachrichten erscheinen hier nur dann, wenn sie wirklich gebraucht werden.",
+        "note": "Passiver Zustand ohne CTA gemäß Katalog."
+      },
+      "ES7": {
+        "title": "Noch keine Bewertungen zu schreiben",
+        "body": "Wenn eine Leistung abgeschlossen ist, kommen Sie hierher zurück und sehen den nächsten Schritt.",
+        "note": "Passiver Zustand oder leichter sekundärer Pfad nach Abschluss."
+      },
+      "ES8": {
+        "title": "Keine gespeicherten Adressen",
+        "body": "Fügen Sie die erste Adresse hinzu, damit der nächste Kauf kürzer und ruhiger wird.",
+        "cta": "Adresse hinzufügen",
+        "cta_href": "/user"
+      }
+    }
+  },
+  "wave5_loading_states": {
+    "meta_title": "Katalog der Ladezustände",
+    "meta_description": "Reference catalogue LP1–LP6 für BonBeauty Loading States.",
+    "title": "Katalog der Ladezustände",
+    "description": "Jedes Muster zeigt, wann Bewegung hilft und wann die Oberfläche in einen Fehler oder einen klareren Recovery-Schritt wechseln sollte.",
+    "patterns": {
+      "LP1": {
+        "title": "Skeleton shimmer",
+        "body": "Für kurze Datenladezeiten zwischen 200 ms und 3 s. Reduced Motion wandelt das Shimmer in einen statischen Placeholder um."
+      },
+      "LP2": {
+        "title": "Pulse hero",
+        "body": "Für Systemverarbeitungszustände, nicht für gewöhnliches Laden einer Produktliste."
+      },
+      "LP3": {
+        "title": "Skeleton dot trio",
+        "body": "Für CTA-Submit-Zustände, damit sichtbar bleibt, welche Aktion noch läuft."
+      },
+      "LP4": {
+        "title": "Auto-poll progress",
+        "body": "Zeigt die Aktualisierungs-Kadenz, damit Warten keine Blackbox ist."
+      },
+      "LP5": {
+        "title": "Progress bar",
+        "body": "Deterministische Variante für mehrstufige Abläufe mit bekanntem Fortschritt."
+      },
+      "LP6": {
+        "title": "Inline spinner",
+        "body": "Seltener letzter Ausweg. Er sollte nicht länger als 3 s rotieren, ohne in Recovery zu wechseln."
+      }
+    }
   }
 }

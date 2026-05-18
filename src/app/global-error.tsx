@@ -1,117 +1,109 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+import deMessages from '../../messages/de.json';
+import enMessages from '../../messages/en.json';
+import plMessages from '../../messages/pl.json';
+import uaMessages from '../../messages/ua.json';
+
+import { ErrorSurface } from '@/components/templates/ErrorSurface';
+import { buildTechnicalDetails, resolveRuntimeErrorVariant } from '@/lib/wave5/error-surface';
+
+const CATALOGUES = { pl: plMessages, en: enMessages, ua: uaMessages, de: deMessages } as const;
+
+type Locale = keyof typeof CATALOGUES;
+
+function resolveLocaleFromPathname(pathname: string): Locale {
+  const segment = pathname.split('/')[1];
+  return segment === 'en' || segment === 'ua' || segment === 'de' ? segment : 'pl';
+}
 
 export default function GlobalError({
   error,
-  reset
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [locale, setLocale] = useState<Locale>('pl');
+  const [offline, setOffline] = useState(false);
+
   useEffect(() => {
     console.error(error);
   }, [error]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLocale(resolveLocaleFromPathname(window.location.pathname));
+      setOffline(window.navigator.onLine === false);
+    }
+  }, []);
+
+  const messages = CATALOGUES[locale].wave5_errors;
+  const variant = resolveRuntimeErrorVariant(error, { offline });
+  const details = buildTechnicalDetails(error, messages.runtime[variant].suggested_action);
+
   return (
-    <html lang="pl">
-      <body
-        style={{
-          margin: 0,
-          backgroundColor: '#FAF8F5',
-          fontFamily: '"Funnel Display", sans-serif'
-        }}
-      >
-        <div
+    <html lang={locale}>
+      <body style={{ margin: 0 }}>
+        <ErrorSurface
           data-testid="global-error"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            padding: '48px 24px'
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '480px',
-              width: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '24px',
-              textAlign: 'center'
-            }}
-          >
-            <svg
-              width="56"
-              height="56"
-              viewBox="0 0 56 56"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          eyebrow={messages.runtime[variant].eyebrow}
+          title={messages.runtime[variant].title}
+          description={messages.runtime[variant].body}
+          tone={variant === 'offline' ? 'warning' : 'error'}
+          role={variant === 'offline' ? 'status' : 'alert'}
+          primaryAction={
+            <button
+              type="button"
+              onClick={() => reset()}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-5 py-3 text-sm font-medium text-action-on-primary"
+              data-testid="global-error-retry-button"
             >
-              <circle cx="28" cy="28" r="26" stroke="#C5A059" strokeWidth="2" fill="white" />
-              <text
-                x="50%"
-                y="50%"
-                dominantBaseline="central"
-                textAnchor="middle"
-                fontSize="24"
-                fontWeight="600"
-                fill="#715828"
-                fontFamily="inherit"
-              >
-                B
-              </text>
-            </svg>
-
-            <h2 style={{ fontSize: '28px', fontWeight: '600', color: '#1A1A1A', margin: 0 }}>
-              Coś poszło nie tak
-            </h2>
-
-            <p style={{ fontSize: '16px', color: '#1A1A1A', margin: 0, lineHeight: '1.6' }}>
-              Przepraszamy, wystąpił nieoczekiwany błąd. Możesz spróbować ponownie lub
-              wrócić na stronę główną.
-            </p>
-
-            <div
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}
+              {messages.runtime[variant].primary_cta}
+            </button>
+          }
+          utilityLink={
+            <a
+              href="https://status.bonbeauty.pl"
+              className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-primary underline"
             >
-              <button
-                type="button"
-                onClick={() => reset()}
-                data-testid="global-error-retry-button"
-                style={{
-                  backgroundColor: '#907032',
-                  color: '#FAF8F5',
-                  border: 'none',
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  borderRadius: '4px',
-                  fontFamily: 'inherit'
-                }}
-              >
-                Spróbuj ponownie
-              </button>
-
+              {messages.runtime.status_link}
+            </a>
+          }
+          supportTitle={messages.runtime.support_title}
+          supportPaths={[
+            {
+              id: 'self-service',
+              label: messages.runtime.support.self_service.label,
+              description: messages.runtime.support.self_service.description,
+            },
+            {
+              id: 'async',
+              label: messages.runtime.support.async.label,
+              description: messages.runtime.support.async.description,
+            },
+            {
+              id: 'panic',
+              label: messages.runtime.support.panic.label,
+              description: messages.runtime.support.panic.description,
+            },
+          ]}
+          technicalDetailsLabel={messages.runtime.technical_details}
+          technicalDetails={details}
+          secondaryAction={
+            variant === 'offline' ? (
               <Link
-                href="/"
-                style={{
-                  color: '#907032',
-                  fontSize: '16px',
-                  textDecoration: 'underline',
-                  fontWeight: '500'
-                }}
+                href={`/${locale}/pomoc`}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[rgba(113,88,40,0.16)] px-5 py-3 text-sm font-medium text-primary no-underline"
               >
-                Wróć na stronę główną
+                {messages.runtime.offline.secondary_cta}
               </Link>
-            </div>
-          </div>
-        </div>
+            ) : undefined
+          }
+        />
       </body>
     </html>
   );

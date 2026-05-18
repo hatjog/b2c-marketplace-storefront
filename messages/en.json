@@ -1147,5 +1147,261 @@
     "suggestions": "Suggestions",
     "loading": "Loading…",
     "no_results": "No results"
+  },
+  "wave5_help": {
+    "meta_title": "BonBeauty Help",
+    "meta_description": "BonBeauty help surface for vouchers, orders, payments, and calm recovery paths.",
+    "eyebrow": "Help centre",
+    "title": "A calm path when you need support",
+    "description": "This is a pre-production fallback surface with a typed source marker until the `pomoc` document is published from Payload. It gathers the most common questions about orders, vouchers, payments, and safe next steps.",
+    "search_label": "Search answers",
+    "search_placeholder": "For example: recover a voucher or check a payment",
+    "no_results": "We could not find that topic. The nearest next step is in the contact card or the links below.",
+    "topics_title": "Frequently asked questions",
+    "contact_card_title": "When you want to move forward without guessing",
+    "contact_card_body": "Start with status and legal documents, then reach out asynchronously. If the situation is urgent, include the order number and the request_id from the error surface.",
+    "contact_card_primary": "Contact support",
+    "contact_card_secondary": "Check rules and timelines",
+    "related_links_title": "Related trust paths",
+    "related_links": {
+      "terms": "Terms and returns",
+      "privacy": "Privacy policy",
+      "rules": "Service rules",
+      "status": "Platform status"
+    },
+    "topics": {
+      "orders": {
+        "title": "Orders and confirmations",
+        "description": "What to do when you need the payment status or the order number.",
+        "entries": {
+          "1": {
+            "question": "Where do I find my order number?",
+            "answer": "You can find it in the purchase email and on the payment status page. If it is missing, contact support with the email address used for the purchase."
+          },
+          "2": {
+            "question": "What if the payment looks stuck?",
+            "answer": "First check whether the status page shows a broader interruption. If the issue is only about your order, use retry or send the request_id to support."
+          }
+        }
+      },
+      "vouchers": {
+        "title": "Vouchers and access recovery",
+        "description": "Help with redemption, reopening the link, and understanding the voucher state.",
+        "entries": {
+          "1": {
+            "question": "My voucher link expired. What now?",
+            "answer": "Open it again from the order email or contact support with the order number. The team will check whether the link needs a refresh or a manual review."
+          },
+          "2": {
+            "question": "I see a support review message. Is that an error?",
+            "answer": "No. It is a safe recovery path when the system does not have enough data to decide automatically."
+          }
+        }
+      },
+      "appointments": {
+        "title": "Appointments and service completion",
+        "description": "How to distinguish the stage before redemption from the state after the service was delivered.",
+        "entries": {
+          "1": {
+            "question": "Can I withdraw after the service was completed?",
+            "answer": "Once the service was completed after prior consent, the withdrawal right expires. The detailed rules are listed in the Terms and Service Rules."
+          },
+          "2": {
+            "question": "Does BonBeauty move appointment dates?",
+            "answer": "No. BonBeauty runs the platform and supports recovery, but the salon confirms the actual appointment and service delivery."
+          }
+        }
+      },
+      "payments": {
+        "title": "Payments and technical interruptions",
+        "description": "How to tell whether the problem is local or platform-wide.",
+        "entries": {
+          "1": {
+            "question": "How do I know whether the issue is global?",
+            "answer": "If the error surface points to status.bonbeauty.pl and the same signal appears again after refresh, treat it as a system-wide issue first."
+          },
+          "2": {
+            "question": "When does retry make sense?",
+            "answer": "Retry makes sense after a temporary 500 error or once the connection is back after offline mode."
+          }
+        }
+      },
+      "returns": {
+        "title": "Returns and consumer rights",
+        "description": "The nearest path to withdrawal rules, refunds, and support contact.",
+        "entries": {
+          "1": {
+            "question": "How long does a refund take after a successful withdrawal?",
+            "answer": "After the withdrawal is confirmed, the refund goes back to the original payment method within the timeline listed in the terms."
+          },
+          "2": {
+            "question": "How should I prepare a support request?",
+            "answer": "The best bundle is the order number, the purchase email, and a short note about what you currently see on the status or error surface."
+          }
+        }
+      },
+      "support": {
+        "title": "Contact and support paths",
+        "description": "When to use self-service, async support, and urgent contact.",
+        "entries": {
+          "1": {
+            "question": "When is self-service enough?",
+            "answer": "Use it when you only need to confirm the platform status, open legal documents, or see whether the issue disappears after a few minutes."
+          },
+          "2": {
+            "question": "When should I mark a request as urgent?",
+            "answer": "When the purchase is close to a gifting deadline, a payment looks duplicated, or you have a blocking request_id from the error surface."
+          }
+        }
+      }
+    }
+  },
+  "wave5_errors": {
+    "not_found": {
+      "meta_title": "This page is not here",
+      "meta_description": "Empathetic BonBeauty 404 surface with a safe return path.",
+      "title": "This page is not here",
+      "primary_cta": "Back to homepage",
+      "secondary_cta": "Use search",
+      "generic": {
+        "eyebrow": "404 · Page not found",
+        "body": "This may be an older link or a path that has already moved. The quickest way back is the homepage or category browse path."
+      },
+      "product": {
+        "eyebrow": "404 · Product no longer available",
+        "body": "This product card is no longer available in the current offer set. We can take you back to current discovery paths."
+      },
+      "seller": {
+        "eyebrow": "404 · Seller profile unavailable",
+        "body": "We cannot open this seller profile right now. You can return to the directory or use search."
+      }
+    },
+    "runtime": {
+      "technical_details": "Show technical details",
+      "status_link": "Check platform status",
+      "support_title": "Three support paths",
+      "support": {
+        "self_service": {
+          "label": "Self-service",
+          "description": "Status and legal documents help separate a system-wide issue from a local one."
+        },
+        "async": {
+          "label": "Async support",
+          "description": "Send the order number and request_id and we will answer with a concrete next step."
+        },
+        "panic": {
+          "label": "Urgent contact",
+          "description": "If the redemption date is close or a payment looks risky, mark the request as urgent."
+        }
+      },
+      "server-error": {
+        "eyebrow": "500 · Something failed on our side",
+        "title": "We cannot complete this page right now",
+        "body": "This looks like a local application error. You can try again, and if it returns, send the details to support.",
+        "primary_cta": "Try again",
+        "suggested_action": "Refresh the surface and send the request_id to support if the error returns."
+      },
+      "service-unavailable": {
+        "eyebrow": "503 · Temporary system interruption",
+        "title": "The service is temporarily unavailable",
+        "body": "The signal points to a broader system issue, not just your session. Check status first, then return when service is restored.",
+        "primary_cta": "Refresh in a moment",
+        "suggested_action": "Check the status page and return after the service is confirmed healthy."
+      },
+      "offline": {
+        "eyebrow": "Offline · No network connection",
+        "title": "Checkout needs a network connection",
+        "body": "Your device appears to be offline. We do not continue the purchase silently and we do not pretend this is an empty state.",
+        "primary_cta": "Try again when you are back online",
+        "secondary_cta": "Open help",
+        "suggested_action": "Restore the network connection and only then retry the purchase flow."
+      }
+    }
+  },
+  "wave5_empty_states": {
+    "meta_title": "Empty states catalogue",
+    "meta_description": "Reference catalogue ES1–ES8 for BonBeauty empty states.",
+    "title": "Empty states catalogue",
+    "description": "Reference surface for ES1–ES8 patterns. Each example points back to the SSOT through `extends:` and moves the user to the nearest useful value path.",
+    "patterns": {
+      "ES1": {
+        "title": "Your collection is waiting",
+        "body": "Save products you want to revisit when you are ready for a calmer comparison.",
+        "cta": "See recommendations",
+        "cta_href": "/categories"
+      },
+      "ES2": {
+        "title": "Nothing is here yet",
+        "body": "After the first purchase, your orders, vouchers, or returns history will appear here.",
+        "cta": "Browse categories",
+        "cta_href": "/categories"
+      },
+      "ES3": {
+        "title": "Your cart is waiting",
+        "body": "Start with editorial picks and only add what you really want to compare.",
+        "cta": "Editorial picks",
+        "cta_href": "/collections"
+      },
+      "ES4": {
+        "title": "We could not find anything",
+        "body": "This is a real zero-results state, not a provider failure. Clear filters or return to recommended paths.",
+        "cta": "Clear filters",
+        "cta_href": "/categories"
+      },
+      "ES5": {
+        "title": "No reviews yet",
+        "body": "The first calm review helps the next person decide without pressure.",
+        "cta": "Write a review",
+        "cta_href": "/user"
+      },
+      "ES6": {
+        "title": "Inbox is empty",
+        "body": "Order messages will appear here only when they are genuinely needed.",
+        "note": "Passive state with no CTA, according to the catalogue."
+      },
+      "ES7": {
+        "title": "No reviews to write yet",
+        "body": "When a service is completed, you will return here and see the next review step.",
+        "note": "Passive state or a light secondary path after completion."
+      },
+      "ES8": {
+        "title": "No saved addresses",
+        "body": "Add the first address to make the next purchase shorter and calmer.",
+        "cta": "Add address",
+        "cta_href": "/user"
+      }
+    }
+  },
+  "wave5_loading_states": {
+    "meta_title": "Loading states catalogue",
+    "meta_description": "Reference catalogue LP1–LP6 for BonBeauty loading states.",
+    "title": "Loading states catalogue",
+    "description": "Each pattern shows when motion is useful and when the surface should transition to an error or a clearer next step.",
+    "patterns": {
+      "LP1": {
+        "title": "Skeleton shimmer",
+        "body": "For short data fetches between 200 ms and 3 s. Reduced motion downgrades the shimmer into a static placeholder."
+      },
+      "LP2": {
+        "title": "Pulse hero",
+        "body": "For system processing states, not for ordinary product list fetching."
+      },
+      "LP3": {
+        "title": "Skeleton dot trio",
+        "body": "For CTA submission states so the user still sees which action is in progress."
+      },
+      "LP4": {
+        "title": "Auto-poll progress",
+        "body": "Shows the refresh cadence so waiting is not a black box."
+      },
+      "LP5": {
+        "title": "Progress bar",
+        "body": "Deterministic variant for multi-step flows where the sequence and progress are known."
+      },
+      "LP6": {
+        "title": "Inline spinner",
+        "body": "Rare last resort. It should not spin for more than 3 s without moving into recovery."
+      }
+    }
   }
 }
