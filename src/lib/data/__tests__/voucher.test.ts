@@ -31,10 +31,15 @@ vi.mock('../../config', () => ({
   }
 }));
 
+vi.mock('../cookies', () => ({
+  getAuthHeaders: vi.fn().mockResolvedValue({})
+}));
+
 // Import after mocks are set up.
-const { getVoucherByCode, getVoucherEvents } = await import('../voucher');
+const { getVoucherByCode, getVoucherEvents, getVoucherRecipientByCode } = await import('../voucher');
 
 const E2E_CLAIMED_CODE = 'E2E-CLAIMED-VOUCHER-002';
+const E2E_RECIPIENT_ACTIVE_CODE = 'E2E-RECIPIENT-ACTIVE-001';
 const REAL_CODE = 'TEST-VOUCHER-001';
 
 const VALID_VOUCHER_PAYLOAD = {
@@ -285,5 +290,82 @@ describe('getVoucherEvents', () => {
     it('returns empty array for empty code', async () => {
       expect(await getVoucherEvents('')).toEqual([]);
     });
+  });
+});
+
+describe('getVoucherRecipientByCode', () => {
+  beforeEach(() => {
+    delete mockMercurClient.store;
+    mockSdkFetch.mockReset();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('maps ACTIVE-like payloads to recipient active state', async () => {
+    mockMercurClient.store = {
+      vouchers: {
+        byCode: vi.fn().mockResolvedValue({
+          voucher: {
+            ...VALID_VOUCHER_PAYLOAD,
+            status: 'ACTIVE',
+            sender_name: 'Anna',
+            sender_disclosure_allowed: true,
+            seller_address: 'ul. Testowa 1, Warszawa',
+          },
+        }),
+      },
+    };
+
+    const result = await getVoucherRecipientByCode(REAL_CODE);
+
+    expect(result?.state).toBe('active');
+    expect(result?.sender_name).toBe('Anna');
+    expect(result?.is_public_entry_confirmed).toBe(true);
+    expect(result).not.toHaveProperty('buyer_email');
+  });
+
+  it('maps redeemed and expired backend states to recipient states', async () => {
+    for (const [input, expected] of [
+      ['redeemed', 'already_redeemed'],
+      ['settled', 'already_redeemed'],
+      ['closed', 'already_redeemed'],
+      ['expired', 'expired'],
+      ['voided', 'expired'],
+      ['refunded', 'expired'],
+    ]) {
+      mockMercurClient.store = {
+        vouchers: {
+          byCode: vi.fn().mockResolvedValue({
+            voucher: {
+              ...VALID_VOUCHER_PAYLOAD,
+              status: input,
+            },
+          }),
+        },
+      };
+
+      const result = await getVoucherRecipientByCode(REAL_CODE);
+      expect(result?.state, `status='${input}'`).toBe(expected);
+    }
+  });
+
+  it('returns recipient fixture without backend for active visual code', async () => {
+    mockMercurClient.store = {};
+    mockSdkFetch.mockRejectedValue(new Error('offline'));
+
+    const result = await getVoucherRecipientByCode(E2E_RECIPIENT_ACTIVE_CODE);
+
+    expect(result?.code).toBe(E2E_RECIPIENT_ACTIVE_CODE);
+    expect(result?.state).toBe('active');
+    expect(result?.seller_name).toBeTruthy();
+  });
+
+  it('returns null for unknown codes when both lookup paths fail', async () => {
+    mockMercurClient.store = {};
+    mockSdkFetch.mockRejectedValue(new Error('404'));
+
+    await expect(getVoucherRecipientByCode('UNKNOWN-RECIPIENT-CODE')).resolves.toBeNull();
   });
 });

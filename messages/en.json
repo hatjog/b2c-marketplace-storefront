@@ -664,7 +664,7 @@
       "directions_no_coords_helper": "Coordinates not available — link searches address",
       "directions_privacy_notice": "Clicking external map links, you leave BonBeauty. BonBeauty does not share your data with external map providers."
     },
-    "claim": {
+  "claim": {
       "title": "Your voucher",
       "subtitle": "Use your voucher at the chosen salon",
       "seller_label": "Salon",
@@ -689,10 +689,123 @@
         "toast_synced": "Voucher claimed. Check your email.",
         "toast_failed_terminal": "Voucher already claimed or expired.",
         "toast_failed_permanent": "We couldn't claim the voucher after 8 attempts. Please contact support.",
-        "button_retry": "Try again"
+      "button_retry": "Try again"
+    }
+  },
+  "recipient": {
+    "meta": {
+      "title": "BonBeauty Voucher",
+      "description": "Calm recipient view with voucher code, redemption rules and salon contact details."
+    },
+    "active": {
+      "hero_sender_disclosed": "{sender} from BonBeauty has a gift for you",
+      "hero_sender_fallback": "You have a gift from BonBeauty",
+      "heading": "A little time for yourself.",
+      "subheading": "You can redeem this voucher at a time that suits you. The code identifies the voucher, but it is not a booking.",
+      "card_eyebrow_with_city": "{seller} · {city}",
+      "service_fallback": "BonBeauty voucher",
+      "code_label": "Voucher code",
+      "copy_cta": "Copy code",
+      "copy_aria": "Copy voucher code",
+      "copy_feedback": "Code copied.",
+      "copy_unavailable": "Copy is not available in this browser.",
+      "validity": "Valid until {date}",
+      "validity_fallback": "Validity will be confirmed during redemption.",
+      "pdf_cta": "Download PDF",
+      "wallet_soon": "Coming soon"
+    },
+    "steps": {
+      "eyebrow": "How to redeem",
+      "heading": "Three simple steps.",
+      "show_code": {
+        "title": "Show the code",
+        "body": "Show the PDF printout or the code from this page. The code identifies your voucher in the salon."
+      },
+      "book_visit": {
+        "title": "Book your visit",
+        "body": "Contact the salon by phone or through its website. The voucher does not reserve a timeslot automatically."
+      },
+      "enjoy_service": {
+        "title": "Enjoy the service",
+        "body": "Bring the code to your visit. If anything goes wrong, BonBeauty will help you sort it out."
       }
     },
-    "audit_trail": {
+    "salon": {
+      "eyebrow": "Salon",
+      "phone_label": "Phone:",
+      "hours_label": "Hours:",
+      "seller_cta": "View salon profile",
+      "maps_cta": "Open in Google Maps"
+    },
+    "map_placeholder": {
+      "eyebrow": "Directions",
+      "heading": "Map opens outside BonBeauty",
+      "body": "We do not embed an external map SDK here. The link opens the salon address in Google Maps.",
+      "primary_cta": "Open map"
+    },
+    "handoff": {
+      "heading": "What happens on the salon side",
+      "body": "The salon identifies the voucher by its code. You can contact the salon before your visit, and if anything looks wrong, BonBeauty will help resolve it."
+    },
+    "rules": {
+      "summary": "Redemption rules and terms",
+      "validity_label": "Validity:",
+      "validity_value": "This voucher is valid until {date}.",
+      "validity_fallback": "Validity details are temporarily unavailable.",
+      "extension_label": "Extension:",
+      "extension_paid": "You can extend the voucher by {months} months for a {feePct}% fee.",
+      "extension_free": "A free extension of {months} months is available.",
+      "extension_unavailable": "This voucher cannot be extended.",
+      "extension_fallback": "Extension details are temporarily unavailable.",
+      "cancellation_label": "Cancellation:",
+      "cancellation": "Cancel free of charge up to {hours} hours before the visit; after that the fee may be {feePct}%.",
+      "cancellation_only_cutoff": "Please cancel no later than {hours} hours before the visit.",
+      "cancellation_fallback": "Cancellation details are temporarily unavailable.",
+      "refund_label": "Refund channel:",
+      "refund_fallback": "The refund channel will be confirmed by support.",
+      "refund_channel_values": {
+        "original_payment": "The refund goes back to the original payment method.",
+        "store_credit": "The refund is settled as store credit.",
+        "bank_transfer": "The refund is settled by bank transfer."
+      },
+      "no_show_label": "No-show:",
+      "no_show_fallback": "The no-show policy is temporarily unavailable.",
+      "no_show_values": {
+        "charge_full": "A no-show may result in a full charge.",
+        "charge_partial": "A no-show may result in a partial charge.",
+        "no_charge": "A no-show does not trigger an extra charge, but please contact the salon.",
+        "forfeit_voucher": "A no-show may cause the voucher to be forfeited."
+      }
+    },
+    "expired": {
+      "badge": "Voucher expired",
+      "heading": "This voucher is no longer active.",
+      "body_with_date": "The validity ended on {date}. If you need help, please contact the salon or BonBeauty.",
+      "body_fallback": "We could not confirm an active voucher for this link. For safety, we do not show full details.",
+      "contact_heading": "Contact and support",
+      "contact_body": "The salon or BonBeauty support can help verify whether the voucher can still be handled or how to clarify the issue.",
+      "support_cta": "Contact support",
+      "privacy_heading": "Safe fallback",
+      "privacy_known_code": "This view does not reveal recipient or buyer details. We only show the minimum needed for support.",
+      "privacy_unknown_code": "We could not confirm a public gift-entry path, so the full code and personal data stay hidden.",
+      "support_hint": "Have the code from the message or PDF ready if you still have access to it."
+    },
+    "redeemed": {
+      "badge": "Voucher redeemed",
+      "heading": "This voucher has already been used.",
+      "body": "{seller} confirmed redemption on {date}. If anything looks wrong, contact the salon or BonBeauty.",
+      "timestamp_fallback": "on the confirmed date",
+      "contact_heading": "Contact the salon",
+      "cta_explore": "See more vouchers",
+      "cta_support": "Get help with a dispute"
+    },
+    "footer": {
+      "rules": "Terms",
+      "privacy": "Privacy policy",
+      "support": "Support"
+    }
+  },
+  "audit_trail": {
       "title": "Voucher history",
       "toggle_show": "Show voucher history",
       "toggle_hide": "Hide voucher history",

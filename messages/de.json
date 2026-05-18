@@ -693,6 +693,119 @@
         "button_retry": "Erneut versuchen"
       }
     },
+    "recipient": {
+      "meta": {
+        "title": "BonBeauty Gutschein",
+        "description": "Ruhige Empfängeransicht mit Gutscheincode, Einlösebedingungen und Salonkontakt."
+      },
+      "active": {
+        "hero_sender_disclosed": "{sender} von BonBeauty hat ein Geschenk für Sie",
+        "hero_sender_fallback": "Sie haben ein Geschenk von BonBeauty",
+        "heading": "Ein wenig Zeit für sich selbst.",
+        "subheading": "Sie können diesen Gutschein zu einem passenden Termin einlösen. Der Code identifiziert den Gutschein, ist aber keine Terminreservierung.",
+        "card_eyebrow_with_city": "{seller} · {city}",
+        "service_fallback": "BonBeauty Gutschein",
+        "code_label": "Gutscheincode",
+        "copy_cta": "Code kopieren",
+        "copy_aria": "Gutscheincode kopieren",
+        "copy_feedback": "Code kopiert.",
+        "copy_unavailable": "Kopieren ist in diesem Browser nicht verfügbar.",
+        "validity": "Gültig bis {date}",
+        "validity_fallback": "Die Gültigkeit wird bei der Einlösung bestätigt.",
+        "pdf_cta": "PDF herunterladen",
+        "wallet_soon": "Demnächst verfügbar"
+      },
+      "steps": {
+        "eyebrow": "So lösen Sie ein",
+        "heading": "Drei einfache Schritte.",
+        "show_code": {
+          "title": "Code zeigen",
+          "body": "Zeigen Sie den PDF-Ausdruck oder den Code von dieser Seite. Der Code identifiziert Ihren Gutschein im Salon."
+        },
+        "book_visit": {
+          "title": "Termin vereinbaren",
+          "body": "Kontaktieren Sie den Salon telefonisch oder über seine Website. Der Gutschein reserviert keinen Termin automatisch."
+        },
+        "enjoy_service": {
+          "title": "Leistung genießen",
+          "body": "Bringen Sie den Code zum Termin mit. Wenn etwas nicht stimmt, hilft BonBeauty bei der Klärung."
+        }
+      },
+      "salon": {
+        "eyebrow": "Salon",
+        "phone_label": "Telefon:",
+        "hours_label": "Öffnungszeiten:",
+        "seller_cta": "Salonprofil ansehen",
+        "maps_cta": "In Google Maps öffnen"
+      },
+      "map_placeholder": {
+        "eyebrow": "Anfahrt",
+        "heading": "Die Karte öffnet sich außerhalb von BonBeauty",
+        "body": "Wir binden hier kein externes Karten-SDK ein. Der Link öffnet die Salonadresse in Google Maps.",
+        "primary_cta": "Karte öffnen"
+      },
+      "handoff": {
+        "heading": "Was der Salon als Nächstes braucht",
+        "body": "Der Salon identifiziert den Gutschein über den Code. Sie können den Salon vor dem Termin kontaktieren, und wenn etwas nicht passt, hilft BonBeauty bei der Klärung."
+      },
+      "rules": {
+        "summary": "Einlösebedingungen und Hinweise",
+        "validity_label": "Gültigkeit:",
+        "validity_value": "Dieser Gutschein ist bis {date} gültig.",
+        "validity_fallback": "Details zur Gültigkeit sind vorübergehend nicht verfügbar.",
+        "extension_label": "Verlängerung:",
+        "extension_paid": "Sie können den Gutschein um {months} Monate gegen eine Gebühr von {feePct}% verlängern.",
+        "extension_free": "Eine kostenlose Verlängerung um {months} Monate ist möglich.",
+        "extension_unavailable": "Für diesen Gutschein ist keine Verlängerung vorgesehen.",
+        "extension_fallback": "Details zur Verlängerung sind vorübergehend nicht verfügbar.",
+        "cancellation_label": "Stornierung:",
+        "cancellation": "Kostenfreie Stornierung bis {hours} Std. vor dem Termin, danach kann die Gebühr {feePct}% betragen.",
+        "cancellation_only_cutoff": "Bitte stornieren Sie spätestens {hours} Std. vor dem Termin.",
+        "cancellation_fallback": "Details zur Stornierung sind vorübergehend nicht verfügbar.",
+        "refund_label": "Rückerstattungskanal:",
+        "refund_fallback": "Der Rückerstattungskanal wird vom Support bestätigt.",
+        "refund_channel_values": {
+          "original_payment": "Die Rückerstattung erfolgt auf die ursprüngliche Zahlungsmethode.",
+          "store_credit": "Die Rückerstattung erfolgt als Guthaben.",
+          "bank_transfer": "Die Rückerstattung erfolgt per Banküberweisung."
+        },
+        "no_show_label": "No-show:",
+        "no_show_fallback": "Die No-show-Regel ist vorübergehend nicht verfügbar.",
+        "no_show_values": {
+          "charge_full": "Ein Nichterscheinen kann zu einer vollständigen Belastung führen.",
+          "charge_partial": "Ein Nichterscheinen kann zu einer teilweisen Belastung führen.",
+          "no_charge": "Ein Nichterscheinen verursacht keine zusätzliche Gebühr, bitte kontaktieren Sie aber den Salon.",
+          "forfeit_voucher": "Ein Nichterscheinen kann zum Verlust des Gutscheins führen."
+        }
+      },
+      "expired": {
+        "badge": "Gutschein abgelaufen",
+        "heading": "Dieser Gutschein ist nicht mehr aktiv.",
+        "body_with_date": "Die Gültigkeit endete am {date}. Wenn Sie Hilfe brauchen, kontaktieren Sie bitte den Salon oder BonBeauty.",
+        "body_fallback": "Wir konnten keinen aktiven Gutschein für diesen Link bestätigen. Aus Sicherheitsgründen zeigen wir keine vollständigen Details an.",
+        "contact_heading": "Kontakt und Hilfe",
+        "contact_body": "Der Salon oder der BonBeauty Support können helfen zu prüfen, ob der Gutschein noch bearbeitet werden kann oder wie der Fall geklärt wird.",
+        "support_cta": "Support kontaktieren",
+        "privacy_heading": "Sicherer Fallback",
+        "privacy_known_code": "Diese Ansicht zeigt keine Daten der empfangenden oder kaufenden Person. Wir zeigen nur das Minimum für die Unterstützung.",
+        "privacy_unknown_code": "Ein öffentlicher Gift-Entry-Pfad konnte nicht bestätigt werden, daher bleiben voller Code und personenbezogene Daten verborgen.",
+        "support_hint": "Halten Sie den Code aus der Nachricht oder dem PDF bereit, falls Sie noch Zugriff darauf haben."
+      },
+      "redeemed": {
+        "badge": "Gutschein eingelöst",
+        "heading": "Dieser Gutschein wurde bereits verwendet.",
+        "body": "{seller} hat die Einlösung am {date} bestätigt. Wenn etwas nicht stimmt, kontaktieren Sie den Salon oder BonBeauty.",
+        "timestamp_fallback": "zum bestätigten Termin",
+        "contact_heading": "Kontakt zum Salon",
+        "cta_explore": "Weitere Gutscheine ansehen",
+        "cta_support": "Hilfe bei Streitfall"
+      },
+      "footer": {
+        "rules": "Regeln",
+        "privacy": "Datenschutz",
+        "support": "Support"
+      }
+    },
     "audit_trail": {
       "title": "Gutschein-Verlauf",
       "toggle_show": "Gutschein-Verlauf anzeigen",

@@ -52,6 +52,47 @@ export interface VoucherPublicView {
   expires_at?: string | null;
 }
 
+export type VoucherRecipientState = 'active' | 'expired' | 'already_redeemed';
+
+export interface VoucherRecipientPolicyView {
+  extension?: {
+    allowed: boolean;
+    paid: boolean;
+    fee_pct: number | null;
+    max_extension_months: number | null;
+  } | null;
+  cancellation?: {
+    cutoff_hours: number | null;
+    fee_pct: number | null;
+  } | null;
+  refund_channel?: string | null;
+  no_show_policy?: string | null;
+}
+
+export interface VoucherRecipientView {
+  code: string;
+  state: VoucherRecipientState;
+  seller_name: string;
+  seller_handle: string;
+  product_title: string;
+  value_minor: number;
+  currency_code: string;
+  expires_at?: string | null;
+  redeemed_at?: string | null;
+  sender_name?: string | null;
+  sender_disclosure_allowed: boolean;
+  sender_message?: string | null;
+  pdf_url?: string | null;
+  seller_address?: string | null;
+  seller_phone?: string | null;
+  seller_hours?: string | null;
+  seller_lat?: number | null;
+  seller_lng?: number | null;
+  seller_city?: string | null;
+  policy_snapshot?: VoucherRecipientPolicyView | null;
+  is_public_entry_confirmed: boolean;
+}
+
 type VoucherApiPayload = {
   code?: string;
   seller_id?: string;
@@ -63,6 +104,46 @@ type VoucherApiPayload = {
   currency_code?: string;
   status?: string;
   expires_at?: string | null;
+  redeemed_at?: string | null;
+  sender_name?: string | null;
+  sender_message?: string | null;
+  sender_disclosure_allowed?: boolean | null;
+  sender_disclosure_opt_in?: boolean | null;
+  pdf_url?: string | null;
+  seller_address?: string | null;
+  seller_phone?: string | null;
+  seller_hours?: string | null;
+  seller_city?: string | null;
+  seller_lat?: number | null;
+  seller_lng?: number | null;
+  policy_snapshot?: {
+    extension?: {
+      allowed?: boolean | null;
+      paid?: boolean | null;
+      fee_pct?: number | null;
+      max_extension_months?: number | null;
+    } | null;
+    cancellation?: {
+      cutoff_hours?: number | null;
+      fee_pct?: number | null;
+    } | null;
+    refund_channel?: string | null;
+    no_show?: {
+      policy?: string | null;
+    } | null;
+  } | null;
+  seller?: {
+    name?: string | null;
+    handle?: string | null;
+    phone?: string | null;
+    opening_hours?: string | null;
+    city?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    address?: string | null;
+    address_line?: string | null;
+    postal_code?: string | null;
+  } | null;
   // Buyer-side fields are explicitly NOT enumerated; the projection below is
   // an allowlist, so any unknown fields are dropped at the boundary.
 };
@@ -81,6 +162,110 @@ const E2E_VOUCHER_FIXTURES: Record<string, VoucherPublicView> = {
     status: 'claimed',
     expires_at: '2026-12-31T23:59:59.000Z'
   }
+};
+
+const E2E_RECIPIENT_ACTIVE_CODE = 'E2E-RECIPIENT-ACTIVE-001';
+const E2E_RECIPIENT_EXPIRED_CODE = 'E2E-RECIPIENT-EXPIRED-001';
+const E2E_RECIPIENT_REDEEMED_CODE = 'E2E-RECIPIENT-REDEEMED-001';
+
+const E2E_RECIPIENT_FIXTURES: Record<string, VoucherRecipientView> = {
+  [E2E_RECIPIENT_ACTIVE_CODE]: {
+    code: E2E_RECIPIENT_ACTIVE_CODE,
+    state: 'active',
+    seller_name: 'Apteczna Pracownia Kasi',
+    seller_handle: 'apteczna-pracownia-kasi',
+    product_title: 'Kwas migdalowy · 30 min konsultacji',
+    value_minor: 22000,
+    currency_code: 'PLN',
+    expires_at: '2026-06-30T21:59:59.000Z',
+    redeemed_at: null,
+    sender_name: 'Anna',
+    sender_disclosure_allowed: true,
+    sender_message: 'Mamo, na chwile dla siebie.',
+    pdf_url: `/api/voucher/${E2E_RECIPIENT_ACTIVE_CODE}/pdf`,
+    seller_address: 'ul. Stalowa 33 lok. 5, 03-426 Warszawa-Praga',
+    seller_phone: '+48 22 818 25 49',
+    seller_hours: 'pn-pt 10-19 · sob 10-15',
+    seller_city: 'Warszawa-Praga',
+    seller_lat: null,
+    seller_lng: null,
+    is_public_entry_confirmed: true,
+    policy_snapshot: {
+      extension: {
+        allowed: true,
+        paid: true,
+        fee_pct: 10,
+        max_extension_months: 6,
+      },
+      cancellation: {
+        cutoff_hours: 24,
+        fee_pct: 0,
+      },
+      refund_channel: 'original_payment',
+      no_show_policy: 'forfeit_voucher',
+    },
+  },
+  [E2E_RECIPIENT_EXPIRED_CODE]: {
+    code: E2E_RECIPIENT_EXPIRED_CODE,
+    state: 'expired',
+    seller_name: 'Apteczna Pracownia Kasi',
+    seller_handle: 'apteczna-pracownia-kasi',
+    product_title: 'Kwas migdalowy · 30 min konsultacji',
+    value_minor: 22000,
+    currency_code: 'PLN',
+    expires_at: '2026-04-30T21:59:59.000Z',
+    redeemed_at: null,
+    sender_name: null,
+    sender_disclosure_allowed: false,
+    sender_message: null,
+    pdf_url: null,
+    seller_address: 'ul. Stalowa 33 lok. 5, 03-426 Warszawa-Praga',
+    seller_phone: '+48 22 818 25 49',
+    seller_hours: 'pn-pt 10-19 · sob 10-15',
+    seller_city: 'Warszawa-Praga',
+    seller_lat: null,
+    seller_lng: null,
+    is_public_entry_confirmed: true,
+    policy_snapshot: {
+      extension: {
+        allowed: true,
+        paid: true,
+        fee_pct: 10,
+        max_extension_months: 6,
+      },
+      cancellation: null,
+      refund_channel: 'original_payment',
+      no_show_policy: 'forfeit_voucher',
+    },
+  },
+  [E2E_RECIPIENT_REDEEMED_CODE]: {
+    code: E2E_RECIPIENT_REDEEMED_CODE,
+    state: 'already_redeemed',
+    seller_name: 'Apteczna Pracownia Kasi',
+    seller_handle: 'apteczna-pracownia-kasi',
+    product_title: 'Kwas migdalowy · 30 min konsultacji',
+    value_minor: 22000,
+    currency_code: 'PLN',
+    expires_at: '2026-06-30T21:59:59.000Z',
+    redeemed_at: '2026-05-18T10:30:00.000Z',
+    sender_name: 'Anna',
+    sender_disclosure_allowed: true,
+    sender_message: null,
+    pdf_url: `/api/voucher/${E2E_RECIPIENT_REDEEMED_CODE}/pdf`,
+    seller_address: 'ul. Stalowa 33 lok. 5, 03-426 Warszawa-Praga',
+    seller_phone: '+48 22 818 25 49',
+    seller_hours: 'pn-pt 10-19 · sob 10-15',
+    seller_city: 'Warszawa-Praga',
+    seller_lat: null,
+    seller_lng: null,
+    is_public_entry_confirmed: true,
+    policy_snapshot: {
+      extension: null,
+      cancellation: null,
+      refund_channel: 'original_payment',
+      no_show_policy: null,
+    },
+  },
 };
 
 const E2E_VOUCHER_EVENTS: Record<string, VoucherAuditEvent[]> = {
@@ -139,6 +324,146 @@ function projectAllowlist(p: VoucherApiPayload | null | undefined): VoucherPubli
   };
 }
 
+function pickBoolean(...values: Array<boolean | null | undefined>): boolean {
+  for (const value of values) {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+  }
+  return false;
+}
+
+function pickString(...values: Array<string | null | undefined>): string | null {
+  for (const value of values) {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        return trimmed;
+      }
+    }
+  }
+  return null;
+}
+
+function pickNumber(...values: Array<number | null | undefined>): number | null {
+  for (const value of values) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function buildSellerAddress(payload: VoucherApiPayload): string | null {
+  const nestedAddress = pickString(
+    payload.seller?.address,
+    payload.seller?.address_line,
+  );
+  const postalCity = [payload.seller?.postal_code, payload.seller?.city]
+    .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
+    .join(' ');
+
+  return pickString(
+    payload.seller_address,
+    nestedAddress,
+    postalCity || null,
+  );
+}
+
+function normalizeRecipientState(rawStatus: string | null | undefined): VoucherRecipientState {
+  const normalized = (rawStatus ?? '').trim().toLowerCase();
+  if (
+    normalized === 'redeemed' ||
+    normalized === 'claimed' ||
+    normalized === 'settled' ||
+    normalized === 'closed' ||
+    normalized === 'redeemed_full' ||
+    normalized === 'redeemed_partial'
+  ) {
+    return 'already_redeemed';
+  }
+
+  if (
+    normalized === 'expired' ||
+    normalized === 'voided' ||
+    normalized === 'withdrawn' ||
+    normalized === 'revoked' ||
+    normalized === 'refunded' ||
+    normalized === 'disputed'
+  ) {
+    return 'expired';
+  }
+
+  return 'active';
+}
+
+function projectRecipientAllowlist(
+  payload: VoucherApiPayload | null | undefined
+): VoucherRecipientView | null {
+  if (!payload?.code || !payload.seller_name) {
+    return null;
+  }
+
+  const state = normalizeRecipientState(payload.status);
+  const sellerAddress = buildSellerAddress(payload);
+  const sellerPhone = pickString(payload.seller_phone, payload.seller?.phone);
+  const sellerHours = pickString(payload.seller_hours, payload.seller?.opening_hours);
+  const sellerCity = pickString(payload.seller_city, payload.seller?.city);
+  const sellerLat = pickNumber(payload.seller_lat, payload.seller?.lat);
+  const sellerLng = pickNumber(payload.seller_lng, payload.seller?.lng);
+
+  return {
+    code: String(payload.code),
+    state,
+    seller_name: String(payload.seller_name),
+    seller_handle: String(payload.seller_handle ?? payload.seller?.handle ?? ''),
+    product_title: String(payload.product_title ?? ''),
+    value_minor:
+      typeof payload.value_minor === 'number'
+        ? payload.value_minor
+        : typeof payload.value === 'number'
+          ? payload.value
+          : 0,
+    currency_code: String(payload.currency_code ?? 'PLN'),
+    expires_at: payload.expires_at ?? null,
+    redeemed_at: payload.redeemed_at ?? null,
+    sender_name: pickString(payload.sender_name),
+    sender_disclosure_allowed: pickBoolean(
+      payload.sender_disclosure_allowed,
+      payload.sender_disclosure_opt_in,
+    ),
+    sender_message: pickString(payload.sender_message),
+    pdf_url: pickString(payload.pdf_url),
+    seller_address: sellerAddress,
+    seller_phone: sellerPhone,
+    seller_hours: sellerHours,
+    seller_city: sellerCity,
+    seller_lat: sellerLat,
+    seller_lng: sellerLng,
+    is_public_entry_confirmed: true,
+    policy_snapshot: payload.policy_snapshot
+      ? {
+          extension: payload.policy_snapshot.extension
+            ? {
+                allowed: Boolean(payload.policy_snapshot.extension.allowed),
+                paid: Boolean(payload.policy_snapshot.extension.paid),
+                fee_pct: pickNumber(payload.policy_snapshot.extension.fee_pct),
+                max_extension_months: pickNumber(payload.policy_snapshot.extension.max_extension_months),
+              }
+            : null,
+          cancellation: payload.policy_snapshot.cancellation
+            ? {
+                cutoff_hours: pickNumber(payload.policy_snapshot.cancellation.cutoff_hours),
+                fee_pct: pickNumber(payload.policy_snapshot.cancellation.fee_pct),
+              }
+            : null,
+          refund_channel: pickString(payload.policy_snapshot.refund_channel),
+          no_show_policy: pickString(payload.policy_snapshot.no_show?.policy),
+        }
+      : null,
+  };
+}
+
 /**
  * Fetches a voucher by recipient-facing code. Strips buyer-side PII at the
  * server boundary (AR45 invariant). Returns null when not found.
@@ -178,6 +503,42 @@ export async function getVoucherByCode(code: string): Promise<VoucherPublicView 
 
   if (code in E2E_VOUCHER_FIXTURES) {
     return E2E_VOUCHER_FIXTURES[code];
+  }
+
+  return null;
+}
+
+export async function getVoucherRecipientByCode(
+  code: string
+): Promise<VoucherRecipientView | null> {
+  if (!code || code.length < 3) return null;
+
+  try {
+    const client = mercurClient as unknown as {
+      store?: { vouchers?: { byCode?: (args: { code: string }) => Promise<{ voucher?: VoucherApiPayload }> } };
+    };
+    if (client.store?.vouchers?.byCode) {
+      const res = await client.store.vouchers.byCode({ code });
+      const view = projectRecipientAllowlist(res?.voucher);
+      if (view) return view;
+    }
+  } catch {
+    // Fall through to raw fetch fallback.
+  }
+
+  try {
+    const url = `/store/vouchers/${encodeURIComponent(code)}`;
+    const res = (await sdk.client.fetch(url, { method: 'GET' })) as
+      | { voucher?: VoucherApiPayload }
+      | null;
+    const view = projectRecipientAllowlist(res?.voucher ?? (res as VoucherApiPayload));
+    if (view) return view;
+  } catch {
+    // Endpoint not provisioned or access denied — fall through to fixtures/null.
+  }
+
+  if (code in E2E_RECIPIENT_FIXTURES) {
+    return E2E_RECIPIENT_FIXTURES[code];
   }
 
   return null;
