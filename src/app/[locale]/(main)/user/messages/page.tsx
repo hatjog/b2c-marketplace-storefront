@@ -1,21 +1,50 @@
-import { LoginForm } from '@/components/molecules/LoginForm/LoginForm';
-import { UserNavigation } from '@/components/molecules/UserNavigation/UserNavigation';
-import { UserMessagesSection } from '@/components/sections/UserMessagesSection/UserMessagesSection';
+import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
+
+import { StateCard } from '@/components/molecules/StateCard/StateCard';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import { toDisplayName } from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';
 
-export default async function MessagesPage() {
-  const user = await retrieveCustomer();
+export default async function MessagesPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const [t, customer] = await Promise.all([
+    getTranslations({ locale, namespace: 'accountRead.messages' }),
+    retrieveCustomer()
+  ]);
 
-  if (!user) return <LoginForm />;
+  if (!customer) {
+    redirect(`/${locale}/login`);
+  }
+
+  const talkJsConfigured = Boolean(process.env.NEXT_PUBLIC_TALKJS_APP_ID);
 
   return (
-    <main id="main-content" className="container">
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
-        <UserNavigation />
-        <div className="space-y-8 md:col-span-3">
-          <UserMessagesSection />
+    <AccountLayoutWithChrome
+      locale={locale}
+      activeSurface="W2-12"
+      user={{
+        id: customer.id,
+        displayName: toDisplayName(customer) ?? customer.email,
+        email: customer.email
+      }}
+      snapshotSections={[
+        { id: 'status', label: t('snapshot.status'), value: talkJsConfigured ? t('snapshot.connected') : t('snapshot.passive') },
+        { id: 'email', label: t('snapshot.email'), value: customer.email }
+      ]}
+      mainContent={
+        <div className="space-y-6" data-testid="messages-page">
+          <div>
+            <h2 className="heading-md text-primary">{t('heading')}</h2>
+            <p className="text-sm text-secondary">{t('intro')}</p>
+          </div>
+          {talkJsConfigured ? (
+            <StateCard variant="unavailable" title={t('provider.title')} description={t('provider.body')} />
+          ) : (
+            <StateCard variant="empty" title={t('empty.title')} description={t('empty.body')} />
+          )}
         </div>
-      </div>
-    </main>
+      }
+    />
   );
 }

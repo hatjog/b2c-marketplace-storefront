@@ -1423,5 +1423,140 @@
     "empty_body": "Sprawdź wpisaną frazę albo zobacz polecane",
     "editorial_cta": "Zobacz Wybór redakcji",
     "subcategory_count": "{count, plural, one {# podkategoria} few {# podkategorie} many {# podkategorii} other {# podkategorii}}"
+  },
+  "accountRead": {
+    "dashboard": {
+      "welcome_eyebrow": "Po zakupie",
+      "welcome_heading": "Cześć, {firstName}",
+      "welcome_body": "Najważniejsze sprawy masz w jednym spokojnym miejscu: zamówienia, vouchery, wishlistę i wiadomości.",
+      "snapshot": { "email": "E-mail", "orders": "Zamówienia", "wishlist": "Wishlist" },
+      "quick_actions": {
+        "vouchers": { "label": "Vouchery", "description": "Otwórz historię voucherów" },
+        "orders": { "label": "Zamówienia", "description": "Sprawdź postęp zamówień" },
+        "wishlist": { "label": "Wishlist", "description": "Zapisane zabiegi" },
+        "messages": { "label": "Wiadomości", "description": "Inbox buyer-salon" }
+      },
+      "recommended": {
+        "heading": "Polecany następny krok",
+        "body": "Przejrzyj kategorie, gdy zechcesz wrócić do zabiegu później.",
+        "cta": "Przeglądaj kategorie"
+      },
+      "recent_activity": {
+        "heading": "Ostatnia aktywność",
+        "cta": "Zobacz wszystkie zamówienia",
+        "empty": "Twoje kolejne zamówienie pojawi się tutaj.",
+        "order_label": "Zamówienie #{displayId}",
+        "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "open_order": "Otwórz zamówienie"
+      },
+      "statuses": { "paid": "Aktywne", "pending": "W toku" },
+      "labels": { "date_pending": "Data w przygotowaniu" }
+    },
+    "orders": {
+      "heading": "Historia zamówień",
+      "intro": "Sprawdź każdą grupę zamówień, kwotę i bieżący postęp bez wychodzenia z konta.",
+      "secondary_cta": "Przejdź do voucherów",
+      "snapshot": { "orders": "Grupy zamówień", "email": "E-mail" },
+      "empty": { "title": "Nie masz jeszcze zamówień", "body": "Historia zamówień pojawi się tutaj po pierwszym zakupie." },
+      "error": {
+        "failed_title": "Nie udało się wczytać zamówień",
+        "failed_body": "Odśwież stronę za chwilę. Twój dostęp pozostaje chroniony.",
+        "retry": "Spróbuj ponownie",
+        "unavailable_title": "Zamówienia są chwilowo niedostępne",
+        "unavailable_body": "Sprawdzamy połączenie z usługą zamówień."
+      },
+      "order_label": "Zamówienie #{displayId}",
+      "status": { "paid": "Opłacone", "pending": "Oczekuje" },
+      "summary": {
+        "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "total": "Suma: {amount}",
+        "lines": "{count, plural, one {# przesyłka} few {# przesyłki} many {# przesyłek} other {# przesyłek}}"
+      },
+      "open": "Otwórz szczegóły",
+      "labels": { "date_pending": "Data w przygotowaniu" }
+    },
+    "orderDetail": {
+      "back": "Wróć do zamówień",
+      "heading": "Zamówienie #{displayId}",
+      "intro": "Sprawdź pozycje, dostawę, płatność i kolejne praktyczne działania.",
+      "snapshot": { "order_number": "Numer zamówienia", "order_date": "Data zamówienia" },
+      "status": { "paid": "Opłacone", "pending": "Oczekuje", "failed": "Wymaga uwagi", "refunded": "Zwrócone" },
+      "items": { "heading": "Pozycje", "quantity": "Ilość: {count}" },
+      "delivery": {
+        "heading": "Dostawa",
+        "pending": "Pokażemy szczegóły dostawy, gdy tylko będą dostępne."
+      },
+      "payment": {
+        "heading": "Podsumowanie płatności",
+        "total": "Suma: {amount}",
+        "method": "Metoda: {value}",
+        "method_pending": "Metoda płatności w przygotowaniu"
+      },
+      "timeline": {
+        "heading": "Oś czasu",
+        "placed": { "label": "Zamówienie złożone", "detail": "Zarejestrowaliśmy zamówienie i rozpoczęliśmy realizację." },
+        "payment": { "label": "Płatność", "detail_paid": "Płatność została potwierdzona.", "detail_pending": "Czekamy na potwierdzenie płatności." },
+        "fulfillment": { "label": "Realizacja", "detail_ready": "Voucher lub przekazanie usługi jest gotowe.", "detail_pending": "Wciąż przygotowujemy realizację." }
+      },
+      "actions": {
+        "heading": "Akcje",
+        "resend": { "title": "Wyślij voucher ponownie", "available": "Otwórz ponownie surface potwierdzenia i stamtąd ponów wysyłkę vouchera.", "unavailable": "To zamówienie nie udostępnia jeszcze ścieżki ponownej wysyłki vouchera.", "cta": "Otwórz potwierdzenie" },
+        "invoice": { "title": "Faktura", "available": "Pobierz fakturę bezpośrednio z tego zamówienia.", "unavailable": "Faktura pojawi się tutaj, gdy księgowość ją udostępni.", "cta": "Otwórz fakturę" },
+        "return": { "title": "Wniosek o zwrot", "available": "Uruchom flow zwrotu dla tej grupy zamówień.", "unavailable": "Zwrot nie jest teraz dostępny dla tego zamówienia.", "cta": "Otwórz flow zwrotu" },
+        "contact": { "title": "Kontakt z pomocą", "available": "Skorzystaj z pomocy, jeśli potrzebujesz spokojnego przekazania sprawy do supportu.", "cta": "Otwórz pomoc" }
+      },
+      "handoff": {
+        "label_for_you": "Co dalej dla Ciebie:",
+        "label_for_us": "Co dalej dla nas:",
+        "for_you": "Zachowaj to zamówienie pod ręką, jeśli chcesz ponowić wysyłkę vouchera, faktury albo wniosku o zwrot.",
+        "for_us": "W tle pilnujemy spójności płatności, realizacji i obsługi posprzedażowej."
+      },
+      "error": {
+        "failed_title": "Nie udało się wczytać tego zamówienia",
+        "failed_body": "Spróbuj ponownie za chwilę. Jeśli problem nie zniknie, skorzystaj z pomocy.",
+        "unavailable_title": "To zamówienie jest chwilowo niedostępne",
+        "unavailable_body": "Sprawdzamy połączenie z zamówieniem i przywrócimy dostęp tak szybko, jak to możliwe."
+      },
+      "labels": { "date_pending": "Data w przygotowaniu" }
+    },
+    "returns": {
+      "heading": "Zwroty",
+      "intro": "Śledź złożone wnioski o zwrot i ich bieżący status.",
+      "snapshot": { "returns": "Zwroty", "email": "E-mail" },
+      "empty": { "title": "Nie masz jeszcze zwrotów", "body": "Wnioski o zwrot pojawią się tutaj, jeśli kiedykolwiek będą potrzebne." },
+      "error": {
+        "failed_title": "Nie udało się wczytać zwrotów",
+        "failed_body": "Spróbuj ponownie za chwilę. Ścieżka recovery jest oddzielona od empty state.",
+        "unavailable_title": "Zwroty są chwilowo niedostępne",
+        "unavailable_body": "Usługa zwrotów nie odpowiada w tej chwili."
+      },
+      "return_label": "Zwrot {id}",
+      "status": { "paid": "Zakończony", "pending": "W toku", "failed": "Wymaga uwagi", "refunded": "Zrefundowany" },
+      "labels": { "date_pending": "Data w przygotowaniu" }
+    },
+    "wishlist": {
+      "heading": "Wishlist",
+      "intro": "Zachowuj zabiegi, do których chcesz wrócić, bez zamieniania tego widoku w ustawienia.",
+      "browse": "Przeglądaj kategorie",
+      "collection": "Zapisana kolekcja",
+      "snapshot": { "wishlist": "Zapisane pozycje", "email": "E-mail" },
+      "empty": { "title": "Twoja wishlist jest pusta", "body": "Zapisuj zabiegi i vouchery, do których chcesz wrócić później." },
+      "error": {
+        "failed_title": "Nie udało się wczytać wishlisty",
+        "failed_body": "To nie jest to samo co pusta wishlist. Spróbuj ponownie za chwilę.",
+        "unavailable_title": "Wishlist jest chwilowo niedostępna",
+        "unavailable_body": "Sprawdzamy połączenie z wishlistą."
+      }
+    },
+    "messages": {
+      "heading": "Wiadomości",
+      "intro": "Ten inbox pozostaje pasywny, dopóki nie będzie potrzebna prawdziwa rozmowa buyer-salon.",
+      "empty": { "title": "Nie masz jeszcze wiadomości", "body": "Rozmowy pojawią się tutaj, gdy salon albo support będą potrzebowali kontaktu." },
+      "provider": {
+        "title": "Provider wiadomości wymaga żywej sesji",
+        "body": "Provider jest skonfigurowany, ale ta surface nie fabrykuje wątków z historii zamówień."
+      },
+      "snapshot": { "status": "Tryb inboxu", "connected": "Provider podłączony", "passive": "Pasywny empty state", "email": "E-mail" }
+    }
   }
 }

@@ -1424,5 +1424,121 @@
     "empty_body": "Prüfen Sie Ihre Suche oder sehen Sie sich Kuratiertes an.",
     "editorial_cta": "Redaktionsempfehlung ansehen",
     "subcategory_count": "{count, plural, one {# Unterkategorie} other {# Unterkategorien}}"
+  },
+  "accountRead": {
+    "dashboard": {
+      "welcome_eyebrow": "Nach dem Kauf",
+      "welcome_heading": "Hallo, {firstName}",
+      "welcome_body": "Alles Wichtige ist an einem ruhigen Ort: Bestellungen, Gutscheine, Wunschliste und Nachrichten.",
+      "snapshot": { "email": "E-Mail", "orders": "Bestellungen", "wishlist": "Wunschliste" },
+      "quick_actions": {
+        "vouchers": { "label": "Gutscheine", "description": "Gutscheinverlauf öffnen" },
+        "orders": { "label": "Bestellungen", "description": "Bestellfortschritt prüfen" },
+        "wishlist": { "label": "Wunschliste", "description": "Gespeicherte Behandlungen" },
+        "messages": { "label": "Nachrichten", "description": "Buyer-Salon-Postfach" }
+      },
+      "recommended": { "heading": "Empfohlener nächster Schritt", "body": "Durchsuchen Sie Kategorien, wenn Sie später zu einer Behandlung zurückkehren möchten.", "cta": "Kategorien öffnen" },
+      "recent_activity": {
+        "heading": "Letzte Aktivität",
+        "cta": "Alle Bestellungen anzeigen",
+        "empty": "Ihre nächste Bestellung erscheint hier.",
+        "order_label": "Bestellung #{displayId}",
+        "items": "{count, plural, one {# Artikel} other {# Artikel}}",
+        "open_order": "Bestellung öffnen"
+      },
+      "statuses": { "paid": "Aktiv", "pending": "In Bearbeitung" },
+      "labels": { "date_pending": "Datum folgt" }
+    },
+    "orders": {
+      "heading": "Bestellverlauf",
+      "intro": "Prüfen Sie jede Bestellgruppe, den Betrag und den aktuellen Fortschritt direkt im Konto.",
+      "secondary_cta": "Zu den Gutscheinen",
+      "snapshot": { "orders": "Bestellgruppen", "email": "E-Mail" },
+      "empty": { "title": "Noch keine Bestellungen", "body": "Ihr Bestellverlauf erscheint hier nach dem ersten Kauf." },
+      "error": {
+        "failed_title": "Bestellungen konnten nicht geladen werden",
+        "failed_body": "Laden Sie die Seite gleich erneut. Ihr Zugriff bleibt geschützt.",
+        "retry": "Erneut versuchen",
+        "unavailable_title": "Bestellungen sind vorübergehend nicht verfügbar",
+        "unavailable_body": "Wir prüfen gerade die Verbindung zum Bestelldienst."
+      },
+      "order_label": "Bestellung #{displayId}",
+      "status": { "paid": "Bezahlt", "pending": "Ausstehend" },
+      "summary": { "items": "{count, plural, one {# Artikel} other {# Artikel}}", "total": "Summe: {amount}", "lines": "{count, plural, one {# Sendung} other {# Sendungen}}" },
+      "open": "Details öffnen",
+      "labels": { "date_pending": "Datum folgt" }
+    },
+    "orderDetail": {
+      "back": "Zurück zu Bestellungen",
+      "heading": "Bestellung #{displayId}",
+      "intro": "Prüfen Sie Artikel, Lieferung, Zahlung und die nächsten praktischen Aktionen.",
+      "snapshot": { "order_number": "Bestellnummer", "order_date": "Bestelldatum" },
+      "status": { "paid": "Bezahlt", "pending": "Ausstehend", "failed": "Benötigt Aufmerksamkeit", "refunded": "Erstattet" },
+      "items": { "heading": "Artikel", "quantity": "Menge: {count}" },
+      "delivery": { "heading": "Lieferung", "pending": "Wir zeigen die Lieferdetails an, sobald sie verfügbar sind." },
+      "payment": { "heading": "Zahlungsübersicht", "total": "Summe: {amount}", "method": "Methode: {value}", "method_pending": "Zahlungsmethode folgt" },
+      "timeline": {
+        "heading": "Zeitachse",
+        "placed": { "label": "Bestellung eingegangen", "detail": "Wir haben die Bestellung registriert und die Abwicklung gestartet." },
+        "payment": { "label": "Zahlung", "detail_paid": "Die Zahlung wurde bestätigt.", "detail_pending": "Wir warten auf die Zahlungsbestätigung." },
+        "fulfillment": { "label": "Erfüllung", "detail_ready": "Der Gutschein oder die Service-Übergabe ist bereit.", "detail_pending": "Wir bereiten die Erfüllung noch vor." }
+      },
+      "actions": {
+        "heading": "Aktionen",
+        "resend": { "title": "Gutschein erneut senden", "available": "Öffnen Sie die Bestätigungsseite erneut und senden Sie den Gutschein von dort aus.", "unavailable": "Für diese Bestellung gibt es noch keinen Pfad zum erneuten Versand.", "cta": "Bestätigung öffnen" },
+        "invoice": { "title": "Rechnung", "available": "Laden Sie die Rechnung direkt aus dieser Bestellung herunter.", "unavailable": "Die Rechnung erscheint hier, sobald sie freigegeben ist.", "cta": "Rechnung öffnen" },
+        "return": { "title": "Rückgabeantrag", "available": "Starten Sie den Rückgabeablauf für diese Bestellgruppe.", "unavailable": "Eine Rückgabe ist für diese Bestellung derzeit nicht verfügbar.", "cta": "Rückgabe öffnen" },
+        "contact": { "title": "Support kontaktieren", "available": "Nutzen Sie die Hilfe, wenn Sie eine ruhige Übergabe an den Support brauchen.", "cta": "Hilfe öffnen" }
+      },
+      "handoff": {
+        "label_for_you": "Was kommt als Nächstes für Sie:",
+        "label_for_us": "Was kommt als Nächstes für uns:",
+        "for_you": "Behalten Sie diese Bestellung griffbereit, falls Sie Gutschein, Rechnung oder Rückgabe erneut benötigen.",
+        "for_us": "Wir halten Zahlung, Erfüllung und After-Sales-Support im Hintergrund aufeinander abgestimmt."
+      },
+      "error": {
+        "failed_title": "Diese Bestellung konnte nicht geladen werden",
+        "failed_body": "Versuchen Sie es gleich noch einmal. Wenn das Problem bleibt, nutzen Sie die Hilfe.",
+        "unavailable_title": "Diese Bestellung ist vorübergehend nicht verfügbar",
+        "unavailable_body": "Wir prüfen die Bestellverbindung und stellen den Zugriff so schnell wie möglich wieder her."
+      },
+      "labels": { "date_pending": "Datum folgt" }
+    },
+    "returns": {
+      "heading": "Rückgaben",
+      "intro": "Verfolgen Sie eingereichte Rückgabeanträge und ihren aktuellen Status.",
+      "snapshot": { "returns": "Rückgaben", "email": "E-Mail" },
+      "empty": { "title": "Noch keine Rückgaben", "body": "Rückgabeanträge erscheinen hier, wenn Sie sie jemals benötigen." },
+      "error": {
+        "failed_title": "Rückgaben konnten nicht geladen werden",
+        "failed_body": "Versuchen Sie es gleich erneut. Der Recovery-Pfad ist vom Empty State getrennt.",
+        "unavailable_title": "Rückgaben sind vorübergehend nicht verfügbar",
+        "unavailable_body": "Der Rückgabedienst antwortet gerade nicht."
+      },
+      "return_label": "Rückgabe {id}",
+      "status": { "paid": "Abgeschlossen", "pending": "In Bearbeitung", "failed": "Benötigt Aufmerksamkeit", "refunded": "Erstattet" },
+      "labels": { "date_pending": "Datum folgt" }
+    },
+    "wishlist": {
+      "heading": "Wunschliste",
+      "intro": "Behalten Sie Behandlungen im Blick, ohne diese Ansicht in einen Einstellungsbereich zu verwandeln.",
+      "browse": "Kategorien öffnen",
+      "collection": "Gespeicherte Sammlung",
+      "snapshot": { "wishlist": "Gespeicherte Einträge", "email": "E-Mail" },
+      "empty": { "title": "Ihre Wunschliste ist leer", "body": "Speichern Sie Behandlungen und Gutscheine, zu denen Sie später zurückkehren möchten." },
+      "error": {
+        "failed_title": "Ihre Wunschliste konnte nicht geladen werden",
+        "failed_body": "Das ist nicht dasselbe wie eine leere Wunschliste. Bitte versuchen Sie es gleich erneut.",
+        "unavailable_title": "Die Wunschliste ist vorübergehend nicht verfügbar",
+        "unavailable_body": "Wir prüfen die Verbindung zur Wunschliste."
+      }
+    },
+    "messages": {
+      "heading": "Nachrichten",
+      "intro": "Dieses Postfach bleibt passiv, bis eine echte Buyer-Salon-Konversation nötig ist.",
+      "empty": { "title": "Noch keine Nachrichten", "body": "Gespräche erscheinen hier, wenn ein Salon oder der Support Sie kontaktieren muss." },
+      "provider": { "title": "Der Messaging-Provider benötigt eine Live-Sitzung", "body": "Der Provider ist konfiguriert, aber diese Oberfläche erzeugt keine künstlichen Threads aus Bestellungen." },
+      "snapshot": { "status": "Postfachmodus", "connected": "Provider verbunden", "passive": "Passiver Empty State", "email": "E-Mail" }
+    }
   }
 }

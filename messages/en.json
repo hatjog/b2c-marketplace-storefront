@@ -1423,5 +1423,140 @@
     "empty_body": "Check your query or explore curated picks.",
     "editorial_cta": "See Editor's choice",
     "subcategory_count": "{count, plural, one {# subcategory} other {# subcategories}}"
+  },
+  "accountRead": {
+    "dashboard": {
+      "welcome_eyebrow": "After purchase",
+      "welcome_heading": "Hello, {firstName}",
+      "welcome_body": "Everything important is in one calm place: orders, vouchers, wishlist and messages.",
+      "snapshot": { "email": "Email", "orders": "Orders", "wishlist": "Wishlist" },
+      "quick_actions": {
+        "vouchers": { "label": "Vouchers", "description": "Open voucher history" },
+        "orders": { "label": "Orders", "description": "Check order progress" },
+        "wishlist": { "label": "Wishlist", "description": "Saved treatments" },
+        "messages": { "label": "Messages", "description": "Buyer-salon inbox" }
+      },
+      "recommended": {
+        "heading": "Recommended next step",
+        "body": "Browse categories when you want to return to a treatment later.",
+        "cta": "Browse categories"
+      },
+      "recent_activity": {
+        "heading": "Recent activity",
+        "cta": "See all orders",
+        "empty": "Your next order will appear here.",
+        "order_label": "Order #{displayId}",
+        "items": "{count, plural, one {# item} other {# items}}",
+        "open_order": "Open order"
+      },
+      "statuses": { "paid": "Active", "pending": "In progress" },
+      "labels": { "date_pending": "Date pending" }
+    },
+    "orders": {
+      "heading": "Order history",
+      "intro": "Review each order group, amount and current progress without leaving your account.",
+      "secondary_cta": "Go to vouchers",
+      "snapshot": { "orders": "Order groups", "email": "Email" },
+      "empty": { "title": "No orders yet", "body": "Your order history will appear here after your first purchase." },
+      "error": {
+        "failed_title": "We couldn't load your orders",
+        "failed_body": "Refresh this page in a moment. Your access stays protected.",
+        "retry": "Try again",
+        "unavailable_title": "Orders are temporarily unavailable",
+        "unavailable_body": "We are checking the connection with the order service."
+      },
+      "order_label": "Order #{displayId}",
+      "status": { "paid": "Paid", "pending": "Pending" },
+      "summary": {
+        "items": "{count, plural, one {# item} other {# items}}",
+        "total": "Total: {amount}",
+        "lines": "{count, plural, one {# shipment} other {# shipments}}"
+      },
+      "open": "Open details",
+      "labels": { "date_pending": "Date pending" }
+    },
+    "orderDetail": {
+      "back": "Back to orders",
+      "heading": "Order #{displayId}",
+      "intro": "Check items, delivery, payment and the next practical actions.",
+      "snapshot": { "order_number": "Order number", "order_date": "Order date" },
+      "status": { "paid": "Paid", "pending": "Pending", "failed": "Needs attention", "refunded": "Returned" },
+      "items": { "heading": "Items", "quantity": "Quantity: {count}" },
+      "delivery": {
+        "heading": "Delivery",
+        "pending": "We will show the delivery details here as soon as they are available."
+      },
+      "payment": {
+        "heading": "Payment summary",
+        "total": "Total: {amount}",
+        "method": "Method: {value}",
+        "method_pending": "Payment method pending"
+      },
+      "timeline": {
+        "heading": "Timeline",
+        "placed": { "label": "Order placed", "detail": "We registered your order and started fulfilment." },
+        "payment": { "label": "Payment", "detail_paid": "Payment has been confirmed.", "detail_pending": "We are waiting for payment confirmation." },
+        "fulfillment": { "label": "Fulfilment", "detail_ready": "The voucher or service handoff is ready.", "detail_pending": "We are still preparing fulfilment." }
+      },
+      "actions": {
+        "heading": "Actions",
+        "resend": { "title": "Resend voucher", "available": "Open the confirmation surface again and resend the voucher from there.", "unavailable": "This order does not expose a voucher resend path yet.", "cta": "Open confirmation" },
+        "invoice": { "title": "Invoice", "available": "Download the invoice directly from this order.", "unavailable": "The invoice will appear here when accounting releases it.", "cta": "Open invoice" },
+        "return": { "title": "Return request", "available": "Start the return flow for this order group.", "unavailable": "Return is not available for this order right now.", "cta": "Open return flow" },
+        "contact": { "title": "Contact support", "available": "Use help if you need a calm handoff to support.", "cta": "Open help" }
+      },
+      "handoff": {
+        "label_for_you": "What happens next for you:",
+        "label_for_us": "What happens next for us:",
+        "for_you": "Keep this order handy if you need to resend a voucher, invoice or return request.",
+        "for_us": "We keep payment, fulfilment and post-purchase support aligned in the background."
+      },
+      "error": {
+        "failed_title": "We couldn't load this order",
+        "failed_body": "Try again in a moment. If the problem stays, use support.",
+        "unavailable_title": "This order is temporarily unavailable",
+        "unavailable_body": "We are checking the order connection and will restore access as soon as possible."
+      },
+      "labels": { "date_pending": "Date pending" }
+    },
+    "returns": {
+      "heading": "Returns",
+      "intro": "Track submitted return requests and their current status.",
+      "snapshot": { "returns": "Returns", "email": "Email" },
+      "empty": { "title": "No returns yet", "body": "Return requests will appear here if you ever need them." },
+      "error": {
+        "failed_title": "We couldn't load returns",
+        "failed_body": "Try again in a moment. We keep the recovery path separate from empty states.",
+        "unavailable_title": "Returns are temporarily unavailable",
+        "unavailable_body": "The returns service is not responding right now."
+      },
+      "return_label": "Return {id}",
+      "status": { "paid": "Completed", "pending": "In progress", "failed": "Needs attention", "refunded": "Refunded" },
+      "labels": { "date_pending": "Date pending" }
+    },
+    "wishlist": {
+      "heading": "Wishlist",
+      "intro": "Keep treatments you want to revisit without turning this view into a settings flow.",
+      "browse": "Browse categories",
+      "collection": "Saved collection",
+      "snapshot": { "wishlist": "Saved items", "email": "Email" },
+      "empty": { "title": "Your wishlist is empty", "body": "Save treatments and vouchers you want to come back to later." },
+      "error": {
+        "failed_title": "We couldn't load your wishlist",
+        "failed_body": "This is not the same as an empty wishlist. Please try again in a moment.",
+        "unavailable_title": "Wishlist is temporarily unavailable",
+        "unavailable_body": "We are checking the wishlist connection."
+      }
+    },
+    "messages": {
+      "heading": "Messages",
+      "intro": "This inbox stays passive until a real buyer-salon conversation is needed.",
+      "empty": { "title": "No messages yet", "body": "Conversations will appear here when a salon or support needs to contact you." },
+      "provider": {
+        "title": "Messaging provider requires a live session",
+        "body": "The provider is configured, but this account surface does not fabricate threads from orders."
+      },
+      "snapshot": { "status": "Inbox mode", "connected": "Provider connected", "passive": "Passive empty state", "email": "Email" }
+    }
   }
 }
