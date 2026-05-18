@@ -39,108 +39,6 @@
     "style_eyebrow": "Odkrywaj style",
     "blog_eyebrow": "Dziennik BonBeauty"
   },
-  "home_v3": {
-    "hero": {
-      "heading": "Znajdź rytuał, który pasuje do Twojego dnia.",
-      "paragraph": "Przeglądaj sprawdzone salony, wybieraj spokojnie i wracaj do propozycji, które budują Twój własny rytm.",
-      "secondary_voucher_cta": "Voucher prezentowy",
-      "trust_verified_label": "Zweryfikowany marketplace"
-    },
-    "search": {
-      "submit": "Szukaj",
-      "tabs": {
-        "product": "Produkt",
-        "salons": "Salony",
-        "voucher": "Voucher"
-      },
-      "placeholders": {
-        "product": "Jakiego rytuału szukasz?",
-        "salons": "Wpisz miasto lub nazwę salonu",
-        "voucher": "Podaj kwotę vouchera"
-      },
-      "aria": {
-        "tablist": "Wybierz sposób wyszukiwania",
-        "product_input": "Wyszukiwanie produktów",
-        "salons_input": "Wyszukiwanie salonów",
-        "voucher_input": "Wyszukiwanie voucherów"
-      }
-    },
-    "categories": {
-      "image_alt": "Kategoria {name}"
-    },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Popularne teraz",
-      "empty_state": "W tej chwili kompletujemy listę popularnych rytuałów. Zajrzyj ponownie za moment."
-    },
-    "editorial": {
-      "aria_label": "Editorial — Cichy luksus",
-      "eyebrow": "Wybór redakcji",
-      "heading": "Cichy luksus",
-      "body": "Pięć nastrojów, od których możesz zacząć spokojne odkrywanie.",
-      "vibes": {
-        "calm": {
-          "title": "Spokój",
-          "subtitle": "Delikatne rytuały na wyciszenie"
-        },
-        "energy": {
-          "title": "Energia",
-          "subtitle": "Zabiegi, które budzą świeżość"
-        },
-        "clarity": {
-          "title": "Czystość",
-          "subtitle": "Przejrzyste formuły i lekkość"
-        },
-        "warmth": {
-          "title": "Ciepło",
-          "subtitle": "Otulające doświadczenia pielęgnacyjne"
-        },
-        "seasonal": {
-          "title": "Sezonowość",
-          "subtitle": "Wybory dopasowane do pory roku"
-        }
-      }
-    },
-    "gift_cta": {
-      "aria_label": "Karta voucheru prezentowego",
-      "eyebrow": "Voucher",
-      "heading": "Voucher prezentowy",
-      "body": "Podaruj bliskiej osobie czas dla siebie w sprawdzonych salonach.",
-      "cta_label": "Zobacz vouchery"
-    },
-    "journal": {
-      "heading": "Rytuały z dziennika",
-      "cta_label": "Czytaj rytuały",
-      "read_time_minutes": "{count} min czytania",
-      "posts": {
-        "1": {
-          "category": "Rytuał",
-          "title": "Jak dobrać rytuał do rytmu tygodnia",
-          "excerpt": "Krótki przewodnik, który pomaga wybrać zabieg zgodnie z tym, ile masz dziś energii."
-        },
-        "2": {
-          "category": "Mapa salonów",
-          "title": "Spokojna trasa: salon blisko Ciebie",
-          "excerpt": "Jak filtrować salony po lokalizacji i wracać do miejsc, które dają Ci komfort."
-        },
-        "3": {
-          "category": "Prezent",
-          "title": "Voucher, który zostawia przestrzeń wyboru",
-          "excerpt": "Dlaczego voucher prezentowy działa najlepiej, gdy odbiorca sam wybiera moment realizacji."
-        }
-      }
-    },
-    "trust_strip": {
-      "aria_label": "Sygnały zaufania platformy",
-      "verified_label": "Zweryfikowany marketplace",
-      "points": {
-        "1": "Zweryfikowane profile salonów",
-        "2": "Oceny klientek i klientów",
-        "3": "Bezpieczne płatności online",
-        "4": "Jasne zasady voucherów"
-      }
-    }
-  },
   "seller": {
     "list": {
       "title": "Salony partnerskie",
@@ -210,7 +108,6 @@
       "meta_fallback_title": "Nieznany salon | BonBeauty",
       "meta_description": "Odkryj ofertę salonu {name} na BonBeauty.",
       "meta_default_description": "Salon partnerski BonBeauty — sprawdź ofertę i adres.",
-      "runtime_fallback_notice": "Część danych salonu jest chwilowo niedostępna. Możesz przeglądać ofertę, ale strona pozostaje wyłączona z indeksowania do czasu uzupełnienia wymaganych danych biznesowych.",
       "directions_title": "Jak dojechać",
       "directions_open_google": "Otwórz w Google Maps",
       "directions_open_apple": "Otwórz w Apple Maps",
@@ -552,7 +449,6 @@
     "no_results_quality": "Nie znaleziono zabiegów spełniających kryteria",
     "seller_joined": "Dołączył: {date}",
     "report_seller": "Zgłoś sprzedawcę",
-    "seller_tax_id": "NIP: {taxId}",
     "chat_heading": "Czat"
   },
   "auth": {
@@ -603,7 +499,103 @@
     "password_req_8chars": "Co najmniej 8 znaków",
     "password_req_lowercase": "Co najmniej jedna mała litera",
     "password_req_uppercase": "Co najmniej jedna wielka litera",
-    "password_req_symbol": "Co najmniej jeden symbol"
+    "password_req_symbol": "Co najmniej jeden symbol",
+    "login_eyebrow": "Powrót do BonBeauty",
+    "login_title": "Witaj ponownie.",
+    "login_subtitle": "Twoje vouchery i wishlist czekają.",
+    "password_helper": "Minimum 8 znaków",
+    "forgot_password_link": "Zapomniałaś hasła?",
+    "register_link": "Zarejestruj się",
+    "common": {
+      "error": "Nie udało się dokończyć tej akcji. Spróbuj ponownie spokojnie za chwilę."
+    },
+    "layout": {
+      "skip_to_form": "Przejdź do formularza",
+      "home_aria": "Wróć na stronę główną BonBeauty",
+      "trust_aria": "Informacje o bezpieczeństwie i zaufaniu",
+      "trust": {
+        "marketplace_verified": {
+          "label": "Zweryfikowany marketplace",
+          "aria": "Zweryfikowany marketplace BonBeauty"
+        },
+        "returns_30_days": {
+          "label": "30 dni na zwrot",
+          "aria": "Do trzydziestu dni na zwrot"
+        },
+        "support": {
+          "label": "Wsparcie po polsku",
+          "aria": "Wsparcie klienta w języku polskim"
+        }
+      },
+      "footer": {
+        "terms": "Regulamin",
+        "privacy": "Polityka prywatności",
+        "help": "Pomoc"
+      }
+    },
+    "login": {
+      "invalid_credentials": "Sprawdź e-mail i hasło. Jedno z nich nie pasuje.",
+      "success": "Wygląda dobrze. Przenosimy Cię dalej."
+    },
+    "forgot_eyebrow": "Odzyskiwanie dostępu",
+    "forgot_title": "Zapomniałaś hasła?",
+    "forgot_subtitle": "Bez stresu. Wyślemy link do resetu bez zdradzania, czy to konto już istnieje.",
+    "forgot": {
+      "submit": "Wyślij link resetujący",
+      "success_title": "Sprawdź skrzynkę.",
+      "success_body": "Jeśli to konto istnieje, wyślemy link na {email}. Będzie aktywny przez godzinę.",
+      "success_neutral": "Nie dotarł? Możesz poprosić o kolejną wiadomość za chwilę.",
+      "resend_cooldown": "Wyślij ponownie ({seconds}s)",
+      "resend_ready": "Wyślij ponownie"
+    },
+    "register_eyebrow": "Nowe konto",
+    "register_title": "Witamy w BonBeauty.",
+    "register_subtitle": "Konto da Ci dostęp do voucherów, wishlist i historii zakupów.",
+    "register": {
+      "email_exists": "Konto z tym adresem już istnieje.",
+      "success": "Konto gotowe. Za moment przejdziemy dalej."
+    },
+    "field_success": "Wygląda dobrze",
+    "remember_me": "Zapamiętaj mnie",
+    "magic_link_option": "Wolisz link bez hasła? Otwórz odzyskiwanie przez link magiczny",
+    "social_google": "Google wkrótce",
+    "social_apple": "Apple wkrótce",
+    "show_password": "Pokaż hasło",
+    "hide_password": "Ukryj hasło",
+    "confirm_password_label": "Potwierdź hasło",
+    "terms_consent_prefix": "Akceptuję",
+    "terms_link_label": "regulamin",
+    "privacy_consent_prefix": "Zapoznałam się z",
+    "privacy_link_label": "polityką prywatności",
+    "rodo_consent_label": "Wyrażam zgodę na przetwarzanie danych potrzebnych do założenia konta.",
+    "marketing_consent_label": "Chcę otrzymywać inspiracje i oferty od BonBeauty.",
+    "password_strength": {
+      "soft": "Delikatne. Dodaj wielką literę albo znak specjalny.",
+      "medium": "Średnie. Jeszcze chwila i będzie solidnie.",
+      "strong": "Silne. Tak jest dobrze."
+    },
+    "reset_eyebrow": "Nowe hasło",
+    "reset_title": "Ustaw nowe hasło.",
+    "reset_subtitle": "Hasło musi mieć minimum 8 znaków. Resztę zostawiamy Tobie.",
+    "reset": {
+      "submit": "Ustaw nowe hasło",
+      "invalid_token": "Ten link już wygasł albo jest nieprawidłowy. Poproś o nowy reset hasła.",
+      "success_title": "Hasło zapisane. Za moment wrócisz do logowania."
+    },
+    "inline": {
+      "eyebrow": "Bonus po zakupie",
+      "title": "Załóż konto w 30 sekund.",
+      "subtitle": "Vouchery zawsze pod ręką, wishlist i szybszy checkout następnym razem.",
+      "order_notice": "Zamówienie {orderReference} jest opłacone. Vouchery są w drodze na {email}.",
+      "header_fallback": "Zakup zakończony. Jeśli chcesz, od razu podepnij konto do adresu {email}.",
+      "benefit_orders": "Historia voucherów i zamówień",
+      "benefit_wishlist": "Wishlist i zapisane adresy",
+      "benefit_checkout": "Szybsza kasa następnym razem",
+      "password_label": "Ustaw hasło",
+      "submit": "Załóż konto",
+      "skip": "Nie teraz",
+      "success": "Konto gotowe. Już Cię przenosimy."
+    }
   },
   "forms": {
     "greeting": "Cześć, {name}!",
@@ -660,25 +652,7 @@
     "promo_code_heading": "Masz kod promocyjny?",
     "promo_code_placeholder": "Wpisz kod",
     "promo_code_button": "Aktywuj",
-    "gift_card": "Karta upominkowa",
-    "open_cart_drawer_aria": "Otwórz mini-koszyk",
-    "item_fallback_name": "Produkt",
-    "summary_subtotal": "Suma częściowa",
-    "delivery_method_label": "Metoda dostawy vouchera",
-    "delivery_method_pdf_email": "PDF email",
-    "delivery_method_scheduled": "Zaplanowane",
-    "trust_microcopy": "Bezpieczna płatność Stripe • Voucher natychmiast w mailu",
-    "recommended_heading": "Polecane dla Ciebie",
-    "recommended_fallback_label": "Wybór redakcji",
-    "empty_es3_heading": "Twój koszyk czeka",
-    "empty_es3_body": "Zacznij od Wyboru redakcji",
-    "empty_es3_cta": "Wybór redakcji",
-    "quantity_decrease_aria": "Zmniejsz ilość",
-    "quantity_increase_aria": "Zwiększ ilość",
-    "quantity_update_failed_title": "Nie udało się zaktualizować ilości",
-    "quantity_update_failed_fallback": "Nie udało się zaktualizować ilości",
-    "quantity_label": "Ilość",
-    "thumbnail_alt": "Miniatura produktu"
+    "gift_card": "Karta upominkowa"
   },
   "navigation": {
     "menu": "Menu",
@@ -718,7 +692,25 @@
     "read_article": "Czytaj artykuł",
     "no_posts": "Dla tego marketu nie opublikowano jeszcze wpisów blogowych.",
     "read_more": "Czytaj więcej",
-    "section_heading": "Bądź na bieżąco"
+    "section_heading": "Bądź na bieżąco",
+    "editorial_intro": "Czytaj rytuały, notatki redakcyjne i praktyczne przewodniki budowane wokół realnych zakupowych scenariuszy.",
+    "tag_all": "Wszystkie tematy",
+    "filter_label": "Filtruj po temacie",
+    "active_filter": "Aktywny filtr",
+    "empty_heading": "Brak wpisów dla wybranego filtra",
+    "empty_body": "Zmień temat albo wróć do wszystkich wpisów, aby zobaczyć pełne archiwum bloga.",
+    "reset_filters": "Pokaż wszystkie wpisy",
+    "min_read": "{minutes} min czytania",
+    "published_label": "Publikacja",
+    "updated_label": "Aktualizacja",
+    "toc_label": "Spis treści artykułu",
+    "toc_mobile_label": "Skocz do sekcji",
+    "back_to_blog": "Wróć do bloga",
+    "related_heading": "Powiązane wpisy",
+    "author_heading": "O autorce",
+    "disallowed_embed": "Ten embed nie jest dostępny w bezpiecznym widoku storefrontu.",
+    "newsletter_heading": "Nie przegap kolejnych rytuałów",
+    "inline_embed_label": "Materiały dodatkowe"
   },
   "orders": {
     "cancel_heading": "Anuluj zamówienie",
@@ -759,7 +751,15 @@
     "country_required": "Kraj jest wymagany",
     "postal_code_required": "Kod pocztowy jest wymagany",
     "rating_required": "Oceń tego sprzedawcę",
-    "opinion_max": "Opinia może zawierać maksymalnie 300 znaków"
+    "opinion_max": "Opinia może zawierać maksymalnie 300 znaków",
+    "password_lowercase": "Dodaj co najmniej jedną małą literę",
+    "password_uppercase": "Dodaj co najmniej jedną wielką literę",
+    "password_symbol": "Dodaj cyfrę lub znak specjalny",
+    "confirm_password_required": "Potwierdź hasło",
+    "password_mismatch": "Hasła muszą być identyczne",
+    "terms_required": "Potwierdź akceptację regulaminu",
+    "privacy_required": "Potwierdź zapoznanie z polityką prywatności",
+    "rodo_required": "Potwierdź zgodę na przetwarzanie danych"
   },
   "accessibility": {
     "breadcrumb": "Okruszki nawigacyjne",
@@ -800,7 +800,7 @@
       "collections": "Kolekcje"
     },
     "hero": {
-      "eyebrow": "Odkrywanie redakcyjne",
+      "eyebrow": "Editorial discovery",
       "title": "Kolekcje ułożone ręcznie, nie przez ranking.",
       "body": "Przeglądaj tematyczne shortlisty przygotowane przez zespół BonBeauty. Każda kolekcja ma własny punkt widzenia i nie udaje algorytmicznej personalizacji.",
       "cta": "Otwórz wyróżnioną kolekcję",
@@ -850,7 +850,7 @@
         "home": "Strona główna",
         "collections": "Kolekcje"
       },
-      "eyebrow": "Tryb kolekcji",
+      "eyebrow": "Collection mode",
       "calloutLabel": "Notatka redakcyjna",
       "quoteLabel": "Dlaczego ta kolekcja",
       "toolbar": {
@@ -870,7 +870,7 @@
       },
       "grid": {
         "cardAria": "Otwórz pozycję {title}",
-        "curatedLabel": "Kolejność redakcyjna",
+        "curatedLabel": "Curated order",
         "cta": "Zobacz szczegóły"
       },
       "related": {
@@ -986,62 +986,7 @@
     "support_required_cta": "Skontaktuj się z pomocą",
     "recovery_cta": "Przejdź do moich zamówień",
     "payment_failed_title": "Płatność nie powiodła się",
-    "payment_failed_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności.",
-    "hero_title": "Płatność potwierdzona",
-    "hero_sub_gift": "Voucher idzie do {recipient}.",
-    "hero_sub_self": "Voucher wyślemy na {email}.",
-    "stepper_title": "Status vouchera",
-    "status_paid": "Krok 1: Zapłacone",
-    "status_voucher_generating": "Krok 2: Voucher generowany",
-    "status_email_sent": "Krok 3: Voucher wysłany",
-    "status_recipient_opened": "Krok 4: Voucher otwarty przez obdarowanego",
-    "status_completed": "Voucher został już otwarty przez obdarowanego",
-    "step_paid_label": "Zapłacone",
-    "step_generating_label": "Voucher generowany",
-    "step_sent_label": "Wysłany",
-    "step_opened_label": "Otwarty przez obdarowanego",
-    "step_done": "Gotowe",
-    "step_active": "W toku",
-    "step_future": "Przed nami",
-    "step_paid_eta": "Potwierdzono",
-    "step_paid_timestamp": "Potwierdzono: {timestamp}",
-    "step_generating_eta": "Gotowe w ~30s",
-    "step_sent_eta": "Trwa do minuty",
-    "step_opened_eta": "Powiadomimy Cię",
-    "generating_countdown": "Odliczanie: {seconds}s",
-    "second_tier_message": "Trwa to trochę dłużej niż zwykle (już {elapsed} sekund). Nadal pracujemy nad wysyłką.",
-    "summary_title": "Podsumowanie zamówienia",
-    "summary_order_id": "ID zamówienia: {orderId}",
-    "summary_copy": "Kopiuj",
-    "summary_copied": "Skopiowano",
-    "summary_item_fallback": "Pozycja zamówienia",
-    "summary_item_quantity": "Ilość: {quantity}",
-    "summary_delivery_method": "Metoda dostawy vouchera",
-    "delivery_email": "E-mail",
-    "delivery_scheduled": "Wysyłka zaplanowana",
-    "delivery_physical": "Wysyłka fizyczna",
-    "summary_subtotal": "Suma częściowa",
-    "summary_fees": "Opłaty",
-    "summary_total": "Razem",
-    "summary_empty": "Nie znaleziono pozycji zamówienia.",
-    "next_title": "Co dalej",
-    "next_for_you_title": "Dla Ciebie",
-    "next_for_you_body": "Możesz pobrać dokument PDF i śledzić status zamówienia w panelu.",
-    "next_for_you_cta": "Śledź status",
-    "next_for_recipient_title": "Dla obdarowanego",
-    "next_for_recipient_body": "Spodziewaj się maila z voucherem. Warto sprawdzić też folder SPAM.",
-    "next_for_recipient_href": "/pomoc",
-    "next_for_recipient_cta": "Zobacz wskazówki",
-    "next_for_salon_title": "Dla salonu",
-    "next_for_salon_body": "System przekazuje zamówienie do realizacji i synchronizuje status po stronie salonu.",
-    "next_for_salon_cta": "Szczegóły procesu",
-    "cross_actor_label_for_you": "Co dalej dla Ciebie:",
-    "cross_actor_label_for_us": "Co dalej po naszej stronie:",
-    "cross_actor_for_you": "Możesz wrócić do zamówień i obserwować postęp wysyłki vouchera.",
-    "cross_actor_for_us": "Automatycznie przechodzimy przez etapy paid → voucher_issued → email_sent → recipient_opened.",
-    "guest_teaser_title": "Kupujesz jako gość?",
-    "guest_teaser_body": "Załóż konto, żeby łatwo śledzić vouchery i statusy kolejnych zamówień.",
-    "guest_teaser_cta": "Utwórz konto"
+    "payment_failed_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności."
   },
   "voucher": {
     "qr_code_aria_label": "Kod QR vouchera",
@@ -1120,6 +1065,119 @@
         "button_retry": "Spróbuj ponownie"
       }
     },
+    "recipient": {
+      "meta": {
+        "title": "Voucher BonBeauty",
+        "description": "Spokojny widok odbiorcy vouchera z kodem, zasadami realizacji i kontaktem do salonu."
+      },
+      "active": {
+        "hero_sender_disclosed": "{sender} z BonBeauty ma dla Ciebie prezent",
+        "hero_sender_fallback": "Masz prezent BonBeauty",
+        "heading": "Prezent na chwilę dla siebie.",
+        "subheading": "Zrealizujesz voucher w dogodnym terminie. Kod identyfikuje voucher, ale nie jest rezerwacją wizyty.",
+        "card_eyebrow_with_city": "{seller} · {city}",
+        "service_fallback": "Voucher BonBeauty",
+        "code_label": "Kod vouchera",
+        "copy_cta": "Kopiuj kod",
+        "copy_aria": "Skopiuj kod vouchera",
+        "copy_feedback": "Kod skopiowany.",
+        "copy_unavailable": "Kopiowanie nie jest dostępne w tej przeglądarce.",
+        "validity": "Ważny do {date}",
+        "validity_fallback": "Termin ważności potwierdzimy przy realizacji.",
+        "pdf_cta": "Pobierz PDF",
+        "wallet_soon": "Dostępne wkrótce"
+      },
+      "steps": {
+        "eyebrow": "Jak zrealizować",
+        "heading": "Trzy proste kroki.",
+        "show_code": {
+          "title": "Pokaż kod",
+          "body": "Pokaż wydruk PDF albo kod z tej strony. Kod identyfikuje Twój voucher w salonie."
+        },
+        "book_visit": {
+          "title": "Umów wizytę",
+          "body": "Skontaktuj się z salonem telefonicznie albo przez jego stronę. Voucher nie rezerwuje terminu automatycznie."
+        },
+        "enjoy_service": {
+          "title": "Skorzystaj z usługi",
+          "body": "Przyjdź na wizytę i pokaż kod. Gdy pojawi się problem, BonBeauty pomoże dopiąć realizację."
+        }
+      },
+      "salon": {
+        "eyebrow": "Salon",
+        "phone_label": "Telefon:",
+        "hours_label": "Godziny:",
+        "seller_cta": "Zobacz profil salonu",
+        "maps_cta": "Otwórz w Google Maps"
+      },
+      "map_placeholder": {
+        "eyebrow": "Dojazd",
+        "heading": "Mapa otwiera się poza BonBeauty",
+        "body": "Nie osadzamy tutaj zewnętrznego SDK map. Link otworzy adres salonu w Google Maps.",
+        "primary_cta": "Przejdź do mapy"
+      },
+      "handoff": {
+        "heading": "Co dalej dla salonu",
+        "body": "Salon identyfikuje voucher po kodzie. Możesz skontaktować się z salonem przed wizytą, a jeśli coś się nie zgadza, BonBeauty pomoże wyjaśnić sprawę."
+      },
+      "rules": {
+        "summary": "Zasady i warunki realizacji",
+        "validity_label": "Ważność:",
+        "validity_value": "Voucher jest ważny do {date}.",
+        "validity_fallback": "Szczegóły ważności są chwilowo niedostępne.",
+        "extension_label": "Przedłużenie:",
+        "extension_paid": "Możesz przedłużyć voucher o {months} mies. przy opłacie {feePct}%.",
+        "extension_free": "Możliwe jest bezpłatne przedłużenie o {months} mies.",
+        "extension_unavailable": "Ten voucher nie przewiduje przedłużenia.",
+        "extension_fallback": "Szczegóły przedłużenia są chwilowo niedostępne.",
+        "cancellation_label": "Anulowanie:",
+        "cancellation": "Anulacja bez opłaty do {hours} godz. przed wizytą, później opłata może wynieść {feePct}%.",
+        "cancellation_only_cutoff": "Anulację zgłoś najpóźniej {hours} godz. przed wizytą.",
+        "cancellation_fallback": "Szczegóły anulowania są chwilowo niedostępne.",
+        "refund_label": "Kanał zwrotu:",
+        "refund_fallback": "Kanał zwrotu zostanie potwierdzony przez support.",
+        "refund_channel_values": {
+          "original_payment": "Zwrot wraca na pierwotną metodę płatności.",
+          "store_credit": "Zwrot jest rozliczany jako saldo do wykorzystania.",
+          "bank_transfer": "Zwrot jest rozliczany przelewem bankowym."
+        },
+        "no_show_label": "No-show:",
+        "no_show_fallback": "Polityka no-show jest chwilowo niedostępna.",
+        "no_show_values": {
+          "charge_full": "Brak obecności może oznaczać pełne obciążenie.",
+          "charge_partial": "Brak obecności może oznaczać częściowe obciążenie.",
+          "no_charge": "Brak obecności nie powoduje dodatkowej opłaty, ale wymaga kontaktu z salonem.",
+          "forfeit_voucher": "Brak obecności może skutkować utratą vouchera."
+        }
+      },
+      "expired": {
+        "badge": "Voucher wygasł",
+        "heading": "Ten voucher nie jest już aktywny.",
+        "body_with_date": "Termin ważności minął {date}. Jeśli potrzebujesz pomocy, skontaktuj się z salonem albo z BonBeauty.",
+        "body_fallback": "Nie udało się potwierdzić aktywnego vouchera pod tym linkiem. Dla bezpieczeństwa nie pokazujemy pełnych danych.",
+        "contact_heading": "Kontakt i pomoc",
+        "contact_body": "Salon albo support BonBeauty pomogą sprawdzić, czy voucher można jeszcze obsłużyć albo jak wyjaśnić sprawę.",
+        "support_cta": "Skontaktuj się z supportem",
+        "privacy_heading": "Bezpieczny fallback",
+        "privacy_known_code": "Ten widok nie pokazuje danych odbiorcy ani kupującego. Pokazujemy tylko minimum potrzebne do kontaktu.",
+        "privacy_unknown_code": "Nie potwierdziliśmy publicznej ścieżki gift entry, więc ukrywamy pełny kod i dane osobowe.",
+        "support_hint": "Przygotuj kod z wiadomości lub PDF, jeśli masz do nich dostęp."
+      },
+      "redeemed": {
+        "badge": "Voucher zrealizowany",
+        "heading": "Voucher został już wykorzystany.",
+        "body": "{seller} potwierdził realizację {date}. Jeśli coś się nie zgadza, odezwij się do salonu lub do BonBeauty.",
+        "timestamp_fallback": "w potwierdzonym terminie",
+        "contact_heading": "Kontakt z salonem",
+        "cta_explore": "Zobacz inne vouchery",
+        "cta_support": "Pomoc w razie sporu"
+      },
+      "footer": {
+        "rules": "Regulamin",
+        "privacy": "Polityka prywatności",
+        "support": "Wsparcie"
+      }
+    },
     "audit_trail": {
       "title": "Historia vouchera",
       "toggle_show": "Pokaż historię vouchera",
@@ -1190,6 +1248,31 @@
       "sent_confirmation": "Jeśli ten adres e-mail jest powiązany z zakupem, wyślemy Ci link odzyskiwania.",
       "meta_title": "Odzyskiwanie dostępu | BonBeauty",
       "meta_description": "Odzyskaj dostęp do swoich voucherów BonBeauty."
+    },
+    "rules": {
+      "title": "Zasady vouchera",
+      "summary_with_validity": "Voucher ważny {count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesięcy}}. Termin realizacji ustalisz później z salonem.",
+      "summary_without_validity": "Voucher dostajesz po płatności, a termin realizacji ustalasz później z salonem.",
+      "validity_label": "Ważność",
+      "validity_value": "Voucher ważny {count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesięcy}}.",
+      "validity_to_confirm": "Okres ważności zostanie potwierdzony.",
+      "redemption_label": "Realizacja",
+      "redemption_value": "Voucher otrzymasz jako PDF po płatności. Termin wizyty ustalasz później bezpośrednio z salonem.",
+      "withdrawal_label": "Zwrot i odstąpienie",
+      "withdrawal_value": "Ścieżka odstąpienia i zwrotu jest widoczna przed realizacją. Szczegóły znajdziesz w zasadach BonBeauty.",
+      "cancellation_label": "Odwołanie",
+      "cancellation_fallback": "Warunki odwołania potwierdzi salon przy umawianiu terminu.",
+      "refund_label": "Kanał zwrotu",
+      "refund_fallback": "Zwrot wraca tą samą metodą płatności albo zgodnie z zasadami BonBeauty.",
+      "no_show_label": "Nieobecność",
+      "no_show_fallback": "Zasady no-show potwierdzi salon przy umawianiu terminu.",
+      "extension_label": "Przedłużenie",
+      "extension_unavailable": "Przedłużenie vouchera nie jest dostępne.",
+      "extension_available": "Przedłużenie vouchera jest dostępne zgodnie z profilem usługi.",
+      "extension_free": "Możesz przedłużyć voucher o {count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesięcy}} bez dodatkowej opłaty.",
+      "extension_paid": "Możesz przedłużyć voucher o {count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesięcy}} za dodatkową opłatą.",
+      "extension_paid_fee": "Możesz przedłużyć voucher o {count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesięcy}} za dopłatą {feePct}% wartości.",
+      "extension_paid_no_months": "Przedłużenie jest płatne zgodnie z profilem usługi. Dopłata wynosi {feePct}% wartości."
     },
     "clarity": {
       "validity_to_confirm": "Okres ważności zostanie potwierdzony.",
@@ -1620,196 +1703,572 @@
     "loading": "Ładowanie…",
     "no_results": "Brak wyników"
   },
-  "categories_index": {
-    "metadata_title": "Kategorie",
-    "metadata_description": "Przeglądaj kategorie zabiegów i znajdź najlepszy rytuał beauty oraz wellness.",
-    "breadcrumbs": {
-      "home": "Strona główna",
-      "current": "Kategorie"
-    },
-    "breadcrumbs_aria_label": "Nawigacja okruszkowa",
-    "hero": {
-      "eyebrow": "BonBeauty",
-      "title": "Kategorie.",
-      "intro": "Przeglądaj rytuały beauty i wellness od zaufanych salonów. Wybierz kierunek i przejdź do szczegółowej listy ofert."
-    },
-    "featured": {
-      "eyebrow": "Najpopularniejsze",
-      "title": "Top 3 kierunki.",
-      "count_label": "podkategorii"
-    },
-    "filters": {
-      "all": "Wszystkie",
-      "popular": "Najczęściej kupowane",
-      "new": "Nowości",
-      "offers": "Promocje",
-      "premium": "Premium"
-    },
-    "filters_aria_label": "Filtry kategorii",
-    "grid": {
-      "title": "Wszystkie kategorie",
-      "description": "Szybko filtruj i przejdź do kategorii, która najlepiej pasuje do Twoich potrzeb.",
-      "image_alt": "Kategoria",
-      "missing_image": "Brak zdjęcia kategorii",
-      "count_label": "podkategorii"
-    }
-  },
-  "category_plp": {
-    "hero_eyebrow": "Kategoria",
-    "filters_aria": "Filtry kategorii",
-    "filters_title": "Filtry",
-    "clear_filters": "Wyczyść filtry",
-    "filter_price": "Cena",
-    "price_from": "Od",
-    "price_to": "Do",
-    "filter_salon": "Salon",
-    "all_salons": "Wszystkie salony",
-    "filter_location": "Lokalizacja",
-    "filter_rating": "Ocena",
-    "filter_availability": "Dostępność",
-    "availability_in_stock": "Dostępne teraz",
-    "filter_mode": "Tryb",
-    "mode_self": "Dla siebie",
-    "mode_gift": "Na prezent",
-    "filter_sort": "Sortuj",
-    "empty_heading": "Nic nie znaleźliśmy",
-    "empty_body": "Sprawdź wpisaną frazę albo zobacz polecane",
-    "editorial_cta": "Zobacz Wybór redakcji",
-    "subcategory_count": "{count, plural, one {# podkategoria} few {# podkategorie} many {# podkategorii} other {# podkategorii}}"
-  },
   "accountRead": {
-    "dashboard": {
-      "welcome_eyebrow": "Po zakupie",
-      "welcome_heading": "Cześć, {firstName}",
-      "welcome_body": "Najważniejsze sprawy masz w jednym spokojnym miejscu: zamówienia, vouchery, wishlistę i wiadomości.",
-      "snapshot": { "email": "E-mail", "orders": "Zamówienia", "wishlist": "Wishlist" },
-      "quick_actions": {
-        "vouchers": { "label": "Vouchery", "description": "Otwórz historię voucherów" },
-        "orders": { "label": "Zamówienia", "description": "Sprawdź postęp zamówień" },
-        "wishlist": { "label": "Wishlist", "description": "Zapisane zabiegi" },
-        "messages": { "label": "Wiadomości", "description": "Inbox buyer-salon" }
-      },
-      "recommended": {
-        "heading": "Polecany następny krok",
-        "body": "Przejrzyj kategorie, gdy zechcesz wrócić do zabiegu później.",
-        "cta": "Przeglądaj kategorie"
-      },
-      "recent_activity": {
-        "heading": "Ostatnia aktywność",
-        "cta": "Zobacz wszystkie zamówienia",
-        "empty": "Twoje kolejne zamówienie pojawi się tutaj.",
-        "order_label": "Zamówienie #{displayId}",
-        "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
-        "open_order": "Otwórz zamówienie"
-      },
-      "statuses": { "paid": "Aktywne", "pending": "W toku" },
-      "labels": { "date_pending": "Data w przygotowaniu" }
+    "common": {
+      "defaultName": "Karolino",
+      "greeting": "Dzień dobry, {firstName}. Wszystko, co ważne po zakupie, masz tutaj pod ręką.",
+      "salonFallback": "Salon BonBeauty"
     },
-    "orders": {
-      "heading": "Historia zamówień",
-      "intro": "Sprawdź każdą grupę zamówień, kwotę i bieżący postęp bez wychodzenia z konta.",
-      "secondary_cta": "Przejdź do voucherów",
-      "snapshot": { "orders": "Grupy zamówień", "email": "E-mail" },
-      "empty": { "title": "Nie masz jeszcze zamówień", "body": "Historia zamówień pojawi się tutaj po pierwszym zakupie." },
-      "error": {
-        "failed_title": "Nie udało się wczytać zamówień",
-        "failed_body": "Odśwież stronę za chwilę. Twój dostęp pozostaje chroniony.",
-        "retry": "Spróbuj ponownie",
-        "unavailable_title": "Zamówienia są chwilowo niedostępne",
-        "unavailable_body": "Sprawdzamy połączenie z usługą zamówień."
-      },
-      "order_label": "Zamówienie #{displayId}",
-      "status": { "paid": "Opłacone", "pending": "Oczekuje" },
-      "summary": {
-        "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
-        "total": "Suma: {amount}",
-        "lines": "{count, plural, one {# przesyłka} few {# przesyłki} many {# przesyłek} other {# przesyłek}}"
-      },
-      "open": "Otwórz szczegóły",
-      "labels": { "date_pending": "Data w przygotowaniu" }
-    },
-    "orderDetail": {
-      "back": "Wróć do zamówień",
-      "heading": "Zamówienie #{displayId}",
-      "intro": "Sprawdź pozycje, dostawę, płatność i kolejne praktyczne działania.",
-      "snapshot": { "order_number": "Numer zamówienia", "order_date": "Data zamówienia" },
-      "status": { "paid": "Opłacone", "pending": "Oczekuje", "failed": "Wymaga uwagi", "refunded": "Zwrócone" },
-      "items": { "heading": "Pozycje", "quantity": "Ilość: {count}" },
-      "delivery": {
-        "heading": "Dostawa",
-        "pending": "Pokażemy szczegóły dostawy, gdy tylko będą dostępne."
-      },
-      "payment": {
-        "heading": "Podsumowanie płatności",
-        "total": "Suma: {amount}",
-        "method": "Metoda: {value}",
-        "method_pending": "Metoda płatności w przygotowaniu"
-      },
-      "timeline": {
-        "heading": "Oś czasu",
-        "placed": { "label": "Zamówienie złożone", "detail": "Zarejestrowaliśmy zamówienie i rozpoczęliśmy realizację." },
-        "payment": { "label": "Płatność", "detail_paid": "Płatność została potwierdzona.", "detail_pending": "Czekamy na potwierdzenie płatności." },
-        "fulfillment": { "label": "Realizacja", "detail_ready": "Voucher lub przekazanie usługi jest gotowe.", "detail_pending": "Wciąż przygotowujemy realizację." }
-      },
-      "actions": {
-        "heading": "Akcje",
-        "resend": { "title": "Wyślij voucher ponownie", "available": "Otwórz ponownie surface potwierdzenia i stamtąd ponów wysyłkę vouchera.", "unavailable": "To zamówienie nie udostępnia jeszcze ścieżki ponownej wysyłki vouchera.", "cta": "Otwórz potwierdzenie" },
-        "invoice": { "title": "Faktura", "available": "Pobierz fakturę bezpośrednio z tego zamówienia.", "unavailable": "Faktura pojawi się tutaj, gdy księgowość ją udostępni.", "cta": "Otwórz fakturę" },
-        "return": { "title": "Wniosek o zwrot", "available": "Uruchom flow zwrotu dla tej grupy zamówień.", "unavailable": "Zwrot nie jest teraz dostępny dla tego zamówienia.", "cta": "Otwórz flow zwrotu" },
-        "contact": { "title": "Kontakt z pomocą", "available": "Skorzystaj z pomocy, jeśli potrzebujesz spokojnego przekazania sprawy do supportu.", "cta": "Otwórz pomoc" }
-      },
-      "handoff": {
-        "label_for_you": "Co dalej dla Ciebie:",
-        "label_for_us": "Co dalej dla nas:",
-        "for_you": "Zachowaj to zamówienie pod ręką, jeśli chcesz ponowić wysyłkę vouchera, faktury albo wniosku o zwrot.",
-        "for_us": "W tle pilnujemy spójności płatności, realizacji i obsługi posprzedażowej."
-      },
-      "error": {
-        "failed_title": "Nie udało się wczytać tego zamówienia",
-        "failed_body": "Spróbuj ponownie za chwilę. Jeśli problem nie zniknie, skorzystaj z pomocy.",
-        "unavailable_title": "To zamówienie jest chwilowo niedostępne",
-        "unavailable_body": "Sprawdzamy połączenie z zamówieniem i przywrócimy dostęp tak szybko, jak to możliwe."
-      },
-      "labels": { "date_pending": "Data w przygotowaniu" }
-    },
-    "returns": {
-      "heading": "Zwroty",
-      "intro": "Śledź złożone wnioski o zwrot i ich bieżący status.",
-      "snapshot": { "returns": "Zwroty", "email": "E-mail" },
-      "empty": { "title": "Nie masz jeszcze zwrotów", "body": "Wnioski o zwrot pojawią się tutaj, jeśli kiedykolwiek będą potrzebne." },
-      "error": {
-        "failed_title": "Nie udało się wczytać zwrotów",
-        "failed_body": "Spróbuj ponownie za chwilę. Ścieżka recovery jest oddzielona od empty state.",
-        "unavailable_title": "Zwroty są chwilowo niedostępne",
-        "unavailable_body": "Usługa zwrotów nie odpowiada w tej chwili."
-      },
-      "return_label": "Zwrot {id}",
-      "status": { "paid": "Zakończony", "pending": "W toku", "failed": "Wymaga uwagi", "refunded": "Zrefundowany" },
-      "labels": { "date_pending": "Data w przygotowaniu" }
-    },
-    "wishlist": {
-      "heading": "Wishlist",
-      "intro": "Zachowuj zabiegi, do których chcesz wrócić, bez zamieniania tego widoku w ustawienia.",
-      "browse": "Przeglądaj kategorie",
-      "collection": "Zapisana kolekcja",
-      "snapshot": { "wishlist": "Zapisane pozycje", "email": "E-mail" },
-      "empty": { "title": "Twoja wishlist jest pusta", "body": "Zapisuj zabiegi i vouchery, do których chcesz wrócić później." },
-      "error": {
-        "failed_title": "Nie udało się wczytać wishlisty",
-        "failed_body": "To nie jest to samo co pusta wishlist. Spróbuj ponownie za chwilę.",
-        "unavailable_title": "Wishlist jest chwilowo niedostępna",
-        "unavailable_body": "Sprawdzamy połączenie z wishlistą."
+    "navigation": {
+      "eyebrow": "Powierzchnie konta",
+      "ariaLabel": "Nawigacja konta",
+      "items": {
+        "dashboard": "Panel",
+        "vouchers": "Vouchery",
+        "orders": "Zamówienia",
+        "returns": "Zwroty",
+        "wishlist": "Wishlist",
+        "messages": "Wiadomości"
       }
     },
-    "messages": {
-      "heading": "Wiadomości",
-      "intro": "Ten inbox pozostaje pasywny, dopóki nie będzie potrzebna prawdziwa rozmowa buyer-salon.",
-      "empty": { "title": "Nie masz jeszcze wiadomości", "body": "Rozmowy pojawią się tutaj, gdy salon albo support będą potrzebowali kontaktu." },
-      "provider": {
-        "title": "Provider wiadomości wymaga żywej sesji",
-        "body": "Provider jest skonfigurowany, ale ta surface nie fabrykuje wątków z historii zamówień."
+    "snapshot": {
+      "eyebrow": "Snapshot konta",
+      "title": "Spokojny podgląd operacyjny",
+      "vouchers": "Vouchery",
+      "vouchersDetail": "Ważne i gotowe do użycia kody.",
+      "orders": "Zamówienia",
+      "ordersDetail": "Historia zakupów i bieżące decyzje.",
+      "returns": "Zwroty",
+      "returnsDetail": "Wnioski czekające na decyzję lub rozliczenie.",
+      "wishlist": "Wishlist",
+      "wishlistDetail": "Zapisane rytuały i prezenty na później.",
+      "messages": "Wiadomości",
+      "messagesDetail": "Spokojna komunikacja z salonem."
+    },
+    "quickActions": {
+      "vouchers": {
+        "label": "Vouchery",
+        "description": "Zobacz kody, ważność i dalsze kroki."
       },
-      "snapshot": { "status": "Tryb inboxu", "connected": "Provider podłączony", "passive": "Pasywny empty state", "email": "E-mail" }
+      "orders": {
+        "label": "Orders",
+        "description": "Sprawdź historię zakupów i szczegóły realizacji."
+      },
+      "wishlist": {
+        "label": "Wishlist",
+        "description": "Wróć do zabiegów zapisanych na później."
+      },
+      "messages": {
+        "label": "Messages",
+        "description": "Przejrzyj rozmowy związane z zamówieniami."
+      }
+    },
+    "status": {
+      "paid": "Opłacone",
+      "pending": "W toku",
+      "failed": "Wymaga uwagi",
+      "refunded": "Rozliczone"
+    },
+    "failure": {
+      "title": "Potrzebujemy chwili na odświeżenie danych",
+      "errorDescription": "Nie udało się pobrać tej historii. Spróbuj odświeżyć widok za chwilę.",
+      "unavailableDescription": "Ta powierzchnia jest chwilowo niedostępna po stronie usług zaplecza.",
+      "retryAction": "Ponów próbę"
+    },
+    "empty": {
+      "collectionCode": "ES2",
+      "collectionTitle": "Jeszcze nic tu nie ma",
+      "collectionBody": "Po pierwszym zakupie zobaczysz tu swoją historię.",
+      "collectionAction": "Przeglądaj kategorie",
+      "wishlistCode": "ES1",
+      "wishlistTitle": "Twoja kolekcja czeka",
+      "wishlistBody": "Zapisz zabiegi i prezenty, do których chcesz wrócić.",
+      "wishlistAction": "Zobacz polecane",
+      "messagesCode": "ES6",
+      "messagesTitle": "Skrzynka pusta",
+      "messagesBody": "Wiadomości o Twoich zamówieniach pojawią się tutaj."
+    },
+    "dashboard": {
+      "eyebrow": "W2-01 dashboard",
+      "title": "Twoje konto po zakupie",
+      "intro": "Tutaj szybko sprawdzisz vouchery, historię zamówień, zapisane inspiracje i wiadomości bez przechodzenia między osobnymi shellami.",
+      "greeting": "Witaj {firstName}, post-purchase self-service jest gotowy.",
+      "heroAsideEyebrow": "Side account snapshot",
+      "heroAsideTitle": "Co dziś warto sprawdzić",
+      "heroAsideBody": "Jeżeli salon lub operator potrzebują Twojej decyzji, zobaczysz to od razu w zamówieniach albo wiadomościach.",
+      "activityEyebrow": "Recent activity",
+      "activityTitle": "Ostatnie aktywności",
+      "activitySummary": "{count} pozycji w tym zamówieniu.",
+      "recommendedEyebrow": "Recommended",
+      "recommendedTitle": "Warto wrócić do tych zapisów",
+      "messagesEyebrow": "Messages",
+      "messagesTitle": "Ostatnie rozmowy",
+      "voucherEyebrow": "Vouchery",
+      "voucherTitle": "Najbliższe użycie"
+    },
+    "vouchers": {
+      "eyebrow": "W2-02 voucher history",
+      "title": "Historia voucherów",
+      "intro": "Filtruj ważne, zrealizowane i przeterminowane vouchery, zachowując spokojny przegląd kodów, ważności i kontaktu z salonem.",
+      "heroAsideEyebrow": "Journal card",
+      "heroAsideTitle": "Każdy voucher ma własny kontekst",
+      "heroAsideBody": "Kod, salon, produkt i status są widoczne w jednym miejscu, bez odsłaniania pełnego kodu na liście.",
+      "tabs": {
+        "all": "Wszystkie",
+        "active": "Aktywne",
+        "redeemed": "Zrealizowane",
+        "expired": "Przeterminowane",
+        "returned": "Zwrócone"
+      },
+      "status": {
+        "active": "Aktywny",
+        "redeemed": "Zrealizowany",
+        "expired": "Przeterminowany",
+        "returned": "Zwrócony"
+      },
+      "validUntil": "Ważny do {date}",
+      "action": "Otwórz voucher",
+      "quickActionActive": "Gotowe do wykorzystania bez dodatkowych kroków.",
+      "quickActionRedeemed": "Historia wykorzystanych usług i prezentów.",
+      "quickActionExpired": "Kody, które potrzebują nowej decyzji.",
+      "quickActionReturned": "Zwroty i wycofane vouchery."
+    },
+    "orders": {
+      "eyebrow": "W2-03 order history",
+      "title": "Historia zamówień",
+      "intro": "Zobacz zamówienia w układzie listy, z czytelnym statusem, datą i przejściem do szczegółów operacyjnych.",
+      "heroAsideEyebrow": "Operational clarity",
+      "heroAsideTitle": "Jedna lista dla wszystkich decyzji",
+      "heroAsideBody": "Zamówienia, zwroty i wiadomości pozostają połączone, ale bez mieszania write-heavy ustawień.",
+      "quickActionAll": "Wszystkie zamówienia",
+      "quickActionAllDescription": "Pełna historia zakupów klientki.",
+      "quickActionOpen": "W toku",
+      "quickActionOpenDescription": "Zamówienia czekające na następny krok.",
+      "quickActionReturns": "Zwroty",
+      "quickActionReturnsDescription": "Przejście do historii zwrotów.",
+      "quickActionMessages": "Wiadomości",
+      "quickActionMessagesDescription": "Kontakt powiązany z zamówieniami.",
+      "filters": {
+        "all": "Wszystkie",
+        "open": "W toku",
+        "settled": "Rozliczone",
+        "attention": "Wymaga uwagi"
+      },
+      "rowSummary": "{count} pozycji • złożono {date}",
+      "detailsAction": "Szczegóły zamówienia"
+    },
+    "orderDetail": {
+      "eyebrow": "W2-04 order detail",
+      "title": "Zamówienie {displayId}",
+      "intro": "W jednym widoku znajdziesz pozycje, dostawę, podsumowanie płatności, timeline i bezpieczne handoffy do dalszych działań.",
+      "heroAsideEyebrow": "Trust Invariant #4",
+      "heroAsideTitle": "Co dalej po potwierdzeniu",
+      "heroAsideBody": "Niedostępne akcje nie znikają. Zawsze wyjaśniamy, co jest możliwe teraz i co dzieje się po stronie salonu albo operatora.",
+      "back": "Wróć do historii zamówień",
+      "itemsTitle": "Pozycje zamówienia",
+      "itemSummary": "{count} szt. • {total}",
+      "timelineTitle": "Timeline aktywności",
+      "deliveryTitle": "Dostawa i kontakt",
+      "paymentTitle": "Podsumowanie płatności",
+      "paymentVoucher": "Wartość usług",
+      "paymentShipping": "Dostawa",
+      "paymentTotal": "Razem",
+      "actionsTitle": "Dostępne akcje",
+      "available": "Dostępne",
+      "disabled": "Wyjaśnione",
+      "quickActionVoucher": "Ponowna wysyłka vouchera albo link do pobrania.",
+      "quickActionInvoice": "Data dokumentu i rozliczenia.",
+      "quickActionReturn": "Zwrot kieruje do osobnej historii decyzji.",
+      "quickActionContact": "Bezpieczny kontakt z salonem bez szukania w innych widokach.",
+      "actions": {
+        "resendVoucher": "Wyślij voucher ponownie",
+        "invoice": "Pobierz fakturę",
+        "return": "Zgłoś zwrot",
+        "contact": "Skontaktuj się z salonem"
+      },
+      "actionExplainers": {
+        "resendVoucher": "Jeżeli odbiorczyni potrzebuje ponownego dostępu, zachowujemy ten sam kontekst zamówienia.",
+        "invoice": "Dokument pozostaje powiązany z tym zamówieniem i jego statusem.",
+        "return": "Jeśli zwrot nie jest dostępny, pokazujemy to spokojnie zamiast ukrywać akcję.",
+        "contact": "Rozmowa z salonem dotyczy tylko tego zamówienia i jego realizacji."
+      },
+      "timeline": {
+        "orderPlaced": "Zamówienie przyjęte",
+        "processing": "Potwierdzenie i przygotowanie",
+        "handoff": "Handoff do realizacji"
+      },
+      "trust": {
+        "forYouLabel": "Co dalej dla Ciebie:",
+        "forUsLabel": "Co dalej dla salonu:",
+        "forYouBody": "Sprawdź wiadomości lub użyj jednej z akcji, gdy będziesz gotowa.",
+        "forUsBody": "Potwierdzamy realizację, pilnujemy dokumentów i utrzymujemy porządek komunikacji."
+      }
+    },
+    "returns": {
+      "eyebrow": "W2-07 returns history",
+      "title": "Historia zwrotów",
+      "intro": "Lista zwrotów pokazuje status, datę i powód bez maskowania błędów dostępu czy problemów konfiguracyjnych.",
+      "heroAsideEyebrow": "Read-heavy only",
+      "heroAsideTitle": "Zwroty bez ukrytych stanów",
+      "heroAsideBody": "Ta powierzchnia jest wyłącznie do odczytu. Jeżeli proces wymaga działania, kierujemy do właściwej ścieżki zamiast mieszać flow.",
+      "quickActionAll": "Wszystkie zwroty",
+      "quickActionAllDescription": "Pełna lista zgłoszonych wniosków.",
+      "quickActionOrders": "Zamówienia",
+      "quickActionOrdersDescription": "Powrót do źródłowych zamówień.",
+      "quickActionMessages": "Wiadomości",
+      "quickActionMessagesDescription": "Kontakt w sprawie zwrotu.",
+      "quickActionVouchers": "Vouchery",
+      "quickActionVouchersDescription": "Powiązane kody i ich status."
+    },
+    "wishlist": {
+      "eyebrow": "W2-09 wishlist",
+      "title": "Wishlist",
+      "intro": "Zobacz zapisane produkty i kolekcje nazwane po swojemu, bez przechodzenia w ustawienia czy cięższe flow edycji.",
+      "heroAsideEyebrow": "Journal card",
+      "heroAsideTitle": "Kolekcje zapisane na później",
+      "heroAsideBody": "Read-heavy widok pokazuje nazwę kolekcji i skrócony kontekst, ale nie zamienia wishlisty w ekran konfiguracji.",
+      "quickActionCollections": "Kolekcje",
+      "quickActionCollectionsDescription": "Nazwane przez użytkowniczkę zbiory inspiracji.",
+      "quickActionVouchers": "Vouchery",
+      "quickActionVouchersDescription": "Powrót do kodów gotowych do użycia.",
+      "quickActionOrders": "Orders",
+      "quickActionOrdersDescription": "Historia zakupów obok zapisów.",
+      "quickActionMessages": "Messages",
+      "quickActionMessagesDescription": "Wiadomości powiązane z zakupami.",
+      "action": "Zobacz produkt"
+    },
+    "messages": {
+      "eyebrow": "W2-12 messages",
+      "title": "Wiadomości buyer-salon",
+      "intro": "Skrzynka zachowuje ton spokojnej komunikacji i pokazuje tylko to, co potrzebne do obsługi zamówień.",
+      "heroAsideEyebrow": "Read model boundary",
+      "heroAsideTitle": "Kontrolowany inbox do odczytu",
+      "heroAsideBody": "Gdy lokalny provider wiadomości nie jest gotowy, wyświetlamy bezpieczny read model bez dostępu do sekretów produkcyjnych.",
+      "emptyAria": "Pusta skrzynka wiadomości",
+      "quickActionInbox": "Inbox",
+      "quickActionInboxDescription": "Otwórz aktualne rozmowy z salonami.",
+      "quickActionOrders": "Orders",
+      "quickActionOrdersDescription": "Przejście do zamówień, z których wynika korespondencja.",
+      "quickActionVouchers": "Vouchery",
+      "quickActionVouchersDescription": "Powiązane kody i potwierdzenia.",
+      "quickActionReturns": "Zwroty",
+      "quickActionReturnsDescription": "Historia decyzji po zakupie.",
+      "states": {
+        "open": "Otwarta",
+        "answered": "Z odpowiedzią",
+        "waiting": "Czeka spokojnie"
+      }
+    }
+  },
+  "account_write": {
+    "common": {
+      "form_error": "Sprawdź wyróżnione pola.",
+      "inline_success": "Pole zapisane po opuszczeniu.",
+      "cancel": "Anuluj",
+      "save": "Zapisz zmiany",
+      "saving": "Zapisywanie…",
+      "deleting": "Usuwanie…",
+      "delete": "Usuń",
+      "submitting": "Wysyłanie…",
+      "edit": "Edytuj"
+    },
+    "breadcrumbs": {
+      "account": "Konto",
+      "orders": "Zamówienia",
+      "return_request": "Wniosek o zwrot",
+      "return_success": "Status zwrotu",
+      "addresses": "Zapisane adresy",
+      "reviews_to_write": "Opinie do napisania",
+      "written_reviews": "Moje opinie",
+      "settings": "Ustawienia"
+    },
+    "quick_actions": {
+      "orders": "Zamówienia",
+      "orders_desc": "Wróć do historii zamówień i sprawdź kolejne kroki.",
+      "addresses": "Adresy",
+      "addresses_desc": "Zaktualizuj dane dostawy i rozliczeń.",
+      "reviews": "Opinie do napisania",
+      "reviews_desc": "Dokończ oczekujące opinie bez wychodzenia z Account Hub.",
+      "written_reviews": "Moje opinie",
+      "written_reviews_desc": "Edytuj lub usuń opublikowane opinie.",
+      "settings": "Ustawienia",
+      "settings_desc": "Zarządzaj profilem, bezpieczeństwem i prywatnością.",
+      "return_request": "Wniosek o zwrot",
+      "return_request_desc": "Przejrzyj właśnie wysłany wniosek o zwrot."
+    },
+    "snapshot": {
+      "orders": "Zamówienia",
+      "addresses": "Adresy",
+      "reviews": "Opinie"
+    },
+    "return_request": {
+      "hero": {
+        "eyebrow": "Wave 2 · Zwroty",
+        "title": "Rozpocznij zwrot bez utraty kontekstu.",
+        "description": "Wybierz powód, dodaj zdjęcia i zostaw notatkę dla salonu. Walidacja działa po stronie klienta i serwera, zanim wyślesz zgłoszenie."
+      },
+      "progress": {
+        "title": "3-etapowy flow zwrotu",
+        "description": "Postęp pozostaje widoczny i nie zaburza kolejności focusa.",
+        "step_reason": "Powód",
+        "step_evidence": "Dowody",
+        "step_submit": "Wysłano"
+      },
+      "form": {
+        "title": "Formularz zwrotu",
+        "description": "Wszystkie pola spełniają UX-DR23: feedback po blur, zlokalizowane błędy i ochrona przed podwójnym wysłaniem.",
+        "reason_label": "Dlaczego zwracasz to zamówienie?",
+        "photos_label": "Dodaj zdjęcia",
+        "photos_help": "Dodaj maksymalnie 3 pliki JPG, PNG albo WEBP. Każdy do 5 MB.",
+        "comment_label": "Dodatkowa notatka",
+        "submit": "Wyślij wniosek o zwrot"
+      },
+      "handoff_message": "Salon ma 7 dni na decyzję, powiadomimy mailem.",
+      "success": {
+        "submitted": "Wniosek o zwrot został wysłany. Etap weryfikacji przez salon już się rozpoczął.",
+        "go_to_summary": "Otwórz oś czasu zwrotu"
+      },
+      "errors": {
+        "order_required": "Brakuje numeru zamówienia.",
+        "reason_required": "Wybierz powód zwrotu.",
+        "comment_too_long": "Notatka może mieć maksymalnie 500 znaków.",
+        "photo_required": "Dodaj co najmniej jedno zdjęcie.",
+        "photo_limit": "Możesz dodać maksymalnie 3 zdjęcia.",
+        "photo_size": "Każdy plik musi mieć mniej niż 5 MB.",
+        "photo_type": "Obsługiwane są tylko pliki JPG, PNG i WEBP.",
+        "generic": "Nie udało się wysłać wniosku o zwrot. Spróbuj ponownie."
+      }
+    },
+    "return_success": {
+      "hero": {
+        "eyebrow": "Wave 2 · Zwrot zgłoszony",
+        "title": "Twoje zgłoszenie czeka na decyzję salonu.",
+        "description": "Zamówienie {orderId} jest już widoczne dla salonu i supportu. Kolejne kroki pozostają przejrzyste dla każdego aktora."
+      },
+      "badge": {
+        "pending": "Oczekiwanie na decyzję salonu"
+      },
+      "timeline": {
+        "title": "Lifecycle zwrotu",
+        "description": "Status używa semantycznych kolorów i nigdy nie opiera się wyłącznie na kolorze.",
+        "submitted": {
+          "title": "Wniosek zapisany",
+          "body": "Zapisaliśmy powód, załączniki i notatkę oraz powiadomiliśmy salon."
+        },
+        "vendor_review": {
+          "title": "Salon analizuje zgłoszenie",
+          "body": "Salon ma do 7 dni na akceptację, odrzucenie albo prośbę o doprecyzowanie."
+        },
+        "payout": {
+          "title": "Zwrot środków lub odbiór",
+          "body": "Po akceptacji support monitoruje zwrot środków albo odbiór i informuje Cię mailowo."
+        }
+      },
+      "handoff": {
+        "title": "Co dalej dla każdego aktora",
+        "description": "Cross-actor handoff utrzymuje spójność dla klienta, salonu i supportu.",
+        "for_customer_label": "Co dalej dla Ciebie:",
+        "for_vendor_label": "Co dalej dla salonu:",
+        "for_customer": "Śledź skrzynkę mailową i timeline zwrotu. Jeśli potrzebne będą dodatkowe materiały, odpowiesz bez restartu flow.",
+        "for_vendor": "Salon ocenia materiały, zapisuje decyzję i potwierdza odbiór albo zwrot środków.",
+        "for_support_label": "Co dalej dla supportu:",
+        "for_platform_label": "Co dalej dla BonBeauty:",
+        "for_support": "Support włącza się przy mediacji, przekroczeniu SLA albo potrzebie doprecyzowania zasad.",
+        "for_platform": "BonBeauty pilnuje czasu SLA, ścieżki audytowej i dostarczenia wyniku do wszystkich stron."
+      }
+    },
+    "addresses": {
+      "hero": {
+        "eyebrow": "Wave 2 · Książka adresowa",
+        "title": "Miej dane dostawy gotowe przed kolejnym zamówieniem.",
+        "description": "Dodawaj, edytuj i usuwaj adresy w panelu z trap-focus, obsługą klawiatury i targetami 44 px."
+      },
+      "actions": {
+        "add": "Dodaj adres"
+      },
+      "empty": {
+        "title": "Nie masz jeszcze zapisanych adresów",
+        "description": "ES8 empty state dla zapisanych adresów.",
+        "body": "Zapisz adres, aby przyspieszyć checkout i nie wpisywać ponownie danych dostawy przy następnym zamówieniu."
+      },
+      "list": {
+        "title": "Zapisane adresy",
+        "description": "Przeglądaj dane dostawy, aktualizuj je inline i usuwaj nieaktualne wpisy po potwierdzeniu.",
+        "default_label": "Zapisany adres",
+        "no_phone": "Brak numeru telefonu"
+      },
+      "form": {
+        "create_title": "Dodaj adres",
+        "edit_title": "Edytuj adres",
+        "address_name": "Etykieta adresu",
+        "first_name": "Imię",
+        "last_name": "Nazwisko",
+        "company": "Firma",
+        "address_line": "Ulica i numer",
+        "city": "Miasto",
+        "postal_code": "Kod pocztowy",
+        "province": "Region / województwo",
+        "phone": "Telefon",
+        "country": "Kraj",
+        "errors": {
+          "address_name_required": "Podaj etykietę adresu.",
+          "first_name_required": "Podaj imię.",
+          "last_name_required": "Podaj nazwisko.",
+          "address_required": "Podaj ulicę i numer.",
+          "city_required": "Podaj miasto.",
+          "country_required": "Wybierz kraj.",
+          "postal_code_required": "Podaj kod pocztowy.",
+          "phone_required": "Podaj numer telefonu.",
+          "generic": "Nie udało się zapisać adresu. Spróbuj ponownie."
+        },
+        "success": {
+          "created": "Adres został dodany.",
+          "updated": "Adres został zaktualizowany.",
+          "deleted": "Adres został usunięty."
+        }
+      },
+      "delete": {
+        "title": "Usunąć ten adres?",
+        "description": "Adres zostanie usunięty z konta po potwierdzeniu."
+      }
+    },
+    "reviews_to_write": {
+      "hero": {
+        "eyebrow": "Wave 2 · Opinie do napisania",
+        "title": "Masz jeszcze kilka salonów do ocenienia.",
+        "description": "Oczekujące opinie są grupowane per zamówienie, dzięki czemu szybko dokończysz feedback bez szukania właściwej rezerwacji."
+      },
+      "empty": {
+        "title": "Brak oczekujących opinii",
+        "description": "ES7 delikatny empty state dla promptów opinii.",
+        "body": "Wszystko masz już nadrobione. Gdy nowe zamówienie będzie gotowe do opinii, pojawi się tutaj.",
+        "cta": "Przejdź do moich opinii"
+      },
+      "list": {
+        "title": "Zamówienia czekające na opinię",
+        "description": "Otwórz listę zapisanych opinii, aby dokończyć formularz i porównać opublikowany feedback.",
+        "order_label": "Zamówienie {id}"
+      },
+      "actions": {
+        "write": "Napisz opinię",
+        "compare": "Zobacz moje opinie"
+      }
+    },
+    "written_reviews": {
+      "hero": {
+        "eyebrow": "Wave 2 · Opublikowane opinie",
+        "title": "Zarządzaj feedbackiem, który już wysłałaś lub wysłałeś.",
+        "description": "Edytuj ton wypowiedzi, zaktualizuj ocenę albo usuń opinię z potwierdzeniem i dostępnym komunikatem mutacji."
+      },
+      "empty": {
+        "title": "Nie masz jeszcze napisanych opinii",
+        "description": "Opublikowane opinie pojawią się tutaj po wysłaniu.",
+        "body": "Skorzystaj z listy opinii do napisania, kiedy będziesz gotowa lub gotowy na feedback."
+      },
+      "list": {
+        "title": "Moje opinie",
+        "description": "Zmiany nigdy nie pokazują surowych błędów backendu. Każda mutacja raportuje zlokalizowany wynik.",
+        "unknown_seller": "Salon",
+        "rating": "Ocena {rating}/5",
+        "no_note": "Brak dodatkowej notatki.",
+        "updated_at": "Aktualizacja: {date}"
+      },
+      "form": {
+        "title": "Edytuj opinię",
+        "rating_label": "Ocena",
+        "note_label": "Treść opinii",
+        "errors": {
+          "rating_required": "Wybierz ocenę.",
+          "note_too_long": "Notatka może mieć maksymalnie 300 znaków.",
+          "review_id_required": "Brakuje identyfikatora opinii.",
+          "order_id_required": "Brakuje identyfikatora zamówienia.",
+          "generic": "Nie udało się zaktualizować opinii. Spróbuj ponownie."
+        },
+        "success": {
+          "updated": "Opinia została zaktualizowana.",
+          "deleted": "Opinia została usunięta."
+        }
+      },
+      "delete": {
+        "title": "Usunąć opinię?",
+        "description": "Po potwierdzeniu opublikowana opinia zniknie z widoku konta."
+      }
+    },
+    "settings": {
+      "hero": {
+        "eyebrow": "Wave 2 · Ustawienia konta",
+        "title": "Zbierz profil, bezpieczeństwo i prywatność w jednym hubie.",
+        "description": "Desktop korzysta z zakotwiczonej nawigacji sekcji, a mobile zachowuje te same landmarki bez overflow."
+      },
+      "nav": {
+        "title": "Sekcje",
+        "description": "Skocz do profilu, bezpieczeństwa, powiadomień, płatności i prywatności RODO."
+      },
+      "sections": {
+        "profile": "Profil",
+        "security": "Bezpieczeństwo",
+        "notifications": "Powiadomienia",
+        "payments": "Płatności",
+        "privacy": "Prywatność RODO"
+      },
+      "profile": {
+        "title": "Profil",
+        "description": "Aktualizuj dane kontaktowe z feedbackiem sukcesu po blur.",
+        "first_name": "Imię",
+        "last_name": "Nazwisko",
+        "phone": "Telefon",
+        "email": "E-mail",
+        "locale": "Preferowany język",
+        "errors": {
+          "first_name_required": "Podaj imię.",
+          "last_name_required": "Podaj nazwisko.",
+          "phone_required": "Podaj numer telefonu.",
+          "email_required": "E-mail jest wymagany.",
+          "email_invalid": "Podaj poprawny adres e-mail.",
+          "locale_required": "Wybierz język.",
+          "generic": "Nie udało się zaktualizować profilu. Spróbuj ponownie."
+        },
+        "success": {
+          "updated": "Profil został zaktualizowany."
+        }
+      },
+      "security": {
+        "title": "Bezpieczeństwo",
+        "description": "Zamiast surowych błędów auth UI uruchamia kontrolowany handoff resetu hasła.",
+        "new_password": "Nowe hasło",
+        "confirm_password": "Potwierdź hasło",
+        "errors": {
+          "password_too_short": "Użyj co najmniej 8 znaków.",
+          "password_mismatch": "Hasła muszą być identyczne.",
+          "generic": "Nie udało się uruchomić resetu hasła. Spróbuj ponownie."
+        },
+        "success": {
+          "reset_email_sent": "Wysłaliśmy mail resetujący hasło. Dokończ zmianę z poziomu skrzynki."
+        }
+      },
+      "notifications": {
+        "title": "Powiadomienia",
+        "description": "Wybierz aktualizacje, które mają przejść przez intake request dla tego release’u.",
+        "email_updates": "Powiadomienia mailowe o zamówieniach",
+        "sms_updates": "SMS o wysyłce",
+        "product_news": "Nowości produktowe i redakcyjne",
+        "success": {
+          "request_received": "Otrzymaliśmy prośbę o aktualizację powiadomień."
+        }
+      },
+      "payments": {
+        "title": "Płatności",
+        "description": "Zapisz preferencje płatnicze bez udawania, że nieobsługiwane mutacje backendowe są już zakończone.",
+        "default_card": "Notatka o preferowanej płatności",
+        "invoices_by_email": "Wysyłaj faktury mailem",
+        "success": {
+          "request_received": "Otrzymaliśmy prośbę o aktualizację preferencji płatniczych."
+        }
+      },
+      "privacy": {
+        "title": "Prywatność RODO",
+        "description": "Akcje prywatności są reprezentowane jako intake request do czasu wdrożenia pełnej automatyzacji backendowej.",
+        "request_intake_notice": "Ten release zapisuje zgłoszenie i przekazuje je dalej w bezpieczny sposób. Nie udaje, że eksport lub usunięcie konta zostały już wykonane.",
+        "export_request": "Poproś o eksport danych osobowych",
+        "delete_request": "Poproś o przegląd usunięcia konta",
+        "errors": {
+          "generic": "Nie udało się zapisać wniosku prywatności. Spróbuj ponownie."
+        },
+        "success": {
+          "export_request_received": "Wniosek o eksport danych został przyjęty.",
+          "delete_request_received": "Wniosek o usunięcie konta został przyjęty."
+        }
+      }
     }
   }
 }
