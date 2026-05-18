@@ -6,7 +6,10 @@ import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/atoms';
 import { NewsletterSlot } from '@/components/organisms';
 import { BlogLayout, BlogRichText, BlogTocNav } from '@/components/templates';
-import { buildTocEntries, formatBlogPublishedDate, getBlogPostDetail } from '@/lib/blog';
+import { fetchPayloadBlogPage } from '@/data/payload-pages';
+import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n/routing';
+import { buildTocEntries, formatBlogPublishedDate } from '@/lib/blog';
+import { toHreflang } from '@/lib/helpers/hreflang';
 
 export const revalidate = 600;
 
@@ -18,6 +21,21 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
+function buildBlogPostAlternates(baseUrl: string, locale: string, slug: string) {
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
+    acc[toHreflang(code)] = new URL(`/${code}/blog/${slug}`, `${baseUrl}/`).toString();
+    return acc;
+  }, {});
+
+  return {
+    canonical: new URL(`/${locale}/blog/${slug}`, `${baseUrl}/`).toString(),
+    languages: {
+      ...languages,
+      'x-default': new URL(`/pl/blog/${slug}`, `${baseUrl}/`).toString()
+    }
+  };
+}
+
 export async function generateMetadata({
   params
 }: {
@@ -25,8 +43,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, locale } = await params;
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const page = await getBlogPostDetail({
-    locale: locale as 'pl' | 'en' | 'ua' | 'de',
+  const page = await fetchPayloadBlogPage({
+    locale: locale as SupportedLocale,
     marketId,
     slug
   });
@@ -36,22 +54,20 @@ export async function generateMetadata({
   }
 
   const baseUrl = await getBaseUrl();
-  const canonical = new URL(`/${locale}/blog/${page.slug}`, `${baseUrl}/`).toString();
+  const alternates = buildBlogPostAlternates(baseUrl, locale, page.slug);
   const openGraphImage = page.heroImage.startsWith('http')
     ? page.heroImage
     : `${baseUrl}${page.heroImage}`;
 
   return {
-    title: page.title,
-    description: page.excerpt,
-    alternates: {
-      canonical
-    },
+    title: page.seo.title,
+    description: page.seo.description,
+    alternates,
     openGraph: {
-      title: page.title,
-      description: page.excerpt,
+      title: page.seo.title,
+      description: page.seo.description,
       type: 'article',
-      url: canonical,
+      url: alternates.canonical,
       images: [
         {
           url: openGraphImage,
@@ -69,8 +85,8 @@ export default async function BlogArticlePage({
 }) {
   const [{ slug, locale }, t] = await Promise.all([params, getTranslations('blog')]);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const page = await getBlogPostDetail({
-    locale: locale as 'pl' | 'en' | 'ua' | 'de',
+  const page = await fetchPayloadBlogPage({
+    locale: locale as SupportedLocale,
     marketId,
     slug
   });
@@ -106,7 +122,7 @@ export default async function BlogArticlePage({
       breadcrumbs={
         <Breadcrumbs
           items={[
-            { path: '/', label: 'Home' },
+            { path: '/', label: t('breadcrumb_home') },
             { path: '/blog', label: t('title') },
             { path: `/blog/${page.slug}`, label: page.title }
           ]}

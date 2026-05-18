@@ -248,7 +248,7 @@ function payloadPageToBlogCard(page: PayloadPage, index: number): BlogPostCard |
   }
 
   const title = page.title || page.name || 'Untitled post';
-  const category = getBlogCategory(page);
+  const category = getBlogCategory(page).toUpperCase();
   const tag: BlogTag = {
     slug: sanitizeTagSlug(category),
     label: category
@@ -285,7 +285,7 @@ export function mapPayloadPageToBlogPost(page: PayloadPage, index: number): Blog
       excerpt: getBlogDescription(page),
       image: getPageImageUrl(page, index),
       imageAlt: page.title || page.name || 'Untitled post',
-      category: getBlogCategory(page),
+      category: getBlogCategory(page).toUpperCase(),
       href: getBlogHref(page),
       tags: [],
       author: {
