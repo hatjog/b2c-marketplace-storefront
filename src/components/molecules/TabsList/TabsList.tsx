@@ -39,32 +39,36 @@ export const TabsList = ({
         const isActive = activeTab === tabValue;
 
         return (
-        <LocalizedClientLink
-          key={tabValue}
-          href={link}
-          role="tab"
-          id={`${idBase}-${tabValue}-tab`}
-          aria-selected={isActive}
-          aria-controls={`${idBase}-${tabValue}-panel`}
-          tabIndex={isActive ? 0 : -1}
-          data-tab-link="true"
-          onKeyDown={(event: React.KeyboardEvent<HTMLAnchorElement>) => {
-            if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) {
-              return;
-            }
+          <LocalizedClientLink
+            key={tabValue}
+            href={link}
+            role="tab"
+            id={`${idBase}-${tabValue}-tab`}
+            aria-selected={isActive}
+            aria-controls={`${idBase}-${tabValue}-panel`}
+            tabIndex={isActive ? 0 : -1}
+            data-tab-link="true"
+            onKeyDown={(event: React.KeyboardEvent<HTMLAnchorElement>) => {
+              if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) {
+                return;
+              }
 
-            const tabLinks = Array.from(
-              containerRef.current?.querySelectorAll<HTMLAnchorElement>('a[data-tab-link="true"]') ?? []
-            );
-            if (tabLinks.length === 0) return;
+              const tabLinks = Array.from(
+                containerRef.current?.querySelectorAll<HTMLAnchorElement>(
+                  'a[data-tab-link="true"]'
+                ) ?? []
+              );
+              if (tabLinks.length === 0) return;
 
-            event.preventDefault();
-            const nextIndex = getNextIndex(index, event.key, tabLinks.length);
-            tabLinks[nextIndex]?.focus();
-          }}
-        >
-          <TabsTrigger isActive={isActive}>{label}</TabsTrigger>
-        </LocalizedClientLink>
+              event.preventDefault();
+              const nextIndex = getNextIndex(index, event.key, tabLinks.length);
+              const nextTab = tabLinks[nextIndex];
+              nextTab?.focus();
+              nextTab?.click();
+            }}
+          >
+            <TabsTrigger isActive={isActive}>{label}</TabsTrigger>
+          </LocalizedClientLink>
         );
       })}
     </div>

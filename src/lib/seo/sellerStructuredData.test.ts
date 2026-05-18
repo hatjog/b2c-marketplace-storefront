@@ -22,10 +22,7 @@ const baseSeller: SellerProps = {
   opening_hours: {
     Mo: { open: '09:00', close: '18:00' }
   },
-  reviews: [
-    { rating: 5 },
-    { rating: 4 }
-  ]
+  reviews: [{ rating: 5 }, { rating: 4 }]
 };
 
 describe('assessSellerStructuredData', () => {
@@ -45,7 +42,7 @@ describe('assessSellerStructuredData', () => {
     });
   });
 
-  it('returns noindex assessment instead of throwing when required fields are missing', () => {
+  it('keeps optional phone and geo out of the required indexing gate', () => {
     const result = assessSellerStructuredData({
       ...baseSeller,
       phone: undefined,
@@ -53,8 +50,25 @@ describe('assessSellerStructuredData', () => {
       lng: null
     });
 
+    expect(result.canIndex).toBe(true);
+    expect(result.jsonLd).toMatchObject({
+      '@type': 'LocalBusiness',
+      name: 'Salon Test'
+    });
+    expect(result.jsonLd).not.toHaveProperty('telephone');
+    expect(result.jsonLd).not.toHaveProperty('geo');
+    expect(result.missingRequired).toEqual([]);
+  });
+
+  it('returns noindex assessment instead of throwing when address fields are missing', () => {
+    const result = assessSellerStructuredData({
+      ...baseSeller,
+      address_line: undefined,
+      city: undefined
+    });
+
     expect(result.canIndex).toBe(false);
     expect(result.jsonLd).toBeNull();
-    expect(result.missingRequired).toEqual(['telephone', 'geo.latitude', 'geo.longitude']);
+    expect(result.missingRequired).toEqual(['address.streetAddress', 'address.addressLocality']);
   });
 });

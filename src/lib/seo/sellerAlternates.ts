@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
+import { toHreflang } from '@/lib/helpers/hreflang';
 
 /**
  * Story v160-3-3: SEO continuity helper for `/[locale]/sellers/*` routes.
@@ -26,16 +27,12 @@ export interface SellerAlternates {
   languages: Record<string, string>;
 }
 
-const buildPath = (locale: string, suffix: string): string =>
-  `/${locale}/sellers${suffix}`;
+const buildPath = (locale: string, suffix: string): string => `/${locale}/sellers${suffix}`;
 
-export function buildSellerAlternates(
-  locale: string,
-  suffix: string = ''
-): SellerAlternates {
+export function buildSellerAlternates(locale: string, suffix: string = ''): SellerAlternates {
   const languages: Record<string, string> = {};
   for (const supported of SUPPORTED_LOCALES) {
-    languages[supported] = buildPath(supported, suffix);
+    languages[toHreflang(supported)] = buildPath(supported, suffix);
   }
   languages['x-default'] = buildPath(DEFAULT_LOCALE, suffix);
 

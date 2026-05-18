@@ -24,13 +24,16 @@ function buildOpeningHours(openingHours: SellerOpeningHours | null | undefined):
   });
 }
 
-function collectReviewAggregate(seller: SellerProps): { ratingValue?: number; reviewCount?: number } {
+function collectReviewAggregate(seller: SellerProps): {
+  ratingValue?: number;
+  reviewCount?: number;
+} {
   const reviews = Array.isArray(seller.reviews)
     ? seller.reviews.filter((review): review is { rating?: number | null } => Boolean(review))
     : [];
 
   const numericRatings = reviews
-    .map((review) => normalizeNumber(review.rating))
+    .map(review => normalizeNumber(review.rating))
     .filter((rating): rating is number => rating !== null);
 
   if (numericRatings.length === 0) {
@@ -60,11 +63,7 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
     !streetAddress ? 'address.streetAddress' : null,
     !addressLocality ? 'address.addressLocality' : null,
     !postalCode ? 'address.postalCode' : null,
-    !addressCountry ? 'address.addressCountry' : null,
-    !telephone ? 'telephone' : null,
-    latitude === null ? 'geo.latitude' : null,
-    longitude === null ? 'geo.longitude' : null,
-    !taxId ? 'legal.tax_id' : null
+    !addressCountry ? 'address.addressCountry' : null
   ].filter((item): item is string => item !== null);
 
   if (missingRequired.length > 0) {
@@ -79,13 +78,14 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
   const { ratingValue, reviewCount } = collectReviewAggregate(seller);
   const district =
     normalizeString(seller.district) ??
-    normalizeString(seller.locations?.find(location => normalizeString(location?.district))?.district);
+    normalizeString(
+      seller.locations?.find(location => normalizeString(location?.district))?.district
+    );
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name,
-    telephone,
     address: {
       '@type': 'PostalAddress',
       streetAddress,
@@ -93,13 +93,24 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
       postalCode,
       addressCountry,
       ...(district ? { addressRegion: district } : {})
-    },
-    geo: {
+    }
+  };
+
+  if (telephone) {
+    jsonLd.telephone = telephone;
+  }
+
+  if (taxId) {
+    jsonLd.taxID = taxId;
+  }
+
+  if (latitude !== null && longitude !== null) {
+    jsonLd.geo = {
       '@type': 'GeoCoordinates',
       latitude,
       longitude
-    }
-  };
+    };
+  }
 
   if (openingHours.length > 0) {
     jsonLd.openingHours = openingHours;

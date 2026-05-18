@@ -56,12 +56,37 @@ type SellerListApiItem = {
     address_line?: string | null;
     postal_code?: string | null;
     country_code?: string | null;
+    district?: string | null;
   }> | null;
   tax_id?: string | null;
   regon?: string | null;
   krs?: string | null;
   created_at?: string;
   reviews?: unknown[];
+  metadata?: {
+    gp?: {
+      description?: string | null;
+      locations?: Array<{
+        city?: string | null;
+        region?: string | null;
+        address?: string | null;
+        address_line?: string | null;
+        postal_code?: string | null;
+        country_code?: string | null;
+        lat?: number | null;
+        lng?: number | null;
+      }> | null;
+      legal?: {
+        tax_id?: string | null;
+        regon?: string | null;
+        krs?: string | null;
+      } | null;
+      tax_id?: string | null;
+      regon?: string | null;
+      krs?: string | null;
+      phone?: string | null;
+    } | null;
+  } | null;
 };
 
 function normalizeSellerHandle(value: unknown): string | null {
@@ -106,7 +131,9 @@ async function querySellersByHandle(
     ...(options?.useNoCache ? { fetchOptions: { cache: 'no-cache' as const } } : {})
   };
 
-  const result = (await mercurClient.store.sellers.query(query)) as { sellers?: SellerListApiItem[] };
+  const result = (await mercurClient.store.sellers.query(query)) as {
+    sellers?: SellerListApiItem[];
+  };
   return pickSellerByHandle(result?.sellers, handle);
 }
 
@@ -218,32 +245,72 @@ export async function fetchSellerSummaryByHandle(
  */
 function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
   const primaryLocation = Array.isArray(s.locations) ? (s.locations.find(Boolean) ?? null) : null;
+  const gpMetadata = s.metadata?.gp ?? null;
+  const primaryMetadataLocation = Array.isArray(gpMetadata?.locations)
+    ? (gpMetadata.locations.find(Boolean) ?? null)
+    : null;
+  const metadataLegal = gpMetadata?.legal ?? null;
 
   return {
     id: s.id,
     name: s.name,
     handle: s.handle,
-    description: s.description ?? '',
+    description: s.description ?? gpMetadata?.description ?? '',
     photo: s.photo ?? '',
-    tax_id: s.tax_id ?? '',
+    tax_id: s.tax_id ?? metadataLegal?.tax_id ?? gpMetadata?.tax_id ?? '',
     created_at: s.created_at ?? '',
     reviews: Array.isArray(s.reviews) ? s.reviews : [],
     email: s.email ?? undefined,
-    phone: s.phone ?? undefined,
+    phone: s.phone ?? gpMetadata?.phone ?? undefined,
     status: s.status as SellerProps['status'],
     store_status: s.store_status as SellerProps['store_status'],
     social_links: (s.social_links as SellerProps['social_links']) ?? null,
     gallery: s.gallery ?? null,
     opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? null,
-    locations: s.locations ?? null,
-    city: s.city ?? undefined,
-    address_line: s.address_line ?? primaryLocation?.address_line ?? undefined,
-    postal_code: s.postal_code ?? primaryLocation?.postal_code ?? undefined,
-    country_code: s.country_code ?? primaryLocation?.country_code ?? undefined,
-    district: s.district ?? primaryLocation?.district ?? null,
-    lat: typeof s.lat === 'number' ? s.lat : null,
-    lng: typeof s.lng === 'number' ? s.lng : null,
-    regon: s.regon ?? null,
-    krs: s.krs ?? null
+    locations:
+      s.locations ??
+      (primaryMetadataLocation
+        ? [
+            {
+              city: primaryMetadataLocation.city,
+              address_line: primaryMetadataLocation.address_line ?? primaryMetadataLocation.address,
+              postal_code: primaryMetadataLocation.postal_code,
+              country_code: primaryMetadataLocation.country_code,
+              district: primaryMetadataLocation.region
+            }
+          ]
+        : null),
+    city: s.city ?? primaryMetadataLocation?.city ?? undefined,
+    address_line:
+      s.address_line ??
+      primaryLocation?.address_line ??
+      primaryMetadataLocation?.address_line ??
+      primaryMetadataLocation?.address ??
+      undefined,
+    postal_code:
+      s.postal_code ??
+      primaryLocation?.postal_code ??
+      primaryMetadataLocation?.postal_code ??
+      undefined,
+    country_code:
+      s.country_code ??
+      primaryLocation?.country_code ??
+      primaryMetadataLocation?.country_code ??
+      undefined,
+    district: s.district ?? primaryLocation?.district ?? primaryMetadataLocation?.region ?? null,
+    lat:
+      typeof s.lat === 'number'
+        ? s.lat
+        : typeof primaryMetadataLocation?.lat === 'number'
+          ? primaryMetadataLocation.lat
+          : null,
+    lng:
+      typeof s.lng === 'number'
+        ? s.lng
+        : typeof primaryMetadataLocation?.lng === 'number'
+          ? primaryMetadataLocation.lng
+          : null,
+    regon: s.regon ?? metadataLegal?.regon ?? gpMetadata?.regon ?? null,
+    krs: s.krs ?? metadataLegal?.krs ?? gpMetadata?.krs ?? null
   };
 }
