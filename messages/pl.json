@@ -210,6 +210,7 @@
       "meta_fallback_title": "Nieznany salon | BonBeauty",
       "meta_description": "Odkryj ofertę salonu {name} na BonBeauty.",
       "meta_default_description": "Salon partnerski BonBeauty — sprawdź ofertę i adres.",
+      "runtime_fallback_notice": "Część danych salonu jest chwilowo niedostępna. Możesz przeglądać ofertę, ale strona pozostaje wyłączona z indeksowania do czasu uzupełnienia wymaganych danych biznesowych.",
       "directions_title": "Jak dojechać",
       "directions_open_google": "Otwórz w Google Maps",
       "directions_open_apple": "Otwórz w Apple Maps",
@@ -395,6 +396,7 @@
     "no_results_quality": "Nie znaleziono zabiegów spełniających kryteria",
     "seller_joined": "Dołączył: {date}",
     "report_seller": "Zgłoś sprzedawcę",
+    "seller_tax_id": "NIP: {taxId}",
     "chat_heading": "Czat"
   },
   "auth": {

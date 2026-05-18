@@ -38,6 +38,7 @@ type SellerApiItem = {
   lat?: number | null;
   lng?: number | null;
   address?: string | null;
+  district?: string | null;
 };
 
 /**
@@ -60,7 +61,8 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
         review_count: typeof v.review_count === 'number' ? v.review_count : null,
         lat: typeof v.lat === 'number' ? v.lat : null,
         lng: typeof v.lng === 'number' ? v.lng : null,
-        address: v.address ?? null
+        address: v.address ?? null,
+        district: v.district ?? null
       }));
 
       return mapped.sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));

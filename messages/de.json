@@ -211,6 +211,7 @@
       "meta_fallback_title": "Unbekannter Salon | BonBeauty",
       "meta_description": "Entdecken Sie das Angebot von {name} auf BonBeauty.",
       "meta_default_description": "BonBeauty Partnersalon — prüfen Sie das Angebot und die Adresse.",
+      "runtime_fallback_notice": "Ein Teil der Saloninformationen ist vorübergehend nicht verfügbar. Sie können das Angebot ansehen, aber diese Seite bleibt bis zur Wiederherstellung der erforderlichen Geschäftsdaten von der Indexierung ausgeschlossen.",
       "directions_title": "So kommen Sie hin",
       "directions_open_google": "In Google Maps öffnen",
       "directions_open_apple": "In Apple Maps öffnen",
@@ -396,6 +397,7 @@
     "no_results_quality": "Keine Behandlungen gefunden, die den Kriterien entsprechen",
     "seller_joined": "Beigetreten {date}",
     "report_seller": "Verkäufer melden",
+    "seller_tax_id": "Steuer-ID: {taxId}",
     "chat_heading": "Chat"
   },
   "auth": {

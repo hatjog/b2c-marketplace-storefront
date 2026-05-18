@@ -210,6 +210,7 @@
       "meta_fallback_title": "Unknown salon | BonBeauty",
       "meta_description": "Discover the offer from {name} on BonBeauty.",
       "meta_default_description": "BonBeauty partner salon — check the offer and address.",
+      "runtime_fallback_notice": "Some salon details are temporarily unavailable. Browse the offer, but this page is excluded from indexing until the required business data is restored.",
       "directions_title": "How to get there",
       "directions_open_google": "Open in Google Maps",
       "directions_open_apple": "Open in Apple Maps",
@@ -395,6 +396,7 @@
     "no_results_quality": "No treatments found matching criteria",
     "seller_joined": "Joined {date}",
     "report_seller": "Report Seller",
+    "seller_tax_id": "Tax ID: {taxId}",
     "chat_heading": "Chat"
   },
   "auth": {

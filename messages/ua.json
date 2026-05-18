@@ -211,6 +211,7 @@
       "meta_fallback_title": "Невідомий салон | BonBeauty",
       "meta_description": "Відкрийте пропозицію салону {name} на BonBeauty.",
       "meta_default_description": "Партнерський салон BonBeauty — перевірте пропозицію та адресу.",
+      "runtime_fallback_notice": "Частина даних салону тимчасово недоступна. Ви можете переглядати пропозицію, але сторінка залишається виключеною з індексації, доки не буде відновлено обов’язкові бізнес-дані.",
       "directions_title": "Як дістатися",
       "directions_open_google": "Відкрити в Google Maps",
       "directions_open_apple": "Відкрити в Apple Maps",
@@ -396,6 +397,7 @@
     "no_results_quality": "Не знайдено процедур, що відповідають критеріям",
     "seller_joined": "Приєднався: {date}",
     "report_seller": "Поскаржитися на продавця",
+    "seller_tax_id": "Податковий номер: {taxId}",
     "chat_heading": "Чат"
   },
   "auth": {
