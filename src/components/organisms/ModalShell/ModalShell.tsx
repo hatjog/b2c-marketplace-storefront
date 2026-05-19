@@ -8,7 +8,7 @@
 //   --text-secondary, --text-on-action, --bb-radius-panel, --font-body, --font-display,
 //   --font-weight-medium, --font-weight-bold, --space-4, --space-6, --space-8,
 //   --anim-duration-base, --anim-ease-emphasized
-// Exposed: --modal-z (300), --modal-max-width (520px), --modal-overlay-bg (rgba(9,9,9,0.6))
+// Exposed: --modal-z (300), --modal-max-width (520px), --modal-overlay-bg (var(--bb-overlay-backdrop))
 //
 // 5 use cases (Story 3.1 AC3) przez `variant` prop:
 //   auth-required / age-verify / consent / confirm-destructive / detailed-info
@@ -74,13 +74,13 @@ export function ModalShell({
         {
           '--modal-z': '300',
           '--modal-max-width': '520px',
-          '--modal-overlay-bg': 'rgba(9, 9, 9, 0.6)',
+          '--modal-overlay-bg': 'var(--bb-overlay-backdrop)',
         } as React.CSSProperties
       }
       data-testid="modal-shell-overlay"
     >
       <div
-        className="absolute inset-0 bg-[var(--modal-overlay-bg,rgba(9,9,9,0.6))]"
+        className="absolute inset-0 bg-[var(--modal-overlay-bg,var(--bb-overlay-backdrop))]"
         onClick={onClose}
         aria-hidden="true"
       />

@@ -147,11 +147,9 @@ export function ToastViewport({
 
   return (
     <div
-      // aria-live region: polite for the stack, individual error toasts
-      // upgrade to role=alert (assertive) per W6-06 a11y contract.
-      role="log"
-      aria-live="polite"
-      aria-atomic="true"
+      // Canonical live region pattern: announcements happen on each toast item
+      // (`role=status|alert`) to avoid nested live regions and duplicate SR reads.
+      role="region"
       aria-label={t('aria_region')}
       data-testid="toast-viewport"
       data-placement={placement}
@@ -170,7 +168,6 @@ export function ToastViewport({
           <div
             key={toast.id}
             role={isError ? 'alert' : 'status'}
-            aria-live={isError ? 'assertive' : 'polite'}
             data-testid={`toast-${toast.variant}`}
             data-variant={toast.variant}
             className={cn(

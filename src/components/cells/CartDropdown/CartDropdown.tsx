@@ -3,135 +3,129 @@
 import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
-import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { usePathname, useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 
-import { Badge, Button } from '@/components/atoms';
-import { CartDropdownItem, Dropdown } from '@/components/molecules';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { Badge } from '@/components/atoms';
+import { MiniCartDrawer, type CartItem as MiniCartItem } from '@/components/organisms';
 import { useCartContext } from '@/components/providers';
 import { usePrevious } from '@/hooks/usePrevious';
 import { CartIcon } from '@/icons';
+import { applyPromotions } from '@/lib/data/cart';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
-import { convertToLocale } from '@/lib/helpers/money';
+import { toast } from '@/lib/helpers/toast';
 
 const getItemCount = (cart: HttpTypes.StoreCart | null) => {
   return cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 };
 
+function toMajor(amount: number | null | undefined): number {
+  if (typeof amount !== 'number' || Number.isNaN(amount)) {
+    return 0;
+  }
+  return amount / 100;
+}
+
+function mapMiniCartItems(cart: HttpTypes.StoreCart | null, fallbackName: string): MiniCartItem[] {
+  const validItems = filterValidCartItems(cart?.items);
+  return validItems.map(item => ({
+    id: item.id,
+    name: item.product_title || item.title || fallbackName,
+    imageUrl: item.thumbnail || undefined,
+    quantity: item.quantity,
+    unitPrice: toMajor(
+      item.unit_price ??
+        (item.quantity > 0 && item.subtotal != null ? item.subtotal / item.quantity : 0)
+    )
+  }));
+}
+
 export const CartDropdown = () => {
-  const { cart } = useCartContext();
+  const { cart, removeCartItem, refreshCart } = useCartContext();
   const [open, setOpen] = useState(false);
   const t = useTranslations('cart');
-
+  const tMiniCart = useTranslations('mini_cart');
+  const locale = useLocale();
+  const router = useRouter();
   const previousItemCount = usePrevious(getItemCount(cart));
-  const cartItemsCount = (cart && getItemCount(cart)) || 0;
+  const cartItemsCount = getItemCount(cart);
   const pathname = usePathname();
-
-  // Filter out items with invalid data (missing prices/variants)
-  const validItems = filterValidCartItems(cart?.items);
-
-  const total = convertToLocale({
-    amount: cart?.total || 0,
-    currency_code: cart?.currency_code || 'eur'
-  });
-
-  const delivery = convertToLocale({
-    amount: cart?.shipping_subtotal || 0,
-    currency_code: cart?.currency_code || 'eur'
-  });
-
-  const tax = convertToLocale({
-    amount: cart?.tax_total || 0,
-    currency_code: cart?.currency_code || 'eur'
-  });
-
-  const items = convertToLocale({
-    amount: cart?.item_subtotal || 0,
-    currency_code: cart?.currency_code || 'eur'
-  });
-
-  useEffect(() => {
-    if (open) {
-      const timeout = setTimeout(() => {
-        setOpen(false);
-      }, 2000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [open]);
 
   useEffect(() => {
     if (
       previousItemCount !== undefined &&
       cartItemsCount > previousItemCount &&
-      pathname.split('/')[2] !== 'cart'
+      !pathname.includes('/cart')
     ) {
       setOpen(true);
     }
-  }, [cartItemsCount, previousItemCount]);
+  }, [cartItemsCount, previousItemCount, pathname]);
+
+  const onApplyDiscount = async (code: string) => {
+    const result = await applyPromotions([code]);
+    if (!result.success) {
+      toast.info({ title: result.error || t('promo_not_found') });
+      return;
+    }
+    if (!result.applied) {
+      toast.info({ title: t('promo_not_found') });
+      return;
+    }
+    toast.success({ title: t('promo_applied') });
+    await refreshCart();
+  };
+
+  const cartWithPromotions = cart as (HttpTypes.StoreCart & {
+    promotions?: Array<{ code?: string }>;
+  }) | null;
+  const discountCode = cartWithPromotions?.promotions?.[0]?.code;
+  const discountAmount = toMajor(Math.max(0, Math.abs(cart?.discount_subtotal ?? 0)));
+  const discountApplied =
+    discountCode && discountAmount > 0
+      ? {
+          code: discountCode,
+          amount: discountAmount
+        }
+      : null;
 
   return (
-    <div
-      className="relative"
-      onMouseOver={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <LocalizedClientLink
-        href="/cart"
+    <div className="relative">
+      <button
+        type="button"
         className="relative"
-        aria-label={t('go_to_cart_aria')}
+        aria-label={t('open_cart_drawer_aria')}
+        onClick={() => setOpen(true)}
+        data-testid="cart-icon-open-drawer"
       >
         <CartIcon size={20} />
         {Boolean(cartItemsCount) && (
           <Badge className="absolute -right-2 -top-2 h-4 w-4 p-0">{cartItemsCount}</Badge>
         )}
-      </LocalizedClientLink>
-      <Dropdown show={open}>
-        <div className="shadow-lg lg:w-[460px]">
-          <h3 className="heading-md border-b p-4 uppercase">{t('shopping_cart')}</h3>
-          <div className="p-4">
-            {Boolean(cartItemsCount) ? (
-              <div>
-                <div className="no-scrollbar max-h-[360px] overflow-y-scroll">
-                  {validItems.map(item => (
-                    <CartDropdownItem
-                      key={`${item.product_id}-${item.variant_id}`}
-                      item={item}
-                      currency_code={cart?.currency_code || 'eur'}
-                    />
-                  ))}
-                </div>
-                <div className="pt-4">
-                  <div className="flex items-center justify-between text-secondary">
-                    {t('items')} <p className="label-md text-primary">{items}</p>
-                  </div>
-                  <div className="flex items-center justify-between text-secondary">
-                    {t('delivery')} <p className="label-md text-primary">{delivery}</p>
-                  </div>
-                  <div className="flex items-center justify-between text-secondary">
-                    {t('tax')} <p className="label-md text-primary">{tax}</p>
-                  </div>
-                  <div className="flex items-center justify-between text-secondary">
-                    {t('total')} <p className="label-xl text-primary">{total}</p>
-                  </div>
-                  <LocalizedClientLink href="/cart">
-                    <Button className="mt-4 w-full py-3">{t('go_to_cart')}</Button>
-                  </LocalizedClientLink>
-                </div>
-              </div>
-            ) : (
-              <div className="px-8">
-                <h4 className="heading-md text-center uppercase">{t('empty_heading')}</h4>
-                <p className="py-4 text-center text-lg">{t('empty_inspiration')}</p>
-                <LocalizedClientLink href="/categories">
-                  <Button className="w-full py-3">{t('explore_home')}</Button>
-                </LocalizedClientLink>
-              </div>
-            )}
-          </div>
-        </div>
-      </Dropdown>
+      </button>
+      <MiniCartDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        items={mapMiniCartItems(cart, t('item_fallback_name'))}
+        subtotal={toMajor(cart?.item_subtotal ?? 0)}
+        discountApplied={discountApplied}
+        currency={(cart?.currency_code || 'eur').toUpperCase()}
+        locale={locale}
+        onCheckout={() => {
+          setOpen(false);
+          router.push(`/${locale}/checkout?step=address`);
+        }}
+        onRemoveItem={async (itemId) => {
+          await removeCartItem(itemId);
+          await refreshCart();
+        }}
+        onApplyDiscount={onApplyDiscount}
+      />
+      <span
+        className="sr-only"
+        aria-live="polite"
+      >
+        {tMiniCart('title')}
+      </span>
     </div>
   );
 };

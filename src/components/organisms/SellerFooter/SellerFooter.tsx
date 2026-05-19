@@ -12,9 +12,10 @@ import type { SellerProps } from '@/types/seller';
 export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
   const t = useTranslations('products');
   const [openModal, setOpenModal] = useState(false);
+
   return (
     <div className="flex flex-col items-center justify-between p-5 lg:flex-row">
-      <div className="label-sm lg:label-md mb-4 flex w-full items-center justify-between gap-2 text-secondary lg:mb-0 lg:w-auto lg:justify-start lg:gap-4">
+      <div className="label-sm lg:label-md mb-4 flex w-full flex-wrap items-center justify-between gap-2 text-secondary lg:mb-0 lg:w-auto lg:justify-start lg:gap-4">
         {/* {seller.verified && (
           <div className="flex items-center gap-2">
             <DoneIcon size={20} />
@@ -23,6 +24,12 @@ export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
         )} */}
         <Divider square />
         <p>{t('seller_joined', { date: format(seller.created_at, 'yyyy-MM-dd') })}</p>
+        {seller.tax_id?.trim() && (
+          <>
+            <Divider square />
+            <p>{t('seller_tax_id', { taxId: seller.tax_id.trim() })}</p>
+          </>
+        )}
         {/* <Divider square /> */}
         {/* <p>sold {seller.sold}</p> */}
       </div>

@@ -11,16 +11,16 @@ export const Navbar = ({
 }) => {
   return (
     <div
-      className="flex flex-col justify-between gap-4 border px-4 py-4 md:gap-0 md:px-5 lg:flex-row"
+      className="min-w-0 overflow-hidden flex flex-col justify-between gap-4 border px-4 py-4 md:gap-0 md:px-5 lg:flex-row"
       data-testid="navbar"
     >
-      <div className="hidden w-full items-center justify-between lg:flex">
+      <div className="hidden min-w-0 w-full items-center justify-between gap-4 overflow-hidden lg:flex">
         <CategoryNavbar
           categories={categories}
           parentCategories={parentCategories}
         />
         <div
-          className="ml-auto w-full max-w-[296px] pl-4"
+          className="ml-auto w-full max-w-[296px] shrink-0 pl-4"
           data-testid="navbar-search-desktop"
         >
           <NavbarSearch />

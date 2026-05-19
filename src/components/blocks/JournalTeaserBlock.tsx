@@ -1,6 +1,7 @@
 // W1-01 Home v3 — Journal teaser.
 // BonBeauty DS v2.1.0: bb-surface, bb-radius-card, bb-shadow-card, card-journal tokens.
 // Story 3.0 Sprint 1 thin slice gate.
+import { getTranslations } from 'next-intl/server';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
@@ -22,39 +23,48 @@ interface JournalTeaserBlockProps {
   locale: string;
 }
 
-const DEFAULT_POSTS: JournalPost[] = [
-  {
-    id: '1',
-    title: 'Jak wybrać idealny zabieg na prezent?',
-    excerpt: 'Poradnik, który pomoże Ci znaleźć wyjątkowy upominek dla bliskiej osoby.',
-    href: '/blog/jak-wybrac-idealny-zabieg',
-    category: 'Prezenty',
-    readTime: 4,
-  },
-  {
-    id: '2',
-    title: 'Trendy pielęgnacji na 2025',
-    excerpt: 'Najważniejsze zabiegi i techniki, które zdominują salony beauty w nowym roku.',
-    href: '/blog/trendy-pielegnacji-2025',
-    category: 'Trendy',
-    readTime: 6,
-  },
-  {
-    id: '3',
-    title: 'Cicha luksus — dlaczego prostota to nowa elegancja',
-    excerpt: 'Minimalizm w beauty wraca w wielkim stylu. Poznaj salony, które to rozumieją.',
-    href: '/blog/cicha-luksus',
-    category: 'Styl życia',
-    readTime: 5,
-  },
-];
+function buildDefaultPosts(t: Awaited<ReturnType<typeof getTranslations>>): JournalPost[] {
+  return [
+    {
+      id: '1',
+      title: t('journal.posts.1.title'),
+      excerpt: t('journal.posts.1.excerpt'),
+      href: '/blog',
+      category: t('journal.posts.1.category'),
+      readTime: 4,
+    },
+    {
+      id: '2',
+      title: t('journal.posts.2.title'),
+      excerpt: t('journal.posts.2.excerpt'),
+      href: '/blog',
+      category: t('journal.posts.2.category'),
+      readTime: 5,
+    },
+    {
+      id: '3',
+      title: t('journal.posts.3.title'),
+      excerpt: t('journal.posts.3.excerpt'),
+      href: '/blog',
+      category: t('journal.posts.3.category'),
+      readTime: 6,
+    },
+  ];
+}
 
-export function JournalTeaserBlock({
-  heading = 'Z Journala',
-  posts = DEFAULT_POSTS,
-  ctaLabel = 'Czytaj więcej',
-  ctaHref = '/blog',
+export async function JournalTeaserBlock({
+  heading,
+  posts,
+  ctaLabel,
+  ctaHref,
+  locale,
 }: JournalTeaserBlockProps) {
+  const t = await getTranslations({ locale, namespace: 'home_v3' });
+  const resolvedHeading = heading ?? t('journal.heading');
+  const resolvedPosts = posts ?? buildDefaultPosts(t);
+  const resolvedCtaLabel = ctaLabel ?? t('journal.cta_label');
+  const resolvedCtaHref = ctaHref ?? '/blog';
+
   return (
     <section
       className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-12 lg:px-8"
@@ -66,24 +76,24 @@ export function JournalTeaserBlock({
           id="journal-teaser-heading"
           className="text-xl font-semibold text-[var(--text-primary)] md:text-2xl"
         >
-          {heading}
+          {resolvedHeading}
         </h2>
         <LocalizedClientLink
-          href={ctaHref}
+          href={resolvedCtaHref}
           className="text-sm font-medium text-[var(--cta)] hover:underline"
         >
-          {ctaLabel}
+          {resolvedCtaLabel}
         </LocalizedClientLink>
       </div>
 
       {/* Journal cards grid — card-journal token for background */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post) => (
+        {resolvedPosts.map((post) => (
           <LocalizedClientLink
             key={post.id}
             href={post.href}
             className="group flex flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] transition-shadow hover:shadow-[var(--bb-shadow-card,var(--bb-shadow-soft))]"
-            style={{ background: 'rgba(255,252,247,0.92)' }}
+            style={{ background: 'var(--bb-surface)' }}
             data-testid={`journal-card-${post.id}`}
           >
             {/* Image placeholder */}
@@ -102,7 +112,9 @@ export function JournalTeaserBlock({
                 {post.excerpt}
               </p>
               {post.readTime && (
-                <span className="text-xs text-[var(--text-muted,var(--text-secondary))]">{post.readTime} min czytania</span>
+                <span className="text-xs text-[var(--text-muted,var(--text-secondary))]">
+                  {t('journal.read_time_minutes', { count: post.readTime })}
+                </span>
               )}
             </div>
           </LocalizedClientLink>

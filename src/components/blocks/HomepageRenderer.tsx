@@ -124,6 +124,7 @@ export function HomepageRenderer({
             return (
               <TrustStripBlock
                 key={key}
+                locale={locale}
                 verifiedLabel={(section as { verifiedLabel?: string }).verifiedLabel}
                 trustPoints={(section as { trustPoints?: Parameters<typeof TrustStripBlock>[0]['trustPoints'] }).trustPoints}
               />

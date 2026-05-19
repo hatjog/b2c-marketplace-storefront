@@ -89,7 +89,7 @@ export const CategoryNavbar = ({
   return (
     <>
       <nav
-        className="flex flex-col gap-2 md:max-w-full md:flex-row md:items-center md:overflow-x-auto md:scrollbar-hide"
+        className="min-w-0 flex flex-col gap-2 md:max-w-full md:flex-row md:items-center md:overflow-x-auto md:scrollbar-hide lg:flex-1 lg:flex-nowrap"
         aria-label={t('category_nav_aria')}
         data-testid="category-navbar"
       >

@@ -11,6 +11,7 @@
  *     aria-busy on ProductListingLoadingView (see molecule).
  */
 import type { HttpTypes } from '@medusajs/types';
+import { getTranslations } from 'next-intl/server';
 
 import {
   ProductListingActiveFilters,
@@ -21,14 +22,22 @@ import {
 } from '@/components/organisms';
 import type { StorefrontFilterConfig } from '@/components/cells/DynamicFilterSidebar/DynamicFilterSidebar';
 import { DiscoveryEmptyState } from '@/components/cells/DiscoveryEmptyState/DiscoveryEmptyState';
+import { CategoryPlpContextualCta } from '@/components/sections/CategoryPlp/CategoryPlpContextualCta';
+import { CategoryPlpNoResults } from '@/components/sections/CategoryPlp/CategoryPlpNoResults';
+import { CategoryPlpSidebar } from '@/components/sections/CategoryPlp/CategoryPlpSidebar';
 import { PRODUCT_LIMIT } from '@/const';
 import { SORT_OPTIONS } from '@/lib/constants';
 import type { SortOption } from '@/lib/constants';
 import { listCategories } from '@/lib/data/categories';
 import type { ProductQueryParams } from '@/lib/data/products';
 import { listProductsWithSort, listProductTags, listSellerCities, searchProducts } from '@/lib/data/products';
+import { getRegion } from '@/lib/data/regions';
+import { getSellers } from '@/lib/data/seller';
+import { applyCategoryPlpSemanticFilters } from '@/lib/helpers/category-plp-semantic-filters';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getMarketId } from '@/lib/helpers/market-filter';
+import { parsePurchaseMode } from '@/lib/helpers/parse-purchase-mode';
+import type { SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 import { sanitizeTagIdList } from '@/lib/helpers/sanitize-tag-id';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { ClearFiltersButton } from './ClearFiltersButton';
@@ -36,6 +45,7 @@ import { ListingRetryButton } from './ListingRetryButton';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
+type SalonOption = { handle: string; name: string };
 
 const HANDLE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const CITY_ALLOWED_CHARS_RE = /[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]/g;
@@ -55,6 +65,9 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
   const rawSellerRating = raw('seller_rating');
   const rawPage = raw('page');
   const rawQuery = raw('query');
+  const rawSalon = raw('salon');
+  const rawAvailability = raw('availability');
+  const rawMode = raw('mode');
 
   const parsedMin = rawMin != null ? Number(rawMin) : NaN;
   const parsedMax = rawMax != null ? Number(rawMax) : NaN;
@@ -103,7 +116,10 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
     cities,
     durations,
     sellerRatings,
-    page
+    page,
+    salonHandle: rawSalon && HANDLE_RE.test(rawSalon) ? rawSalon : undefined,
+    availability: rawAvailability === 'in_stock' ? ('in_stock' as const) : undefined,
+    purchaseMode: parsePurchaseMode(rawMode)
   };
 }
 
@@ -120,6 +136,7 @@ export const ProductListing = async ({
   collection_id,
   seller_id,
   showSidebar = false,
+  categoryPlp = false,
   locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'pl',
   searchParams = {},
   fromContext
@@ -128,6 +145,7 @@ export const ProductListing = async ({
   collection_id?: string;
   seller_id?: string;
   showSidebar?: boolean;
+  categoryPlp?: boolean;
   locale?: string;
   searchParams?: Record<string, string | string[] | undefined>;
   /**
@@ -139,7 +157,20 @@ export const ProductListing = async ({
   fromContext?: { type: 'seller'; handle: string };
 }) => {
   // Resolve & sanitize filter params from URL search params
-  const { categoryHandle, minPrice, maxPrice, query, tagIds, cities, durations, sellerRatings, page } = sanitizeSearchParams(searchParams);
+  const {
+    categoryHandle,
+    minPrice,
+    maxPrice,
+    query,
+    tagIds,
+    cities,
+    durations,
+    sellerRatings,
+    page,
+    salonHandle,
+    availability,
+    purchaseMode,
+  } = sanitizeSearchParams(searchParams);
 
   // Resolve sort option — validate against allowlist, default to 'recommended'
   const rawSort = typeof searchParams.sort === 'string' ? searchParams.sort : undefined;
@@ -147,12 +178,27 @@ export const ProductListing = async ({
 
   // ADR-046: resolve country code from cookie, not from locale URL segment
   const countryCode = await getCountryCode(locale);
+  const region = await getRegion(countryCode);
+  const currencyCode = (region?.currency_code ?? 'PLN').toUpperCase();
+  const semanticFilters: {
+    salonHandle?: string;
+    availability?: 'in_stock';
+    purchaseMode?: SelfPurchaseMode;
+  } | undefined = categoryPlp
+    ? {
+        salonHandle,
+        availability,
+        purchaseMode,
+      }
+    : undefined;
+
   // Fetch market config for storefront filters
   const marketId = getMarketId();
   const storefrontFilters: StorefrontFilterConfig[] = [];
   let categories: Category[] = [];
   let tags: Tag[] = [];
   let sidebarCities: string[] = [];
+  let salonOptions: SalonOption[] = [];
 
   if (showSidebar && !marketId) {
     console.warn(
@@ -192,6 +238,17 @@ export const ProductListing = async ({
     }
   }
 
+  if (categoryPlp) {
+    const salons = await getSellers();
+    salonOptions = salons
+      .filter(seller => seller.handle && seller.name)
+      .map(seller => ({ handle: seller.handle, name: seller.name }));
+
+    if (sidebarCities.length === 0) {
+      sidebarCities = await listSellerCities();
+    }
+  }
+
   // Resolve category_id from URL handle if provided
   let resolvedCategoryId = category_id;
   if (categoryHandle && categories.length > 0) {
@@ -212,14 +269,19 @@ export const ProductListing = async ({
     if (query) {
       const searchResult = await searchProducts({
         query,
-        page: page - 1,
-        hitsPerPage: PRODUCT_LIMIT,
+        page: 0,
+        hitsPerPage: 1000,
         countryCode,
       });
 
-      totalFiltered = searchResult.nbHits;
-      pages = searchResult.nbPages;
-      paginatedProducts = searchResult.products;
+      const filteredSearchProducts = categoryPlp
+        ? applyCategoryPlpSemanticFilters(searchResult.products, semanticFilters)
+        : searchResult.products;
+
+      totalFiltered = filteredSearchProducts.length;
+      pages = Math.ceil(totalFiltered / PRODUCT_LIMIT);
+      const offset = (page - 1) * PRODUCT_LIMIT;
+      paginatedProducts = filteredSearchProducts.slice(offset, offset + PRODUCT_LIMIT);
     } else {
       const { response } = await listProductsWithSort({
         seller_id,
@@ -232,6 +294,7 @@ export const ProductListing = async ({
         tagIds,
         durations,
         sellerRatings,
+        semanticFilters,
         page,
         limit: PRODUCT_LIMIT,
       });
@@ -260,44 +323,66 @@ export const ProductListing = async ({
     );
   }
 
+  const visibleProducts = paginatedProducts;
+  const effectiveTotal = totalFiltered;
+  const showContextualEditorialCta = categoryPlp && totalFiltered > 0 && totalFiltered < 10;
+  const tCategoryPlp = categoryPlp ? await getTranslations('category_plp') : null;
+  const contextualCtaLabel = tCategoryPlp?.('editorial_cta') ?? '';
+
   return (
     <div className="space-y-6 py-2" data-testid="product-listing-container">
       <div className="bb-section-shell bb-section-shell-strong space-y-4">
-        <ProductListingHeader total={totalFiltered} />
+        <ProductListingHeader total={effectiveTotal} showSort={!categoryPlp} />
         <div className="hidden md:block">
           <ProductListingActiveFilters />
         </div>
       </div>
       <div className={`grid grid-cols-1 gap-6 ${showSidebar ? 'lg:grid-cols-[300px_minmax(0,1fr)]' : ''}`}>
         {showSidebar && (
-          <ProductSidebar
-            filters={storefrontFilters}
-            categories={categories}
-            tags={tags}
-            cities={sidebarCities}
-          />
+          categoryPlp ? (
+            <CategoryPlpSidebar
+              salons={salonOptions}
+              cities={sidebarCities}
+              locale={locale}
+              currencyCode={currencyCode}
+            />
+          ) : (
+            <ProductSidebar
+              filters={storefrontFilters}
+              categories={categories}
+              tags={tags}
+              cities={sidebarCities}
+            />
+          )
         )}
         <section
           className={showSidebar ? 'space-y-6' : 'col-span-full space-y-6'}
           data-testid="product-listing-section"
         >
-          {paginatedProducts.length === 0 ? (
-            /* no-results: semantically distinct from load-error/permission-denied (UX-DR19).
-               ClearFiltersButton is the one recommended next action per UX-DR18. */
+          {visibleProducts.length === 0 ? (
             <div className="py-6" data-testid="product-listing-empty">
-              <DiscoveryEmptyState
-                variant="no-results"
-                action={<ClearFiltersButton />}
-                data-testid="empty-state"
-              />
+              {categoryPlp ? (
+                <CategoryPlpNoResults />
+              ) : (
+                /* no-results: semantically distinct from load-error/permission-denied (UX-DR19).
+                   ClearFiltersButton is the one recommended next action per UX-DR18. */
+                <DiscoveryEmptyState
+                  variant="no-results"
+                  action={<ClearFiltersButton />}
+                  data-testid="empty-state"
+                />
+              )}
             </div>
           ) : (
             <div
               className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${showSidebar ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}
               data-testid="product-list"
             >
-              <ProductsList products={paginatedProducts} fromContext={fromContext} />
+              <ProductsList products={visibleProducts} fromContext={fromContext} />
             </div>
+          )}
+          {showContextualEditorialCta && (
+            <CategoryPlpContextualCta label={contextualCtaLabel} />
           )}
           {pages > 1 && (
             <div className="bb-section-shell">

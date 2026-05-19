@@ -115,6 +115,13 @@ export default defineConfig({
         viewport: { width: 1920, height: 1080 },
       },
     },
+    {
+      name: "chromium-vr",
+      testDir: "./tests/visual-regression",
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+    },
   ],
 
   /* No web-server auto-start — environment expected up per checklist */

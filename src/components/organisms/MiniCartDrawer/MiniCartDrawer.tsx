@@ -92,7 +92,7 @@ export function MiniCartDrawer({
         ? 'with-discount-applied'
         : 'many';
 
-  const total = subtotal - (discountApplied?.amount ?? 0);
+  const total = Math.max(0, subtotal - (discountApplied?.amount ?? 0));
 
   async function handleApply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -117,7 +117,7 @@ export function MiniCartDrawer({
       data-testid="mini-cart-overlay"
     >
       <div
-        className="absolute inset-0 bg-[rgba(9,9,9,0.5)]"
+        className="absolute inset-0 bg-[var(--bb-overlay-backdrop)]"
         onClick={onClose}
         aria-hidden="true"
       />

@@ -45,10 +45,12 @@ export const SellerTabs = async ({
       <TabsList
         list={tabsList}
         activeTab={tab}
+        idBase="seller-tabs"
       />
       <TabsContent
         value="products"
         activeTab={tab}
+        idBase="seller-tabs"
       >
         <Suspense
           fallback={
@@ -77,6 +79,7 @@ export const SellerTabs = async ({
       <TabsContent
         value="reviews"
         activeTab={tab}
+        idBase="seller-tabs"
       >
         <Suspense fallback={<div data-testid="seller-tabs-reviews-loading">{commonT('loading')}</div>}>
           <SellerReviewTab seller_handle={seller_handle} />

@@ -6,6 +6,8 @@ import type { HttpTypes } from '@medusajs/types';
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
 import { normalizeListedProducts } from '@/lib/helpers/normalize-listed-products';
 import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
+import { applyCategoryPlpSemanticFilters } from '@/lib/helpers/category-plp-semantic-filters';
+import type { SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 import { sortProducts } from '@/lib/helpers/sort-products';
 import { sortByRecommended } from '@/lib/helpers/sort-utils';
 import type { SortOptions } from '@/types/product';
@@ -331,6 +333,7 @@ export const listProductsWithSort = async ({
   tagIds,
   durations,
   sellerRatings,
+  semanticFilters,
   page,
   limit,
 }: {
@@ -344,6 +347,11 @@ export const listProductsWithSort = async ({
   tagIds?: string[];
   durations?: number[];
   sellerRatings?: number[];
+  semanticFilters?: {
+    salonHandle?: string;
+    availability?: 'in_stock';
+    purchaseMode?: SelfPurchaseMode;
+  };
   page?: number;
   limit?: number;
 }): Promise<{
@@ -354,9 +362,21 @@ export const listProductsWithSort = async ({
   nextPage: number | null;
   queryParams?: ProductQueryParams;
 }> => {
+  const hasSemanticFilters = Boolean(
+    semanticFilters?.salonHandle ||
+      semanticFilters?.availability === 'in_stock' ||
+      semanticFilters?.purchaseMode
+  );
+
   // Pipeline mode: any custom filter active AND no seller_id scope → backend pipeline.
   // seller_id is not supported in the pipeline endpoint — fall through to native mode when set.
-  if (!seller_id && hasCustomFilters({ tagIds, cities, durations, sellerRatings })) {
+  // Category-PLP semantic filters are currently evaluated in storefront data layer,
+  // therefore pipeline is bypassed when those filters are active.
+  if (
+    !seller_id &&
+    !hasSemanticFilters &&
+    hasCustomFilters({ tagIds, cities, durations, sellerRatings })
+  ) {
     return listFilteredProducts({
       tagIds,
       categoryId: category_id,
@@ -435,7 +455,9 @@ export const listProductsWithSort = async ({
     ? deduped.filter(product => (product as any).seller?.id === seller_id)
     : deduped;
 
-  const pricedProducts = filteredBySeller.filter(prod =>
+  const semanticFiltered = applyCategoryPlpSemanticFilters(filteredBySeller, semanticFilters);
+
+  const pricedProducts = semanticFiltered.filter(prod =>
     prod.variants?.some(variant => variant.calculated_price !== null)
   );
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
+
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useGeolocation } from '@/hooks/useGeolocation';
 
@@ -60,7 +61,7 @@ export function NearMeToggle({ defaultRadiusKm = 10 }: NearMeToggleProps) {
       const qs = next.toString();
       router.push(qs ? `${pathname}?${qs}` : pathname);
     },
-    [pathname, router, searchParams],
+    [pathname, router, searchParams]
   );
 
   // Once the hook resolves to 'granted', sync the new lat/lng into the URL.
@@ -72,7 +73,7 @@ export function NearMeToggle({ defaultRadiusKm = 10 }: NearMeToggleProps) {
     if (!isMountedRef.current) return;
 
     pendingPushRef.current = false;
-    pushWith((params) => {
+    pushWith(params => {
       params.set('nearMe', '1');
       params.set('radius', String(defaultRadiusKm));
       params.set('lat', lat.toFixed(6));
@@ -83,7 +84,7 @@ export function NearMeToggle({ defaultRadiusKm = 10 }: NearMeToggleProps) {
   const handleClick = useCallback(() => {
     if (isActive) {
       pendingPushRef.current = false;
-      pushWith((params) => {
+      pushWith(params => {
         params.delete('nearMe');
         params.delete('radius');
         params.delete('lat');
@@ -99,9 +100,10 @@ export function NearMeToggle({ defaultRadiusKm = 10 }: NearMeToggleProps) {
   }, [isActive, pushWith, requestLocation]);
 
   const isPending = status === 'pending' && pendingPushRef.current;
-  const isDenied = status === 'denied' && pendingPushRef.current === false && !isActive
-    ? false
-    : status === 'denied';
+  const isDenied =
+    status === 'denied' && pendingPushRef.current === false && !isActive
+      ? false
+      : status === 'denied';
   const isUnsupported = status === 'unsupported';
 
   const label = isActive ? t('near_me_toggle_active') : t('near_me_toggle');
@@ -132,7 +134,10 @@ export function NearMeToggle({ defaultRadiusKm = 10 }: NearMeToggleProps) {
         {label}
       </button>
       {isPending && (
-        <span className="text-xs text-stone-500" data-testid="sellers-near-me-pending">
+        <span
+          className="text-xs text-stone-500"
+          data-testid="sellers-near-me-pending"
+        >
           {t('geolocation_pending')}
         </span>
       )}
@@ -146,7 +151,10 @@ export function NearMeToggle({ defaultRadiusKm = 10 }: NearMeToggleProps) {
         </span>
       )}
       {!isActive && status === 'idle' && (
-        <span className="text-xs text-stone-400" data-testid="sellers-near-me-privacy">
+        <span
+          className="text-xs text-stone-600"
+          data-testid="sellers-near-me-privacy"
+        >
           {t('privacy_notice_inline')}
         </span>
       )}

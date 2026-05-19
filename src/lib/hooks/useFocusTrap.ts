@@ -35,11 +35,34 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>({
 
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const container = containerRef.current;
+    if (!container) return;
+    const containerEl = container;
 
-    const focusables = container
-      ? Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE))
-      : [];
-    (focusables[0] ?? container)?.focus();
+    const shouldRestoreTabIndex = !containerEl.hasAttribute('tabindex');
+    if (shouldRestoreTabIndex) {
+      // Defensive fallback for callers that forget tabIndex={-1}.
+      containerEl.setAttribute('tabindex', '-1');
+    }
+
+    function isVisibleFocusable(el: HTMLElement): boolean {
+      if (el.hasAttribute('disabled') || el.getAttribute('aria-hidden') === 'true') {
+        return false;
+      }
+      if (el.closest('[aria-hidden="true"]')) {
+        return false;
+      }
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') {
+        return false;
+      }
+      // position: fixed often has offsetParent === null, so rely on geometry/style.
+      return el.getClientRects().length > 0 || style.position === 'fixed';
+    }
+
+    const focusables = Array.from(containerEl.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+      isVisibleFocusable
+    );
+    (focusables[0] ?? containerEl)?.focus();
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -47,14 +70,23 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>({
         onEscape?.();
         return;
       }
-      if (e.key !== 'Tab' || !container) return;
-      const items = Array.from(
-        container.querySelectorAll<HTMLElement>(FOCUSABLE)
-      ).filter((el) => el.offsetParent !== null);
-      if (items.length === 0) return;
+      if (e.key !== 'Tab') return;
+      const items = Array.from(containerEl.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+        isVisibleFocusable
+      );
+      if (items.length === 0) {
+        e.preventDefault();
+        containerEl.focus();
+        return;
+      }
       const first = items[0];
       const last = items[items.length - 1];
       const activeEl = document.activeElement;
+      if (!(activeEl instanceof HTMLElement) || !containerEl.contains(activeEl)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+        return;
+      }
       if (e.shiftKey && activeEl === first) {
         e.preventDefault();
         last.focus();
@@ -76,6 +108,9 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>({
       document.removeEventListener('keydown', handleKeyDown, true);
       if (lockScroll) {
         document.body.style.overflow = prevOverflow;
+      }
+      if (shouldRestoreTabIndex) {
+        containerEl.removeAttribute('tabindex');
       }
       previouslyFocused.current?.focus?.();
     };

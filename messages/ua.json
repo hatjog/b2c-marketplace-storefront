@@ -118,6 +118,162 @@
       "context_chip_back": "Повернутися до салону",
       "context_chip_close": "Закрити"
     },
+    "directory_v180": {
+      "meta_title": "Каталог салонів | BonBeauty",
+      "meta_description": "Переглядайте перевірені салони BonBeauty за локацією, категорією послуг і сигналами довіри.",
+      "title": "Салони поруч із вашим ритмом.",
+      "intro": "Порівнюйте перевірені салони за районом, спеціалізацією та сигналами довіри перед тим, як забронювати візит.",
+      "verified_badge": "Перевірений салон",
+      "view_offers_cta": "Переглянути пропозиції",
+      "results_count": "Знайдено {count} салонів",
+      "empty_title": "Жоден салон не відповідає цим фільтрам.",
+      "empty_body": "Спробуйте іншу локацію, категорію або порядок сортування, щоб розширити список.",
+      "clear_filters": "Очистити фільтри",
+      "trust_years": "{count} років",
+      "trust_treatments": "{count} процедур",
+      "trust_reviews": "{count} відгуків",
+      "filters": {
+        "location_label": "Локація",
+        "location_aria": "Фільтрувати салони за локацією",
+        "location_all": "Усі локації",
+        "category_label": "Категорія послуг",
+        "category_aria": "Фільтрувати салони за категорією послуг",
+        "category_all": "Усі категорії",
+        "sort_label": "Сортування",
+        "sort_aria": "Сортувати салони",
+        "sort_rating": "Найкращий рейтинг",
+        "sort_name": "Назва А-Я",
+        "sort_treatments": "Найбільше процедур",
+        "apply": "Застосувати фільтри"
+      },
+      "mobile_toggle": {
+        "list": "Список",
+        "map": "Карта",
+        "aria": "Вибрати вигляд салонів"
+      },
+      "map": {
+        "title": "Плейсхолдер карти локацій",
+        "badge": "map placeholder"
+      }
+    },
+    "detail_v180": {
+      "meta_fallback_title": "Салон не знайдено | BonBeauty",
+      "meta_default_description": "Профіль салону BonBeauty з пропозиціями, локацією та сигналами довіри.",
+      "meta_title": "{name} | салон BonBeauty",
+      "meta_description": "Перевірте пропозиції, локацію та юридичні дані салону {name} у районі {district}.",
+      "verified_badge": "Перевірений салон BonBeauty",
+      "cta_view_offers": "Переглянути пропозиції",
+      "trust": {
+        "aria": "Підсумок довіри до салону",
+        "years_label": "Досвід",
+        "years_value": "{count} років роботи",
+        "treatments_label": "Проведені процедури",
+        "treatments_value": "{count} процедур",
+        "reviews_label": "Обсяг відгуків",
+        "reviews_value": "{count} відгуків",
+        "verified_label": "Перевірка",
+        "verified_value": "Особу підтверджено"
+      },
+      "tabs": {
+        "aria": "Розділи інформації про салон",
+        "offers": "Пропозиції",
+        "about": "Про нас",
+        "location": "Локація",
+        "reviews": "Відгуки",
+        "policy": "Правила салону"
+      },
+      "offers": {
+        "heading": "Доступні пропозиції",
+        "empty": "Цей салон ще не опублікував пропозицій.",
+        "cta": "Відкрити пропозицію"
+      },
+      "about": {
+        "heading": "Про салон",
+        "fallback": "Салон ще не додав повного опису."
+      },
+      "location": {
+        "heading": "Локація",
+        "phone": "Телефон",
+        "hours": "Години роботи",
+        "map_title": "Плейсхолдер карти локації",
+        "map_badge": "попередній перегляд адреси"
+      },
+      "reviews": {
+        "heading": "Відгуки",
+        "summary": "Доступно відгуків клієнтів: {count}.",
+        "link": "Відкрити всі відгуки",
+        "empty": "У цього салону ще немає опублікованих відгуків.",
+        "rating": "Рейтинг {rating} / 5"
+      },
+      "policy": {
+        "heading": "Правила салону",
+        "fallback": "Салон ще не опублікував деталі правил."
+      },
+      "legal": {
+        "heading": "Юридичні дані продавця",
+        "nip": "NIP",
+        "regon": "REGON",
+        "krs": "KRS"
+      },
+      "bottom_cta": {
+        "caption": "Готові порівняти пропозицію?",
+        "label": "Переглянути пропозиції"
+      }
+    },
+    "reviews_v180": {
+      "meta": {
+        "fallbackTitle": "Відгуки про салон | BonBeauty",
+        "fallbackDescription": "Відгуки про салон, підсумок рейтингу та підтверджені візити на BonBeauty.",
+        "title": "Відгуки про {name} | BonBeauty",
+        "description": "Прочитайте {count} відгуків про {name}, перегляньте розподіл оцінок і відповіді салону."
+      },
+      "breadcrumbs": {
+        "reviews": "Відгуки"
+      },
+      "backToSeller": "Повернутися до профілю салону",
+      "verifiedBadge": "Підтверджені візити",
+      "title": "Відгуки про {name}",
+      "intro": "Підтверджені візити, розподіл оцінок і відповіді салону в одному місці.",
+      "summary": {
+        "eyebrow": "Середня оцінка",
+        "noRating": "Оцінок ще немає",
+        "ratingLabel": "{count, plural, one {# відгук} few {# відгуки} many {# відгуків} other {# відгуків}}",
+        "ratingLine": "{rating} / 5"
+      },
+      "filters": {
+        "heading": "Фільтр за оцінкою",
+        "clear": "Очистити фільтр",
+        "aria": "Фільтрувати відгуки за оцінкою",
+        "ratingChip": "{rating} зірок"
+      },
+      "list": {
+        "heading": "Усі відгуки",
+        "results": "{count, plural, one {# результат} few {# результати} many {# результатів} other {# результатів}}",
+        "verifiedVisit": "Підтверджений візит",
+        "ratingAria": "Оцінка {rating} з 5",
+        "ratingVisible": "{rating}/5",
+        "expand": "Показати більше",
+        "replyLabel": "Відповідь салону"
+      },
+      "sort": {
+        "aria": "Сортування відгуків",
+        "newest": "Найновіші",
+        "highest": "Найвищі",
+        "lowest": "Найнижчі"
+      },
+      "empty": {
+        "title": "Відгуків ще немає",
+        "body": "Цей салон ще не опублікував відгуків. Поверніться до пропозиції або увійдіть, щоб легше повернутися після першого візиту.",
+        "loggedInCta": "Переглянути пропозицію салону",
+        "guestCta": "Увійти"
+      },
+      "pagination": {
+        "aria": "Пагінація відгуків салону",
+        "status": "Сторінка {page} з {totalPages}",
+        "previous": "Попередні",
+        "next": "Показати більше"
+      }
+    },
     "shared": {
       "home": "Головна сторінка",
       "salons": "Салони",
@@ -344,7 +500,103 @@
     "password_req_8chars": "Щонайменше 8 символів",
     "password_req_lowercase": "Щонайменше одна мала літера",
     "password_req_uppercase": "Щонайменше одна велика літера",
-    "password_req_symbol": "Щонайменше один символ"
+    "password_req_symbol": "Щонайменше один символ",
+    "login_eyebrow": "Повернення до BonBeauty",
+    "login_title": "Раді знову вас бачити.",
+    "login_subtitle": "Ваші ваучери та wishlist вже чекають.",
+    "password_helper": "Мінімум 8 символів",
+    "forgot_password_link": "Забули пароль?",
+    "register_link": "Зареєструйтеся",
+    "common": {
+      "error": "Не вдалося завершити цей крок. Спробуйте ще раз трохи пізніше."
+    },
+    "layout": {
+      "skip_to_form": "Перейти до форми",
+      "home_aria": "Повернутися на головну BonBeauty",
+      "trust_aria": "Інформація про безпеку та довіру",
+      "trust": {
+        "marketplace_verified": {
+          "label": "Перевірений маркетплейс",
+          "aria": "Перевірений маркетплейс BonBeauty"
+        },
+        "returns_30_days": {
+          "label": "30 днів на повернення",
+          "aria": "До тридцяти днів на повернення"
+        },
+        "support": {
+          "label": "Підтримка польською",
+          "aria": "Підтримка клієнтів польською мовою"
+        }
+      },
+      "footer": {
+        "terms": "Умови",
+        "privacy": "Політика конфіденційності",
+        "help": "Допомога"
+      }
+    },
+    "login": {
+      "invalid_credentials": "Перевірте e-mail і пароль. Один із них не збігається.",
+      "success": "Усе виглядає добре. Зараз перейдемо далі."
+    },
+    "forgot_eyebrow": "Відновлення доступу",
+    "forgot_title": "Забули пароль?",
+    "forgot_subtitle": "Без стресу. Ми надішлемо посилання, не розкриваючи, чи цей акаунт існує.",
+    "forgot": {
+      "submit": "Надіслати посилання для скидання",
+      "success_title": "Перевірте пошту.",
+      "success_body": "Якщо цей акаунт існує, ми надішлемо посилання на {email}. Воно діятиме одну годину.",
+      "success_neutral": "Повідомлення ще не прийшло? За мить можна буде попросити ще раз.",
+      "resend_cooldown": "Надіслати знову ({seconds}s)",
+      "resend_ready": "Надіслати знову"
+    },
+    "register_eyebrow": "Новий акаунт",
+    "register_title": "Ласкаво просимо до BonBeauty.",
+    "register_subtitle": "Акаунт відкриє доступ до ваучерів, wishlist і історії покупок.",
+    "register": {
+      "email_exists": "Акаунт із цією адресою вже існує.",
+      "success": "Акаунт готовий. Зараз перейдемо далі."
+    },
+    "field_success": "Усе добре",
+    "remember_me": "Запам'ятати мене",
+    "magic_link_option": "Потрібне посилання без пароля? Відкрийте відновлення через magic link",
+    "social_google": "Google незабаром",
+    "social_apple": "Apple незабаром",
+    "show_password": "Показати пароль",
+    "hide_password": "Сховати пароль",
+    "confirm_password_label": "Підтвердіть пароль",
+    "terms_consent_prefix": "Я приймаю",
+    "terms_link_label": "умови користування",
+    "privacy_consent_prefix": "Я ознайомилася з",
+    "privacy_link_label": "політикою конфіденційності",
+    "rodo_consent_label": "Я погоджуюся на обробку даних, потрібних для створення акаунту.",
+    "marketing_consent_label": "Хочу отримувати натхнення та пропозиції від BonBeauty.",
+    "password_strength": {
+      "soft": "Початок м'який. Додайте велику літеру або символ.",
+      "medium": "Середньо. Ще трохи, і буде надійно.",
+      "strong": "Сильно. Так добре."
+    },
+    "reset_eyebrow": "Новий пароль",
+    "reset_title": "Встановіть новий пароль.",
+    "reset_subtitle": "Пароль має містити щонайменше 8 символів. Решту залишаємо вам.",
+    "reset": {
+      "submit": "Встановити новий пароль",
+      "invalid_token": "Це посилання вже недійсне або прострочене. Будь ласка, попросіть новий лист для скидання.",
+      "success_title": "Пароль збережено. За мить ви повернетеся до входу."
+    },
+    "inline": {
+      "eyebrow": "Бонус після покупки",
+      "title": "Створіть акаунт за 30 секунд.",
+      "subtitle": "Тримайте ваучери під рукою, зберігайте wishlist і швидше проходьте checkout наступного разу.",
+      "order_notice": "Замовлення {orderReference} оплачено. Ваучери вже прямують на {email}.",
+      "header_fallback": "Покупку завершено. Якщо хочете, одразу підключіть акаунт до {email}.",
+      "benefit_orders": "Історія ваучерів і замовлень",
+      "benefit_wishlist": "Wishlist і збережені адреси",
+      "benefit_checkout": "Швидший checkout наступного разу",
+      "password_label": "Створіть пароль",
+      "submit": "Створити акаунт",
+      "skip": "Не зараз",
+      "success": "Акаунт готовий. Перенаправляємо."
+    }
   },
   "forms": {
     "greeting": "Привіт, {name}!",
@@ -441,7 +693,53 @@
     "read_article": "Читати статтю",
     "no_posts": "Для цього ринку ще не опубліковано жодних записів блогу.",
     "read_more": "Читати далі",
-    "section_heading": "Залишайтеся в курсі"
+    "section_heading": "Залишайтеся в курсі",
+    "editorial_intro": "Читайте ритуали, редакційні нотатки та практичні гіди, побудовані навколо реальних сценаріїв покупки.",
+    "tag_all": "Усі теми",
+    "filter_label": "Фільтр за темою",
+    "active_filter": "Активний фільтр",
+    "empty_heading": "Немає записів для цього фільтра",
+    "empty_body": "Змініть тему або поверніться до всіх записів, щоб переглянути повний журнал.",
+    "reset_filters": "Показати всі записи",
+    "min_read": "{minutes} хв читання",
+    "published_label": "Опубліковано",
+    "updated_label": "Оновлено",
+    "toc_label": "Зміст статті",
+    "toc_mobile_label": "Перейти до секції",
+    "back_to_blog": "Назад до блогу",
+    "related_heading": "Пов’язані записи",
+    "author_heading": "Про авторку",
+    "breadcrumb_home": "Головна",
+    "disallowed_embed": "Цей embed недоступний у безпечному storefront-перегляді.",
+    "newsletter_heading": "Не пропустіть наступні ритуали",
+    "inline_embed_label": "Додатковий матеріал"
+  },
+  "programmaticLanding": {
+    "metadata_title": "{offer} у {location} | BonBeauty",
+    "metadata_description": "Локальні салони, пропозиції та SEO-гід для {offer} у {location}.",
+    "eyebrow": "Локальний гід",
+    "hero_title": "{offer} у {location}",
+    "hero_summary": "Порівняйте локальні салони, доступні пропозиції та пов'язані місця для {location}.",
+    "hero_cta": "Переглянути салони",
+    "geo_label": "Координати",
+    "locality_label": "Місцевість",
+    "trust_aria": "Сигнали довіри локального гіда",
+    "trust_verified": "Перевірені дані локацій і салонів",
+    "trust_geo": "Geo SEO з координатами району або місцевості",
+    "trust_schema": "Place та Offer JSON-LD з одного шляху",
+    "salons_eyebrow": "Локальні салони",
+    "salons_heading": "Салони, що відповідають локації та пропозиції",
+    "rating_label": "Оцінка {rating} на основі {count} відгуків",
+    "empty_salons": "Для цієї комбінації локації та пропозиції немає салонів.",
+    "empty_salons_aria": "Немає локальних салонів",
+    "offers_eyebrow": "Вибрані пропозиції",
+    "offers_heading": "Доступні пропозиції локальних салонів",
+    "disallowed_embed": "Цей embed недоступний у безпечному storefront-перегляді.",
+    "inline_embed_label": "Локальний матеріал",
+    "related_locations_heading": "Пов'язані локації",
+    "bottom_cta_heading": "Перегляньте повний каталог салонів",
+    "bottom_cta_body": "Перейдіть до списку салонів, щоб порівняти всі доступні місця та категорії.",
+    "bottom_cta_label": "Переглянути салони"
   },
   "orders": {
     "cancel_heading": "Скасувати замовлення",
@@ -482,7 +780,15 @@
     "country_required": "Країна є обов'язковою",
     "postal_code_required": "Поштовий індекс є обов'язковим",
     "rating_required": "Оцініть цього продавця",
-    "opinion_max": "Думка може містити максимум 300 символів"
+    "opinion_max": "Думка може містити максимум 300 символів",
+    "password_lowercase": "Додайте щонайменше одну малу літеру",
+    "password_uppercase": "Додайте щонайменше одну велику літеру",
+    "password_symbol": "Додайте цифру або спеціальний символ",
+    "confirm_password_required": "Підтвердьте пароль",
+    "password_mismatch": "Паролі мають збігатися",
+    "terms_required": "Підтвердьте умови користування",
+    "privacy_required": "Підтвердьте політику конфіденційності",
+    "rodo_required": "Підтвердьте згоду на обробку даних"
   },
   "accessibility": {
     "breadcrumb": "Навігаційний ланцюжок",
@@ -512,6 +818,101 @@
   "routes": {
     "terms_of_service": "/umovy-vykorystannia",
     "privacy_policy": "/polityka-konfidentsiinosti"
+  },
+  "collections_editorial_v180": {
+    "meta": {
+      "title": "Колекції | BonBeauty",
+      "description": "Editorial discovery через колекції BonBeauty: вибір редакції, сезонні ритуали та рекомендовані подарунки."
+    },
+    "breadcrumbs": {
+      "home": "Головна сторінка",
+      "collections": "Колекції"
+    },
+    "hero": {
+      "eyebrow": "Editorial discovery",
+      "title": "Колекції, зібрані вручну, а не ранжовані алгоритмом.",
+      "body": "Переглядайте тематичні shortlist-и команди BonBeauty. Кожна колекція має власну точку зору і не маскується під алгоритмічну персоналізацію.",
+      "cta": "Відкрити вибрану колекцію",
+      "noAlgorithm": "Без алгоритму"
+    },
+    "featured": {
+      "label": "Вибрана колекція",
+      "itemCount": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}}"
+    },
+    "buckets": {
+      "aria": "Категорії колекцій editorial discovery",
+      "editorial": {
+        "eyebrow": "Вибір редакції",
+        "title": "Точка входу в відкриття BonBeauty",
+        "body": "Колекції, побудовані навколо якості рішення, а не короткострокового попиту."
+      },
+      "seasonal": {
+        "eyebrow": "Сезонні",
+        "title": "Ритуали під конкретний момент року",
+        "body": "Добірки для відновлення, відпочинку або швидкого оновлення, коли змінюється ритм тижня."
+      },
+      "recommended": {
+        "eyebrow": "Рекомендовані",
+        "title": "Колекції для простішого вибору подарунка",
+        "body": "Shortlist-и для тих, хто хоче вирішити швидко, але свідомо."
+      }
+    },
+    "grid": {
+      "title": "Перегляньте всі колекції",
+      "body": "Кожна картка веде на окрему editorial-сторінку з intro, цитатою, curated-списком позицій і пов’язаними колекціями.",
+      "cardAria": "Відкрити колекцію {title}",
+      "itemCount": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}}"
+    },
+    "bucketLabel": {
+      "editorial": "Вибір редакції",
+      "seasonal": "Сезонні",
+      "recommended": "Рекомендовані"
+    },
+    "detail": {
+      "meta": {
+        "fallbackTitle": "Колекція | BonBeauty",
+        "fallbackDescription": "Editorial collection на BonBeauty.",
+        "title": "{title} | колекція BonBeauty",
+        "description": "{title} містить {count} curated-позицій у editorial collection BonBeauty."
+      },
+      "breadcrumbs": {
+        "home": "Головна сторінка",
+        "collections": "Колекції"
+      },
+      "eyebrow": "Collection mode",
+      "calloutLabel": "Редакційна нотатка",
+      "quoteLabel": "Чому саме ця колекція",
+      "toolbar": {
+        "title": "Кураторовані позиції",
+        "count": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}}",
+        "sortAria": "Сортування позицій у колекції",
+        "sort": {
+          "curated": "Редакційний порядок",
+          "title-asc": "Назва А-Я",
+          "title-desc": "Назва Я-А"
+        }
+      },
+      "empty": {
+        "title": "Тут ще нічого немає",
+        "body": "Ця колекція готова до наступного shortlist-у, але редакція ще не опублікувала позиції.",
+        "cta": "Повернутися до колекцій"
+      },
+      "grid": {
+        "cardAria": "Відкрити позицію {title}",
+        "curatedLabel": "Curated order",
+        "cta": "Переглянути деталі"
+      },
+      "related": {
+        "title": "Пов’язані колекції",
+        "body": "Якщо цей напрямок збігається з вашим настроєм, тут знайдете наступні editorial-шляхи відкриття.",
+        "cardAria": "Відкрити пов’язану колекцію {title}"
+      },
+      "bucketLabel": {
+        "editorial": "Вибір редакції",
+        "seasonal": "Сезонні",
+        "recommended": "Рекомендовані"
+      }
+    }
   },
   "wishlist": {
     "all": "Всі",
@@ -693,6 +1094,119 @@
         "button_retry": "Спробувати знову"
       }
     },
+    "recipient": {
+      "meta": {
+        "title": "Ваучер BonBeauty",
+        "description": "Спокійний екран отримувача з кодом ваучера, правилами використання та контактами салону."
+      },
+      "active": {
+        "hero_sender_disclosed": "{sender} з BonBeauty має для тебе подарунок",
+        "hero_sender_fallback": "Ти маєш подарунок від BonBeauty",
+        "heading": "Трохи часу для себе.",
+        "subheading": "Ти можеш скористатися ваучером у зручний для себе час. Код ідентифікує ваучер, але не є бронюванням візиту.",
+        "card_eyebrow_with_city": "{seller} · {city}",
+        "service_fallback": "Ваучер BonBeauty",
+        "code_label": "Код ваучера",
+        "copy_cta": "Скопіювати код",
+        "copy_aria": "Скопіювати код ваучера",
+        "copy_feedback": "Код скопійовано.",
+        "copy_unavailable": "Копіювання недоступне в цьому браузері.",
+        "validity": "Дійсний до {date}",
+        "validity_fallback": "Термін дії буде підтверджено під час використання.",
+        "pdf_cta": "Завантажити PDF",
+        "wallet_soon": "Незабаром"
+      },
+      "steps": {
+        "eyebrow": "Як скористатися",
+        "heading": "Три прості кроки.",
+        "show_code": {
+          "title": "Покажи код",
+          "body": "Покажи PDF або код з цієї сторінки. Саме код ідентифікує твій ваучер у салоні."
+        },
+        "book_visit": {
+          "title": "Домовся про візит",
+          "body": "Зв'яжися із салоном телефоном або через його сайт. Ваучер не бронює дату автоматично."
+        },
+        "enjoy_service": {
+          "title": "Скористайся послугою",
+          "body": "Прийди на візит і покажи код. Якщо щось піде не так, BonBeauty допоможе розібратися."
+        }
+      },
+      "salon": {
+        "eyebrow": "Салон",
+        "phone_label": "Телефон:",
+        "hours_label": "Години:",
+        "seller_cta": "Переглянути профіль салону",
+        "maps_cta": "Відкрити в Google Maps"
+      },
+      "map_placeholder": {
+        "eyebrow": "Маршрут",
+        "heading": "Мапа відкривається поза BonBeauty",
+        "body": "Ми не вбудовуємо тут зовнішній map SDK. Посилання відкриє адресу салону в Google Maps.",
+        "primary_cta": "Відкрити мапу"
+      },
+      "handoff": {
+        "heading": "Що далі для салону",
+        "body": "Салон ідентифікує ваучер за кодом. Ти можеш зв'язатися із салоном до візиту, а якщо щось не збігається, BonBeauty допоможе все з'ясувати."
+      },
+      "rules": {
+        "summary": "Правила та умови використання",
+        "validity_label": "Термін дії:",
+        "validity_value": "Цей ваучер дійсний до {date}.",
+        "validity_fallback": "Деталі терміну дії тимчасово недоступні.",
+        "extension_label": "Подовження:",
+        "extension_paid": "Ваучер можна подовжити на {months} міс. за оплату {feePct}%.",
+        "extension_free": "Доступне безкоштовне подовження на {months} міс.",
+        "extension_unavailable": "Для цього ваучера подовження недоступне.",
+        "extension_fallback": "Деталі подовження тимчасово недоступні.",
+        "cancellation_label": "Скасування:",
+        "cancellation": "Скасування без оплати можливе до {hours} год. до візиту; після цього збір може становити {feePct}%.",
+        "cancellation_only_cutoff": "Будь ласка, скасуй не пізніше ніж за {hours} год. до візиту.",
+        "cancellation_fallback": "Деталі скасування тимчасово недоступні.",
+        "refund_label": "Канал повернення:",
+        "refund_fallback": "Канал повернення підтвердить support.",
+        "refund_channel_values": {
+          "original_payment": "Повернення надходить на початковий спосіб оплати.",
+          "store_credit": "Повернення оформлюється як кредит магазину.",
+          "bank_transfer": "Повернення оформлюється банківським переказом."
+        },
+        "no_show_label": "Неявка:",
+        "no_show_fallback": "Політика щодо неявки тимчасово недоступна.",
+        "no_show_values": {
+          "charge_full": "Неявка може призвести до повного списання.",
+          "charge_partial": "Неявка може призвести до часткового списання.",
+          "no_charge": "Неявка не спричиняє додаткової оплати, але попросимо зв'язатися із салоном.",
+          "forfeit_voucher": "Неявка може призвести до втрати ваучера."
+        }
+      },
+      "expired": {
+        "badge": "Термін дії ваучера минув",
+        "heading": "Цей ваучер вже не активний.",
+        "body_with_date": "Термін дії завершився {date}. Якщо потрібна допомога, звернися до салону або BonBeauty.",
+        "body_fallback": "Нам не вдалося підтвердити активний ваучер за цим посиланням. Для безпеки ми не показуємо повні дані.",
+        "contact_heading": "Контакт і допомога",
+        "contact_body": "Салон або support BonBeauty допоможуть перевірити, чи можна ще обслуговувати ваучер, або як уточнити ситуацію.",
+        "support_cta": "Звернутися до support",
+        "privacy_heading": "Безпечний fallback",
+        "privacy_known_code": "Цей екран не розкриває дані отримувача чи покупця. Ми показуємо лише мінімум, потрібний для допомоги.",
+        "privacy_unknown_code": "Ми не підтвердили публічний gift-entry path, тому повний код і персональні дані залишаються прихованими.",
+        "support_hint": "Підготуй код з повідомлення або PDF, якщо все ще маєш до них доступ."
+      },
+      "redeemed": {
+        "badge": "Ваучер використано",
+        "heading": "Цей ваучер уже використано.",
+        "body": "{seller} підтвердив використання {date}. Якщо щось не збігається, звернися до салону або BonBeauty.",
+        "timestamp_fallback": "у підтверджену дату",
+        "contact_heading": "Контакт із салоном",
+        "cta_explore": "Переглянути інші ваучери",
+        "cta_support": "Отримати допомогу у спорі"
+      },
+      "footer": {
+        "rules": "Правила",
+        "privacy": "Політика приватності",
+        "support": "Підтримка"
+      }
+    },
     "audit_trail": {
       "title": "Історія ваучера",
       "toggle_show": "Показати історію ваучера",
@@ -764,6 +1278,31 @@
       "meta_title": "Відновлення доступу | BonBeauty",
       "meta_description": "Відновіть доступ до своїх ваучерів BonBeauty."
     },
+    "rules": {
+      "title": "Правила ваучера",
+      "summary_with_validity": "Ваучер дійсний {count, plural, one {# місяць} few {# місяці} many {# місяців} other {# місяця}}. Дату візиту ви узгодите із салоном пізніше.",
+      "summary_without_validity": "Ви отримаєте ваучер після оплати, а дату візиту узгодите із салоном пізніше.",
+      "validity_label": "Строк дії",
+      "validity_value": "Ваучер дійсний {count, plural, one {# місяць} few {# місяці} many {# місяців} other {# місяця}}.",
+      "validity_to_confirm": "Строк дії буде підтверджено.",
+      "redemption_label": "Використання",
+      "redemption_value": "Після оплати ви отримаєте ваучер у PDF. Дату візиту ви узгодите із салоном пізніше напряму.",
+      "withdrawal_label": "Відмова та повернення",
+      "withdrawal_value": "Шлях для відмови від договору та повернення коштів видно ще до використання ваучера. Деталі є в правилах BonBeauty.",
+      "cancellation_label": "Скасування",
+      "cancellation_fallback": "Умови скасування салон підтвердить під час узгодження візиту.",
+      "refund_label": "Канал повернення",
+      "refund_fallback": "Кошти повертаються на той самий спосіб оплати або згідно з правилами BonBeauty.",
+      "no_show_label": "Неявка",
+      "no_show_fallback": "Правила щодо неявки салон підтвердить під час узгодження візиту.",
+      "extension_label": "Продовження",
+      "extension_unavailable": "Продовження строку дії ваучера недоступне.",
+      "extension_available": "Продовження строку дії ваучера доступне відповідно до профілю послуги.",
+      "extension_free": "Ви можете продовжити ваучер на {count, plural, one {# місяць} few {# місяці} many {# місяців} other {# місяця}} без додаткової оплати.",
+      "extension_paid": "Ви можете продовжити ваучер на {count, plural, one {# місяць} few {# місяці} many {# місяців} other {# місяця}} за додаткову оплату.",
+      "extension_paid_fee": "Ви можете продовжити ваучер на {count, plural, one {# місяць} few {# місяці} many {# місяців} other {# місяця}} з доплатою {feePct}% від вартості.",
+      "extension_paid_no_months": "Продовження є платним відповідно до профілю послуги. Доплата становить {feePct}% від вартості."
+    },
     "clarity": {
       "validity_to_confirm": "Період дії буде підтверджено.",
       "validity_help_link": "Умови використання",
@@ -820,6 +1359,50 @@
         "failed_heading": "Не вдалося завантажити ваучери",
         "failed": "Перевірте з'єднання та оновіть сторінку.",
         "failed_cta": "Спробувати знову"
+      }
+    },
+    "layout": {
+      "a11y": {
+        "skip_to_main": "Перейти до вмісту акаунта"
+      },
+      "hero": {
+        "aria_label": "Заголовок акаунта",
+        "eyebrow": "Акаунт",
+        "greeting": "Ласкаво просимо!",
+        "greeting_with_name": "Привіт, {name}",
+        "subtitle": "Керуйте замовленнями, ваучерами та налаштуваннями."
+      },
+      "quick_actions": {
+        "aria_label": "Швидкі дії"
+      },
+      "content": {
+        "aria_label": "Вміст акаунта"
+      },
+      "sidebar": {
+        "aria_label": "Бічна панель акаунта"
+      },
+      "nav": {
+        "aria_label": "Навігація акаунта",
+        "items": {
+          "dashboard": "Огляд",
+          "order_history": "Замовлення",
+          "order_detail": "Деталі замовлення",
+          "active_vouchers": "Активні ваучери",
+          "used_vouchers": "Використані та прострочені ваучери",
+          "addresses": "Адреси",
+          "payment_methods": "Способи оплати",
+          "notifications": "Сповіщення",
+          "loyalty": "Програма лояльності",
+          "referrals": "Рекомендації",
+          "profile": "Дані профілю",
+          "password": "Пароль і безпека",
+          "delete_account": "Видалити акаунт"
+        }
+      },
+      "snapshot": {
+        "heading": "Зведення акаунта",
+        "loading_aria": "Завантаження зведення акаунта",
+        "empty": "Наразі немає даних для відображення."
       }
     }
   },
@@ -1148,5 +1731,681 @@
     "suggestions": "Підказки",
     "loading": "Завантаження…",
     "no_results": "Немає результатів"
+  },
+  "accountRead": {
+    "common": {
+      "defaultName": "Кароліно",
+      "greeting": "Вітаємо, {firstName}. Усе важливе після покупки зібрано тут під рукою.",
+      "salonFallback": "Салон BonBeauty"
+    },
+    "navigation": {
+      "eyebrow": "Поверхні акаунта",
+      "ariaLabel": "Навігація акаунта",
+      "items": {
+        "dashboard": "Панель",
+        "vouchers": "Ваучери",
+        "orders": "Замовлення",
+        "returns": "Повернення",
+        "wishlist": "Wishlist",
+        "messages": "Повідомлення"
+      }
+    },
+    "snapshot": {
+      "eyebrow": "Огляд акаунта",
+      "title": "Спокійний операційний огляд",
+      "vouchers": "Ваучери",
+      "vouchersDetail": "Чинні коди, готові до використання.",
+      "orders": "Замовлення",
+      "ordersDetail": "Історія покупок і поточні рішення.",
+      "returns": "Повернення",
+      "returnsDetail": "Запити, що очікують рішення або розрахунку.",
+      "wishlist": "Wishlist",
+      "wishlistDetail": "Збережені ритуали та подарунки на потім.",
+      "messages": "Повідомлення",
+      "messagesDetail": "Спокійна комунікація із салоном."
+    },
+    "quickActions": {
+      "vouchers": {
+        "label": "Ваучери",
+        "description": "Коди, термін дії та наступні кроки."
+      },
+      "orders": {
+        "label": "Замовлення",
+        "description": "Історія покупок і деталі виконання."
+      },
+      "wishlist": {
+        "label": "Wishlist",
+        "description": "Поверніться до процедур, збережених на потім."
+      },
+      "messages": {
+        "label": "Повідомлення",
+        "description": "Розмови, пов’язані із замовленнями."
+      }
+    },
+    "status": {
+      "paid": "Оплачено",
+      "pending": "У процесі",
+      "failed": "Потрібна увага",
+      "refunded": "Врегульовано"
+    },
+    "failure": {
+      "title": "Потрібна мить, щоб оновити ці дані",
+      "errorDescription": "Не вдалося завантажити цю історію зараз. Спробуйте відкрити вигляд ще раз трохи пізніше.",
+      "unavailableDescription": "Ця поверхня тимчасово недоступна на боці бекенд-сервісів.",
+      "retryAction": "Спробувати ще раз"
+    },
+    "empty": {
+      "collectionCode": "ES2",
+      "collectionTitle": "Тут ще нічого немає",
+      "collectionBody": "Після першої покупки ваша історія з’явиться тут.",
+      "collectionAction": "Переглянути категорії",
+      "wishlistCode": "ES1",
+      "wishlistTitle": "Ваша колекція чекає",
+      "wishlistBody": "Збережіть процедури й подарунки, до яких хочете повернутися.",
+      "wishlistAction": "Подивитися рекомендоване",
+      "messagesCode": "ES6",
+      "messagesTitle": "Скринька порожня",
+      "messagesBody": "Повідомлення про ваші замовлення з’являться тут."
+    },
+    "dashboard": {
+      "eyebrow": "W2-01 dashboard",
+      "title": "Ваш акаунт після покупки",
+      "intro": "Тут можна швидко перевірити ваучери, історію замовлень, збережені натхнення та повідомлення без переходу між різними оболонками.",
+      "greeting": "Вітаємо, {firstName}, post-purchase self-service готовий.",
+      "heroAsideEyebrow": "Side account snapshot",
+      "heroAsideTitle": "Що варто перевірити сьогодні",
+      "heroAsideBody": "Якщо салону або оператору потрібне ваше рішення, ви одразу побачите це в замовленнях або повідомленнях.",
+      "activityEyebrow": "Recent activity",
+      "activityTitle": "Остання активність",
+      "activitySummary": "{count} позицій у цьому замовленні.",
+      "recommendedEyebrow": "Recommended",
+      "recommendedTitle": "До цього варто повернутися",
+      "messagesEyebrow": "Messages",
+      "messagesTitle": "Останні розмови",
+      "voucherEyebrow": "Ваучери",
+      "voucherTitle": "Найближче використання"
+    },
+    "vouchers": {
+      "eyebrow": "W2-02 voucher history",
+      "title": "Історія ваучерів",
+      "intro": "Фільтруйте активні, використані та прострочені ваучери, зберігаючи коди, термін дії й контакт салону в одному спокійному огляді.",
+      "heroAsideEyebrow": "Journal card",
+      "heroAsideTitle": "Кожен ваучер має свій контекст",
+      "heroAsideBody": "Код, салон, продукт і статус видно в одному місці без показу повного коду в списку.",
+      "tabs": {
+        "all": "Усі",
+        "active": "Активні",
+        "redeemed": "Використані",
+        "expired": "Прострочені",
+        "returned": "Повернуті"
+      },
+      "status": {
+        "active": "Активний",
+        "redeemed": "Використаний",
+        "expired": "Прострочений",
+        "returned": "Повернутий"
+      },
+      "validUntil": "Дійсний до {date}",
+      "action": "Відкрити ваучер",
+      "quickActionActive": "Готові до використання без додаткових кроків.",
+      "quickActionRedeemed": "Історія виконаних послуг і подарунків.",
+      "quickActionExpired": "Коди, що потребують нового рішення.",
+      "quickActionReturned": "Повернуті або відкликані ваучери."
+    },
+    "orders": {
+      "eyebrow": "W2-03 order history",
+      "title": "Історія замовлень",
+      "intro": "Переглядайте замовлення у списку з чітким статусом, датою та переходом у детальний операційний вигляд.",
+      "heroAsideEyebrow": "Operational clarity",
+      "heroAsideTitle": "Один список для всіх наступних кроків",
+      "heroAsideBody": "Замовлення, повернення та повідомлення залишаються пов’язаними без змішування з write-heavy налаштуваннями.",
+      "quickActionAll": "Усі замовлення",
+      "quickActionAllDescription": "Повна історія покупок клієнтки.",
+      "quickActionOpen": "У процесі",
+      "quickActionOpenDescription": "Замовлення, що очікують наступного кроку.",
+      "quickActionReturns": "Повернення",
+      "quickActionReturnsDescription": "Перехід до історії повернень.",
+      "quickActionMessages": "Повідомлення",
+      "quickActionMessagesDescription": "Комунікація, пов’язана із замовленнями.",
+      "filters": {
+        "all": "Усі",
+        "open": "У процесі",
+        "settled": "Врегульовані",
+        "attention": "Потрібна увага"
+      },
+      "rowSummary": "{count} позицій • оформлено {date}",
+      "detailsAction": "Деталі замовлення"
+    },
+    "orderDetail": {
+      "eyebrow": "W2-04 order detail",
+      "title": "Замовлення {displayId}",
+      "intro": "В одному вигляді зібрані позиції, доставка, підсумок оплати, timeline та безпечні handoff-и до наступних дій.",
+      "heroAsideEyebrow": "Trust Invariant #4",
+      "heroAsideTitle": "Що відбувається після підтвердження",
+      "heroAsideBody": "Недоступні дії не зникають. Ми пояснюємо, що можливо зараз і що відбувається на боці салону або оператора.",
+      "back": "Назад до історії замовлень",
+      "itemsTitle": "Позиції замовлення",
+      "itemSummary": "{count} шт. • {total}",
+      "timelineTitle": "Timeline активності",
+      "deliveryTitle": "Доставка і контакт",
+      "paymentTitle": "Підсумок оплати",
+      "paymentVoucher": "Вартість послуг",
+      "paymentShipping": "Доставка",
+      "paymentTotal": "Разом",
+      "actionsTitle": "Доступні дії",
+      "available": "Доступно",
+      "disabled": "Пояснено",
+      "quickActionVoucher": "Повторне надсилання ваучера або посилання на завантаження.",
+      "quickActionInvoice": "Дата документа і розрахунку.",
+      "quickActionReturn": "Повернення веде до окремої історії рішень.",
+      "quickActionContact": "Безпечний контакт із салоном без пошуку в інших видах.",
+      "actions": {
+        "resendVoucher": "Надіслати ваучер повторно",
+        "invoice": "Завантажити рахунок",
+        "return": "Розпочати повернення",
+        "contact": "Зв’язатися із салоном"
+      },
+      "actionExplainers": {
+        "resendVoucher": "Якщо одержувачці знову потрібен доступ, зберігається той самий контекст замовлення.",
+        "invoice": "Документ залишається пов’язаним із цим замовленням та його статусом.",
+        "return": "Якщо повернення недоступне, ми спокійно пояснюємо це, а не ховаємо дію.",
+        "contact": "Розмова стосується лише цього замовлення та його виконання."
+      },
+      "timeline": {
+        "orderPlaced": "Замовлення прийнято",
+        "processing": "Підтвердження і підготовка",
+        "handoff": "Передача до виконання"
+      },
+      "trust": {
+        "forYouLabel": "Що далі для вас:",
+        "forUsLabel": "Що далі для салону:",
+        "forYouBody": "Перевірте повідомлення або скористайтеся однією з дій, коли будете готові.",
+        "forUsBody": "Ми підтверджуємо виконання, стежимо за документами та підтримуємо зрозумілу комунікацію."
+      }
+    },
+    "returns": {
+      "eyebrow": "W2-07 returns history",
+      "title": "Історія повернень",
+      "intro": "Список повернень показує статус, дату й причину без маскування помилок доступу або конфігурації.",
+      "heroAsideEyebrow": "Read-heavy only",
+      "heroAsideTitle": "Повернення без прихованих станів",
+      "heroAsideBody": "Ця поверхня лишається лише для читання. Якщо процес потребує дії, ми скеровуємо до правильної стежки замість змішування flow.",
+      "quickActionAll": "Усі повернення",
+      "quickActionAllDescription": "Повний список поданих запитів.",
+      "quickActionOrders": "Замовлення",
+      "quickActionOrdersDescription": "Повернення до вихідних замовлень.",
+      "quickActionMessages": "Повідомлення",
+      "quickActionMessagesDescription": "Контакт щодо повернення.",
+      "quickActionVouchers": "Ваучери",
+      "quickActionVouchersDescription": "Пов’язані коди та статус."
+    },
+    "wishlist": {
+      "eyebrow": "W2-09 wishlist",
+      "title": "Wishlist",
+      "intro": "Переглядайте збережені товари та власноруч названі колекції без переходу до налаштувань або важчих сценаріїв редагування.",
+      "heroAsideEyebrow": "Journal card",
+      "heroAsideTitle": "Колекції, збережені на потім",
+      "heroAsideBody": "Read-heavy вигляд показує назву колекції та короткий контекст, не перетворюючи wishlist на екран налаштувань.",
+      "quickActionCollections": "Колекції",
+      "quickActionCollectionsDescription": "Набори натхнення, названі користувачкою.",
+      "quickActionVouchers": "Ваучери",
+      "quickActionVouchersDescription": "Повернення до кодів, готових до використання.",
+      "quickActionOrders": "Замовлення",
+      "quickActionOrdersDescription": "Історія покупок поруч із збереженим.",
+      "quickActionMessages": "Повідомлення",
+      "quickActionMessagesDescription": "Комунікація, пов’язана з покупками.",
+      "action": "Переглянути товар"
+    },
+    "messages": {
+      "eyebrow": "W2-12 messages",
+      "title": "Повідомлення buyer-salon",
+      "intro": "Скринька зберігає тон спокійної комунікації та показує лише те, що потрібно для супроводу шляху замовлення.",
+      "heroAsideEyebrow": "Read model boundary",
+      "heroAsideTitle": "Контрольований inbox для читання",
+      "heroAsideBody": "Коли локальний провайдер повідомлень ще не готовий, ми показуємо безпечну read model без доступу до production secret-ів.",
+      "emptyAria": "Порожня скринька повідомлень",
+      "quickActionInbox": "Inbox",
+      "quickActionInboxDescription": "Відкрити поточні розмови із салонами.",
+      "quickActionOrders": "Замовлення",
+      "quickActionOrdersDescription": "Перехід до замовлень, що стоять за кожною розмовою.",
+      "quickActionVouchers": "Ваучери",
+      "quickActionVouchersDescription": "Пов’язані коди й підтвердження.",
+      "quickActionReturns": "Повернення",
+      "quickActionReturnsDescription": "Історія рішень після покупки.",
+      "states": {
+        "open": "Відкрита",
+        "answered": "Є відповідь",
+        "waiting": "Спокійно очікує"
+      }
+    }
+  },
+  "account_write": {
+    "common": {
+      "form_error": "Перевірте виділені поля.",
+      "inline_success": "Поле збережено після виходу.",
+      "cancel": "Скасувати",
+      "save": "Зберегти зміни",
+      "saving": "Збереження…",
+      "deleting": "Видалення…",
+      "delete": "Видалити",
+      "submitting": "Надсилання…",
+      "edit": "Редагувати"
+    },
+    "breadcrumbs": {
+      "account": "Account",
+      "orders": "Orders",
+      "return_request": "Return request",
+      "return_success": "Return status",
+      "addresses": "Saved addresses",
+      "reviews_to_write": "Reviews to write",
+      "written_reviews": "Written reviews",
+      "settings": "Settings"
+    },
+    "quick_actions": {
+      "orders": "Orders",
+      "orders_desc": "Return to order history and track next steps.",
+      "addresses": "Addresses",
+      "addresses_desc": "Update delivery and billing details.",
+      "reviews": "Reviews to write",
+      "reviews_desc": "Finish pending reviews without leaving Account Hub.",
+      "written_reviews": "Written reviews",
+      "written_reviews_desc": "Edit or delete published reviews.",
+      "settings": "Settings",
+      "settings_desc": "Manage profile, security and privacy.",
+      "return_request": "Return request",
+      "return_request_desc": "Review the return request you just sent."
+    },
+    "snapshot": {
+      "orders": "Orders",
+      "addresses": "Addresses",
+      "reviews": "Reviews"
+    },
+    "return_request": {
+      "hero": {
+        "eyebrow": "Wave 2 · Returns",
+        "title": "Start a return request without losing context.",
+        "description": "Choose the reason, attach photos and leave a note for the salon. Validation runs on the client and server before the request is sent."
+      },
+      "progress": {
+        "title": "3-step return flow",
+        "description": "Progress stays visible while preserving keyboard order.",
+        "step_reason": "Reason",
+        "step_evidence": "Evidence",
+        "step_submit": "Sent"
+      },
+      "form": {
+        "title": "Return request form",
+        "description": "All fields follow UX-DR23: blur feedback, localized errors and pending-state protection against duplicate submits.",
+        "reason_label": "Why are you returning this order?",
+        "photos_label": "Upload photos",
+        "photos_help": "Add up to 3 JPG, PNG or WEBP files. Max 5 MB each.",
+        "comment_label": "Additional note",
+        "submit": "Send return request"
+      },
+      "handoff_message": "The salon has 7 days to decide. We will notify you by email.",
+      "success": {
+        "submitted": "Return request submitted. The seller review starts now and the timeline is already available.",
+        "go_to_summary": "Open return timeline"
+      },
+      "errors": {
+        "order_required": "Missing order reference.",
+        "reason_required": "Choose a return reason.",
+        "comment_too_long": "Your note can contain up to 500 characters.",
+        "photo_required": "Add at least one supporting photo.",
+        "photo_limit": "Upload no more than 3 photos.",
+        "photo_size": "Each file must be smaller than 5 MB.",
+        "photo_type": "Only JPG, PNG and WEBP files are supported.",
+        "generic": "We could not submit the return request. Try again in a moment."
+      }
+    },
+    "return_success": {
+      "hero": {
+        "eyebrow": "Wave 2 · Return confirmed",
+        "title": "Your request is in the decision queue.",
+        "description": "Order {orderId} is now visible to the salon and support. The next steps stay transparent for every actor."
+      },
+      "badge": {
+        "pending": "Awaiting vendor decision"
+      },
+      "timeline": {
+        "title": "Return lifecycle",
+        "description": "Status uses semantic state colors and never relies on color only.",
+        "submitted": {
+          "title": "Request recorded",
+          "body": "We stored your reason, attachments and note and notified the salon."
+        },
+        "vendor_review": {
+          "title": "Salon reviews the request",
+          "body": "The salon has up to 7 days to accept, reject or request more context."
+        },
+        "payout": {
+          "title": "Refund or pickup arranged",
+          "body": "Once approved, support monitors refund or collection details and keeps you updated by email."
+        }
+      },
+      "handoff": {
+        "title": "What happens next for each actor",
+        "description": "Cross-actor handoff keeps the customer, vendor and support aligned.",
+        "for_customer_label": "What happens next for you:",
+        "for_vendor_label": "What happens next for the salon:",
+        "for_customer": "Watch your inbox and return timeline. If more proof is needed, you can respond without restarting the flow.",
+        "for_vendor": "The salon reviews the evidence, records a decision and confirms pickup or refund details.",
+        "for_support_label": "What happens next for support:",
+        "for_platform_label": "What happens next for BonBeauty:",
+        "for_support": "Support steps in when the case needs mediation, deadline follow-up or policy clarification.",
+        "for_platform": "BonBeauty tracks SLA timing, keeps the audit trail and makes sure the outcome reaches every actor."
+      }
+    },
+    "addresses": {
+      "hero": {
+        "eyebrow": "Wave 2 · Address book",
+        "title": "Keep delivery details ready for the next order.",
+        "description": "Add, edit and delete addresses inside a focus-trapped panel with keyboard-safe controls and 44px targets."
+      },
+      "actions": {
+        "add": "Add address"
+      },
+      "empty": {
+        "title": "No saved addresses yet",
+        "description": "ES8 empty state for saved addresses.",
+        "body": "Save an address to speed up checkout and avoid retyping delivery details on the next order."
+      },
+      "list": {
+        "title": "Saved addresses",
+        "description": "Review delivery details, update them inline and remove outdated entries with confirmation.",
+        "default_label": "Saved address",
+        "no_phone": "Phone not provided"
+      },
+      "form": {
+        "create_title": "Add address",
+        "edit_title": "Edit address",
+        "address_name": "Address label",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "company": "Company",
+        "address_line": "Street and number",
+        "city": "City",
+        "postal_code": "Postal code",
+        "province": "Region / province",
+        "phone": "Phone number",
+        "country": "Country",
+        "errors": {
+          "address_name_required": "Enter an address label.",
+          "first_name_required": "Enter the first name.",
+          "last_name_required": "Enter the last name.",
+          "address_required": "Enter the street and number.",
+          "city_required": "Enter the city.",
+          "country_required": "Choose a country.",
+          "postal_code_required": "Enter the postal code.",
+          "phone_required": "Enter the phone number.",
+          "generic": "We could not save the address. Try again."
+        },
+        "success": {
+          "created": "Address added.",
+          "updated": "Address updated.",
+          "deleted": "Address deleted."
+        }
+      },
+      "delete": {
+        "title": "Delete this address?",
+        "description": "The address will be removed from your account after confirmation."
+      }
+    },
+    "reviews_to_write": {
+      "hero": {
+        "eyebrow": "Wave 2 · Reviews to write",
+        "title": "You still have a few salons to review.",
+        "description": "Pending reviews stay grouped by order so you can complete feedback without hunting for the right booking."
+      },
+      "empty": {
+        "title": "No reviews waiting",
+        "description": "ES7 gentle empty state for review prompts.",
+        "body": "You are caught up. When a new order becomes eligible for review, it will appear here.",
+        "cta": "Go to written reviews"
+      },
+      "list": {
+        "title": "Orders waiting for feedback",
+        "description": "Open written reviews to finish the form and compare your published feedback.",
+        "order_label": "Order {id}"
+      },
+      "actions": {
+        "write": "Write review",
+        "compare": "See written reviews"
+      }
+    },
+    "written_reviews": {
+      "hero": {
+        "eyebrow": "Wave 2 · Published reviews",
+        "title": "Manage the feedback you already sent.",
+        "description": "Edit tone, update rating or delete a review with confirmation and accessible mutation feedback."
+      },
+      "empty": {
+        "title": "No written reviews yet",
+        "description": "Published reviews will appear here after submission.",
+        "body": "Use the reviews-to-write list when you are ready to share feedback."
+      },
+      "list": {
+        "title": "My written reviews",
+        "description": "Changes never surface raw backend errors. Each mutation reports a localized result.",
+        "unknown_seller": "Salon",
+        "rating": "{rating}/5",
+        "no_note": "No additional note.",
+        "updated_at": "Updated: {date}"
+      },
+      "form": {
+        "title": "Edit review",
+        "rating_label": "Rating",
+        "note_label": "Review note",
+        "errors": {
+          "rating_required": "Choose a rating.",
+          "note_too_long": "Your note can contain up to 300 characters.",
+          "review_id_required": "Missing review reference.",
+          "order_id_required": "Missing order reference.",
+          "generic": "We could not update the review. Try again."
+        },
+        "success": {
+          "updated": "Review updated.",
+          "deleted": "Review deleted."
+        }
+      },
+      "delete": {
+        "title": "Delete review?",
+        "description": "This removes the published review from your account view after confirmation."
+      }
+    },
+    "settings": {
+      "hero": {
+        "eyebrow": "Wave 2 · Account settings",
+        "title": "Keep profile, security and privacy controls in one hub.",
+        "description": "Desktop uses anchored section navigation, while mobile keeps the same landmarks without overflow."
+      },
+      "nav": {
+        "title": "Sections",
+        "description": "Jump between profile, security, notifications, payments and GDPR privacy."
+      },
+      "sections": {
+        "profile": "Profile",
+        "security": "Security",
+        "notifications": "Notifications",
+        "payments": "Payments",
+        "privacy": "GDPR privacy"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Update personal contact details with blur-based success feedback.",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "phone": "Phone",
+        "email": "Email",
+        "locale": "Preferred locale",
+        "errors": {
+          "first_name_required": "Enter the first name.",
+          "last_name_required": "Enter the last name.",
+          "phone_required": "Enter the phone number.",
+          "email_required": "Email is required.",
+          "email_invalid": "Enter a valid email address.",
+          "locale_required": "Choose a preferred locale.",
+          "generic": "We could not update the profile. Try again."
+        },
+        "success": {
+          "updated": "Profile updated."
+        }
+      },
+      "security": {
+        "title": "Security",
+        "description": "Use a password reset handoff instead of exposing raw auth errors in the UI.",
+        "new_password": "New password",
+        "confirm_password": "Confirm password",
+        "errors": {
+          "password_too_short": "Use at least 8 characters.",
+          "password_mismatch": "Passwords must match.",
+          "generic": "We could not start the reset flow. Try again."
+        },
+        "success": {
+          "reset_email_sent": "Reset email sent. Complete the password change from your inbox."
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Choose which updates should continue through the account team request intake for this release.",
+        "email_updates": "Email order updates",
+        "sms_updates": "SMS shipment updates",
+        "product_news": "Product and editorial news",
+        "success": {
+          "request_received": "Notification preference request received."
+        }
+      },
+      "payments": {
+        "title": "Payments",
+        "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
+        "default_card": "Preferred payment note",
+        "invoices_by_email": "Send invoices by email",
+        "success": {
+          "request_received": "Payment preference request received."
+        }
+      },
+      "privacy": {
+        "title": "GDPR privacy",
+        "description": "Privacy actions are represented as intake requests until dedicated backend automation is available.",
+        "request_intake_notice": "This release records the request and hands it off safely. It does not claim that export or deletion is already complete.",
+        "export_request": "Request personal data export",
+        "delete_request": "Request account deletion review",
+        "errors": {
+          "generic": "We could not record the privacy request. Try again."
+        },
+        "success": {
+          "export_request_received": "Data export request received.",
+          "delete_request_received": "Account deletion request received."
+        }
+      }
+    }
+  },
+  "not_found": {
+    "headline": "Цієї сторінки не існує",
+    "body": "Сторінку, яку ви шукаєте, могло бути переміщено або її адреса змінилась.",
+    "cta_home": "Повернутись на головну",
+    "cta_search": "Скористатись пошуком"
+  },
+  "error_surface": {
+    "server_error_headline": "Щось пішло не так з нашого боку",
+    "server_error_body": "Це системна проблема, а не ваша. Перевірте статус сервісів і повторіть спробу.",
+    "server_error_cta": "Повернутись на головну",
+    "service_unavailable_headline": "Сервіс тимчасово недоступний",
+    "service_unavailable_body": "Ми проводимо технічне обслуговування. Поверніться через кілька хвилин.",
+    "service_unavailable_cta": "Повернутись на головну",
+    "offline_headline": "Немає підключення до інтернету",
+    "offline_body": "Для покупки потрібне активне з'єднання. Перевірте Wi-Fi або мобільні дані.",
+    "offline_cta": "Спробувати знову",
+    "offline_label": "Офлайн",
+    "status_page_link": "Перевірити статус сервісів",
+    "show_technical_details": "Показати технічні деталі",
+    "suggested_action": "Рекомендована дія",
+    "suggested_action_value": "Оновіть сторінку або поверніться через кілька хвилин"
+  },
+  "empty_states_catalogue": {
+    "page_title": "Каталог порожніх станів",
+    "page_description": "Референсна вітрина ES1-ES8 для дизайн-системи BonBeauty.",
+    "catalogue_label": "Шаблони порожніх станів ES1-ES8",
+    "es1_headline": "Ваша колекція чекає",
+    "es1_body": "Зберігайте продукти, до яких хочете повернутися",
+    "es1_cta": "Дивитися рекомендації",
+    "es2_headline": "Колекція порожня",
+    "es2_body": "У цій колекції ще немає товарів. Перегляньте інші категорії.",
+    "es2_cta": "Переглянути категорії",
+    "es3_headline": "Ваш кошик порожній",
+    "es3_body": "Додайте ваучер на процедуру для себе або близьких.",
+    "es3_cta": "Вибір редакції",
+    "es4_headline": "Немає результатів",
+    "es4_body": "За вашими критеріями нічого не знайдено. Спробуйте очистити фільтри.",
+    "es4_cta": "Очистити фільтри",
+    "es5_headline": "Немає відгуків",
+    "es5_body": "Цей товар ще не має відгуків.",
+    "es5_cta": "Написати перший відгук",
+    "es6_headline": "Немає повідомлень",
+    "es6_body": "Тут з'являться ваші повідомлення.",
+    "es7_headline": "Немає відгуків для написання",
+    "es7_body": "У вас ще немає замовлень, які потребують відгуку.",
+    "es7_cta": "Переглянути товари",
+    "es8_headline": "Немає збережених адрес",
+    "es8_body": "Додайте адресу доставки, щоб прискорити покупки.",
+    "es8_cta": "Додати адресу"
+  },
+  "loading_states_catalogue": {
+    "page_title": "Каталог станів завантаження",
+    "page_description": "Референсна вітрина LP1-LP6 для дизайн-системи BonBeauty.",
+    "lp1_name": "Skeleton Shimmer",
+    "lp1_description": "Для завантаження даних (200мс-3с). Теплий кремовий варіант, безпечний для reduced-motion.",
+    "lp1_aria_label": "Завантаження",
+    "lp2_name": "Pulse Animation Hero",
+    "lp2_description": "Для станів обробки/очікування, не для звичайного отримання даних.",
+    "lp2_aria_label": "Обробка",
+    "lp3_name": "Skeleton Dot Trio",
+    "lp3_description": "Для завантаження CTA після натискання.",
+    "lp3_aria_label": "Відправлення",
+    "lp4_name": "Auto-Poll Progress Indicator",
+    "lp4_description": "Видимий ритм опитування, максимальний час і шлях виходу.",
+    "lp4_aria_label": "Очікування підтвердження",
+    "lp4_polling_label": "Перевіряю статус...",
+    "lp4_timeout_label": "Макс. 30с",
+    "lp5_name": "Progress Bar",
+    "lp5_description": "Для детермінованих багатоетапних дій.",
+    "lp5_aria_label": "Прогрес",
+    "lp6_name": "Inline Spinner",
+    "lp6_description": "Крайній варіант. Не може крутитися невизначено більше 3с.",
+    "lp6_aria_label": "Завантаження",
+    "lp6_label": "Завантаження...",
+    "lp6_rare_last_resort_note": "Крайній варіант — після 3с перейти до стану помилки або повідомлення про прогрес."
+  },
+  "voucher-consent": {
+    "title": "Підтвердьте згоди",
+    "subtitle": "Щоб отримати ваучер, прийміть умови нижче.",
+    "guardian_section_title": "Згода опікуна",
+    "consent_section_title": "Згоди, потрібні для обробки ваучера",
+    "label_rodo": "Я даю згоду на обробку моїх персональних даних для виконання послуги відповідно до політики конфіденційності.",
+    "label_service_execution": "Я погоджуюся на початок надання послуги до завершення строку відмови від договору.",
+    "label_marketing": "Я погоджуюся отримувати маркетингову інформацію від салону.",
+    "label_optional": "(необов'язково)",
+    "label_guardian_email": "Електронна адреса одного з батьків/законного опікуна",
+    "placeholder_guardian_email": "guardian@example.com",
+    "label_guardian_is_parent": "Я є одним із батьків/законним опікуном власника ваучера і надаю згоду від його імені.",
+    "privacy_guardian_email_notice": "Електронна адреса опікуна використовується лише для одноразової транзакції згоди — вона НЕ додається до маркетингового списку.",
+    "captcha_label": "Код CAPTCHA",
+    "captcha_placeholder": "Введіть тестовий токен CAPTCHA",
+    "blocked_minor_message": "Потрібне підтвердження опікуна",
+    "cta_submit": "Приймаю і переходжу далі",
+    "cta_pending": "Зберігаємо згоди...",
+    "success_message": "Згоди збережено.",
+    "error_RODO_CONSENT_REQUIRED": "Згода GDPR є обов'язковою.",
+    "error_SERVICE_CONSENT_REQUIRED": "Згода на виконання послуги є обов'язковою.",
+    "error_GUARDIAN_EMAIL_INVALID": "Вкажіть правильну електронну адресу опікуна.",
+    "error_GUARDIAN_CONSENT_REQUIRED": "Потрібне підтвердження ролі законного опікуна.",
+    "error_CAPTCHA_REQUIRED": "Потрібне підтвердження CAPTCHA.",
+    "error_RATE_LIMITED": "Перевищено ліміт спроб. Спробуйте ще раз через {minutes} хв.",
+    "error_TOKEN_EXPIRED": "Термін дії посилання минув. Зв'яжіться з відправником ваучера.",
+    "error_TOKEN_REVOKED": "Посилання було скасовано. Зв'яжіться з відправником ваучера.",
+    "error_TOKEN_INVALID": "Недійсне посилання. Перевірте, чи відкрили правильну адресу.",
+    "error_FIELD_NOT_ALLOWED": "Форма містить недозволене поле.",
+    "error_GUARDIAN_APPROVAL_REQUIRED": "Потрібне підтвердження опікуна.",
+    "error_SERVICE_UNAVAILABLE": "Не вдалося перевірити посилання. Спробуйте ще раз за мить."
   }
 }

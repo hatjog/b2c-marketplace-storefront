@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { ArrowRightIcon } from '@/icons';
 
 import { MarketplaceVerificationMark } from '@/components/atoms/MarketplaceVerificationMark/MarketplaceVerificationMark';
-import { NavbarSearch } from '@/components/molecules/NavbarSearch/NavbarSearch';
+import { HomeSearchWidget } from '@/components/molecules/HomeSearchWidget/HomeSearchWidget';
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 
 /**
@@ -35,6 +36,7 @@ type HeroProps = {
    *  `Hero banner - ${heading}` — bled into PL/UA/DE pages. Now caller must
    *  pass a locale-resolved value (e.g. interpolated from `category.hero_image_alt`). */
   imageAlt: string;
+  secondaryVoucherCtaLabel: string;
 };
 
 export const Hero = ({
@@ -46,6 +48,7 @@ export const Hero = ({
   showSearch = false,
   trustMarkLabel,
   imageAlt,
+  secondaryVoucherCtaLabel,
 }: HeroProps) => {
   if (!image) {
     // v1.7.0 Story 2.2 re-review fix (LOW L5'): defensive early-return when
@@ -105,8 +108,14 @@ export const Hero = ({
           </p>
         </div>
         {showSearch && (
-          <div className="max-w-[620px] rounded-[24px] border border-white/18 bg-white/92 p-3 shadow-[0_24px_70px_rgba(12,12,12,0.16)] backdrop-blur md:p-4">
-            <NavbarSearch className="w-full" />
+          <div className="max-w-[680px] space-y-3">
+            <HomeSearchWidget />
+            <LocalizedClientLink
+              href="/categories?mode=gift"
+              className="inline-flex min-h-[46px] items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur transition-colors hover:bg-white hover:text-primary"
+            >
+              {secondaryVoucherCtaLabel}
+            </LocalizedClientLink>
           </div>
         )}
         {buttons.length > 0 && (

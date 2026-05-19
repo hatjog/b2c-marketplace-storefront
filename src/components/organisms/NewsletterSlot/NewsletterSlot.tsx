@@ -14,18 +14,14 @@
 //   inline-footer  — kompaktowy pasek w footerze
 //   modal-popup    — overlay triggered (exit-intent / timed) z ESC dismiss
 //   success        — stan po submit (potwierdzenie)
+import { useId, useState, type FormEvent } from 'react';
 
-import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import { cn } from '@/lib/utils';
 
-export type NewsletterSlotVariant =
-  | 'inline-body'
-  | 'inline-footer'
-  | 'modal-popup'
-  | 'success';
+export type NewsletterSlotVariant = 'inline-body' | 'inline-footer' | 'modal-popup' | 'success';
 
 export interface NewsletterSlotProps {
   variant?: NewsletterSlotVariant;
@@ -40,9 +36,10 @@ export function NewsletterSlot({
   locale: _locale,
   onSubmit,
   onDismiss,
-  className,
+  className
 }: NewsletterSlotProps) {
   const t = useTranslations('newsletter');
+  const inputId = useId();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(variant === 'success');
   const [pending, setPending] = useState(false);
@@ -86,21 +83,19 @@ export function NewsletterSlot({
     >
       <div className="flex-1 space-y-2">
         <label
-          htmlFor="newsletter-slot-email"
+          htmlFor={inputId}
           className="block text-sm font-[var(--font-weight-medium)] text-[var(--text-primary)]"
         >
           {t('headline')}
         </label>
-        {!isFooter && (
-          <p className="text-sm text-[var(--text-secondary)]">{t('subline')}</p>
-        )}
+        {!isFooter && <p className="text-sm text-[var(--text-secondary)]">{t('subline')}</p>}
         <input
-          id="newsletter-slot-email"
+          id={inputId}
           type="email"
           required
           aria-required="true"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           placeholder={t('email_placeholder')}
           className={cn(
             'w-full rounded-[var(--bb-radius-card,12px)] border border-[var(--bb-border-soft)]',
@@ -110,7 +105,10 @@ export function NewsletterSlot({
           data-testid="newsletter-slot-input"
         />
         {/* slot: legal — GDPR consent note (required all placements) */}
-        <p className="text-xs text-[var(--text-secondary)]" data-testid="newsletter-slot-legal">
+        <p
+          className="text-xs text-[var(--text-secondary)]"
+          data-testid="newsletter-slot-legal"
+        >
           {t('legal')}
         </p>
       </div>
@@ -140,7 +138,7 @@ export function NewsletterSlot({
       style={
         {
           '--newsletter-slot-bg': 'var(--bb-surface)',
-          '--newsletter-slot-accent': 'var(--cta)',
+          '--newsletter-slot-accent': 'var(--cta)'
         } as React.CSSProperties
       }
     >
@@ -155,7 +153,7 @@ export function NewsletterSlot({
         role="dialog"
         aria-modal="true"
         aria-label={t('aria_region')}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Escape') onDismiss?.();
         }}
         data-testid="newsletter-slot-modal-overlay"

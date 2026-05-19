@@ -1,132 +1,118 @@
-import { isEmpty } from 'lodash';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
 import { StorefrontRouteStateSignal } from '@/components/atoms';
-import { LoginForm, ParcelAccordion, UserNavigation } from '@/components/molecules';
-import { OrdersPagination } from '@/components/sections';
+import { StateCard } from '@/components/molecules/StateCard/StateCard';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import {
+  formatAccountCurrency,
+  formatAccountDate,
+  loadOrderGroups,
+  toDisplayName,
+  toneToBadgeClass
+} from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { listOrders } from '@/lib/data/orders';
-import type { MercurOrderWithOrderGroup } from '@/types/medusa-extensions';
 
-const LIMIT = 10;
-
-export default async function UserPage({
-  searchParams
+function OrdersFailureState({
+  locale,
+  title,
+  description,
+  ctaLabel
 }: {
-  searchParams: Promise<{ page: string }>;
+  locale: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
 }) {
-  const t = await getTranslations('user');
-  const user = await retrieveCustomer();
+  return (
+    <StateCard
+      variant="error"
+      title={title}
+      description={description}
+      action={
+        <Link href={`/${locale}/user/orders`} className="inline-flex min-h-11 items-center rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-on-primary">
+          {ctaLabel}
+        </Link>
+      }
+    />
+  );
+}
 
-  if (!user) {
-    return (
-      <>
-        <StorefrontRouteStateSignal
-          route="user-orders"
-          surface="user-orders"
-          stateInput={{ is_access_denied: true }}
-        />
-        <LoginForm />
-      </>
-    );
+export default async function OrdersPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const [t, customer] = await Promise.all([
+    getTranslations({ locale, namespace: 'accountRead.orders' }),
+    retrieveCustomer()
+  ]);
+
+  if (!customer) {
+    redirect(`/${locale}/login`);
   }
 
-  const orders = await listOrders();
-
-  const { page } = await searchParams;
-
-  const pages = Math.ceil(orders.length / LIMIT);
-  const currentPage = +page || 1;
-  const offset = (+currentPage - 1) * LIMIT;
-
-  const orderGroupsGrouped = orders.reduce(
-    (acc, order) => {
-      const orderGroupId = order.order_group.id;
-      if (!acc[orderGroupId]) {
-        acc[orderGroupId] = [];
-      }
-      acc[orderGroupId].push(order);
-      return acc;
-    },
-    {} as Record<string, MercurOrderWithOrderGroup[]>
-  );
-
-  const orderGroups = Object.entries(orderGroupsGrouped).map(([orderGroupId, orders]) => {
-    const firstOrder = orders[0];
-    const orderGroup = firstOrder.order_group;
-
-    return {
-      id: orderGroupId,
-      orders: orders,
-      created_at: orderGroup.created_at,
-      display_id: orderGroup.display_id,
-      total: orders.reduce((sum, order) => sum + order.total, 0),
-      currency_code: firstOrder.currency_code
-    };
-  });
-
-  const processedOrders = orderGroups.slice(offset, offset + LIMIT);
+  const result = await loadOrderGroups();
 
   return (
-    <main
-      id="main-content"
-      className="container"
-      data-testid="orders-page"
-    >
-      <StorefrontRouteStateSignal
-        route="user-orders"
-        surface="user-orders"
-        stateInput={isEmpty(orders) ? { is_genuinely_empty: true } : { is_recovered: true }}
-      />
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
-        <UserNavigation />
-        <div
-          className="space-y-8 md:col-span-3"
-          data-testid="orders-container"
-        >
-          <h1 className="heading-md uppercase">{t('orders')}</h1>
-          {isEmpty(orders) ? (
-            <div
-              className="text-center"
-              data-testid="orders-empty-state"
-            >
-              <h3
-                className="heading-lg uppercase text-primary"
-                data-testid="no-orders-heading"
-              >
-                {t('no_orders')}
-              </h3>
-              <p
-                className="mt-2 text-lg text-secondary"
-                data-testid="no-orders-description"
-              >
-                {t('no_orders_message')}
-              </p>
+    <>
+      <StorefrontRouteStateSignal route="user-orders" surface="w2-03-orders" />
+      <AccountLayoutWithChrome
+        locale={locale}
+        activeSurface="W2-03"
+        user={{
+          id: customer.id,
+          displayName: toDisplayName(customer) ?? customer.email,
+          email: customer.email
+        }}
+        snapshotSections={[
+          { id: 'count', label: t('snapshot.orders'), value: String(result.data.length) },
+          { id: 'email', label: t('snapshot.email'), value: customer.email }
+        ]}
+        mainContent={
+          <div className="space-y-6" data-testid="orders-page">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="heading-md text-primary">{t('heading')}</h2>
+                <p className="text-sm text-secondary">{t('intro')}</p>
+              </div>
+              <Link href={`/${locale}/user/vouchers`} className="text-sm font-medium text-action">
+                {t('secondary_cta')}
+              </Link>
             </div>
-          ) : (
-            <>
-              <div
-                className="w-full max-w-full"
-                data-testid="orders-list"
-              >
-                {processedOrders.map(orderGroup => (
-                  <ParcelAccordion
-                    key={orderGroup.id}
-                    orderId={orderGroup.id}
-                    orderDisplayId={`#${orderGroup.display_id}`}
-                    createdAt={orderGroup.created_at}
-                    total={orderGroup.total}
-                    orders={orderGroup.orders || []}
-                    currency_code={orderGroup.currency_code}
-                  />
+
+            {result.state === 'failed' ? (
+              <OrdersFailureState locale={locale} title={t('error.failed_title')} description={t('error.failed_body')} ctaLabel={t('error.retry')} />
+            ) : result.state === 'unavailable' ? (
+              <StateCard variant="unavailable" title={t('error.unavailable_title')} description={t('error.unavailable_body')} />
+            ) : result.data.length === 0 ? (
+              <StateCard variant="empty" title={t('empty.title')} description={t('empty.body')} />
+            ) : (
+              <div className="space-y-3">
+                {result.data.map(orderGroup => (
+                  <article key={orderGroup.id} className="bb-card space-y-3" data-testid={`order-group-${orderGroup.id}`}>
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                      <div className="space-y-1">
+                        <h3 className="text-base font-semibold text-primary">{t('order_label', { displayId: orderGroup.displayId })}</h3>
+                        <p className="text-sm text-secondary">{formatAccountDate(orderGroup.createdAt, locale) ?? t('labels.date_pending')}</p>
+                      </div>
+                      <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-medium ${toneToBadgeClass(orderGroup.statuses[0] ? 'paid' : 'pending')}`}>
+                        {t(`status.${orderGroup.statuses[0] ? 'paid' : 'pending'}`)}
+                      </span>
+                    </div>
+                    <div className="grid gap-3 text-sm text-secondary md:grid-cols-3">
+                      <p>{t('summary.items', { count: orderGroup.itemCount })}</p>
+                      <p>{t('summary.total', { amount: formatAccountCurrency(orderGroup.total, orderGroup.currencyCode, locale) })}</p>
+                      <p>{t('summary.lines', { count: orderGroup.orders.length })}</p>
+                    </div>
+                    <Link href={`/${locale}/user/orders/${orderGroup.id}`} className="inline-flex min-h-11 items-center rounded-sm border border-action px-4 py-2 text-sm font-medium text-action">
+                      {t('open')}
+                    </Link>
+                  </article>
                 ))}
               </div>
-              {/* TODO - pagination */}
-              <OrdersPagination pages={pages} />
-            </>
-          )}
-        </div>
-      </div>
-    </main>
+            )}
+          </div>
+        }
+      />
+    </>
   );
 }

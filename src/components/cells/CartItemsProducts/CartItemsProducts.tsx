@@ -43,6 +43,7 @@ export const CartItemsProducts = ({
   // Filter out items with invalid data (missing prices/variants)
   const validProducts = filterValidCartItems(products);
   const t = useTranslations('seller.cart');
+  const tCart = useTranslations('cart');
   // cleanup-12f + TF-75: evaluate flag inside component body via single helper.
   const mvEnabled = getCurrentFlagValue();
 
@@ -78,7 +79,7 @@ export const CartItemsProducts = ({
                 {!usesPlaceholderImage ? (
                   <Image
                     src={thumbnailSrc}
-                    alt="Product thumbnail"
+                    alt={tCart('thumbnail_alt')}
                     width={100}
                     height={132}
                     className="h-[132px] w-[100px] rounded-xs object-contain"
@@ -86,7 +87,7 @@ export const CartItemsProducts = ({
                 ) : (
                   <Image
                     src={STOREFRONT_PLACEHOLDER_IMAGE_SRC}
-                    alt="Product thumbnail"
+                    alt={tCart('thumbnail_alt')}
                     width={50}
                     height={66}
                     className="h-[66px] w-[50px] rounded-xs object-contain opacity-30"
@@ -140,7 +141,7 @@ export const CartItemsProducts = ({
                     />
                   ) : (
                     <p>
-                      Quantity: <span className="text-primary">{product.quantity}</span>
+                      {tCart('quantity_label')}: <span className="text-primary">{product.quantity}</span>
                     </p>
                   )}
                 </div>
