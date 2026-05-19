@@ -4,6 +4,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
+import { GiftModeToggle } from '@/components/atoms/GiftModeToggle/GiftModeToggle';
 import { ProductVariants } from '@/components/molecules';
 import { Chat } from '@/components/organisms/Chat/Chat';
 import { useCartContext } from '@/components/providers';
@@ -27,6 +28,20 @@ const optionsAsKeymap = (variantOptions: HttpTypes.StoreProductVariant['options'
     {}
   );
 };
+
+function DotTrio({ label }: { label: string }) {
+  return (
+    <span
+      className="inline-flex min-h-[1.5rem] items-center justify-center gap-1"
+      role="status"
+      aria-label={label}
+    >
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current [animation-delay:0ms]" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current [animation-delay:120ms]" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current [animation-delay:240ms]" />
+    </span>
+  );
+}
 
 export const ProductDetailsHeader = ({
   product,
@@ -63,6 +78,7 @@ export const ProductDetailsHeader = ({
     selectedSellerId,
     selectedSellerName,
     selectedSellerHandle,
+    purchaseMode
   } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
@@ -78,15 +94,19 @@ export const ProductDetailsHeader = ({
         calculated_price_without_tax_number: initialPrice.calculated_price_without_tax_number,
         original_price: initialPrice.original_price,
         original_price_number: initialPrice.original_price_number,
-        currency_code: initialPrice.currency_code,
+        currency_code: initialPrice.currency_code
       }
     : null;
   const fallbackVariant = initialPrice?.variantId
-    ? ({ id: initialPrice.variantId, inventory_quantity: initialPrice.inventory_quantity } as HttpTypes.StoreProductVariant)
+    ? ({
+        id: initialPrice.variantId,
+        inventory_quantity: initialPrice.inventory_quantity
+      } as HttpTypes.StoreProductVariant)
     : null;
 
   // Check if product has any valid prices in current region
-  const hasAnyPrice = (cheapestPrice ?? fallbackPrice) !== null && (cheapestVariant ?? fallbackVariant) !== null;
+  const hasAnyPrice =
+    (cheapestPrice ?? fallbackPrice) !== null && (cheapestVariant ?? fallbackVariant) !== null;
 
   // set default variant
   const selectedVariant = hasAnyPrice
@@ -102,7 +122,9 @@ export const ProductDetailsHeader = ({
       options?.every((option: any) =>
         selectedVariant[option.option?.title.toLowerCase() || '']?.includes(option.value)
       )
-    )?.id || initialPrice?.variantId || '';
+    )?.id ||
+    initialPrice?.variantId ||
+    '';
 
   // get variant price
   const { variantPrice: computedVariantPrice } = getProductPrice({
@@ -123,7 +145,8 @@ export const ProductDetailsHeader = ({
           ? Infinity
           : 0;
 
-  const variantHasPrice = !!selectedVariantData?.calculated_price || variantId === initialPrice?.variantId;
+  const variantHasPrice =
+    !!selectedVariantData?.calculated_price || variantId === initialPrice?.variantId;
 
   const isVariantStockMaxLimitReached =
     variantStock !== Infinity &&
@@ -145,7 +168,11 @@ export const ProductDetailsHeader = ({
       tax_total: total - subtotal,
       variant_id: variantId,
       product_id: product.id,
-      variant: product.variants?.find(({ id }) => id === variantId)
+      variant: product.variants?.find(({ id }) => id === variantId),
+      metadata: {
+        purchase_mode: purchaseMode,
+        is_gift: purchaseMode === 'gift'
+      }
     };
 
     // Optimistic update
@@ -163,6 +190,7 @@ export const ProductDetailsHeader = ({
         selectedSellerName,
         // cleanup-12d AC1 — propagate seller handle.
         selectedSellerHandle,
+        purchaseMode
       });
     } catch {
       toast.error({
@@ -183,27 +211,45 @@ export const ProductDetailsHeader = ({
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-3">
           {product.seller?.name && (
-            <span className="bb-pill" data-testid="product-details-vendor-badge">
+            <span
+              className="bb-pill"
+              data-testid="product-details-vendor-badge"
+            >
               {product.seller.name}
             </span>
           )}
-          <h1 className="heading-lg text-primary" data-testid="product-title">
+          <h1
+            className="heading-lg text-primary"
+            data-testid="product-title"
+          >
             {product.title}
           </h1>
-          <div className="flex items-center gap-2" data-testid="product-price-container">
+          <div
+            className="flex items-center gap-2"
+            data-testid="product-price-container"
+          >
             {hasAnyPrice && variantPrice ? (
               <>
-                <span className="text-[28px] font-medium text-primary md:text-[34px]" data-testid="product-price-current">
+                <span
+                  className="text-[28px] font-medium text-primary md:text-[34px]"
+                  data-testid="product-price-current"
+                >
                   {variantPrice.calculated_price}
                 </span>
                 {variantPrice.calculated_price_number !== variantPrice.original_price_number && (
-                  <span className="label-md text-secondary line-through" data-testid="product-price-original">
+                  <span
+                    className="label-md text-secondary line-through"
+                    data-testid="product-price-original"
+                  >
                     {variantPrice.original_price}
                   </span>
                 )}
               </>
             ) : (
-              <span className="label-md pb-4 pt-2 text-secondary" data-testid="product-price-unavailable">
+              <span
+                className="label-md pb-4 pt-2 text-secondary"
+                data-testid="product-price-unavailable"
+              >
                 {t('not_available_in_region')}
               </span>
             )}
@@ -228,17 +274,20 @@ export const ProductDetailsHeader = ({
       <div className="flex flex-col gap-3 md:flex-row">
         <Button
           onClick={handleAddToCart}
-          disabled={isAddToCartDisabled}
-          loading={isAddingItem}
+          disabled={isAddToCartDisabled || isAddingItem}
           className="flex w-full justify-center rounded-full bg-[var(--cta)] py-4 text-white hover:bg-[var(--cta-hover)] md:flex-1"
           size="large"
           data-testid="product-add-to-cart-button"
         >
-          {!hasAnyPrice || !variantHasPrice
-            ? t('not_available_in_region')
-            : variantStock && variantHasPrice
-              ? t('add_to_cart')
-              : t('out_of_stock')}
+          {isAddingItem ? (
+            <DotTrio label={t('adding_to_cart')} />
+          ) : !hasAnyPrice || !variantHasPrice ? (
+            t('not_available_in_region')
+          ) : variantStock && variantHasPrice ? (
+            t('add_to_cart')
+          ) : (
+            t('out_of_stock')
+          )}
         </Button>
 
         {user && product.seller && (
@@ -250,6 +299,7 @@ export const ProductDetailsHeader = ({
           />
         )}
       </div>
+      <GiftModeToggle data-testid="pdp-gift-mode-toggle" />
     </div>
   );
 };

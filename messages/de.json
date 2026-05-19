@@ -442,6 +442,7 @@
     "reviews_count": "{count, plural, one {# Bewertung} other {# Bewertungen}}",
     "error_adding_to_cart": "Fehler beim Hinzufügen zum Warenkorb",
     "error_adding_to_cart_desc": "Die ausgewählte Variante ist möglicherweise nicht verfügbar. Bitte eine andere Option versuchen.",
+    "adding_to_cart": "Wird zum Warenkorb hinzugefügt",
     "posted_date": "Veröffentlicht",
     "report_listing": "Inserat melden",
     "more_from_seller": "Mehr von diesem Verkäufer",
@@ -1323,7 +1324,8 @@
   },
   "cross_sell": {
     "same_seller": "In diesem Salon",
-    "same_category": "In dieser Kategorie"
+    "same_category": "In dieser Kategorie",
+    "recommended_for_you": "Für Sie empfohlen"
   },
   "sort": {
     "label": "Sortieren",
@@ -1668,7 +1670,109 @@
     }
   },
   "pdp": {
-    "verified_seller": "Verifizierter Salon"
+    "verified_seller": "Verifizierter Salon",
+    "breadcrumbs": {
+      "aria_label": "Breadcrumb der Produktseite",
+      "home": "Home",
+      "categories": "Kategorien"
+    },
+    "variants": {
+      "size": "Größe",
+      "duration": "Dauer",
+      "package": "Paket"
+    },
+    "gift_mode": {
+      "aria_label": "Kaufmodus",
+      "title": "Wie kaufen Sie diesen Gutschein?",
+      "description": "Die Auswahl wird im Warenkorb gespeichert und bereitet den passenden Checkout-Schritt vor.",
+      "self": "Für mich",
+      "gift": "Als Geschenk"
+    },
+    "voucher_rules": {
+      "aria_label": "Gutscheinregeln",
+      "title": "Gutscheinregeln",
+      "summary": "Gutschein gültig {months} Monate",
+      "validity_title": "Gutschein gültig {months} Monate",
+      "validity_body": "Den Besuchstermin vereinbaren Sie nach dem Kauf direkt mit dem Salon.",
+      "usage_title": "Einlösung im Salon",
+      "usage_body": "Zeigen Sie den PDF-Gutschein im Salon oder nennen Sie den Code bei der Terminvereinbarung.",
+      "refund_title": "Rückerstattung",
+      "refund_body": "Sie haben 30 Tage Zeit, einen ungenutzten Gutschein gemäß den Bedingungen zurückzugeben.",
+      "cancellation_title": "Terminänderung",
+      "cancellation_body": "Sie können den Termin bis 24 Stunden vorher direkt mit dem Salon ändern.",
+      "extension_title": "Verlängerung",
+      "extension_body": "Eine einmalige Verlängerung der Gültigkeit kann möglich sein, wenn das Gutscheinprofil es erlaubt.",
+      "no_show_title": "Nichterscheinen",
+      "no_show_body": "Der Salon kann Nichterscheinen gemäß den Gutscheinregeln markieren."
+    },
+    "trust_bar": {
+      "aria_label": "Kaufgarantien",
+      "marketplace_verified": "Marketplace verified",
+      "return_30_days": "30 Tage Rückgabe",
+      "polish_support": "Support auf Polnisch",
+      "instant_pdf": "PDF-Gutschein sofort"
+    },
+    "trust_band": {
+      "aria_label": "Unteres Vertrauensband des Produkts"
+    },
+    "seller_proof": {
+      "aria": "Qualitätsnachweis für {name}",
+      "view_seller": "Salon ansehen",
+      "years_value": "{count, plural, one {# Jahr} other {# Jahre}}",
+      "years_label": "Erfahrung",
+      "treatments_value": "{count, number}",
+      "treatments_label": "abgeschlossene Behandlungen",
+      "rating_value": "{rating} · {count, plural, one {# Bewertung} other {# Bewertungen}}",
+      "rating_label": "Kundenbewertung",
+      "no_ratings": "Keine Bewertungen",
+      "warning_title": "Unvollständiger Salonnachweis",
+      "warning_body": "Dieser Salon hat weniger als drei vollständige Nachweispunkte. Wir zeigen die Daten ohne Platzhalterzahlen."
+    },
+    "tabs": {
+      "aria_label": "Produktinformationsbereiche",
+      "description": {
+        "label": "Beschreibung",
+        "fallback": "Der Salon hat für dieses Angebot noch keine vollständige Beschreibung hinzugefügt."
+      },
+      "voucher": {
+        "label": "Gutscheinregeln"
+      },
+      "salon": {
+        "label": "Salon",
+        "fallback_name": "BonBeauty-Salon",
+        "fallback_description": "Der Salon hat noch keine vollständige Beschreibung hinzugefügt.",
+        "gallery_alt": "Foto von {name}",
+        "address": "Adresse",
+        "address_fallback": "Die Adresse wird nach dem Kauf bestätigt.",
+        "hours": "Öffnungszeiten",
+        "hours_fallback": "Öffnungszeiten bestätigen Sie direkt mit dem Salon."
+      },
+      "reviews": {
+        "label": "Bewertungen",
+        "empty": "Dieser Salon hat noch keine veröffentlichten Bewertungen.",
+        "summary": "Durchschnitt {rating} aus {count, plural, one {# Bewertung} other {# Bewertungen}}.",
+        "summary_no_rating": "Noch keine vollständige Bewertungsübersicht.",
+        "rating": "Bewertung {rating} / 5",
+        "no_rating": "Keine Bewertung",
+        "review_fallback": "Bewertung ohne zusätzlichen Kommentar.",
+        "anonymous": "BonBeauty-Kundin"
+      },
+      "faq": {
+        "label": "FAQ",
+        "delivery": {
+          "question": "Wann erhalte ich den Gutschein?",
+          "answer": "Der PDF-Gutschein wird nach der Zahlung generiert und an die E-Mail-Adresse der kaufenden Person gesendet."
+        },
+        "refund": {
+          "question": "Kann ich den Gutschein zurückgeben?",
+          "answer": "Ja. Einen ungenutzten Gutschein können Sie innerhalb von 30 Tagen gemäß den Bedingungen zurückgeben."
+        },
+        "recipient": {
+          "question": "Eignet sich der Gutschein als Geschenk?",
+          "answer": "Ja. Der Geschenkmodus speichert die Kaufabsicht und führt im Checkout zu den Empfängerdaten."
+        }
+      }
+    }
   },
   "newsletter": {
     "headline": "Newsletter abonnieren",

@@ -442,6 +442,7 @@
     "reviews_count": "{count, plural, one {# відгук} few {# відгуки} many {# відгуків} other {# відгуків}}",
     "error_adding_to_cart": "Помилка додавання до кошика",
     "error_adding_to_cart_desc": "Вибраний варіант може бути недоступний. Спробуйте інший варіант.",
+    "adding_to_cart": "Додаємо до кошика",
     "posted_date": "Додано",
     "report_listing": "Поскаржитися на пропозицію",
     "more_from_seller": "Більше від цього продавця",
@@ -1323,7 +1324,8 @@
   },
   "cross_sell": {
     "same_seller": "У цьому салоні",
-    "same_category": "У цій категорії"
+    "same_category": "У цій категорії",
+    "recommended_for_you": "Рекомендовано для вас"
   },
   "sort": {
     "label": "Сортування",
@@ -1668,7 +1670,109 @@
     }
   },
   "pdp": {
-    "verified_seller": "Перевірений салон"
+    "verified_seller": "Перевірений салон",
+    "breadcrumbs": {
+      "aria_label": "Навігаційний шлях сторінки продукту",
+      "home": "Home",
+      "categories": "Категорії"
+    },
+    "variants": {
+      "size": "Розмір",
+      "duration": "Тривалість",
+      "package": "Пакет"
+    },
+    "gift_mode": {
+      "aria_label": "Режим покупки",
+      "title": "Як ви купуєте цей ваучер?",
+      "description": "Вибір збережеться в кошику та підготує правильний крок checkout.",
+      "self": "Для себе",
+      "gift": "У подарунок"
+    },
+    "voucher_rules": {
+      "aria_label": "Правила ваучера",
+      "title": "Правила ваучера",
+      "summary": "Ваучер дійсний {months} міс.",
+      "validity_title": "Ваучер дійсний {months} міс.",
+      "validity_body": "Дату візиту ви узгоджуєте із салоном після покупки.",
+      "usage_title": "Використання в салоні",
+      "usage_body": "Покажіть PDF-ваучер у салоні або назвіть код під час запису.",
+      "refund_title": "Повернення",
+      "refund_body": "У вас є 30 днів, щоб повернути невикористаний ваучер згідно з правилами.",
+      "cancellation_title": "Зміна терміну",
+      "cancellation_body": "Термін візиту можна змінити безпосередньо з салоном до 24 годин перед візитом.",
+      "extension_title": "Продовження",
+      "extension_body": "Одноразове продовження дії може бути доступне, якщо профіль ваучера це дозволяє.",
+      "no_show_title": "Неявка",
+      "no_show_body": "Салон може позначити неявку відповідно до правил використання ваучера."
+    },
+    "trust_bar": {
+      "aria_label": "Гарантії покупки",
+      "marketplace_verified": "Marketplace verified",
+      "return_30_days": "30 днів на повернення",
+      "polish_support": "Підтримка PL",
+      "instant_pdf": "PDF-ваучер одразу"
+    },
+    "trust_band": {
+      "aria_label": "Нижня смуга довіри продукту"
+    },
+    "seller_proof": {
+      "aria": "Доказ якості салону {name}",
+      "view_seller": "Переглянути салон",
+      "years_value": "{count, plural, one {# рік} few {# роки} many {# років} other {# років}}",
+      "years_label": "досвіду",
+      "treatments_value": "{count, number}",
+      "treatments_label": "виконаних процедур",
+      "rating_value": "{rating} · {count, plural, one {# відгук} few {# відгуки} many {# відгуків} other {# відгуків}}",
+      "rating_label": "оцінка клієнтів",
+      "no_ratings": "Немає оцінок",
+      "warning_title": "Неповний доказ салону",
+      "warning_body": "Цей салон має менше ніж три повні proof points. Ми показуємо дані без підставних чисел."
+    },
+    "tabs": {
+      "aria_label": "Розділи інформації про продукт",
+      "description": {
+        "label": "Опис",
+        "fallback": "Салон ще не додав повний опис цієї пропозиції."
+      },
+      "voucher": {
+        "label": "Правила ваучера"
+      },
+      "salon": {
+        "label": "Салон",
+        "fallback_name": "Салон BonBeauty",
+        "fallback_description": "Салон ще не додав повний опис.",
+        "gallery_alt": "Фото салону {name}",
+        "address": "Адреса",
+        "address_fallback": "Адресу буде підтверджено після покупки.",
+        "hours": "Години роботи",
+        "hours_fallback": "Години роботи підтвердьте безпосередньо із салоном."
+      },
+      "reviews": {
+        "label": "Відгуки",
+        "empty": "Цей салон ще не має опублікованих відгуків.",
+        "summary": "Середня {rating} з {count, plural, one {# відгуку} few {# відгуків} many {# відгуків} other {# відгуків}}.",
+        "summary_no_rating": "Поки що немає повного підсумку оцінок.",
+        "rating": "Оцінка {rating} / 5",
+        "no_rating": "Немає оцінки",
+        "review_fallback": "Відгук без додаткового коментаря.",
+        "anonymous": "Клієнтка BonBeauty"
+      },
+      "faq": {
+        "label": "FAQ",
+        "delivery": {
+          "question": "Коли я отримаю ваучер?",
+          "answer": "PDF-ваучер генерується після оплати та надсилається на e-mail покупця."
+        },
+        "refund": {
+          "question": "Чи можна повернути ваучер?",
+          "answer": "Так. Невикористаний ваучер можна повернути протягом 30 днів згідно з правилами."
+        },
+        "recipient": {
+          "question": "Чи підходить ваучер як подарунок?",
+          "answer": "Так. Подарунковий режим зберігає намір покупки та веде до даних отримувача в checkout."
+        }
+      }
+    }
   },
   "newsletter": {
     "headline": "Підпишіться на розсилку",

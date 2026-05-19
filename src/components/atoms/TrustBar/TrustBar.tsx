@@ -1,45 +1,52 @@
-// TrustBar — horizontal trust strip for PDP / checkout surfaces.
-// DS v2.1.0 token-bound: color-trust, bb-surface, bb-border-soft.
-
 import { cn } from '@/lib/utils';
 
 interface TrustItem {
-  icon: string;
   label: string;
 }
 
-const DEFAULT_ITEMS: TrustItem[] = [
-  { icon: '🔒', label: 'Bezpieczna płatność' },
-  { icon: '✓', label: 'Zweryfikowany salon' },
-  { icon: '↩', label: 'Zwrot w 14 dni' },
-];
-
 interface TrustBarProps {
-  items?: TrustItem[];
+  items: TrustItem[];
+  ariaLabel: string;
   className?: string;
   'data-testid'?: string;
 }
 
 export function TrustBar({
-  items = DEFAULT_ITEMS,
+  items,
+  ariaLabel,
   className,
-  'data-testid': dataTestId = 'trust-bar',
+  'data-testid': dataTestId = 'trust-bar'
 }: TrustBarProps) {
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-[var(--radius-sm,12px)] border border-[var(--bb-border-hairline,var(--bb-border-soft))] bg-[var(--bb-surface)] px-4 py-2.5',
+        'grid grid-cols-2 gap-2 rounded-[var(--radius-sm,12px)] border border-[var(--bb-border-hairline,var(--bb-border-soft))] bg-[var(--bb-surface)] px-4 py-3 lg:grid-cols-4',
         className
       )}
       data-testid={dataTestId}
-      aria-label="Gwarancje zakupu"
+      aria-label={ariaLabel}
+      role="list"
     >
-      {items.map((item) => (
+      {items.map(item => (
         <span
           key={item.label}
-          className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)]"
+          className="inline-flex items-start gap-2 text-xs leading-5 text-[var(--text-secondary)]"
+          role="listitem"
         >
-          <span aria-hidden="true">{item.icon}</span>
+          <span
+            className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(22,101,52,0.1)] text-[rgb(22,101,52)]"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3 w-3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+            >
+              <path d="m5 12 5 5L20 7" />
+            </svg>
+          </span>
           <span>{item.label}</span>
         </span>
       ))}

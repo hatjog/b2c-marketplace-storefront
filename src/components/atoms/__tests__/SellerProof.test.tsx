@@ -6,6 +6,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { deriveSellerYears } from '@/lib/helpers/pdp';
+
 describe('SellerProof (Trust Invariant #2)', () => {
   it('data-testid is pdp-seller-proof', () => {
     const testId = 'pdp-seller-proof';
@@ -20,10 +22,8 @@ describe('SellerProof (Trust Invariant #2)', () => {
   });
 
   describe('deriveSellerYears logic', () => {
-    it('returns null for undefined joinDate', () => {
-      // Source in ProductDetailsPage: deriveSellerYears(undefined) → null
-      const result = undefined ? new Date().getFullYear() - new Date(undefined!).getFullYear() : null;
-      expect(result).toBeNull();
+    it('returns undefined for missing seller dates', () => {
+      expect(deriveSellerYears(undefined)).toBeUndefined();
     });
 
     it('returns non-negative years for valid past joinDate', () => {

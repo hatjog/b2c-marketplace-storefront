@@ -441,6 +441,7 @@
     "reviews_count": "{count, plural, one {# opinia} few {# opinie} many {# opinii} other {# opinii}}",
     "error_adding_to_cart": "Błąd dodawania do koszyka",
     "error_adding_to_cart_desc": "Wybrany wariant może być niedostępny. Spróbuj inną opcję.",
+    "adding_to_cart": "Dodajemy do koszyka",
     "posted_date": "Dodano",
     "report_listing": "Zgłoś ofertę",
     "more_from_seller": "Więcej od tego sprzedawcy",
@@ -1322,7 +1323,8 @@
   },
   "cross_sell": {
     "same_seller": "W tym salonie",
-    "same_category": "W tej kategorii"
+    "same_category": "W tej kategorii",
+    "recommended_for_you": "Polecane dla Ciebie"
   },
   "sort": {
     "label": "Sortuj",
@@ -1667,7 +1669,109 @@
     }
   },
   "pdp": {
-    "verified_seller": "Zweryfikowany salon"
+    "verified_seller": "Zweryfikowany salon",
+    "breadcrumbs": {
+      "aria_label": "Ścieżka strony produktu",
+      "home": "Home",
+      "categories": "Kategorie"
+    },
+    "variants": {
+      "size": "Rozmiar",
+      "duration": "Czas trwania",
+      "package": "Pakiet"
+    },
+    "gift_mode": {
+      "aria_label": "Tryb zakupu",
+      "title": "Jak kupujesz ten voucher?",
+      "description": "Wybór zapisze się w koszyku i przygotuje właściwy krok checkoutu.",
+      "self": "Dla siebie",
+      "gift": "Na prezent"
+    },
+    "voucher_rules": {
+      "aria_label": "Zasady vouchera",
+      "title": "Zasady vouchera",
+      "summary": "Voucher ważny {months} mies.",
+      "validity_title": "Voucher ważny {months} mies.",
+      "validity_body": "Termin realizacji uzgadniasz z salonem po zakupie.",
+      "usage_title": "Realizacja w salonie",
+      "usage_body": "Pokaż voucher PDF w salonie lub podaj kod podczas umawiania wizyty.",
+      "refund_title": "Zwrot",
+      "refund_body": "Masz 30 dni na zwrot niewykorzystanego vouchera zgodnie z regulaminem.",
+      "cancellation_title": "Zmiana terminu",
+      "cancellation_body": "Termin wizyty możesz zmienić bezpośrednio z salonem do 24 godzin przed wizytą.",
+      "extension_title": "Przedłużenie",
+      "extension_body": "Możliwe jednorazowe przedłużenie ważności, jeśli profil vouchera na to pozwala.",
+      "no_show_title": "Nieobecność",
+      "no_show_body": "Salon może oznaczyć nieobecność zgodnie z zasadami realizacji vouchera."
+    },
+    "trust_bar": {
+      "aria_label": "Gwarancje zakupu",
+      "marketplace_verified": "Marketplace verified",
+      "return_30_days": "30 dni na zwrot",
+      "polish_support": "Wsparcie PL",
+      "instant_pdf": "Voucher PDF natychmiast"
+    },
+    "trust_band": {
+      "aria_label": "Dolny pasek zaufania produktu"
+    },
+    "seller_proof": {
+      "aria": "Dowód jakości salonu {name}",
+      "view_seller": "Zobacz salon",
+      "years_value": "{count, plural, one {# rok} few {# lata} many {# lat} other {# lat}}",
+      "years_label": "doświadczenia",
+      "treatments_value": "{count, number}",
+      "treatments_label": "zrealizowanych zabiegów",
+      "rating_value": "{rating} · {count, plural, one {# opinia} few {# opinie} many {# opinii} other {# opinii}}",
+      "rating_label": "ocena klientek i klientów",
+      "no_ratings": "Brak ocen",
+      "warning_title": "Niepełny dowód salonu",
+      "warning_body": "Ten salon ma mniej niż trzy kompletne punkty proof. Dane pokazujemy bez zastępczych liczb."
+    },
+    "tabs": {
+      "aria_label": "Sekcje informacji o produkcie",
+      "description": {
+        "label": "Opis",
+        "fallback": "Salon nie dodał jeszcze pełnego opisu tej oferty."
+      },
+      "voucher": {
+        "label": "Zasady vouchera"
+      },
+      "salon": {
+        "label": "Salon",
+        "fallback_name": "Salon BonBeauty",
+        "fallback_description": "Salon nie dodał jeszcze pełnego opisu.",
+        "gallery_alt": "Zdjęcie salonu {name}",
+        "address": "Adres",
+        "address_fallback": "Adres zostanie potwierdzony po zakupie.",
+        "hours": "Godziny otwarcia",
+        "hours_fallback": "Godziny otwarcia potwierdzisz bezpośrednio z salonem."
+      },
+      "reviews": {
+        "label": "Opinie",
+        "empty": "Ten salon nie ma jeszcze opublikowanych opinii.",
+        "summary": "Średnia {rating} z {count, plural, one {# opinii} few {# opinii} many {# opinii} other {# opinii}}.",
+        "summary_no_rating": "Brak jeszcze pełnego podsumowania ocen.",
+        "rating": "Ocena {rating} / 5",
+        "no_rating": "Brak oceny",
+        "review_fallback": "Opinia bez dodatkowego komentarza.",
+        "anonymous": "Klientka BonBeauty"
+      },
+      "faq": {
+        "label": "FAQ",
+        "delivery": {
+          "question": "Kiedy dostanę voucher?",
+          "answer": "Voucher PDF jest generowany po płatności i trafia na adres e-mail kupującego."
+        },
+        "refund": {
+          "question": "Czy mogę zwrócić voucher?",
+          "answer": "Tak, niewykorzystany voucher możesz zwrócić w ciągu 30 dni zgodnie z regulaminem."
+        },
+        "recipient": {
+          "question": "Czy voucher nadaje się na prezent?",
+          "answer": "Tak. Tryb prezentowy zapisuje intencję zakupu i prowadzi do danych odbiorcy w checkout."
+        }
+      }
+    }
   },
   "newsletter": {
     "headline": "Zapisz się do newslettera",
