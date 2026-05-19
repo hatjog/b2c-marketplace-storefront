@@ -2,14 +2,22 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import useEmblaCarousel from 'embla-carousel-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 import { ProductCarouselIndicator } from '@/components/molecules';
-import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { safeDecodeURIComponent } from '@/lib/helpers/decode-uri';
 
-export const ProductCarousel = ({ slides = [] }: { slides: HttpTypes.StoreProduct['images'] }) => {
+export const ProductCarousel = ({
+  slides = [],
+  productTitle
+}: {
+  slides: HttpTypes.StoreProduct['images'];
+  productTitle?: string | null;
+}) => {
   const screenSize = useScreenSize();
+  const t = useTranslations('products');
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: screenSize === 'xs' || screenSize === 'sm' || screenSize === 'md' ? 'x' : 'y',
@@ -41,12 +49,15 @@ export const ProductCarousel = ({ slides = [] }: { slides: HttpTypes.StoreProduc
                 priority={idx === 0}
                 fetchPriority={idx === 0 ? 'high' : 'auto'}
                 src={safeDecodeURIComponent(slide.url)}
-                alt={(slide as { metadata?: { alt?: string } }).metadata?.alt ?? 'Product image'}
+                alt={
+                  (slide as { metadata?: { alt?: string } }).metadata?.alt ??
+                  t('image_alt', { name: productTitle ?? t('fallback_name') })
+                }
                 width={700}
                 height={700}
                 quality={idx === 0 ? 85 : 70}
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="aspect-square h-auto max-h-[700px] w-full object-cover object-center"
+                className="aspect-square h-auto max-h-[700px] w-full object-cover object-center transition-transform duration-300 motion-safe:hover:scale-[1.04]"
                 data-testid={`product-carousel-image-${idx}`}
               />
             </div>
@@ -56,6 +67,7 @@ export const ProductCarousel = ({ slides = [] }: { slides: HttpTypes.StoreProduc
           <ProductCarouselIndicator
             slides={slides}
             embla={emblaApi}
+            productTitle={productTitle}
           />
         ) : null}
       </div>

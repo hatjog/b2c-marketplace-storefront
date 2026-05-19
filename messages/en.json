@@ -441,6 +441,7 @@
     "reviews_count": "{count, plural, one {# review} other {# reviews}}",
     "error_adding_to_cart": "Error adding to cart",
     "error_adding_to_cart_desc": "The selected variant may be unavailable. Please try a different option.",
+    "adding_to_cart": "Adding to cart",
     "posted_date": "Posted",
     "report_listing": "Report listing",
     "more_from_seller": "More from this seller",
@@ -1322,7 +1323,8 @@
   },
   "cross_sell": {
     "same_seller": "From this salon",
-    "same_category": "In this category"
+    "same_category": "In this category",
+    "recommended_for_you": "Recommended for you"
   },
   "sort": {
     "label": "Sort",
@@ -1667,7 +1669,109 @@
     }
   },
   "pdp": {
-    "verified_seller": "Verified salon"
+    "verified_seller": "Verified salon",
+    "breadcrumbs": {
+      "aria_label": "Product page breadcrumb",
+      "home": "Home",
+      "categories": "Categories"
+    },
+    "variants": {
+      "size": "Size",
+      "duration": "Duration",
+      "package": "Package"
+    },
+    "gift_mode": {
+      "aria_label": "Purchase mode",
+      "title": "How are you buying this voucher?",
+      "description": "Your choice is saved on the cart item and prepares the right checkout step.",
+      "self": "For myself",
+      "gift": "As a gift"
+    },
+    "voucher_rules": {
+      "aria_label": "Voucher rules",
+      "title": "Voucher rules",
+      "summary": "Voucher valid for {months} months",
+      "validity_title": "Voucher valid for {months} months",
+      "validity_body": "You arrange the visit date with the salon after purchase.",
+      "usage_title": "Salon redemption",
+      "usage_body": "Show the PDF voucher at the salon or share the code when booking the visit.",
+      "refund_title": "Refund",
+      "refund_body": "You have 30 days to return an unused voucher under the terms.",
+      "cancellation_title": "Rescheduling",
+      "cancellation_body": "You can reschedule directly with the salon up to 24 hours before the visit.",
+      "extension_title": "Extension",
+      "extension_body": "A one-time validity extension may be available when the voucher profile allows it.",
+      "no_show_title": "No-show",
+      "no_show_body": "The salon may mark a no-show according to the voucher redemption rules."
+    },
+    "trust_bar": {
+      "aria_label": "Purchase guarantees",
+      "marketplace_verified": "Marketplace verified",
+      "return_30_days": "30-day return",
+      "polish_support": "Polish support",
+      "instant_pdf": "Instant PDF voucher"
+    },
+    "trust_band": {
+      "aria_label": "Bottom product trust band"
+    },
+    "seller_proof": {
+      "aria": "Quality proof for {name}",
+      "view_seller": "View salon",
+      "years_value": "{count, plural, one {# year} other {# years}}",
+      "years_label": "of experience",
+      "treatments_value": "{count, number}",
+      "treatments_label": "completed treatments",
+      "rating_value": "{rating} · {count, plural, one {# review} other {# reviews}}",
+      "rating_label": "customer rating",
+      "no_ratings": "No ratings",
+      "warning_title": "Incomplete salon proof",
+      "warning_body": "This salon has fewer than three complete proof points. We show the data without placeholder numbers."
+    },
+    "tabs": {
+      "aria_label": "Product information sections",
+      "description": {
+        "label": "Description",
+        "fallback": "The salon has not added a full description for this offer yet."
+      },
+      "voucher": {
+        "label": "Voucher rules"
+      },
+      "salon": {
+        "label": "Salon",
+        "fallback_name": "BonBeauty salon",
+        "fallback_description": "The salon has not added a full description yet.",
+        "gallery_alt": "Photo of {name}",
+        "address": "Address",
+        "address_fallback": "The address will be confirmed after purchase.",
+        "hours": "Opening hours",
+        "hours_fallback": "Confirm opening hours directly with the salon."
+      },
+      "reviews": {
+        "label": "Reviews",
+        "empty": "This salon does not have published reviews yet.",
+        "summary": "Average {rating} from {count, plural, one {# review} other {# reviews}}.",
+        "summary_no_rating": "No full rating summary yet.",
+        "rating": "Rating {rating} / 5",
+        "no_rating": "No rating",
+        "review_fallback": "Review without additional comment.",
+        "anonymous": "BonBeauty customer"
+      },
+      "faq": {
+        "label": "FAQ",
+        "delivery": {
+          "question": "When will I receive the voucher?",
+          "answer": "The PDF voucher is generated after payment and sent to the buyer's email address."
+        },
+        "refund": {
+          "question": "Can I return the voucher?",
+          "answer": "Yes. You can return an unused voucher within 30 days under the terms."
+        },
+        "recipient": {
+          "question": "Is this voucher suitable as a gift?",
+          "answer": "Yes. Gift mode saves the purchase intent and leads to recipient details in checkout."
+        }
+      }
+    }
   },
   "newsletter": {
     "headline": "Subscribe to our newsletter",
