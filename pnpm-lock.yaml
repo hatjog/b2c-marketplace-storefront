@@ -5,6 +5,17 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@medusajs/admin-sdk': 2.14.2
+  '@medusajs/admin-shared': 2.14.2
+  '@medusajs/admin-vite-plugin': 2.14.2
+  '@medusajs/cli': 2.14.2
+  '@medusajs/dashboard': 2.14.2
+  '@medusajs/framework': 2.14.2
+  '@medusajs/icons': 2.14.2
+  '@medusajs/js-sdk': 2.14.2
+  '@medusajs/medusa': 2.14.2
+  '@medusajs/test-utils': 2.14.2
+  '@medusajs/types': 2.14.2
   import-in-the-middle: 3.0.1
 
 packageExtensionsChecksum: sha256-kG7YJzGekzpz3i7gUwcUwhyU3d+N1D3ttm3C1aD85cM=
@@ -23,11 +34,11 @@ importers:
         specifier: ^3.12.1
         version: 3.12.1
       '@medusajs/js-sdk':
-        specifier: 2.13.4
-        version: 2.13.4
+        specifier: 2.14.2
+        version: 2.14.2
       '@medusajs/types':
-        specifier: 2.13.4
-        version: 2.13.4
+        specifier: 2.14.2
+        version: 2.14.2
       '@medusajs/ui':
         specifier: ^4.0.33
         version: 4.1.9(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
@@ -1685,12 +1696,12 @@ packages:
     peerDependencies:
       react: ^19.2.5
 
-  '@medusajs/js-sdk@2.13.4':
-    resolution: {integrity: sha512-OpkGSi0jz5XbywKCGtHhD96zTnE9fVVb+tOuxJWL42cUcdWXOUZ/q4nes7r1bp+JXb67yeDglptd3rdrjtR6cg==}
+  '@medusajs/js-sdk@2.14.2':
+    resolution: {integrity: sha512-nNpkzcQU8WhPEcXIoh7ET+1y8qSaRsAeoYtci+naCdT7U0/f4jT4vpBH1vI5E3P+sWvSO+fAVvkhVoHc0OY+bQ==}
     engines: {node: '>=20'}
 
-  '@medusajs/types@2.13.4':
-    resolution: {integrity: sha512-tp9jXAwTWC8eN29QcYe9GK78iprJ+K9YnwAfneUdZgn++wHaqnn/gAkrJxRmEiFlB/xgwlDT+49xzbBEqPLTYw==}
+  '@medusajs/types@2.14.2':
+    resolution: {integrity: sha512-vWzzuG9hXrGMVhrwrUL+LiOi2cuvAoPRyDVdQeA7USdt7ooC+Tb6tWv6E9Sf1wFR3OoUa3S7Ft25qIXmVpV1AQ==}
     engines: {node: '>=20'}
     peerDependencies:
       ioredis: ^5.4.1
@@ -8342,12 +8353,12 @@ snapshots:
     dependencies:
       react: 19.2.5
 
-  '@medusajs/js-sdk@2.13.4':
+  '@medusajs/js-sdk@2.14.2':
     dependencies:
       fetch-event-stream: 0.1.6
       qs: 6.15.1
 
-  '@medusajs/types@2.13.4':
+  '@medusajs/types@2.14.2':
     dependencies:
       bignumber.js: 9.3.1
 
