@@ -1,0 +1,21 @@
+{
+  "title": "Einwilligungen bestätigen",
+  "subtitle": "Um den Gutschein zu erhalten, akzeptieren Sie die folgenden Bedingungen.",
+  "label_rodo": "Ich willige in die Verarbeitung meiner personenbezogenen Daten zur Erbringung der Dienstleistung gemäß Datenschutzerklärung ein.",
+  "label_service_execution": "Ich stimme dem Beginn der Dienstleistung vor Ablauf der Widerrufsfrist zu.",
+  "label_marketing": "Ich willige ein, Marketinginformationen vom Salon zu erhalten.",
+  "label_optional": "(optional)",
+  "label_guardian_email": "E-Mail-Adresse des Elternteils/gesetzlichen Vertreters",
+  "label_guardian_is_parent": "Ich bin Elternteil/gesetzlicher Vertreter des Gutscheininhabers und erteile die Einwilligung in seinem Namen.",
+  "privacy_guardian_email_notice": "Die E-Mail-Adresse des gesetzlichen Vertreters wird nur für diese einmalige Einwilligungstransaktion verwendet — sie wird NICHT zu einer Marketingliste hinzugefügt.",
+  "cta_submit": "Akzeptieren und weiter",
+  "error_RODO_CONSENT_REQUIRED": "DSGVO-Einwilligung ist erforderlich.",
+  "error_SERVICE_CONSENT_REQUIRED": "Einwilligung zur Ausführung der Dienstleistung ist erforderlich.",
+  "error_GUARDIAN_EMAIL_INVALID": "Geben Sie eine gültige E-Mail-Adresse des gesetzlichen Vertreters ein.",
+  "error_GUARDIAN_CONSENT_REQUIRED": "Bestätigung der Rolle als gesetzlicher Vertreter ist erforderlich.",
+  "error_RATE_LIMITED": "Zu viele Versuche. Versuchen Sie es in {minutes} Min. erneut.",
+  "error_TOKEN_EXPIRED": "Der Link ist abgelaufen. Kontaktieren Sie den Absender des Gutscheins.",
+  "error_TOKEN_REVOKED": "Der Link wurde widerrufen. Kontaktieren Sie den Absender des Gutscheins.",
+  "error_TOKEN_INVALID": "Ungültiger Link. Prüfen Sie, ob Sie die richtige Adresse geöffnet haben.",
+  "error_FIELD_NOT_ALLOWED": "Das Formular enthält ein nicht erlaubtes Feld."
+}

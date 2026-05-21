@@ -48,15 +48,17 @@ export default async function WishlistPage({ params }: { params: Promise<{ local
               {t('browse')}
             </Link>
           </div>
-          {result.state === 'failed' ? (
+          {result.state === 'access_denied' ? (
+            <StateCard variant="error" title={t('error.access_denied_title')} description={t('error.access_denied_body')} />
+          ) : result.state === 'failed' ? (
             <StateCard variant="error" title={t('error.failed_title')} description={t('error.failed_body')} />
           ) : result.state === 'unavailable' ? (
             <StateCard variant="unavailable" title={t('error.unavailable_title')} description={t('error.unavailable_body')} />
-          ) : result.data.products.length === 0 ? (
+          ) : (result.data.products ?? []).length === 0 ? (
             <StateCard variant="empty" title={t('empty.title')} description={t('empty.body')} />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {result.data.products.map(product => (
+              {(result.data.products ?? []).map(product => (
                 <div key={product.id} className="bb-card" data-testid={`wishlist-item-${product.id}`}>
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-secondary">{t('collection')}</p>
                   <WishlistItem

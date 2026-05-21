@@ -39,108 +39,6 @@
     "style_eyebrow": "Editorial discovery",
     "blog_eyebrow": "BonBeauty journal"
   },
-  "home_v3": {
-    "hero": {
-      "heading": "Find the ritual that matches your day.",
-      "paragraph": "Browse verified salons, choose with confidence, and return to suggestions that support your personal rhythm.",
-      "secondary_voucher_cta": "Gift voucher",
-      "trust_verified_label": "Verified marketplace"
-    },
-    "search": {
-      "submit": "Search",
-      "tabs": {
-        "product": "Product",
-        "salons": "Salons",
-        "voucher": "Voucher"
-      },
-      "placeholders": {
-        "product": "What ritual are you looking for?",
-        "salons": "Enter city or salon name",
-        "voucher": "Enter voucher amount"
-      },
-      "aria": {
-        "tablist": "Choose search mode",
-        "product_input": "Product search",
-        "salons_input": "Salon search",
-        "voucher_input": "Voucher search"
-      }
-    },
-    "categories": {
-      "image_alt": "Category {name}"
-    },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Popular now",
-      "empty_state": "We are currently refreshing the popular rituals list. Please check again shortly."
-    },
-    "editorial": {
-      "aria_label": "Editorial — Quiet luxury",
-      "eyebrow": "Editorial pick",
-      "heading": "Quiet luxury",
-      "body": "Five moods you can use as a calm starting point for discovery.",
-      "vibes": {
-        "calm": {
-          "title": "Calm",
-          "subtitle": "Gentle rituals for unwinding"
-        },
-        "energy": {
-          "title": "Energy",
-          "subtitle": "Treatments that restore freshness"
-        },
-        "clarity": {
-          "title": "Clarity",
-          "subtitle": "Clean formulas and light textures"
-        },
-        "warmth": {
-          "title": "Warmth",
-          "subtitle": "Comfort-focused care experiences"
-        },
-        "seasonal": {
-          "title": "Seasonality",
-          "subtitle": "Choices aligned with the season"
-        }
-      }
-    },
-    "gift_cta": {
-      "aria_label": "Gift voucher card",
-      "eyebrow": "Voucher",
-      "heading": "Gift voucher",
-      "body": "Give someone close to you time for self-care in trusted partner salons.",
-      "cta_label": "Explore vouchers"
-    },
-    "journal": {
-      "heading": "Rituals from the journal",
-      "cta_label": "Read rituals",
-      "read_time_minutes": "{count} min read",
-      "posts": {
-        "1": {
-          "category": "Ritual",
-          "title": "How to match a ritual to your week",
-          "excerpt": "A short guide to choosing treatments based on the amount of energy you have today."
-        },
-        "2": {
-          "category": "Salon map",
-          "title": "A calm route: find a salon near you",
-          "excerpt": "How to filter salons by location and return to places that feel reliable."
-        },
-        "3": {
-          "category": "Gift",
-          "title": "A voucher that leaves room to choose",
-          "excerpt": "Why a gift voucher works best when the recipient picks the right time for redemption."
-        }
-      }
-    },
-    "trust_strip": {
-      "aria_label": "Platform trust signals",
-      "verified_label": "Verified marketplace",
-      "points": {
-        "1": "Verified salon profiles",
-        "2": "Customer ratings and feedback",
-        "3": "Secure online payments",
-        "4": "Clear voucher rules"
-      }
-    }
-  },
   "seller": {
     "list": {
       "title": "Partner salons",
@@ -170,9 +68,7 @@
         "popup_view_details": "View details",
         "loading": "Loading map...",
         "aria_map": "Sellers map",
-        "aria_marker": "Marker for {name}",
-        "placeholder_title": "Salon map placeholder",
-        "placeholder_body": "Map provider pending; list remains crawlable."
+        "aria_marker": "Marker for {name}"
       }
     },
     "search": {
@@ -203,9 +99,7 @@
       "title_template": "{name} — Partner Salons | BonBeauty",
       "description_label": "Description",
       "address_label": "Address",
-      "location_label": "Location",
       "opening_hours_label": "Opening hours",
-      "policy_label": "Policy",
       "products_label": "Salon products",
       "not_found_message": "No salon found for this address.",
       "no_products": "This salon does not have any products listed yet.",
@@ -214,7 +108,6 @@
       "meta_fallback_title": "Unknown salon | BonBeauty",
       "meta_description": "Discover the offer from {name} on BonBeauty.",
       "meta_default_description": "BonBeauty partner salon — check the offer and address.",
-      "runtime_fallback_notice": "Some salon details are temporarily unavailable. Browse the offer, but this page is excluded from indexing until the required business data is restored.",
       "directions_title": "How to get there",
       "directions_open_google": "Open in Google Maps",
       "directions_open_apple": "Open in Apple Maps",
@@ -223,6 +116,162 @@
       "context_chip_label": "From salon: {name}",
       "context_chip_back": "Back to salon",
       "context_chip_close": "Close"
+    },
+    "directory_v180": {
+      "meta_title": "Salon directory | BonBeauty",
+      "meta_description": "Browse verified BonBeauty salons by location, service category and trust signals.",
+      "title": "Salons near your routine.",
+      "intro": "Compare verified salons by district, service focus and trust signals before you choose where to book.",
+      "verified_badge": "Verified salon",
+      "view_offers_cta": "View offers",
+      "results_count": "{count} salons found",
+      "empty_title": "No salons match these filters.",
+      "empty_body": "Try another location, category or sort order to widen the list.",
+      "clear_filters": "Clear filters",
+      "trust_years": "{count} years",
+      "trust_treatments": "{count} treatments",
+      "trust_reviews": "{count} reviews",
+      "filters": {
+        "location_label": "Location",
+        "location_aria": "Filter salons by location",
+        "location_all": "All locations",
+        "category_label": "Service category",
+        "category_aria": "Filter salons by service category",
+        "category_all": "All categories",
+        "sort_label": "Sort",
+        "sort_aria": "Sort salons",
+        "sort_rating": "Best rated",
+        "sort_name": "Name A-Z",
+        "sort_treatments": "Most treatments",
+        "apply": "Apply filters"
+      },
+      "mobile_toggle": {
+        "list": "List",
+        "map": "Map",
+        "aria": "Choose seller view"
+      },
+      "map": {
+        "title": "Map preview placeholder",
+        "badge": "map placeholder"
+      }
+    },
+    "detail_v180": {
+      "meta_fallback_title": "Salon not found | BonBeauty",
+      "meta_default_description": "BonBeauty salon profile with offers, location and trust information.",
+      "meta_title": "{name} | BonBeauty salon",
+      "meta_description": "Check offers, location and legal details for {name} in {district}.",
+      "verified_badge": "Verified BonBeauty salon",
+      "cta_view_offers": "View offers",
+      "trust": {
+        "aria": "Seller trust summary",
+        "years_label": "Experience",
+        "years_value": "{count} years active",
+        "treatments_label": "Completed treatments",
+        "treatments_value": "{count} treatments",
+        "reviews_label": "Review volume",
+        "reviews_value": "{count} reviews",
+        "verified_label": "Verification",
+        "verified_value": "Identity checked"
+      },
+      "tabs": {
+        "aria": "Seller information sections",
+        "offers": "Offers",
+        "about": "About",
+        "location": "Location",
+        "reviews": "Reviews",
+        "policy": "Salon policy"
+      },
+      "offers": {
+        "heading": "Available offers",
+        "empty": "This salon has not published offers yet.",
+        "cta": "Open offer"
+      },
+      "about": {
+        "heading": "About the salon",
+        "fallback": "The salon has not added a full description yet."
+      },
+      "location": {
+        "heading": "Location",
+        "phone": "Phone",
+        "hours": "Opening hours",
+        "map_title": "Location map placeholder",
+        "map_badge": "address preview"
+      },
+      "reviews": {
+        "heading": "Reviews",
+        "summary": "{count} customer reviews available for this salon.",
+        "link": "Open all reviews",
+        "empty": "No reviews have been published yet.",
+        "rating": "Rating {rating} / 5"
+      },
+      "policy": {
+        "heading": "Salon policy",
+        "fallback": "The salon has not published policy details yet."
+      },
+      "legal": {
+        "heading": "Legal seller details",
+        "nip": "NIP",
+        "regon": "REGON",
+        "krs": "KRS"
+      },
+      "bottom_cta": {
+        "caption": "Ready to compare the offer?",
+        "label": "View offers"
+      }
+    },
+    "reviews_v180": {
+      "meta": {
+        "fallbackTitle": "Seller reviews | BonBeauty",
+        "fallbackDescription": "Seller reviews, rating summary and verified visits on BonBeauty.",
+        "title": "{name} reviews | BonBeauty",
+        "description": "Read {count} reviews about {name}, including rating breakdown and salon replies."
+      },
+      "breadcrumbs": {
+        "reviews": "Reviews"
+      },
+      "backToSeller": "Back to salon profile",
+      "verifiedBadge": "Verified visits",
+      "title": "Reviews for {name}",
+      "intro": "Verified visits, rating distribution and salon replies in one place.",
+      "summary": {
+        "eyebrow": "Average rating",
+        "noRating": "No rating yet",
+        "ratingLabel": "{count, plural, one {# review} other {# reviews}}",
+        "ratingLine": "{rating} / 5"
+      },
+      "filters": {
+        "heading": "Filter by rating",
+        "clear": "Clear filter",
+        "aria": "Filter reviews by rating",
+        "ratingChip": "{rating} stars"
+      },
+      "list": {
+        "heading": "All reviews",
+        "results": "{count, plural, one {# result} other {# results}}",
+        "verifiedVisit": "Verified visit",
+        "ratingAria": "Rating {rating} out of 5",
+        "ratingVisible": "{rating}/5",
+        "expand": "Show more",
+        "replyLabel": "Salon reply"
+      },
+      "sort": {
+        "aria": "Review sorting",
+        "newest": "Newest",
+        "highest": "Highest",
+        "lowest": "Lowest"
+      },
+      "empty": {
+        "title": "No reviews yet",
+        "body": "This salon has not published any reviews yet. Return to the offer or sign in so it is easier to come back after your first visit.",
+        "loggedInCta": "View salon offer",
+        "guestCta": "Sign in"
+      },
+      "pagination": {
+        "aria": "Salon reviews pagination",
+        "status": "Page {page} of {totalPages}",
+        "previous": "Previous",
+        "next": "Load more"
+      }
     },
     "shared": {
       "home": "Home",
@@ -392,6 +441,7 @@
     "reviews_count": "{count, plural, one {# review} other {# reviews}}",
     "error_adding_to_cart": "Error adding to cart",
     "error_adding_to_cart_desc": "The selected variant may be unavailable. Please try a different option.",
+    "adding_to_cart": "Adding to cart",
     "posted_date": "Posted",
     "report_listing": "Report listing",
     "more_from_seller": "More from this seller",
@@ -400,10 +450,10 @@
     "no_results_quality": "No treatments found matching criteria",
     "seller_joined": "Joined {date}",
     "report_seller": "Report Seller",
+    "chat_heading": "Chat",
     "seller_tax_id": "Tax ID: {taxId}",
     "seller_regon": "REGON: {regon}",
-    "seller_krs": "KRS: {krs}",
-    "chat_heading": "Chat"
+    "seller_krs": "KRS: {krs}"
   },
   "auth": {
     "login_heading": "Log in",
@@ -453,7 +503,103 @@
     "password_req_8chars": "At least 8 characters",
     "password_req_lowercase": "At least one lowercase letter",
     "password_req_uppercase": "At least one uppercase letter",
-    "password_req_symbol": "At least one symbol"
+    "password_req_symbol": "At least one symbol",
+    "login_eyebrow": "Back to BonBeauty",
+    "login_title": "Welcome back.",
+    "login_subtitle": "Your vouchers and wishlist are waiting for you.",
+    "password_helper": "Minimum 8 characters",
+    "forgot_password_link": "Forgot your password?",
+    "register_link": "Register",
+    "common": {
+      "error": "We could not finish that step. Please try again in a moment."
+    },
+    "layout": {
+      "skip_to_form": "Skip to form",
+      "home_aria": "Back to BonBeauty home",
+      "trust_aria": "Security and trust information",
+      "trust": {
+        "marketplace_verified": {
+          "label": "Verified marketplace",
+          "aria": "Verified BonBeauty marketplace"
+        },
+        "returns_30_days": {
+          "label": "30-day returns",
+          "aria": "Up to thirty days for returns"
+        },
+        "support": {
+          "label": "Support in Polish",
+          "aria": "Customer support in Polish"
+        }
+      },
+      "footer": {
+        "terms": "Terms",
+        "privacy": "Privacy policy",
+        "help": "Help"
+      }
+    },
+    "login": {
+      "invalid_credentials": "Check your e-mail and password. One of them does not match.",
+      "success": "Looks good. Taking you forward now."
+    },
+    "forgot_eyebrow": "Recover access",
+    "forgot_title": "Forgot your password?",
+    "forgot_subtitle": "No pressure. We will send a reset link without revealing whether this account exists.",
+    "forgot": {
+      "submit": "Send reset link",
+      "success_title": "Check your inbox.",
+      "success_body": "If this account exists, we will send a link to {email}. It stays active for one hour.",
+      "success_neutral": "No message yet? You can ask for another one in a moment.",
+      "resend_cooldown": "Send again ({seconds}s)",
+      "resend_ready": "Send again"
+    },
+    "register_eyebrow": "New account",
+    "register_title": "Welcome to BonBeauty.",
+    "register_subtitle": "An account gives you vouchers, wishlist access and purchase history.",
+    "register": {
+      "email_exists": "An account with this address already exists.",
+      "success": "Account ready. We will move you forward in a moment."
+    },
+    "field_success": "Looks good",
+    "remember_me": "Remember me",
+    "magic_link_option": "Prefer a password-free link? Open magic-link recovery",
+    "social_google": "Google soon",
+    "social_apple": "Apple soon",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "confirm_password_label": "Confirm password",
+    "terms_consent_prefix": "I accept the",
+    "terms_link_label": "terms of service",
+    "privacy_consent_prefix": "I have read the",
+    "privacy_link_label": "privacy policy",
+    "rodo_consent_label": "I consent to processing the data needed to create my account.",
+    "marketing_consent_label": "I want inspiration and offers from BonBeauty.",
+    "password_strength": {
+      "soft": "Gentle start. Add an uppercase letter or symbol.",
+      "medium": "Medium. One more step and it becomes solid.",
+      "strong": "Strong. This works well."
+    },
+    "reset_eyebrow": "New password",
+    "reset_title": "Set a new password.",
+    "reset_subtitle": "Your password needs at least 8 characters. The rest is up to you.",
+    "reset": {
+      "submit": "Set new password",
+      "invalid_token": "This link has expired or is invalid. Please request a new password reset.",
+      "success_title": "Password saved. You will return to login in a moment."
+    },
+    "inline": {
+      "eyebrow": "Post-purchase bonus",
+      "title": "Create your account in 30 seconds.",
+      "subtitle": "Keep vouchers close, save a wishlist and move faster through checkout next time.",
+      "order_notice": "Order {orderReference} is paid. Vouchers are on the way to {email}.",
+      "header_fallback": "Your purchase is complete. If you want, connect an account to {email} right away.",
+      "benefit_orders": "Voucher and order history",
+      "benefit_wishlist": "Wishlist and saved addresses",
+      "benefit_checkout": "Faster checkout next time",
+      "password_label": "Set password",
+      "submit": "Create account",
+      "skip": "Not now",
+      "success": "Account ready. Redirecting you now."
+    }
   },
   "forms": {
     "greeting": "Hello, {name}!",
@@ -510,25 +656,7 @@
     "promo_code_heading": "Have promo code?",
     "promo_code_placeholder": "Enter code",
     "promo_code_button": "Activate",
-    "gift_card": "Gift card",
-    "open_cart_drawer_aria": "Open mini cart drawer",
-    "item_fallback_name": "Product",
-    "summary_subtotal": "Subtotal",
-    "delivery_method_label": "Voucher delivery method",
-    "delivery_method_pdf_email": "PDF email",
-    "delivery_method_scheduled": "Scheduled",
-    "trust_microcopy": "Secure Stripe payment • Voucher delivered instantly by email",
-    "recommended_heading": "Recommended for you",
-    "recommended_fallback_label": "Editor's choice",
-    "empty_es3_heading": "Your cart is waiting",
-    "empty_es3_body": "Start with Editor's choice",
-    "empty_es3_cta": "Editor's choice",
-    "quantity_decrease_aria": "Decrease quantity",
-    "quantity_increase_aria": "Increase quantity",
-    "quantity_update_failed_title": "Could not update quantity",
-    "quantity_update_failed_fallback": "Could not update quantity",
-    "quantity_label": "Quantity",
-    "thumbnail_alt": "Product thumbnail"
+    "gift_card": "Gift card"
   },
   "navigation": {
     "menu": "Menu",
@@ -568,7 +696,53 @@
     "read_article": "Read article",
     "no_posts": "No published blog posts are available for this market yet.",
     "read_more": "Read more",
-    "section_heading": "Stay up to date"
+    "section_heading": "Stay up to date",
+    "editorial_intro": "Read rituals, editorial notes, and practical guides built around real shopping scenarios.",
+    "tag_all": "All topics",
+    "filter_label": "Filter by topic",
+    "active_filter": "Active filter",
+    "empty_heading": "No posts match this filter",
+    "empty_body": "Switch the topic or return to all posts to browse the full journal.",
+    "reset_filters": "Show all posts",
+    "min_read": "{minutes} min read",
+    "published_label": "Published",
+    "updated_label": "Updated",
+    "toc_label": "Article table of contents",
+    "toc_mobile_label": "Jump to section",
+    "back_to_blog": "Back to blog",
+    "related_heading": "Related posts",
+    "author_heading": "About the author",
+    "breadcrumb_home": "Home",
+    "disallowed_embed": "This embed is not available in the safe storefront view.",
+    "newsletter_heading": "Do not miss the next rituals",
+    "inline_embed_label": "Supplementary material"
+  },
+  "programmaticLanding": {
+    "metadata_title": "{offer} in {location} | BonBeauty",
+    "metadata_description": "Local salons, offers and SEO guide for {offer} in {location}.",
+    "eyebrow": "Local guide",
+    "hero_title": "{offer} in {location}",
+    "hero_summary": "Compare local salons, featured offers and related places for {location}.",
+    "hero_cta": "View salons",
+    "geo_label": "Coordinates",
+    "locality_label": "Locality",
+    "trust_aria": "Local guide trust signals",
+    "trust_verified": "Verified location and salon data",
+    "trust_geo": "Geo SEO with district or locality coordinates",
+    "trust_schema": "Place and Offer JSON-LD emitted from one path",
+    "salons_eyebrow": "Local salons",
+    "salons_heading": "Salons matching this location and offer",
+    "rating_label": "Rating {rating} from {count} reviews",
+    "empty_salons": "No salons are available for this location and offer combination.",
+    "empty_salons_aria": "No local salons",
+    "offers_eyebrow": "Featured offers",
+    "offers_heading": "Available offers from local salons",
+    "disallowed_embed": "This embed is not available in the safe storefront view.",
+    "inline_embed_label": "Local material",
+    "related_locations_heading": "Related locations",
+    "bottom_cta_heading": "Browse the full salon catalogue",
+    "bottom_cta_body": "Go to the salon list to compare all available places and categories.",
+    "bottom_cta_label": "View salons"
   },
   "orders": {
     "cancel_heading": "Cancel order",
@@ -609,7 +783,15 @@
     "country_required": "Country is required",
     "postal_code_required": "Postal code is required",
     "rating_required": "Please rate this seller",
-    "opinion_max": "Opinion must be less than 300 characters"
+    "opinion_max": "Opinion must be less than 300 characters",
+    "password_lowercase": "Add at least one lowercase letter",
+    "password_uppercase": "Add at least one uppercase letter",
+    "password_symbol": "Add a digit or special character",
+    "confirm_password_required": "Please confirm your password",
+    "password_mismatch": "Passwords must match",
+    "terms_required": "Please confirm the terms of service",
+    "privacy_required": "Please confirm the privacy policy",
+    "rodo_required": "Please confirm data processing consent"
   },
   "accessibility": {
     "breadcrumb": "Breadcrumb",
@@ -639,6 +821,101 @@
   "routes": {
     "terms_of_service": "/terms-of-service",
     "privacy_policy": "/privacy-policy"
+  },
+  "collections_editorial_v180": {
+    "meta": {
+      "title": "Collections | BonBeauty",
+      "description": "Editorial discovery through BonBeauty collections: editor’s choice, seasonal rituals and recommended gifts."
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "collections": "Collections"
+    },
+    "hero": {
+      "eyebrow": "Editorial discovery",
+      "title": "Collections arranged by hand, not by ranking.",
+      "body": "Browse thematic shortlists prepared by the BonBeauty team. Each collection has a clear point of view and does not pretend to be algorithmic personalization.",
+      "cta": "Open featured collection",
+      "noAlgorithm": "No algorithm"
+    },
+    "featured": {
+      "label": "Featured collection",
+      "itemCount": "{count, plural, one {# item} other {# items}}"
+    },
+    "buckets": {
+      "aria": "Editorial discovery collection categories",
+      "editorial": {
+        "eyebrow": "Editor’s choice",
+        "title": "A starting point for discovering BonBeauty",
+        "body": "Collections built around decision quality rather than short-term demand."
+      },
+      "seasonal": {
+        "eyebrow": "Seasonal",
+        "title": "Rituals tied to a specific moment of the year",
+        "body": "Selections for recovery, rest or a quick refresh when your weekly rhythm changes."
+      },
+      "recommended": {
+        "eyebrow": "Recommended",
+        "title": "Collections that simplify gifting decisions",
+        "body": "Shortlists for people who want to decide quickly without giving up intent."
+      }
+    },
+    "grid": {
+      "title": "Browse every collection",
+      "body": "Each card opens a dedicated editorial page with an intro, a quote, a curated item list and related collections.",
+      "cardAria": "Open collection {title}",
+      "itemCount": "{count, plural, one {# item} other {# items}}"
+    },
+    "bucketLabel": {
+      "editorial": "Editor’s choice",
+      "seasonal": "Seasonal",
+      "recommended": "Recommended"
+    },
+    "detail": {
+      "meta": {
+        "fallbackTitle": "Collection | BonBeauty",
+        "fallbackDescription": "Editorial collection on BonBeauty.",
+        "title": "{title} | BonBeauty collection",
+        "description": "{title} contains {count} curated items in a BonBeauty editorial collection."
+      },
+      "breadcrumbs": {
+        "home": "Home",
+        "collections": "Collections"
+      },
+      "eyebrow": "Collection mode",
+      "calloutLabel": "Editorial note",
+      "quoteLabel": "Why this collection",
+      "toolbar": {
+        "title": "Curated items",
+        "count": "{count, plural, one {# item} other {# items}}",
+        "sortAria": "Collection item sorting",
+        "sort": {
+          "curated": "Editorial order",
+          "title-asc": "Title A-Z",
+          "title-desc": "Title Z-A"
+        }
+      },
+      "empty": {
+        "title": "Nothing here yet",
+        "body": "This collection is ready for the next shortlist, but the editorial team has not published any items yet.",
+        "cta": "Back to collections"
+      },
+      "grid": {
+        "cardAria": "Open item {title}",
+        "curatedLabel": "Curated order",
+        "cta": "View details"
+      },
+      "related": {
+        "title": "Related collections",
+        "body": "If this direction matches your mood, these are the next editorial paths worth exploring.",
+        "cardAria": "Open related collection {title}"
+      },
+      "bucketLabel": {
+        "editorial": "Editor’s choice",
+        "seasonal": "Seasonal",
+        "recommended": "Recommended"
+      }
+    }
   },
   "wishlist": {
     "all": "All",
@@ -741,62 +1018,7 @@
     "support_required_cta": "Contact support",
     "recovery_cta": "Go to my orders",
     "payment_failed_title": "Payment failed",
-    "payment_failed_description": "Try again or go back to the cart to change the payment method.",
-    "hero_title": "Payment confirmed",
-    "hero_sub_gift": "The voucher is on its way to {recipient}.",
-    "hero_sub_self": "We will send the voucher to {email}.",
-    "stepper_title": "Voucher status",
-    "status_paid": "Step 1: Paid",
-    "status_voucher_generating": "Step 2: Voucher generating",
-    "status_email_sent": "Step 3: Sent",
-    "status_recipient_opened": "Step 4: Opened by recipient",
-    "status_completed": "The recipient has already opened the voucher",
-    "step_paid_label": "Paid",
-    "step_generating_label": "Voucher generating",
-    "step_sent_label": "Sent",
-    "step_opened_label": "Opened by recipient",
-    "step_done": "Done",
-    "step_active": "In progress",
-    "step_future": "Upcoming",
-    "step_paid_eta": "Confirmed",
-    "step_paid_timestamp": "Confirmed: {timestamp}",
-    "step_generating_eta": "Ready in ~30s",
-    "step_sent_eta": "Can take up to one minute",
-    "step_opened_eta": "We will notify you",
-    "generating_countdown": "Countdown: {seconds}s",
-    "second_tier_message": "This is taking a bit longer than usual ({elapsed} seconds already). We are still processing the send.",
-    "summary_title": "Order summary",
-    "summary_order_id": "Order ID: {orderId}",
-    "summary_copy": "Copy",
-    "summary_copied": "Copied",
-    "summary_item_fallback": "Order item",
-    "summary_item_quantity": "Quantity: {quantity}",
-    "summary_delivery_method": "Voucher delivery method",
-    "delivery_email": "Email",
-    "delivery_scheduled": "Scheduled delivery",
-    "delivery_physical": "Physical delivery",
-    "summary_subtotal": "Subtotal",
-    "summary_fees": "Fees",
-    "summary_total": "Total",
-    "summary_empty": "No order items were found.",
-    "next_title": "What happens next",
-    "next_for_you_title": "For you",
-    "next_for_you_body": "You can download your PDF and track voucher status in your orders panel.",
-    "next_for_you_cta": "Track status",
-    "next_for_recipient_title": "For the recipient",
-    "next_for_recipient_body": "The recipient should expect an email with the voucher. Please check spam as well.",
-    "next_for_recipient_href": "/pomoc",
-    "next_for_recipient_cta": "See guidance",
-    "next_for_salon_title": "For the salon",
-    "next_for_salon_body": "The system forwards the order for processing and keeps salon-side state in sync.",
-    "next_for_salon_cta": "Process details",
-    "cross_actor_label_for_you": "What is next for you:",
-    "cross_actor_label_for_us": "What is next on our side:",
-    "cross_actor_for_you": "You can return to your orders and track the voucher shipment progress.",
-    "cross_actor_for_us": "We automatically move through paid → voucher_issued → email_sent → recipient_opened.",
-    "guest_teaser_title": "Checking out as a guest?",
-    "guest_teaser_body": "Create an account to track vouchers and order statuses in one place.",
-    "guest_teaser_cta": "Create account"
+    "payment_failed_description": "Try again or go back to the cart to change the payment method."
   },
   "voucher": {
     "qr_code_aria_label": "Voucher QR code",
@@ -875,6 +1097,119 @@
         "button_retry": "Try again"
       }
     },
+    "recipient": {
+      "meta": {
+        "title": "BonBeauty Voucher",
+        "description": "Calm recipient view with voucher code, redemption rules and salon contact details."
+      },
+      "active": {
+        "hero_sender_disclosed": "{sender} from BonBeauty has a gift for you",
+        "hero_sender_fallback": "You have a gift from BonBeauty",
+        "heading": "A little time for yourself.",
+        "subheading": "You can redeem this voucher at a time that suits you. The code identifies the voucher, but it is not a booking.",
+        "card_eyebrow_with_city": "{seller} · {city}",
+        "service_fallback": "BonBeauty voucher",
+        "code_label": "Voucher code",
+        "copy_cta": "Copy code",
+        "copy_aria": "Copy voucher code",
+        "copy_feedback": "Code copied.",
+        "copy_unavailable": "Copy is not available in this browser.",
+        "validity": "Valid until {date}",
+        "validity_fallback": "Validity will be confirmed during redemption.",
+        "pdf_cta": "Download PDF",
+        "wallet_soon": "Coming soon"
+      },
+      "steps": {
+        "eyebrow": "How to redeem",
+        "heading": "Three simple steps.",
+        "show_code": {
+          "title": "Show the code",
+          "body": "Show the PDF printout or the code from this page. The code identifies your voucher in the salon."
+        },
+        "book_visit": {
+          "title": "Book your visit",
+          "body": "Contact the salon by phone or through its website. The voucher does not reserve a timeslot automatically."
+        },
+        "enjoy_service": {
+          "title": "Enjoy the service",
+          "body": "Bring the code to your visit. If anything goes wrong, BonBeauty will help you sort it out."
+        }
+      },
+      "salon": {
+        "eyebrow": "Salon",
+        "phone_label": "Phone:",
+        "hours_label": "Hours:",
+        "seller_cta": "View salon profile",
+        "maps_cta": "Open in Google Maps"
+      },
+      "map_placeholder": {
+        "eyebrow": "Directions",
+        "heading": "Map opens outside BonBeauty",
+        "body": "We do not embed an external map SDK here. The link opens the salon address in Google Maps.",
+        "primary_cta": "Open map"
+      },
+      "handoff": {
+        "heading": "What happens on the salon side",
+        "body": "The salon identifies the voucher by its code. You can contact the salon before your visit, and if anything looks wrong, BonBeauty will help resolve it."
+      },
+      "rules": {
+        "summary": "Redemption rules and terms",
+        "validity_label": "Validity:",
+        "validity_value": "This voucher is valid until {date}.",
+        "validity_fallback": "Validity details are temporarily unavailable.",
+        "extension_label": "Extension:",
+        "extension_paid": "You can extend the voucher by {months} months for a {feePct}% fee.",
+        "extension_free": "A free extension of {months} months is available.",
+        "extension_unavailable": "This voucher cannot be extended.",
+        "extension_fallback": "Extension details are temporarily unavailable.",
+        "cancellation_label": "Cancellation:",
+        "cancellation": "Cancel free of charge up to {hours} hours before the visit; after that the fee may be {feePct}%.",
+        "cancellation_only_cutoff": "Please cancel no later than {hours} hours before the visit.",
+        "cancellation_fallback": "Cancellation details are temporarily unavailable.",
+        "refund_label": "Refund channel:",
+        "refund_fallback": "The refund channel will be confirmed by support.",
+        "refund_channel_values": {
+          "original_payment": "The refund goes back to the original payment method.",
+          "store_credit": "The refund is settled as store credit.",
+          "bank_transfer": "The refund is settled by bank transfer."
+        },
+        "no_show_label": "No-show:",
+        "no_show_fallback": "The no-show policy is temporarily unavailable.",
+        "no_show_values": {
+          "charge_full": "A no-show may result in a full charge.",
+          "charge_partial": "A no-show may result in a partial charge.",
+          "no_charge": "A no-show does not trigger an extra charge, but please contact the salon.",
+          "forfeit_voucher": "A no-show may cause the voucher to be forfeited."
+        }
+      },
+      "expired": {
+        "badge": "Voucher expired",
+        "heading": "This voucher is no longer active.",
+        "body_with_date": "The validity ended on {date}. If you need help, please contact the salon or BonBeauty.",
+        "body_fallback": "We could not confirm an active voucher for this link. For safety, we do not show full details.",
+        "contact_heading": "Contact and support",
+        "contact_body": "The salon or BonBeauty support can help verify whether the voucher can still be handled or how to clarify the issue.",
+        "support_cta": "Contact support",
+        "privacy_heading": "Safe fallback",
+        "privacy_known_code": "This view does not reveal recipient or buyer details. We only show the minimum needed for support.",
+        "privacy_unknown_code": "We could not confirm a public gift-entry path, so the full code and personal data stay hidden.",
+        "support_hint": "Have the code from the message or PDF ready if you still have access to it."
+      },
+      "redeemed": {
+        "badge": "Voucher redeemed",
+        "heading": "This voucher has already been used.",
+        "body": "{seller} confirmed redemption on {date}. If anything looks wrong, contact the salon or BonBeauty.",
+        "timestamp_fallback": "on the confirmed date",
+        "contact_heading": "Contact the salon",
+        "cta_explore": "See more vouchers",
+        "cta_support": "Get help with a dispute"
+      },
+      "footer": {
+        "rules": "Terms",
+        "privacy": "Privacy policy",
+        "support": "Support"
+      }
+    },
     "audit_trail": {
       "title": "Voucher history",
       "toggle_show": "Show voucher history",
@@ -946,6 +1281,31 @@
       "meta_title": "Access recovery | BonBeauty",
       "meta_description": "Recover access to your BonBeauty vouchers."
     },
+    "rules": {
+      "title": "Voucher rules",
+      "summary_with_validity": "Voucher valid for {count, plural, one {# month} other {# months}}. You will agree the visit date with the salon later.",
+      "summary_without_validity": "You receive the voucher after payment and arrange the visit date with the salon later.",
+      "validity_label": "Validity",
+      "validity_value": "Voucher valid for {count, plural, one {# month} other {# months}}.",
+      "validity_to_confirm": "Validity period to be confirmed.",
+      "redemption_label": "Redemption",
+      "redemption_value": "You receive the voucher as a PDF after payment. The visit date is arranged later directly with the salon.",
+      "withdrawal_label": "Withdrawal and refunds",
+      "withdrawal_value": "The withdrawal and refund path stays visible before redemption. Details are available in the BonBeauty rules.",
+      "cancellation_label": "Cancellation",
+      "cancellation_fallback": "The salon confirms cancellation terms when you arrange the visit.",
+      "refund_label": "Refund channel",
+      "refund_fallback": "Refunds go back to the original payment method or follow the BonBeauty rules.",
+      "no_show_label": "No-show",
+      "no_show_fallback": "The salon confirms the no-show rules when you arrange the visit.",
+      "extension_label": "Extension",
+      "extension_unavailable": "Voucher extension is not available.",
+      "extension_available": "Voucher extension is available according to the service profile.",
+      "extension_free": "You can extend the voucher by {count, plural, one {# month} other {# months}} without an extra fee.",
+      "extension_paid": "You can extend the voucher by {count, plural, one {# month} other {# months}} for an extra fee.",
+      "extension_paid_fee": "You can extend the voucher by {count, plural, one {# month} other {# months}} for an extra fee of {feePct}% of the value.",
+      "extension_paid_no_months": "Extension is paid according to the service profile. The extra fee is {feePct}% of the value."
+    },
     "clarity": {
       "validity_to_confirm": "Validity period to be confirmed.",
       "validity_help_link": "Redemption terms",
@@ -966,7 +1326,8 @@
   },
   "cross_sell": {
     "same_seller": "From this salon",
-    "same_category": "In this category"
+    "same_category": "In this category",
+    "recommended_for_you": "Recommended for you"
   },
   "sort": {
     "label": "Sort",
@@ -1311,7 +1672,109 @@
     }
   },
   "pdp": {
-    "verified_seller": "Verified salon"
+    "verified_seller": "Verified salon",
+    "breadcrumbs": {
+      "aria_label": "Product page breadcrumb",
+      "home": "Home",
+      "categories": "Categories"
+    },
+    "variants": {
+      "size": "Size",
+      "duration": "Duration",
+      "package": "Package"
+    },
+    "gift_mode": {
+      "aria_label": "Purchase mode",
+      "title": "How are you buying this voucher?",
+      "description": "Your choice is saved on the cart item and prepares the right checkout step.",
+      "self": "For myself",
+      "gift": "As a gift"
+    },
+    "voucher_rules": {
+      "aria_label": "Voucher rules",
+      "title": "Voucher rules",
+      "summary": "Voucher valid for {months} months",
+      "validity_title": "Voucher valid for {months} months",
+      "validity_body": "You arrange the visit date with the salon after purchase.",
+      "usage_title": "Salon redemption",
+      "usage_body": "Show the PDF voucher at the salon or share the code when booking the visit.",
+      "refund_title": "Refund",
+      "refund_body": "You have 30 days to return an unused voucher under the terms.",
+      "cancellation_title": "Rescheduling",
+      "cancellation_body": "You can reschedule directly with the salon up to 24 hours before the visit.",
+      "extension_title": "Extension",
+      "extension_body": "A one-time validity extension may be available when the voucher profile allows it.",
+      "no_show_title": "No-show",
+      "no_show_body": "The salon may mark a no-show according to the voucher redemption rules."
+    },
+    "trust_bar": {
+      "aria_label": "Purchase guarantees",
+      "marketplace_verified": "Marketplace verified",
+      "return_30_days": "30-day return",
+      "polish_support": "Polish support",
+      "instant_pdf": "Instant PDF voucher"
+    },
+    "trust_band": {
+      "aria_label": "Bottom product trust band"
+    },
+    "seller_proof": {
+      "aria": "Quality proof for {name}",
+      "view_seller": "View salon",
+      "years_value": "{count, plural, one {# year} other {# years}}",
+      "years_label": "of experience",
+      "treatments_value": "{count, number}",
+      "treatments_label": "completed treatments",
+      "rating_value": "{rating} · {count, plural, one {# review} other {# reviews}}",
+      "rating_label": "customer rating",
+      "no_ratings": "No ratings",
+      "warning_title": "Incomplete salon proof",
+      "warning_body": "This salon has fewer than three complete proof points. We show the data without placeholder numbers."
+    },
+    "tabs": {
+      "aria_label": "Product information sections",
+      "description": {
+        "label": "Description",
+        "fallback": "The salon has not added a full description for this offer yet."
+      },
+      "voucher": {
+        "label": "Voucher rules"
+      },
+      "salon": {
+        "label": "Salon",
+        "fallback_name": "BonBeauty salon",
+        "fallback_description": "The salon has not added a full description yet.",
+        "gallery_alt": "Photo of {name}",
+        "address": "Address",
+        "address_fallback": "The address will be confirmed after purchase.",
+        "hours": "Opening hours",
+        "hours_fallback": "Confirm opening hours directly with the salon."
+      },
+      "reviews": {
+        "label": "Reviews",
+        "empty": "This salon does not have published reviews yet.",
+        "summary": "Average {rating} from {count, plural, one {# review} other {# reviews}}.",
+        "summary_no_rating": "No full rating summary yet.",
+        "rating": "Rating {rating} / 5",
+        "no_rating": "No rating",
+        "review_fallback": "Review without additional comment.",
+        "anonymous": "BonBeauty customer"
+      },
+      "faq": {
+        "label": "FAQ",
+        "delivery": {
+          "question": "When will I receive the voucher?",
+          "answer": "The PDF voucher is generated after payment and sent to the buyer's email address."
+        },
+        "refund": {
+          "question": "Can I return the voucher?",
+          "answer": "Yes. You can return an unused voucher within 30 days under the terms."
+        },
+        "recipient": {
+          "question": "Is this voucher suitable as a gift?",
+          "answer": "Yes. Gift mode saves the purchase intent and leads to recipient details in checkout."
+        }
+      }
+    }
   },
   "newsletter": {
     "headline": "Subscribe to our newsletter",
@@ -1375,74 +1838,107 @@
     "loading": "Loading…",
     "no_results": "No results"
   },
-  "categories_index": {
-    "metadata_title": "Categories",
-    "metadata_description": "Browse service categories and find the best beauty and wellness ritual.",
-    "breadcrumbs": {
-      "home": "Home",
-      "current": "Categories"
-    },
-    "breadcrumbs_aria_label": "Breadcrumb navigation",
-    "hero": {
-      "eyebrow": "BonBeauty",
-      "title": "Categories.",
-      "intro": "Browse beauty and wellness rituals from trusted salons. Pick a direction and open the detailed listing."
-    },
-    "featured": {
-      "eyebrow": "Most popular",
-      "title": "Top 3 picks.",
-      "count_label": "subcategories"
-    },
-    "filters": {
-      "all": "All",
-      "popular": "Most booked",
-      "new": "New",
-      "offers": "Deals",
-      "premium": "Premium"
-    },
-    "filters_aria_label": "Category filters",
-    "grid": {
-      "title": "All categories",
-      "description": "Filter quickly and jump to the category that best matches your needs.",
-      "image_alt": "Category",
-      "missing_image": "Missing category image",
-      "count_label": "subcategories"
-    }
-  },
-  "category_plp": {
-    "hero_eyebrow": "Category",
-    "filters_aria": "Category filters",
-    "filters_title": "Filters",
-    "clear_filters": "Clear filters",
-    "filter_price": "Price",
-    "price_from": "From",
-    "price_to": "To",
-    "filter_salon": "Salon",
-    "all_salons": "All salons",
-    "filter_location": "Location",
-    "filter_rating": "Rating",
-    "filter_availability": "Availability",
-    "availability_in_stock": "In stock now",
-    "filter_mode": "Mode",
-    "mode_self": "Self",
-    "mode_gift": "Gift",
-    "filter_sort": "Sort",
-    "empty_heading": "We couldn't find anything",
-    "empty_body": "Check your query or explore curated picks.",
-    "editorial_cta": "See Editor's choice",
-    "subcategory_count": "{count, plural, one {# subcategory} other {# subcategories}}"
-  },
   "accountRead": {
+    "common": {
+      "defaultName": "Karolina",
+      "greeting": "Hello {firstName}. Everything that matters after purchase stays close at hand here.",
+      "salonFallback": "BonBeauty salon"
+    },
+    "navigation": {
+      "eyebrow": "Account surfaces",
+      "ariaLabel": "Account navigation",
+      "items": {
+        "dashboard": "Dashboard",
+        "vouchers": "Vouchers",
+        "orders": "Orders",
+        "returns": "Returns",
+        "wishlist": "Wishlist",
+        "messages": "Messages"
+      }
+    },
+    "snapshot": {
+      "eyebrow": "Account snapshot",
+      "title": "Calm operational view",
+      "vouchers": "Vouchers",
+      "vouchersDetail": "Valid codes ready to use.",
+      "orders": "Orders",
+      "ordersDetail": "Purchase history and current decisions.",
+      "returns": "Returns",
+      "returnsDetail": "Requests waiting for a decision or settlement.",
+      "wishlist": "Wishlist",
+      "wishlistDetail": "Saved rituals and gifts for later.",
+      "messages": "Messages",
+      "messagesDetail": "Calm communication with the salon."
+    },
+    "quickActions": {
+      "vouchers": {
+        "label": "Vouchers",
+        "description": "Open codes, validity and next steps."
+      },
+      "orders": {
+        "label": "Orders",
+        "description": "Review purchase history and fulfillment details."
+      },
+      "wishlist": {
+        "label": "Wishlist",
+        "description": "Return to treatments saved for later."
+      },
+      "messages": {
+        "label": "Messages",
+        "description": "Review conversations linked to orders."
+      }
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "In progress",
+      "failed": "Needs attention",
+      "refunded": "Settled"
+    },
+    "failure": {
+      "title": "We need a moment to refresh this data",
+      "errorDescription": "We could not load this history right now. Please try the view again in a moment.",
+      "unavailableDescription": "This surface is temporarily unavailable on the backend service side.",
+      "retryAction": "Try again"
+    },
+    "empty": {
+      "collectionCode": "ES2",
+      "collectionTitle": "Nothing here yet",
+      "collectionBody": "After the first purchase, your history will appear here.",
+      "collectionAction": "Browse categories",
+      "wishlistCode": "ES1",
+      "wishlistTitle": "Your collection is waiting",
+      "wishlistBody": "Save treatments and gifts you want to revisit.",
+      "wishlistAction": "See recommended",
+      "messagesCode": "ES6",
+      "messagesTitle": "Inbox is empty",
+      "messagesBody": "Messages about your orders will appear here."
+    },
     "dashboard": {
       "welcome_eyebrow": "After purchase",
       "welcome_heading": "Hello, {firstName}",
       "welcome_body": "Everything important is in one calm place: orders, vouchers, wishlist and messages.",
-      "snapshot": { "email": "Email", "orders": "Orders", "wishlist": "Wishlist" },
+      "snapshot": {
+        "email": "Email",
+        "orders": "Orders",
+        "wishlist": "Wishlist"
+      },
       "quick_actions": {
-        "vouchers": { "label": "Vouchers", "description": "Open voucher history" },
-        "orders": { "label": "Orders", "description": "Check order progress" },
-        "wishlist": { "label": "Wishlist", "description": "Saved treatments" },
-        "messages": { "label": "Messages", "description": "Buyer-salon inbox" }
+        "vouchers": {
+          "label": "Vouchers",
+          "description": "Open voucher history"
+        },
+        "orders": {
+          "label": "Orders",
+          "description": "Check order progress"
+        },
+        "wishlist": {
+          "label": "Wishlist",
+          "description": "Saved treatments"
+        },
+        "messages": {
+          "label": "Messages",
+          "description": "Buyer-salon inbox"
+        }
       },
       "recommended": {
         "heading": "Recommended next step",
@@ -1457,16 +1953,69 @@
         "items": "{count, plural, one {# item} other {# items}}",
         "open_order": "Open order"
       },
-      "statuses": { "paid": "Active", "pending": "In progress" },
-      "labels": { "date_pending": "Date pending" }
+      "statuses": {
+        "paid": "Active",
+        "pending": "In progress"
+      },
+      "labels": {
+        "date_pending": "Date pending"
+      }
+    },
+    "vouchers": {
+      "eyebrow": "W2-02 voucher history",
+      "title": "Voucher history",
+      "intro": "Filter active, redeemed and expired vouchers while keeping codes, validity and salon contact in one calm overview.",
+      "heroAsideEyebrow": "Journal card",
+      "heroAsideTitle": "Every voucher keeps its context",
+      "heroAsideBody": "Code, salon, product and state stay visible in one place, without exposing the full code on the list.",
+      "tabs": {
+        "all": "All",
+        "active": "Active",
+        "redeemed": "Redeemed",
+        "expired": "Expired",
+        "returned": "Returned"
+      },
+      "status": {
+        "active": "Active",
+        "redeemed": "Redeemed",
+        "expired": "Expired",
+        "returned": "Returned"
+      },
+      "validUntil": "Valid until {date}",
+      "action": "Open voucher",
+      "quickActionActive": "Ready to use without extra steps.",
+      "quickActionRedeemed": "History of completed services and gifts.",
+      "quickActionExpired": "Codes that need a new decision.",
+      "quickActionReturned": "Returned or withdrawn vouchers."
     },
     "orders": {
       "heading": "Order history",
       "intro": "Review each order group, amount and current progress without leaving your account.",
       "secondary_cta": "Go to vouchers",
-      "snapshot": { "orders": "Order groups", "email": "Email" },
-      "empty": { "title": "No orders yet", "body": "Your order history will appear here after your first purchase." },
+      "snapshot": {
+        "orders": "Order groups",
+        "email": "Email"
+      },
+      "filters": {
+        "aria_label": "Order status filters",
+        "all": "All",
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
+      "pagination": {
+        "previous": "Previous orders",
+        "next": "Next orders"
+      },
+      "empty": {
+        "title": "No orders yet",
+        "body": "Your order history will appear here after your first purchase."
+      },
       "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view your orders.",
+        "login": "Log in",
         "failed_title": "We couldn't load your orders",
         "failed_body": "Refresh this page in a moment. Your access stays protected.",
         "retry": "Try again",
@@ -1474,22 +2023,40 @@
         "unavailable_body": "We are checking the connection with the order service."
       },
       "order_label": "Order #{displayId}",
-      "status": { "paid": "Paid", "pending": "Pending" },
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
       "summary": {
         "items": "{count, plural, one {# item} other {# items}}",
         "total": "Total: {amount}",
         "lines": "{count, plural, one {# shipment} other {# shipments}}"
       },
       "open": "Open details",
-      "labels": { "date_pending": "Date pending" }
+      "labels": {
+        "date_pending": "Date pending"
+      }
     },
     "orderDetail": {
       "back": "Back to orders",
       "heading": "Order #{displayId}",
       "intro": "Check items, delivery, payment and the next practical actions.",
-      "snapshot": { "order_number": "Order number", "order_date": "Order date" },
-      "status": { "paid": "Paid", "pending": "Pending", "failed": "Needs attention", "refunded": "Returned" },
-      "items": { "heading": "Items", "quantity": "Quantity: {count}" },
+      "snapshot": {
+        "order_number": "Order number",
+        "order_date": "Order date"
+      },
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
+      "items": {
+        "heading": "Items",
+        "quantity": "Quantity: {count}"
+      },
       "delivery": {
         "heading": "Delivery",
         "pending": "We will show the delivery details here as soon as they are available."
@@ -1502,22 +2069,60 @@
       },
       "timeline": {
         "heading": "Timeline",
-        "placed": { "label": "Order placed", "detail": "We registered your order and started fulfilment." },
-        "payment": { "label": "Payment", "detail_paid": "Payment has been confirmed.", "detail_pending": "We are waiting for payment confirmation." },
-        "fulfillment": { "label": "Fulfilment", "detail_ready": "The voucher or service handoff is ready.", "detail_pending": "We are still preparing fulfilment." }
+        "placed": {
+          "label": "Order placed",
+          "detail": "We registered your order and started fulfilment."
+        },
+        "payment": {
+          "label": "Payment",
+          "detail_paid": "Payment has been confirmed.",
+          "detail_pending": "We are waiting for payment confirmation."
+        },
+        "fulfillment": {
+          "label": "Fulfilment",
+          "detail_ready": "The voucher or service handoff is ready.",
+          "detail_pending": "We are still preparing fulfilment."
+        },
+        "voucher_handoff": {
+          "label": "Voucher lifecycle",
+          "detail": "The buyer, recipient and salon can track the next voucher handoff from this account view."
+        }
       },
       "actions": {
         "heading": "Actions",
-        "resend": { "title": "Resend voucher", "available": "Open the confirmation surface again and resend the voucher from there.", "unavailable": "This order does not expose a voucher resend path yet.", "cta": "Open confirmation" },
-        "invoice": { "title": "Invoice", "available": "Download the invoice directly from this order.", "unavailable": "The invoice will appear here when accounting releases it.", "cta": "Open invoice" },
-        "return": { "title": "Return request", "available": "Start the return flow for this order group.", "unavailable": "Return is not available for this order right now.", "cta": "Open return flow" },
-        "contact": { "title": "Contact support", "available": "Use help if you need a calm handoff to support.", "cta": "Open help" }
+        "resend": {
+          "title": "Resend voucher",
+          "available": "Open the confirmation surface again and resend the voucher from there.",
+          "unavailable": "This order does not expose a voucher resend path yet.",
+          "cta": "Open confirmation"
+        },
+        "invoice": {
+          "title": "Invoice",
+          "available": "Download the invoice directly from this order.",
+          "unavailable": "The invoice will appear here when accounting releases it.",
+          "cta": "Open invoice"
+        },
+        "return": {
+          "title": "Return request",
+          "available": "Start the return flow for this order group.",
+          "unavailable": "Return is not available for this order right now.",
+          "cta": "Open return flow"
+        },
+        "contact": {
+          "title": "Contact support",
+          "available": "Use help if you need a calm handoff to support.",
+          "cta": "Open help"
+        }
       },
       "handoff": {
         "label_for_you": "What happens next for you:",
         "label_for_us": "What happens next for us:",
+        "label_for_recipient": "What happens next for the recipient:",
+        "label_for_salon": "What happens next for the salon:",
         "for_you": "Keep this order handy if you need to resend a voucher, invoice or return request.",
-        "for_us": "We keep payment, fulfilment and post-purchase support aligned in the background."
+        "for_us": "We keep payment, fulfilment and post-purchase support aligned in the background.",
+        "for_recipient": "The recipient receives the voucher handoff and can return to the voucher detail when consent or redemption is needed.",
+        "for_salon": "The salon sees the voucher context only when it needs to honor or support the service."
       },
       "error": {
         "failed_title": "We couldn't load this order",
@@ -1525,31 +2130,56 @@
         "unavailable_title": "This order is temporarily unavailable",
         "unavailable_body": "We are checking the order connection and will restore access as soon as possible."
       },
-      "labels": { "date_pending": "Date pending" }
+      "labels": {
+        "date_pending": "Date pending"
+      }
     },
     "returns": {
       "heading": "Returns",
       "intro": "Track submitted return requests and their current status.",
-      "snapshot": { "returns": "Returns", "email": "Email" },
-      "empty": { "title": "No returns yet", "body": "Return requests will appear here if you ever need them." },
+      "snapshot": {
+        "returns": "Returns",
+        "email": "Email"
+      },
+      "empty": {
+        "title": "No returns yet",
+        "body": "Return requests will appear here if you ever need them."
+      },
       "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view returns.",
         "failed_title": "We couldn't load returns",
         "failed_body": "Try again in a moment. We keep the recovery path separate from empty states.",
         "unavailable_title": "Returns are temporarily unavailable",
         "unavailable_body": "The returns service is not responding right now."
       },
       "return_label": "Return {id}",
-      "status": { "paid": "Completed", "pending": "In progress", "failed": "Needs attention", "refunded": "Refunded" },
-      "labels": { "date_pending": "Date pending" }
+      "status": {
+        "paid": "Completed",
+        "pending": "In progress",
+        "failed": "Needs attention",
+        "refunded": "Refunded"
+      },
+      "labels": {
+        "date_pending": "Date pending"
+      }
     },
     "wishlist": {
       "heading": "Wishlist",
       "intro": "Keep treatments you want to revisit without turning this view into a settings flow.",
       "browse": "Browse categories",
       "collection": "Saved collection",
-      "snapshot": { "wishlist": "Saved items", "email": "Email" },
-      "empty": { "title": "Your wishlist is empty", "body": "Save treatments and vouchers you want to come back to later." },
+      "snapshot": {
+        "wishlist": "Saved items",
+        "email": "Email"
+      },
+      "empty": {
+        "title": "Your wishlist is empty",
+        "body": "Save treatments and vouchers you want to come back to later."
+      },
       "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view your wishlist.",
         "failed_title": "We couldn't load your wishlist",
         "failed_body": "This is not the same as an empty wishlist. Please try again in a moment.",
         "unavailable_title": "Wishlist is temporarily unavailable",
@@ -1559,12 +2189,469 @@
     "messages": {
       "heading": "Messages",
       "intro": "This inbox stays passive until a real buyer-salon conversation is needed.",
-      "empty": { "title": "No messages yet", "body": "Conversations will appear here when a salon or support needs to contact you." },
+      "empty": {
+        "title": "No messages yet",
+        "body": "Conversations will appear here when a salon or support needs to contact you."
+      },
       "provider": {
         "title": "Messaging provider requires a live session",
         "body": "The provider is configured, but this account surface does not fabricate threads from orders."
       },
-      "snapshot": { "status": "Inbox mode", "connected": "Provider connected", "passive": "Passive empty state", "email": "Email" }
+      "channels": {
+        "aria_label": "Inbox channels",
+        "salon": {
+          "title": "Salon conversations",
+          "body": "Messages from salons appear here when a real thread is opened."
+        },
+        "support": {
+          "title": "Support handoff",
+          "body": "Support messages stay separate from empty states and provider outages."
+        }
+      },
+      "snapshot": {
+        "status": "Inbox mode",
+        "connected": "Provider connected",
+        "passive": "Passive empty state",
+        "email": "Email"
+      }
     }
+  },
+  "account_write": {
+    "common": {
+      "form_error": "Please review the highlighted fields.",
+      "inline_success": "Saved on blur.",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "deleting": "Deleting…",
+      "delete": "Delete",
+      "submitting": "Submitting…",
+      "edit": "Edit"
+    },
+    "breadcrumbs": {
+      "account": "Account",
+      "orders": "Orders",
+      "return_request": "Return request",
+      "return_success": "Return status",
+      "addresses": "Saved addresses",
+      "reviews_to_write": "Reviews to write",
+      "written_reviews": "Written reviews",
+      "settings": "Settings"
+    },
+    "quick_actions": {
+      "orders": "Orders",
+      "orders_desc": "Return to order history and track next steps.",
+      "addresses": "Addresses",
+      "addresses_desc": "Update delivery and billing details.",
+      "reviews": "Reviews to write",
+      "reviews_desc": "Finish pending reviews without leaving Account Hub.",
+      "written_reviews": "Written reviews",
+      "written_reviews_desc": "Edit or delete published reviews.",
+      "settings": "Settings",
+      "settings_desc": "Manage profile, security and privacy.",
+      "return_request": "Return request",
+      "return_request_desc": "Review the return request you just sent."
+    },
+    "snapshot": {
+      "orders": "Orders",
+      "addresses": "Addresses",
+      "reviews": "Reviews"
+    },
+    "return_request": {
+      "hero": {
+        "eyebrow": "Wave 2 · Returns",
+        "title": "Start a return request without losing context.",
+        "description": "Choose the reason, attach photos and leave a note for the salon. Validation runs on the client and server before the request is sent."
+      },
+      "progress": {
+        "title": "3-step return flow",
+        "description": "Progress stays visible while preserving keyboard order.",
+        "step_reason": "Reason",
+        "step_evidence": "Evidence",
+        "step_submit": "Sent"
+      },
+      "form": {
+        "title": "Return request form",
+        "description": "All fields follow UX-DR23: blur feedback, localized errors and pending-state protection against duplicate submits.",
+        "reason_label": "Why are you returning this order?",
+        "photos_label": "Upload photos",
+        "photos_help": "Add up to 3 JPG, PNG or WEBP files. Max 5 MB each.",
+        "comment_label": "Additional note",
+        "submit": "Send return request"
+      },
+      "handoff_message": "The salon has 7 days to decide. We will notify you by email.",
+      "success": {
+        "submitted": "Return request submitted. The seller review starts now and the timeline is already available.",
+        "go_to_summary": "Open return timeline"
+      },
+      "errors": {
+        "order_required": "Missing order reference.",
+        "reason_required": "Choose a return reason.",
+        "comment_too_long": "Your note can contain up to 500 characters.",
+        "photo_required": "Add at least one supporting photo.",
+        "photo_limit": "Upload no more than 3 photos.",
+        "photo_size": "Each file must be smaller than 5 MB.",
+        "photo_type": "Only JPG, PNG and WEBP files are supported.",
+        "generic": "We could not submit the return request. Try again in a moment."
+      }
+    },
+    "return_success": {
+      "hero": {
+        "eyebrow": "Wave 2 · Return confirmed",
+        "title": "Your request is in the decision queue.",
+        "description": "Order {orderId} is now visible to the salon and support. The next steps stay transparent for every actor."
+      },
+      "badge": {
+        "pending": "Awaiting vendor decision"
+      },
+      "timeline": {
+        "title": "Return lifecycle",
+        "description": "Status uses semantic state colors and never relies on color only.",
+        "submitted": {
+          "title": "Request recorded",
+          "body": "We stored your reason, attachments and note and notified the salon."
+        },
+        "vendor_review": {
+          "title": "Salon reviews the request",
+          "body": "The salon has up to 7 days to accept, reject or request more context."
+        },
+        "payout": {
+          "title": "Refund or pickup arranged",
+          "body": "Once approved, support monitors refund or collection details and keeps you updated by email."
+        }
+      },
+      "handoff": {
+        "title": "What happens next for each actor",
+        "description": "Cross-actor handoff keeps the customer, vendor and support aligned.",
+        "for_customer_label": "What happens next for you:",
+        "for_vendor_label": "What happens next for the salon:",
+        "for_customer": "Watch your inbox and return timeline. If more proof is needed, you can respond without restarting the flow.",
+        "for_vendor": "The salon reviews the evidence, records a decision and confirms pickup or refund details.",
+        "for_support_label": "What happens next for support:",
+        "for_platform_label": "What happens next for BonBeauty:",
+        "for_support": "Support steps in when the case needs mediation, deadline follow-up or policy clarification.",
+        "for_platform": "BonBeauty tracks SLA timing, keeps the audit trail and makes sure the outcome reaches every actor."
+      }
+    },
+    "addresses": {
+      "hero": {
+        "eyebrow": "Wave 2 · Address book",
+        "title": "Keep delivery details ready for the next order.",
+        "description": "Add, edit and delete addresses inside a focus-trapped panel with keyboard-safe controls and 44px targets."
+      },
+      "actions": {
+        "add": "Add address"
+      },
+      "empty": {
+        "title": "No saved addresses yet",
+        "description": "ES8 empty state for saved addresses.",
+        "body": "Save an address to speed up checkout and avoid retyping delivery details on the next order."
+      },
+      "list": {
+        "title": "Saved addresses",
+        "description": "Review delivery details, update them inline and remove outdated entries with confirmation.",
+        "default_label": "Saved address",
+        "no_phone": "Phone not provided"
+      },
+      "form": {
+        "create_title": "Add address",
+        "edit_title": "Edit address",
+        "address_name": "Address label",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "company": "Company",
+        "address_line": "Street and number",
+        "city": "City",
+        "postal_code": "Postal code",
+        "province": "Region / province",
+        "phone": "Phone number",
+        "country": "Country",
+        "errors": {
+          "address_name_required": "Enter an address label.",
+          "first_name_required": "Enter the first name.",
+          "last_name_required": "Enter the last name.",
+          "address_required": "Enter the street and number.",
+          "city_required": "Enter the city.",
+          "country_required": "Choose a country.",
+          "postal_code_required": "Enter the postal code.",
+          "phone_required": "Enter the phone number.",
+          "generic": "We could not save the address. Try again."
+        },
+        "success": {
+          "created": "Address added.",
+          "updated": "Address updated.",
+          "deleted": "Address deleted."
+        }
+      },
+      "delete": {
+        "title": "Delete this address?",
+        "description": "The address will be removed from your account after confirmation."
+      }
+    },
+    "reviews_to_write": {
+      "hero": {
+        "eyebrow": "Wave 2 · Reviews to write",
+        "title": "You still have a few salons to review.",
+        "description": "Pending reviews stay grouped by order so you can complete feedback without hunting for the right booking."
+      },
+      "empty": {
+        "title": "No reviews waiting",
+        "description": "ES7 gentle empty state for review prompts.",
+        "body": "You are caught up. When a new order becomes eligible for review, it will appear here.",
+        "cta": "Go to written reviews"
+      },
+      "list": {
+        "title": "Orders waiting for feedback",
+        "description": "Open written reviews to finish the form and compare your published feedback.",
+        "order_label": "Order {id}"
+      },
+      "actions": {
+        "write": "Write review",
+        "compare": "See written reviews"
+      }
+    },
+    "written_reviews": {
+      "hero": {
+        "eyebrow": "Wave 2 · Published reviews",
+        "title": "Manage the feedback you already sent.",
+        "description": "Edit tone, update rating or delete a review with confirmation and accessible mutation feedback."
+      },
+      "empty": {
+        "title": "No written reviews yet",
+        "description": "Published reviews will appear here after submission.",
+        "body": "Use the reviews-to-write list when you are ready to share feedback."
+      },
+      "list": {
+        "title": "My written reviews",
+        "description": "Changes never surface raw backend errors. Each mutation reports a localized result.",
+        "unknown_seller": "Salon",
+        "rating": "{rating}/5",
+        "no_note": "No additional note.",
+        "updated_at": "Updated: {date}"
+      },
+      "form": {
+        "title": "Edit review",
+        "create_title": "Write review",
+        "rating_label": "Rating",
+        "note_label": "Review note",
+        "errors": {
+          "rating_required": "Choose a rating.",
+          "note_too_long": "Your note can contain up to 300 characters.",
+          "review_id_required": "Missing review reference.",
+          "order_id_required": "Missing order reference.",
+          "seller_id_required": "Missing salon reference.",
+          "generic": "We could not update the review. Try again."
+        },
+        "success": {
+          "created": "Review saved.",
+          "updated": "Review updated.",
+          "deleted": "Review deleted."
+        }
+      },
+      "delete": {
+        "title": "Delete review?",
+        "description": "This removes the published review from your account view after confirmation."
+      }
+    },
+    "settings": {
+      "hero": {
+        "eyebrow": "Wave 2 · Account settings",
+        "title": "Keep profile, security and privacy controls in one hub.",
+        "description": "Desktop uses anchored section navigation, while mobile keeps the same landmarks without overflow."
+      },
+      "nav": {
+        "title": "Sections",
+        "description": "Jump between profile, security, notifications, payments and GDPR privacy."
+      },
+      "sections": {
+        "profile": "Profile",
+        "security": "Security",
+        "notifications": "Notifications",
+        "payments": "Payments",
+        "privacy": "GDPR privacy"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Update personal contact details with blur-based success feedback.",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "phone": "Phone",
+        "email": "Email",
+        "locale": "Preferred locale",
+        "errors": {
+          "first_name_required": "Enter the first name.",
+          "last_name_required": "Enter the last name.",
+          "phone_required": "Enter the phone number.",
+          "email_required": "Email is required.",
+          "email_invalid": "Enter a valid email address.",
+          "locale_required": "Choose a preferred locale.",
+          "generic": "We could not update the profile. Try again."
+        },
+        "success": {
+          "updated": "Profile updated."
+        }
+      },
+      "security": {
+        "title": "Security",
+        "description": "Use a password reset handoff instead of exposing raw auth errors in the UI.",
+        "new_password": "New password",
+        "confirm_password": "Confirm password",
+        "errors": {
+          "password_too_short": "Use at least 8 characters.",
+          "password_mismatch": "Passwords must match.",
+          "generic": "We could not start the reset flow. Try again."
+        },
+        "success": {
+          "reset_email_sent": "Reset email sent. Complete the password change from your inbox."
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Choose which updates should continue through the account team request intake for this release.",
+        "email_updates": "Email order updates",
+        "sms_updates": "SMS shipment updates",
+        "product_news": "Product and editorial news",
+        "errors": {
+          "generic": "We could not record the notification request. Try again."
+        },
+        "success": {
+          "request_received": "Notification preference request received."
+        }
+      },
+      "payments": {
+        "title": "Payments",
+        "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
+        "default_card": "Preferred payment note",
+        "invoices_by_email": "Send invoices by email",
+        "errors": {
+          "generic": "We could not record the payment request. Try again."
+        },
+        "success": {
+          "request_received": "Payment preference request received."
+        }
+      },
+      "privacy": {
+        "title": "GDPR privacy",
+        "description": "Privacy actions are represented as intake requests until dedicated backend automation is available.",
+        "request_intake_notice": "This release records the request and hands it off safely. It does not claim that export or deletion is already complete.",
+        "export_request": "Request personal data export",
+        "delete_request": "Request account deletion review",
+        "errors": {
+          "generic": "We could not record the privacy request. Try again."
+        },
+        "success": {
+          "export_request_received": "Data export request received.",
+          "delete_request_received": "Account deletion request received."
+        }
+      }
+    }
+  },
+  "not_found": {
+    "headline": "This page doesn't exist",
+    "body": "The page you're looking for may have been moved or its address has changed.",
+    "cta_home": "Go back to home",
+    "cta_search": "Use the search"
+  },
+  "error_surface": {
+    "server_error_headline": "Something went wrong on our end",
+    "server_error_body": "This is a system issue, not yours. Check service status and try again in a moment.",
+    "server_error_cta": "Go back to home",
+    "service_unavailable_headline": "Service temporarily unavailable",
+    "service_unavailable_body": "We are doing maintenance. Come back in a few minutes or check service status.",
+    "service_unavailable_cta": "Go back to home",
+    "offline_headline": "No internet connection",
+    "offline_body": "Making a purchase requires an active connection. Check your Wi-Fi or mobile data and try again.",
+    "offline_cta": "Try again",
+    "offline_label": "Offline",
+    "status_page_link": "Check service status",
+    "show_technical_details": "Show technical details",
+    "suggested_action": "Suggested action",
+    "suggested_action_value": "Refresh the page or come back in a few minutes"
+  },
+  "empty_states_catalogue": {
+    "page_title": "Empty States Catalogue",
+    "page_description": "Reference showcase ES1-ES8 for BonBeauty design system.",
+    "catalogue_label": "Empty state patterns ES1-ES8",
+    "es1_headline": "Your collection awaits",
+    "es1_body": "Save products you want to come back to",
+    "es1_cta": "See recommendations",
+    "es2_headline": "Collection is empty",
+    "es2_body": "This collection has no products yet. Check other categories.",
+    "es2_cta": "Browse categories",
+    "es3_headline": "Your cart is empty",
+    "es3_body": "Add a treatment voucher for yourself or loved ones.",
+    "es3_cta": "Editor's picks",
+    "es4_headline": "No results",
+    "es4_body": "No results found for your criteria. Try clearing filters.",
+    "es4_cta": "Clear filters",
+    "es5_headline": "No reviews",
+    "es5_body": "This product has no reviews yet.",
+    "es5_cta": "Write the first review",
+    "es6_headline": "No messages",
+    "es6_body": "Your messages will appear here.",
+    "es7_headline": "No reviews to write",
+    "es7_body": "You have no orders requiring a review yet.",
+    "es7_cta": "Browse products",
+    "es8_headline": "No saved addresses",
+    "es8_body": "Add a delivery address to speed up checkout.",
+    "es8_cta": "Add address"
+  },
+  "loading_states_catalogue": {
+    "page_title": "Loading States Catalogue",
+    "page_description": "Reference showcase LP1-LP6 for BonBeauty design system.",
+    "lp1_name": "Skeleton Shimmer",
+    "lp1_description": "For data loading (200ms-3s). Warm cream variant, reduced-motion safe.",
+    "lp1_aria_label": "Loading",
+    "lp2_name": "Pulse Animation Hero",
+    "lp2_description": "For processing/pending states, not generic data fetching.",
+    "lp2_aria_label": "Processing",
+    "lp3_name": "Skeleton Dot Trio",
+    "lp3_description": "For CTA loading after submit.",
+    "lp3_aria_label": "Sending",
+    "lp4_name": "Auto-Poll Progress Indicator",
+    "lp4_description": "Visible polling cadence, maximum time, and exit path.",
+    "lp4_aria_label": "Waiting for confirmation",
+    "lp4_polling_label": "Checking status...",
+    "lp4_timeout_label": "Max 30s",
+    "lp5_name": "Progress Bar",
+    "lp5_description": "For determinate multi-step actions.",
+    "lp5_aria_label": "Progress",
+    "lp6_name": "Inline Spinner",
+    "lp6_description": "Rare last resort. Must not spin indefinitely beyond 3s.",
+    "lp6_aria_label": "Loading",
+    "lp6_label": "Loading...",
+    "lp6_rare_last_resort_note": "Rare last resort — after 3s transition to an error state or progress message."
+  },
+  "voucher-consent": {
+    "title": "Confirm consents",
+    "subtitle": "To receive the voucher, accept the conditions below.",
+    "guardian_section_title": "Guardian approval",
+    "consent_section_title": "Consents required to process the voucher",
+    "label_rodo": "I consent to the processing of my personal data to deliver the service in accordance with the privacy policy.",
+    "label_service_execution": "I consent to starting the service before the withdrawal period ends.",
+    "label_marketing": "I consent to receive marketing information from the salon.",
+    "label_optional": "(optional)",
+    "label_guardian_email": "Parent/legal guardian email address",
+    "placeholder_guardian_email": "guardian@example.com",
+    "label_guardian_is_parent": "I am the parent/legal guardian of the voucher holder and give consent on their behalf.",
+    "privacy_guardian_email_notice": "The guardian email address is used only for this one-time consent transaction — it is NOT added to a marketing list.",
+    "captcha_label": "CAPTCHA code",
+    "captcha_placeholder": "Enter the test CAPTCHA token",
+    "blocked_minor_message": "Guardian approval required",
+    "cta_submit": "Accept and continue",
+    "cta_pending": "Saving consents...",
+    "success_message": "Consents have been saved.",
+    "error_RODO_CONSENT_REQUIRED": "GDPR consent is required.",
+    "error_SERVICE_CONSENT_REQUIRED": "Service execution consent is required.",
+    "error_GUARDIAN_EMAIL_INVALID": "Enter a valid guardian email address.",
+    "error_GUARDIAN_CONSENT_REQUIRED": "Legal guardian confirmation is required.",
+    "error_CAPTCHA_REQUIRED": "CAPTCHA confirmation is required.",
+    "error_RATE_LIMITED": "Too many attempts. Try again in {minutes} min.",
+    "error_TOKEN_EXPIRED": "The link has expired. Contact the voucher sender.",
+    "error_TOKEN_REVOKED": "The link was revoked. Contact the voucher sender.",
+    "error_TOKEN_INVALID": "Invalid link. Check that you opened the correct address.",
+    "error_FIELD_NOT_ALLOWED": "The form contains a field that is not allowed.",
+    "error_GUARDIAN_APPROVAL_REQUIRED": "Guardian approval required.",
+    "error_SERVICE_UNAVAILABLE": "We could not verify the link. Try again in a moment."
   }
 }

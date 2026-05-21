@@ -50,22 +50,43 @@ export const retrieveOrder = async (id: string) => {
     .catch(err => medusaError(err));
 };
 
-export const createReturnRequest = async (data: any) => {
+type ReturnRequestPayload = FormData | Record<string, unknown>;
+
+function isMultipartPayload(data: ReturnRequestPayload): data is FormData {
+  return typeof FormData !== 'undefined' && data instanceof FormData;
+}
+
+export const createReturnRequest = async (data: ReturnRequestPayload) => {
+  const multipart = isMultipartPayload(data);
   const headers = {
     ...(await getAuthHeaders()),
-    'Content-Type': 'application/json',
-    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string
+    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+    ...(multipart ? {} : { 'Content-Type': 'application/json' })
   };
 
-  const response = await fetch(`${MEDUSA_BACKEND_URL}/store/return-request`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(data)
-  })
-    .then(async res => await res.json())
-    .catch(err => medusaError(err));
+  try {
+    const response = await fetch(`${MEDUSA_BACKEND_URL}/store/return-request`, {
+      method: 'POST',
+      headers,
+      body: multipart ? data : JSON.stringify(data)
+    });
 
-  return response;
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        error: payload?.message ?? payload?.error ?? `Return request failed with ${response.status}`,
+        order_return_request: payload?.order_return_request ?? {}
+      };
+    }
+
+    return payload;
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Return request failed',
+      order_return_request: {}
+    };
+  }
 };
 
 export const getReturns = async () => {

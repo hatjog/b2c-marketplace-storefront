@@ -1,19 +1,15 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { Breadcrumbs } from '@/components/atoms';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import {
-  extractLexicalParagraphs,
-  fetchBlogPageBySlug,
-  formatBlogPublishedDate,
-  getBlogCategory,
-  getBlogDescription,
-  getBlogHref,
-  getPageImageUrl
-} from '@/lib/blog';
+import { NewsletterSlot } from '@/components/organisms';
+import { BlogLayout, BlogRichText, BlogTocNav } from '@/components/templates';
+import { fetchPayloadBlogPage } from '@/data/payload-pages';
+import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n/routing';
+import { buildTocEntries, formatBlogPublishedDate } from '@/lib/blog';
+import { toHreflang } from '@/lib/helpers/hreflang';
 
 export const revalidate = 600;
 
@@ -25,13 +21,19 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
-async function getBlogPage(slug: string) {
-  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+function buildBlogPostAlternates(baseUrl: string, locale: string, slug: string) {
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
+    acc[toHreflang(code)] = new URL(`/${code}/blog/${slug}`, `${baseUrl}/`).toString();
+    return acc;
+  }, {});
 
-  return fetchBlogPageBySlug({
-    marketId,
-    slug
-  });
+  return {
+    canonical: new URL(`/${locale}/blog/${slug}`, `${baseUrl}/`).toString(),
+    languages: {
+      ...languages,
+      'x-default': new URL(`/pl/blog/${slug}`, `${baseUrl}/`).toString()
+    }
+  };
 }
 
 export async function generateMetadata({
@@ -40,35 +42,36 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
-  const page = await getBlogPage(slug);
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const page = await fetchPayloadBlogPage({
+    locale: locale as SupportedLocale,
+    marketId,
+    slug
+  });
 
   if (!page) {
     return {};
   }
 
   const baseUrl = await getBaseUrl();
-  const title = page.title || page.name || 'Blog';
-  const description = getBlogDescription(page);
-  const blogPath = getBlogHref(page);
-  const canonical = new URL(`/${locale}${blogPath}`, `${baseUrl}/`).toString();
-  const imageUrl = getPageImageUrl(page, 0, { preferHeroImage: true });
-  const openGraphImage = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+  const alternates = buildBlogPostAlternates(baseUrl, locale, page.slug);
+  const openGraphImage = page.heroImage.startsWith('http')
+    ? page.heroImage
+    : `${baseUrl}${page.heroImage}`;
 
   return {
-    title,
-    description,
-    alternates: {
-      canonical
-    },
+    title: page.seo.title,
+    description: page.seo.description,
+    alternates,
     openGraph: {
-      title,
-      description,
+      title: page.seo.title,
+      description: page.seo.description,
       type: 'article',
-      url: canonical,
+      url: alternates.canonical,
       images: [
         {
           url: openGraphImage,
-          alt: title
+          alt: page.heroImageAlt
         }
       ]
     }
@@ -80,84 +83,86 @@ export default async function BlogArticlePage({
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug, locale } = await params;
-  const page = await getBlogPage(slug);
+  const [{ slug, locale }, t] = await Promise.all([params, getTranslations('blog')]);
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
+  const page = await fetchPayloadBlogPage({
+    locale: locale as SupportedLocale,
+    marketId,
+    slug
+  });
 
   if (!page) {
     return notFound();
   }
 
-  const title = page.title || page.name || 'Untitled post';
-  const description = getBlogDescription(page);
-  const category = getBlogCategory(page);
+  const tocEntries = buildTocEntries(page.slug, page.content);
   const publishedDate = formatBlogPublishedDate(page.publishedAt, locale);
-  const imageUrl = getPageImageUrl(page, 0, { preferHeroImage: true });
-  const paragraphs = extractLexicalParagraphs(page.content);
-  const bodyParagraphs = paragraphs.length > 0 ? paragraphs : [];
+  const updatedDate = formatBlogPublishedDate(page.updatedAt, locale);
+
+  const meta = (
+    <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-secondary">
+      <span data-testid="blog-article-category">{page.category}</span>
+      <span>{t('min_read', { minutes: page.readTimeMinutes })}</span>
+      {publishedDate ? (
+        <span data-testid="blog-article-date">
+          {t('published_label')}: {publishedDate}
+        </span>
+      ) : null}
+      {updatedDate ? (
+        <span>
+          {t('updated_label')}: {updatedDate}
+        </span>
+      ) : null}
+    </div>
+  );
 
   return (
-    <main id="main-content" className="bb-page-shell">
-      <div className="mb-4 hidden md:block">
+    <BlogLayout
+      surface="W4-07"
+      breadcrumbs={
         <Breadcrumbs
           items={[
-            { path: '/', label: 'Home' },
-            { path: '/blog', label: 'Blog' },
-            { path: `/blog/${page.slug || slug}`, label: title }
+            { path: '/', label: t('breadcrumb_home') },
+            { path: '/blog', label: t('title') },
+            { path: `/blog/${page.slug}`, label: page.title }
           ]}
         />
-      </div>
-
-      <article
-        className="mx-auto flex max-w-4xl flex-col gap-8"
-        data-testid="blog-article"
-      >
-        <header className="bb-section-shell bb-section-shell-strong flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.24em] text-secondary">
-            <span data-testid="blog-article-category">{category}</span>
-            {publishedDate ? <span data-testid="blog-article-date">{publishedDate}</span> : null}
-          </div>
-
-          <h1
-            className="heading-xl max-w-3xl"
-            data-testid="blog-article-title"
-          >
-            {title}
-          </h1>
-
-          <p className="max-w-3xl text-lg leading-8 text-secondary">{description}</p>
-        </header>
-
-        <div className="relative overflow-hidden rounded-sm bg-quaternary">
-          <Image
-            src={imageUrl}
-            alt={title}
-            width={1440}
-            height={960}
-            priority
-            className="h-auto w-full object-cover"
+      }
+      eyebrow={page.category}
+      title={page.title}
+      intro={page.excerpt}
+      meta={meta}
+      heroImage={page.heroImage}
+      heroImageAlt={page.heroImageAlt}
+      toc={
+        tocEntries.length > 0 ? (
+          <BlogTocNav
+            label={t('toc_label')}
+            mobileLabel={t('toc_mobile_label')}
+            entries={tocEntries}
           />
-        </div>
-
-        <div className="bb-section-shell flex flex-col gap-5 text-base leading-8 text-primary">
-          {bodyParagraphs.length > 0 ? (
-            bodyParagraphs.map((paragraph, index) => <p key={`${page.slug || slug}-${index}`}>{paragraph}</p>)
-          ) : (
-            <p>
-              {description} Follow the latest edits on the homepage to track what is currently being
-              highlighted for this market.
-            </p>
-          )}
-        </div>
-
-        <div className="border-t border-[rgba(144,112,50,0.14)] pt-6">
-          <LocalizedClientLink
-            href="/blog"
-            className="label-md inline-flex items-center uppercase text-primary transition-opacity hover:opacity-70"
-          >
-            Back to blog
-          </LocalizedClientLink>
-        </div>
-      </article>
-    </main>
+        ) : null
+      }
+      content={
+        <BlogRichText
+          slug={page.slug}
+          content={page.content}
+          disallowedEmbedLabel={t('disallowed_embed')}
+          inlineEmbedLabel={t('inline_embed_label')}
+        />
+      }
+      author={page.author}
+      authorHeading={t('author_heading')}
+      relatedHeading={t('related_heading')}
+      relatedPosts={page.relatedPosts}
+      backToBlogLabel={t('back_to_blog')}
+      relatedCtaLabel={t('read_article')}
+      newsletterSlot={
+        <NewsletterSlot
+          locale={locale}
+          variant="inline-body"
+        />
+      }
+    />
   );
 }

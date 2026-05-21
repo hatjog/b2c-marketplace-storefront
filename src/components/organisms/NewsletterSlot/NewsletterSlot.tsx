@@ -14,19 +14,14 @@
 //   inline-footer  — kompaktowy pasek w footerze
 //   modal-popup    — overlay triggered (exit-intent / timed) z ESC dismiss
 //   success        — stan po submit (potwierdzenie)
-
 import { useId, useState, type FormEvent } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
-import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 import { cn } from '@/lib/utils';
 
-export type NewsletterSlotVariant =
-  | 'inline-body'
-  | 'inline-footer'
-  | 'modal-popup'
-  | 'success';
+export type NewsletterSlotVariant = 'inline-body' | 'inline-footer' | 'modal-popup' | 'success';
 
 export interface NewsletterSlotProps {
   variant?: NewsletterSlotVariant;
@@ -38,10 +33,10 @@ export interface NewsletterSlotProps {
 
 export function NewsletterSlot({
   variant = 'inline-body',
-  locale,
+  locale: _locale,
   onSubmit,
   onDismiss,
-  className,
+  className
 }: NewsletterSlotProps) {
   const t = useTranslations('newsletter');
   const inputId = useId();
@@ -64,12 +59,6 @@ export function NewsletterSlot({
   const isSuccess = submitted || variant === 'success';
   const isModal = variant === 'modal-popup';
   const isFooter = variant === 'inline-footer';
-  const modalOpen = isModal && !isSuccess;
-  const modalRef = useFocusTrap<HTMLDivElement>({
-    active: modalOpen,
-    onEscape: onDismiss,
-    lockScroll: true,
-  });
 
   const successView = (
     <div
@@ -99,16 +88,14 @@ export function NewsletterSlot({
         >
           {t('headline')}
         </label>
-        {!isFooter && (
-          <p className="text-sm text-[var(--text-secondary)]">{t('subline')}</p>
-        )}
+        {!isFooter && <p className="text-sm text-[var(--text-secondary)]">{t('subline')}</p>}
         <input
           id={inputId}
           type="email"
           required
           aria-required="true"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           placeholder={t('email_placeholder')}
           className={cn(
             'w-full rounded-[var(--bb-radius-card,12px)] border border-[var(--bb-border-soft)]',
@@ -118,7 +105,10 @@ export function NewsletterSlot({
           data-testid="newsletter-slot-input"
         />
         {/* slot: legal — GDPR consent note (required all placements) */}
-        <p className="text-xs text-[var(--text-secondary)]" data-testid="newsletter-slot-legal">
+        <p
+          className="text-xs text-[var(--text-secondary)]"
+          data-testid="newsletter-slot-legal"
+        >
           {t('legal')}
         </p>
       </div>
@@ -138,7 +128,6 @@ export function NewsletterSlot({
       aria-label={t('aria_region')}
       data-testid="newsletter-slot"
       data-variant={variant}
-      lang={locale}
       className={cn(
         'w-full',
         !isFooter &&
@@ -149,7 +138,7 @@ export function NewsletterSlot({
       style={
         {
           '--newsletter-slot-bg': 'var(--bb-surface)',
-          '--newsletter-slot-accent': 'var(--cta)',
+          '--newsletter-slot-accent': 'var(--cta)'
         } as React.CSSProperties
       }
     >
@@ -157,21 +146,19 @@ export function NewsletterSlot({
     </section>
   );
 
-  if (modalOpen) {
+  if (isModal && !isSuccess) {
     return (
       <div
-        className="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--bb-overlay-backdrop)] p-4"
+        className="fixed inset-0 z-[300] flex items-center justify-center bg-[rgba(9,9,9,0.6)] p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('aria_region')}
+        onKeyDown={e => {
+          if (e.key === 'Escape') onDismiss?.();
+        }}
         data-testid="newsletter-slot-modal-overlay"
       >
-        <div
-          ref={modalRef}
-          className="w-full max-w-md"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('aria_region')}
-          tabIndex={-1}
-          lang={locale}
-        >
+        <div className="w-full max-w-md">
           <div className="relative">
             <button
               type="button"

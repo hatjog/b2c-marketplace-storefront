@@ -1,9 +1,21 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { Chip } from '@/components/atoms';
 import useUpdateSearchParams from '@/hooks/useUpdateSearchParams';
+
+function optionLabel(title: string, t: (key: 'size' | 'duration' | 'package') => string) {
+  const normalized = title.trim().toLowerCase();
+
+  if (normalized === 'size' || normalized === 'rozmiar') return t('size');
+  if (normalized === 'duration' || normalized === 'czas trwania') return t('duration');
+  if (normalized === 'pakiet' || normalized === 'package' || normalized === 'bundle')
+    return t('package');
+
+  return title;
+}
 
 export const ProductVariants = ({
   product,
@@ -13,6 +25,7 @@ export const ProductVariants = ({
   selectedVariant: Record<string, string>;
 }) => {
   const updateSearchParams = useUpdateSearchParams();
+  const t = useTranslations('pdp.variants');
 
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
@@ -29,7 +42,7 @@ export const ProductVariants = ({
           key={id}
           data-testid={`product-variant-${title.toLowerCase()}`}
         >
-          <span className="label-md text-secondary">{title}: </span>
+          <span className="label-md text-secondary">{optionLabel(title, t)}: </span>
           <span
             className="label-md text-primary"
             data-testid={`product-variant-selected-${title.toLowerCase()}`}

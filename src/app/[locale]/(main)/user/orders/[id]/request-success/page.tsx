@@ -1,25 +1,61 @@
-import { Button } from '@/components/atoms/Button/Button';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { UserNavigation } from '@/components/molecules/UserNavigation/UserNavigation';
+import { getTranslations } from 'next-intl/server';
 
-export default async function RequestSuccessPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+import { LoginForm } from '@/components/molecules';
+import { ReturnRequestSuccessSurface } from '@/components/sections/AccountWriteSurfaces';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
+import { retrieveCustomer } from '@/lib/data/customer';
+import { listOrders } from '@/lib/data/orders';
+
+export default async function RequestSuccessPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  const { locale, id } = await params;
+  const [t, customer] = await Promise.all([
+    getTranslations('account_write'),
+    retrieveCustomer(),
+  ]);
+  const orders = customer ? await listOrders() : [];
 
   return (
-    <main id="main-content" className="container">
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
-        <UserNavigation />
-        <div className="text-center md:col-span-3">
-          <h1 className="heading-md uppercase">Return requested</h1>
-          <p className="label-md mx-auto my-8 w-96 text-secondary">
-            Your return request has been submitted. Once the seller confirms it, you will receive a
-            confirmation email.
-          </p>
-          <LocalizedClientLink href={`/user/returns${id && `?return=${id}`}`}>
-            <Button className="label-md px-12 py-3 uppercase">Return details</Button>
-          </LocalizedClientLink>
-        </div>
-      </div>
-    </main>
+    <AccountLayoutWithChrome
+      locale={locale}
+      activeSurface="W2-06"
+      user={
+        customer
+          ? {
+              id: customer.id,
+              displayName: `${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || customer.email,
+              email: customer.email,
+            }
+          : null
+      }
+      breadcrumbs={[
+        { label: t('breadcrumbs.account'), href: `/${locale}/user` },
+        { label: t('breadcrumbs.orders'), href: `/${locale}/user/orders` },
+        { label: t('breadcrumbs.return_success'), href: `/${locale}/user/orders/${id}/request-success` },
+      ]}
+      quickActions={[
+        {
+          id: 'return-form',
+          label: t('quick_actions.return_request'),
+          href: `/user/orders/${id}/return`,
+          description: t('quick_actions.return_request_desc'),
+        },
+        {
+          id: 'orders',
+          label: t('quick_actions.orders'),
+          href: `/user/orders`,
+          description: t('quick_actions.orders_desc'),
+        },
+      ]}
+      snapshotSections={[
+        { id: 'orders', label: t('snapshot.orders'), value: String(orders.length) },
+        { id: 'addresses', label: t('snapshot.addresses'), value: String(customer?.addresses?.length ?? 0) },
+        { id: 'reviews', label: t('snapshot.reviews'), value: String(orders.reduce((count, order) => count + (order.reviews?.length ?? 0), 0)) },
+      ]}
+      mainContent={customer ? <ReturnRequestSuccessSurface orderId={id} /> : <LoginForm />}
+    />
   );
 }

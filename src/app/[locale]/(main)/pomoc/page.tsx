@@ -104,7 +104,7 @@ export default async function PomocPage({ params }: { params: Promise<{ locale: 
     <LegalPageLayout>
       <article
         aria-labelledby="pomoc-page-title"
-        data-testid="pomoc-content"
+        data-testid="help-page"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <StorefrontRouteStateSignal

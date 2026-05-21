@@ -1,44 +1,32 @@
-import React from 'react';
+import type React from 'react';
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { grantConsent, withdrawConsent } from '@/actions/voucher-consent';
+import { submitVoucherConsent } from '@/actions/voucher-kyc-consent';
+import { initialVoucherConsentActionState } from '@/actions/voucher-kyc-consent-state';
 import { StorefrontRouteStateSignal } from '@/components/atoms';
-import { ConsentMomentInline } from '@/components/molecules/ConsentMomentInline';
-import { RecipientPausePathToggle } from '@/components/molecules/RecipientPausePathToggle';
+import { getVoucherConsentContext } from '@/lib/data/voucher-consent';
 
-/**
- * Voucher PII consent moment route — STORY-2-1.
- *
- * Hybrid pattern (per Method #36 Devil's Advocate elicitation):
- *   route + native <dialog> on mount = both deep-link semantics AND
- *   Art. 7 modal cognitive cue.
- *
- * No-JS path: the same page renders a native <form action> with the same
- * Server Action `grantConsent` so JS-disabled clients can complete consent.
- * AC-VPII-2.1-02 / AC-CONSENT-NO-JS-01 verified by Playwright with
- * `javaScriptEnabled: false`.
- *
- * Security headers (NFR-SEC-5 / NFR-SEC-6 / Risk #5):
- *   `frame-ancestors 'none'` is enforced project-wide via `src/lib/security/csp.ts`.
- *   `Referrer-Policy: no-referrer` is set per-route below.
- */
+import { ConsentForm } from './ConsentForm';
 
 export const dynamic = 'force-dynamic';
+
+async function submitVoucherConsentNoScript(formData: FormData): Promise<void> {
+  'use server';
+  await submitVoucherConsent(initialVoucherConsentActionState, formData);
+}
 
 interface ConsentPageProps {
   params: Promise<{ locale: string; token: string }>;
 }
 
-type NativeFormAction = (formData: FormData) => void | Promise<void>;
-
 export async function generateMetadata({ params }: ConsentPageProps): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'voucher.consent' });
+  const t = await getTranslations({ locale, namespace: 'voucher-consent' });
   return {
-    title: t('heading'),
-    description: t('purpose'),
+    title: t('title'),
+    description: t('subtitle'),
     robots: { index: false, follow: false },
     referrer: 'no-referrer',
     other: {
@@ -51,120 +39,137 @@ export default async function VoucherConsentPage({
   params
 }: ConsentPageProps): Promise<React.ReactElement> {
   const { locale, token } = await params;
-  const t = await getTranslations({ locale, namespace: 'voucher.consent' });
-  const privacyPolicyHref = `/${locale}/polityka-prywatnosci`;
-  const grantConsentAction = grantConsent as unknown as NativeFormAction;
-  const withdrawConsentAction = withdrawConsent as unknown as NativeFormAction;
+  const t = await getTranslations({ locale, namespace: 'voucher-consent' });
+  const context = await getVoucherConsentContext(token);
+  const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY?.trim() || null;
 
   return (
     <main
       data-testid="voucher-consent-page"
       data-token={token}
-      className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10"
+      className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col justify-center gap-6 px-4 py-10"
     >
       <StorefrontRouteStateSignal
         route="voucher-consent"
         surface="voucher-consent"
       />
-      <h1 className="heading-lg">{t('heading')}</h1>
+      <header className="text-center">
+        <h1 className="heading-lg text-primary">{t('title')}</h1>
+        <p className="mt-3 text-secondary">{t('subtitle')}</p>
+      </header>
 
-      {/* No-JS fallback: server-rendered <form> identical to JS path. */}
-      <noscript>
-        <form
-          action={grantConsentAction}
-          method="POST"
-          className="flex flex-col gap-4 rounded-sm border border-tertiary p-4"
+      {!context.ok && (
+        <section
+          role="alert"
+          className="rounded-sm border border-negative bg-negative-secondary px-4 py-3 text-sm text-negative"
+          data-testid="voucher-consent-error-state"
         >
-          <input
-            type="hidden"
-            name="token"
-            value={token}
-          />
-          <input
-            type="hidden"
-            name="locale"
-            value={locale}
-          />
-          <input
-            type="hidden"
-            name="surface"
-            value="no-js"
-          />
-          <p>{t('purpose')}</p>
-          <label className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              name="consent"
-              value="on"
-              required
-              aria-label={t('checkbox_aria')}
-            />
-            <span>{t('checkbox_label')}</span>
-          </label>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <a
-              href={`/${locale}/voucher/consent/${token}/skipped`}
-              className="min-h-12 min-w-12 rounded-sm border border-tertiary px-6 py-3"
-            >
-              {t('skip_cta')}
-            </a>
-            <button
-              type="submit"
-              className="min-h-12 min-w-12 rounded-sm bg-action px-6 py-3 text-action-on-primary"
-            >
-              {t('grant_cta')}
-            </button>
-          </div>
-        </form>
-      </noscript>
+          {t(`error_${context.error}`)}
+        </section>
+      )}
 
-      {/* JS path — native <dialog> opens on mount via showModal(). */}
-      <ConsentMomentInline
-        token={token}
-        locale={locale}
-        privacyPolicyHref={privacyPolicyHref}
-      />
-
-      <RecipientPausePathToggle
-        token={token}
-        locale={locale}
-      />
-
-      {/* Withdrawal symmetry — per UX-DR30. Always-visible withdraw form. */}
-      <form
-        action={withdrawConsentAction}
-        method="POST"
-        className="rounded-sm border border-tertiary p-4"
-      >
-        <input
-          type="hidden"
-          name="token"
-          value={token}
-        />
-        <input
-          type="hidden"
-          name="locale"
-          value={locale}
-        />
-        <input
-          type="hidden"
-          name="compensates_audit_id"
-          value=""
-        />
-        <input
-          type="hidden"
-          name="surface"
-          value="no-js"
-        />
-        <p className="mb-3 text-sm">{t('withdraw_explainer')}</p>
-        <button
-          type="submit"
-          data-testid="consent-withdraw-cta"
-          className="min-h-12 min-w-12 rounded-sm border border-action px-6 py-3 text-action"
+      {context.ok && context.state === 'blocked' && (
+        <section
+          role="status"
+          className="rounded-sm border border-warning bg-warning-secondary px-4 py-3 text-sm text-primary"
+          data-testid="voucher-consent-blocked-state"
         >
-          {t('withdraw_cta')}
-        </button>
-      </form>
+          {t('blocked_minor_message')}
+        </section>
+      )}
+
+      {context.ok && (
+        <>
+          <noscript>
+            <form
+              action={submitVoucherConsentNoScript}
+              className="flex w-full flex-col gap-4 rounded-sm border border-tertiary p-4"
+            >
+              <input
+                type="hidden"
+                name="token"
+                value={token}
+              />
+              <input
+                type="hidden"
+                name="locale"
+                value={locale}
+              />
+              <input
+                type="hidden"
+                name="age_check_required"
+                value={context.age_check_required ? 'true' : 'false'}
+              />
+              {context.age_check_required && (
+                <>
+                  <label className="flex flex-col gap-2">
+                    <span>{t('label_guardian_email')}</span>
+                    <input
+                      type="email"
+                      name="guardian_email"
+                      required
+                      className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3"
+                    />
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      name="guardian_is_parent"
+                      required
+                    />
+                    <span>{t('label_guardian_is_parent')}</span>
+                  </label>
+                  <label className="flex flex-col gap-2">
+                    <span>{t('captcha_label')}</span>
+                    <input
+                      type="text"
+                      name="captcha_token"
+                      required
+                      className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3"
+                    />
+                  </label>
+                  <p className="text-sm text-secondary">{t('privacy_guardian_email_notice')}</p>
+                </>
+              )}
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="consent_rodo"
+                  required
+                />
+                <span>{t('label_rodo')}</span>
+              </label>
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="consent_service_execution"
+                  required
+                />
+                <span>{t('label_service_execution')}</span>
+              </label>
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="consent_marketing"
+                />
+                <span>{t('label_marketing')}</span>
+              </label>
+              <button
+                type="submit"
+                className="min-h-12 rounded-sm bg-action px-6 py-3 text-action-on-primary"
+              >
+                {t('cta_submit')}
+              </button>
+            </form>
+          </noscript>
+          <ConsentForm
+            token={token}
+            locale={locale}
+            ageCheckRequired={context.age_check_required}
+            captchaSiteKey={captchaSiteKey}
+          />
+        </>
+      )}
     </main>
   );
 }

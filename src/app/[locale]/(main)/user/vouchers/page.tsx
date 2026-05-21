@@ -33,11 +33,13 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
-import { UserNavigation } from '@/components/molecules/UserNavigation/UserNavigation';
-import { VoucherHistoryEmptyState } from '@/components/molecules/VoucherHistoryEmptyState/VoucherHistoryEmptyState';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import { toDisplayName } from '@/lib/account/read-heavy';
+import { retrieveCustomer } from '@/lib/data/customer';
 import { listCustomerVouchers, type VoucherListItem, type VoucherStatus } from '@/lib/data/voucher';
 
 export const dynamic = 'force-dynamic';
@@ -87,6 +89,30 @@ function formatExpiresDate(iso: string, locale: string): string {
     day: 'numeric',
     timeZone: 'Europe/Warsaw'
   });
+}
+
+function formatVoucherValue(value: number | null, currencyCode: string, locale: string): string | null {
+  if (typeof value !== 'number') {
+    return null;
+  }
+
+  const bcp47: Record<string, string> = {
+    pl: 'pl-PL',
+    en: 'en-GB',
+    ua: 'uk-UA',
+    de: 'de-DE'
+  };
+
+  return new Intl.NumberFormat(bcp47[locale] ?? 'pl-PL', {
+    style: 'currency',
+    currency: (currencyCode || 'PLN').toUpperCase()
+  }).format(value / 100);
+}
+
+function maskVoucherCode(code: string): string {
+  const normalized = code.trim();
+  if (normalized.length <= 4) return normalized;
+  return `**** ${normalized.slice(-4)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -142,29 +168,38 @@ function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
   // `keyof` resolves to function-property names, not translation keys.
   const statusLabel = t(`status.${voucher.status}`);
 
+  const value = formatVoucherValue(voucher.value_minor, voucher.currency_code, locale);
+
   return (
-    <div
-      className="flex flex-col gap-3 rounded-md border border-primary bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
+    <article
+      className="bb-card flex h-full flex-col gap-4"
+      style={{ background: 'var(--card-journal-bg, var(--bb-surface))' }}
       data-testid="voucher-row"
     >
-      <div className="flex flex-col gap-1">
-        <p className="font-medium text-primary">{voucher.product_title || voucher.code}</p>
-        <p className="text-sm text-secondary">{voucher.seller_name}</p>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-secondary">
+            {maskVoucherCode(voucher.code)}
+          </p>
+          <h2 className="text-base font-semibold text-primary">{voucher.product_title || voucher.seller_name}</h2>
+          <p className="text-sm text-secondary">{voucher.seller_name}</p>
+        </div>
+        <div className="flex flex-col items-start gap-2 sm:items-end">
           <VoucherStatusBadge
             status={voucher.status}
             label={String(statusLabel ?? voucher.status)}
           />
-          {voucher.expires_at && (
-            <span className="text-xs text-secondary">
-              {t('expires_label', {
-                date: formatExpiresDate(voucher.expires_at, locale)
-              } as Parameters<typeof t>[1])}
-            </span>
-          )}
+          {value && <span className="text-sm font-medium text-primary">{value}</span>}
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      {voucher.expires_at && (
+        <p className="text-xs text-secondary">
+          {t('expires_label', {
+            date: formatExpiresDate(voucher.expires_at, locale)
+          } as Parameters<typeof t>[1])}
+        </p>
+      )}
+      <div className="mt-auto flex shrink-0 items-center gap-2">
         <Link
           href={`/${locale}/voucher/${encodeURIComponent(voucher.code)}`}
           className="inline-flex min-h-12 items-center rounded-sm border border-action px-4 py-2 text-sm font-medium text-action focus:outline-none focus:ring-2 focus:ring-action focus:ring-offset-2"
@@ -173,7 +208,7 @@ function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
           {t('row_cta_open')}
         </Link>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -259,6 +294,11 @@ export default async function VouchersPage({
 }: VouchersPageProps): Promise<React.ReactElement> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'account.vouchers' });
+  const customer = await retrieveCustomer();
+
+  if (!customer) {
+    redirect(`/${locale}/login`);
+  }
 
   const result = await listCustomerVouchers();
   const routeStateInput =
@@ -273,86 +313,76 @@ export default async function VouchersPage({
             : { is_recovered: true };
 
   return (
-    <main
-      id="main-content"
-      className="container"
-      data-testid="vouchers-page"
-    >
-      <StorefrontRouteStateSignal
-        route="user-vouchers"
-        surface="user-vouchers"
-        stateInput={routeStateInput}
-      />
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
-        <UserNavigation />
-        <div
-          className="space-y-6 md:col-span-3"
-          data-testid="vouchers-container"
-        >
-          <h1 className="heading-md uppercase">{t('title')}</h1>
+    <AccountLayoutWithChrome
+      locale={locale}
+      activeSurface="W2-02"
+      user={{
+        id: customer.id,
+        displayName: toDisplayName(customer) ?? customer.email,
+        email: customer.email
+      }}
+      snapshotSections={[
+        { id: 'vouchers', label: t('title'), value: String(result.vouchers.length) },
+        { id: 'email', label: t('snapshot_email'), value: customer.email }
+      ]}
+      mainContent={
+        <div className="space-y-6" data-testid="vouchers-page">
+          <StorefrontRouteStateSignal
+            route="user-vouchers"
+            surface="user-vouchers"
+            stateInput={routeStateInput}
+          />
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h1 className="heading-md text-primary">{t('title')}</h1>
+              <p className="text-sm text-secondary">{t('page_intro')}</p>
+            </div>
+            <Link
+              href={`/${locale}/user/orders`}
+              className="text-sm font-medium text-action"
+              data-testid="orders-crosslink"
+            >
+              {t('orders_crosslink')}
+            </Link>
+          </div>
 
           {result.state === 'access_denied' && (
-            <NamedState
-              variant="access_denied"
-              locale={locale}
-            />
+            <NamedState variant="access_denied" locale={locale} />
           )}
 
           {result.state === 'unavailable' && (
-            <NamedState
-              variant="unavailable"
-              locale={locale}
-            />
+            <NamedState variant="unavailable" locale={locale} />
           )}
 
           {result.state === 'failed' && (
-            <NamedState
-              variant="failed"
-              locale={locale}
-            />
+            <NamedState variant="failed" locale={locale} />
           )}
 
           {result.state === 'ok' && result.vouchers.length === 0 && (
-            <VoucherHistoryEmptyState
-              locale={locale}
+            <StateCard
+              variant="empty"
+              title={t('empty.heading')}
+              description={t('empty.body')}
               data-testid="vouchers-empty-state"
             />
           )}
 
           {result.state === 'ok' && result.vouchers.length > 0 && (
             <div
-              className="flex flex-col gap-4"
+              className="grid gap-4 md:grid-cols-2"
               data-testid="vouchers-list"
               role="list"
               aria-label={t('title')}
             >
               {result.vouchers.map(voucher => (
-                <div
-                  key={voucher.code}
-                  role="listitem"
-                >
-                  <VoucherRow
-                    voucher={voucher}
-                    locale={locale}
-                    t={t}
-                  />
+                <div key={voucher.code} role="listitem">
+                  <VoucherRow voucher={voucher} locale={locale} t={t} />
                 </div>
               ))}
             </div>
           )}
-
-          {/* Cross-link to orders for order-level lifecycle (paid/pending/failed/expired) */}
-          <div className="mt-4 border-t border-primary pt-4">
-            <Link
-              href={`/${locale}/user/orders`}
-              className="text-sm text-action underline focus:outline-none focus:ring-2 focus:ring-action"
-              data-testid="orders-crosslink"
-            >
-              {t('orders_crosslink')}
-            </Link>
-          </div>
         </div>
-      </div>
-    </main>
+      }
+    />
   );
 }

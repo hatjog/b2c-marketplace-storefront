@@ -3,12 +3,13 @@ import React from 'react';
 import { AlertIcon } from '@/icons';
 import { cn } from '@/lib/utils';
 
-type AlertVariant = 'base' | 'base-inverse' | 'brand';
+type AlertVariant = 'base' | 'base-inverse' | 'brand' | 'positive' | 'negative' | 'neutral';
 
 interface AlertProps {
   variant?: AlertVariant;
   icon?: React.ReactNode | boolean;
   title?: string;
+  children?: React.ReactNode;
   className?: string;
   'data-testid'?: string;
 }
@@ -28,6 +29,21 @@ const variantStyles: Record<AlertVariant, { container: string; text: string; ico
     container: 'bg-action-secondary',
     text: 'text-action-on-secondary',
     icon: '#090909'
+  },
+  positive: {
+    container: 'border border-emerald-200 bg-emerald-50',
+    text: 'text-emerald-900',
+    icon: '#166534'
+  },
+  negative: {
+    container: 'border border-rose-200 bg-rose-50',
+    text: 'text-rose-900',
+    icon: '#be123c'
+  },
+  neutral: {
+    container: 'border border-[var(--bb-border-soft)] bg-[rgba(243,241,237,0.72)]',
+    text: 'text-primary',
+    icon: '#090909'
   }
 };
 
@@ -35,6 +51,7 @@ export const Alert = ({
   variant = 'base',
   icon,
   title,
+  children,
   className,
   'data-testid': dataTestId
 }: AlertProps) => {
@@ -65,6 +82,7 @@ export const Alert = ({
         </div>
       )}
       {title && <p className={cn('label-sm', styles.text)}>{title}</p>}
+      {children ? <div className={cn('label-sm', styles.text)}>{children}</div> : null}
     </div>
   );
 };
