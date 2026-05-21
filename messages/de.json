@@ -971,6 +971,8 @@
   "account": {
     "vouchers": {
       "title": "Meine Gutscheine",
+      "page_intro": "Prüfe aktive, eingelöste und zurückgezogene Gutscheine im Account Hub.",
+      "snapshot_email": "E-Mail",
       "row_cta_open": "Gutschein öffnen",
       "expires_label": "Läuft ab {date}",
       "orders_crosslink": "Bestellungen ansehen",
@@ -1454,8 +1456,20 @@
       "intro": "Prüfen Sie jede Bestellgruppe, den Betrag und den aktuellen Fortschritt direkt im Konto.",
       "secondary_cta": "Zu den Gutscheinen",
       "snapshot": { "orders": "Bestellgruppen", "email": "E-Mail" },
+      "filters": {
+        "aria_label": "Filter nach Bestellstatus",
+        "all": "Alle",
+        "paid": "Bezahlt",
+        "pending": "Ausstehend",
+        "failed": "Benötigt Aufmerksamkeit",
+        "refunded": "Zurückgegeben"
+      },
+      "pagination": { "previous": "Vorherige Bestellungen", "next": "Weitere Bestellungen" },
       "empty": { "title": "Noch keine Bestellungen", "body": "Ihr Bestellverlauf erscheint hier nach dem ersten Kauf." },
       "error": {
+        "access_denied_title": "Anmeldung erforderlich",
+        "access_denied_body": "Melden Sie sich erneut an, um Ihre Bestellungen zu sehen.",
+        "login": "Anmelden",
         "failed_title": "Bestellungen konnten nicht geladen werden",
         "failed_body": "Laden Sie die Seite gleich erneut. Ihr Zugriff bleibt geschützt.",
         "retry": "Erneut versuchen",
@@ -1463,7 +1477,7 @@
         "unavailable_body": "Wir prüfen gerade die Verbindung zum Bestelldienst."
       },
       "order_label": "Bestellung #{displayId}",
-      "status": { "paid": "Bezahlt", "pending": "Ausstehend" },
+      "status": { "paid": "Bezahlt", "pending": "Ausstehend", "failed": "Benötigt Aufmerksamkeit", "refunded": "Zurückgegeben" },
       "summary": { "items": "{count, plural, one {# Artikel} other {# Artikel}}", "total": "Summe: {amount}", "lines": "{count, plural, one {# Sendung} other {# Sendungen}}" },
       "open": "Details öffnen",
       "labels": { "date_pending": "Datum folgt" }
@@ -1481,7 +1495,8 @@
         "heading": "Zeitachse",
         "placed": { "label": "Bestellung eingegangen", "detail": "Wir haben die Bestellung registriert und die Abwicklung gestartet." },
         "payment": { "label": "Zahlung", "detail_paid": "Die Zahlung wurde bestätigt.", "detail_pending": "Wir warten auf die Zahlungsbestätigung." },
-        "fulfillment": { "label": "Erfüllung", "detail_ready": "Der Gutschein oder die Service-Übergabe ist bereit.", "detail_pending": "Wir bereiten die Erfüllung noch vor." }
+        "fulfillment": { "label": "Erfüllung", "detail_ready": "Der Gutschein oder die Service-Übergabe ist bereit.", "detail_pending": "Wir bereiten die Erfüllung noch vor." },
+        "voucher_handoff": { "label": "Gutschein-Lifecycle", "detail": "Käufer, Empfänger und Salon können die nächste Gutscheinübergabe in diesem Kontobereich verfolgen." }
       },
       "actions": {
         "heading": "Aktionen",
@@ -1493,8 +1508,12 @@
       "handoff": {
         "label_for_you": "Was kommt als Nächstes für Sie:",
         "label_for_us": "Was kommt als Nächstes für uns:",
+        "label_for_recipient": "Was kommt als Nächstes für den Empfänger:",
+        "label_for_salon": "Was kommt als Nächstes für den Salon:",
         "for_you": "Behalten Sie diese Bestellung griffbereit, falls Sie Gutschein, Rechnung oder Rückgabe erneut benötigen.",
-        "for_us": "Wir halten Zahlung, Erfüllung und After-Sales-Support im Hintergrund aufeinander abgestimmt."
+        "for_us": "Wir halten Zahlung, Erfüllung und After-Sales-Support im Hintergrund aufeinander abgestimmt.",
+        "for_recipient": "Der Empfänger erhält die Gutscheinübergabe und kann zu den Details zurückkehren, wenn Zustimmung oder Einlösung nötig sind.",
+        "for_salon": "Der Salon sieht den Gutscheinkontext erst, wenn er den Service einlösen oder unterstützen muss."
       },
       "error": {
         "failed_title": "Diese Bestellung konnte nicht geladen werden",
@@ -1510,6 +1529,8 @@
       "snapshot": { "returns": "Rückgaben", "email": "E-Mail" },
       "empty": { "title": "Noch keine Rückgaben", "body": "Rückgabeanträge erscheinen hier, wenn Sie sie jemals benötigen." },
       "error": {
+        "access_denied_title": "Anmeldung erforderlich",
+        "access_denied_body": "Melden Sie sich erneut an, um Rückgaben zu sehen.",
         "failed_title": "Rückgaben konnten nicht geladen werden",
         "failed_body": "Versuchen Sie es gleich erneut. Der Recovery-Pfad ist vom Empty State getrennt.",
         "unavailable_title": "Rückgaben sind vorübergehend nicht verfügbar",
@@ -1527,6 +1548,8 @@
       "snapshot": { "wishlist": "Gespeicherte Einträge", "email": "E-Mail" },
       "empty": { "title": "Ihre Wunschliste ist leer", "body": "Speichern Sie Behandlungen und Gutscheine, zu denen Sie später zurückkehren möchten." },
       "error": {
+        "access_denied_title": "Anmeldung erforderlich",
+        "access_denied_body": "Melden Sie sich erneut an, um Ihre Wunschliste zu sehen.",
         "failed_title": "Ihre Wunschliste konnte nicht geladen werden",
         "failed_body": "Das ist nicht dasselbe wie eine leere Wunschliste. Bitte versuchen Sie es gleich erneut.",
         "unavailable_title": "Die Wunschliste ist vorübergehend nicht verfügbar",
@@ -1538,6 +1561,11 @@
       "intro": "Dieses Postfach bleibt passiv, bis eine echte Buyer-Salon-Konversation nötig ist.",
       "empty": { "title": "Noch keine Nachrichten", "body": "Gespräche erscheinen hier, wenn ein Salon oder der Support Sie kontaktieren muss." },
       "provider": { "title": "Der Messaging-Provider benötigt eine Live-Sitzung", "body": "Der Provider ist konfiguriert, aber diese Oberfläche erzeugt keine künstlichen Threads aus Bestellungen." },
+      "channels": {
+        "aria_label": "Postfachkanäle",
+        "salon": { "title": "Salon-Unterhaltungen", "body": "Nachrichten von Salons erscheinen hier, sobald ein echter Thread geöffnet ist." },
+        "support": { "title": "Support-Übergabe", "body": "Supportnachrichten bleiben von Empty States und Provider-Ausfällen getrennt." }
+      },
       "snapshot": { "status": "Postfachmodus", "connected": "Provider verbunden", "passive": "Passiver Empty State", "email": "E-Mail" }
     }
   }

@@ -48,6 +48,20 @@ function ActionTile({
   );
 }
 
+function safeInternalOrHttpHref(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith('/')) return trimmed;
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export default async function OrderDetailPage({
   params
 }: {
@@ -84,7 +98,7 @@ export default async function OrderDetailPage({
   const timeline = buildOrderTimeline(orderGroup);
   const resendHref = primaryOrder?.id ? `/${locale}/order/${primaryOrder.id}/confirmed` : undefined;
   const returnHref = primaryOrder?.id ? `/${locale}/user/orders/${primaryOrder.id}/return` : undefined;
-  const invoiceHref = primaryOrder?.metadata?.invoice_url ? String(primaryOrder.metadata.invoice_url) : undefined;
+  const invoiceHref = safeInternalOrHttpHref(primaryOrder?.metadata?.invoice_url);
   const contactHref = `/${locale}/pomoc`;
 
   return (
@@ -188,6 +202,12 @@ export default async function OrderDetailPage({
             forUs={t('handoff.for_us')}
             labelForYou={t('handoff.label_for_you')}
             labelForUs={t('handoff.label_for_us')}
+          />
+          <CrossActorHandoff
+            forYou={t('handoff.for_recipient')}
+            forUs={t('handoff.for_salon')}
+            labelForYou={t('handoff.label_for_recipient')}
+            labelForUs={t('handoff.label_for_salon')}
           />
         </div>
       }

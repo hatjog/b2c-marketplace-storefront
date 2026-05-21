@@ -18,6 +18,18 @@ export default async function MessagesPage({ params }: { params: Promise<{ local
   }
 
   const talkJsConfigured = Boolean(process.env.NEXT_PUBLIC_TALKJS_APP_ID);
+  const inboxChannels = [
+    {
+      id: 'salon',
+      title: t('channels.salon.title'),
+      body: t('channels.salon.body')
+    },
+    {
+      id: 'support',
+      title: t('channels.support.title'),
+      body: t('channels.support.body')
+    }
+  ];
 
   return (
     <AccountLayoutWithChrome
@@ -38,11 +50,19 @@ export default async function MessagesPage({ params }: { params: Promise<{ local
             <h2 className="heading-md text-primary">{t('heading')}</h2>
             <p className="text-sm text-secondary">{t('intro')}</p>
           </div>
-          {talkJsConfigured ? (
-            <StateCard variant="unavailable" title={t('provider.title')} description={t('provider.body')} />
-          ) : (
-            <StateCard variant="empty" title={t('empty.title')} description={t('empty.body')} />
-          )}
+          <div className="grid gap-3 md:grid-cols-2" role="list" aria-label={t('channels.aria_label')}>
+            {inboxChannels.map(channel => (
+              <article key={channel.id} className="bb-card space-y-2" role="listitem">
+                <h3 className="text-sm font-semibold text-primary">{channel.title}</h3>
+                <p className="text-sm text-secondary">{channel.body}</p>
+              </article>
+            ))}
+          </div>
+          <StateCard
+            variant={talkJsConfigured ? 'unavailable' : 'empty'}
+            title={talkJsConfigured ? t('provider.title') : t('empty.title')}
+            description={talkJsConfigured ? t('provider.body') : t('empty.body')}
+          />
         </div>
       }
     />

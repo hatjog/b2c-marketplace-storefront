@@ -970,6 +970,8 @@
   "account": {
     "vouchers": {
       "title": "Moje vouchery",
+      "page_intro": "Przeglądaj aktywne, zrealizowane i wycofane vouchery w Account Hub.",
+      "snapshot_email": "E-mail",
       "row_cta_open": "Otwórz voucher",
       "expires_label": "Wygasa {date}",
       "orders_crosslink": "Zobacz zamówienia",
@@ -1457,8 +1459,20 @@
       "intro": "Sprawdź każdą grupę zamówień, kwotę i bieżący postęp bez wychodzenia z konta.",
       "secondary_cta": "Przejdź do voucherów",
       "snapshot": { "orders": "Grupy zamówień", "email": "E-mail" },
+      "filters": {
+        "aria_label": "Filtry statusu zamówień",
+        "all": "Wszystkie",
+        "paid": "Opłacone",
+        "pending": "Oczekujące",
+        "failed": "Wymaga uwagi",
+        "refunded": "Zwrócone"
+      },
+      "pagination": { "previous": "Poprzednie zamówienia", "next": "Następne zamówienia" },
       "empty": { "title": "Nie masz jeszcze zamówień", "body": "Historia zamówień pojawi się tutaj po pierwszym zakupie." },
       "error": {
+        "access_denied_title": "Wymagane logowanie",
+        "access_denied_body": "Zaloguj się ponownie, aby zobaczyć zamówienia.",
+        "login": "Zaloguj się",
         "failed_title": "Nie udało się wczytać zamówień",
         "failed_body": "Odśwież stronę za chwilę. Twój dostęp pozostaje chroniony.",
         "retry": "Spróbuj ponownie",
@@ -1466,7 +1480,7 @@
         "unavailable_body": "Sprawdzamy połączenie z usługą zamówień."
       },
       "order_label": "Zamówienie #{displayId}",
-      "status": { "paid": "Opłacone", "pending": "Oczekuje" },
+      "status": { "paid": "Opłacone", "pending": "Oczekuje", "failed": "Wymaga uwagi", "refunded": "Zwrócone" },
       "summary": {
         "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
         "total": "Suma: {amount}",
@@ -1496,7 +1510,8 @@
         "heading": "Oś czasu",
         "placed": { "label": "Zamówienie złożone", "detail": "Zarejestrowaliśmy zamówienie i rozpoczęliśmy realizację." },
         "payment": { "label": "Płatność", "detail_paid": "Płatność została potwierdzona.", "detail_pending": "Czekamy na potwierdzenie płatności." },
-        "fulfillment": { "label": "Realizacja", "detail_ready": "Voucher lub przekazanie usługi jest gotowe.", "detail_pending": "Wciąż przygotowujemy realizację." }
+        "fulfillment": { "label": "Realizacja", "detail_ready": "Voucher lub przekazanie usługi jest gotowe.", "detail_pending": "Wciąż przygotowujemy realizację." },
+        "voucher_handoff": { "label": "Cykl życia vouchera", "detail": "Kupujący, odbiorca i salon mogą śledzić kolejne przekazanie vouchera z tego widoku konta." }
       },
       "actions": {
         "heading": "Akcje",
@@ -1508,8 +1523,12 @@
       "handoff": {
         "label_for_you": "Co dalej dla Ciebie:",
         "label_for_us": "Co dalej dla nas:",
+        "label_for_recipient": "Co dalej dla odbiorcy:",
+        "label_for_salon": "Co dalej dla salonu:",
         "for_you": "Zachowaj to zamówienie pod ręką, jeśli chcesz ponowić wysyłkę vouchera, faktury albo wniosku o zwrot.",
-        "for_us": "W tle pilnujemy spójności płatności, realizacji i obsługi posprzedażowej."
+        "for_us": "W tle pilnujemy spójności płatności, realizacji i obsługi posprzedażowej.",
+        "for_recipient": "Odbiorca dostaje przekazanie vouchera i może wrócić do szczegółów, gdy potrzebna jest zgoda albo realizacja.",
+        "for_salon": "Salon widzi kontekst vouchera dopiero wtedy, gdy trzeba go zrealizować albo wesprzeć usługę."
       },
       "error": {
         "failed_title": "Nie udało się wczytać tego zamówienia",
@@ -1525,6 +1544,8 @@
       "snapshot": { "returns": "Zwroty", "email": "E-mail" },
       "empty": { "title": "Nie masz jeszcze zwrotów", "body": "Wnioski o zwrot pojawią się tutaj, jeśli kiedykolwiek będą potrzebne." },
       "error": {
+        "access_denied_title": "Wymagane logowanie",
+        "access_denied_body": "Zaloguj się ponownie, aby zobaczyć zwroty.",
         "failed_title": "Nie udało się wczytać zwrotów",
         "failed_body": "Spróbuj ponownie za chwilę. Ścieżka recovery jest oddzielona od empty state.",
         "unavailable_title": "Zwroty są chwilowo niedostępne",
@@ -1542,6 +1563,8 @@
       "snapshot": { "wishlist": "Zapisane pozycje", "email": "E-mail" },
       "empty": { "title": "Twoja wishlist jest pusta", "body": "Zapisuj zabiegi i vouchery, do których chcesz wrócić później." },
       "error": {
+        "access_denied_title": "Wymagane logowanie",
+        "access_denied_body": "Zaloguj się ponownie, aby zobaczyć wishlistę.",
         "failed_title": "Nie udało się wczytać wishlisty",
         "failed_body": "To nie jest to samo co pusta wishlist. Spróbuj ponownie za chwilę.",
         "unavailable_title": "Wishlist jest chwilowo niedostępna",
@@ -1555,6 +1578,11 @@
       "provider": {
         "title": "Provider wiadomości wymaga żywej sesji",
         "body": "Provider jest skonfigurowany, ale ta surface nie fabrykuje wątków z historii zamówień."
+      },
+      "channels": {
+        "aria_label": "Kanały inboxu",
+        "salon": { "title": "Rozmowy z salonami", "body": "Wiadomości od salonów pojawią się tutaj, gdy istnieje prawdziwy wątek." },
+        "support": { "title": "Przekazanie do supportu", "body": "Wiadomości supportu są oddzielone od empty state i awarii providera." }
       },
       "snapshot": { "status": "Tryb inboxu", "connected": "Provider podłączony", "passive": "Pasywny empty state", "email": "E-mail" }
     }
