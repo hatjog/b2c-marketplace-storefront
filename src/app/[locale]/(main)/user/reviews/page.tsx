@@ -9,11 +9,11 @@ import { isReviewableOrder } from '@/lib/data/reviews.shared';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const [t, user, orders] = await Promise.all([
+  const [t, user] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),
-    listOrders(),
   ]);
+  const orders = user ? await listOrders() : [];
 
   const reviewableOrders = orders.filter(isReviewableOrder).filter((order) => (order.reviews?.length ?? 0) === 0);
 
@@ -59,6 +59,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             orders={reviewableOrders.map((order) => ({
               id: order.id,
               displayId: order.display_id ? `#${order.display_id}` : order.id.slice(0, 8),
+              sellerId: order.seller.id,
               sellerName: order.seller?.name ?? t('written_reviews.list.unknown_seller'),
               createdAt: order.created_at ?? null,
               existingReview: null,

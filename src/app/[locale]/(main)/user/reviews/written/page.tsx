@@ -9,12 +9,13 @@ import { getReviews } from '@/lib/data/reviews';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const [t, user, reviewsRes, orders] = await Promise.all([
+  const [t, user] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),
-    getReviews(),
-    listOrders(),
   ]);
+  const [reviewsRes, orders] = user
+    ? await Promise.all([getReviews(), listOrders()])
+    : [{ data: { reviews: [] } }, []];
 
   return (
     <AccountLayoutWithChrome

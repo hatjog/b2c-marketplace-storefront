@@ -1438,310 +1438,319 @@
       "edit": "Bearbeiten"
     },
     "breadcrumbs": {
-      "account": "Account",
-      "orders": "Orders",
-      "return_request": "Return request",
-      "return_success": "Return status",
-      "addresses": "Saved addresses",
-      "reviews_to_write": "Reviews to write",
-      "written_reviews": "Written reviews",
-      "settings": "Settings"
+      "account": "Konto",
+      "orders": "Bestellungen",
+      "return_request": "Rückgabeanfrage",
+      "return_success": "Rückgabestatus",
+      "addresses": "Gespeicherte Adressen",
+      "reviews_to_write": "Ausstehende Bewertungen",
+      "written_reviews": "Geschriebene Bewertungen",
+      "settings": "Einstellungen"
     },
     "quick_actions": {
-      "orders": "Orders",
-      "orders_desc": "Return to order history and track next steps.",
-      "addresses": "Addresses",
-      "addresses_desc": "Update delivery and billing details.",
-      "reviews": "Reviews to write",
-      "reviews_desc": "Finish pending reviews without leaving Account Hub.",
-      "written_reviews": "Written reviews",
-      "written_reviews_desc": "Edit or delete published reviews.",
-      "settings": "Settings",
-      "settings_desc": "Manage profile, security and privacy.",
-      "return_request": "Return request",
-      "return_request_desc": "Review the return request you just sent."
+      "orders": "Bestellungen",
+      "orders_desc": "Zur Bestellhistorie zurückkehren und nächste Schritte verfolgen.",
+      "addresses": "Adressen",
+      "addresses_desc": "Liefer- und Rechnungsdaten aktualisieren.",
+      "reviews": "Ausstehende Bewertungen",
+      "reviews_desc": "Offene Bewertungen direkt im Konto-Hub abschließen.",
+      "written_reviews": "Geschriebene Bewertungen",
+      "written_reviews_desc": "Veröffentlichte Bewertungen bearbeiten oder löschen.",
+      "settings": "Einstellungen",
+      "settings_desc": "Profil, Sicherheit und Datenschutz verwalten.",
+      "return_request": "Rückgabeanfrage",
+      "return_request_desc": "Die gerade gesendete Rückgabeanfrage prüfen."
     },
     "snapshot": {
-      "orders": "Orders",
-      "addresses": "Addresses",
-      "reviews": "Reviews"
+      "orders": "Bestellungen",
+      "addresses": "Adressen",
+      "reviews": "Bewertungen"
     },
     "return_request": {
       "hero": {
-        "eyebrow": "Wave 2 · Returns",
-        "title": "Start a return request without losing context.",
-        "description": "Choose the reason, attach photos and leave a note for the salon. Validation runs on the client and server before the request is sent."
+        "eyebrow": "Wave 2 · Rückgaben",
+        "title": "Eine Rückgabe starten, ohne den Kontext zu verlieren.",
+        "description": "Wählen Sie den Grund, hängen Sie Fotos an und hinterlassen Sie eine Notiz für den Salon. Die Validierung läuft im Client und auf dem Server, bevor die Anfrage gesendet wird."
       },
       "progress": {
-        "title": "3-step return flow",
-        "description": "Progress stays visible while preserving keyboard order.",
-        "step_reason": "Reason",
-        "step_evidence": "Evidence",
-        "step_submit": "Sent"
+        "title": "Rückgabe in 3 Schritten",
+        "description": "Der Fortschritt bleibt sichtbar, während die Tastaturreihenfolge erhalten bleibt.",
+        "step_reason": "Grund",
+        "step_evidence": "Nachweis",
+        "step_submit": "Gesendet"
       },
       "form": {
-        "title": "Return request form",
-        "description": "All fields follow UX-DR23: blur feedback, localized errors and pending-state protection against duplicate submits.",
-        "reason_label": "Why are you returning this order?",
-        "photos_label": "Upload photos",
-        "photos_help": "Add up to 3 JPG, PNG or WEBP files. Max 5 MB each.",
-        "comment_label": "Additional note",
-        "submit": "Send return request"
+        "title": "Formular für die Rückgabeanfrage",
+        "description": "Alle Felder folgen UX-DR23: Blur-Feedback, lokalisierte Fehler und Pending-State-Schutz gegen doppelte Absendungen.",
+        "reason_label": "Warum geben Sie diese Bestellung zurück?",
+        "photos_label": "Fotos hochladen",
+        "photos_help": "Bis zu 3 JPG-, PNG- oder WEBP-Dateien hinzufügen. Maximal 5 MB pro Datei.",
+        "comment_label": "Zusätzliche Notiz",
+        "submit": "Rückgabeanfrage senden"
       },
-      "handoff_message": "The salon has 7 days to decide. We will notify you by email.",
+      "handoff_message": "Der Salon hat 7 Tage Zeit für die Entscheidung. Wir benachrichtigen Sie per E-Mail.",
       "success": {
-        "submitted": "Return request submitted. The seller review starts now and the timeline is already available.",
-        "go_to_summary": "Open return timeline"
+        "submitted": "Rückgabeanfrage gesendet. Die Prüfung durch den Verkäufer startet jetzt und die Timeline ist bereits verfügbar.",
+        "go_to_summary": "Rückgabe-Timeline öffnen"
       },
       "errors": {
-        "order_required": "Missing order reference.",
-        "reason_required": "Choose a return reason.",
-        "comment_too_long": "Your note can contain up to 500 characters.",
-        "photo_required": "Add at least one supporting photo.",
-        "photo_limit": "Upload no more than 3 photos.",
-        "photo_size": "Each file must be smaller than 5 MB.",
-        "photo_type": "Only JPG, PNG and WEBP files are supported.",
-        "generic": "We could not submit the return request. Try again in a moment."
+        "order_required": "Bestellreferenz fehlt.",
+        "reason_required": "Wählen Sie einen Rückgabegrund.",
+        "comment_too_long": "Ihre Notiz darf höchstens 500 Zeichen enthalten.",
+        "photo_required": "Fügen Sie mindestens ein Foto als Nachweis hinzu.",
+        "photo_limit": "Laden Sie höchstens 3 Fotos hoch.",
+        "photo_size": "Jede Datei muss kleiner als 5 MB sein.",
+        "photo_type": "Nur JPG-, PNG- und WEBP-Dateien werden unterstützt.",
+        "generic": "Wir konnten die Rückgabeanfrage nicht senden. Versuchen Sie es gleich erneut."
       }
     },
     "return_success": {
       "hero": {
-        "eyebrow": "Wave 2 · Return confirmed",
-        "title": "Your request is in the decision queue.",
-        "description": "Order {orderId} is now visible to the salon and support. The next steps stay transparent for every actor."
+        "eyebrow": "Wave 2 · Rückgabe bestätigt",
+        "title": "Ihre Anfrage liegt in der Entscheidungswarteschlange.",
+        "description": "Bestellung {orderId} ist jetzt für Salon und Support sichtbar. Die nächsten Schritte bleiben für alle Beteiligten transparent."
       },
       "badge": {
-        "pending": "Awaiting vendor decision"
+        "pending": "Warten auf Entscheidung des Verkäufers"
       },
       "timeline": {
-        "title": "Return lifecycle",
-        "description": "Status uses semantic state colors and never relies on color only.",
+        "title": "Rückgabe-Lebenszyklus",
+        "description": "Der Status nutzt semantische Zustandsfarben und verlässt sich nie nur auf Farbe.",
         "submitted": {
-          "title": "Request recorded",
-          "body": "We stored your reason, attachments and note and notified the salon."
+          "title": "Anfrage erfasst",
+          "body": "Wir haben Grund, Anhänge und Notiz gespeichert und den Salon informiert."
         },
         "vendor_review": {
-          "title": "Salon reviews the request",
-          "body": "The salon has up to 7 days to accept, reject or request more context."
+          "title": "Der Salon prüft die Anfrage",
+          "body": "Der Salon hat bis zu 7 Tage Zeit, die Anfrage anzunehmen, abzulehnen oder mehr Kontext anzufordern."
         },
         "payout": {
-          "title": "Refund or pickup arranged",
-          "body": "Once approved, support monitors refund or collection details and keeps you updated by email."
+          "title": "Erstattung oder Abholung vereinbart",
+          "body": "Nach der Freigabe überwacht der Support Erstattung oder Abholung und hält Sie per E-Mail auf dem Laufenden."
         }
       },
       "handoff": {
-        "title": "What happens next for each actor",
-        "description": "Cross-actor handoff keeps the customer, vendor and support aligned.",
-        "for_customer_label": "What happens next for you:",
-        "for_vendor_label": "What happens next for the salon:",
-        "for_customer": "Watch your inbox and return timeline. If more proof is needed, you can respond without restarting the flow.",
-        "for_vendor": "The salon reviews the evidence, records a decision and confirms pickup or refund details.",
-        "for_support_label": "What happens next for support:",
-        "for_platform_label": "What happens next for BonBeauty:",
-        "for_support": "Support steps in when the case needs mediation, deadline follow-up or policy clarification.",
-        "for_platform": "BonBeauty tracks SLA timing, keeps the audit trail and makes sure the outcome reaches every actor."
+        "title": "Was für jede Rolle als Nächstes passiert",
+        "description": "Der rollenübergreifende Handoff hält Kundin, Verkäufer und Support synchron.",
+        "for_customer_label": "Was für Sie als Nächstes passiert:",
+        "for_vendor_label": "Was für den Salon als Nächstes passiert:",
+        "for_customer": "Behalten Sie Posteingang und Rückgabe-Timeline im Blick. Wenn mehr Nachweise nötig sind, können Sie antworten, ohne den Ablauf neu zu starten.",
+        "for_vendor": "Der Salon prüft die Nachweise, dokumentiert die Entscheidung und bestätigt Abhol- oder Erstattungsdetails.",
+        "for_support_label": "Was für den Support als Nächstes passiert:",
+        "for_platform_label": "Was für BonBeauty als Nächstes passiert:",
+        "for_support": "Der Support greift ein, wenn Vermittlung, Fristnachverfolgung oder Richtlinienklärung nötig sind.",
+        "for_platform": "BonBeauty verfolgt SLA-Zeiten, hält den Audit-Trail fest und sorgt dafür, dass das Ergebnis alle Beteiligten erreicht."
       }
     },
     "addresses": {
       "hero": {
-        "eyebrow": "Wave 2 · Address book",
-        "title": "Keep delivery details ready for the next order.",
-        "description": "Add, edit and delete addresses inside a focus-trapped panel with keyboard-safe controls and 44px targets."
+        "eyebrow": "Wave 2 · Adressbuch",
+        "title": "Lieferdaten für die nächste Bestellung bereithalten.",
+        "description": "Adressen in einem fokussierten Panel mit tastatursicheren Controls und 44px-Zielen hinzufügen, bearbeiten und löschen."
       },
       "actions": {
-        "add": "Add address"
+        "add": "Adresse hinzufügen"
       },
       "empty": {
-        "title": "No saved addresses yet",
-        "description": "ES8 empty state for saved addresses.",
-        "body": "Save an address to speed up checkout and avoid retyping delivery details on the next order."
+        "title": "Noch keine Adressen gespeichert",
+        "description": "ES8-Leerzustand für gespeicherte Adressen.",
+        "body": "Speichern Sie eine Adresse, um den Checkout zu beschleunigen und Lieferdaten bei der nächsten Bestellung nicht erneut einzugeben."
       },
       "list": {
-        "title": "Saved addresses",
-        "description": "Review delivery details, update them inline and remove outdated entries with confirmation.",
-        "default_label": "Saved address",
-        "no_phone": "Phone not provided"
+        "title": "Gespeicherte Adressen",
+        "description": "Lieferdaten prüfen, direkt aktualisieren und veraltete Einträge mit Bestätigung entfernen.",
+        "default_label": "Gespeicherte Adresse",
+        "no_phone": "Keine Telefonnummer angegeben"
       },
       "form": {
-        "create_title": "Add address",
-        "edit_title": "Edit address",
-        "address_name": "Address label",
-        "first_name": "First name",
-        "last_name": "Last name",
-        "company": "Company",
-        "address_line": "Street and number",
-        "city": "City",
-        "postal_code": "Postal code",
-        "province": "Region / province",
-        "phone": "Phone number",
-        "country": "Country",
+        "create_title": "Adresse hinzufügen",
+        "edit_title": "Adresse bearbeiten",
+        "address_name": "Adressbezeichnung",
+        "first_name": "Vorname",
+        "last_name": "Nachname",
+        "company": "Firma",
+        "address_line": "Straße und Hausnummer",
+        "city": "Ort",
+        "postal_code": "Postleitzahl",
+        "province": "Region / Bundesland",
+        "phone": "Telefonnummer",
+        "country": "Land",
         "errors": {
-          "address_name_required": "Enter an address label.",
-          "first_name_required": "Enter the first name.",
-          "last_name_required": "Enter the last name.",
-          "address_required": "Enter the street and number.",
-          "city_required": "Enter the city.",
-          "country_required": "Choose a country.",
-          "postal_code_required": "Enter the postal code.",
-          "phone_required": "Enter the phone number.",
-          "generic": "We could not save the address. Try again."
+          "address_name_required": "Geben Sie eine Adressbezeichnung ein.",
+          "first_name_required": "Geben Sie den Vornamen ein.",
+          "last_name_required": "Geben Sie den Nachnamen ein.",
+          "address_required": "Geben Sie Straße und Hausnummer ein.",
+          "city_required": "Geben Sie den Ort ein.",
+          "country_required": "Wählen Sie ein Land.",
+          "postal_code_required": "Geben Sie die Postleitzahl ein.",
+          "phone_required": "Geben Sie die Telefonnummer ein.",
+          "generic": "Wir konnten die Adresse nicht speichern. Versuchen Sie es erneut."
         },
         "success": {
-          "created": "Address added.",
-          "updated": "Address updated.",
-          "deleted": "Address deleted."
+          "created": "Adresse hinzugefügt.",
+          "updated": "Adresse aktualisiert.",
+          "deleted": "Adresse gelöscht."
         }
       },
       "delete": {
-        "title": "Delete this address?",
-        "description": "The address will be removed from your account after confirmation."
+        "title": "Diese Adresse löschen?",
+        "description": "Die Adresse wird nach der Bestätigung aus Ihrem Konto entfernt."
       }
     },
     "reviews_to_write": {
       "hero": {
-        "eyebrow": "Wave 2 · Reviews to write",
-        "title": "You still have a few salons to review.",
-        "description": "Pending reviews stay grouped by order so you can complete feedback without hunting for the right booking."
+        "eyebrow": "Wave 2 · Ausstehende Bewertungen",
+        "title": "Einige Salons warten noch auf Ihre Bewertung.",
+        "description": "Ausstehende Bewertungen bleiben nach Bestellung gruppiert, damit Sie Feedback ohne Suche nach der richtigen Buchung abschließen können."
       },
       "empty": {
-        "title": "No reviews waiting",
-        "description": "ES7 gentle empty state for review prompts.",
-        "body": "You are caught up. When a new order becomes eligible for review, it will appear here.",
-        "cta": "Go to written reviews"
+        "title": "Keine Bewertungen offen",
+        "description": "ES7-sanfter Leerzustand für Bewertungsaufforderungen.",
+        "body": "Alles ist erledigt. Sobald eine neue Bestellung bewertbar ist, erscheint sie hier.",
+        "cta": "Zu geschriebenen Bewertungen"
       },
       "list": {
-        "title": "Orders waiting for feedback",
-        "description": "Open written reviews to finish the form and compare your published feedback.",
-        "order_label": "Order {id}"
+        "title": "Bestellungen mit offenem Feedback",
+        "description": "Öffnen Sie geschriebene Bewertungen, um das Formular abzuschließen und veröffentlichtes Feedback zu vergleichen.",
+        "order_label": "Bestellung {id}"
       },
       "actions": {
-        "write": "Write review",
-        "compare": "See written reviews"
+        "write": "Bewertung schreiben",
+        "compare": "Geschriebene Bewertungen ansehen"
       }
     },
     "written_reviews": {
       "hero": {
-        "eyebrow": "Wave 2 · Published reviews",
-        "title": "Manage the feedback you already sent.",
-        "description": "Edit tone, update rating or delete a review with confirmation and accessible mutation feedback."
+        "eyebrow": "Wave 2 · Veröffentlichte Bewertungen",
+        "title": "Verwalten Sie bereits gesendetes Feedback.",
+        "description": "Ton anpassen, Bewertung aktualisieren oder eine Bewertung mit Bestätigung und zugänglichem Mutationsfeedback löschen."
       },
       "empty": {
-        "title": "No written reviews yet",
-        "description": "Published reviews will appear here after submission.",
-        "body": "Use the reviews-to-write list when you are ready to share feedback."
+        "title": "Noch keine geschriebenen Bewertungen",
+        "description": "Veröffentlichte Bewertungen erscheinen nach dem Senden hier.",
+        "body": "Nutzen Sie die Liste ausstehender Bewertungen, wenn Sie Feedback teilen möchten."
       },
       "list": {
-        "title": "My written reviews",
-        "description": "Changes never surface raw backend errors. Each mutation reports a localized result.",
+        "title": "Meine geschriebenen Bewertungen",
+        "description": "Änderungen zeigen nie rohe Backend-Fehler. Jede Mutation meldet ein lokalisiertes Ergebnis.",
         "unknown_seller": "Salon",
         "rating": "{rating}/5",
-        "no_note": "No additional note.",
-        "updated_at": "Updated: {date}"
+        "no_note": "Keine zusätzliche Notiz.",
+        "updated_at": "Aktualisiert: {date}"
       },
       "form": {
-        "title": "Edit review",
-        "rating_label": "Rating",
-        "note_label": "Review note",
+        "title": "Bewertung bearbeiten",
+        "create_title": "Bewertung schreiben",
+        "rating_label": "Bewertung",
+        "note_label": "Bewertungsnotiz",
         "errors": {
-          "rating_required": "Choose a rating.",
-          "note_too_long": "Your note can contain up to 300 characters.",
-          "review_id_required": "Missing review reference.",
-          "order_id_required": "Missing order reference.",
-          "generic": "We could not update the review. Try again."
+          "rating_required": "Wählen Sie eine Bewertung.",
+          "note_too_long": "Ihre Notiz darf höchstens 300 Zeichen enthalten.",
+          "review_id_required": "Bewertungsreferenz fehlt.",
+          "order_id_required": "Bestellreferenz fehlt.",
+          "seller_id_required": "Salonreferenz fehlt.",
+          "generic": "Wir konnten die Bewertung nicht aktualisieren. Versuchen Sie es erneut."
         },
         "success": {
-          "updated": "Review updated.",
-          "deleted": "Review deleted."
+          "created": "Bewertung gespeichert.",
+          "updated": "Bewertung aktualisiert.",
+          "deleted": "Bewertung gelöscht."
         }
       },
       "delete": {
-        "title": "Delete review?",
-        "description": "This removes the published review from your account view after confirmation."
+        "title": "Bewertung löschen?",
+        "description": "Nach der Bestätigung wird die veröffentlichte Bewertung aus Ihrer Kontoansicht entfernt."
       }
     },
     "settings": {
       "hero": {
-        "eyebrow": "Wave 2 · Account settings",
-        "title": "Keep profile, security and privacy controls in one hub.",
-        "description": "Desktop uses anchored section navigation, while mobile keeps the same landmarks without overflow."
+        "eyebrow": "Wave 2 · Kontoeinstellungen",
+        "title": "Profil, Sicherheit und Datenschutz in einem Hub verwalten.",
+        "description": "Desktop nutzt eine verankerte Abschnittsnavigation, während Mobile dieselben Landmarks ohne Overflow behält."
       },
       "nav": {
-        "title": "Sections",
-        "description": "Jump between profile, security, notifications, payments and GDPR privacy."
+        "title": "Abschnitte",
+        "description": "Zwischen Profil, Sicherheit, Benachrichtigungen, Zahlungen und DSGVO-Datenschutz wechseln."
       },
       "sections": {
-        "profile": "Profile",
-        "security": "Security",
-        "notifications": "Notifications",
-        "payments": "Payments",
-        "privacy": "GDPR privacy"
+        "profile": "Profil",
+        "security": "Sicherheit",
+        "notifications": "Benachrichtigungen",
+        "payments": "Zahlungen",
+        "privacy": "DSGVO-Datenschutz"
       },
       "profile": {
-        "title": "Profile",
-        "description": "Update personal contact details with blur-based success feedback.",
-        "first_name": "First name",
-        "last_name": "Last name",
-        "phone": "Phone",
-        "email": "Email",
-        "locale": "Preferred locale",
+        "title": "Profil",
+        "description": "Persönliche Kontaktdaten mit Blur-basiertem Erfolgsfeedback aktualisieren.",
+        "first_name": "Vorname",
+        "last_name": "Nachname",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "locale": "Bevorzugte Sprache",
         "errors": {
-          "first_name_required": "Enter the first name.",
-          "last_name_required": "Enter the last name.",
-          "phone_required": "Enter the phone number.",
-          "email_required": "Email is required.",
-          "email_invalid": "Enter a valid email address.",
-          "locale_required": "Choose a preferred locale.",
-          "generic": "We could not update the profile. Try again."
+          "first_name_required": "Geben Sie den Vornamen ein.",
+          "last_name_required": "Geben Sie den Nachnamen ein.",
+          "phone_required": "Geben Sie die Telefonnummer ein.",
+          "email_required": "E-Mail ist erforderlich.",
+          "email_invalid": "Geben Sie eine gültige E-Mail-Adresse ein.",
+          "locale_required": "Wählen Sie eine bevorzugte Sprache.",
+          "generic": "Wir konnten das Profil nicht aktualisieren. Versuchen Sie es erneut."
         },
         "success": {
-          "updated": "Profile updated."
+          "updated": "Profil aktualisiert."
         }
       },
       "security": {
-        "title": "Security",
-        "description": "Use a password reset handoff instead of exposing raw auth errors in the UI.",
-        "new_password": "New password",
-        "confirm_password": "Confirm password",
+        "title": "Sicherheit",
+        "description": "Einen Passwort-Reset-Handoff nutzen, statt rohe Auth-Fehler in der UI zu zeigen.",
+        "new_password": "Neues Passwort",
+        "confirm_password": "Passwort bestätigen",
         "errors": {
-          "password_too_short": "Use at least 8 characters.",
-          "password_mismatch": "Passwords must match.",
-          "generic": "We could not start the reset flow. Try again."
+          "password_too_short": "Verwenden Sie mindestens 8 Zeichen.",
+          "password_mismatch": "Die Passwörter müssen übereinstimmen.",
+          "generic": "Wir konnten den Reset-Ablauf nicht starten. Versuchen Sie es erneut."
         },
         "success": {
-          "reset_email_sent": "Reset email sent. Complete the password change from your inbox."
+          "reset_email_sent": "Reset-E-Mail gesendet. Schließen Sie die Passwortänderung über Ihren Posteingang ab."
         }
       },
       "notifications": {
-        "title": "Notifications",
-        "description": "Choose which updates should continue through the account team request intake for this release.",
-        "email_updates": "Email order updates",
-        "sms_updates": "SMS shipment updates",
-        "product_news": "Product and editorial news",
+        "title": "Benachrichtigungen",
+        "description": "Wählen Sie, welche Updates in diesem Release über den Intake des Account-Teams laufen sollen.",
+        "email_updates": "E-Mail-Updates zu Bestellungen",
+        "sms_updates": "SMS-Versandupdates",
+        "product_news": "Produkt- und Redaktionsthemen",
+        "errors": {
+          "generic": "Wir konnten die Benachrichtigungsanfrage nicht speichern. Versuchen Sie es erneut."
+        },
         "success": {
-          "request_received": "Notification preference request received."
+          "request_received": "Anfrage zu Benachrichtigungseinstellungen erhalten."
         }
       },
       "payments": {
-        "title": "Payments",
-        "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
-        "default_card": "Preferred payment note",
-        "invoices_by_email": "Send invoices by email",
+        "title": "Zahlungen",
+        "description": "Zahlungspräferenzen für den Support erfassen, ohne nicht unterstützte Backend-Mutationen als abgeschlossen darzustellen.",
+        "default_card": "Notiz zur bevorzugten Zahlung",
+        "invoices_by_email": "Rechnungen per E-Mail senden",
+        "errors": {
+          "generic": "Wir konnten die Zahlungsanfrage nicht speichern. Versuchen Sie es erneut."
+        },
         "success": {
-          "request_received": "Payment preference request received."
+          "request_received": "Anfrage zu Zahlungseinstellungen erhalten."
         }
       },
       "privacy": {
-        "title": "GDPR privacy",
-        "description": "Privacy actions are represented as intake requests until dedicated backend automation is available.",
-        "request_intake_notice": "This release records the request and hands it off safely. It does not claim that export or deletion is already complete.",
-        "export_request": "Request personal data export",
-        "delete_request": "Request account deletion review",
+        "title": "DSGVO-Datenschutz",
+        "description": "Datenschutzaktionen werden als Intake-Anfragen abgebildet, bis dedizierte Backend-Automatisierung verfügbar ist.",
+        "request_intake_notice": "Dieses Release speichert die Anfrage und übergibt sie sicher. Es behauptet nicht, dass Export oder Kontolöschung bereits abgeschlossen sind.",
+        "export_request": "Export personenbezogener Daten anfragen",
+        "delete_request": "Prüfung zur Kontolöschung anfragen",
         "errors": {
-          "generic": "We could not record the privacy request. Try again."
+          "generic": "Wir konnten die Datenschutzanfrage nicht speichern. Versuchen Sie es erneut."
         },
         "success": {
-          "export_request_received": "Data export request received.",
-          "delete_request_received": "Account deletion request received."
+          "export_request_received": "Anfrage zum Datenexport erhalten.",
+          "delete_request_received": "Anfrage zur Kontolöschung erhalten."
         }
       }
     }

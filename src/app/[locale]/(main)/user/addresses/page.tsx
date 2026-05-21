@@ -9,12 +9,12 @@ import { listRegions } from '@/lib/data/regions';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const [t, user, regions, orders] = await Promise.all([
+  const [t, user, regions] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),
     listRegions(),
-    listOrders(),
   ]);
+  const orders = user ? await listOrders() : [];
 
   const countries = regions.flatMap((region) => region.countries ?? []);
 

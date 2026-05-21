@@ -22,6 +22,7 @@ import {
 
 import {
   accountActionInitialState,
+  createWrittenReview,
   deleteAddressAction,
   deleteWrittenReview,
   submitAddress,
@@ -43,11 +44,13 @@ import { ModalShell } from '@/components/organisms/ModalShell/ModalShell';
 import {
   addressSchema,
   profileSettingsSchema,
+  reviewCreateSchema,
   reviewMutationSchema,
   returnRequestSchema,
   securitySettingsSchema,
   type AddressFormValues,
   type ProfileSettingsFormValues,
+  type ReviewCreateFormValues,
   type ReviewMutationFormValues,
   type ReturnRequestFormValues,
   type SecuritySettingsFormValues,
@@ -94,6 +97,7 @@ interface ReviewRecord {
 interface ReviewableOrder {
   id: string;
   displayId: string;
+  sellerId: string;
   sellerName: string;
   createdAt?: string | Date | null;
   existingReview?: ReviewRecord | null;
@@ -123,6 +127,21 @@ interface ReviewsToWriteProps {
 interface WrittenReviewsProps {
   reviews: ReviewRecord[];
 }
+
+type NotificationSettingsFormValues = {
+  emailUpdates: boolean;
+  smsUpdates: boolean;
+  productNews: boolean;
+};
+
+type PaymentSettingsFormValues = {
+  defaultCard: string;
+  invoicesByEmail: boolean;
+};
+
+type PrivacySettingsFormValues = {
+  requestType: 'export' | 'delete';
+};
 
 interface SettingsProps {
   customer: {
@@ -356,6 +375,7 @@ function WrittenReviewForm({
         >
           <input type="hidden" {...form.register('reviewId')} />
           <input type="hidden" {...form.register('orderId')} />
+          <input type="hidden" {...form.register('rating')} />
           <div className="space-y-2">
             <label className="text-sm font-medium text-primary">{t('written_reviews.form.rating_label')}</label>
             <div className="flex gap-2">
@@ -477,6 +497,136 @@ function DeleteReviewDialog({
   );
 }
 
+function CreateReviewForm({
+  order,
+  open,
+  onClose,
+}: {
+  order: ReviewableOrder | null;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const t = useTranslations('account_write');
+  const [state, action, pending] = useActionState(createWrittenReview, accountActionInitialState);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const { blurred, registerBlur } = useBlurSuccessState<ReviewCreateFormValues>();
+
+  const form = useForm<ReviewCreateFormValues>({
+    resolver: zodResolver(reviewCreateSchema),
+    defaultValues: {
+      orderId: order?.id ?? '',
+      sellerId: order?.sellerId ?? '',
+      rating: 5,
+      note: '',
+    },
+  });
+
+  useEffect(() => {
+    form.reset({
+      orderId: order?.id ?? '',
+      sellerId: order?.sellerId ?? '',
+      rating: 5,
+      note: '',
+    });
+  }, [form, order]);
+
+  useEffect(() => {
+    if (state.status === 'error' && state.fieldErrors) {
+      mapServerErrorsToForm<ReviewCreateFormValues>(state, form.setError, form.setFocus);
+    }
+  }, [form, state]);
+
+  useEffect(() => {
+    if (state.status === 'success') {
+      onClose();
+    }
+  }, [onClose, state.status]);
+
+  if (!order) return null;
+
+  return (
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      title={t('written_reviews.form.create_title')}
+      body={
+        <form
+          ref={formRef}
+          className="space-y-4"
+          onSubmit={form.handleSubmit(() => {
+            if (!formRef.current) return;
+            action(new FormData(formRef.current));
+          })}
+        >
+          <input type="hidden" {...form.register('orderId')} />
+          <input type="hidden" {...form.register('sellerId')} />
+          <input type="hidden" {...form.register('rating')} />
+          <div className="space-y-2">
+            <p className="text-sm text-secondary">
+              {t('reviews_to_write.list.order_label', { id: order.displayId })}
+            </p>
+            <label className="text-sm font-medium text-primary">{t('written_reviews.form.rating_label')}</label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  onClick={() => {
+                    form.setValue('rating', rating, { shouldDirty: true, shouldValidate: true });
+                  }}
+                  className={cn(
+                    'min-h-[44px] min-w-[44px] rounded-full border text-sm font-semibold',
+                    form.watch('rating') >= rating
+                      ? 'border-[var(--accent,#A89279)] bg-[rgba(168,146,121,0.18)] text-primary'
+                      : 'border-[var(--bb-border-soft)] text-secondary'
+                  )}
+                >
+                  {rating}
+                </button>
+              ))}
+            </div>
+            <FieldErrorMessage messageKey={form.formState.errors.rating?.message} t={t} />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-primary" htmlFor="new-review-note">
+              {t('written_reviews.form.note_label')}
+            </label>
+            <Textarea
+              id="new-review-note"
+              rows={5}
+              {...form.register('note', {
+                onBlur: registerBlur('note'),
+              })}
+            />
+            <FieldErrorMessage messageKey={form.formState.errors.note?.message} t={t} />
+            <BlurSuccess
+              active={blurred.note && !form.formState.errors.note}
+              label={t('common.inline_success')}
+            />
+          </div>
+
+          {state.messageKey && state.status === 'error' ? <Alert variant="negative">{t(state.messageKey as never)}</Alert> : null}
+          <button type="submit" className="hidden" aria-hidden="true" />
+        </form>
+      }
+      actions={[
+        {
+          id: 'cancel',
+          label: t('common.cancel'),
+          onClick: onClose,
+          variant: 'tonal',
+        },
+        {
+          id: 'save',
+          label: pending ? t('common.saving') : t('common.save'),
+          onClick: () => formRef.current?.requestSubmit(),
+        },
+      ]}
+    />
+  );
+}
+
 export function ReturnRequestSurface({ orderId, reasons }: ReturnSurfaceProps) {
   const t = useTranslations('account_write');
   const [state, action, pending] = useActionState(submitReturnRequest, accountActionInitialState);
@@ -548,16 +698,21 @@ export function ReturnRequestSurface({ orderId, reasons }: ReturnSurfaceProps) {
                           : 'border-[var(--bb-border-soft)]'
                       )}
                     >
-                      <button
-                        type="button"
-                        className="mt-0.5"
-                        aria-label={reason.label}
-                        onClick={() => {
-                          field.onChange(reason.value);
-                        }}
-                      >
+                      <span className="mt-0.5">
+                        <input
+                          ref={field.ref}
+                          type="radio"
+                          name={field.name}
+                          value={reason.value}
+                          checked={field.value === reason.value}
+                          onBlur={field.onBlur}
+                          onChange={() => {
+                            field.onChange(reason.value);
+                          }}
+                          className="sr-only"
+                        />
                         <Radio checked={field.value === reason.value} />
-                      </button>
+                      </span>
                       <span className="text-sm text-primary">{reason.label}</span>
                     </label>
                   ))}
@@ -809,6 +964,12 @@ export function SavedAddressesSurface({
     return editing;
   }, [editing]);
 
+  useEffect(() => {
+    if (deleteState.status === 'success') {
+      setDeleteTarget(null);
+    }
+  }, [deleteState.status]);
+
   return (
     <div className="space-y-6" data-testid="saved-addresses-page">
       <SurfaceHero
@@ -929,7 +1090,6 @@ export function SavedAddressesSurface({
               const formData = new FormData();
               formData.set('addressId', deleteTarget.id);
               deleteAction(formData);
-              setDeleteTarget(null);
             },
             destructive: true,
           },
@@ -941,6 +1101,7 @@ export function SavedAddressesSurface({
 
 export function ReviewsToWriteSurface({ orders }: ReviewsToWriteProps) {
   const t = useTranslations('account_write');
+  const [creating, setCreating] = useState<ReviewableOrder | null>(null);
 
   return (
     <div className="space-y-6" data-testid="reviews-to-write-page">
@@ -980,12 +1141,9 @@ export function ReviewsToWriteSurface({ orders }: ReviewsToWriteProps) {
                     ) : null}
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Link
-                      href={`/user/reviews/written?draft=${order.id}`}
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-on-primary"
-                    >
+                    <Button type="button" onClick={() => setCreating(order)}>
                       {t('reviews_to_write.actions.write')}
-                    </Link>
+                    </Button>
                     <Link
                       href={`/user/reviews/written`}
                       className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[var(--bb-border-soft)] px-4 py-2 text-sm font-medium text-primary"
@@ -999,6 +1157,8 @@ export function ReviewsToWriteSurface({ orders }: ReviewsToWriteProps) {
           </div>
         </SectionCard>
       )}
+
+      <CreateReviewForm order={creating} open={Boolean(creating)} onClose={() => setCreating(null)} />
     </div>
   );
 }
@@ -1190,7 +1350,7 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
     },
   });
 
-  const notificationForm = useForm({
+  const notificationForm = useForm<NotificationSettingsFormValues>({
     defaultValues: {
       emailUpdates: true,
       smsUpdates: false,
@@ -1198,14 +1358,14 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
     },
   });
 
-  const paymentForm = useForm({
+  const paymentForm = useForm<PaymentSettingsFormValues>({
     defaultValues: {
       defaultCard: 'ending-4242',
       invoicesByEmail: true,
     },
   });
 
-  const privacyForm = useForm({
+  const privacyForm = useForm<PrivacySettingsFormValues>({
     defaultValues: {
       requestType: 'export',
     },
@@ -1259,7 +1419,8 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                       </label>
                       <Input
                         id={`profile-${name}`}
-                        disabled={name === 'email'}
+                        readOnly={name === 'email'}
+                        aria-readonly={name === 'email' ? 'true' : undefined}
                         {...profileForm.register(name as FieldPath<ProfileSettingsFormValues>, {
                           onBlur: registerBlur(name as FieldPath<ProfileSettingsFormValues>),
                         })}
@@ -1348,9 +1509,14 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                     ['productNews', t('settings.notifications.product_news')],
                   ].map(([name, label]) => (
                     <label key={name} className="flex min-h-[44px] items-center gap-3 rounded-2xl border border-[var(--bb-border-soft)] px-4 py-3">
+                      <input
+                        type="hidden"
+                        name={name}
+                        value={notificationForm.watch(name as keyof NotificationSettingsFormValues) ? 'on' : 'off'}
+                      />
                       <Controller
                         control={notificationForm.control}
-                        name={name as never}
+                        name={name as keyof NotificationSettingsFormValues}
                         render={({ field }) => (
                           <Checkbox
                             checked={Boolean(field.value)}
@@ -1379,9 +1545,14 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                   </label>
                   <Input id="payment-card" {...paymentForm.register('defaultCard')} />
                   <label className="flex min-h-[44px] items-center gap-3 rounded-2xl border border-[var(--bb-border-soft)] px-4 py-3">
+                    <input
+                      type="hidden"
+                      name="invoicesByEmail"
+                      value={paymentForm.watch('invoicesByEmail') ? 'on' : 'off'}
+                    />
                     <Controller
                       control={paymentForm.control}
-                      name={'invoicesByEmail' as never}
+                      name="invoicesByEmail"
                       render={({ field }) => (
                         <Checkbox
                           checked={Boolean(field.value)}
@@ -1419,19 +1590,19 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                             : 'border-[var(--bb-border-soft)]'
                         )}
                       >
-                        <button
-                          type="button"
-                          className="mt-0.5"
-                          aria-label={label}
-                          onClick={() => privacyForm.setValue('requestType', value)}
-                        >
+                        <span className="mt-0.5">
+                          <input
+                            type="radio"
+                            value={value}
+                            className="sr-only"
+                            {...privacyForm.register('requestType')}
+                          />
                           <Radio checked={privacyForm.watch('requestType') === value} />
-                        </button>
+                        </span>
                         <span className="text-sm text-primary">{label}</span>
                       </label>
                     ))}
                   </div>
-                  <input type="hidden" {...privacyForm.register('requestType')} />
                 </div>
               )}
             />

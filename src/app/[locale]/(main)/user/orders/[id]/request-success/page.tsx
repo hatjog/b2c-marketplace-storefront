@@ -12,11 +12,11 @@ export default async function RequestSuccessPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const [t, customer, orders] = await Promise.all([
+  const [t, customer] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),
-    listOrders(),
   ]);
+  const orders = customer ? await listOrders() : [];
 
   return (
     <AccountLayoutWithChrome

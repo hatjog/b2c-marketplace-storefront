@@ -6,6 +6,7 @@ import type { z } from 'zod';
 import {
   addressSchema,
   profileSettingsSchema,
+  reviewCreateSchema,
   reviewDeleteSchema,
   reviewMutationSchema,
   returnRequestSchema,
@@ -15,6 +16,7 @@ import {
 import {
   addCustomerAddress,
   deleteCustomerAddress,
+  retrieveCustomer,
   sendResetPasswordEmail,
   updateCustomer,
   updateCustomerAddress,
@@ -77,14 +79,23 @@ function buildAddressFormData(parsed: z.infer<typeof addressSchema>) {
   return formData;
 }
 
-async function mutateReview(method: 'PATCH' | 'DELETE', reviewId: string, payload?: Record<string, unknown>) {
+async function mutateReview(
+  method: 'POST' | 'PATCH' | 'DELETE',
+  reviewId: string | null,
+  payload?: Record<string, unknown>
+) {
   const headers = {
     ...(await getAuthHeaders()),
     'Content-Type': 'application/json',
     'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
   };
 
-  const response = await fetch(`${MEDUSA_BACKEND_URL}/store/reviews/${reviewId}`, {
+  const endpoint =
+    method === 'POST'
+      ? `${MEDUSA_BACKEND_URL}/store/reviews`
+      : `${MEDUSA_BACKEND_URL}/store/reviews/${reviewId}`;
+
+  const response = await fetch(endpoint, {
     method,
     headers,
     body: payload ? JSON.stringify(payload) : undefined,
@@ -93,6 +104,49 @@ async function mutateReview(method: 'PATCH' | 'DELETE', reviewId: string, payloa
   if (!response.ok) {
     throw new Error('written_reviews.form.errors.generic');
   }
+}
+
+async function recordAccountRequest(
+  requestType: string,
+  payload: Record<string, unknown> = {}
+): Promise<boolean> {
+  const customer = await retrieveCustomer();
+
+  if (!customer) return false;
+
+  const metadata = ((customer as { metadata?: Record<string, unknown> }).metadata ?? {}) as Record<string, unknown>;
+  const gpMetadata =
+    metadata.gp && typeof metadata.gp === 'object' && !Array.isArray(metadata.gp)
+      ? (metadata.gp as Record<string, unknown>)
+      : {};
+  const existingRequests = Array.isArray(gpMetadata.account_requests)
+    ? gpMetadata.account_requests.slice(-19)
+    : [];
+
+  try {
+    await updateCustomer({
+      metadata: {
+        ...metadata,
+        gp: {
+          ...gpMetadata,
+          account_requests: [
+            ...existingRequests,
+            {
+              id: `account_request_${Date.now()}`,
+              type: requestType,
+              status: 'received',
+              submitted_at: new Date().toISOString(),
+              payload,
+            },
+          ],
+        },
+      },
+    } as unknown as Parameters<typeof updateCustomer>[0]);
+  } catch {
+    return false;
+  }
+
+  return true;
 }
 
 export async function submitReturnRequest(
@@ -122,12 +176,16 @@ export async function submitReturnRequest(
     };
   }
 
-  const response = await createReturnRequest({
-    order_id: parsed.data.orderId,
-    order_return_reason_id: parsed.data.reasonId,
-    customer_note: parsed.data.comment,
-    attachment_names: files.map((file) => file.name),
+  const payload = new FormData();
+  payload.set('order_id', parsed.data.orderId);
+  payload.set('order_return_reason_id', parsed.data.reasonId);
+  payload.set('customer_note', parsed.data.comment);
+  files.forEach((file) => {
+    payload.append('photos', file, file.name);
+    payload.append('attachment_names', file.name);
   });
+
+  const response = await createReturnRequest(payload);
 
   if (response?.error) {
     return {
@@ -203,12 +261,59 @@ export async function deleteAddressAction(
     };
   }
 
-  await deleteCustomerAddress(addressId);
+  const result = await deleteCustomerAddress(addressId);
+
+  if (!result.success) {
+    return {
+      status: 'error',
+      messageKey: 'addresses.form.errors.generic',
+    };
+  }
+
   revalidatePath('/user/addresses');
 
   return {
     status: 'success',
     messageKey: 'addresses.form.success.deleted',
+  };
+}
+
+export async function createWrittenReview(
+  _previous: AccountActionState = INITIAL_STATE,
+  formData: FormData
+): Promise<AccountActionState> {
+  const parsed = reviewCreateSchema.safeParse({
+    orderId: formData.get('orderId'),
+    sellerId: formData.get('sellerId'),
+    rating: formData.get('rating'),
+    note: formData.get('note'),
+  });
+
+  if (!parsed.success) {
+    return withFieldErrors(parsed.error);
+  }
+
+  try {
+    await mutateReview('POST', null, {
+      order_id: parsed.data.orderId,
+      rating: parsed.data.rating,
+      reference: 'seller',
+      reference_id: parsed.data.sellerId,
+      customer_note: parsed.data.note,
+    });
+  } catch {
+    return {
+      status: 'error',
+      messageKey: 'written_reviews.form.errors.generic',
+    };
+  }
+
+  revalidatePath('/user/reviews');
+  revalidatePath('/user/reviews/written');
+
+  return {
+    status: 'success',
+    messageKey: 'written_reviews.form.success.created',
   };
 }
 
@@ -347,8 +452,21 @@ export async function updateSecuritySettings(
 
 export async function updateNotificationSettings(
   _previous: AccountActionState = INITIAL_STATE,
-  _formData: FormData
+  formData: FormData
 ): Promise<AccountActionState> {
+  const recorded = await recordAccountRequest('notification_preferences', {
+    emailUpdates: formData.get('emailUpdates') === 'on',
+    smsUpdates: formData.get('smsUpdates') === 'on',
+    productNews: formData.get('productNews') === 'on',
+  });
+
+  if (!recorded) {
+    return {
+      status: 'error',
+      messageKey: 'settings.notifications.errors.generic',
+    };
+  }
+
   revalidatePath('/user/settings');
 
   return {
@@ -359,8 +477,20 @@ export async function updateNotificationSettings(
 
 export async function updatePaymentSettings(
   _previous: AccountActionState = INITIAL_STATE,
-  _formData: FormData
+  formData: FormData
 ): Promise<AccountActionState> {
+  const recorded = await recordAccountRequest('payment_preferences', {
+    defaultCard: formData.get('defaultCard'),
+    invoicesByEmail: formData.get('invoicesByEmail') === 'on',
+  });
+
+  if (!recorded) {
+    return {
+      status: 'error',
+      messageKey: 'settings.payments.errors.generic',
+    };
+  }
+
   revalidatePath('/user/settings');
 
   return {
@@ -376,6 +506,17 @@ export async function submitPrivacyRequest(
   const requestType = formData.get('requestType');
 
   if (requestType !== 'export' && requestType !== 'delete') {
+    return {
+      status: 'error',
+      messageKey: 'settings.privacy.errors.generic',
+    };
+  }
+
+  const recorded = await recordAccountRequest('privacy_request', {
+    requestType,
+  });
+
+  if (!recorded) {
     return {
       status: 'error',
       messageKey: 'settings.privacy.errors.generic',
