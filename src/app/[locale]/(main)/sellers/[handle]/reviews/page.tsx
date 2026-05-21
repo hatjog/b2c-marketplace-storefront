@@ -33,6 +33,7 @@ export default async function SellerReviewsPage({
       />
       <SellerTabs
         tab={tab}
+        seller={seller}
         seller_id={seller.id}
         seller_handle={seller.handle}
         locale={locale}

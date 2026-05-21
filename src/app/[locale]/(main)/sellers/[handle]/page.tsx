@@ -16,6 +16,13 @@ import { assessSellerStructuredData } from '@/lib/seo/sellerStructuredData';
 
 export const revalidate = 60;
 
+type SellerDetailTab = 'products' | 'about' | 'location' | 'policy';
+
+function parseSellerDetailTab(raw: string | string[] | undefined): SellerDetailTab {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return value === 'about' || value === 'location' || value === 'policy' ? value : 'products';
+}
+
 /**
  * Story v160-4-4: refresh of `/[locale]/sellers/[handle]` per Hybrid D Phase B.
  *
@@ -91,11 +98,14 @@ export async function generateMetadata({
 }
 
 export default async function SellerPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ handle: string; locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { handle, locale } = await params;
+  const sp = await searchParams;
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
   try {
@@ -115,7 +125,7 @@ export default async function SellerPage({
   const countryCode = await getCountryCode(locale);
   const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
 
-  const tab = 'products';
+  const tab = parseSellerDetailTab(sp.tab);
 
   // Story v160-4-5 — assemble human-readable address z `SellerProps` shape
   // (`address_line`, `postal_code`, `city`, `country_code`). `lat`/`lng` are
@@ -189,8 +199,9 @@ export default async function SellerPage({
           locale={locale}
         />
       </div>
-        <SellerTabs
-          tab={tab}
+      <SellerTabs
+        tab={tab}
+        seller={seller}
         seller_id={seller.id}
         seller_handle={seller.handle}
         locale={locale}
