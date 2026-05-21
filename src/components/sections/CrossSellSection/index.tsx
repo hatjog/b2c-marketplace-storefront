@@ -5,13 +5,13 @@ import { ProductCard } from '@/components/organisms/ProductCard/ProductCard';
 import { listProducts } from '@/lib/data/products';
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
 
-import { MIN_GROUP_SIZE, filterCrossSellProducts, filterCrossSellSellerProducts } from './filters';
+import { filterCrossSellProducts, filterCrossSellSellerProducts, MIN_GROUP_SIZE } from './filters';
 
 export { filterCrossSellProducts, filterCrossSellSellerProducts } from './filters';
 
 export const CrossSellSection = async ({
   product,
-  countryCode,
+  countryCode
 }: {
   product: ListedProduct;
   countryCode: string;
@@ -24,7 +24,7 @@ export const CrossSellSection = async ({
     ? await listProducts({
         category_id: categoryId,
         countryCode,
-        queryParams: { limit: 6 },
+        queryParams: { limit: 6 }
       })
     : { response: { products: [] as ListedProduct[] } };
 
@@ -33,7 +33,7 @@ export const CrossSellSection = async ({
   const sellerFiltered = filterCrossSellSellerProducts(sellerProductsRaw, productId);
   const categoryFiltered = filterCrossSellProducts(
     categoryResult.response.products as unknown as HttpTypes.StoreProduct[],
-    productId,
+    productId
   );
 
   if (sellerFiltered.length < MIN_GROUP_SIZE && categoryFiltered.length < MIN_GROUP_SIZE) {
@@ -41,38 +41,34 @@ export const CrossSellSection = async ({
   }
 
   const t = await getTranslations('cross_sell');
+  const recommendedProducts =
+    sellerFiltered.length >= MIN_GROUP_SIZE ? sellerFiltered : categoryFiltered;
+  const fromContext = product.seller?.handle
+    ? { type: 'seller' as const, handle: product.seller.handle }
+    : undefined;
 
   return (
-    <div
-      className="mt-8 space-y-8"
-      data-testid="cross-sell-section"
+    <section
+      className="mt-10 border-t border-[var(--bb-border-soft)] pt-8"
+      data-testid="pdp-recommendations-carousel"
     >
-      {sellerFiltered.length >= MIN_GROUP_SIZE && (
-        <section data-testid="cross-sell-same-seller">
-          <h2 className="heading-lg mb-4">{t('same_seller')}</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {sellerFiltered.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-              />
-            ))}
+      <h2 className="heading-lg mb-4">{t('recommended_for_you')}</h2>
+      <div
+        className="flex snap-x gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-4 md:overflow-visible md:pb-0"
+        aria-label={t('recommended_for_you')}
+      >
+        {recommendedProducts.map(p => (
+          <div
+            key={p.id}
+            className="w-[240px] shrink-0 snap-start md:w-auto"
+          >
+            <ProductCard
+              product={p}
+              fromContext={fromContext}
+            />
           </div>
-        </section>
-      )}
-      {categoryFiltered.length >= MIN_GROUP_SIZE && (
-        <section data-testid="cross-sell-same-category">
-          <h2 className="heading-lg mb-4">{t('same_category')}</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {categoryFiltered.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
+        ))}
+      </div>
+    </section>
   );
 };

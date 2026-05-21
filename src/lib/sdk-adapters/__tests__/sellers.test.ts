@@ -11,7 +11,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchSellerById, resolveSellerHandleToId } from '../sellers';
+import { fetchSellerById, fetchSellerSummaryByHandle, resolveSellerHandleToId } from '../sellers';
 
 // ---- Mock mercurClient + unstable_cache BEFORE module imports ----
 
@@ -74,6 +74,14 @@ const makeSeller = (overrides: Record<string, unknown> = {}) => ({
   phone: '+48600000000',
   status: 'open',
   store_status: 'ACTIVE', // noqa: mercur15-drift — legacy Mercur 1.x bridge fixture
+  address_line: 'ul. Testowa 1',
+  postal_code: '00-001',
+  country_code: 'pl',
+  district: 'Śródmieście',
+  lat: 52.2297,
+  lng: 21.0122,
+  regon: '123456789',
+  krs: '0000123456',
   social_links: { instagram: '@bonbeauty' },
   gallery: null,
   opening_hours: null,
@@ -300,5 +308,81 @@ describe('fetchSellerById', () => {
 
     const result = await fetchSellerById('seller-abc');
     expect(result?.reviews).toEqual([]);
+  });
+
+  it('maps address, geo and legal fields from seller payload', async () => {
+    mockSellersIdQuery.mockResolvedValue({
+      seller: makeSeller()
+    });
+
+    const result = await fetchSellerById('seller-abc');
+
+    expect(result?.address_line).toBe('ul. Testowa 1');
+    expect(result?.postal_code).toBe('00-001');
+    expect(result?.country_code).toBe('pl');
+    expect(result?.district).toBe('Śródmieście');
+    expect(result?.lat).toBe(52.2297);
+    expect(result?.lng).toBe(21.0122);
+    expect(result?.regon).toBe('123456789');
+    expect(result?.krs).toBe('0000123456');
+  });
+
+  it('falls back to the first location when direct address fields are absent', async () => {
+    mockSellersIdQuery.mockResolvedValue({
+      seller: makeSeller({
+        address_line: null,
+        postal_code: null,
+        country_code: null,
+        district: null,
+        locations: [
+          {
+            address_line: 'ul. Zapasowa 2',
+            postal_code: '30-001',
+            city: 'Kraków',
+            country_code: 'pl',
+            district: 'Kazimierz'
+          }
+        ]
+      })
+    });
+
+    const result = await fetchSellerById('seller-abc');
+
+    expect(result?.address_line).toBe('ul. Zapasowa 2');
+    expect(result?.postal_code).toBe('30-001');
+    expect(result?.country_code).toBe('pl');
+    expect(result?.district).toBe('Kazimierz');
+  });
+});
+
+describe('fetchSellerSummaryByHandle', () => {
+  beforeEach(() => {
+    mockSellersQuery.mockReset();
+  });
+
+  it('returns a mapped seller from the filtered handle query', async () => {
+    mockSellersQuery.mockResolvedValue({ sellers: [makeSeller()] });
+
+    const result = await fetchSellerSummaryByHandle('bonbeauty', '+email,+phone');
+
+    expect(result?.handle).toBe('bonbeauty');
+    expect(result?.address_line).toBe('ul. Testowa 1');
+    expect(mockSellersQuery).toHaveBeenCalledWith(
+      expect.objectContaining({ handle: 'bonbeauty', limit: 1, fields: '+email,+phone' })
+    );
+  });
+
+  it('retries with no-cache when the filtered response contains no matching seller', async () => {
+    mockSellersQuery
+      .mockResolvedValueOnce({ sellers: [] })
+      .mockResolvedValueOnce({ sellers: [makeSeller({ handle: 'city-beauty' })] });
+
+    const result = await fetchSellerSummaryByHandle('city-beauty');
+
+    expect(result?.handle).toBe('city-beauty');
+    expect(mockSellersQuery).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ handle: 'city-beauty', limit: 1, fetchOptions: { cache: 'no-cache' } })
+    );
   });
 });

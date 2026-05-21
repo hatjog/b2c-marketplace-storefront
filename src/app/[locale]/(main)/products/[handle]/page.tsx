@@ -1,6 +1,8 @@
 // @trust-invariant-scope: v180
 // W1-04 PDP route — Story 3.0 Sprint 1 thin slice gate.
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import {
@@ -76,6 +78,7 @@ export default async function ProductPage({
 }) {
   const { handle, locale } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  const t = await getTranslations('pdp');
   // Story v160-cleanup-13c — warm runtime feature-flag cache before sync gates.
   await isMultiVendorEnabledRuntime();
   // Full product fetch (no field restriction) — variants include calculated_price + inventory_quantity
@@ -127,6 +130,37 @@ export default async function ProductPage({
         ...(offers ? { offers } : {})
       }
     : null;
+  const primaryCategory = product?.categories?.[0];
+  const categoryName = primaryCategory?.name ?? t('breadcrumbs.categories');
+  const categoryHref = primaryCategory?.handle
+    ? `/${locale}/categories/${primaryCategory.handle}`
+    : `/${locale}/categories`;
+  const breadcrumbSchema = product
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('breadcrumbs.home'),
+            item: `/${locale}`
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: categoryName,
+            item: categoryHref
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: product.title,
+            item: `/${locale}/products/${handle}`
+          }
+        ]
+      }
+    : null;
 
   return (
     <main
@@ -147,6 +181,36 @@ export default async function ProductPage({
           // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
         />
+      ) : null}
+      {breadcrumbSchema ? (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      ) : null}
+      {product ? (
+        <nav
+          className="flex flex-wrap items-center gap-2 py-4 text-xs text-[var(--text-secondary)]"
+          aria-label={t('breadcrumbs.aria_label')}
+          data-testid="pdp-breadcrumbs"
+        >
+          <Link
+            href={`/${locale}`}
+            className="hover:text-[var(--text-primary)]"
+          >
+            {t('breadcrumbs.home')}
+          </Link>
+          <span aria-hidden="true">/</span>
+          <Link
+            href={categoryHref}
+            className="hover:text-[var(--text-primary)]"
+          >
+            {categoryName}
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="text-[var(--text-primary)]">{product.title}</span>
+        </nav>
       ) : null}
       <SalonContextChip
         seller={salonContext}

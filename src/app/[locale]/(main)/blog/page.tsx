@@ -1,17 +1,13 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
-import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
+import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import {
-  fetchHomepageBlogPageDocs,
-  formatBlogPublishedDate,
-  getBlogCategory,
-  getBlogDescription,
-  getBlogHref,
-  getPageImageUrl
-} from '@/lib/blog';
+import { BlogLayout } from '@/components/templates';
+import { SUPPORTED_LOCALES } from '@/i18n/routing';
+import { getBlogIndexData } from '@/lib/blog';
+import { toHreflang } from '@/lib/helpers/hreflang';
 
 export const revalidate = 600;
 
@@ -23,6 +19,21 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
+function buildBlogIndexAlternates(baseUrl: string, locale: string) {
+  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
+    acc[toHreflang(code)] = new URL(`/${code}/blog`, `${baseUrl}/`).toString();
+    return acc;
+  }, {});
+
+  return {
+    canonical: new URL(`/${locale}/blog`, `${baseUrl}/`).toString(),
+    languages: {
+      ...languages,
+      'x-default': new URL('/pl/blog', `${baseUrl}/`).toString()
+    }
+  };
+}
+
 export async function generateMetadata({
   params
 }: {
@@ -30,92 +41,153 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const baseUrl = await getBaseUrl();
-  const canonical = new URL(`/${locale}/blog`, `${baseUrl}/`).toString();
+  const alternates = buildBlogIndexAlternates(baseUrl, locale);
   const t = await getTranslations('blog');
 
   return {
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical
-    },
+    alternates,
     openGraph: {
       title: t('title'),
       description: t('description'),
       type: 'website',
-      url: canonical
+      url: alternates.canonical
     }
   };
 }
 
 export default async function BlogIndexPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tag?: string }>;
 }) {
-  const { locale } = await params;
-  const t = await getTranslations('blog');
+  const [{ locale }, resolvedSearchParams, t] = await Promise.all([
+    params,
+    searchParams,
+    getTranslations('blog')
+  ]);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const pages = await fetchHomepageBlogPageDocs({
+  const selectedTag = resolvedSearchParams.tag || null;
+  const {
+    posts,
+    availableTags,
+    selectedTag: activeTag
+  } = await getBlogIndexData({
+    locale: locale as 'pl' | 'en' | 'ua' | 'de',
     marketId,
-    limit: 24
+    selectedTag
   });
 
-  return (
-    <main id="main-content" className="bb-page-shell">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-8" data-testid="blog-index">
-        <header className="bb-section-shell bb-section-shell-strong flex max-w-4xl flex-col gap-4">
-          <p className="text-xs font-medium uppercase tracking-[0.24em] text-secondary">{t('journal')}</p>
-          <h1 className="heading-xl" data-testid="blog-index-title">{t('title')}</h1>
-          <p className="text-lg leading-8 text-secondary">
-            {t('subtitle')}
-          </p>
-        </header>
+  const filters = (
+    <div className="space-y-3">
+      <p className="text-xs font-medium uppercase tracking-[0.2em] text-secondary">
+        {t('filter_label')}
+      </p>
+      <div
+        className="flex flex-wrap gap-3"
+        role="list"
+        aria-label={t('filter_label')}
+      >
+        <LocalizedClientLink
+          href="/blog"
+          aria-current={!activeTag ? 'page' : undefined}
+          className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
+            !activeTag
+              ? 'border-[var(--bg-action)] bg-[rgba(144,112,50,0.12)] text-primary'
+              : 'border-[rgba(144,112,50,0.14)] text-secondary hover:text-primary'
+          }`}
+        >
+          {t('tag_all')}
+        </LocalizedClientLink>
+        {availableTags.map(tag => (
+          <LocalizedClientLink
+            key={tag.slug}
+            href={`/blog?tag=${encodeURIComponent(tag.slug)}`}
+            aria-current={activeTag === tag.slug ? 'page' : undefined}
+            className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
+              activeTag === tag.slug
+                ? 'border-[var(--bg-action)] bg-[rgba(144,112,50,0.12)] text-primary'
+                : 'border-[rgba(144,112,50,0.14)] text-secondary hover:text-primary'
+            }`}
+          >
+            {tag.label}
+          </LocalizedClientLink>
+        ))}
+      </div>
+    </div>
+  );
 
-        {pages.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {pages.map((page, index) => {
-              const title = page.title || page.name || t('untitled_post');
-              const description = getBlogDescription(page);
-              const href = getBlogHref(page);
-              const publishedDate = formatBlogPublishedDate(page.publishedAt, locale);
-
-              return (
-                <LocalizedClientLink
-                  key={page.slug || page.id || index}
-                  href={href}
-                  className="group flex h-full flex-col overflow-hidden rounded-sm border border-secondary bg-tertiary transition-opacity hover:opacity-90"
+  const postsGrid = (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {posts.map(post => (
+        <LocalizedClientLink
+          key={post.slug}
+          href={post.href}
+          className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-white transition-transform duration-300 hover:-translate-y-0.5"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <Image
+              src={post.image}
+              alt={post.imageAlt}
+              fill
+              sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            />
+          </div>
+          <div className="flex flex-1 flex-col gap-4 p-5">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-secondary">
+              <span>{post.category}</span>
+              <span>{t('min_read', { minutes: post.readTimeMinutes })}</span>
+            </div>
+            <h2 className="heading-sm text-primary">{post.title}</h2>
+            <p className="line-clamp-3 text-sm leading-6 text-secondary">{post.excerpt}</p>
+            <div className="mt-auto flex flex-wrap items-center gap-3 text-xs text-secondary">
+              <span>{post.author.name}</span>
+              {post.tags.slice(0, 2).map(tag => (
+                <span
+                  key={tag.slug}
+                  className="rounded-full bg-[rgba(144,112,50,0.08)] px-2.5 py-1"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={getPageImageUrl(page, index)}
-                      alt={title}
-                      fill
-                      sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    />
-                  </div>
-
-                  <div className="flex flex-1 flex-col gap-4 p-5 text-tertiary">
-                    <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-secondary">
-                      <span>{getBlogCategory(page)}</span>
-                      {publishedDate ? <span>{publishedDate}</span> : null}
-                    </div>
-
-                    <h2 className="heading-sm">{title}</h2>
-                    <p className="line-clamp-3 text-base leading-7 text-secondary">{description}</p>
-                    <span className="label-md mt-auto uppercase text-primary">{t('read_article')}</span>
-                  </div>
-                </LocalizedClientLink>
-              );
-            })}
+                  {tag.label}
+                </span>
+              ))}
+            </div>
+            <span className="label-md uppercase text-primary">{t('read_article')}</span>
           </div>
-        ) : (
-          <div className="bb-section-shell text-secondary">
-            {t('no_posts')}
-          </div>
-        )}
-      </section>
-    </main>
+        </LocalizedClientLink>
+      ))}
+    </div>
+  );
+
+  const emptyState = (
+    <div
+      className="rounded-[28px] border border-dashed border-[rgba(144,112,50,0.24)] bg-[rgba(144,112,50,0.05)] px-6 py-10 text-center"
+      data-testid="blog-index-empty-state"
+    >
+      <h2 className="heading-sm text-primary">{t('empty_heading')}</h2>
+      <p className="mt-3 text-sm leading-6 text-secondary">{t('empty_body')}</p>
+      <LocalizedClientLink
+        href="/blog"
+        className="label-md mt-5 inline-flex uppercase text-primary"
+      >
+        {t('reset_filters')}
+      </LocalizedClientLink>
+    </div>
+  );
+
+  return (
+    <BlogLayout
+      surface="W4-06"
+      title={t('title')}
+      intro={t('editorial_intro')}
+      eyebrow={t('journal')}
+      filters={filters}
+      posts={postsGrid}
+      empty={emptyState}
+      hasPosts={posts.length > 0}
+    />
   );
 }

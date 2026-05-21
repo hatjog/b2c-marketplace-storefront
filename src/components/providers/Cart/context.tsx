@@ -2,6 +2,8 @@ import { createContext, useContext } from 'react';
 
 import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
 
+export type CartPurchaseMode = 'self' | 'gift';
+
 interface CartContextInterface {
   cart: Cart | null;
   onAddToCart: (item: StoreCartLineItemOptimisticUpdate, currency_code: string) => void;
@@ -17,6 +19,8 @@ interface CartContextInterface {
     /** cleanup-12d AC1 / TF-72 — seller handle for CartGroupBySeller
      *  "visit seller" link. Persisted as cart_item metadata.selected_seller_handle. */
     selectedSellerHandle?: string | null;
+    /** W1-04 PDP gift mode. Persisted as cart_item metadata.is_gift / purchase_mode. */
+    purchaseMode?: CartPurchaseMode;
   }) => Promise<void>;
   removeCartItem: (lineId: string) => Promise<void>;
   updateCartItem: (lineId: string, quantity: number) => Promise<void>;
@@ -36,6 +40,8 @@ interface CartContextInterface {
   /** cleanup-12d AC1 / TF-72 — seller handle for propagation to cart metadata. */
   selectedSellerHandle: string | null;
   setSelectedSeller: (ctx: { id: string; name: string; handle?: string | null } | null) => void;
+  purchaseMode: CartPurchaseMode;
+  setPurchaseMode: (mode: CartPurchaseMode) => void;
 }
 
 export const CartContext = createContext<CartContextInterface | null>(null);

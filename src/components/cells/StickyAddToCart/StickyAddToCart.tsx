@@ -22,6 +22,20 @@ const optionsAsKeymap = (variantOptions: HttpTypes.StoreProductVariant['options'
   );
 };
 
+function DotTrio({ label }: { label: string }) {
+  return (
+    <span
+      className="inline-flex min-h-[1.25rem] items-center justify-center gap-1"
+      role="status"
+      aria-label={label}
+    >
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current [animation-delay:0ms]" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current [animation-delay:120ms]" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current [animation-delay:240ms]" />
+    </span>
+  );
+}
+
 export const StickyAddToCart = ({
   product,
   countryCode
@@ -32,7 +46,14 @@ export const StickyAddToCart = ({
   const [isVisible, setIsVisible] = useState(false);
   // Story 5.5 — selectedSellerId/Name from CartContext shared state.
   // TF-72: also pull selectedSellerHandle for "visit seller" link propagation.
-  const { addToCart, isAddingItem, selectedSellerId, selectedSellerName, selectedSellerHandle } = useCartContext();
+  const {
+    addToCart,
+    isAddingItem,
+    selectedSellerId,
+    selectedSellerName,
+    selectedSellerHandle,
+    purchaseMode
+  } = useCartContext();
   const { allSearchParams } = useGetAllSearchParams();
   const t = useTranslations('products');
 
@@ -83,7 +104,8 @@ export const StickyAddToCart = ({
         // TF-72: also propagate handle for "visit seller" link in CartGroupBySeller.
         selectedSellerId,
         selectedSellerName,
-        selectedSellerHandle
+        selectedSellerHandle,
+        purchaseMode
       });
     } catch {
       toast.error({
@@ -104,11 +126,11 @@ export const StickyAddToCart = ({
       </span>
       <Button
         onClick={handleAddToCart}
-        loading={isAddingItem}
+        disabled={isAddingItem}
         size="small"
         className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
       >
-        {t('add_to_cart')}
+        {isAddingItem ? <DotTrio label={t('adding_to_cart')} /> : t('add_to_cart')}
       </Button>
     </div>
   );

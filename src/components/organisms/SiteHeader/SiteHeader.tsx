@@ -115,7 +115,7 @@ export const SiteHeader = async ({
         </div>
 
         {/* slot: nav-primary */}
-        <div className="hidden flex-1 items-center justify-center lg:flex">
+        <div className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex">
           <Navbar
             categories={categories}
             parentCategories={parentCategories}

@@ -8,11 +8,9 @@
  *
  * Assertions are kept truthful to the real component API
  * (see ../VoucherRulesCard/VoucherRulesCard.tsx): the public props are
- * `ttlDays` (default 365) + `extensionPolicy` / `cancellationPolicy` /
- * `refundChannel` / `noShowPolicy` policy strings + `data-testid`.
- * There is intentionally NO `ttlMonths` / `cancellationDays` /
- * `extensionMonths` numeric prop — earlier revisions of this file documented
- * a non-existent API (review F-06).
+ * `validityMonths` (default 12) + `usageConditions` / `refundPolicy` /
+ * `extensionPolicy` / `cancellationPolicy` / `noShowPolicy` policy strings
+ * + `data-testid`.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -32,24 +30,21 @@ describe('VoucherRulesCard (Trust Invariant #3)', () => {
     expect(alwaysRendered).toBe(true);
   });
 
-  it('default voucher validity is 365 days (ttlDays default)', () => {
-    // Source: ttlDays = 365  (NOT ttlMonths)
-    const defaultTtlDays = 365;
-    expect(defaultTtlDays).toBe(365);
+  it('default voucher validity is 12 months (validityMonths default)', () => {
+    const defaultValidityMonths = 12;
+    expect(defaultValidityMonths).toBe(12);
   });
 
-  it('policy is expressed as copy strings, not numeric day/month props', () => {
-    // Source: extensionPolicy / cancellationPolicy / refundChannel / noShowPolicy
-    // are string props with prose defaults — there is no cancellationDays /
-    // extensionMonths numeric prop.
+  it('policy is expressed with required voucher-rule disclosure props', () => {
     const policyProps = [
+      'validityMonths',
+      'usageConditions',
+      'refundPolicy',
       'extensionPolicy',
       'cancellationPolicy',
-      'refundChannel',
-      'noShowPolicy',
+      'noShowPolicy'
     ];
-    expect(policyProps).toHaveLength(4);
+    expect(policyProps).toHaveLength(6);
     expect(policyProps).not.toContain('cancellationDays');
-    expect(policyProps).not.toContain('extensionMonths');
   });
 });

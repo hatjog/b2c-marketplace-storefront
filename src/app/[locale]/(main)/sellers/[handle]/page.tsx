@@ -12,6 +12,7 @@ import { getRegion } from '@/lib/data/regions';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
+import { assessSellerStructuredData } from '@/lib/seo/sellerStructuredData';
 
 export const revalidate = 60;
 
@@ -69,6 +70,7 @@ export async function generateMetadata({
   const description = rawDescription
     ? rawDescription.slice(0, 160)
     : tDetail('meta_description', { name: seller.name });
+  const structuredData = assessSellerStructuredData(seller);
 
   const ogImage = seller.photo || null;
 
@@ -76,7 +78,9 @@ export async function generateMetadata({
     title,
     description,
     alternates,
-    robots: { index: true, follow: true },
+    robots: structuredData.canIndex
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
     openGraph: {
       title,
       description,
@@ -104,6 +108,7 @@ export default async function SellerPage({
     notFound();
   }
 
+  const tDetail = await getTranslations('seller.detail');
   const tShared = await getTranslations('seller.shared');
 
   const user = await retrieveCustomer();
@@ -128,6 +133,7 @@ export default async function SellerPage({
   const sellerAddress = sellerAddressParts.length > 0 ? sellerAddressParts.join(', ') : null;
   const sellerLat = (seller as { lat?: number | null }).lat ?? null;
   const sellerLng = (seller as { lng?: number | null }).lng ?? null;
+  const structuredData = assessSellerStructuredData(seller);
 
   return (
     <main
@@ -157,6 +163,21 @@ export default async function SellerPage({
         user={user}
       />
       <div className="container py-6">
+        {!structuredData.canIndex && (
+          <div
+            className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            data-testid="seller-detail-runtime-fallback"
+          >
+            {tDetail('runtime_fallback_notice')}
+          </div>
+        )}
+        {structuredData.jsonLd && (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData.jsonLd) }}
+          />
+        )}
         <DirectionsBlock
           seller={{
             name: seller.name,
@@ -168,8 +189,8 @@ export default async function SellerPage({
           locale={locale}
         />
       </div>
-      <SellerTabs
-        tab={tab}
+        <SellerTabs
+          tab={tab}
         seller_id={seller.id}
         seller_handle={seller.handle}
         locale={locale}

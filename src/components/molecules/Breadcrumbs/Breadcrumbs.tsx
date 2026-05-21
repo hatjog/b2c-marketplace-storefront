@@ -25,8 +25,8 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      ...(baseUrl ? { item: `${baseUrl}${item.href}` } : {}),
-    })),
+      ...(baseUrl ? { item: `${baseUrl}${item.href}` } : {})
+    }))
   };
 
   return (
@@ -42,21 +42,30 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
               key={`${index}-${item.href}`}
               className={
                 isMiddle
-                  ? 'hidden sm:inline-flex items-center gap-1'
+                  ? 'hidden items-center gap-1 sm:inline-flex'
                   : 'inline-flex items-center gap-1'
               }
             >
               {!isFirst && (
-                <span className="mx-1 text-secondary" aria-hidden="true">
+                <span
+                  className="mx-1 text-secondary"
+                  aria-hidden="true"
+                >
                   {'>'}
                 </span>
               )}
               {isLast ? (
-                <span className="font-semibold text-cta" aria-current="page">
+                <span
+                  className="font-semibold text-cta"
+                  aria-current="page"
+                >
                   {item.label}
                 </span>
               ) : (
-                <Link href={item.href} className="text-secondary hover:underline">
+                <Link
+                  href={item.href}
+                  className="text-secondary hover:underline"
+                >
                   {item.label}
                 </Link>
               )}
@@ -67,19 +76,35 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
       {/* Mobile ellipsis — inserted via CSS order to appear between first and last */}
       {hasMiddleItems && (
-        <ol className="flex sm:hidden items-center gap-1 text-sm" aria-hidden="true">
+        <ol className="flex items-center gap-1 text-sm sm:hidden">
           <li className="inline-flex items-center gap-1">
-            <Link href={items[0].href} className="text-secondary hover:underline">
+            <Link
+              href={items[0].href}
+              className="text-secondary hover:underline"
+            >
               {items[0].label}
             </Link>
           </li>
           <li className="inline-flex items-center gap-1">
-            <span className="mx-1 text-secondary" aria-hidden="true">{'>'}</span>
+            <span
+              className="mx-1 text-secondary"
+              aria-hidden="true"
+            >
+              {'>'}
+            </span>
             <span>{'…'}</span>
           </li>
           <li className="inline-flex items-center gap-1">
-            <span className="mx-1 text-secondary" aria-hidden="true">{'>'}</span>
-            <span className="font-semibold text-cta" aria-current="page">
+            <span
+              className="mx-1 text-secondary"
+              aria-hidden="true"
+            >
+              {'>'}
+            </span>
+            <span
+              className="font-semibold text-cta"
+              aria-current="page"
+            >
               {items[lastIndex].label}
             </span>
           </li>
