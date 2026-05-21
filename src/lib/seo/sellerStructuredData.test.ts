@@ -42,7 +42,7 @@ describe('assessSellerStructuredData', () => {
     });
   });
 
-  it('keeps optional phone and geo out of the required indexing gate', () => {
+  it('returns noindex when phone or geo are missing from LocalBusiness data', () => {
     const result = assessSellerStructuredData({
       ...baseSeller,
       phone: undefined,
@@ -50,14 +50,9 @@ describe('assessSellerStructuredData', () => {
       lng: null
     });
 
-    expect(result.canIndex).toBe(true);
-    expect(result.jsonLd).toMatchObject({
-      '@type': 'LocalBusiness',
-      name: 'Salon Test'
-    });
-    expect(result.jsonLd).not.toHaveProperty('telephone');
-    expect(result.jsonLd).not.toHaveProperty('geo');
-    expect(result.missingRequired).toEqual([]);
+    expect(result.canIndex).toBe(false);
+    expect(result.jsonLd).toBeNull();
+    expect(result.missingRequired).toEqual(['telephone', 'geo']);
   });
 
   it('returns noindex assessment instead of throwing when address fields are missing', () => {

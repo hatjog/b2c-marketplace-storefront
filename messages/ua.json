@@ -171,7 +171,9 @@
         "popup_view_details": "Переглянути деталі",
         "loading": "Завантаження карти...",
         "aria_map": "Карта салонів",
-        "aria_marker": "Маркер салону {name}"
+        "aria_marker": "Маркер салону {name}",
+        "placeholder_title": "Placeholder карти салонів",
+        "placeholder_body": "Постачальник карти очікує; список залишається доступним для індексації."
       }
     },
     "search": {
@@ -202,7 +204,9 @@
       "title_template": "{name} — Партнерські салони | BonBeauty",
       "description_label": "Опис",
       "address_label": "Адреса",
+      "location_label": "Локація",
       "opening_hours_label": "Години роботи",
+      "policy_label": "Правила",
       "products_label": "Продукти салону",
       "not_found_message": "Салон за вказаною адресою не знайдено.",
       "no_products": "Цей салон ще не опублікував жодних продуктів.",
@@ -398,6 +402,8 @@
     "seller_joined": "Приєднався: {date}",
     "report_seller": "Поскаржитися на продавця",
     "seller_tax_id": "Податковий номер: {taxId}",
+    "seller_regon": "REGON: {regon}",
+    "seller_krs": "KRS: {krs}",
     "chat_heading": "Чат"
   },
   "auth": {

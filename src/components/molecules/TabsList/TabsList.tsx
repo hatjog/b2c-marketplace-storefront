@@ -49,6 +49,12 @@ export const TabsList = ({
             tabIndex={isActive ? 0 : -1}
             data-tab-link="true"
             onKeyDown={(event: React.KeyboardEvent<HTMLAnchorElement>) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.currentTarget.click();
+                return;
+              }
+
               if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) {
                 return;
               }

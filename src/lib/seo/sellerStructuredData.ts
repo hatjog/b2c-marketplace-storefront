@@ -57,13 +57,19 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
   const latitude = normalizeNumber(seller.lat);
   const longitude = normalizeNumber(seller.lng);
   const taxId = normalizeString(seller.tax_id);
+  const openingHours = buildOpeningHours(seller.opening_hours);
+  const { ratingValue, reviewCount } = collectReviewAggregate(seller);
 
   const missingRequired = [
     !name ? 'name' : null,
     !streetAddress ? 'address.streetAddress' : null,
     !addressLocality ? 'address.addressLocality' : null,
     !postalCode ? 'address.postalCode' : null,
-    !addressCountry ? 'address.addressCountry' : null
+    !addressCountry ? 'address.addressCountry' : null,
+    !telephone ? 'telephone' : null,
+    latitude === null || longitude === null ? 'geo' : null,
+    openingHours.length === 0 ? 'openingHours' : null,
+    typeof ratingValue !== 'number' || typeof reviewCount !== 'number' ? 'aggregateRating' : null
   ].filter((item): item is string => item !== null);
 
   if (missingRequired.length > 0) {
@@ -74,8 +80,6 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
     };
   }
 
-  const openingHours = buildOpeningHours(seller.opening_hours);
-  const { ratingValue, reviewCount } = collectReviewAggregate(seller);
   const district =
     normalizeString(seller.district) ??
     normalizeString(

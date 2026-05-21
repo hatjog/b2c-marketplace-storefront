@@ -171,7 +171,9 @@
         "popup_view_details": "Details anzeigen",
         "loading": "Karte wird geladen...",
         "aria_map": "Salons-Karte",
-        "aria_marker": "Marker für {name}"
+        "aria_marker": "Marker für {name}",
+        "placeholder_title": "Platzhalter für Salonkarte",
+        "placeholder_body": "Kartenanbieter ausstehend; die Liste bleibt crawlbar."
       }
     },
     "search": {
@@ -202,7 +204,9 @@
       "title_template": "{name} — Partnersalons | BonBeauty",
       "description_label": "Beschreibung",
       "address_label": "Adresse",
+      "location_label": "Standort",
       "opening_hours_label": "Öffnungszeiten",
+      "policy_label": "Richtlinie",
       "products_label": "Salon-Produkte",
       "not_found_message": "Kein Salon für diese Adresse gefunden.",
       "no_products": "Dieser Salon hat noch keine Produkte gelistet.",
@@ -398,6 +402,8 @@
     "seller_joined": "Beigetreten {date}",
     "report_seller": "Verkäufer melden",
     "seller_tax_id": "Steuer-ID: {taxId}",
+    "seller_regon": "REGON: {regon}",
+    "seller_krs": "KRS: {krs}",
     "chat_heading": "Chat"
   },
   "auth": {
