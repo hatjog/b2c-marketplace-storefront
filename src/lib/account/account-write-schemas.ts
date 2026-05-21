@@ -27,6 +27,7 @@ export const REVIEW_ERRORS = {
   noteTooLong: 'written_reviews.form.errors.note_too_long',
   reviewIdRequired: 'written_reviews.form.errors.review_id_required',
   orderIdRequired: 'written_reviews.form.errors.order_id_required',
+  sellerIdRequired: 'written_reviews.form.errors.seller_id_required',
 } as const;
 
 export const SETTINGS_ERRORS = {
@@ -67,6 +68,13 @@ export const reviewMutationSchema = z.object({
   note: z.string().trim().max(300, REVIEW_ERRORS.noteTooLong).optional().default(''),
 });
 
+export const reviewCreateSchema = z.object({
+  orderId: z.string().min(1, REVIEW_ERRORS.orderIdRequired),
+  sellerId: z.string().min(1, REVIEW_ERRORS.sellerIdRequired),
+  rating: z.coerce.number().min(1, REVIEW_ERRORS.ratingRequired).max(5),
+  note: z.string().trim().max(300, REVIEW_ERRORS.noteTooLong).optional().default(''),
+});
+
 export const reviewDeleteSchema = z.object({
   reviewId: z.string().min(1, REVIEW_ERRORS.reviewIdRequired),
 });
@@ -93,6 +101,7 @@ export const securitySettingsSchema = z
 export type ReturnRequestFormValues = z.infer<typeof returnRequestSchema>;
 export type AddressFormValues = z.infer<typeof addressSchema>;
 export type ReviewMutationFormValues = z.infer<typeof reviewMutationSchema>;
+export type ReviewCreateFormValues = z.infer<typeof reviewCreateSchema>;
 export type ReviewDeleteFormValues = z.infer<typeof reviewDeleteSchema>;
 export type ProfileSettingsFormValues = z.infer<typeof profileSettingsSchema>;
 export type SecuritySettingsFormValues = z.infer<typeof securitySettingsSchema>;

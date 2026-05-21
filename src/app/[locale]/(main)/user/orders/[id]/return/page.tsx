@@ -12,12 +12,13 @@ export default async function ReturnOrderPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const [t, customer, orders, returnReasons] = await Promise.all([
+  const [t, customer] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),
-    listOrders(),
-    retrieveReturnReasons(),
   ]);
+  const [orders, returnReasons] = customer
+    ? await Promise.all([listOrders(), retrieveReturnReasons()])
+    : [[], []];
 
   const reasons = (returnReasons ?? []).map((reason) => ({
     value: reason.id,

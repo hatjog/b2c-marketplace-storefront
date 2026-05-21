@@ -1639,6 +1639,7 @@
       },
       "form": {
         "title": "Edit review",
+        "create_title": "Write review",
         "rating_label": "Rating",
         "note_label": "Review note",
         "errors": {
@@ -1646,9 +1647,11 @@
           "note_too_long": "Your note can contain up to 300 characters.",
           "review_id_required": "Missing review reference.",
           "order_id_required": "Missing order reference.",
+          "seller_id_required": "Missing salon reference.",
           "generic": "We could not update the review. Try again."
         },
         "success": {
+          "created": "Review saved.",
           "updated": "Review updated.",
           "deleted": "Review deleted."
         }
@@ -1716,6 +1719,9 @@
         "email_updates": "Email order updates",
         "sms_updates": "SMS shipment updates",
         "product_news": "Product and editorial news",
+        "errors": {
+          "generic": "We could not record the notification request. Try again."
+        },
         "success": {
           "request_received": "Notification preference request received."
         }
@@ -1725,6 +1731,9 @@
         "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
         "default_card": "Preferred payment note",
         "invoices_by_email": "Send invoices by email",
+        "errors": {
+          "generic": "We could not record the payment request. Try again."
+        },
         "success": {
           "request_received": "Payment preference request received."
         }
