@@ -2428,6 +2428,7 @@
       },
       "form": {
         "title": "Edytuj opinię",
+        "create_title": "Napisz opinię",
         "rating_label": "Ocena",
         "note_label": "Treść opinii",
         "errors": {
@@ -2435,9 +2436,11 @@
           "note_too_long": "Notatka może mieć maksymalnie 300 znaków.",
           "review_id_required": "Brakuje identyfikatora opinii.",
           "order_id_required": "Brakuje identyfikatora zamówienia.",
+          "seller_id_required": "Brakuje identyfikatora salonu.",
           "generic": "Nie udało się zaktualizować opinii. Spróbuj ponownie."
         },
         "success": {
+          "created": "Opinia została zapisana.",
           "updated": "Opinia została zaktualizowana.",
           "deleted": "Opinia została usunięta."
         }
@@ -2505,6 +2508,9 @@
         "email_updates": "Powiadomienia mailowe o zamówieniach",
         "sms_updates": "SMS o wysyłce",
         "product_news": "Nowości produktowe i redakcyjne",
+        "errors": {
+          "generic": "Nie udało się zapisać prośby o powiadomienia. Spróbuj ponownie."
+        },
         "success": {
           "request_received": "Otrzymaliśmy prośbę o aktualizację powiadomień."
         }
@@ -2514,6 +2520,9 @@
         "description": "Zapisz preferencje płatnicze bez udawania, że nieobsługiwane mutacje backendowe są już zakończone.",
         "default_card": "Notatka o preferowanej płatności",
         "invoices_by_email": "Wysyłaj faktury mailem",
+        "errors": {
+          "generic": "Nie udało się zapisać prośby o płatności. Spróbuj ponownie."
+        },
         "success": {
           "request_received": "Otrzymaliśmy prośbę o aktualizację preferencji płatniczych."
         }

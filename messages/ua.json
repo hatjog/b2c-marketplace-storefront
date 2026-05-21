@@ -2227,310 +2227,319 @@
       "edit": "Редагувати"
     },
     "breadcrumbs": {
-      "account": "Account",
-      "orders": "Orders",
-      "return_request": "Return request",
-      "return_success": "Return status",
-      "addresses": "Saved addresses",
-      "reviews_to_write": "Reviews to write",
-      "written_reviews": "Written reviews",
-      "settings": "Settings"
+      "account": "Акаунт",
+      "orders": "Замовлення",
+      "return_request": "Запит на повернення",
+      "return_success": "Статус повернення",
+      "addresses": "Збережені адреси",
+      "reviews_to_write": "Відгуки до написання",
+      "written_reviews": "Написані відгуки",
+      "settings": "Налаштування"
     },
     "quick_actions": {
-      "orders": "Orders",
-      "orders_desc": "Return to order history and track next steps.",
-      "addresses": "Addresses",
-      "addresses_desc": "Update delivery and billing details.",
-      "reviews": "Reviews to write",
-      "reviews_desc": "Finish pending reviews without leaving Account Hub.",
-      "written_reviews": "Written reviews",
-      "written_reviews_desc": "Edit or delete published reviews.",
-      "settings": "Settings",
-      "settings_desc": "Manage profile, security and privacy.",
-      "return_request": "Return request",
-      "return_request_desc": "Review the return request you just sent."
+      "orders": "Замовлення",
+      "orders_desc": "Повернутися до історії замовлень і відстежити наступні кроки.",
+      "addresses": "Адреси",
+      "addresses_desc": "Оновити дані доставки та рахунку.",
+      "reviews": "Відгуки до написання",
+      "reviews_desc": "Завершити очікувані відгуки, не виходячи з Account Hub.",
+      "written_reviews": "Написані відгуки",
+      "written_reviews_desc": "Редагувати або видалити опубліковані відгуки.",
+      "settings": "Налаштування",
+      "settings_desc": "Керувати профілем, безпекою та приватністю.",
+      "return_request": "Запит на повернення",
+      "return_request_desc": "Переглянути щойно надісланий запит на повернення."
     },
     "snapshot": {
-      "orders": "Orders",
-      "addresses": "Addresses",
-      "reviews": "Reviews"
+      "orders": "Замовлення",
+      "addresses": "Адреси",
+      "reviews": "Відгуки"
     },
     "return_request": {
       "hero": {
-        "eyebrow": "Wave 2 · Returns",
-        "title": "Start a return request without losing context.",
-        "description": "Choose the reason, attach photos and leave a note for the salon. Validation runs on the client and server before the request is sent."
+        "eyebrow": "Wave 2 · Повернення",
+        "title": "Почніть запит на повернення без втрати контексту.",
+        "description": "Оберіть причину, додайте фото та залиште нотатку для салону. Перевірка виконується на клієнті й сервері до надсилання запиту."
       },
       "progress": {
-        "title": "3-step return flow",
-        "description": "Progress stays visible while preserving keyboard order.",
-        "step_reason": "Reason",
-        "step_evidence": "Evidence",
-        "step_submit": "Sent"
+        "title": "Повернення у 3 кроки",
+        "description": "Прогрес залишається видимим і зберігає порядок клавіатурної навігації.",
+        "step_reason": "Причина",
+        "step_evidence": "Докази",
+        "step_submit": "Надіслано"
       },
       "form": {
-        "title": "Return request form",
-        "description": "All fields follow UX-DR23: blur feedback, localized errors and pending-state protection against duplicate submits.",
-        "reason_label": "Why are you returning this order?",
-        "photos_label": "Upload photos",
-        "photos_help": "Add up to 3 JPG, PNG or WEBP files. Max 5 MB each.",
-        "comment_label": "Additional note",
-        "submit": "Send return request"
+        "title": "Форма запиту на повернення",
+        "description": "Усі поля відповідають UX-DR23: feedback після blur, локалізовані помилки та pending-state захист від повторного надсилання.",
+        "reason_label": "Чому ви повертаєте це замовлення?",
+        "photos_label": "Завантажте фото",
+        "photos_help": "Додайте до 3 JPG, PNG або WEBP файлів. Максимум 5 МБ кожен.",
+        "comment_label": "Додаткова нотатка",
+        "submit": "Надіслати запит на повернення"
       },
-      "handoff_message": "The salon has 7 days to decide. We will notify you by email.",
+      "handoff_message": "Салон має 7 днів на рішення. Ми повідомимо вас електронною поштою.",
       "success": {
-        "submitted": "Return request submitted. The seller review starts now and the timeline is already available.",
-        "go_to_summary": "Open return timeline"
+        "submitted": "Запит на повернення надіслано. Перевірка продавцем починається зараз, а timeline вже доступний.",
+        "go_to_summary": "Відкрити timeline повернення"
       },
       "errors": {
-        "order_required": "Missing order reference.",
-        "reason_required": "Choose a return reason.",
-        "comment_too_long": "Your note can contain up to 500 characters.",
-        "photo_required": "Add at least one supporting photo.",
-        "photo_limit": "Upload no more than 3 photos.",
-        "photo_size": "Each file must be smaller than 5 MB.",
-        "photo_type": "Only JPG, PNG and WEBP files are supported.",
-        "generic": "We could not submit the return request. Try again in a moment."
+        "order_required": "Відсутнє посилання на замовлення.",
+        "reason_required": "Оберіть причину повернення.",
+        "comment_too_long": "Нотатка може містити до 500 символів.",
+        "photo_required": "Додайте щонайменше одне фото як доказ.",
+        "photo_limit": "Завантажте не більше 3 фото.",
+        "photo_size": "Кожен файл має бути меншим за 5 МБ.",
+        "photo_type": "Підтримуються лише JPG, PNG і WEBP файли.",
+        "generic": "Не вдалося надіслати запит на повернення. Спробуйте ще раз за мить."
       }
     },
     "return_success": {
       "hero": {
-        "eyebrow": "Wave 2 · Return confirmed",
-        "title": "Your request is in the decision queue.",
-        "description": "Order {orderId} is now visible to the salon and support. The next steps stay transparent for every actor."
+        "eyebrow": "Wave 2 · Повернення підтверджено",
+        "title": "Ваш запит у черзі на рішення.",
+        "description": "Замовлення {orderId} тепер видиме салону й підтримці. Наступні кроки залишаються прозорими для всіх учасників."
       },
       "badge": {
-        "pending": "Awaiting vendor decision"
+        "pending": "Очікуємо рішення продавця"
       },
       "timeline": {
-        "title": "Return lifecycle",
-        "description": "Status uses semantic state colors and never relies on color only.",
+        "title": "Життєвий цикл повернення",
+        "description": "Статус використовує семантичні кольори станів і ніколи не покладається лише на колір.",
         "submitted": {
-          "title": "Request recorded",
-          "body": "We stored your reason, attachments and note and notified the salon."
+          "title": "Запит зафіксовано",
+          "body": "Ми зберегли причину, вкладення й нотатку та повідомили салон."
         },
         "vendor_review": {
-          "title": "Salon reviews the request",
-          "body": "The salon has up to 7 days to accept, reject or request more context."
+          "title": "Салон перевіряє запит",
+          "body": "Салон має до 7 днів, щоб прийняти, відхилити або запросити більше контексту."
         },
         "payout": {
-          "title": "Refund or pickup arranged",
-          "body": "Once approved, support monitors refund or collection details and keeps you updated by email."
+          "title": "Узгоджено повернення коштів або забір",
+          "body": "Після схвалення підтримка відстежує деталі повернення коштів або забору й оновлює вас електронною поштою."
         }
       },
       "handoff": {
-        "title": "What happens next for each actor",
-        "description": "Cross-actor handoff keeps the customer, vendor and support aligned.",
-        "for_customer_label": "What happens next for you:",
-        "for_vendor_label": "What happens next for the salon:",
-        "for_customer": "Watch your inbox and return timeline. If more proof is needed, you can respond without restarting the flow.",
-        "for_vendor": "The salon reviews the evidence, records a decision and confirms pickup or refund details.",
-        "for_support_label": "What happens next for support:",
-        "for_platform_label": "What happens next for BonBeauty:",
-        "for_support": "Support steps in when the case needs mediation, deadline follow-up or policy clarification.",
-        "for_platform": "BonBeauty tracks SLA timing, keeps the audit trail and makes sure the outcome reaches every actor."
+        "title": "Що далі для кожної ролі",
+        "description": "Cross-actor handoff синхронізує клієнта, продавця й підтримку.",
+        "for_customer_label": "Що далі для вас:",
+        "for_vendor_label": "Що далі для салону:",
+        "for_customer": "Стежте за поштою та timeline повернення. Якщо потрібні додаткові докази, ви зможете відповісти без перезапуску процесу.",
+        "for_vendor": "Салон перевіряє докази, фіксує рішення й підтверджує деталі забору або повернення коштів.",
+        "for_support_label": "Що далі для підтримки:",
+        "for_platform_label": "Що далі для BonBeauty:",
+        "for_support": "Підтримка долучається, коли потрібна медіація, контроль строків або уточнення політики.",
+        "for_platform": "BonBeauty відстежує SLA, зберігає audit trail і стежить, щоб результат дійшов до кожного учасника."
       }
     },
     "addresses": {
       "hero": {
-        "eyebrow": "Wave 2 · Address book",
-        "title": "Keep delivery details ready for the next order.",
-        "description": "Add, edit and delete addresses inside a focus-trapped panel with keyboard-safe controls and 44px targets."
+        "eyebrow": "Wave 2 · Адресна книга",
+        "title": "Тримайте дані доставки готовими для наступного замовлення.",
+        "description": "Додавайте, редагуйте й видаляйте адреси у focus-trapped панелі з клавіатурно безпечними контролами та 44px targets."
       },
       "actions": {
-        "add": "Add address"
+        "add": "Додати адресу"
       },
       "empty": {
-        "title": "No saved addresses yet",
-        "description": "ES8 empty state for saved addresses.",
-        "body": "Save an address to speed up checkout and avoid retyping delivery details on the next order."
+        "title": "Ще немає збережених адрес",
+        "description": "ES8 empty state для збережених адрес.",
+        "body": "Збережіть адресу, щоб пришвидшити checkout і не вводити дані доставки повторно в наступному замовленні."
       },
       "list": {
-        "title": "Saved addresses",
-        "description": "Review delivery details, update them inline and remove outdated entries with confirmation.",
-        "default_label": "Saved address",
-        "no_phone": "Phone not provided"
+        "title": "Збережені адреси",
+        "description": "Перевіряйте дані доставки, оновлюйте їх inline і видаляйте застарілі записи з підтвердженням.",
+        "default_label": "Збережена адреса",
+        "no_phone": "Телефон не вказано"
       },
       "form": {
-        "create_title": "Add address",
-        "edit_title": "Edit address",
-        "address_name": "Address label",
-        "first_name": "First name",
-        "last_name": "Last name",
-        "company": "Company",
-        "address_line": "Street and number",
-        "city": "City",
-        "postal_code": "Postal code",
-        "province": "Region / province",
-        "phone": "Phone number",
-        "country": "Country",
+        "create_title": "Додати адресу",
+        "edit_title": "Редагувати адресу",
+        "address_name": "Назва адреси",
+        "first_name": "Ім’я",
+        "last_name": "Прізвище",
+        "company": "Компанія",
+        "address_line": "Вулиця та номер",
+        "city": "Місто",
+        "postal_code": "Поштовий індекс",
+        "province": "Регіон / область",
+        "phone": "Номер телефону",
+        "country": "Країна",
         "errors": {
-          "address_name_required": "Enter an address label.",
-          "first_name_required": "Enter the first name.",
-          "last_name_required": "Enter the last name.",
-          "address_required": "Enter the street and number.",
-          "city_required": "Enter the city.",
-          "country_required": "Choose a country.",
-          "postal_code_required": "Enter the postal code.",
-          "phone_required": "Enter the phone number.",
-          "generic": "We could not save the address. Try again."
+          "address_name_required": "Введіть назву адреси.",
+          "first_name_required": "Введіть ім’я.",
+          "last_name_required": "Введіть прізвище.",
+          "address_required": "Введіть вулицю та номер.",
+          "city_required": "Введіть місто.",
+          "country_required": "Оберіть країну.",
+          "postal_code_required": "Введіть поштовий індекс.",
+          "phone_required": "Введіть номер телефону.",
+          "generic": "Не вдалося зберегти адресу. Спробуйте ще раз."
         },
         "success": {
-          "created": "Address added.",
-          "updated": "Address updated.",
-          "deleted": "Address deleted."
+          "created": "Адресу додано.",
+          "updated": "Адресу оновлено.",
+          "deleted": "Адресу видалено."
         }
       },
       "delete": {
-        "title": "Delete this address?",
-        "description": "The address will be removed from your account after confirmation."
+        "title": "Видалити цю адресу?",
+        "description": "Після підтвердження адресу буде видалено з вашого акаунта."
       }
     },
     "reviews_to_write": {
       "hero": {
-        "eyebrow": "Wave 2 · Reviews to write",
-        "title": "You still have a few salons to review.",
-        "description": "Pending reviews stay grouped by order so you can complete feedback without hunting for the right booking."
+        "eyebrow": "Wave 2 · Відгуки до написання",
+        "title": "У вас ще є кілька салонів для оцінки.",
+        "description": "Очікувані відгуки згруповані за замовленнями, щоб ви могли завершити feedback без пошуку потрібного бронювання."
       },
       "empty": {
-        "title": "No reviews waiting",
-        "description": "ES7 gentle empty state for review prompts.",
-        "body": "You are caught up. When a new order becomes eligible for review, it will appear here.",
-        "cta": "Go to written reviews"
+        "title": "Немає очікуваних відгуків",
+        "description": "ES7 gentle empty state для запитів відгуку.",
+        "body": "Усе виконано. Коли нове замовлення стане доступним для відгуку, воно з’явиться тут.",
+        "cta": "Перейти до написаних відгуків"
       },
       "list": {
-        "title": "Orders waiting for feedback",
-        "description": "Open written reviews to finish the form and compare your published feedback.",
-        "order_label": "Order {id}"
+        "title": "Замовлення очікують feedback",
+        "description": "Відкрийте написані відгуки, щоб завершити форму й порівняти опублікований feedback.",
+        "order_label": "Замовлення {id}"
       },
       "actions": {
-        "write": "Write review",
-        "compare": "See written reviews"
+        "write": "Написати відгук",
+        "compare": "Переглянути написані відгуки"
       }
     },
     "written_reviews": {
       "hero": {
-        "eyebrow": "Wave 2 · Published reviews",
-        "title": "Manage the feedback you already sent.",
-        "description": "Edit tone, update rating or delete a review with confirmation and accessible mutation feedback."
+        "eyebrow": "Wave 2 · Опубліковані відгуки",
+        "title": "Керуйте feedback, який уже надіслали.",
+        "description": "Редагуйте тон, оновлюйте оцінку або видаляйте відгук із підтвердженням і доступним mutation feedback."
       },
       "empty": {
-        "title": "No written reviews yet",
-        "description": "Published reviews will appear here after submission.",
-        "body": "Use the reviews-to-write list when you are ready to share feedback."
+        "title": "Ще немає написаних відгуків",
+        "description": "Опубліковані відгуки з’являться тут після надсилання.",
+        "body": "Скористайтеся списком відгуків до написання, коли будете готові поділитися feedback."
       },
       "list": {
-        "title": "My written reviews",
-        "description": "Changes never surface raw backend errors. Each mutation reports a localized result.",
+        "title": "Мої написані відгуки",
+        "description": "Зміни ніколи не показують сирі backend errors. Кожна mutation повертає локалізований результат.",
         "unknown_seller": "Salon",
         "rating": "{rating}/5",
-        "no_note": "No additional note.",
-        "updated_at": "Updated: {date}"
+        "no_note": "Немає додаткової нотатки.",
+        "updated_at": "Оновлено: {date}"
       },
       "form": {
-        "title": "Edit review",
-        "rating_label": "Rating",
-        "note_label": "Review note",
+        "title": "Редагувати відгук",
+        "create_title": "Написати відгук",
+        "rating_label": "Оцінка",
+        "note_label": "Текст відгуку",
         "errors": {
-          "rating_required": "Choose a rating.",
-          "note_too_long": "Your note can contain up to 300 characters.",
-          "review_id_required": "Missing review reference.",
-          "order_id_required": "Missing order reference.",
-          "generic": "We could not update the review. Try again."
+          "rating_required": "Оберіть оцінку.",
+          "note_too_long": "Нотатка може містити до 300 символів.",
+          "review_id_required": "Відсутнє посилання на відгук.",
+          "order_id_required": "Відсутнє посилання на замовлення.",
+          "seller_id_required": "Відсутнє посилання на салон.",
+          "generic": "Не вдалося оновити відгук. Спробуйте ще раз."
         },
         "success": {
-          "updated": "Review updated.",
-          "deleted": "Review deleted."
+          "created": "Відгук збережено.",
+          "updated": "Відгук оновлено.",
+          "deleted": "Відгук видалено."
         }
       },
       "delete": {
-        "title": "Delete review?",
-        "description": "This removes the published review from your account view after confirmation."
+        "title": "Видалити відгук?",
+        "description": "Після підтвердження опублікований відгук буде видалено з вигляду акаунта."
       }
     },
     "settings": {
       "hero": {
-        "eyebrow": "Wave 2 · Account settings",
-        "title": "Keep profile, security and privacy controls in one hub.",
-        "description": "Desktop uses anchored section navigation, while mobile keeps the same landmarks without overflow."
+        "eyebrow": "Wave 2 · Налаштування акаунта",
+        "title": "Тримайте профіль, безпеку та приватність в одному hub.",
+        "description": "Desktop використовує закріплену навігацію секціями, а mobile зберігає ті самі landmarks без overflow."
       },
       "nav": {
-        "title": "Sections",
-        "description": "Jump between profile, security, notifications, payments and GDPR privacy."
+        "title": "Секції",
+        "description": "Переходьте між профілем, безпекою, сповіщеннями, платежами та GDPR privacy."
       },
       "sections": {
-        "profile": "Profile",
-        "security": "Security",
-        "notifications": "Notifications",
-        "payments": "Payments",
+        "profile": "Профіль",
+        "security": "Безпека",
+        "notifications": "Сповіщення",
+        "payments": "Платежі",
         "privacy": "GDPR privacy"
       },
       "profile": {
-        "title": "Profile",
-        "description": "Update personal contact details with blur-based success feedback.",
-        "first_name": "First name",
-        "last_name": "Last name",
-        "phone": "Phone",
-        "email": "Email",
-        "locale": "Preferred locale",
+        "title": "Профіль",
+        "description": "Оновлюйте особисті контактні дані з blur-based success feedback.",
+        "first_name": "Ім’я",
+        "last_name": "Прізвище",
+        "phone": "Телефон",
+        "email": "E-mail",
+        "locale": "Бажана мова",
         "errors": {
-          "first_name_required": "Enter the first name.",
-          "last_name_required": "Enter the last name.",
-          "phone_required": "Enter the phone number.",
-          "email_required": "Email is required.",
-          "email_invalid": "Enter a valid email address.",
-          "locale_required": "Choose a preferred locale.",
-          "generic": "We could not update the profile. Try again."
+          "first_name_required": "Введіть ім’я.",
+          "last_name_required": "Введіть прізвище.",
+          "phone_required": "Введіть номер телефону.",
+          "email_required": "E-mail обов’язковий.",
+          "email_invalid": "Введіть коректну e-mail адресу.",
+          "locale_required": "Оберіть бажану мову.",
+          "generic": "Не вдалося оновити профіль. Спробуйте ще раз."
         },
         "success": {
-          "updated": "Profile updated."
+          "updated": "Профіль оновлено."
         }
       },
       "security": {
-        "title": "Security",
-        "description": "Use a password reset handoff instead of exposing raw auth errors in the UI.",
-        "new_password": "New password",
-        "confirm_password": "Confirm password",
+        "title": "Безпека",
+        "description": "Використовуйте password reset handoff замість показу сирих auth errors в UI.",
+        "new_password": "Новий пароль",
+        "confirm_password": "Підтвердьте пароль",
         "errors": {
-          "password_too_short": "Use at least 8 characters.",
-          "password_mismatch": "Passwords must match.",
-          "generic": "We could not start the reset flow. Try again."
+          "password_too_short": "Використайте щонайменше 8 символів.",
+          "password_mismatch": "Паролі мають збігатися.",
+          "generic": "Не вдалося запустити reset flow. Спробуйте ще раз."
         },
         "success": {
-          "reset_email_sent": "Reset email sent. Complete the password change from your inbox."
+          "reset_email_sent": "Reset email надіслано. Завершіть зміну пароля зі своєї поштової скриньки."
         }
       },
       "notifications": {
-        "title": "Notifications",
-        "description": "Choose which updates should continue through the account team request intake for this release.",
-        "email_updates": "Email order updates",
-        "sms_updates": "SMS shipment updates",
-        "product_news": "Product and editorial news",
+        "title": "Сповіщення",
+        "description": "Оберіть, які оновлення мають пройти через request intake команди акаунта в цьому release.",
+        "email_updates": "E-mail оновлення щодо замовлень",
+        "sms_updates": "SMS оновлення щодо доставки",
+        "product_news": "Продуктові й редакційні новини",
+        "errors": {
+          "generic": "Не вдалося записати запит щодо сповіщень. Спробуйте ще раз."
+        },
         "success": {
-          "request_received": "Notification preference request received."
+          "request_received": "Запит щодо налаштувань сповіщень отримано."
         }
       },
       "payments": {
-        "title": "Payments",
-        "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
-        "default_card": "Preferred payment note",
-        "invoices_by_email": "Send invoices by email",
+        "title": "Платежі",
+        "description": "Записуйте платіжні побажання для підтримки, не вдаючи, що непідтримувані backend mutations уже завершені.",
+        "default_card": "Нотатка про бажаний платіж",
+        "invoices_by_email": "Надсилати рахунки e-mail",
+        "errors": {
+          "generic": "Не вдалося записати платіжний запит. Спробуйте ще раз."
+        },
         "success": {
-          "request_received": "Payment preference request received."
+          "request_received": "Запит щодо платіжних налаштувань отримано."
         }
       },
       "privacy": {
         "title": "GDPR privacy",
-        "description": "Privacy actions are represented as intake requests until dedicated backend automation is available.",
-        "request_intake_notice": "This release records the request and hands it off safely. It does not claim that export or deletion is already complete.",
-        "export_request": "Request personal data export",
-        "delete_request": "Request account deletion review",
+        "description": "Дії приватності представлені як intake requests, доки не доступна dedicated backend automation.",
+        "request_intake_notice": "Цей release записує запит і безпечно передає його далі. Він не стверджує, що експорт або видалення акаунта вже завершені.",
+        "export_request": "Запросити експорт персональних даних",
+        "delete_request": "Запросити перевірку видалення акаунта",
         "errors": {
-          "generic": "We could not record the privacy request. Try again."
+          "generic": "Не вдалося записати privacy request. Спробуйте ще раз."
         },
         "success": {
-          "export_request_received": "Data export request received.",
-          "delete_request_received": "Account deletion request received."
+          "export_request_received": "Запит на експорт даних отримано.",
+          "delete_request_received": "Запит на видалення акаунта отримано."
         }
       }
     }

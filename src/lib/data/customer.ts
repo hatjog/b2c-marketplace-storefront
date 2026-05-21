@@ -34,7 +34,7 @@ export const retrieveCustomer = async (): Promise<HttpTypes.StoreCustomer | null
     .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
       method: 'GET',
       query: {
-        fields: '*orders'
+        fields: '*orders,+metadata'
       },
       headers,
       next,
@@ -190,12 +190,14 @@ export const addCustomerAddress = async (formData: FormData): Promise<any> => {
     });
 };
 
-export const deleteCustomerAddress = async (addressId: string): Promise<void> => {
+export const deleteCustomerAddress = async (
+  addressId: string
+): Promise<{ success: boolean; error: string | null }> => {
   const headers = {
     ...(await getAuthHeaders())
   };
 
-  await sdk.store.customer
+  return await sdk.store.customer
     .deleteAddress(addressId, headers)
     .then(async () => {
       const customerCacheTag = await getCacheTag('customers');

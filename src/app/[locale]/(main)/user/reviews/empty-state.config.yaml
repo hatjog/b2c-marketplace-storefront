@@ -1,0 +1,7 @@
+surface: storefront/user/reviews-to-write
+extends: empty-states#pattern-7-empty-reviews-to-write
+overrides:
+  cta_target: "/user/reviews/written"
+rationale: >-
+  Story 4.3 W2-10 reuses ES7 as a gentle empty state and routes the secondary
+  CTA to the written-reviews surface, matching the Account Hub review flow.

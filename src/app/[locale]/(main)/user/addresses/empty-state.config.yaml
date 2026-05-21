@@ -1,0 +1,7 @@
+surface: storefront/user/addresses
+extends: empty-states#pattern-8-empty-saved-addresses
+overrides:
+  cta_target: "/user/addresses"
+rationale: >-
+  Story 4.3 W2-08 reuses ES8 for saved addresses while keeping the add-address
+  CTA on the same surface, where the focus-trapped editor panel is available.
