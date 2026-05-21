@@ -4,7 +4,6 @@ import Link from 'next/link';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { clampRadius, type RadiusOption } from '@/components/atoms/RadiusSelector/clampRadius';
-import { SellerMap } from '@/components/cells/SellerMap';
 import { SellersPagination } from '@/components/cells/SellersPagination/SellersPagination';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SellersSearchForm } from '@/components/molecules/SellersSearchForm/SellersSearchForm';
@@ -67,6 +66,45 @@ function parseFiniteNumber(raw: string | string[] | undefined): number | undefin
   if (typeof value !== 'string' || value === '') return undefined;
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function SellerMapPlaceholder({
+  title,
+  body,
+  sellers
+}: {
+  title: string;
+  body: string;
+  sellers: { name: string; city: string | null; district?: string | null }[];
+}) {
+  return (
+    <div
+      className="mb-6 rounded-sm border border-dashed border-gray-300 bg-gray-50 p-6 font-mono text-sm text-gray-700"
+      data-testid="sellers-list-map-view"
+      aria-label={title}
+    >
+      <div className="mb-4 flex items-center justify-between gap-4 border-b border-gray-200 pb-3">
+        <p className="font-semibold uppercase tracking-[0.08em]">{title}</p>
+        <p className="text-xs text-gray-500">{body}</p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {sellers.slice(0, 8).map((seller, index) => (
+          <div
+            key={`${seller.name}-${index}`}
+            className="rounded-sm border border-gray-200 bg-white px-3 py-2"
+          >
+            <span className="mr-2 text-gray-400">{String(index + 1).padStart(2, '0')}</span>
+            <span>{seller.name}</span>
+            {(seller.city || seller.district) && (
+              <span className="ml-2 text-gray-500">
+                {[seller.city, seller.district].filter(Boolean).join(' / ')}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export async function generateMetadata({
@@ -186,8 +224,8 @@ export default async function SellersListPage({
       />
       <Breadcrumbs
         items={[
-          { label: tSellerPage('home'), href: '/' },
-          { label: tSellerPage('salons'), href: '/sellers' }
+          { label: tSellerPage('home'), href: `/${locale}/` },
+          { label: tSellerPage('salons'), href: `/${locale}/sellers` }
         ]}
       />
 
@@ -219,18 +257,11 @@ export default async function SellersListPage({
       </p>
 
       {view === 'map' ? (
-        <div
-          className="mb-6"
-          data-testid="sellers-list-map-view"
-        >
-          <SellerMap
-            sellers={pageItems}
-            locale={locale}
-            userLat={nearMeEffective ? userLat : undefined}
-            userLng={nearMeEffective ? userLng : undefined}
-            radiusKm={nearMeEffective ? radius : undefined}
-          />
-        </div>
+        <SellerMapPlaceholder
+          title={t('map.placeholder_title')}
+          body={t('map.placeholder_body')}
+          sellers={pageItems}
+        />
       ) : pageItems.length === 0 ? (
         <div
           data-testid="sellers-list-empty"
@@ -270,6 +301,7 @@ export default async function SellersListPage({
               handle={seller.handle}
               photo_url={seller.photo_url}
               city={seller.city}
+              district={seller.district}
               product_count={seller.product_count}
             />
           ))}

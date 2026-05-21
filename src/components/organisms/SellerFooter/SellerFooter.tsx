@@ -9,9 +9,16 @@ import { Button, Divider } from '@/components/atoms';
 import { Modal, ReportSellerForm } from '@/components/molecules';
 import type { SellerProps } from '@/types/seller';
 
+function formatSellerJoinDate(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : format(date, 'yyyy-MM-dd');
+}
+
 export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
   const t = useTranslations('products');
   const [openModal, setOpenModal] = useState(false);
+  const joinedDate = formatSellerJoinDate(seller.created_at);
 
   return (
     <div className="flex flex-col items-center justify-between p-5 lg:flex-row">
@@ -22,12 +29,28 @@ export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
             Verified seller
           </div>
         )} */}
-        <Divider square />
-        <p>{t('seller_joined', { date: format(seller.created_at, 'yyyy-MM-dd') })}</p>
+        {joinedDate && (
+          <>
+            <Divider square />
+            <p>{t('seller_joined', { date: joinedDate })}</p>
+          </>
+        )}
         {seller.tax_id?.trim() && (
           <>
             <Divider square />
             <p>{t('seller_tax_id', { taxId: seller.tax_id.trim() })}</p>
+          </>
+        )}
+        {seller.regon?.trim() && (
+          <>
+            <Divider square />
+            <p>{t('seller_regon', { regon: seller.regon.trim() })}</p>
+          </>
+        )}
+        {seller.krs?.trim() && (
+          <>
+            <Divider square />
+            <p>{t('seller_krs', { krs: seller.krs.trim() })}</p>
           </>
         )}
         {/* <Divider square /> */}

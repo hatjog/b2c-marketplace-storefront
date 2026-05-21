@@ -450,7 +450,10 @@
     "no_results_quality": "Nie znaleziono zabiegów spełniających kryteria",
     "seller_joined": "Dołączył: {date}",
     "report_seller": "Zgłoś sprzedawcę",
-    "chat_heading": "Czat"
+    "chat_heading": "Czat",
+    "seller_tax_id": "NIP: {taxId}",
+    "seller_regon": "REGON: {regon}",
+    "seller_krs": "KRS: {krs}"
   },
   "auth": {
     "login_heading": "Zaloguj się",

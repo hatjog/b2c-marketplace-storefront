@@ -451,7 +451,10 @@
     "no_results_quality": "Keine Behandlungen gefunden, die den Kriterien entsprechen",
     "seller_joined": "Beigetreten {date}",
     "report_seller": "Verkäufer melden",
-    "chat_heading": "Chat"
+    "chat_heading": "Chat",
+    "seller_tax_id": "Steuer-ID: {taxId}",
+    "seller_regon": "REGON: {regon}",
+    "seller_krs": "KRS: {krs}"
   },
   "auth": {
     "login_heading": "Anmelden",

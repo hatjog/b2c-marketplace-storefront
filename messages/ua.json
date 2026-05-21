@@ -451,7 +451,10 @@
     "no_results_quality": "Не знайдено процедур, що відповідають критеріям",
     "seller_joined": "Приєднався: {date}",
     "report_seller": "Поскаржитися на продавця",
-    "chat_heading": "Чат"
+    "chat_heading": "Чат",
+    "seller_tax_id": "Податковий номер: {taxId}",
+    "seller_regon": "REGON: {regon}",
+    "seller_krs": "KRS: {krs}"
   },
   "auth": {
     "login_heading": "Увійти",

@@ -9,6 +9,7 @@ export interface SellerListItem {
   name: string;
   photo_url: string | null;
   city: string | null;
+  district?: string | null;
   product_count: number;
   avg_rating?: number | null;
   review_count?: number | null;

@@ -38,10 +38,13 @@ export interface SellerCardProps {
   handle: string;
   photo_url?: string | null;
   city?: string | null;
+  district?: string | null;
   product_count: number;
 }
 
-export function SellerCard({ name, handle, photo_url, city, product_count }: SellerCardProps) {
+export function SellerCard({ name, handle, photo_url, city, district, product_count }: SellerCardProps) {
+  const location = [city, district].filter(Boolean).join(' / ');
+
   return (
     <Link
       href={`/sellers/${handle}`}
@@ -77,7 +80,7 @@ export function SellerCard({ name, handle, photo_url, city, product_count }: Sel
 
       <div className="p-4">
         <p className="truncate font-semibold text-gray-900">{name}</p>
-        {city && <p className="mt-0.5 truncate text-sm text-gray-500">{city}</p>}
+        {location && <p className="mt-0.5 truncate text-sm text-gray-500">{location}</p>}
         <p className="mt-1 text-sm text-gray-600">{pluralizeProducts(product_count)}</p>
       </div>
     </Link>

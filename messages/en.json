@@ -450,7 +450,10 @@
     "no_results_quality": "No treatments found matching criteria",
     "seller_joined": "Joined {date}",
     "report_seller": "Report Seller",
-    "chat_heading": "Chat"
+    "chat_heading": "Chat",
+    "seller_tax_id": "Tax ID: {taxId}",
+    "seller_regon": "REGON: {regon}",
+    "seller_krs": "KRS: {krs}"
   },
   "auth": {
     "login_heading": "Log in",
