@@ -157,14 +157,20 @@ export function groupOrdersByOrderGroup(orders: MercurOrderWithOrderGroup[]): Or
     });
 }
 
-export async function loadOrderGroups(): Promise<CollectionResult<OrderGroupSummary[]>> {
+export async function loadOrderGroups({
+  limit = 25,
+  offset = 0
+}: {
+  limit?: number;
+  offset?: number;
+} = {}): Promise<CollectionResult<OrderGroupSummary[]>> {
   const customer = await retrieveCustomer();
   if (!customer) {
     return { state: 'access_denied', data: [] };
   }
 
   try {
-    const orders = await listOrders();
+    const orders = await listOrders(limit, offset);
     return { state: 'ok', data: groupOrdersByOrderGroup(orders) };
   } catch (error) {
     if (isAccessError(error)) {
@@ -276,6 +282,13 @@ export function buildOrderTimeline(orderGroup: OrderGroup | null): TimelineEvent
           : 'timeline.fulfillment.detail_pending',
       at: primaryOrder.updated_at ?? null,
       tone: primaryOrder.fulfillment_status === 'fulfilled' ? 'paid' : 'pending'
+    },
+    {
+      id: 'voucher_handoff',
+      labelKey: 'timeline.voucher_handoff.label',
+      detailKey: 'timeline.voucher_handoff.detail',
+      at: primaryOrder.updated_at ?? primaryOrder.created_at ?? null,
+      tone: orderStatusToTone(primaryOrder.status)
     }
   ];
 }

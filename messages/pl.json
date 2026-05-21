@@ -1911,22 +1911,52 @@
       "messagesBody": "Wiadomości o Twoich zamówieniach pojawią się tutaj."
     },
     "dashboard": {
-      "eyebrow": "W2-01 dashboard",
-      "title": "Twoje konto po zakupie",
-      "intro": "Tutaj szybko sprawdzisz vouchery, historię zamówień, zapisane inspiracje i wiadomości bez przechodzenia między osobnymi shellami.",
-      "greeting": "Witaj {firstName}, post-purchase self-service jest gotowy.",
-      "heroAsideEyebrow": "Side account snapshot",
-      "heroAsideTitle": "Co dziś warto sprawdzić",
-      "heroAsideBody": "Jeżeli salon lub operator potrzebują Twojej decyzji, zobaczysz to od razu w zamówieniach albo wiadomościach.",
-      "activityEyebrow": "Recent activity",
-      "activityTitle": "Ostatnie aktywności",
-      "activitySummary": "{count} pozycji w tym zamówieniu.",
-      "recommendedEyebrow": "Recommended",
-      "recommendedTitle": "Warto wrócić do tych zapisów",
-      "messagesEyebrow": "Messages",
-      "messagesTitle": "Ostatnie rozmowy",
-      "voucherEyebrow": "Vouchery",
-      "voucherTitle": "Najbliższe użycie"
+      "welcome_eyebrow": "Po zakupie",
+      "welcome_heading": "Cześć, {firstName}",
+      "welcome_body": "Najważniejsze sprawy masz w jednym spokojnym miejscu: zamówienia, vouchery, wishlistę i wiadomości.",
+      "snapshot": {
+        "email": "E-mail",
+        "orders": "Zamówienia",
+        "wishlist": "Wishlist"
+      },
+      "quick_actions": {
+        "vouchers": {
+          "label": "Vouchery",
+          "description": "Otwórz historię voucherów"
+        },
+        "orders": {
+          "label": "Zamówienia",
+          "description": "Sprawdź postęp zamówień"
+        },
+        "wishlist": {
+          "label": "Wishlist",
+          "description": "Zapisane zabiegi"
+        },
+        "messages": {
+          "label": "Wiadomości",
+          "description": "Inbox buyer-salon"
+        }
+      },
+      "recommended": {
+        "heading": "Polecany następny krok",
+        "body": "Przejrzyj kategorie, gdy zechcesz wrócić do zabiegu później.",
+        "cta": "Przeglądaj kategorie"
+      },
+      "recent_activity": {
+        "heading": "Ostatnia aktywność",
+        "cta": "Zobacz wszystkie zamówienia",
+        "empty": "Twoje kolejne zamówienie pojawi się tutaj.",
+        "order_label": "Zamówienie #{displayId}",
+        "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "open_order": "Otwórz zamówienie"
+      },
+      "statuses": {
+        "paid": "Aktywne",
+        "pending": "W toku"
+      },
+      "labels": {
+        "date_pending": "Data w przygotowaniu"
+      }
     },
     "vouchers": {
       "eyebrow": "W2-02 voucher history",
@@ -1956,129 +1986,230 @@
       "quickActionReturned": "Zwroty i wycofane vouchery."
     },
     "orders": {
-      "eyebrow": "W2-03 order history",
-      "title": "Historia zamówień",
-      "intro": "Zobacz zamówienia w układzie listy, z czytelnym statusem, datą i przejściem do szczegółów operacyjnych.",
-      "heroAsideEyebrow": "Operational clarity",
-      "heroAsideTitle": "Jedna lista dla wszystkich decyzji",
-      "heroAsideBody": "Zamówienia, zwroty i wiadomości pozostają połączone, ale bez mieszania write-heavy ustawień.",
-      "quickActionAll": "Wszystkie zamówienia",
-      "quickActionAllDescription": "Pełna historia zakupów klientki.",
-      "quickActionOpen": "W toku",
-      "quickActionOpenDescription": "Zamówienia czekające na następny krok.",
-      "quickActionReturns": "Zwroty",
-      "quickActionReturnsDescription": "Przejście do historii zwrotów.",
-      "quickActionMessages": "Wiadomości",
-      "quickActionMessagesDescription": "Kontakt powiązany z zamówieniami.",
-      "filters": {
-        "all": "Wszystkie",
-        "open": "W toku",
-        "settled": "Rozliczone",
-        "attention": "Wymaga uwagi"
+      "heading": "Historia zamówień",
+      "intro": "Sprawdź każdą grupę zamówień, kwotę i bieżący postęp bez wychodzenia z konta.",
+      "secondary_cta": "Przejdź do voucherów",
+      "snapshot": {
+        "orders": "Grupy zamówień",
+        "email": "E-mail"
       },
-      "rowSummary": "{count} pozycji • złożono {date}",
-      "detailsAction": "Szczegóły zamówienia"
+      "filters": {
+        "aria_label": "Filtry statusu zamówień",
+        "all": "Wszystkie",
+        "paid": "Opłacone",
+        "pending": "Oczekujące",
+        "failed": "Wymaga uwagi",
+        "refunded": "Zwrócone"
+      },
+      "pagination": {
+        "previous": "Poprzednie zamówienia",
+        "next": "Następne zamówienia"
+      },
+      "empty": {
+        "title": "Nie masz jeszcze zamówień",
+        "body": "Historia zamówień pojawi się tutaj po pierwszym zakupie."
+      },
+      "error": {
+        "access_denied_title": "Wymagane logowanie",
+        "access_denied_body": "Zaloguj się ponownie, aby zobaczyć zamówienia.",
+        "login": "Zaloguj się",
+        "failed_title": "Nie udało się wczytać zamówień",
+        "failed_body": "Odśwież stronę za chwilę. Twój dostęp pozostaje chroniony.",
+        "retry": "Spróbuj ponownie",
+        "unavailable_title": "Zamówienia są chwilowo niedostępne",
+        "unavailable_body": "Sprawdzamy połączenie z usługą zamówień."
+      },
+      "order_label": "Zamówienie #{displayId}",
+      "status": {
+        "paid": "Opłacone",
+        "pending": "Oczekuje",
+        "failed": "Wymaga uwagi",
+        "refunded": "Zwrócone"
+      },
+      "summary": {
+        "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+        "total": "Suma: {amount}",
+        "lines": "{count, plural, one {# przesyłka} few {# przesyłki} many {# przesyłek} other {# przesyłek}}"
+      },
+      "open": "Otwórz szczegóły",
+      "labels": {
+        "date_pending": "Data w przygotowaniu"
+      }
     },
     "orderDetail": {
-      "eyebrow": "W2-04 order detail",
-      "title": "Zamówienie {displayId}",
-      "intro": "W jednym widoku znajdziesz pozycje, dostawę, podsumowanie płatności, timeline i bezpieczne handoffy do dalszych działań.",
-      "heroAsideEyebrow": "Trust Invariant #4",
-      "heroAsideTitle": "Co dalej po potwierdzeniu",
-      "heroAsideBody": "Niedostępne akcje nie znikają. Zawsze wyjaśniamy, co jest możliwe teraz i co dzieje się po stronie salonu albo operatora.",
-      "back": "Wróć do historii zamówień",
-      "itemsTitle": "Pozycje zamówienia",
-      "itemSummary": "{count} szt. • {total}",
-      "timelineTitle": "Timeline aktywności",
-      "deliveryTitle": "Dostawa i kontakt",
-      "paymentTitle": "Podsumowanie płatności",
-      "paymentVoucher": "Wartość usług",
-      "paymentShipping": "Dostawa",
-      "paymentTotal": "Razem",
-      "actionsTitle": "Dostępne akcje",
-      "available": "Dostępne",
-      "disabled": "Wyjaśnione",
-      "quickActionVoucher": "Ponowna wysyłka vouchera albo link do pobrania.",
-      "quickActionInvoice": "Data dokumentu i rozliczenia.",
-      "quickActionReturn": "Zwrot kieruje do osobnej historii decyzji.",
-      "quickActionContact": "Bezpieczny kontakt z salonem bez szukania w innych widokach.",
-      "actions": {
-        "resendVoucher": "Wyślij voucher ponownie",
-        "invoice": "Pobierz fakturę",
-        "return": "Zgłoś zwrot",
-        "contact": "Skontaktuj się z salonem"
+      "back": "Wróć do zamówień",
+      "heading": "Zamówienie #{displayId}",
+      "intro": "Sprawdź pozycje, dostawę, płatność i kolejne praktyczne działania.",
+      "snapshot": {
+        "order_number": "Numer zamówienia",
+        "order_date": "Data zamówienia"
       },
-      "actionExplainers": {
-        "resendVoucher": "Jeżeli odbiorczyni potrzebuje ponownego dostępu, zachowujemy ten sam kontekst zamówienia.",
-        "invoice": "Dokument pozostaje powiązany z tym zamówieniem i jego statusem.",
-        "return": "Jeśli zwrot nie jest dostępny, pokazujemy to spokojnie zamiast ukrywać akcję.",
-        "contact": "Rozmowa z salonem dotyczy tylko tego zamówienia i jego realizacji."
+      "status": {
+        "paid": "Opłacone",
+        "pending": "Oczekuje",
+        "failed": "Wymaga uwagi",
+        "refunded": "Zwrócone"
+      },
+      "items": {
+        "heading": "Pozycje",
+        "quantity": "Ilość: {count}"
+      },
+      "delivery": {
+        "heading": "Dostawa",
+        "pending": "Pokażemy szczegóły dostawy, gdy tylko będą dostępne."
+      },
+      "payment": {
+        "heading": "Podsumowanie płatności",
+        "total": "Suma: {amount}",
+        "method": "Metoda: {value}",
+        "method_pending": "Metoda płatności w przygotowaniu"
       },
       "timeline": {
-        "orderPlaced": "Zamówienie przyjęte",
-        "processing": "Potwierdzenie i przygotowanie",
-        "handoff": "Handoff do realizacji"
+        "heading": "Oś czasu",
+        "placed": {
+          "label": "Zamówienie złożone",
+          "detail": "Zarejestrowaliśmy zamówienie i rozpoczęliśmy realizację."
+        },
+        "payment": {
+          "label": "Płatność",
+          "detail_paid": "Płatność została potwierdzona.",
+          "detail_pending": "Czekamy na potwierdzenie płatności."
+        },
+        "fulfillment": {
+          "label": "Realizacja",
+          "detail_ready": "Voucher lub przekazanie usługi jest gotowe.",
+          "detail_pending": "Wciąż przygotowujemy realizację."
+        },
+        "voucher_handoff": {
+          "label": "Cykl życia vouchera",
+          "detail": "Kupujący, odbiorca i salon mogą śledzić kolejne przekazanie vouchera z tego widoku konta."
+        }
       },
-      "trust": {
-        "forYouLabel": "Co dalej dla Ciebie:",
-        "forUsLabel": "Co dalej dla salonu:",
-        "forYouBody": "Sprawdź wiadomości lub użyj jednej z akcji, gdy będziesz gotowa.",
-        "forUsBody": "Potwierdzamy realizację, pilnujemy dokumentów i utrzymujemy porządek komunikacji."
+      "actions": {
+        "heading": "Akcje",
+        "resend": {
+          "title": "Wyślij voucher ponownie",
+          "available": "Otwórz ponownie surface potwierdzenia i stamtąd ponów wysyłkę vouchera.",
+          "unavailable": "To zamówienie nie udostępnia jeszcze ścieżki ponownej wysyłki vouchera.",
+          "cta": "Otwórz potwierdzenie"
+        },
+        "invoice": {
+          "title": "Faktura",
+          "available": "Pobierz fakturę bezpośrednio z tego zamówienia.",
+          "unavailable": "Faktura pojawi się tutaj, gdy księgowość ją udostępni.",
+          "cta": "Otwórz fakturę"
+        },
+        "return": {
+          "title": "Wniosek o zwrot",
+          "available": "Uruchom flow zwrotu dla tej grupy zamówień.",
+          "unavailable": "Zwrot nie jest teraz dostępny dla tego zamówienia.",
+          "cta": "Otwórz flow zwrotu"
+        },
+        "contact": {
+          "title": "Kontakt z pomocą",
+          "available": "Skorzystaj z pomocy, jeśli potrzebujesz spokojnego przekazania sprawy do supportu.",
+          "cta": "Otwórz pomoc"
+        }
+      },
+      "handoff": {
+        "label_for_you": "Co dalej dla Ciebie:",
+        "label_for_us": "Co dalej dla nas:",
+        "label_for_recipient": "Co dalej dla odbiorcy:",
+        "label_for_salon": "Co dalej dla salonu:",
+        "for_you": "Zachowaj to zamówienie pod ręką, jeśli chcesz ponowić wysyłkę vouchera, faktury albo wniosku o zwrot.",
+        "for_us": "W tle pilnujemy spójności płatności, realizacji i obsługi posprzedażowej.",
+        "for_recipient": "Odbiorca dostaje przekazanie vouchera i może wrócić do szczegółów, gdy potrzebna jest zgoda albo realizacja.",
+        "for_salon": "Salon widzi kontekst vouchera dopiero wtedy, gdy trzeba go zrealizować albo wesprzeć usługę."
+      },
+      "error": {
+        "failed_title": "Nie udało się wczytać tego zamówienia",
+        "failed_body": "Spróbuj ponownie za chwilę. Jeśli problem nie zniknie, skorzystaj z pomocy.",
+        "unavailable_title": "To zamówienie jest chwilowo niedostępne",
+        "unavailable_body": "Sprawdzamy połączenie z zamówieniem i przywrócimy dostęp tak szybko, jak to możliwe."
+      },
+      "labels": {
+        "date_pending": "Data w przygotowaniu"
       }
     },
     "returns": {
-      "eyebrow": "W2-07 returns history",
-      "title": "Historia zwrotów",
-      "intro": "Lista zwrotów pokazuje status, datę i powód bez maskowania błędów dostępu czy problemów konfiguracyjnych.",
-      "heroAsideEyebrow": "Read-heavy only",
-      "heroAsideTitle": "Zwroty bez ukrytych stanów",
-      "heroAsideBody": "Ta powierzchnia jest wyłącznie do odczytu. Jeżeli proces wymaga działania, kierujemy do właściwej ścieżki zamiast mieszać flow.",
-      "quickActionAll": "Wszystkie zwroty",
-      "quickActionAllDescription": "Pełna lista zgłoszonych wniosków.",
-      "quickActionOrders": "Zamówienia",
-      "quickActionOrdersDescription": "Powrót do źródłowych zamówień.",
-      "quickActionMessages": "Wiadomości",
-      "quickActionMessagesDescription": "Kontakt w sprawie zwrotu.",
-      "quickActionVouchers": "Vouchery",
-      "quickActionVouchersDescription": "Powiązane kody i ich status."
+      "heading": "Zwroty",
+      "intro": "Śledź złożone wnioski o zwrot i ich bieżący status.",
+      "snapshot": {
+        "returns": "Zwroty",
+        "email": "E-mail"
+      },
+      "empty": {
+        "title": "Nie masz jeszcze zwrotów",
+        "body": "Wnioski o zwrot pojawią się tutaj, jeśli kiedykolwiek będą potrzebne."
+      },
+      "error": {
+        "access_denied_title": "Wymagane logowanie",
+        "access_denied_body": "Zaloguj się ponownie, aby zobaczyć zwroty.",
+        "failed_title": "Nie udało się wczytać zwrotów",
+        "failed_body": "Spróbuj ponownie za chwilę. Ścieżka recovery jest oddzielona od empty state.",
+        "unavailable_title": "Zwroty są chwilowo niedostępne",
+        "unavailable_body": "Usługa zwrotów nie odpowiada w tej chwili."
+      },
+      "return_label": "Zwrot {id}",
+      "status": {
+        "paid": "Zakończony",
+        "pending": "W toku",
+        "failed": "Wymaga uwagi",
+        "refunded": "Zrefundowany"
+      },
+      "labels": {
+        "date_pending": "Data w przygotowaniu"
+      }
     },
     "wishlist": {
-      "eyebrow": "W2-09 wishlist",
-      "title": "Wishlist",
-      "intro": "Zobacz zapisane produkty i kolekcje nazwane po swojemu, bez przechodzenia w ustawienia czy cięższe flow edycji.",
-      "heroAsideEyebrow": "Journal card",
-      "heroAsideTitle": "Kolekcje zapisane na później",
-      "heroAsideBody": "Read-heavy widok pokazuje nazwę kolekcji i skrócony kontekst, ale nie zamienia wishlisty w ekran konfiguracji.",
-      "quickActionCollections": "Kolekcje",
-      "quickActionCollectionsDescription": "Nazwane przez użytkowniczkę zbiory inspiracji.",
-      "quickActionVouchers": "Vouchery",
-      "quickActionVouchersDescription": "Powrót do kodów gotowych do użycia.",
-      "quickActionOrders": "Orders",
-      "quickActionOrdersDescription": "Historia zakupów obok zapisów.",
-      "quickActionMessages": "Messages",
-      "quickActionMessagesDescription": "Wiadomości powiązane z zakupami.",
-      "action": "Zobacz produkt"
+      "heading": "Wishlist",
+      "intro": "Zachowuj zabiegi, do których chcesz wrócić, bez zamieniania tego widoku w ustawienia.",
+      "browse": "Przeglądaj kategorie",
+      "collection": "Zapisana kolekcja",
+      "snapshot": {
+        "wishlist": "Zapisane pozycje",
+        "email": "E-mail"
+      },
+      "empty": {
+        "title": "Twoja wishlist jest pusta",
+        "body": "Zapisuj zabiegi i vouchery, do których chcesz wrócić później."
+      },
+      "error": {
+        "access_denied_title": "Wymagane logowanie",
+        "access_denied_body": "Zaloguj się ponownie, aby zobaczyć wishlistę.",
+        "failed_title": "Nie udało się wczytać wishlisty",
+        "failed_body": "To nie jest to samo co pusta wishlist. Spróbuj ponownie za chwilę.",
+        "unavailable_title": "Wishlist jest chwilowo niedostępna",
+        "unavailable_body": "Sprawdzamy połączenie z wishlistą."
+      }
     },
     "messages": {
-      "eyebrow": "W2-12 messages",
-      "title": "Wiadomości buyer-salon",
-      "intro": "Skrzynka zachowuje ton spokojnej komunikacji i pokazuje tylko to, co potrzebne do obsługi zamówień.",
-      "heroAsideEyebrow": "Read model boundary",
-      "heroAsideTitle": "Kontrolowany inbox do odczytu",
-      "heroAsideBody": "Gdy lokalny provider wiadomości nie jest gotowy, wyświetlamy bezpieczny read model bez dostępu do sekretów produkcyjnych.",
-      "emptyAria": "Pusta skrzynka wiadomości",
-      "quickActionInbox": "Inbox",
-      "quickActionInboxDescription": "Otwórz aktualne rozmowy z salonami.",
-      "quickActionOrders": "Orders",
-      "quickActionOrdersDescription": "Przejście do zamówień, z których wynika korespondencja.",
-      "quickActionVouchers": "Vouchery",
-      "quickActionVouchersDescription": "Powiązane kody i potwierdzenia.",
-      "quickActionReturns": "Zwroty",
-      "quickActionReturnsDescription": "Historia decyzji po zakupie.",
-      "states": {
-        "open": "Otwarta",
-        "answered": "Z odpowiedzią",
-        "waiting": "Czeka spokojnie"
+      "heading": "Wiadomości",
+      "intro": "Ten inbox pozostaje pasywny, dopóki nie będzie potrzebna prawdziwa rozmowa buyer-salon.",
+      "empty": {
+        "title": "Nie masz jeszcze wiadomości",
+        "body": "Rozmowy pojawią się tutaj, gdy salon albo support będą potrzebowali kontaktu."
+      },
+      "provider": {
+        "title": "Provider wiadomości wymaga żywej sesji",
+        "body": "Provider jest skonfigurowany, ale ta surface nie fabrykuje wątków z historii zamówień."
+      },
+      "channels": {
+        "aria_label": "Kanały inboxu",
+        "salon": {
+          "title": "Rozmowy z salonami",
+          "body": "Wiadomości od salonów pojawią się tutaj, gdy istnieje prawdziwy wątek."
+        },
+        "support": {
+          "title": "Przekazanie do supportu",
+          "body": "Wiadomości supportu są oddzielone od empty state i awarii providera."
+        }
+      },
+      "snapshot": {
+        "status": "Tryb inboxu",
+        "connected": "Provider podłączony",
+        "passive": "Pasywny empty state",
+        "email": "E-mail"
       }
     }
   },

@@ -9,21 +9,38 @@ import {
   formatAccountCurrency,
   formatAccountDate,
   loadOrderGroups,
+  orderStatusToTone,
   toDisplayName,
   toneToBadgeClass
 } from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';
 
+const ORDER_FILTERS = ['all', 'paid', 'pending', 'failed', 'refunded'] as const;
+type OrderFilter = (typeof ORDER_FILTERS)[number];
+
+function parseFilter(value: string | string[] | undefined): OrderFilter {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return ORDER_FILTERS.includes(raw as OrderFilter) ? (raw as OrderFilter) : 'all';
+}
+
+function parseOffset(value: string | string[] | undefined): number {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(raw ?? '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
 function OrdersFailureState({
   locale,
   title,
   description,
-  ctaLabel
+  ctaLabel,
+  href = `/${locale}/user/orders`
 }: {
   locale: string;
   title: string;
   description: string;
   ctaLabel: string;
+  href?: string;
 }) {
   return (
     <StateCard
@@ -31,7 +48,7 @@ function OrdersFailureState({
       title={title}
       description={description}
       action={
-        <Link href={`/${locale}/user/orders`} className="inline-flex min-h-11 items-center rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-on-primary">
+        <Link href={href} className="inline-flex min-h-11 items-center rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-on-primary">
           {ctaLabel}
         </Link>
       }
@@ -39,8 +56,18 @@ function OrdersFailureState({
   );
 }
 
-export default async function OrdersPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function OrdersPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { locale } = await params;
+  const sp = await searchParams;
+  const filter = parseFilter(sp.status);
+  const offset = parseOffset(sp.offset);
+  const limit = 25;
   const [t, customer] = await Promise.all([
     getTranslations({ locale, namespace: 'accountRead.orders' }),
     retrieveCustomer()
@@ -50,7 +77,15 @@ export default async function OrdersPage({ params }: { params: Promise<{ locale:
     redirect(`/${locale}/login`);
   }
 
-  const result = await loadOrderGroups();
+  const result = await loadOrderGroups({ limit, offset });
+  const filteredOrders =
+    filter === 'all'
+      ? result.data
+      : result.data.filter(orderGroup =>
+          orderGroup.statuses.some(status => orderStatusToTone(status) === filter)
+        );
+  const nextOffset = offset + limit;
+  const previousOffset = Math.max(0, offset - limit);
 
   return (
     <>
@@ -64,7 +99,7 @@ export default async function OrdersPage({ params }: { params: Promise<{ locale:
           email: customer.email
         }}
         snapshotSections={[
-          { id: 'count', label: t('snapshot.orders'), value: String(result.data.length) },
+          { id: 'count', label: t('snapshot.orders'), value: String(filteredOrders.length) },
           { id: 'email', label: t('snapshot.email'), value: customer.email }
         ]}
         mainContent={
@@ -79,23 +114,40 @@ export default async function OrdersPage({ params }: { params: Promise<{ locale:
               </Link>
             </div>
 
-            {result.state === 'failed' ? (
+            <nav className="flex flex-wrap gap-2" aria-label={t('filters.aria_label')}>
+              {ORDER_FILTERS.map(option => (
+                <Link
+                  key={option}
+                  href={`/${locale}/user/orders${option === 'all' ? '' : `?status=${option}`}`}
+                  className={`rounded-sm border px-3 py-2 text-sm ${filter === option ? 'border-action bg-action text-action-on-primary' : 'border-primary text-primary'}`}
+                  aria-current={filter === option ? 'page' : undefined}
+                >
+                  {t(`filters.${option}`)}
+                </Link>
+              ))}
+            </nav>
+
+            {result.state === 'access_denied' ? (
+              <OrdersFailureState locale={locale} title={t('error.access_denied_title')} description={t('error.access_denied_body')} ctaLabel={t('error.login')} href={`/${locale}/login`} />
+            ) : result.state === 'failed' ? (
               <OrdersFailureState locale={locale} title={t('error.failed_title')} description={t('error.failed_body')} ctaLabel={t('error.retry')} />
             ) : result.state === 'unavailable' ? (
               <StateCard variant="unavailable" title={t('error.unavailable_title')} description={t('error.unavailable_body')} />
-            ) : result.data.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <StateCard variant="empty" title={t('empty.title')} description={t('empty.body')} />
             ) : (
               <div className="space-y-3">
-                {result.data.map(orderGroup => (
+                {filteredOrders.map(orderGroup => {
+                  const tone = orderStatusToTone(orderGroup.statuses[0]);
+                  return (
                   <article key={orderGroup.id} className="bb-card space-y-3" data-testid={`order-group-${orderGroup.id}`}>
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div className="space-y-1">
                         <h3 className="text-base font-semibold text-primary">{t('order_label', { displayId: orderGroup.displayId })}</h3>
                         <p className="text-sm text-secondary">{formatAccountDate(orderGroup.createdAt, locale) ?? t('labels.date_pending')}</p>
                       </div>
-                      <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-medium ${toneToBadgeClass(orderGroup.statuses[0] ? 'paid' : 'pending')}`}>
-                        {t(`status.${orderGroup.statuses[0] ? 'paid' : 'pending'}`)}
+                      <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-medium ${toneToBadgeClass(tone)}`}>
+                        {t(`status.${tone}`)}
                       </span>
                     </div>
                     <div className="grid gap-3 text-sm text-secondary md:grid-cols-3">
@@ -107,7 +159,20 @@ export default async function OrdersPage({ params }: { params: Promise<{ locale:
                       {t('open')}
                     </Link>
                   </article>
-                ))}
+                );
+                })}
+                <div className="flex flex-wrap gap-3">
+                  {offset > 0 && (
+                    <Link href={`/${locale}/user/orders?offset=${previousOffset}${filter === 'all' ? '' : `&status=${filter}`}`} className="text-sm font-medium text-action">
+                      {t('pagination.previous')}
+                    </Link>
+                  )}
+                  {result.data.length === limit && (
+                    <Link href={`/${locale}/user/orders?offset=${nextOffset}${filter === 'all' ? '' : `&status=${filter}`}`} className="text-sm font-medium text-action">
+                      {t('pagination.next')}
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
           </div>

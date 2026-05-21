@@ -1911,22 +1911,52 @@
       "messagesBody": "Messages about your orders will appear here."
     },
     "dashboard": {
-      "eyebrow": "W2-01 dashboard",
-      "title": "Your post-purchase account",
-      "intro": "Check vouchers, order history, saved inspirations and messages without moving between separate shells.",
-      "greeting": "Welcome {firstName}, post-purchase self-service is ready.",
-      "heroAsideEyebrow": "Side account snapshot",
-      "heroAsideTitle": "What is worth checking today",
-      "heroAsideBody": "If the salon or operator needs your decision, you will see it right away in orders or messages.",
-      "activityEyebrow": "Recent activity",
-      "activityTitle": "Latest activity",
-      "activitySummary": "{count} items in this order.",
-      "recommendedEyebrow": "Recommended",
-      "recommendedTitle": "Worth revisiting",
-      "messagesEyebrow": "Messages",
-      "messagesTitle": "Latest conversations",
-      "voucherEyebrow": "Vouchers",
-      "voucherTitle": "Closest to use"
+      "welcome_eyebrow": "After purchase",
+      "welcome_heading": "Hello, {firstName}",
+      "welcome_body": "Everything important is in one calm place: orders, vouchers, wishlist and messages.",
+      "snapshot": {
+        "email": "Email",
+        "orders": "Orders",
+        "wishlist": "Wishlist"
+      },
+      "quick_actions": {
+        "vouchers": {
+          "label": "Vouchers",
+          "description": "Open voucher history"
+        },
+        "orders": {
+          "label": "Orders",
+          "description": "Check order progress"
+        },
+        "wishlist": {
+          "label": "Wishlist",
+          "description": "Saved treatments"
+        },
+        "messages": {
+          "label": "Messages",
+          "description": "Buyer-salon inbox"
+        }
+      },
+      "recommended": {
+        "heading": "Recommended next step",
+        "body": "Browse categories when you want to return to a treatment later.",
+        "cta": "Browse categories"
+      },
+      "recent_activity": {
+        "heading": "Recent activity",
+        "cta": "See all orders",
+        "empty": "Your next order will appear here.",
+        "order_label": "Order #{displayId}",
+        "items": "{count, plural, one {# item} other {# items}}",
+        "open_order": "Open order"
+      },
+      "statuses": {
+        "paid": "Active",
+        "pending": "In progress"
+      },
+      "labels": {
+        "date_pending": "Date pending"
+      }
     },
     "vouchers": {
       "eyebrow": "W2-02 voucher history",
@@ -1956,129 +1986,230 @@
       "quickActionReturned": "Returned or withdrawn vouchers."
     },
     "orders": {
-      "eyebrow": "W2-03 order history",
-      "title": "Order history",
-      "intro": "See orders in a list with clear status, date and a route into the operational detail view.",
-      "heroAsideEyebrow": "Operational clarity",
-      "heroAsideTitle": "One list for every next step",
-      "heroAsideBody": "Orders, returns and messages stay connected without mixing in write-heavy settings.",
-      "quickActionAll": "All orders",
-      "quickActionAllDescription": "Full customer purchase history.",
-      "quickActionOpen": "In progress",
-      "quickActionOpenDescription": "Orders waiting for the next step.",
-      "quickActionReturns": "Returns",
-      "quickActionReturnsDescription": "Jump to return history.",
-      "quickActionMessages": "Messages",
-      "quickActionMessagesDescription": "Order-linked communication.",
-      "filters": {
-        "all": "All",
-        "open": "In progress",
-        "settled": "Settled",
-        "attention": "Needs attention"
+      "heading": "Order history",
+      "intro": "Review each order group, amount and current progress without leaving your account.",
+      "secondary_cta": "Go to vouchers",
+      "snapshot": {
+        "orders": "Order groups",
+        "email": "Email"
       },
-      "rowSummary": "{count} items • placed {date}",
-      "detailsAction": "Order details"
+      "filters": {
+        "aria_label": "Order status filters",
+        "all": "All",
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
+      "pagination": {
+        "previous": "Previous orders",
+        "next": "Next orders"
+      },
+      "empty": {
+        "title": "No orders yet",
+        "body": "Your order history will appear here after your first purchase."
+      },
+      "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view your orders.",
+        "login": "Log in",
+        "failed_title": "We couldn't load your orders",
+        "failed_body": "Refresh this page in a moment. Your access stays protected.",
+        "retry": "Try again",
+        "unavailable_title": "Orders are temporarily unavailable",
+        "unavailable_body": "We are checking the connection with the order service."
+      },
+      "order_label": "Order #{displayId}",
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
+      "summary": {
+        "items": "{count, plural, one {# item} other {# items}}",
+        "total": "Total: {amount}",
+        "lines": "{count, plural, one {# shipment} other {# shipments}}"
+      },
+      "open": "Open details",
+      "labels": {
+        "date_pending": "Date pending"
+      }
     },
     "orderDetail": {
-      "eyebrow": "W2-04 order detail",
-      "title": "Order {displayId}",
-      "intro": "One view for items, delivery, payment summary, timeline and safe handoffs into next actions.",
-      "heroAsideEyebrow": "Trust Invariant #4",
-      "heroAsideTitle": "What happens after confirmation",
-      "heroAsideBody": "Unavailable actions do not disappear. We explain what is possible now and what happens on the salon or operator side.",
-      "back": "Back to order history",
-      "itemsTitle": "Order items",
-      "itemSummary": "{count} pcs • {total}",
-      "timelineTitle": "Activity timeline",
-      "deliveryTitle": "Delivery and contact",
-      "paymentTitle": "Payment summary",
-      "paymentVoucher": "Service value",
-      "paymentShipping": "Shipping",
-      "paymentTotal": "Total",
-      "actionsTitle": "Available actions",
-      "available": "Available",
-      "disabled": "Explained",
-      "quickActionVoucher": "Resend the voucher or open a download link.",
-      "quickActionInvoice": "Document and settlement date.",
-      "quickActionReturn": "Return takes you into dedicated history.",
-      "quickActionContact": "Safe salon contact without searching in other views.",
-      "actions": {
-        "resendVoucher": "Resend voucher",
-        "invoice": "Download invoice",
-        "return": "Start return",
-        "contact": "Contact the salon"
+      "back": "Back to orders",
+      "heading": "Order #{displayId}",
+      "intro": "Check items, delivery, payment and the next practical actions.",
+      "snapshot": {
+        "order_number": "Order number",
+        "order_date": "Order date"
       },
-      "actionExplainers": {
-        "resendVoucher": "If the recipient needs access again, the same order context is preserved.",
-        "invoice": "The document stays connected to this order and its state.",
-        "return": "If return is not available, we explain it calmly instead of hiding the action.",
-        "contact": "The conversation stays focused on this order and its fulfillment."
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
+      "items": {
+        "heading": "Items",
+        "quantity": "Quantity: {count}"
+      },
+      "delivery": {
+        "heading": "Delivery",
+        "pending": "We will show the delivery details here as soon as they are available."
+      },
+      "payment": {
+        "heading": "Payment summary",
+        "total": "Total: {amount}",
+        "method": "Method: {value}",
+        "method_pending": "Payment method pending"
       },
       "timeline": {
-        "orderPlaced": "Order placed",
-        "processing": "Confirmation and preparation",
-        "handoff": "Fulfillment handoff"
+        "heading": "Timeline",
+        "placed": {
+          "label": "Order placed",
+          "detail": "We registered your order and started fulfilment."
+        },
+        "payment": {
+          "label": "Payment",
+          "detail_paid": "Payment has been confirmed.",
+          "detail_pending": "We are waiting for payment confirmation."
+        },
+        "fulfillment": {
+          "label": "Fulfilment",
+          "detail_ready": "The voucher or service handoff is ready.",
+          "detail_pending": "We are still preparing fulfilment."
+        },
+        "voucher_handoff": {
+          "label": "Voucher lifecycle",
+          "detail": "The buyer, recipient and salon can track the next voucher handoff from this account view."
+        }
       },
-      "trust": {
-        "forYouLabel": "What is next for you:",
-        "forUsLabel": "What is next for the salon:",
-        "forYouBody": "Check messages or use one of the actions when you are ready.",
-        "forUsBody": "We confirm fulfillment, keep documents in order and maintain clear communication."
+      "actions": {
+        "heading": "Actions",
+        "resend": {
+          "title": "Resend voucher",
+          "available": "Open the confirmation surface again and resend the voucher from there.",
+          "unavailable": "This order does not expose a voucher resend path yet.",
+          "cta": "Open confirmation"
+        },
+        "invoice": {
+          "title": "Invoice",
+          "available": "Download the invoice directly from this order.",
+          "unavailable": "The invoice will appear here when accounting releases it.",
+          "cta": "Open invoice"
+        },
+        "return": {
+          "title": "Return request",
+          "available": "Start the return flow for this order group.",
+          "unavailable": "Return is not available for this order right now.",
+          "cta": "Open return flow"
+        },
+        "contact": {
+          "title": "Contact support",
+          "available": "Use help if you need a calm handoff to support.",
+          "cta": "Open help"
+        }
+      },
+      "handoff": {
+        "label_for_you": "What happens next for you:",
+        "label_for_us": "What happens next for us:",
+        "label_for_recipient": "What happens next for the recipient:",
+        "label_for_salon": "What happens next for the salon:",
+        "for_you": "Keep this order handy if you need to resend a voucher, invoice or return request.",
+        "for_us": "We keep payment, fulfilment and post-purchase support aligned in the background.",
+        "for_recipient": "The recipient receives the voucher handoff and can return to the voucher detail when consent or redemption is needed.",
+        "for_salon": "The salon sees the voucher context only when it needs to honor or support the service."
+      },
+      "error": {
+        "failed_title": "We couldn't load this order",
+        "failed_body": "Try again in a moment. If the problem stays, use support.",
+        "unavailable_title": "This order is temporarily unavailable",
+        "unavailable_body": "We are checking the order connection and will restore access as soon as possible."
+      },
+      "labels": {
+        "date_pending": "Date pending"
       }
     },
     "returns": {
-      "eyebrow": "W2-07 returns history",
-      "title": "Return history",
-      "intro": "The return list shows state, date and reason without masking access or configuration failures.",
-      "heroAsideEyebrow": "Read-heavy only",
-      "heroAsideTitle": "Returns without hidden states",
-      "heroAsideBody": "This surface stays read-only. If a process needs action, we guide to the correct path instead of mixing flows.",
-      "quickActionAll": "All returns",
-      "quickActionAllDescription": "Full list of submitted requests.",
-      "quickActionOrders": "Orders",
-      "quickActionOrdersDescription": "Go back to source orders.",
-      "quickActionMessages": "Messages",
-      "quickActionMessagesDescription": "Contact about the return.",
-      "quickActionVouchers": "Vouchers",
-      "quickActionVouchersDescription": "Related codes and status."
+      "heading": "Returns",
+      "intro": "Track submitted return requests and their current status.",
+      "snapshot": {
+        "returns": "Returns",
+        "email": "Email"
+      },
+      "empty": {
+        "title": "No returns yet",
+        "body": "Return requests will appear here if you ever need them."
+      },
+      "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view returns.",
+        "failed_title": "We couldn't load returns",
+        "failed_body": "Try again in a moment. We keep the recovery path separate from empty states.",
+        "unavailable_title": "Returns are temporarily unavailable",
+        "unavailable_body": "The returns service is not responding right now."
+      },
+      "return_label": "Return {id}",
+      "status": {
+        "paid": "Completed",
+        "pending": "In progress",
+        "failed": "Needs attention",
+        "refunded": "Refunded"
+      },
+      "labels": {
+        "date_pending": "Date pending"
+      }
     },
     "wishlist": {
-      "eyebrow": "W2-09 wishlist",
-      "title": "Wishlist",
-      "intro": "See saved products and personally named collections without switching into settings or heavier edit flows.",
-      "heroAsideEyebrow": "Journal card",
-      "heroAsideTitle": "Collections saved for later",
-      "heroAsideBody": "The read-heavy view shows the collection name and short context, without turning wishlist into a settings screen.",
-      "quickActionCollections": "Collections",
-      "quickActionCollectionsDescription": "User-named sets of inspiration.",
-      "quickActionVouchers": "Vouchers",
-      "quickActionVouchersDescription": "Back to codes ready to use.",
-      "quickActionOrders": "Orders",
-      "quickActionOrdersDescription": "Purchase history next to saved items.",
-      "quickActionMessages": "Messages",
-      "quickActionMessagesDescription": "Communication related to purchases.",
-      "action": "View product"
+      "heading": "Wishlist",
+      "intro": "Keep treatments you want to revisit without turning this view into a settings flow.",
+      "browse": "Browse categories",
+      "collection": "Saved collection",
+      "snapshot": {
+        "wishlist": "Saved items",
+        "email": "Email"
+      },
+      "empty": {
+        "title": "Your wishlist is empty",
+        "body": "Save treatments and vouchers you want to come back to later."
+      },
+      "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view your wishlist.",
+        "failed_title": "We couldn't load your wishlist",
+        "failed_body": "This is not the same as an empty wishlist. Please try again in a moment.",
+        "unavailable_title": "Wishlist is temporarily unavailable",
+        "unavailable_body": "We are checking the wishlist connection."
+      }
     },
     "messages": {
-      "eyebrow": "W2-12 messages",
-      "title": "Buyer-salon messages",
-      "intro": "The inbox keeps a calm communication tone and shows only what is needed to operate the order journey.",
-      "heroAsideEyebrow": "Read model boundary",
-      "heroAsideTitle": "Controlled inbox for reading",
-      "heroAsideBody": "When the local messaging provider is not ready, we render a safe read model without access to production secrets.",
-      "emptyAria": "Empty inbox",
-      "quickActionInbox": "Inbox",
-      "quickActionInboxDescription": "Open current conversations with salons.",
-      "quickActionOrders": "Orders",
-      "quickActionOrdersDescription": "Jump to the orders behind each thread.",
-      "quickActionVouchers": "Vouchers",
-      "quickActionVouchersDescription": "Related codes and confirmations.",
-      "quickActionReturns": "Returns",
-      "quickActionReturnsDescription": "Post-purchase decision history.",
-      "states": {
-        "open": "Open",
-        "answered": "Answered",
-        "waiting": "Waiting calmly"
+      "heading": "Messages",
+      "intro": "This inbox stays passive until a real buyer-salon conversation is needed.",
+      "empty": {
+        "title": "No messages yet",
+        "body": "Conversations will appear here when a salon or support needs to contact you."
+      },
+      "provider": {
+        "title": "Messaging provider requires a live session",
+        "body": "The provider is configured, but this account surface does not fabricate threads from orders."
+      },
+      "channels": {
+        "aria_label": "Inbox channels",
+        "salon": {
+          "title": "Salon conversations",
+          "body": "Messages from salons appear here when a real thread is opened."
+        },
+        "support": {
+          "title": "Support handoff",
+          "body": "Support messages stay separate from empty states and provider outages."
+        }
+      },
+      "snapshot": {
+        "status": "Inbox mode",
+        "connected": "Provider connected",
+        "passive": "Passive empty state",
+        "email": "Email"
       }
     }
   },
