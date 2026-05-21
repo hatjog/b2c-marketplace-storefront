@@ -970,6 +970,8 @@
   "account": {
     "vouchers": {
       "title": "My vouchers",
+      "page_intro": "Review active, claimed and withdrawn vouchers in the Account Hub.",
+      "snapshot_email": "Email",
       "row_cta_open": "Open voucher",
       "expires_label": "Expires {date}",
       "orders_crosslink": "See orders",
@@ -1457,8 +1459,20 @@
       "intro": "Review each order group, amount and current progress without leaving your account.",
       "secondary_cta": "Go to vouchers",
       "snapshot": { "orders": "Order groups", "email": "Email" },
+      "filters": {
+        "aria_label": "Order status filters",
+        "all": "All",
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Needs attention",
+        "refunded": "Returned"
+      },
+      "pagination": { "previous": "Previous orders", "next": "Next orders" },
       "empty": { "title": "No orders yet", "body": "Your order history will appear here after your first purchase." },
       "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view your orders.",
+        "login": "Log in",
         "failed_title": "We couldn't load your orders",
         "failed_body": "Refresh this page in a moment. Your access stays protected.",
         "retry": "Try again",
@@ -1466,7 +1480,7 @@
         "unavailable_body": "We are checking the connection with the order service."
       },
       "order_label": "Order #{displayId}",
-      "status": { "paid": "Paid", "pending": "Pending" },
+      "status": { "paid": "Paid", "pending": "Pending", "failed": "Needs attention", "refunded": "Returned" },
       "summary": {
         "items": "{count, plural, one {# item} other {# items}}",
         "total": "Total: {amount}",
@@ -1496,7 +1510,8 @@
         "heading": "Timeline",
         "placed": { "label": "Order placed", "detail": "We registered your order and started fulfilment." },
         "payment": { "label": "Payment", "detail_paid": "Payment has been confirmed.", "detail_pending": "We are waiting for payment confirmation." },
-        "fulfillment": { "label": "Fulfilment", "detail_ready": "The voucher or service handoff is ready.", "detail_pending": "We are still preparing fulfilment." }
+        "fulfillment": { "label": "Fulfilment", "detail_ready": "The voucher or service handoff is ready.", "detail_pending": "We are still preparing fulfilment." },
+        "voucher_handoff": { "label": "Voucher lifecycle", "detail": "The buyer, recipient and salon can track the next voucher handoff from this account view." }
       },
       "actions": {
         "heading": "Actions",
@@ -1508,8 +1523,12 @@
       "handoff": {
         "label_for_you": "What happens next for you:",
         "label_for_us": "What happens next for us:",
+        "label_for_recipient": "What happens next for the recipient:",
+        "label_for_salon": "What happens next for the salon:",
         "for_you": "Keep this order handy if you need to resend a voucher, invoice or return request.",
-        "for_us": "We keep payment, fulfilment and post-purchase support aligned in the background."
+        "for_us": "We keep payment, fulfilment and post-purchase support aligned in the background.",
+        "for_recipient": "The recipient receives the voucher handoff and can return to the voucher detail when consent or redemption is needed.",
+        "for_salon": "The salon sees the voucher context only when it needs to honor or support the service."
       },
       "error": {
         "failed_title": "We couldn't load this order",
@@ -1525,6 +1544,8 @@
       "snapshot": { "returns": "Returns", "email": "Email" },
       "empty": { "title": "No returns yet", "body": "Return requests will appear here if you ever need them." },
       "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view returns.",
         "failed_title": "We couldn't load returns",
         "failed_body": "Try again in a moment. We keep the recovery path separate from empty states.",
         "unavailable_title": "Returns are temporarily unavailable",
@@ -1542,6 +1563,8 @@
       "snapshot": { "wishlist": "Saved items", "email": "Email" },
       "empty": { "title": "Your wishlist is empty", "body": "Save treatments and vouchers you want to come back to later." },
       "error": {
+        "access_denied_title": "Login required",
+        "access_denied_body": "Log in again to view your wishlist.",
         "failed_title": "We couldn't load your wishlist",
         "failed_body": "This is not the same as an empty wishlist. Please try again in a moment.",
         "unavailable_title": "Wishlist is temporarily unavailable",
@@ -1555,6 +1578,11 @@
       "provider": {
         "title": "Messaging provider requires a live session",
         "body": "The provider is configured, but this account surface does not fabricate threads from orders."
+      },
+      "channels": {
+        "aria_label": "Inbox channels",
+        "salon": { "title": "Salon conversations", "body": "Messages from salons appear here when a real thread is opened." },
+        "support": { "title": "Support handoff", "body": "Support messages stay separate from empty states and provider outages." }
       },
       "snapshot": { "status": "Inbox mode", "connected": "Provider connected", "passive": "Passive empty state", "email": "Email" }
     }

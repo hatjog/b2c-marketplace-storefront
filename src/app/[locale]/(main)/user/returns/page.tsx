@@ -38,7 +38,9 @@ export default async function ReturnsPage({ params }: { params: Promise<{ locale
             <h2 className="heading-md text-primary">{t('heading')}</h2>
             <p className="text-sm text-secondary">{t('intro')}</p>
           </div>
-          {result.state === 'failed' ? (
+          {result.state === 'access_denied' ? (
+            <StateCard variant="error" title={t('error.access_denied_title')} description={t('error.access_denied_body')} />
+          ) : result.state === 'failed' ? (
             <StateCard variant="error" title={t('error.failed_title')} description={t('error.failed_body')} />
           ) : result.state === 'unavailable' ? (
             <StateCard variant="unavailable" title={t('error.unavailable_title')} description={t('error.unavailable_body')} />
