@@ -1,0 +1,2 @@
+surface: w2-12-messages
+extends: empty-states#pattern-6-empty-messages

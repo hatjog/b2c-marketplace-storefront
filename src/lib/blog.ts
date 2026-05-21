@@ -1,6 +1,16 @@
-import { fetchMarketConfig } from '@/lib/portal.server';
-import type { BlogPost } from '@/types/blog';
+import { getFixtureBlogCards, getFixtureBlogPost } from '@/lib/blog-fixtures';
 import { stripHtml } from '@/lib/helpers/text';
+import { fetchMarketConfig } from '@/lib/portal.server';
+import type {
+  BlogIndexData,
+  BlogInlineNode,
+  BlogLocale,
+  BlogPostCard,
+  BlogPostDetail,
+  BlogRichTextNode,
+  BlogTag,
+  TocEntry
+} from '@/types/blog';
 
 export type PayloadStructuredData = {
   articleSection?: string | null;
@@ -21,6 +31,7 @@ export type PayloadPage = {
   image?: { url?: string | null } | string | null;
   hero_image?: { url?: string | null } | string | null;
   publishedAt?: string | null;
+  updatedAt?: string | null;
   content?: unknown;
 };
 
@@ -33,6 +44,8 @@ const FALLBACK_IMAGES = [
   '/images/blog/post-2.jpg',
   '/images/blog/post-3.jpg'
 ];
+
+const IFRAME_HOST_ALLOWLIST = new Set(['www.youtube.com', 'youtube.com', 'player.vimeo.com']);
 
 export function getPayloadApiUrl() {
   return process.env.PAYLOAD_API_URL;
@@ -156,7 +169,6 @@ export function getPageImageUrl(
     return secondaryUrl;
   }
 
-  // Fallback to structuredData.image_url (set by gp-config-sync-blog from blog.yaml)
   const sdImageUrl = page.structuredData?.image_url;
   if (typeof sdImageUrl === 'string' && sdImageUrl.length > 0) {
     return sdImageUrl;
@@ -168,14 +180,16 @@ export function getPageImageUrl(
 export function getBlogCategory(page: PayloadPage) {
   const articleSection = page.structuredData?.articleSection;
   if (typeof articleSection === 'string' && articleSection.trim().length > 0) {
-    return articleSection.toUpperCase();
+    return articleSection.trim();
   }
 
-  return (page.page_type || 'BLOG').toUpperCase();
+  return page.page_type || 'Blog';
 }
 
 export function getBlogDescription(page: PayloadPage) {
-  return stripHtml(page.excerpt || page.summary || 'Read the latest updates from our marketplace blog.');
+  return stripHtml(
+    page.excerpt || page.summary || 'Read the latest updates from our marketplace blog.'
+  );
 }
 
 export function getBlogHref(page: PayloadPage) {
@@ -190,34 +204,6 @@ export function getBlogHref(page: PayloadPage) {
   }
 
   return '#';
-}
-
-export function mapPayloadPageToBlogPost(page: PayloadPage, index: number): BlogPost {
-  const title = page.title || page.name || 'Untitled post';
-  const parsedId = Number(page.id);
-  const id = Number.isFinite(parsedId) ? parsedId : index + 1;
-
-  return {
-    id,
-    title,
-    excerpt: getBlogDescription(page),
-    image: getPageImageUrl(page, index),
-    category: getBlogCategory(page),
-    href: getBlogHref(page)
-  };
-}
-
-export function extractLexicalParagraphs(content: unknown): string[] {
-  if (!content || typeof content !== 'object') {
-    return [];
-  }
-
-  const rootChildren = (content as { root?: { children?: unknown } }).root?.children;
-  if (!Array.isArray(rootChildren)) {
-    return [];
-  }
-
-  return rootChildren.map(node => collectText(node).trim()).filter(Boolean);
 }
 
 export function formatBlogPublishedDate(publishedAt: string | null | undefined, locale: string) {
@@ -237,6 +223,175 @@ export function formatBlogPublishedDate(publishedAt: string | null | undefined, 
   }).format(parsedDate);
 }
 
+function sanitizeTagSlug(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function estimateReadTimeFromContent(content: unknown) {
+  const text = extractLexicalParagraphs(content).join(' ');
+  if (!text) {
+    return 4;
+  }
+
+  return Math.max(4, Math.ceil(text.split(/\s+/).filter(Boolean).length / 180));
+}
+
+function payloadPageToBlogCard(page: PayloadPage, index: number): BlogPostCard | null {
+  const slug = page.slug?.trim();
+  if (!slug) {
+    return null;
+  }
+
+  const title = page.title || page.name || 'Untitled post';
+  const category = getBlogCategory(page).toUpperCase();
+  const tag: BlogTag = {
+    slug: sanitizeTagSlug(category),
+    label: category
+  };
+
+  return {
+    id: String(page.id ?? slug),
+    slug,
+    title,
+    excerpt: getBlogDescription(page),
+    image: getPageImageUrl(page, index),
+    imageAlt: title,
+    category,
+    href: getBlogHref(page),
+    tags: [tag],
+    author: {
+      name: 'Grow Platform Editorial',
+      role: 'Editorial team',
+      bio: 'Market-specific notes and editorial updates published from the storefront content layer.',
+      avatar: null,
+      profileUrl: '/blog'
+    },
+    readTimeMinutes: estimateReadTimeFromContent(page.content),
+    publishedAt: page.publishedAt ?? null
+  };
+}
+
+export function mapPayloadPageToBlogPost(page: PayloadPage, index: number): BlogPostCard {
+  return (
+    payloadPageToBlogCard(page, index) || {
+      id: `fallback-${index + 1}`,
+      slug: `fallback-${index + 1}`,
+      title: page.title || page.name || 'Untitled post',
+      excerpt: getBlogDescription(page),
+      image: getPageImageUrl(page, index),
+      imageAlt: page.title || page.name || 'Untitled post',
+      category: getBlogCategory(page).toUpperCase(),
+      href: getBlogHref(page),
+      tags: [],
+      author: {
+        name: 'Grow Platform Editorial',
+        role: 'Editorial team',
+        bio: 'Market-specific notes and editorial updates published from the storefront content layer.'
+      },
+      readTimeMinutes: estimateReadTimeFromContent(page.content),
+      publishedAt: page.publishedAt ?? null
+    }
+  );
+}
+
+function dedupeCards(cards: BlogPostCard[]) {
+  const seen = new Set<string>();
+  return cards.filter(card => {
+    if (seen.has(card.slug)) {
+      return false;
+    }
+
+    seen.add(card.slug);
+    return true;
+  });
+}
+
+function getTagSet(posts: BlogPostCard[]) {
+  const tags = new Map<string, BlogTag>();
+  for (const post of posts) {
+    for (const tag of post.tags) {
+      if (!tags.has(tag.slug)) {
+        tags.set(tag.slug, tag);
+      }
+    }
+  }
+
+  return Array.from(tags.values()).sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function filterPostsByTag(posts: BlogPostCard[], selectedTag: string | null) {
+  if (!selectedTag || selectedTag === 'all') {
+    return posts;
+  }
+
+  return posts.filter(post => post.tags.some(tag => tag.slug === selectedTag));
+}
+
+function slugifyHeading(text: string) {
+  return text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function buildHeadingId(postSlug: string, text: string, index: number) {
+  const base = slugifyHeading(text) || `section-${index + 1}`;
+  return `${postSlug}-${base}-${index + 1}`;
+}
+
+export function buildTocEntries(postSlug: string, content: BlogRichTextNode[]): TocEntry[] {
+  return content
+    .map((node, index) => {
+      switch (node.type) {
+        case 'heading-2':
+        case 'heading-3':
+        case 'heading-4': {
+          const level = Number(node.type.slice(-1)) as 2 | 3 | 4;
+          return {
+            id: buildHeadingId(postSlug, node.text, index),
+            label: node.text,
+            level
+          };
+        }
+        default:
+          return null;
+      }
+    })
+    .filter((entry): entry is TocEntry => Boolean(entry));
+}
+
+export function extractLexicalParagraphs(content: unknown): string[] {
+  if (!content || typeof content !== 'object') {
+    return [];
+  }
+
+  const rootChildren = (content as { root?: { children?: unknown } }).root?.children;
+  if (!Array.isArray(rootChildren)) {
+    return [];
+  }
+
+  return rootChildren.map(node => collectText(node).trim()).filter(Boolean);
+}
+
+function lexicalParagraphsToRichText(content: unknown): BlogRichTextNode[] {
+  const paragraphs = extractLexicalParagraphs(content);
+  if (paragraphs.length === 0) {
+    return [];
+  }
+
+  return paragraphs.map(paragraph => ({
+    type: 'paragraph',
+    content: [{ type: 'text', text: paragraph }] satisfies BlogInlineNode[]
+  }));
+}
+
 export async function fetchHomepageBlogPageDocs({
   marketId,
   limit
@@ -244,7 +399,7 @@ export async function fetchHomepageBlogPageDocs({
   marketId: string;
   limit?: number | null;
 }) {
-  const resolvedLimit = Math.max(1, Math.min(limit ?? 3, 12));
+  const resolvedLimit = Math.max(1, Math.min(limit ?? 12, 24));
 
   return fetchMarketScopedPages({
     marketId,
@@ -258,13 +413,7 @@ export async function fetchHomepageBlogPageDocs({
   });
 }
 
-export async function fetchBlogPageBySlug({
-  marketId,
-  slug
-}: {
-  marketId: string;
-  slug: string;
-}) {
+export async function fetchBlogPageBySlug({ marketId, slug }: { marketId: string; slug: string }) {
   if (!slug) {
     return null;
   }
@@ -281,4 +430,92 @@ export async function fetchBlogPageBySlug({
   });
 
   return docs[0] ?? null;
+}
+
+export async function getBlogIndexData({
+  locale,
+  marketId,
+  selectedTag
+}: {
+  locale: BlogLocale;
+  marketId: string;
+  selectedTag: string | null;
+}): Promise<BlogIndexData> {
+  const [payloadPages, fixtureCards] = await Promise.all([
+    fetchHomepageBlogPageDocs({
+      marketId,
+      limit: 12
+    }),
+    Promise.resolve(getFixtureBlogCards(locale))
+  ]);
+
+  const payloadCards = payloadPages
+    .map((page, index) => payloadPageToBlogCard(page, index))
+    .filter((card): card is BlogPostCard => Boolean(card));
+
+  const merged = dedupeCards([...payloadCards, ...fixtureCards]).slice(0, 12);
+  const availableTags = getTagSet(merged);
+  const normalizedTag = selectedTag && selectedTag !== 'all' ? selectedTag : null;
+  const filtered = filterPostsByTag(merged, normalizedTag);
+
+  return {
+    posts: filtered,
+    availableTags,
+    selectedTag: normalizedTag
+  };
+}
+
+export async function getBlogPostDetail({
+  locale,
+  marketId,
+  slug
+}: {
+  locale: BlogLocale;
+  marketId: string;
+  slug: string;
+}): Promise<BlogPostDetail | null> {
+  const fixture = getFixtureBlogPost(locale, slug);
+  if (fixture) {
+    return fixture;
+  }
+
+  const page = await fetchBlogPageBySlug({
+    marketId,
+    slug
+  });
+
+  if (!page) {
+    return null;
+  }
+
+  const card = payloadPageToBlogCard(page, 0);
+  if (!card) {
+    return null;
+  }
+
+  const allCards = (
+    await getBlogIndexData({
+      locale,
+      marketId,
+      selectedTag: null
+    })
+  ).posts;
+
+  return {
+    ...card,
+    heroImage: getPageImageUrl(page, 0, { preferHeroImage: true }),
+    heroImageAlt: card.title,
+    updatedAt: page.updatedAt ?? null,
+    content: lexicalParagraphsToRichText(page.content),
+    relatedPosts: allCards.filter(entry => entry.slug !== slug).slice(0, 3)
+  };
+}
+
+export function isAllowedIframeUrl(src: string) {
+  try {
+    const url = new URL(src);
+    return url.protocol === 'https:' && IFRAME_HOST_ALLOWLIST.has(url.hostname);
+  } catch {
+    return false;
+  }
 }

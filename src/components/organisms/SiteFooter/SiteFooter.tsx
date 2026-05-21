@@ -11,19 +11,19 @@ import {
   resolveFooterConnectLinks,
   resolveFooterCopyright,
   resolveFooterLegalEntity,
-  resolveFooterNavLinks,
+  resolveFooterNavLinks
 } from '@/lib/footer';
 import type { MarketConfig } from '@/lib/portal';
 
 const SECTION_I18N_KEYS: Record<string, string> = {
   customer_services: 'section_customer_services',
   about: 'section_about',
-  connect: 'section_connect',
+  connect: 'section_connect'
 };
 
 export async function SiteFooter({
   marketConfig,
-  locale,
+  locale: _locale
 }: {
   marketConfig?: MarketConfig | null;
   locale: string;
@@ -31,7 +31,7 @@ export async function SiteFooter({
   const t = await getTranslations('footer');
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);
-  const navSections = resolveFooterNavLinks(marketConfig).filter((s) => s.section !== 'connect');
+  const navSections = resolveFooterNavLinks(marketConfig).filter(s => s.section !== 'connect');
   const legalEntity = resolveFooterLegalEntity(marketConfig);
 
   const sectionLabel = (section: string) => {
@@ -51,7 +51,11 @@ export async function SiteFooter({
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo + tagline column */}
           <div className="space-y-3">
-            <LocalizedClientLink href="/" className="text-xl font-semibold text-white" aria-label="BonBeauty home">
+            <LocalizedClientLink
+              href="/"
+              className="text-xl font-semibold text-white"
+              aria-label="BonBeauty home"
+            >
               BonBeauty
             </LocalizedClientLink>
             <p className="text-sm leading-relaxed text-[color:rgba(250,248,245,0.6)]">
@@ -61,12 +65,15 @@ export async function SiteFooter({
 
           {/* Nav sections */}
           {navSections.slice(0, 2).map(({ section, links }) => (
-            <div key={section} className="space-y-3">
+            <div
+              key={section}
+              className="space-y-3"
+            >
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[color:rgba(250,248,245,0.6)]">
                 {sectionLabel(section)}
               </h3>
               <ul className="space-y-2">
-                {links.map((link) => (
+                {links.map(link => (
                   <li key={link.path}>
                     <LocalizedClientLink
                       href={link.path}
@@ -86,7 +93,7 @@ export async function SiteFooter({
               {t('section_connect')}
             </h3>
             <div className="flex flex-wrap gap-2">
-              {connectLinks.map((link) => (
+              {connectLinks.map(link => (
                 <a
                   key={link.href}
                   href={link.href}
@@ -105,18 +112,16 @@ export async function SiteFooter({
         <div className="mt-10 border-t border-[color:rgba(250,248,245,0.12)] pt-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             {/* Copyright */}
-            <p className="text-xs text-[color:rgba(250,248,245,0.5)]">{copyright}</p>
+            <p className="text-xs text-[color:rgba(250,248,245,0.72)]">{copyright}</p>
 
             {/* slot: legal-entity — dane prawne sprzedawcy NIP/REGON/KRS (W6-02 spec) */}
             {legalEntity && (
               <div
-                className="space-y-0.5 text-xs text-[color:rgba(250,248,245,0.45)]"
+                className="space-y-0.5 text-xs text-[color:rgba(250,248,245,0.78)]"
                 data-testid="site-footer-legal-entity"
               >
-                {legalEntity.companyName && <p>{legalEntity.companyName}</p>}
-                {legalEntity.nip && <p>NIP: {legalEntity.nip}</p>}
-                {legalEntity.regon && <p>REGON: {legalEntity.regon}</p>}
-                {legalEntity.krs && <p>KRS: {legalEntity.krs}</p>}
+                {legalEntity.name && <p>{legalEntity.name}</p>}
+                {legalEntity.tax_id && <p>NIP: {legalEntity.tax_id}</p>}
                 {legalEntity.address && <p>{legalEntity.address}</p>}
               </div>
             )}

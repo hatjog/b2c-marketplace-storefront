@@ -5,6 +5,7 @@ type SellerAddress = {
   city?: string;
   country_code?: string;
   postal_code?: string;
+  district?: string | null;
 };
 
 export type SellerSocialLinks = {
@@ -25,6 +26,7 @@ export type SellerLocation = {
   address_line?: string | null;
   postal_code?: string | null;
   country_code?: string | null;
+  district?: string | null;
 };
 
 export type SellerOpeningHours = Record<string, { open: string; close: string } | null>;
@@ -41,6 +43,8 @@ export type SellerProps = SellerAddress & {
   products?: Product[];
   email?: string;
   phone?: string;
+  lat?: number | null;
+  lng?: number | null;
   status?: 'pending_approval' | 'open' | 'suspended' | 'terminated';
   // store_status: Mercur 1.5 legacy field; Mercur 2 uses seller.status (above).
   // Transitional union: accepts BOTH legacy Mercur 1.5 uppercase values
@@ -56,4 +60,6 @@ export type SellerProps = SellerAddress & {
   gallery?: SellerGalleryItem[] | null;
   opening_hours?: SellerOpeningHours | null;
   locations?: SellerLocation[] | null;
+  regon?: string | null;
+  krs?: string | null;
 };

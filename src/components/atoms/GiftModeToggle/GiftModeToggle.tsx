@@ -2,13 +2,16 @@
 
 // GiftModeToggle — client-side toggle for gift/self purchase mode on PDP.
 // DS v2.1.0: cta, bg-action, text-on-action tokens.
-
 import { useState } from 'react';
+
+import { useTranslations } from 'next-intl';
+
+import { useCartContext, type CartPurchaseMode } from '@/components/providers';
 import { cn } from '@/lib/utils';
 
 interface GiftModeToggleProps {
-  defaultMode?: 'gift' | 'self';
-  onModeChange?: (mode: 'gift' | 'self') => void;
+  defaultMode?: CartPurchaseMode;
+  onModeChange?: (mode: CartPurchaseMode) => void;
   className?: string;
   'data-testid'?: string;
 }
@@ -17,44 +20,78 @@ export function GiftModeToggle({
   defaultMode = 'self',
   onModeChange,
   className,
-  'data-testid': dataTestId = 'gift-mode-toggle',
+  'data-testid': dataTestId = 'gift-mode-toggle'
 }: GiftModeToggleProps) {
-  const [mode, setMode] = useState<'gift' | 'self'>(defaultMode);
+  const { purchaseMode, setPurchaseMode } = useCartContext();
+  const t = useTranslations('pdp.gift_mode');
+  const [mode, setMode] = useState<CartPurchaseMode>(purchaseMode ?? defaultMode);
 
-  function handleSelect(next: 'gift' | 'self') {
+  function handleSelect(next: CartPurchaseMode) {
     setMode(next);
+    setPurchaseMode(next);
     onModeChange?.(next);
   }
 
   return (
     <div
       className={cn(
-        'inline-flex rounded-[var(--bb-radius-pill)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] p-0.5',
+        'rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] p-3',
         className
       )}
-      role="group"
-      aria-label="Tryb zakupu"
+      role="radiogroup"
+      aria-label={t('aria_label')}
       data-testid={dataTestId}
     >
-      {(['self', 'gift'] as const).map((m) => {
-        const active = mode === m;
-        return (
-          <button
-            key={m}
-            type="button"
-            onClick={() => handleSelect(m)}
-            aria-pressed={active}
-            className={cn(
-              'rounded-[var(--bb-radius-pill)] px-4 py-1.5 text-sm font-medium transition-colors duration-[var(--anim-duration-fast)]',
-              active
-                ? 'bg-[var(--bg-action)] text-[var(--text-on-action)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            )}
+      <div className="mb-3 flex items-start gap-3">
+        <span
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(197,160,89,0.18)] text-[var(--cta-hover)]"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
           >
-            {m === 'gift' ? '🎁 Prezent' : 'Dla siebie'}
-          </button>
-        );
-      })}
+            <rect
+              x="3"
+              y="8"
+              width="18"
+              height="13"
+              rx="1"
+            />
+            <path d="M3 8h18M12 21V8M12 8s-2.5-5-5-5-3 4 0 5h5z" />
+            <path d="M12 8s2.5-5 5-5 3 4 0 5h-5z" />
+          </svg>
+        </span>
+        <div>
+          <p className="text-sm font-medium text-[var(--text-primary)]">{t('title')}</p>
+          <p className="text-xs leading-5 text-[var(--text-secondary)]">{t('description')}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {(['self', 'gift'] as const).map(m => {
+          const active = mode === m;
+          return (
+            <button
+              key={m}
+              type="button"
+              onClick={() => handleSelect(m)}
+              role="radio"
+              aria-checked={active}
+              className={cn(
+                'min-h-[44px] rounded-[var(--bb-radius-pill)] px-4 py-2 text-sm font-medium transition-colors duration-[var(--anim-duration-fast)]',
+                active
+                  ? 'bg-[var(--bg-action)] text-[var(--text-on-action)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              )}
+            >
+              {m === 'gift' ? t('gift') : t('self')}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

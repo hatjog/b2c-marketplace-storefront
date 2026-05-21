@@ -1,0 +1,2 @@
+surface: w2-03-orders
+extends: empty-states#pattern-2-empty-collection

@@ -27,7 +27,6 @@
  */
 
 import type { HttpTypes } from '@medusajs/types';
-
 import { getTranslations } from 'next-intl/server';
 
 import {
@@ -36,15 +35,15 @@ import {
   ProductDetailsHeader,
   ProductDetailsShipping,
   ProductPageDetails,
-  VoucherClaritySurface,
   SellerProofSurface,
+  VoucherClaritySurface
 } from '@/components/cells';
-import { VendorBadge } from '@/components/molecules/VendorBadge';
 import {
   NoActiveVendorsFallback,
   SellerSelectorCartBridge,
-  SoleVendorBadge,
+  SoleVendorBadge
 } from '@/components/cells/SellerSelector';
+import { VendorBadge } from '@/components/molecules/VendorBadge';
 // F9 fix: TrustSignals + VoucherValidityInfo were imported but never used after
 // the Story 2.3 retrofit (VoucherClaritySurface now owns those concerns).
 // Story Dev Notes had claimed they were "consumed as slots inside VoucherClaritySurface"
@@ -52,21 +51,21 @@ import {
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
-import { getProductPrice } from '@/lib/helpers/get-product-price';
 import {
   cleanText,
   derivePdpVoucherClarityVariant,
   resolveValidityWording,
-  type VoucherClarityVariant,
+  type VoucherClarityVariant
 } from '@/lib/voucher/voucher-copy';
 import type {
   AdditionalAttributeProps,
   GpProductMetadata,
-  MultiVendorPricingFields,
+  MultiVendorPricingFields
 } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
@@ -87,13 +86,17 @@ import type { Wishlist } from '@/types/wishlist';
 
 export const ProductDetails = async ({
   product,
-  locale
+  locale,
+  showTrustSurfaces = true,
+  showExtendedSections = true
 }: {
   product: HttpTypes.StoreProduct & {
     seller?: SellerProps;
     attribute_values?: AdditionalAttributeProps[];
   };
   locale: string;
+  showTrustSurfaces?: boolean;
+  showExtendedSections?: boolean;
 }) => {
   const user = await retrieveCustomer();
 
@@ -106,7 +109,7 @@ export const ProductDetails = async ({
   const marketId = getMarketId();
   const [trustSignals, defaultValidityInfo] = await Promise.all([
     resolvePdpTrustSignals(marketId),
-    resolveDefaultValidityInfo(marketId),
+    resolveDefaultValidityInfo(marketId)
   ]);
 
   const gpMeta = getGpMetadata<GpProductMetadata>(product.metadata as Record<string, unknown>);
@@ -117,8 +120,7 @@ export const ProductDetails = async ({
   // vendorOfferCount === 0   → empty array → showNoActiveVendorsFallback (Story 5.6)
   // vendorOfferCount === 1   → showSoleVendorBadge (closes audit F4 silent length===1 fall-through)
   // vendorOfferCount >= 2    → showSellerSelector (Story 5.2 / 5.3 / 5.5)
-  const vendorOffers =
-    (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
+  const vendorOffers = (product as unknown as MultiVendorPricingFields).vendor_offers ?? undefined;
   const vendorOfferCount = Array.isArray(vendorOffers) ? vendorOffers.length : -1;
   // cleanup-12f + TF-75: evaluate flag inside function body via single helper.
   const MULTI_VENDOR_PRICING_ENABLED = getCurrentFlagValue();
@@ -155,13 +157,21 @@ export const ProductDetails = async ({
   try {
     const { cheapestVariant, cheapestPrice } = getProductPrice({ product });
     hasPrice = cheapestVariant !== null && !!cheapestVariant.calculated_price;
-    if (cheapestVariant && typeof (cheapestVariant as { inventory_quantity?: number }).inventory_quantity === 'number') {
-      cheapestVariantInventory = (cheapestVariant as { inventory_quantity?: number }).inventory_quantity ?? null;
+    if (
+      cheapestVariant &&
+      typeof (cheapestVariant as { inventory_quantity?: number }).inventory_quantity === 'number'
+    ) {
+      cheapestVariantInventory =
+        (cheapestVariant as { inventory_quantity?: number }).inventory_quantity ?? null;
     }
     if (cheapestPrice && typeof cheapestPrice.calculated_price === 'string') {
       voucherPriceDisplay = cheapestPrice.calculated_price;
     }
-    if (cheapestVariant?.id && cheapestPrice && typeof cheapestPrice.calculated_price === 'string') {
+    if (
+      cheapestVariant?.id &&
+      cheapestPrice &&
+      typeof cheapestPrice.calculated_price === 'string'
+    ) {
       headerInitialPrice = {
         variantId: cheapestVariant.id,
         calculated_price: cheapestPrice.calculated_price,
@@ -170,7 +180,7 @@ export const ProductDetails = async ({
         original_price: cheapestPrice.original_price,
         original_price_number: cheapestPrice.original_price_number,
         currency_code: cheapestPrice.currency_code,
-        inventory_quantity: cheapestVariantInventory,
+        inventory_quantity: cheapestVariantInventory
       };
     }
   } catch (e) {
@@ -183,14 +193,13 @@ export const ProductDetails = async ({
   // and isExpiredInCatalog from product status (Medusa lifecycle field).
   // The PDP helper now exercises all three PDP-only signals it advertises.
   const isOutOfStock = cheapestVariantInventory === 0;
-  const isExpiredInCatalog =
-    typeof product.status === 'string' && product.status !== 'published';
+  const isExpiredInCatalog = typeof product.status === 'string' && product.status !== 'published';
 
   const voucherVariant: VoucherClarityVariant = derivePdpVoucherClarityVariant({
     hasPrice,
     isVendorUnavailable: showNoActiveVendorsFallback,
     isOutOfStock,
-    isExpiredInCatalog,
+    isExpiredInCatalog
   });
 
   // F2 fix: status messages + next-action labels routed through next-intl
@@ -208,8 +217,8 @@ export const ProductDetails = async ({
           message: tVoucher('status_pending_message'),
           nextAction: {
             href: `/${locale}/categories`,
-            label: tVoucher('next_action_back_to_list'),
-          },
+            label: tVoucher('next_action_back_to_list')
+          }
         }
       : voucherVariant === 'error'
         ? {
@@ -217,8 +226,8 @@ export const ProductDetails = async ({
             message: tVoucher('status_expired_message'),
             nextAction: {
               href: `/${locale}/categories`,
-              label: tVoucher('next_action_back_to_list'),
-            },
+              label: tVoucher('next_action_back_to_list')
+            }
           }
         : undefined;
 
@@ -231,12 +240,12 @@ export const ProductDetails = async ({
   // voucher can be redeemed" — aligned with UX-DR7.
   const productRules = Array.isArray(gpMeta?.realization_rules)
     ? (gpMeta.realization_rules.filter(
-        (s): s is string => typeof s === 'string' && s.trim().length > 0,
+        (s): s is string => typeof s === 'string' && s.trim().length > 0
       ) as string[])
     : null;
   const realizationRulesSource =
     productRules && productRules.length > 0 ? productRules : trustSignals;
-  const realizationRules = realizationRulesSource.map((s) => ({ text: s }));
+  const realizationRules = realizationRulesSource.map(s => ({ text: s }));
 
   // Seller data for SellerProofSurface
   const seller = product.seller;
@@ -244,7 +253,10 @@ export const ProductDetails = async ({
   const reviewCount = sellerReviews.length;
   const rating =
     reviewCount > 0
-      ? sellerReviews.reduce((sum: number, r: { rating?: number }) => sum + Number(r?.rating ?? 0), 0) / reviewCount
+      ? sellerReviews.reduce(
+          (sum: number, r: { rating?: number }) => sum + Number(r?.rating ?? 0),
+          0
+        ) / reviewCount
       : null;
 
   // VendorBadge as identity slot inside SellerProofSurface.
@@ -261,7 +273,7 @@ export const ProductDetails = async ({
           name: seller.name,
           handle: seller.handle,
           photoUrl: seller.photo || null,
-          productCount: Array.isArray(seller.products) ? seller.products.length : 0,
+          productCount: Array.isArray(seller.products) ? seller.products.length : 0
         }}
       />
     ) : null;
@@ -303,48 +315,56 @@ export const ProductDetails = async ({
         <SellerSelectorCartBridge sellers={vendorOffers} />
       )}
 
-      {/* ── Story 2.3: VoucherClaritySurface replaces ad-hoc TrustSignals + VoucherValidityInfo ── */}
-      {/* Composes TrustSignals + VoucherValidityInfo as internal slots rather than duplicating
-          their data resolution. refundCancellationInfo is a stable link anchor to /zasady#zwroty;
-          Story 2.9 owns the legal copy SSOT — we reference it here, not freeze it. */}
-      <VoucherClaritySurface
-        title={product.title ?? ''}
-        price={voucherPriceDisplay}
-        validityWording={validityWording}
-        realizationRules={realizationRules}
-        merchantName={cleanText(seller?.name)}
-        merchantHandle={seller?.handle}
-        variant={voucherVariant}
-        status={voucherStatus}
-      />
+      {showTrustSurfaces && (
+        <>
+          {/* ── Story 2.3: VoucherClaritySurface replaces ad-hoc TrustSignals + VoucherValidityInfo ── */}
+          {/* Composes TrustSignals + VoucherValidityInfo as internal slots rather than duplicating
+              their data resolution. refundCancellationInfo is a stable link anchor to /zasady#zwroty;
+              Story 2.9 owns the legal copy SSOT — we reference it here, not freeze it. */}
+          <VoucherClaritySurface
+            title={product.title ?? ''}
+            price={voucherPriceDisplay}
+            validityWording={validityWording}
+            realizationRules={realizationRules}
+            merchantName={cleanText(seller?.name)}
+            merchantHandle={seller?.handle}
+            variant={voucherVariant}
+            status={voucherStatus}
+          />
 
-      {/* ── Story 2.3: SellerProofSurface replaces ProductDetailsSeller + standalone VendorBadge ── */}
-      {/* VendorBadge is passed as identitySlot — composed, not parallel-forked.
-          ProductDetailsSeller (full info grid: address, contact, rating) is now inside
-          SellerProofSurface state logic. SellerInfo is accessed via VendorBadge / identitySlot. */}
-      {seller && (
-        <SellerProofSurface
-          seller={{
-            name: seller.name,
-            handle: seller.handle,
-            photoUrl: seller.photo || null,
-            status: seller.status,
-            rating: rating,
-            reviewCount: reviewCount > 0 ? reviewCount : null,
-            city: seller.city || null,
-            addressLine: seller.address_line || null,
-          }}
-          identitySlot={sellerIdentitySlot}
-        />
+          {/* ── Story 2.3: SellerProofSurface replaces ProductDetailsSeller + standalone VendorBadge ── */}
+          {/* VendorBadge is passed as identitySlot — composed, not parallel-forked.
+              ProductDetailsSeller (full info grid: address, contact, rating) is now inside
+              SellerProofSurface state logic. SellerInfo is accessed via VendorBadge / identitySlot. */}
+          {seller && (
+            <SellerProofSurface
+              seller={{
+                name: seller.name,
+                handle: seller.handle,
+                photoUrl: seller.photo || null,
+                status: seller.status,
+                rating: rating,
+                reviewCount: reviewCount > 0 ? reviewCount : null,
+                city: seller.city || null,
+                addressLine: seller.address_line || null
+              }}
+              identitySlot={sellerIdentitySlot}
+            />
+          )}
+        </>
       )}
 
-      <ProductPageDetails details={product?.description || ''} />
-      <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
-      <ProductDetailsShipping />
-      <ProductDetailsFooter
-        tags={product?.tags || []}
-        posted={product?.created_at}
-      />
+      {showExtendedSections && (
+        <>
+          <ProductPageDetails details={product?.description || ''} />
+          <ProductAdditionalAttributes attributes={product?.attribute_values || []} />
+          <ProductDetailsShipping />
+          <ProductDetailsFooter
+            tags={product?.tags || []}
+            posted={product?.created_at}
+          />
+        </>
+      )}
     </div>
   );
 };
