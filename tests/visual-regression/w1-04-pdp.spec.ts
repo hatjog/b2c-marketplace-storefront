@@ -9,10 +9,23 @@ import { test, expect } from '@playwright/test';
 import { BREAKPOINTS, LOCALES, BASE_URL, setViewport } from './setup';
 
 const PDP_HANDLE = process.env.PDP_TEST_HANDLE ?? 'test-product';
+const BASE_HOST = new URL(BASE_URL).hostname;
+
+async function setBonBeautyRegion(page: import('@playwright/test').Page) {
+  await page.context().addCookies([
+    {
+      name: '_gp_region',
+      value: 'pl',
+      domain: BASE_HOST,
+      path: '/',
+    },
+  ]);
+}
 
 for (const locale of LOCALES) {
   for (const bp of BREAKPOINTS) {
     test(`W1-04 PDP — ${locale} ${bp.name}`, async ({ page }) => {
+      await setBonBeautyRegion(page);
       await setViewport(page, bp);
       await page.goto(`${BASE_URL}/${locale}/products/${PDP_HANDLE}`);
 

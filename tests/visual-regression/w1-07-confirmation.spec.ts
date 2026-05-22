@@ -49,31 +49,23 @@ function mockConfirmationApis(page: import('@playwright/test').Page) {
   ]);
 }
 
-for (const bp of BREAKPOINTS) {
-  test(`W1-07 confirmation — pl ${bp.name}`, async ({ page }) => {
-    await mockConfirmationApis(page);
-    await setViewport(page, bp);
-    await page.goto(`${BASE_URL}/pl/order/${ORDER_ID}/confirmed`);
+for (const locale of LOCALES) {
+  for (const bp of BREAKPOINTS) {
+    test(`W1-07 confirmation — ${locale} ${bp.name}`, async ({ page }) => {
+      await mockConfirmationApis(page);
+      await setViewport(page, bp);
+      await page.goto(`${BASE_URL}/${locale}/order/${ORDER_ID}/confirmed`);
 
-    await page.waitForSelector('[data-testid="self-purchase-confirmed"]', { timeout: 15_000 });
-    await expect(page.locator('[data-testid="confirmation-voucher-rules-card"]')).toBeVisible();
+      await page.waitForSelector('[data-testid="self-purchase-confirmed"]', { timeout: 15_000 });
+      const card = page.locator('[data-testid="confirmation-voucher-rules-card"]');
+      await expect(card).toBeVisible();
+      await expect(card).toHaveCSS('overflow', 'visible');
 
-    await expect(page).toHaveScreenshot(`w1-07-confirmation-pl-${bp.name}.png`, {
-      maxDiffPixelRatio: 0.02,
-      fullPage: false,
-      clip: { x: 0, y: 0, width: bp.width, height: bp.height },
+      await expect(page).toHaveScreenshot(`w1-07-confirmation-${locale}-${bp.name}.png`, {
+        maxDiffPixelRatio: 0.02,
+        fullPage: false,
+        clip: { x: 0, y: 0, width: bp.width, height: bp.height },
+      });
     });
-  });
-}
-
-for (const locale of LOCALES.filter((entry) => entry !== 'pl')) {
-  test(`W1-07 confirmation smoke — ${locale}`, async ({ page }) => {
-    await mockConfirmationApis(page);
-    await setViewport(page, BREAKPOINTS[0]);
-    await page.goto(`${BASE_URL}/${locale}/order/${ORDER_ID}/confirmed`);
-
-    const card = page.locator('[data-testid="confirmation-voucher-rules-card"]');
-    await expect(card).toBeVisible();
-    await expect(card).toHaveCSS('overflow', 'visible');
-  });
+  }
 }
