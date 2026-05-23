@@ -1,11 +1,15 @@
 import { getTranslations } from 'next-intl/server';
 
-import { MobileBottomNav } from '@/components/organisms/MobileBottomNav/MobileBottomNav';
-import { SiteFooter } from '@/components/organisms/SiteFooter/SiteFooter';
-import { SiteHeader } from '@/components/organisms/SiteHeader/SiteHeader';
 import { AccountLayout, type AccountLayoutProps, type AccountUser } from '@/components/templates/AccountLayout';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { resolveMarketConfig } from '@/lib/portal.server';
+
+// Story 4.2 review fix 2026-05-23 (N1 HIGH — double chrome):
+// `(main)/layout.tsx` already renders SiteHeader (W6-01) + SiteFooter (W6-02)
+// + MobileBottomNav (W6-07) around {children}. Re-emitting them here as
+// AccountLayout headerSlot/footerSlot duplicated the chrome on every W2
+// surface (two headers, two footers, two bottom navs). Slots are now empty —
+// AccountLayout retains its hero/sidebar/main composition, chrome stays in
+// (main)/layout.tsx exclusively.
 
 export type AccountLayoutWithChromeProps = Omit<
   AccountLayoutProps,
@@ -20,9 +24,6 @@ export async function AccountLayoutWithChrome({
   ...rest
 }: AccountLayoutWithChromeProps) {
   const tLayout = await getTranslations('account.layout');
-
-  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig } = await resolveMarketConfig(marketId);
 
   const customer = userOverride ? null : await retrieveCustomer().catch(() => null);
   const resolvedUser: AccountUser =
@@ -41,13 +42,8 @@ export async function AccountLayoutWithChrome({
       locale={locale}
       user={resolvedUser}
       t={(key) => tLayout(key as any)}
-      headerSlot={<SiteHeader locale={locale} marketConfig={marketConfig} />}
-      footerSlot={
-        <>
-          <SiteFooter locale={locale} marketConfig={marketConfig} />
-          <MobileBottomNav locale={locale} />
-        </>
-      }
+      headerSlot={null}
+      footerSlot={null}
     />
   );
 }

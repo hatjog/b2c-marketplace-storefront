@@ -134,7 +134,31 @@ export default async function OrdersPage({
             ) : result.state === 'unavailable' ? (
               <StateCard variant="unavailable" title={t('error.unavailable_title')} description={t('error.unavailable_body')} />
             ) : filteredOrders.length === 0 ? (
-              <StateCard variant="empty" title={t('empty.title')} description={t('empty.body')} />
+              // Story 4.2 review fix 2026-05-23 (N7 LOW — client-side filter
+              // hides matches on later pages): when a filter is active and the
+              // current page is full (`result.data.length === limit`), the
+              // remaining matches might live on the next page. Surface that
+              // explicitly via `empty.filter_more_pages_hint` so users know to
+              // load more instead of assuming zero matches exist.
+              <StateCard
+                variant="empty"
+                title={t('empty.title')}
+                description={
+                  filter !== 'all' && result.data.length === limit
+                    ? `${t('empty.body')} ${t('empty.filter_more_pages_hint')}`
+                    : t('empty.body')
+                }
+                action={
+                  filter !== 'all' && result.data.length === limit ? (
+                    <Link
+                      href={`/${locale}/user/orders?offset=${nextOffset}&status=${filter}`}
+                      className="inline-flex min-h-11 items-center rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-on-primary"
+                    >
+                      {t('pagination.next')}
+                    </Link>
+                  ) : undefined
+                }
+              />
             ) : (
               <div className="space-y-3">
                 {filteredOrders.map(orderGroup => {

@@ -6,6 +6,22 @@ import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWit
 import { toDisplayName } from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';
 
+// Story 4.2 review fix 2026-05-23 (N4 MEDIUM — messages always-on StateCard +
+// static channel cards):
+// Previously the page always rendered 2 static channel cards (`salon`,
+// `support`) plus an always-on StateCard underneath, regardless of whether
+// any real message threads existed — visually contradictory ("here are the
+// channels" vs "your inbox is empty"). Per AC8 + UX-DR19 + ES6 the surface
+// must be PASSIVE: no fake threads, no CTAs, and the empty state must own
+// the surface until a live message read-model integration lands.
+//
+// Behaviour now:
+//   - `talkJsConfigured` is true  → StateCard `unavailable` (provider
+//     configured but no live read-model wired yet for buyer-salon inbox).
+//   - `talkJsConfigured` is false → StateCard `empty` (ES6 passive: "no
+//     conversations yet"), no CTA.
+// Static channel cards removed entirely — they were not real channels.
+
 export default async function MessagesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const [t, customer] = await Promise.all([
@@ -18,18 +34,6 @@ export default async function MessagesPage({ params }: { params: Promise<{ local
   }
 
   const talkJsConfigured = Boolean(process.env.NEXT_PUBLIC_TALKJS_APP_ID);
-  const inboxChannels = [
-    {
-      id: 'salon',
-      title: t('channels.salon.title'),
-      body: t('channels.salon.body')
-    },
-    {
-      id: 'support',
-      title: t('channels.support.title'),
-      body: t('channels.support.body')
-    }
-  ];
 
   return (
     <AccountLayoutWithChrome
@@ -50,18 +54,11 @@ export default async function MessagesPage({ params }: { params: Promise<{ local
             <h2 className="heading-md text-primary">{t('heading')}</h2>
             <p className="text-sm text-secondary">{t('intro')}</p>
           </div>
-          <div className="grid gap-3 md:grid-cols-2" role="list" aria-label={t('channels.aria_label')}>
-            {inboxChannels.map(channel => (
-              <article key={channel.id} className="bb-card space-y-2" role="listitem">
-                <h3 className="text-sm font-semibold text-primary">{channel.title}</h3>
-                <p className="text-sm text-secondary">{channel.body}</p>
-              </article>
-            ))}
-          </div>
           <StateCard
             variant={talkJsConfigured ? 'unavailable' : 'empty'}
             title={talkJsConfigured ? t('provider.title') : t('empty.title')}
             description={talkJsConfigured ? t('provider.body') : t('empty.body')}
+            data-testid={talkJsConfigured ? 'messages-unavailable-state' : 'messages-empty-state'}
           />
         </div>
       }

@@ -1962,7 +1962,9 @@
       },
       "statuses": {
         "paid": "Aktywne",
-        "pending": "W toku"
+        "pending": "W toku",
+        "failed": "Wymaga uwagi",
+        "refunded": "Zwrócone"
       },
       "labels": {
         "date_pending": "Data w przygotowaniu"
@@ -2017,7 +2019,8 @@
       },
       "empty": {
         "title": "Nie masz jeszcze zamówień",
-        "body": "Historia zamówień pojawi się tutaj po pierwszym zakupie."
+        "body": "Historia zamówień pojawi się tutaj po pierwszym zakupie.",
+        "filter_more_pages_hint": "Załaduj kolejną stronę, aby zobaczyć starsze zamówienia pasujące do filtra."
       },
       "error": {
         "access_denied_title": "Wymagane logowanie",
@@ -2072,7 +2075,19 @@
         "heading": "Podsumowanie płatności",
         "total": "Suma: {amount}",
         "method": "Metoda: {value}",
-        "method_pending": "Metoda płatności w przygotowaniu"
+        "method_pending": "Metoda płatności w przygotowaniu",
+        "method_unknown": "Płatność (kod: {code})",
+        "providers": {
+          "stripe": "Stripe",
+          "manual": "Płatność manualna",
+          "pp_system_default": "Domyślna płatność systemowa",
+          "pp_stripe_stripe": "Stripe",
+          "paypal": "PayPal",
+          "blik": "BLIK",
+          "p24": "Przelewy24",
+          "cash_on_delivery": "Płatność przy odbiorze",
+          "bank_transfer": "Przelew bankowy"
+        }
       },
       "timeline": {
         "heading": "Oś czasu",

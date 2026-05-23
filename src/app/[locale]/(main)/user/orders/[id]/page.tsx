@@ -48,7 +48,11 @@ function ActionTile({
   );
 }
 
-function safeInternalOrHttpHref(value: unknown): string | undefined {
+// Story 4.2 review fix 2026-05-23 (N5 LOW — http: invoice href):
+// Restrict external invoice URLs to https: only. http: invoices would allow
+// MITM/phishing on the customer-facing surface. Internal paths (`/...`)
+// remain valid because the storefront serves them under its own origin.
+function safeInternalOrHttpsHref(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   if (!trimmed) return undefined;
@@ -56,10 +60,39 @@ function safeInternalOrHttpHref(value: unknown): string | undefined {
 
   try {
     const url = new URL(trimmed);
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : undefined;
+    return url.protocol === 'https:' ? url.toString() : undefined;
   } catch {
     return undefined;
   }
+}
+
+// Story 4.2 review fix 2026-05-23 (N3 MEDIUM — provider_id raw render):
+// Maps Medusa/Mercur payment provider ids to localized labels. Unknown
+// providers fall back to `payment.method_unknown` with code preserved so the
+// surface never bleeds backend identifiers into PL/EN/UA/DE copy.
+function paymentProviderLabelKey(providerId: string | null | undefined): {
+  key: string;
+  vars: Record<string, string | number>;
+} {
+  const raw = String(providerId ?? '').trim().toLowerCase();
+  if (!raw) {
+    return { key: 'payment.method_pending', vars: {} };
+  }
+  const known = new Set([
+    'stripe',
+    'manual',
+    'pp_system_default',
+    'pp_stripe_stripe',
+    'paypal',
+    'blik',
+    'p24',
+    'cash_on_delivery',
+    'bank_transfer'
+  ]);
+  if (known.has(raw)) {
+    return { key: `payment.providers.${raw}`, vars: {} };
+  }
+  return { key: 'payment.method_unknown', vars: { code: raw } };
 }
 
 export default async function OrderDetailPage({
@@ -98,7 +131,8 @@ export default async function OrderDetailPage({
   const timeline = buildOrderTimeline(orderGroup);
   const resendHref = primaryOrder?.id ? `/${locale}/order/${primaryOrder.id}/confirmed` : undefined;
   const returnHref = primaryOrder?.id ? `/${locale}/user/orders/${primaryOrder.id}/return` : undefined;
-  const invoiceHref = safeInternalOrHttpHref(primaryOrder?.metadata?.invoice_url);
+  const invoiceHref = safeInternalOrHttpsHref(primaryOrder?.metadata?.invoice_url);
+  const providerLabelKey = paymentProviderLabelKey(primaryOrder?.payment_collections?.[0]?.payments?.[0]?.provider_id);
   const contactHref = `/${locale}/pomoc`;
 
   return (
@@ -132,8 +166,15 @@ export default async function OrderDetailPage({
           <section className="space-y-3">
             <h3 className="heading-sm text-primary">{t('items.heading')}</h3>
             <div className="space-y-3">
-              {orderGroup.orders?.flatMap(order => order.items ?? []).map(item => (
-                <article key={`${item.id}-${item.variant_id}`} className="bb-card flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              {/* Story 4.2 review fix 2026-05-23 (N6 LOW — duplicate keys):
+                  Previous key was `${item.id}-${item.variant_id}` which could
+                  collide when variant_id is null/undefined or when items appear
+                  in multiple orders inside the same group. Now keyed by
+                  `${order.id}:${item.id}:${index}` which is unique per render. */}
+              {orderGroup.orders?.flatMap(order =>
+                (order.items ?? []).map((item, index) => ({ order, item, index }))
+              ).map(({ order, item, index }) => (
+                <article key={`${order.id}:${item.id ?? 'noid'}:${index}`} className="bb-card flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-primary">{item.title}</p>
                     <p className="text-sm text-secondary">{t('items.quantity', { count: item.quantity ?? 1 })}</p>
@@ -163,7 +204,7 @@ export default async function OrderDetailPage({
                   amount: formatAccountCurrency(orderGroup.total ?? 0, primaryOrder?.currency_code ?? 'PLN', locale)
                 })}
               </p>
-              <p className="text-sm text-secondary">{t('payment.method', { value: primaryOrder?.payment_collections?.[0]?.payments?.[0]?.provider_id ?? t('payment.method_pending') })}</p>
+              <p className="text-sm text-secondary">{t('payment.method', { value: t(providerLabelKey.key, providerLabelKey.vars) })}</p>
             </article>
           </section>
 

@@ -1963,7 +1963,9 @@
       },
       "statuses": {
         "paid": "Активне",
-        "pending": "У процесі"
+        "pending": "У процесі",
+        "failed": "Потребує уваги",
+        "refunded": "Повернуто"
       },
       "labels": {
         "date_pending": "Дата готується"
@@ -2018,7 +2020,8 @@
       },
       "empty": {
         "title": "Замовлень ще немає",
-        "body": "Історія замовлень з’явиться тут після першої покупки."
+        "body": "Історія замовлень з’явиться тут після першої покупки.",
+        "filter_more_pages_hint": "Завантажте наступну сторінку, щоб побачити старіші замовлення, які відповідають фільтру."
       },
       "error": {
         "access_denied_title": "Потрібен вхід",
@@ -2073,7 +2076,19 @@
         "heading": "Підсумок оплати",
         "total": "Сума: {amount}",
         "method": "Метод: {value}",
-        "method_pending": "Метод оплати готується"
+        "method_pending": "Метод оплати готується",
+        "method_unknown": "Платіж (код: {code})",
+        "providers": {
+          "stripe": "Stripe",
+          "manual": "Ручна оплата",
+          "pp_system_default": "Системний платіж за замовчуванням",
+          "pp_stripe_stripe": "Stripe",
+          "paypal": "PayPal",
+          "blik": "BLIK",
+          "p24": "Przelewy24",
+          "cash_on_delivery": "Оплата при отриманні",
+          "bank_transfer": "Банківський переказ"
+        }
       },
       "timeline": {
         "heading": "Хронологія",

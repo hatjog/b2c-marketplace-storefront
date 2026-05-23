@@ -1963,7 +1963,9 @@
       },
       "statuses": {
         "paid": "Aktiv",
-        "pending": "In Bearbeitung"
+        "pending": "In Bearbeitung",
+        "failed": "Benötigt Aufmerksamkeit",
+        "refunded": "Erstattet"
       },
       "labels": {
         "date_pending": "Datum folgt"
@@ -2018,7 +2020,8 @@
       },
       "empty": {
         "title": "Noch keine Bestellungen",
-        "body": "Ihr Bestellverlauf erscheint hier nach dem ersten Kauf."
+        "body": "Ihr Bestellverlauf erscheint hier nach dem ersten Kauf.",
+        "filter_more_pages_hint": "Laden Sie die nächste Seite, um ältere Bestellungen zu diesem Filter zu sehen."
       },
       "error": {
         "access_denied_title": "Anmeldung erforderlich",
@@ -2073,7 +2076,19 @@
         "heading": "Zahlungsübersicht",
         "total": "Summe: {amount}",
         "method": "Methode: {value}",
-        "method_pending": "Zahlungsmethode folgt"
+        "method_pending": "Zahlungsmethode folgt",
+        "method_unknown": "Zahlung (Code: {code})",
+        "providers": {
+          "stripe": "Stripe",
+          "manual": "Manuelle Zahlung",
+          "pp_system_default": "Standard-Systemzahlung",
+          "pp_stripe_stripe": "Stripe",
+          "paypal": "PayPal",
+          "blik": "BLIK",
+          "p24": "Przelewy24",
+          "cash_on_delivery": "Nachnahme",
+          "bank_transfer": "Banküberweisung"
+        }
       },
       "timeline": {
         "heading": "Zeitachse",

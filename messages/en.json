@@ -1962,7 +1962,9 @@
       },
       "statuses": {
         "paid": "Active",
-        "pending": "In progress"
+        "pending": "In progress",
+        "failed": "Needs attention",
+        "refunded": "Refunded"
       },
       "labels": {
         "date_pending": "Date pending"
@@ -2017,7 +2019,8 @@
       },
       "empty": {
         "title": "No orders yet",
-        "body": "Your order history will appear here after your first purchase."
+        "body": "Your order history will appear here after your first purchase.",
+        "filter_more_pages_hint": "Load the next page to see older orders matching this filter."
       },
       "error": {
         "access_denied_title": "Login required",
@@ -2072,7 +2075,19 @@
         "heading": "Payment summary",
         "total": "Total: {amount}",
         "method": "Method: {value}",
-        "method_pending": "Payment method pending"
+        "method_pending": "Payment method pending",
+        "method_unknown": "Payment (code: {code})",
+        "providers": {
+          "stripe": "Stripe",
+          "manual": "Manual payment",
+          "pp_system_default": "Default system payment",
+          "pp_stripe_stripe": "Stripe",
+          "paypal": "PayPal",
+          "blik": "BLIK",
+          "p24": "Przelewy24",
+          "cash_on_delivery": "Cash on delivery",
+          "bank_transfer": "Bank transfer"
+        }
       },
       "timeline": {
         "heading": "Timeline",
