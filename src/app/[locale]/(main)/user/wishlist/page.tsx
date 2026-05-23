@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
-import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
 import { WishlistItem } from '@/components/cells';
 import { loadWishlist, toDisplayName } from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';

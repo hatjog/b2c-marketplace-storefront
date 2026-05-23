@@ -5,6 +5,4 @@ export { BlogLayout } from './BlogLayout';
 export { BlogRichText } from './BlogRichText';
 export { BlogTocNav } from './BlogTocNav';
 export { LegalPageLayout } from './LegalPageLayout';
-export { SellerDetailTabPanel, SellerDetailTabs } from './SellerDetailTabs';
 export { SellersDetailLayout } from './SellersDetailLayout';
-export { SellersIndexSplitView } from './SellersIndexSplitView';

@@ -129,6 +129,7 @@ export default async function SellerPage({
 
   const tDetail = await getTranslations('seller.detail');
   const tShared = await getTranslations('seller.shared');
+  const tSellerProof = await getTranslations('pdp.seller_proof');
 
   const user = await retrieveCustomer();
   const countryCode = await getCountryCode(locale);
@@ -201,6 +202,21 @@ export default async function SellerPage({
           rating={sellerRating}
           ratingCount={sellerRatingCount}
           sellerName={seller.name}
+          locale={locale}
+          labels={{
+            aria: tSellerProof('aria', { name: seller.name }),
+            viewSeller: tSellerProof('view_seller'),
+            yearsValue: count => tSellerProof('years_value', { count }),
+            yearsLabel: tSellerProof('years_label'),
+            treatmentsValue: count => tSellerProof('treatments_value', { count }),
+            treatmentsLabel: tSellerProof('treatments_label'),
+            ratingValue: (rating, count) =>
+              tSellerProof('rating_value', { rating: rating.toFixed(1), count }),
+            ratingLabel: tSellerProof('rating_label'),
+            noRatings: tSellerProof('no_ratings'),
+            warningTitle: tSellerProof('warning_title'),
+            warningBody: tSellerProof('warning_body')
+          }}
           data-testid="seller-detail-seller-proof"
         />
       </div>

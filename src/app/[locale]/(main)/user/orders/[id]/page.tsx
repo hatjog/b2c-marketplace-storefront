@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
-import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
 import {
   buildOrderTimeline,
   formatAccountCurrency,
@@ -163,7 +163,7 @@ export default async function OrderDetailPage({
                   amount: formatAccountCurrency(orderGroup.total ?? 0, primaryOrder?.currency_code ?? 'PLN', locale)
                 })}
               </p>
-              <p className="text-sm text-secondary">{t('payment.method', { value: primaryOrder?.payment_collection?.payments?.[0]?.provider_id ?? t('payment.method_pending') })}</p>
+              <p className="text-sm text-secondary">{t('payment.method', { value: primaryOrder?.payment_collections?.[0]?.payments?.[0]?.provider_id ?? t('payment.method_pending') })}</p>
             </article>
           </section>
 

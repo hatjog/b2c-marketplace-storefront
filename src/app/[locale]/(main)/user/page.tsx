@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
-import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
 import {
   formatAccountCurrency,
   formatAccountDate,

@@ -17,7 +17,12 @@
  * (same gate as visual regression baseline, Story 3.8 joint).
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
+import type { BackendPaymentStatusResponse, PaymentStatusV180 } from '@/lib/payment/payment-status-v180-adapter';
+
+type OnStatusChangeMock = Mock<(status: PaymentStatusV180, data: BackendPaymentStatusResponse) => void>;
+type OnCountdownTickMock = Mock<(countdown: number, totalElapsedSeconds: number, isSecondTier: boolean) => void>;
 
 // ─── Adapter tests (pure, no React) ──────────────────────────────────────────
 
@@ -145,8 +150,8 @@ describe('createPaymentStatusPoller', async () => {
     COUNTDOWN_SECONDS,
   } = await import('@/lib/payment/payment-status-poller');
 
-  let onStatusChange: ReturnType<typeof vi.fn>;
-  let onCountdownTick: ReturnType<typeof vi.fn>;
+  let onStatusChange: OnStatusChangeMock;
+  let onCountdownTick: OnCountdownTickMock;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   const pendingResponse = () =>
@@ -163,8 +168,8 @@ describe('createPaymentStatusPoller', async () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    onStatusChange = vi.fn();
-    onCountdownTick = vi.fn();
+    onStatusChange = vi.fn<(status: PaymentStatusV180, data: BackendPaymentStatusResponse) => void>();
+    onCountdownTick = vi.fn<(countdown: number, totalElapsedSeconds: number, isSecondTier: boolean) => void>();
     fetchMock = vi.fn().mockImplementation(pendingResponse);
     vi.stubGlobal('fetch', fetchMock);
   });

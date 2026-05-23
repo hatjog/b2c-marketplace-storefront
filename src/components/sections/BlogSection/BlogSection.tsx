@@ -3,33 +3,59 @@ import { getTranslations } from 'next-intl/server';
 import { BlogCard } from '@/components/organisms';
 import type { BlogPost } from '@/types/blog';
 
+const placeholderAuthor = {
+  id: 'placeholder',
+  name: '',
+  slug: 'placeholder',
+  role: '',
+  bio: ''
+};
+
 export const blogPosts: BlogPost[] = [
   {
-    id: 1,
+    id: '1',
+    slug: 'summer-elegant-accessories',
     title: "Summer's Most Elegant Accessories",
     excerpt:
       "Discover this season's most sophisticated accessories that blend timeless elegance with modern design.",
     image: '/images/blog/post-1.jpg',
+    imageAlt: '',
     category: 'ACCESSORIES',
-    href: '#'
+    href: '#',
+    tags: [],
+    author: placeholderAuthor,
+    readTimeMinutes: 0,
+    publishedAt: null
   },
   {
-    id: 2,
+    id: '2',
+    slug: 'season-hottest-trends',
     title: 'The Season’s Hottest Trends',
     excerpt:
       'From bold colors to nostalgic silhouettes, explore the must-have looks defining this season’s fashion narrative.',
     image: '/images/blog/post-2.jpg',
+    imageAlt: '',
     category: 'STYLE GUIDE',
-    href: '#'
+    href: '#',
+    tags: [],
+    author: placeholderAuthor,
+    readTimeMinutes: 0,
+    publishedAt: null
   },
   {
-    id: 3,
+    id: '3',
+    slug: 'minimalist-outerwear-trends',
     title: 'Minimalist Outerwear Trends',
     excerpt:
       'Explore the latest minimalist outerwear pieces that combine functionality with clean aesthetics.',
     image: '/images/blog/post-3.jpg',
+    imageAlt: '',
     category: 'TRENDS',
-    href: '#'
+    href: '#',
+    tags: [],
+    author: placeholderAuthor,
+    readTimeMinutes: 0,
+    publishedAt: null
   }
 ];
 
