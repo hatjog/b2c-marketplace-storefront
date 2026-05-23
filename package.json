@@ -19,8 +19,8 @@
     "@headlessui/react": "^2.2.1",
     "@hookform/resolvers": "^3.10.0",
     "@internationalized/date": "^3.12.1",
-    "@medusajs/js-sdk": "2.13.4",
-    "@medusajs/types": "2.13.4",
+    "@medusajs/js-sdk": "2.14.2",
+    "@medusajs/types": "2.14.2",
     "@medusajs/ui": "^4.0.33",
     "@mercurjs/client": "2.1.1",
     "@sentry/nextjs": "^10.40.0",
@@ -120,6 +120,17 @@
       }
     },
     "overrides": {
+      "@medusajs/admin-sdk": "2.14.2",
+      "@medusajs/admin-shared": "2.14.2",
+      "@medusajs/admin-vite-plugin": "2.14.2",
+      "@medusajs/cli": "2.14.2",
+      "@medusajs/dashboard": "2.14.2",
+      "@medusajs/framework": "2.14.2",
+      "@medusajs/icons": "2.14.2",
+      "@medusajs/js-sdk": "2.14.2",
+      "@medusajs/medusa": "2.14.2",
+      "@medusajs/test-utils": "2.14.2",
+      "@medusajs/types": "2.14.2",
       "import-in-the-middle": "3.0.1"
     }
   }
