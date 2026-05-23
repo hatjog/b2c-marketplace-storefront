@@ -17,8 +17,24 @@ export const CustomCarousel = ({
   items: React.ReactNode[];
   align?: 'center' | 'start' | 'end';
 }) => {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const applyPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    applyPreference();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', applyPreference);
+      return () => mediaQuery.removeEventListener('change', applyPreference);
+    }
+
+    mediaQuery.addListener(applyPreference);
+    return () => mediaQuery.removeListener(applyPreference);
+  }, []);
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
+    loop: !prefersReducedMotion,
     align
   });
 

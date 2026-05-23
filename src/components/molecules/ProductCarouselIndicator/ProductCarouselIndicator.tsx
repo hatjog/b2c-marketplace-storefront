@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { HttpTypes } from '@medusajs/types';
 import type { EmblaCarouselType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 import { Indicator } from '@/components/atoms';
@@ -13,12 +14,15 @@ import { cn } from '@/lib/utils';
 
 export const ProductCarouselIndicator = ({
   slides = [],
-  embla: parentEmbla
+  embla: parentEmbla,
+  productTitle
 }: {
   slides: HttpTypes.StoreProduct['images'];
   embla?: EmblaCarouselType;
+  productTitle?: string | null;
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const t = useTranslations('products');
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'y',
@@ -72,7 +76,7 @@ export const ProductCarouselIndicator = ({
               >
                 <Image
                   src={safeDecodeURIComponent(slide.url)}
-                  alt="Product carousel Indicator"
+                  alt={t('image_alt', { name: productTitle ?? t('fallback_name') })}
                   width={64}
                   height={64}
                   className={cn(

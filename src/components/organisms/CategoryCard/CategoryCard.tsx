@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
@@ -16,6 +19,7 @@ export function CategoryCard({
 }: {
   category: { name: string; handle: string; metadata?: { photo_url?: string } | null };
 }) {
+  const t = useTranslations('home_v3.categories');
   const imageSrc = category.metadata?.photo_url
     ?? (CATEGORY_IMAGE_HANDLES.has(category.handle)
         ? `/images/categories/${category.handle}.png`
@@ -31,7 +35,7 @@ export function CategoryCard({
         <Image
           loading="lazy"
           src={imageSrc}
-          alt={`category - ${category.name}`}
+          alt={t('image_alt', { name: category.name })}
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"

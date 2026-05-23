@@ -10,10 +10,12 @@ import { getAuthHeaders } from './cookies';
 
 export const getUserWishlists = async ({
   regionId,
-  countryCode
+  countryCode,
+  suppressErrors = true
 }: {
   regionId?: string;
   countryCode?: string;
+  suppressErrors?: boolean;
 }) => {
   const headers = {
     ...(await getAuthHeaders()),
@@ -51,7 +53,10 @@ export const getUserWishlists = async ({
     .then(res => {
       return res;
     })
-    .catch(() => {
+    .catch(err => {
+      if (!suppressErrors) {
+        throw err;
+      }
       return { products: [] };
     });
 };

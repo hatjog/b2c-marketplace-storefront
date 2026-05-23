@@ -38,14 +38,17 @@ export interface SellerCardProps {
   handle: string;
   photo_url?: string | null;
   city?: string | null;
+  district?: string | null;
   product_count: number;
 }
 
-export function SellerCard({ name, handle, photo_url, city, product_count }: SellerCardProps) {
+export function SellerCard({ name, handle, photo_url, city, district, product_count }: SellerCardProps) {
+  const location = [city, district].filter(Boolean).join(' / ');
+
   return (
     <Link
       href={`/sellers/${handle}`}
-      className="group block rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      className="group block overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       aria-label={name}
       data-testid="seller-card"
     >
@@ -61,9 +64,10 @@ export function SellerCard({ name, handle, photo_url, city, product_count }: Sel
         </div>
       ) : (
         <div
-          className="aspect-[16/9] flex items-center justify-center"
+          className="flex aspect-[16/9] items-center justify-center"
           style={{
-            background: 'linear-gradient(to bottom right, var(--gold-light, #fef3c7), rgb(var(--brand-50, 238 238 238)))'
+            background:
+              'linear-gradient(to bottom right, var(--gold-light, #fef3c7), rgb(var(--brand-50, 238 238 238)))'
           }}
         >
           <span
@@ -75,11 +79,9 @@ export function SellerCard({ name, handle, photo_url, city, product_count }: Sel
       )}
 
       <div className="p-4">
-        <p className="font-semibold text-gray-900 truncate">{name}</p>
-        {city && (
-          <p className="mt-0.5 text-sm text-gray-500 truncate">{city}</p>
-        )}
-        <p className="mt-1 text-sm text-gray-400">{pluralizeProducts(product_count)}</p>
+        <p className="truncate font-semibold text-gray-900">{name}</p>
+        {location && <p className="mt-0.5 truncate text-sm text-gray-500">{location}</p>}
+        <p className="mt-1 text-sm text-gray-600">{pluralizeProducts(product_count)}</p>
       </div>
     </Link>
   );

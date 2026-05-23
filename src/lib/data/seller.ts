@@ -1,7 +1,7 @@
 import type { SellerProps } from '@/types/seller';
 
 import { haversineKm } from '../helpers/distance';
-import { fetchSellerById, resolveSellerHandleToId } from '../sdk-adapters/sellers';
+import { fetchSellerById, fetchSellerSummaryByHandle, resolveSellerHandleToId } from '../sdk-adapters/sellers';
 import { mercurClient } from '../config';
 
 export interface SellerListItem {
@@ -9,6 +9,7 @@ export interface SellerListItem {
   name: string;
   photo_url: string | null;
   city: string | null;
+  district?: string | null;
   product_count: number;
   avg_rating?: number | null;
   review_count?: number | null;
@@ -38,6 +39,7 @@ type SellerApiItem = {
   lat?: number | null;
   lng?: number | null;
   address?: string | null;
+  district?: string | null;
 };
 
 /**
@@ -60,7 +62,8 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
         review_count: typeof v.review_count === 'number' ? v.review_count : null,
         lat: typeof v.lat === 'number' ? v.lat : null,
         lng: typeof v.lng === 'number' ? v.lng : null,
-        address: v.address ?? null
+        address: v.address ?? null,
+        district: v.district ?? null
       }));
 
       return mapped.sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
@@ -244,19 +247,32 @@ export const searchSellers = async ({
 export const getSellerByHandle = async (handle: string): Promise<SellerProps | null> => {
   const SELLER_FIELDS =
     '+created_at,+email,+phone,+social_links,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name';
+  const SAFE_SELLER_FIELDS = SELLER_FIELDS
+    .split(',')
+    .filter(field => !field.includes('reviews'))
+    .join(',');
 
-  const id = await resolveSellerHandleToId(handle);
-  if (!id) return null;
-
-  const seller = await fetchSellerById(id, SELLER_FIELDS);
-  if (!seller) return null;
-
-  // Sort reviews by created_at desc (preserve existing consumer contract).
-  return {
+  const normalizeSeller = (seller: SellerProps): SellerProps => ({
     ...seller,
     reviews:
       (seller.reviews as Array<{ created_at: string }> | undefined)
         ?.filter(item => item !== null)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)) ?? []
-  };
+  });
+
+  const id = await resolveSellerHandleToId(handle);
+  if (!id) return null;
+
+  const seller = await fetchSellerById(id, SELLER_FIELDS);
+  if (seller) {
+    return normalizeSeller(seller);
+  }
+
+  const sellerWithoutReviews = await fetchSellerById(id, SAFE_SELLER_FIELDS);
+  if (sellerWithoutReviews) {
+    return normalizeSeller(sellerWithoutReviews);
+  }
+
+  const sellerSummary = await fetchSellerSummaryByHandle(handle, SAFE_SELLER_FIELDS);
+  return sellerSummary ? normalizeSeller(sellerSummary) : null;
 };

@@ -8,7 +8,7 @@ import {
 } from '@/lib/data/cart';
 import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
 
-import { CartContext } from './context';
+import { CartContext, type CartPurchaseMode } from './context';
 
 interface CartProviderProps extends PropsWithChildren {
   cart: Cart | null;
@@ -26,18 +26,22 @@ export function CartProvider({ cart, children }: CartProviderProps) {
   const [selectedSellerName, setSelectedSellerName] = useState<string | null>(null);
   // cleanup-12d AC1 / TF-72
   const [selectedSellerHandle, setSelectedSellerHandle] = useState<string | null>(null);
+  const [purchaseMode, setPurchaseMode] = useState<CartPurchaseMode>('self');
 
-  const setSelectedSeller = useCallback((ctx: { id: string; name: string; handle?: string | null } | null) => {
-    if (ctx === null) {
-      setSelectedSellerId(null);
-      setSelectedSellerName(null);
-      setSelectedSellerHandle(null);
-      return;
-    }
-    setSelectedSellerId(ctx.id);
-    setSelectedSellerName(ctx.name);
-    setSelectedSellerHandle(ctx.handle ?? null);
-  }, []);
+  const setSelectedSeller = useCallback(
+    (ctx: { id: string; name: string; handle?: string | null } | null) => {
+      if (ctx === null) {
+        setSelectedSellerId(null);
+        setSelectedSellerName(null);
+        setSelectedSellerHandle(null);
+        return;
+      }
+      setSelectedSellerId(ctx.id);
+      setSelectedSellerName(ctx.name);
+      setSelectedSellerHandle(ctx.handle ?? null);
+    },
+    []
+  );
 
   useEffect(() => {
     setCartState(cart);
@@ -136,6 +140,7 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     selectedSellerId,
     selectedSellerName,
     selectedSellerHandle,
+    purchaseMode
   }: {
     variantId: string;
     quantity: number;
@@ -146,6 +151,8 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     selectedSellerName?: string | null;
     /** cleanup-12d AC1 / TF-72 — seller handle for "visit seller" link. */
     selectedSellerHandle?: string | null;
+    /** W1-04 PDP gift/self mode. */
+    purchaseMode?: CartPurchaseMode;
   }) => {
     setIsAddingItem(true);
     setIsUpdating(true);
@@ -158,6 +165,7 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         selectedSellerId,
         selectedSellerName,
         selectedSellerHandle,
+        purchaseMode
       });
       await refreshCart();
     } catch (error) {
@@ -222,7 +230,9 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         selectedSellerId,
         selectedSellerName,
         selectedSellerHandle,
-        setSelectedSeller
+        setSelectedSeller,
+        purchaseMode,
+        setPurchaseMode
       }}
     >
       {children}

@@ -13,6 +13,7 @@ import {
   componentPreviewUrl,
   previewHarnessAvailable,
   setViewport,
+  WAVE6_REQUIRE_PREVIEW_HARNESS,
   type Wave6ComponentId,
 } from './setup';
 
@@ -34,6 +35,12 @@ export function defineWave6Spec(component: Wave6ComponentId) {
           test(`${component} — ${variant} — ${locale} ${bp.name}`, async ({
             page,
           }) => {
+            if (!harnessUp && WAVE6_REQUIRE_PREVIEW_HARNESS) {
+              throw new Error(
+                'Wave 6 preview harness unavailable in required mode (CI/WAVE6_REQUIRE_PREVIEW_HARNESS=1). ' +
+                  `Cannot lock baseline for ${component}/${variant}/${locale}/${bp.name}.`
+              );
+            }
             test.skip(
               !harnessUp,
               `Preview harness unavailable — baseline capture deferred to CI ` +

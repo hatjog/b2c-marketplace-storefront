@@ -5,7 +5,10 @@ import { getTranslations } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { Cart } from '@/components/sections';
+import { listCategories } from '@/lib/data/categories';
+import { listProducts } from '@/lib/data/products';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
+import { getCountryCode } from '@/lib/helpers/country-code';
 
 /**
  * Story 2.4: force-dynamic — cart state is volatile (voucher availability,
@@ -30,12 +33,48 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
+  let recommendedProducts: Awaited<ReturnType<typeof listProducts>>['response']['products'] = [];
+  let curatedCategories: Array<{ id: string; name: string; handle: string }> = [];
+
+  const productsPromise = getCountryCode(locale).then(countryCode =>
+    listProducts({
+      countryCode,
+      queryParams: {
+        limit: 8,
+        order: 'created_at'
+      },
+      forceCache: true
+    })
+  );
+  const categoriesPromise = listCategories({ query: { limit: 8 } });
+
+  const [productsResult, categoriesResult] = await Promise.allSettled([
+    productsPromise,
+    categoriesPromise
+  ]);
+
+  if (productsResult.status === 'fulfilled') {
+    recommendedProducts = productsResult.value.response.products.slice(0, 8);
+  } else {
+    console.error('[cart] Failed to load recommended products feed:', productsResult.reason);
+  }
+
+  if (categoriesResult.status === 'fulfilled') {
+    curatedCategories = categoriesResult.value.categories.slice(0, 8).map(category => ({
+      id: category.id,
+      name: category.name,
+      handle: category.handle
+    }));
+  } else {
+    console.error('[cart] Failed to load curated categories feed:', categoriesResult.reason);
+  }
   const t = await getTranslations('page');
   return (
     <main
       id="main-content"
       className="container grid grid-cols-12"
     >
+      <h1 className="sr-only">{t('cart_title')}</h1>
       <StorefrontRouteStateSignal
         route="cart"
         surface="cart"
@@ -45,7 +84,10 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
         surface="cart"
       />
       <Suspense fallback={<>{t('loading')}</>}>
-        <Cart />
+        <Cart
+          recommendedProducts={recommendedProducts}
+          curatedCategories={curatedCategories}
+        />
       </Suspense>
     </main>
   );

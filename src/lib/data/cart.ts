@@ -390,7 +390,8 @@ export async function addToCart({
   countryCode,
   selectedSellerId,
   selectedSellerName,
-  selectedSellerHandle
+  selectedSellerHandle,
+  purchaseMode
 }: {
   variantId: string;
   quantity: number;
@@ -404,6 +405,8 @@ export async function addToCart({
   /** cleanup-12d AC1 / TF-72 — seller handle for "/sellers/{handle}" link
    *  in CartGroupBySeller; persisted as cart_item metadata.selected_seller_handle. */
   selectedSellerHandle?: string | null;
+  /** W1-04 PDP gift/self mode persisted for checkout recipient flow. */
+  purchaseMode?: 'self' | 'gift';
 }) {
   if (!variantId) {
     throw new Error('Missing variant ID when adding to cart');
@@ -433,6 +436,19 @@ export async function addToCart({
           ...(selectedSellerHandle ? { selected_seller_handle: selectedSellerHandle } : {})
         }
       : undefined;
+  const purchaseModeMetadata = purchaseMode
+    ? {
+        purchase_mode: purchaseMode,
+        is_gift: purchaseMode === 'gift'
+      }
+    : undefined;
+  const lineItemMetadata =
+    sellerMetadata || purchaseModeMetadata
+      ? {
+          ...(sellerMetadata ?? {}),
+          ...(purchaseModeMetadata ?? {})
+        }
+      : undefined;
 
   if (currentItem) {
     await sdk.store.cart
@@ -441,8 +457,8 @@ export async function addToCart({
         currentItem.id,
         {
           quantity: currentItem.quantity + quantity,
-          ...(sellerMetadata
-            ? { metadata: { ...(currentItem.metadata ?? {}), ...sellerMetadata } }
+          ...(lineItemMetadata
+            ? { metadata: { ...(currentItem.metadata ?? {}), ...lineItemMetadata } }
             : {})
         },
         {},
@@ -460,7 +476,7 @@ export async function addToCart({
         {
           variant_id: variantId,
           quantity,
-          ...(sellerMetadata ? { metadata: sellerMetadata } : {})
+          ...(lineItemMetadata ? { metadata: lineItemMetadata } : {})
         },
         {},
         headers

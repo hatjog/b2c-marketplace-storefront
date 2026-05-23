@@ -16,10 +16,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock sdk-adapters/sellers — isolates getSellerByHandle logic from adapter internals
 const mockResolveHandleToId = vi.fn();
 const mockFetchSellerById = vi.fn();
+const mockFetchSellerSummaryByHandle = vi.fn();
 
 vi.mock('../sdk-adapters/sellers', () => ({
   resolveSellerHandleToId: (...args: unknown[]) => mockResolveHandleToId(...args),
-  fetchSellerById: (...args: unknown[]) => mockFetchSellerById(...args)
+  fetchSellerById: (...args: unknown[]) => mockFetchSellerById(...args),
+  fetchSellerSummaryByHandle: (...args: unknown[]) => mockFetchSellerSummaryByHandle(...args)
 }));
 
 // Mock mercurClient — seller.ts imports it for getSellers (not used by getSellerByHandle now)
@@ -53,6 +55,7 @@ describe('getSellerByHandle', () => {
   beforeEach(() => {
     mockResolveHandleToId.mockReset();
     mockFetchSellerById.mockReset();
+    mockFetchSellerSummaryByHandle.mockReset();
   });
 
   it('returns seller when handle resolves to id and seller is fetched', async () => {
@@ -141,5 +144,32 @@ describe('getSellerByHandle', () => {
     expect(fieldsArg).toContain('+phone');
     expect(fieldsArg).toContain('+social_links');
     expect(fieldsArg).toContain('+reviews.rating');
+  });
+
+  it('retries without reviews when expanded seller fetch fails', async () => {
+    mockResolveHandleToId.mockResolvedValue('seller-abc');
+    mockFetchSellerById.mockResolvedValueOnce(null).mockResolvedValueOnce(makeSeller());
+
+    const result = await getSellerByHandle('bonbeauty');
+
+    expect(result?.id).toBe('seller-abc');
+    expect(mockFetchSellerById).toHaveBeenCalledTimes(2);
+    expect(mockFetchSellerById.mock.calls[1][1]).not.toContain('reviews');
+    expect(mockFetchSellerSummaryByHandle).not.toHaveBeenCalled();
+  });
+
+  it('falls back to handle summary when both id-based fetches fail', async () => {
+    mockResolveHandleToId.mockResolvedValue('seller-abc');
+    mockFetchSellerById.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+    mockFetchSellerSummaryByHandle.mockResolvedValue(makeSeller({ reviews: undefined }));
+
+    const result = await getSellerByHandle('bonbeauty');
+
+    expect(result?.handle).toBe('bonbeauty');
+    expect(result?.reviews).toEqual([]);
+    expect(mockFetchSellerSummaryByHandle).toHaveBeenCalledWith(
+      'bonbeauty',
+      expect.not.stringContaining('reviews')
+    );
   });
 });

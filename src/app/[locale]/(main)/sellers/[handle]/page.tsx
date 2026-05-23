@@ -14,14 +14,22 @@ import { getRegion } from '@/lib/data/regions';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
+import { assessSellerStructuredData } from '@/lib/seo/sellerStructuredData';
 
 export const revalidate = 60;
+
+type SellerDetailTab = 'products' | 'about' | 'location' | 'policy';
 
 function deriveSellerYears(joinDate?: string): number | undefined {
   if (!joinDate) return undefined;
   const joined = new Date(joinDate);
   if (Number.isNaN(joined.getTime())) return undefined;
   return Math.max(0, new Date().getFullYear() - joined.getFullYear());
+}
+
+function parseSellerDetailTab(raw: string | string[] | undefined): SellerDetailTab {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return value === 'about' || value === 'location' || value === 'policy' ? value : 'products';
 }
 
 /**
@@ -78,6 +86,7 @@ export async function generateMetadata({
   const description = rawDescription
     ? rawDescription.slice(0, 160)
     : tDetail('meta_description', { name: seller.name });
+  const structuredData = assessSellerStructuredData(seller);
 
   const ogImage = seller.photo || null;
 
@@ -85,7 +94,9 @@ export async function generateMetadata({
     title,
     description,
     alternates,
-    robots: { index: true, follow: true },
+    robots: structuredData.canIndex
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
     openGraph: {
       title,
       description,
@@ -96,11 +107,14 @@ export async function generateMetadata({
 }
 
 export default async function SellerPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ handle: string; locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { handle, locale } = await params;
+  const sp = await searchParams;
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
   try {
@@ -113,13 +127,14 @@ export default async function SellerPage({
     notFound();
   }
 
+  const tDetail = await getTranslations('seller.detail');
   const tShared = await getTranslations('seller.shared');
 
   const user = await retrieveCustomer();
   const countryCode = await getCountryCode(locale);
   const currency_code = (await getRegion(countryCode))?.currency_code || 'usd';
 
-  const tab = 'products';
+  const tab = parseSellerDetailTab(sp.tab);
 
   // Story v160-4-5 — assemble human-readable address z `SellerProps` shape
   // (`address_line`, `postal_code`, `city`, `country_code`). `lat`/`lng` are
@@ -137,6 +152,7 @@ export default async function SellerPage({
   const sellerAddress = sellerAddressParts.length > 0 ? sellerAddressParts.join(', ') : null;
   const sellerLat = (seller as { lat?: number | null }).lat ?? null;
   const sellerLng = (seller as { lng?: number | null }).lng ?? null;
+  const structuredData = assessSellerStructuredData(seller);
   const sellerYears = deriveSellerYears(seller.created_at);
   const sellerReviews = Array.isArray(seller.reviews)
     ? (seller.reviews.filter(Boolean) as Array<{ rating?: number | null }>)
@@ -189,6 +205,21 @@ export default async function SellerPage({
         />
       </div>
       <div className="container py-6">
+        {!structuredData.canIndex && (
+          <div
+            className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            data-testid="seller-detail-runtime-fallback"
+          >
+            {tDetail('runtime_fallback_notice')}
+          </div>
+        )}
+        {structuredData.jsonLd && (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line no-restricted-syntax -- JSON-LD structured data, not user HTML
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData.jsonLd) }}
+          />
+        )}
         <DirectionsBlock
           seller={{
             name: seller.name,
@@ -202,6 +233,7 @@ export default async function SellerPage({
       </div>
       <SellerTabs
         tab={tab}
+        seller={seller}
         seller_id={seller.id}
         seller_handle={seller.handle}
         locale={locale}

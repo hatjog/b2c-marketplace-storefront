@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  isGuestCheckout,
   mapMedusaOrderStatusToLifecycle,
   mapMedusaPaymentStatusToLifecycle,
 } from '../[id]/route';
@@ -99,5 +100,17 @@ describe('mapMedusaOrderStatusToLifecycle', () => {
     expect(mapMedusaOrderStatusToLifecycle('completed')).toBeNull();
     expect(mapMedusaOrderStatusToLifecycle(null)).toBeNull();
     expect(mapMedusaOrderStatusToLifecycle(undefined)).toBeNull();
+  });
+});
+
+describe('isGuestCheckout', () => {
+  it('returns true when customer_id is null/undefined/empty', () => {
+    expect(isGuestCheckout(null)).toBe(true);
+    expect(isGuestCheckout(undefined)).toBe(true);
+    expect(isGuestCheckout('')).toBe(true);
+  });
+
+  it('returns false when customer_id is present', () => {
+    expect(isGuestCheckout('cus_123')).toBe(false);
   });
 });

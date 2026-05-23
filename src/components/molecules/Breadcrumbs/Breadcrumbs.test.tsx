@@ -1,30 +1,23 @@
 import React from 'react';
+
 import { describe, expect, it } from 'vitest';
 
 import { Breadcrumbs } from './Breadcrumbs';
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 
-function findAll(
-  element: React.ReactNode,
-  predicate: (el: ReactEl) => boolean,
-): ReactEl[] {
+function findAll(element: React.ReactNode, predicate: (el: ReactEl) => boolean): ReactEl[] {
   if (!React.isValidElement(element)) return [];
   const results: ReactEl[] = [];
   if (predicate(element as ReactEl)) results.push(element as ReactEl);
-  const children = React.Children.toArray(
-    (element as ReactEl).props.children as React.ReactNode,
-  );
+  const children = React.Children.toArray((element as ReactEl).props.children as React.ReactNode);
   for (const child of children) {
     results.push(...findAll(child, predicate));
   }
   return results;
 }
 
-function findFirst(
-  element: React.ReactNode,
-  predicate: (el: ReactEl) => boolean,
-): ReactEl | null {
+function findFirst(element: React.ReactNode, predicate: (el: ReactEl) => boolean): ReactEl | null {
   const all = findAll(element, predicate);
   return all.length > 0 ? all[0] : null;
 }
@@ -32,9 +25,7 @@ function findFirst(
 function collectTextContent(node: React.ReactNode): string {
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   if (!React.isValidElement(node)) return '';
-  const children = React.Children.toArray(
-    (node as ReactEl).props.children as React.ReactNode,
-  );
+  const children = React.Children.toArray((node as ReactEl).props.children as React.ReactNode);
   return children.map(collectTextContent).join('');
 }
 
@@ -67,10 +58,8 @@ describe('Breadcrumbs', () => {
     const result = Breadcrumbs({ items: [HOME] }) as ReactEl;
     const separators = findAll(
       result,
-      (el) =>
-        el.type === 'span' &&
-        el.props['aria-hidden'] === 'true' &&
-        collectTextContent(el) === '>',
+      el =>
+        el.type === 'span' && el.props['aria-hidden'] === 'true' && collectTextContent(el) === '>'
     );
     expect(separators).toHaveLength(0);
   });
@@ -83,24 +72,27 @@ describe('Breadcrumbs', () => {
     // No ellipsis element for 2 items
     const ellipsis = findAll(
       result,
-      (el) =>
+      el =>
         el.type === 'li' &&
         typeof el.props.className === 'string' &&
-        el.props.className.includes('sm:hidden'),
+        el.props.className.includes('sm:hidden')
     );
     expect(ellipsis).toHaveLength(0);
   });
 
-  it('includes mobile ellipsis ol for 3+ items (mobile truncation)', () => {
+  it('includes accessible mobile ellipsis ol for 3+ items (mobile truncation)', () => {
     const result = Breadcrumbs({ items: [HOME, CAT, PRODUCT] }) as ReactEl;
-    // Mobile ellipsis is rendered as a second <ol> with aria-hidden="true"
+    // Mobile ellipsis is rendered as a second <ol>; it must not be aria-hidden
+    // because it contains the focusable home link on mobile.
     const mobileOl = findFirst(
       result,
-      (el) =>
+      el =>
         el.type === 'ol' &&
-        el.props['aria-hidden'] === 'true',
+        typeof el.props.className === 'string' &&
+        el.props.className.includes('sm:hidden')
     );
     expect(mobileOl).not.toBeNull();
+    expect(mobileOl!.props['aria-hidden']).toBeUndefined();
     const text = collectTextContent(mobileOl!);
     expect(text).toContain('…');
   });
@@ -109,10 +101,11 @@ describe('Breadcrumbs', () => {
     const result = Breadcrumbs({ items: [HOME, CAT, PRODUCT] }) as ReactEl;
     const middleLi = findFirst(
       result,
-      (el) =>
+      el =>
         el.type === 'li' &&
         typeof el.props.className === 'string' &&
-        el.props.className.includes('hidden sm:inline-flex'),
+        el.props.className.includes('hidden') &&
+        el.props.className.includes('sm:inline-flex')
     );
     expect(middleLi).not.toBeNull();
     const text = collectTextContent(middleLi!);
@@ -123,8 +116,7 @@ describe('Breadcrumbs', () => {
     const result = Breadcrumbs({ items: [HOME, CAT] }) as ReactEl;
     const scriptEl = findFirst(
       result,
-      (el) =>
-        el.type === 'script' && el.props.type === 'application/ld+json',
+      el => el.type === 'script' && el.props.type === 'application/ld+json'
     );
     expect(scriptEl).not.toBeNull();
     const rawContent = scriptEl!.props.children as string;
@@ -138,7 +130,7 @@ describe('Breadcrumbs', () => {
     const result = Breadcrumbs({ items }) as ReactEl;
     const scriptEl = findFirst(
       result,
-      (el) => el.type === 'script' && el.props.type === 'application/ld+json',
+      el => el.type === 'script' && el.props.type === 'application/ld+json'
     )!;
     const parsed = JSON.parse(scriptEl.props.children as string);
     const elements = parsed.itemListElement as Array<{

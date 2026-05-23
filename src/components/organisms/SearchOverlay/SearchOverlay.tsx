@@ -14,7 +14,7 @@
 // Sekcje: recent searches + suggestions + popular products
 // a11y: focus trap + autofocus input + ESC close + combobox/listbox pattern
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
@@ -48,7 +48,7 @@ export function SearchOverlay({
   query,
   results,
   isLoading = false,
-  locale: _locale,
+  locale,
   recentSearches = [],
   popularProducts = [],
   suggestions = [],
@@ -59,6 +59,8 @@ export function SearchOverlay({
 }: SearchOverlayProps) {
   const t = useTranslations('search_overlay');
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = useId();
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const containerRef = useFocusTrap<HTMLDivElement>({
     active: open,
     onEscape: onClose,
@@ -73,16 +75,58 @@ export function SearchOverlay({
     }
   }, [open]);
 
+  useEffect(() => {
+    setActiveSuggestionIndex(-1);
+  }, [query, suggestions]);
+
   if (!open) return null;
 
   const hasQuery = query.trim().length > 0;
   const showEmptyResults = hasQuery && !isLoading && results.length === 0;
+  const hasSuggestions = hasQuery && suggestions.length > 0;
+  const activeDescendant =
+    activeSuggestionIndex >= 0 && hasSuggestions
+      ? `${listboxId}-option-${activeSuggestionIndex}`
+      : undefined;
+
+  function selectSuggestion(value: string) {
+    onQueryChange(value);
+    setActiveSuggestionIndex(-1);
+  }
+
+  function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (!hasSuggestions) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveSuggestionIndex((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : 0
+      );
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveSuggestionIndex((prev) =>
+        prev > 0 ? prev - 1 : suggestions.length - 1
+      );
+      return;
+    }
+    if (event.key === 'Enter' && activeSuggestionIndex >= 0) {
+      event.preventDefault();
+      selectSuggestion(suggestions[activeSuggestionIndex]);
+    }
+  }
 
   return (
     <div
       ref={containerRef}
       role="search"
       aria-label={t('aria_label')}
+      lang={locale}
       tabIndex={-1}
       data-testid="search-overlay"
       data-variant="responsive"
@@ -105,11 +149,13 @@ export function SearchOverlay({
             ref={inputRef}
             type="search"
             role="combobox"
-            aria-expanded={suggestions.length > 0}
-            aria-controls="search-overlay-suggestions"
+            aria-expanded={hasSuggestions}
+            aria-controls={hasSuggestions ? listboxId : undefined}
+            aria-activedescendant={activeDescendant}
             aria-autocomplete="list"
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
+            onKeyDown={handleInputKeyDown}
             placeholder={t('placeholder')}
             className="flex-1 rounded-[var(--bb-radius-pill,9999px)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-[var(--space-4,16px)] py-3 text-base text-[var(--text-primary)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
             data-testid="search-overlay-input"
@@ -174,23 +220,36 @@ export function SearchOverlay({
             {/* slot: suggestions */}
             {suggestions.length > 0 && (
               <ul
-                id="search-overlay-suggestions"
+                id={listboxId}
                 role="listbox"
                 aria-label={t('suggestions')}
                 className="space-y-1"
                 data-testid="search-overlay-suggestions"
               >
-                {suggestions.map((s) => (
-                  <li key={s} role="option" aria-selected={false}>
-                    <button
-                      type="button"
-                      onClick={() => onQueryChange(s)}
-                      className="w-full rounded-[var(--bb-radius-card,12px)] px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--bb-surface-strong)]"
+                {suggestions.map((s, index) => {
+                  const selected = index === activeSuggestionIndex;
+                  return (
+                    <li
+                      id={`${listboxId}-option-${index}`}
+                      key={`${s}-${index}`}
+                      role="option"
+                      aria-selected={selected}
+                      onMouseEnter={() => setActiveSuggestionIndex(index)}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        selectSuggestion(s);
+                      }}
+                      className={cn(
+                        'cursor-pointer rounded-[var(--bb-radius-card,12px)] px-3 py-2 text-left text-sm text-[var(--text-primary)]',
+                        selected
+                          ? 'bg-[var(--bb-surface-strong)]'
+                          : 'hover:bg-[var(--bb-surface-strong)]'
+                      )}
                     >
                       {s}
-                    </button>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
 

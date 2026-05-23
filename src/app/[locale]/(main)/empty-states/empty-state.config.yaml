@@ -1,0 +1,30 @@
+# Story v1.8.0-7-5: W5-07 Empty States Catalogue showcase
+# spec: specs/design-system/bonbeauty/empty-states.yaml
+# Extension contract: surface + extends required per empty-state SSOT
+
+surface: storefront/empty-states-catalogue/showcase
+extends: empty-states#pattern-1-empty-wishlist
+rationale: >-
+  W5-07 catalogue page presents all 8 patterns ES1-ES8. Primary extends reference
+  is pattern-1. Individual showcase usages are documented in additional_surfaces below.
+
+additional_surfaces:
+  - surface: storefront/empty-states/es1-empty-wishlist
+    extends: empty-states#pattern-1-empty-wishlist
+  - surface: storefront/empty-states/es2-empty-collection
+    extends: empty-states#pattern-2-empty-collection
+  - surface: storefront/empty-states/es3-empty-cart
+    extends: empty-states#pattern-3-empty-cart
+  - surface: storefront/empty-states/es4-search-no-results
+    extends: empty-states#pattern-4-search-no-results
+    rationale: >-
+      ES4 distinguishes real 0-results from backend/provider unavailable.
+      0-results renders this pattern; provider error renders error surface instead.
+  - surface: storefront/empty-states/es5-empty-reviews
+    extends: empty-states#pattern-5-empty-reviews
+  - surface: storefront/empty-states/es6-empty-messages
+    extends: empty-states#pattern-6-empty-messages
+  - surface: storefront/empty-states/es7-empty-reviews-to-write
+    extends: empty-states#pattern-7-empty-reviews-to-write
+  - surface: storefront/empty-states/es8-empty-saved-addresses
+    extends: empty-states#pattern-8-empty-saved-addresses

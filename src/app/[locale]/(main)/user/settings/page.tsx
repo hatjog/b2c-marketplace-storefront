@@ -1,32 +1,70 @@
 import { getTranslations } from 'next-intl/server';
 
-import { LoginForm, ProfileDetails, UserNavigation } from '@/components/molecules';
-import { ProfilePassword } from '@/components/molecules/ProfileDetails/ProfilePassword';
+import { LoginForm } from '@/components/molecules';
+import { AccountSettingsSurface } from '@/components/sections/AccountWriteSurfaces';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
 import { retrieveCustomer } from '@/lib/data/customer';
+import { listOrders } from '@/lib/data/orders';
 
-export default async function ReviewsPage() {
-  const t = await getTranslations('user');
-  const user = await retrieveCustomer();
-
-  if (!user) return <LoginForm />;
+export default async function ReviewsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const [t, user] = await Promise.all([
+    getTranslations('account_write'),
+    retrieveCustomer(),
+  ]);
+  const orders = user ? await listOrders() : [];
 
   return (
-    <main
-      id="main-content"
-      className="container"
-      data-testid="profile-settings-page"
-    >
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-8">
-        <UserNavigation />
-        <div
-          className="md:col-span-3"
-          data-testid="profile-settings-container"
-        >
-          <h1 className="heading-md mb-8 uppercase">{t('settings')}</h1>
-          <ProfileDetails user={user} />
-          <ProfilePassword user={user} />
-        </div>
-      </div>
-    </main>
+    <AccountLayoutWithChrome
+      locale={locale}
+      activeSurface="W2-13"
+      user={
+        user
+          ? {
+              id: user.id,
+              displayName: `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.email,
+              email: user.email,
+            }
+          : null
+      }
+      breadcrumbs={[
+        { label: t('breadcrumbs.account'), href: `/${locale}/user` },
+        { label: t('breadcrumbs.settings'), href: `/${locale}/user/settings` },
+      ]}
+      quickActions={[
+        {
+          id: 'settings',
+          label: t('quick_actions.settings'),
+          href: `/user/settings`,
+          description: t('quick_actions.settings_desc'),
+        },
+        {
+          id: 'addresses',
+          label: t('quick_actions.addresses'),
+          href: `/user/addresses`,
+          description: t('quick_actions.addresses_desc'),
+        },
+      ]}
+      snapshotSections={[
+        { id: 'orders', label: t('snapshot.orders'), value: String(orders.length) },
+        { id: 'addresses', label: t('snapshot.addresses'), value: String(user?.addresses?.length ?? 0) },
+        { id: 'reviews', label: t('snapshot.reviews'), value: '0' },
+      ]}
+      mainContent={
+        user ? (
+          <AccountSettingsSurface
+            customer={{
+              firstName: user.first_name ?? '',
+              lastName: user.last_name ?? '',
+              phone: user.phone ?? '',
+              email: user.email,
+              locale,
+            }}
+          />
+        ) : (
+          <LoginForm />
+        )
+      }
+    />
   );
 }

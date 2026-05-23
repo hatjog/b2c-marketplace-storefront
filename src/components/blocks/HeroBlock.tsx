@@ -27,6 +27,7 @@ export async function HeroBlock({ section }: { section: HeroSectionBlock }) {
   const maxHeight = normalizeOptionalText(section.max_height);
 
   const t = await getTranslations('category');
+  const tHomeHero = await getTranslations('home_v3.hero');
   const trustMarkLabel = t('trust_mark_label');
   // v1.7.0 Story 2.2 re-review fix (HIGH H1'): resolve hero image alt through
   // i18n instead of the previous hardcoded EN `Hero banner - ${heading}` literal.
@@ -48,6 +49,7 @@ export async function HeroBlock({ section }: { section: HeroSectionBlock }) {
         showSearch={true}
         trustMarkLabel={trustMarkLabel}
         imageAlt={imageAlt}
+        secondaryVoucherCtaLabel={tHomeHero('secondary_voucher_cta')}
       />
     );
   }

@@ -40,6 +40,10 @@ describe('W6-03 NewsletterSlot a11y', () => {
     expect(src).toMatch(/aria-required="true"/);
     expect(src).toMatch(/required/);
   });
+  it('uses a per-instance input id to avoid duplicates across multiple slots', () => {
+    expect(src).toMatch(/useId/);
+    expect(src).not.toMatch(/id="newsletter-slot-email"/);
+  });
   it('modal placement is a labelled dialog with ESC dismiss', () => {
     expect(src).toMatch(/role="dialog"/);
     expect(src).toMatch(/aria-modal="true"/);
