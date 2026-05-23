@@ -2817,5 +2817,67 @@
       "missing_image": "Kein Kategorie-Bild verfügbar",
       "count_label": "Unterkategorien"
     }
+  },
+  "wave5_errors": {
+    "not_found": {
+      "meta_title": "Diese Seite ist hier nicht",
+      "meta_description": "Empathische BonBeauty-404-Oberfläche mit sicherem Rückweg.",
+      "title": "Diese Seite ist hier nicht",
+      "primary_cta": "Zur Startseite",
+      "secondary_cta": "Suche verwenden",
+      "generic": {
+        "eyebrow": "404 · Seite nicht gefunden",
+        "body": "Das kann ein älterer Link oder ein Pfad sein, der sich bereits geändert hat. Am schnellsten kommen Sie über Startseite oder Kategorien zurück."
+      },
+      "product": {
+        "eyebrow": "404 · Produkt nicht mehr verfügbar",
+        "body": "Diese Produktkarte ist im aktuellen Angebot nicht mehr verfügbar. Wir führen Sie zurück zu aktuellen Entdeckungspfaden."
+      },
+      "seller": {
+        "eyebrow": "404 · Anbieterprofil nicht verfügbar",
+        "body": "Dieses Anbieterprofil kann derzeit nicht geöffnet werden. Sie können zum Verzeichnis zurückkehren oder die Suche nutzen."
+      }
+    },
+    "runtime": {
+      "technical_details": "Technische Details anzeigen",
+      "status_link": "Plattformstatus prüfen",
+      "support_title": "Drei Supportpfade",
+      "support": {
+        "self_service": {
+          "label": "Self-Service",
+          "description": "Status und Rechtsdokumente helfen, ein systemweites Problem von einem lokalen zu trennen."
+        },
+        "async": {
+          "label": "Asynchroner Support",
+          "description": "Senden Sie Bestellnummer und request_id, und wir melden uns mit einem konkreten nächsten Schritt."
+        },
+        "panic": {
+          "label": "Dringender Kontakt",
+          "description": "Wenn der Einlösetermin nah ist oder eine Zahlung riskant wirkt, markieren Sie die Anfrage als dringend."
+        }
+      },
+      "server-error": {
+        "eyebrow": "500 · Auf unserer Seite ist etwas fehlgeschlagen",
+        "title": "Wir können diese Seite gerade nicht abschließen",
+        "body": "Das sieht nach einem lokalen Anwendungsfehler aus. Sie können es erneut versuchen und bei Wiederholung die Details an den Support senden.",
+        "primary_cta": "Erneut versuchen",
+        "suggested_action": "Aktualisieren Sie die Oberfläche und senden Sie die request_id an den Support, wenn der Fehler zurückkehrt."
+      },
+      "service-unavailable": {
+        "eyebrow": "503 · Vorübergehende Systemunterbrechung",
+        "title": "Der Dienst ist vorübergehend nicht verfügbar",
+        "body": "Das Signal weist eher auf ein systemweites als auf ein lokales Problem hin. Prüfen Sie zuerst den Status und kehren Sie danach zurück.",
+        "primary_cta": "Später aktualisieren",
+        "suggested_action": "Prüfen Sie die Statusseite und kehren Sie zurück, sobald der Dienst wieder stabil ist."
+      },
+      "offline": {
+        "eyebrow": "Offline · Keine Netzwerkverbindung",
+        "title": "Für den Kauf ist eine Netzwerkverbindung nötig",
+        "body": "Das Gerät scheint offline zu sein. Wir setzen den Kauf nicht still im Hintergrund fort und tun auch nicht so, als wäre dies nur ein leerer Zustand.",
+        "primary_cta": "Nach Wiederherstellung erneut versuchen",
+        "secondary_cta": "Hilfe öffnen",
+        "suggested_action": "Stellen Sie die Netzwerkverbindung wieder her und versuchen Sie es erst dann erneut."
+      }
+    }
   }
 }
