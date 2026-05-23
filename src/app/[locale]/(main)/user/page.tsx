@@ -9,6 +9,7 @@ import {
   formatAccountDate,
   loadOrderGroups,
   loadWishlist,
+  orderStatusToTone,
   toDisplayName,
   toneToBadgeClass
 } from '@/lib/account/read-heavy';
@@ -60,12 +61,12 @@ export default async function UserPage({ params }: { params: Promise<{ locale: s
         ]}
         mainContent={
           <div className="space-y-8" data-testid="account-dashboard">
-            <section className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-              <article className="bb-card space-y-3" data-testid="dashboard-hero-card">
-                <p className="text-sm text-secondary">{t('welcome_eyebrow')}</p>
-                <h2 className="heading-md text-primary">{t('welcome_heading', { firstName: customer.first_name || toDisplayName(customer) || customer.email })}</h2>
-                <p className="text-sm text-secondary">{t('welcome_body')}</p>
-              </article>
+            {/* Story 4.2 review fix 2026-05-23 (N8 INFO — dashboard hero dubluje
+                AccountLayout hero): the legacy `dashboard-hero-card` repeated
+                the welcome greeting that AccountLayout already renders at the
+                global hero slot. Removed; only the "Recommended next step"
+                side card remains as supplementary post-purchase context. */}
+            <section data-testid="dashboard-recommended">
               <article className="bb-card-muted space-y-2" data-testid="dashboard-side-snapshot">
                 <h2 className="text-sm font-semibold text-primary">{t('recommended.heading')}</h2>
                 <p className="text-sm text-secondary">{t('recommended.body')}</p>
@@ -86,15 +87,22 @@ export default async function UserPage({ params }: { params: Promise<{ locale: s
                 <p className="bb-card-muted text-sm text-secondary">{t('recent_activity.empty')}</p>
               ) : (
                 <div className="grid gap-3 md:grid-cols-3">
-                  {orderGroups.map(orderGroup => (
+                  {orderGroups.map(orderGroup => {
+                    // Story 4.2 review fix 2026-05-23 (N2 HIGH — dashboard status fallback):
+                    // Previous mapping treated any non-empty status as `paid`, masking
+                    // failed/cancelled/refunded as green "Active" badges. Now we route
+                    // through orderStatusToTone() — the same semantic mapping consumed
+                    // by /user/orders, /user/orders/[id] and /user/returns.
+                    const tone = orderStatusToTone(orderGroup.statuses[0]);
+                    return (
                     <article key={orderGroup.id} className="bb-card space-y-2" data-testid={`dashboard-order-${orderGroup.id}`}>
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="text-sm font-semibold text-primary">{t('recent_activity.order_label', { displayId: orderGroup.displayId })}</p>
                           <p className="text-xs text-secondary">{formatAccountDate(orderGroup.createdAt, locale) ?? t('labels.date_pending')}</p>
                         </div>
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${toneToBadgeClass(orderGroup.statuses[0] ? 'paid' : 'pending')}`}>
-                          {t(`statuses.${orderGroup.statuses[0] ? 'paid' : 'pending'}`)}
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${toneToBadgeClass(tone)}`}>
+                          {t(`statuses.${tone}`)}
                         </span>
                       </div>
                       <p className="text-sm text-secondary">{t('recent_activity.items', { count: orderGroup.itemCount })}</p>
@@ -103,7 +111,8 @@ export default async function UserPage({ params }: { params: Promise<{ locale: s
                         {t('recent_activity.open_order')}
                       </Link>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
