@@ -25,16 +25,22 @@ export async function AccountLayoutWithChrome({
 }: AccountLayoutWithChromeProps) {
   const tLayout = await getTranslations('account.layout');
 
-  const customer = userOverride ? null : await retrieveCustomer().catch(() => null);
-  const resolvedUser: AccountUser =
-    userOverride ??
-    (customer
-      ? {
-          id: customer.id,
-          displayName: `${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || customer.email,
-          email: customer.email,
-        }
-      : null);
+  // Story 4.3 M3 fix 2026-05-23: page-level auth gate already calls retrieveCustomer()
+  // and passes `user` explicitly (including `user: null` for unauthenticated visitors).
+  // Only fetch here when caller omitted the prop entirely (userOverride === undefined) —
+  // prevents duplicate protected fetch + chrome-vs-page race. Compatible with Story 4.2
+  // N1 chrome dedup (slots stay empty regardless of fetch outcome).
+  const shouldFetch = userOverride === undefined;
+  const customer = shouldFetch ? await retrieveCustomer().catch(() => null) : null;
+  const resolvedUser: AccountUser = shouldFetch
+    ? (customer
+        ? {
+            id: customer.id,
+            displayName: `${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || customer.email,
+            email: customer.email,
+          }
+        : null)
+    : (userOverride ?? null);
 
   return (
     <AccountLayout

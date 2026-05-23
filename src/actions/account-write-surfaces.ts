@@ -5,6 +5,9 @@ import type { z } from 'zod';
 
 import {
   addressSchema,
+  notificationSettingsSchema,
+  paymentSettingsSchema,
+  privacyRequestSchema,
   profileSettingsSchema,
   reviewCreateSchema,
   reviewDeleteSchema,
@@ -454,10 +457,23 @@ export async function updateNotificationSettings(
   _previous: AccountActionState = INITIAL_STATE,
   formData: FormData
 ): Promise<AccountActionState> {
+  const parsed = notificationSettingsSchema.safeParse({
+    emailUpdates: formData.get('emailUpdates') ?? undefined,
+    smsUpdates: formData.get('smsUpdates') ?? undefined,
+    productNews: formData.get('productNews') ?? undefined,
+  });
+
+  if (!parsed.success) {
+    return {
+      status: 'error',
+      messageKey: 'settings.notifications.errors.generic',
+    };
+  }
+
   const recorded = await recordAccountRequest('notification_preferences', {
-    emailUpdates: formData.get('emailUpdates') === 'on',
-    smsUpdates: formData.get('smsUpdates') === 'on',
-    productNews: formData.get('productNews') === 'on',
+    emailUpdates: parsed.data.emailUpdates === 'on',
+    smsUpdates: parsed.data.smsUpdates === 'on',
+    productNews: parsed.data.productNews === 'on',
   });
 
   if (!recorded) {
@@ -479,9 +495,20 @@ export async function updatePaymentSettings(
   _previous: AccountActionState = INITIAL_STATE,
   formData: FormData
 ): Promise<AccountActionState> {
-  const recorded = await recordAccountRequest('payment_preferences', {
+  // PCI/PII guard: paymentSettingsSchema enforces last-4 card token only.
+  // A full PAN / CVV reaching this action is rejected before any persistence call.
+  const parsed = paymentSettingsSchema.safeParse({
     defaultCard: formData.get('defaultCard'),
-    invoicesByEmail: formData.get('invoicesByEmail') === 'on',
+    invoicesByEmail: formData.get('invoicesByEmail') ?? undefined,
+  });
+
+  if (!parsed.success) {
+    return withFieldErrors(parsed.error);
+  }
+
+  const recorded = await recordAccountRequest('payment_preferences', {
+    defaultCard: parsed.data.defaultCard,
+    invoicesByEmail: parsed.data.invoicesByEmail === 'on',
   });
 
   if (!recorded) {
@@ -503,14 +530,18 @@ export async function submitPrivacyRequest(
   _previous: AccountActionState = INITIAL_STATE,
   formData: FormData
 ): Promise<AccountActionState> {
-  const requestType = formData.get('requestType');
+  const parsed = privacyRequestSchema.safeParse({
+    requestType: formData.get('requestType'),
+  });
 
-  if (requestType !== 'export' && requestType !== 'delete') {
+  if (!parsed.success) {
     return {
       status: 'error',
       messageKey: 'settings.privacy.errors.generic',
     };
   }
+
+  const { requestType } = parsed.data;
 
   const recorded = await recordAccountRequest('privacy_request', {
     requestType,

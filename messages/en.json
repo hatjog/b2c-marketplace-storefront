@@ -1407,7 +1407,13 @@
           "referrals": "Referrals",
           "profile": "Profile details",
           "password": "Password & security",
-          "delete_account": "Delete account"
+          "delete_account": "Delete account",
+          "return_request": "Return request",
+          "return_success": "Return request status",
+          "saved_addresses": "Saved addresses",
+          "reviews_to_write": "Reviews to write",
+          "written_reviews": "My reviews",
+          "account_settings": "Account settings"
         }
       },
       "snapshot": {
@@ -2544,9 +2550,11 @@
         "title": "Payments",
         "description": "Capture payment support preferences without pretending unsupported backend mutations are complete.",
         "default_card": "Preferred payment note",
+        "default_card_help": "Only enter the last 4 digits of the card (e.g. ending-4242). Never type the full card number or CVV.",
         "invoices_by_email": "Send invoices by email",
         "errors": {
-          "generic": "We could not record the payment request. Try again."
+          "generic": "We could not record the payment request. Try again.",
+          "invalid_card_token": "Enter only the last 4 digits of the card in the format ending-XXXX."
         },
         "success": {
           "request_received": "Payment preference request received."

@@ -1408,7 +1408,13 @@
           "referrals": "Empfehlungen",
           "profile": "Profildaten",
           "password": "Passwort & Sicherheit",
-          "delete_account": "Konto löschen"
+          "delete_account": "Konto löschen",
+          "return_request": "Rücksendeantrag",
+          "return_success": "Status des Rücksendeantrags",
+          "saved_addresses": "Gespeicherte Adressen",
+          "reviews_to_write": "Zu schreibende Bewertungen",
+          "written_reviews": "Meine Bewertungen",
+          "account_settings": "Kontoeinstellungen"
         }
       },
       "snapshot": {
@@ -2545,9 +2551,11 @@
         "title": "Zahlungen",
         "description": "Zahlungspräferenzen für den Support erfassen, ohne nicht unterstützte Backend-Mutationen als abgeschlossen darzustellen.",
         "default_card": "Notiz zur bevorzugten Zahlung",
+        "default_card_help": "Geben Sie nur die letzten 4 Ziffern der Karte ein (z. B. ending-4242). Geben Sie niemals die vollständige Kartennummer oder CVV ein.",
         "invoices_by_email": "Rechnungen per E-Mail senden",
         "errors": {
-          "generic": "Wir konnten die Zahlungsanfrage nicht speichern. Versuchen Sie es erneut."
+          "generic": "Wir konnten die Zahlungsanfrage nicht speichern. Versuchen Sie es erneut.",
+          "invalid_card_token": "Geben Sie nur die letzten 4 Ziffern der Karte im Format ending-XXXX ein."
         },
         "success": {
           "request_received": "Anfrage zu Zahlungseinstellungen erhalten."
