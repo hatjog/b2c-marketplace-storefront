@@ -137,15 +137,12 @@ export const SiteHeader = async ({
           >
             <HeartIcon className="h-5 w-5" />
             {wishlistCount > 0 && (
-              <Badge
-                count={wishlistCount}
-                className="absolute -right-0.5 -top-0.5"
-              />
+              <Badge className="absolute -right-0.5 -top-0.5">{wishlistCount}</Badge>
             )}
           </LocalizedClientLink>
           <CartDropdown />
           {isLoggedIn ? (
-            <UserDropdown customer={user!} />
+            <UserDropdown isLoggedIn />
           ) : (
             <LocalizedClientLink
               href="/account"

@@ -35,6 +35,11 @@ export interface TimelineEvent {
   tone: SemanticTone;
 }
 
+function toIsoString(value: string | Date | null | undefined): string | null {
+  if (value == null) return null;
+  return value instanceof Date ? value.toISOString() : value;
+}
+
 function isAccessError(error: unknown) {
   const status = (error as { response?: { status?: number } })?.response?.status;
   return status === 401 || status === 403;
@@ -54,7 +59,7 @@ export function toDisplayName(customer: HttpTypes.StoreCustomer | null) {
   return name || customer.email;
 }
 
-export function formatAccountDate(value: string | null | undefined, locale: string) {
+export function formatAccountDate(value: string | Date | null | undefined, locale: string) {
   if (!value) {
     return null;
   }
@@ -142,7 +147,7 @@ export function groupOrdersByOrderGroup(orders: MercurOrderWithOrderGroup[]): Or
       return {
         id,
         displayId: String(first.order_group.display_id ?? id),
-        createdAt: first.order_group.created_at ?? first.created_at ?? null,
+        createdAt: toIsoString(first.order_group.created_at ?? first.created_at),
         total,
         currencyCode: first.currency_code ?? first.order_group.payment_collection?.currency_code ?? 'PLN',
         itemCount: bucket.reduce((sum, order) => sum + (order.items?.length ?? 0), 0),
@@ -263,14 +268,14 @@ export function buildOrderTimeline(orderGroup: OrderGroup | null): TimelineEvent
       id: 'placed',
       labelKey: 'timeline.placed.label',
       detailKey: 'timeline.placed.detail',
-      at: primaryOrder.created_at ?? null,
+      at: toIsoString(primaryOrder.created_at),
       tone: 'paid'
     },
     {
       id: 'payment',
       labelKey: 'timeline.payment.label',
       detailKey: primaryOrder.payment_status === 'captured' ? 'timeline.payment.detail_paid' : 'timeline.payment.detail_pending',
-      at: primaryOrder.updated_at ?? primaryOrder.created_at ?? null,
+      at: toIsoString(primaryOrder.updated_at ?? primaryOrder.created_at),
       tone: primaryOrder.payment_status === 'captured' ? 'paid' : 'pending'
     },
     {
@@ -280,14 +285,14 @@ export function buildOrderTimeline(orderGroup: OrderGroup | null): TimelineEvent
         primaryOrder.fulfillment_status === 'fulfilled'
           ? 'timeline.fulfillment.detail_ready'
           : 'timeline.fulfillment.detail_pending',
-      at: primaryOrder.updated_at ?? null,
+      at: toIsoString(primaryOrder.updated_at),
       tone: primaryOrder.fulfillment_status === 'fulfilled' ? 'paid' : 'pending'
     },
     {
       id: 'voucher_handoff',
       labelKey: 'timeline.voucher_handoff.label',
       detailKey: 'timeline.voucher_handoff.detail',
-      at: primaryOrder.updated_at ?? primaryOrder.created_at ?? null,
+      at: toIsoString(primaryOrder.updated_at ?? primaryOrder.created_at),
       tone: orderStatusToTone(primaryOrder.status)
     }
   ];

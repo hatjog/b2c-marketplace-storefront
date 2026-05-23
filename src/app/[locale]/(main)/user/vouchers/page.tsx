@@ -37,7 +37,7 @@ import { redirect } from 'next/navigation';
 
 import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
-import { AccountLayoutWithChrome } from '@/components/templates/AccountLayout';
+import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
 import { toDisplayName } from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCustomerVouchers, type VoucherListItem, type VoucherStatus } from '@/lib/data/voucher';

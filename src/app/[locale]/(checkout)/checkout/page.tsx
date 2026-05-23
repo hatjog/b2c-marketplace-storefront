@@ -124,10 +124,7 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             />
             {/* Trust Invariant #3: <VoucherRulesCard stays visible even when
                 seller grouping drops every item due to missing seller.id. */}
-            <VoucherRulesCard
-              locale={locale}
-              data-testid="checkout-voucher-rules-card"
-            />
+            <VoucherRulesCard data-testid="checkout-voucher-rules-card" />
             {/* Story 2.4 AC1: VoucherClaritySurface (condensed) + SellerProofSurface
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
