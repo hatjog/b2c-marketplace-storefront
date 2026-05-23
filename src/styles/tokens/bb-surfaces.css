@@ -52,6 +52,11 @@
   --bb-overlay-backdrop: rgba(9, 9, 9, 0.60);              /* modal/drawer/sheet backdrop */
   --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.08);       /* legacy alias (used in Tailwind boxShadow.card) */
   --shadow-inset-hairline: inset 0 0 0 1px rgba(144, 112, 50, 0.14); /* inset ring accent  */
+  --card-journal: rgba(255, 252, 247, 0.92);                /* journal card surface (warm pearl) */
+  --journal-card-bg: var(--card-journal);                   /* alias used in JournalTeaserBlock + user/vouchers */
+  --journal-card-border: rgba(144, 112, 50, 0.12);          /* journal card hairline */
+  --journal-card-radius: 16px;                              /* journal card corner radius */
+  --journal-card-shadow: 0 10px 30px rgba(90, 67, 28, 0.06);/* journal card ambient lift */
 
   /* ------------------------------------------------------------------
    * Gradients

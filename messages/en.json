@@ -2657,5 +2657,164 @@
     "error_FIELD_NOT_ALLOWED": "The form contains a field that is not allowed.",
     "error_GUARDIAN_APPROVAL_REQUIRED": "Guardian approval required.",
     "error_SERVICE_UNAVAILABLE": "We could not verify the link. Try again in a moment."
+  },
+  "home_v3": {
+    "hero": {
+      "heading": "Find the ritual that matches your day.",
+      "paragraph": "Browse verified salons, choose with confidence, and return to suggestions that support your personal rhythm.",
+      "secondary_voucher_cta": "Gift voucher",
+      "trust_verified_label": "Verified marketplace"
+    },
+    "search": {
+      "submit": "Search",
+      "tabs": {
+        "product": "Product",
+        "salons": "Salons",
+        "voucher": "Voucher"
+      },
+      "placeholders": {
+        "product": "What ritual are you looking for?",
+        "salons": "Enter city or salon name",
+        "voucher": "Enter voucher amount"
+      },
+      "aria": {
+        "tablist": "Choose search mode",
+        "product_input": "Product search",
+        "salons_input": "Salon search",
+        "voucher_input": "Voucher search"
+      }
+    },
+    "categories": {
+      "image_alt": "Category {name}"
+    },
+    "popular_now": {
+      "eyebrow": "Popular now",
+      "heading": "Popular now",
+      "empty_state": "We are currently refreshing the popular rituals list. Please check again shortly."
+    },
+    "editorial": {
+      "aria_label": "Editorial — Quiet luxury",
+      "eyebrow": "Editorial pick",
+      "heading": "Quiet luxury",
+      "body": "Five moods you can use as a calm starting point for discovery.",
+      "vibes": {
+        "calm": {
+          "title": "Calm",
+          "subtitle": "Gentle rituals for unwinding"
+        },
+        "energy": {
+          "title": "Energy",
+          "subtitle": "Treatments that restore freshness"
+        },
+        "clarity": {
+          "title": "Clarity",
+          "subtitle": "Clean formulas and light textures"
+        },
+        "warmth": {
+          "title": "Warmth",
+          "subtitle": "Comfort-focused care experiences"
+        },
+        "seasonal": {
+          "title": "Seasonality",
+          "subtitle": "Choices aligned with the season"
+        }
+      }
+    },
+    "gift_cta": {
+      "aria_label": "Gift voucher card",
+      "eyebrow": "Voucher",
+      "heading": "Gift voucher",
+      "body": "Give someone close to you time for self-care in trusted partner salons.",
+      "cta_label": "Explore vouchers"
+    },
+    "journal": {
+      "heading": "Rituals from the journal",
+      "cta_label": "Read rituals",
+      "read_time_minutes": "{count} min read",
+      "posts": {
+        "1": {
+          "category": "Ritual",
+          "title": "How to match a ritual to your week",
+          "excerpt": "A short guide to choosing treatments based on the amount of energy you have today."
+        },
+        "2": {
+          "category": "Salon map",
+          "title": "A calm route: find a salon near you",
+          "excerpt": "How to filter salons by location and return to places that feel reliable."
+        },
+        "3": {
+          "category": "Gift",
+          "title": "A voucher that leaves room to choose",
+          "excerpt": "Why a gift voucher works best when the recipient picks the right time for redemption."
+        }
+      }
+    },
+    "trust_strip": {
+      "aria_label": "Platform trust signals",
+      "verified_label": "Verified marketplace",
+      "points": {
+        "1": "Verified salon profiles",
+        "2": "Customer ratings and feedback",
+        "3": "Secure online payments",
+        "4": "Clear voucher rules"
+      }
+    }
+  },
+  "category_plp": {
+    "hero_eyebrow": "Category",
+    "filters_aria": "Category filters",
+    "filters_title": "Filters",
+    "clear_filters": "Clear filters",
+    "filter_price": "Price",
+    "price_from": "From",
+    "price_to": "To",
+    "filter_salon": "Salon",
+    "all_salons": "All salons",
+    "filter_location": "Location",
+    "filter_rating": "Rating",
+    "filter_availability": "Availability",
+    "availability_in_stock": "In stock now",
+    "filter_mode": "Mode",
+    "mode_self": "Self",
+    "mode_gift": "Gift",
+    "filter_sort": "Sort",
+    "empty_heading": "We couldn't find anything",
+    "empty_body": "Check your query or explore curated picks.",
+    "editorial_cta": "See Editor's choice",
+    "subcategory_count": "{count, plural, one {# subcategory} other {# subcategories}}"
+  },
+  "categories_index": {
+    "metadata_title": "Categories",
+    "metadata_description": "Browse service categories and find the best beauty and wellness ritual.",
+    "breadcrumbs": {
+      "home": "Home",
+      "current": "Categories"
+    },
+    "breadcrumbs_aria_label": "Breadcrumb navigation",
+    "hero": {
+      "eyebrow": "BonBeauty",
+      "title": "Categories.",
+      "intro": "Browse beauty and wellness rituals from trusted salons. Pick a direction and open the detailed listing."
+    },
+    "featured": {
+      "eyebrow": "Most popular",
+      "title": "Top 3 picks.",
+      "count_label": "subcategories"
+    },
+    "filters": {
+      "all": "All",
+      "popular": "Most booked",
+      "new": "New",
+      "offers": "Deals",
+      "premium": "Premium"
+    },
+    "filters_aria_label": "Category filters",
+    "grid": {
+      "title": "All categories",
+      "description": "Filter quickly and jump to the category that best matches your needs.",
+      "image_alt": "Category",
+      "missing_image": "Missing category image",
+      "count_label": "subcategories"
+    }
   }
 }
