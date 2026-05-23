@@ -9,6 +9,7 @@ import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import medusaError from '@/lib/helpers/medusa-error';
 import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
+import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 
 import { fetchQuery, sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
@@ -372,6 +373,15 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
  * `selected_seller_name` for downstream grouping (Story 5.7) + Phase B+
  * fulfillment routing.
  *
+ * Story 1.10.1 (v180-1-10-1-option-a-catalog-checkout-propagation): optional
+ * `entitlement` parameter persists the embedded `entitlement_profile` triad
+ * onto `cart_item.metadata` so the backend `stripe-payment-audit` workflow
+ * can resolve `entitlement_profile` from `order_line_item.metadata` and
+ * issue `entitlement_instance` on `payment.captured` (per ADR-099 Layer 4
+ * + Story 2.1 + ADR-118 Path Y). Without this propagation,
+ * `MissingEntitlementProfileError` is thrown for every BonBeauty paid order
+ * (catalog→checkout propagation gap, investigation finding 2026-05-23).
+ *
  * Backward-compat: oba parametry optional (`undefined` lub `null` →
  * legacy single-vendor flow; zero metadata appended; existing callers
  * np. quick-buy w PLP card bez zmian).
@@ -391,7 +401,8 @@ export async function addToCart({
   selectedSellerId,
   selectedSellerName,
   selectedSellerHandle,
-  purchaseMode
+  purchaseMode,
+  entitlement
 }: {
   variantId: string;
   quantity: number;
@@ -407,6 +418,13 @@ export async function addToCart({
   selectedSellerHandle?: string | null;
   /** W1-04 PDP gift/self mode persisted for checkout recipient flow. */
   purchaseMode?: 'self' | 'gift';
+  /** Story 1.10.1 — embedded entitlement_profile triad sourced from
+   *  `product.metadata.gp.entitlement_profile` (set by gp-config-sync-catalog
+   *  from market.yaml entitlement_profiles + products.yaml
+   *  entitlement_profile_id cross-ref). Use `buildEntitlementLineItemMetadata`
+   *  from `@/lib/voucher/entitlement-metadata` at the call site. Undefined for
+   *  non-voucher-bearing products → metadata stays clean. */
+  entitlement?: EntitlementLineItemMetadata;
 }) {
   if (!variantId) {
     throw new Error('Missing variant ID when adding to cart');
@@ -442,11 +460,20 @@ export async function addToCart({
         is_gift: purchaseMode === 'gift'
       }
     : undefined;
+  // Story 1.10.1 GAP #1 — embedded entitlement_profile triad for the
+  // stripe-payment-audit → issueEntitlementWithinPaymentTransaction →
+  // resolveEntitlementProfile chain. Caller derives the fragment from
+  // `product.metadata.gp.entitlement_profile` via
+  // `buildEntitlementLineItemMetadata`. Non-voucher SKUs pass undefined →
+  // no metadata noise, no backend behavior change (resolver short-circuit
+  // remains unchanged for legacy items).
+  const entitlementMetadata = entitlement ?? undefined;
   const lineItemMetadata =
-    sellerMetadata || purchaseModeMetadata
+    sellerMetadata || purchaseModeMetadata || entitlementMetadata
       ? {
           ...(sellerMetadata ?? {}),
-          ...(purchaseModeMetadata ?? {})
+          ...(purchaseModeMetadata ?? {}),
+          ...(entitlementMetadata ?? {})
         }
       : undefined;
 

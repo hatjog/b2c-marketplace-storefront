@@ -10,6 +10,7 @@ import { useCartContext } from '@/components/providers';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { toast } from '@/lib/helpers/toast';
+import { buildEntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import type { SellerProps } from '@/types/seller';
 
 const optionsAsKeymap = (variantOptions: HttpTypes.StoreProductVariant['options']) => {
@@ -95,6 +96,16 @@ export const StickyAddToCart = ({
   const handleAddToCart = async () => {
     if (!variantId) return;
 
+    // Story 1.10.1 — derive embedded entitlement_profile triad from
+    // product.metadata.gp.entitlement_profile so payment.captured can resolve
+    // it and issue entitlement_instance (parity with PDP CTA).
+    const entitlement = buildEntitlementLineItemMetadata(
+      product,
+      typeof variantPrice?.calculated_price_number === 'number'
+        ? Math.round(variantPrice.calculated_price_number * 100)
+        : null
+    );
+
     try {
       await addToCart({
         variantId,
@@ -105,7 +116,8 @@ export const StickyAddToCart = ({
         selectedSellerId,
         selectedSellerName,
         selectedSellerHandle,
-        purchaseMode
+        purchaseMode,
+        entitlement
       });
     } catch {
       toast.error({
