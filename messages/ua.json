@@ -69,7 +69,9 @@
         "popup_view_details": "Переглянути деталі",
         "loading": "Завантаження карти...",
         "aria_map": "Карта салонів",
-        "aria_marker": "Маркер салону {name}"
+        "aria_marker": "Маркер салону {name}",
+        "placeholder_title": "Попередній перегляд локацій салонів",
+        "placeholder_body": "Інтерактивна карта буде доступна незабаром. Нижче — список найближчих салонів."
       }
     },
     "search": {
@@ -116,7 +118,8 @@
       "directions_external_notice": "Відкриваючи зовнішні карти, ви залишаєте BonBeauty.",
       "context_chip_label": "З салону: {name}",
       "context_chip_back": "Повернутися до салону",
-      "context_chip_close": "Закрити"
+      "context_chip_close": "Закрити",
+      "runtime_fallback_notice": "Деякі дані про салон ще оновлюються. Повна інформація з'явиться найближчим часом."
     },
     "directory_v180": {
       "meta_title": "Каталог салонів | BonBeauty",
