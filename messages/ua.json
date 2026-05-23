@@ -1408,7 +1408,13 @@
           "referrals": "Рекомендації",
           "profile": "Дані профілю",
           "password": "Пароль і безпека",
-          "delete_account": "Видалити акаунт"
+          "delete_account": "Видалити акаунт",
+          "return_request": "Запит на повернення",
+          "return_success": "Статус запиту на повернення",
+          "saved_addresses": "Збережені адреси",
+          "reviews_to_write": "Відгуки до написання",
+          "written_reviews": "Мої відгуки",
+          "account_settings": "Налаштування акаунта"
         }
       },
       "snapshot": {
@@ -2491,7 +2497,7 @@
         "security": "Безпека",
         "notifications": "Сповіщення",
         "payments": "Платежі",
-        "privacy": "GDPR privacy"
+        "privacy": "Конфіденційність GDPR"
       },
       "profile": {
         "title": "Профіль",
@@ -2545,16 +2551,18 @@
         "title": "Платежі",
         "description": "Записуйте платіжні побажання для підтримки, не вдаючи, що непідтримувані backend mutations уже завершені.",
         "default_card": "Нотатка про бажаний платіж",
+        "default_card_help": "Вкажіть лише останні 4 цифри картки (наприклад, ending-4242). Ніколи не вводьте повний номер картки або CVV.",
         "invoices_by_email": "Надсилати рахунки e-mail",
         "errors": {
-          "generic": "Не вдалося записати платіжний запит. Спробуйте ще раз."
+          "generic": "Не вдалося записати платіжний запит. Спробуйте ще раз.",
+          "invalid_card_token": "Введіть лише останні 4 цифри картки у форматі ending-XXXX."
         },
         "success": {
           "request_received": "Запит щодо платіжних налаштувань отримано."
         }
       },
       "privacy": {
-        "title": "GDPR privacy",
+        "title": "Конфіденційність GDPR",
         "description": "Дії приватності представлені як intake requests, доки не доступна dedicated backend automation.",
         "request_intake_notice": "Цей release записує запит і безпечно передає його далі. Він не стверджує, що експорт або видалення акаунта вже завершені.",
         "export_request": "Запросити експорт персональних даних",

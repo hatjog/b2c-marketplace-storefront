@@ -1407,7 +1407,13 @@
           "referrals": "Polecenia",
           "profile": "Dane profilu",
           "password": "Hasło i bezpieczeństwo",
-          "delete_account": "Usuń konto"
+          "delete_account": "Usuń konto",
+          "return_request": "Zgłoszenie zwrotu",
+          "return_success": "Status zgłoszenia zwrotu",
+          "saved_addresses": "Zapisane adresy",
+          "reviews_to_write": "Opinie do napisania",
+          "written_reviews": "Moje opinie",
+          "account_settings": "Ustawienia konta"
         }
       },
       "snapshot": {
@@ -2544,9 +2550,11 @@
         "title": "Płatności",
         "description": "Zapisz preferencje płatnicze bez udawania, że nieobsługiwane mutacje backendowe są już zakończone.",
         "default_card": "Notatka o preferowanej płatności",
+        "default_card_help": "Podaj tylko 4 ostatnie cyfry karty (np. ending-4242). Nigdy nie wpisuj pełnego numeru karty ani CVV.",
         "invoices_by_email": "Wysyłaj faktury mailem",
         "errors": {
-          "generic": "Nie udało się zapisać prośby o płatności. Spróbuj ponownie."
+          "generic": "Nie udało się zapisać prośby o płatności. Spróbuj ponownie.",
+          "invalid_card_token": "Podaj wyłącznie 4 ostatnie cyfry karty w formacie ending-XXXX."
         },
         "success": {
           "request_received": "Otrzymaliśmy prośbę o aktualizację preferencji płatniczych."

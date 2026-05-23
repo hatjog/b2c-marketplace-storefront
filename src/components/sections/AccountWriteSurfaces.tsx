@@ -43,12 +43,14 @@ import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/Cros
 import { ModalShell } from '@/components/organisms/ModalShell/ModalShell';
 import {
   addressSchema,
+  paymentSettingsSchema,
   profileSettingsSchema,
   reviewCreateSchema,
   reviewMutationSchema,
   returnRequestSchema,
   securitySettingsSchema,
   type AddressFormValues,
+  type PaymentSettingsFormValues,
   type ProfileSettingsFormValues,
   type ReviewCreateFormValues,
   type ReviewMutationFormValues,
@@ -132,11 +134,6 @@ type NotificationSettingsFormValues = {
   emailUpdates: boolean;
   smsUpdates: boolean;
   productNews: boolean;
-};
-
-type PaymentSettingsFormValues = {
-  defaultCard: string;
-  invoicesByEmail: boolean;
 };
 
 type PrivacySettingsFormValues = {
@@ -1359,9 +1356,10 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
   });
 
   const paymentForm = useForm<PaymentSettingsFormValues>({
+    resolver: zodResolver(paymentSettingsSchema),
     defaultValues: {
       defaultCard: 'ending-4242',
-      invoicesByEmail: true,
+      invoicesByEmail: 'on',
     },
   });
 
@@ -1543,20 +1541,34 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                   <label className="block text-sm font-medium text-primary" htmlFor="payment-card">
                     {t('settings.payments.default_card')}
                   </label>
-                  <Input id="payment-card" {...paymentForm.register('defaultCard')} />
+                  {/* PCI guard: last-4 card token only; full PAN/CVV rejected at server schema. */}
+                  <Input
+                    id="payment-card"
+                    maxLength={10}
+                    inputMode="text"
+                    autoComplete="off"
+                    pattern="(ending-)?\d{2,4}"
+                    aria-describedby="payment-card-help"
+                    placeholder="ending-4242"
+                    {...paymentForm.register('defaultCard')}
+                  />
+                  <p id="payment-card-help" className="text-xs text-secondary">
+                    {t('settings.payments.default_card_help')}
+                  </p>
+                  <FieldErrorMessage messageKey={paymentForm.formState.errors.defaultCard?.message} t={t} />
                   <label className="flex min-h-[44px] items-center gap-3 rounded-2xl border border-[var(--bb-border-soft)] px-4 py-3">
                     <input
                       type="hidden"
                       name="invoicesByEmail"
-                      value={paymentForm.watch('invoicesByEmail') ? 'on' : 'off'}
+                      value={paymentForm.watch('invoicesByEmail') === 'on' ? 'on' : 'off'}
                     />
                     <Controller
                       control={paymentForm.control}
                       name="invoicesByEmail"
                       render={({ field }) => (
                         <Checkbox
-                          checked={Boolean(field.value)}
-                          onChange={(event) => field.onChange(event.currentTarget.checked)}
+                          checked={field.value === 'on'}
+                          onChange={(event) => field.onChange(event.currentTarget.checked ? 'on' : 'off')}
                         />
                       )}
                     />

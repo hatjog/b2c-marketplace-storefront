@@ -52,20 +52,25 @@ export interface AccountLayoutProps {
 
 export type AccountUser = AccountLayoutProps['user'];
 
+// Surface label mapping aligned with v1.8.0 Account Hub ownership:
+// - Story 4.2 read-heavy: W2-01..W2-04, W2-07, W2-09, W2-12
+// - Story 4.3 write-heavy: W2-05, W2-06, W2-08, W2-10, W2-11, W2-13
+// The labels MUST reflect the surface that actually renders at the route, otherwise
+// the sidebar nav highlights an item whose label points to a different page.
 const SURFACE_NAV: Array<{ surface: AccountSurface; key: string }> = [
   { surface: 'W2-01', key: 'dashboard' },
   { surface: 'W2-02', key: 'order_history' },
   { surface: 'W2-03', key: 'order_detail' },
   { surface: 'W2-04', key: 'active_vouchers' },
-  { surface: 'W2-05', key: 'used_vouchers' },
-  { surface: 'W2-06', key: 'addresses' },
+  { surface: 'W2-05', key: 'return_request' },
+  { surface: 'W2-06', key: 'return_success' },
   { surface: 'W2-07', key: 'payment_methods' },
-  { surface: 'W2-08', key: 'notifications' },
+  { surface: 'W2-08', key: 'saved_addresses' },
   { surface: 'W2-09', key: 'loyalty' },
-  { surface: 'W2-10', key: 'referrals' },
-  { surface: 'W2-11', key: 'profile' },
+  { surface: 'W2-10', key: 'reviews_to_write' },
+  { surface: 'W2-11', key: 'written_reviews' },
   { surface: 'W2-12', key: 'password' },
-  { surface: 'W2-13', key: 'delete_account' },
+  { surface: 'W2-13', key: 'account_settings' },
 ];
 
 function localizedHref(locale: string, href: string) {

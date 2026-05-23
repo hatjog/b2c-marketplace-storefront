@@ -39,10 +39,21 @@ export const SETTINGS_ERRORS = {
   localeRequired: 'settings.profile.errors.locale_required',
   passwordTooShort: 'settings.security.errors.password_too_short',
   passwordMismatch: 'settings.security.errors.password_mismatch',
+  invalidCardToken: 'settings.payments.errors.invalid_card_token',
 } as const;
 
+// Last-4 card token format only — full PAN/CVV never accepted via this surface.
+export const PAYMENT_CARD_TOKEN_PATTERN = /^(ending-)?\d{2,4}$/;
+
+// Medusa/Mercur order ID format guard — alphanumeric + `_`/`-` only.
+// Eliminates path traversal in revalidatePath/redirectPath construction.
+export const ORDER_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
 export const returnRequestSchema = z.object({
-  orderId: z.string().min(1, 'return_request.errors.order_required'),
+  orderId: z
+    .string()
+    .min(1, 'return_request.errors.order_required')
+    .regex(ORDER_ID_PATTERN, 'return_request.errors.order_required'),
   reasonId: z.string().min(1, RETURN_REQUEST_REASON_REQUIRED),
   comment: z.string().trim().max(500, RETURN_REQUEST_COMMENT_TOO_LONG).optional().default(''),
 });
@@ -98,6 +109,40 @@ export const securitySettingsSchema = z
     path: ['confirmPassword'],
   });
 
+// Notification preferences are stored as opt-in flags only.
+// Schema rejects unexpected payload shapes while allowing absent keys (unchecked checkbox).
+export const notificationSettingsSchema = z.object({
+  emailUpdates: z
+    .union([z.literal('on'), z.literal('off')])
+    .optional(),
+  smsUpdates: z
+    .union([z.literal('on'), z.literal('off')])
+    .optional(),
+  productNews: z
+    .union([z.literal('on'), z.literal('off')])
+    .optional(),
+});
+
+// Payment surface accepts ONLY a last-4 card token (e.g. `ending-4242`).
+// Full PAN / CVV are rejected at the schema gate before any persistence call.
+export const paymentSettingsSchema = z.object({
+  defaultCard: z
+    .string()
+    .trim()
+    .min(1, SETTINGS_ERRORS.invalidCardToken)
+    .regex(PAYMENT_CARD_TOKEN_PATTERN, SETTINGS_ERRORS.invalidCardToken),
+  invoicesByEmail: z
+    .union([z.literal('on'), z.literal('off')])
+    .optional(),
+});
+
+// GDPR request type — strict allowlist; any other value is rejected and not persisted.
+export const privacyRequestSchema = z.object({
+  requestType: z.union([z.literal('export'), z.literal('delete')], {
+    errorMap: () => ({ message: 'settings.privacy.errors.generic' }),
+  }),
+});
+
 export type ReturnRequestFormValues = z.infer<typeof returnRequestSchema>;
 export type AddressFormValues = z.infer<typeof addressSchema>;
 export type ReviewMutationFormValues = z.infer<typeof reviewMutationSchema>;
@@ -105,6 +150,9 @@ export type ReviewCreateFormValues = z.infer<typeof reviewCreateSchema>;
 export type ReviewDeleteFormValues = z.infer<typeof reviewDeleteSchema>;
 export type ProfileSettingsFormValues = z.infer<typeof profileSettingsSchema>;
 export type SecuritySettingsFormValues = z.infer<typeof securitySettingsSchema>;
+export type NotificationSettingsFormValues = z.infer<typeof notificationSettingsSchema>;
+export type PaymentSettingsFormValues = z.infer<typeof paymentSettingsSchema>;
+export type PrivacyRequestFormValues = z.infer<typeof privacyRequestSchema>;
 
 export function validateReturnFiles(files: File[]) {
   if (files.length === 0) {
