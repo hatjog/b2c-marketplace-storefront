@@ -1,0 +1,2 @@
+surface: storefront/w5-07/es4-search-no-results
+extends: empty-states#pattern-4-search-no-results

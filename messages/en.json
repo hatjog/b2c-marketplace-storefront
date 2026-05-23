@@ -986,7 +986,11 @@
         "withdrawal_required": "Acknowledgement of the withdrawal policy is required"
       }
     },
-    "pay_now": "Pay"
+    "pay_now": "Pay",
+    "cross_actor": {
+      "for_you": "You confirm the basket, details, and consent before payment.",
+      "for_us": "We split the order between salons and share only the needed details after payment is confirmed."
+    }
   },
   "confirmation": {
     "meta_title": "Order confirmed",

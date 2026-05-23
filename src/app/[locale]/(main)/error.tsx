@@ -1,106 +1,86 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function Error({
+import { useLocale, useTranslations } from 'next-intl';
+
+import { ErrorSurface } from '@/components/templates/ErrorSurface';
+import { buildTechnicalDetails, resolveRuntimeErrorVariant } from '@/lib/wave5/error-surface';
+
+export default function MainErrorBoundary({
   error,
-  reset
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const locale = useLocale();
+  const t = useTranslations('wave5_errors');
+  const [offline, setOffline] = useState(false);
+
   useEffect(() => {
     console.error(error);
   }, [error]);
 
+  useEffect(() => {
+    const readOffline = () => setOffline(typeof navigator !== 'undefined' && navigator.onLine === false);
+    readOffline();
+    window.addEventListener('online', readOffline);
+    window.addEventListener('offline', readOffline);
+    return () => {
+      window.removeEventListener('online', readOffline);
+      window.removeEventListener('offline', readOffline);
+    };
+  }, []);
+
+  const variant = resolveRuntimeErrorVariant(error, { offline });
+  const details = buildTechnicalDetails(error, t(`runtime.${variant}.suggested_action`));
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '60vh',
-        padding: '48px 24px',
-        backgroundColor: '#FAF8F5',
-        fontFamily: 'inherit'
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '480px',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
-          textAlign: 'center'
-        }}
-      >
-        <svg
-          width="56"
-          height="56"
-          viewBox="0 0 56 56"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+    <ErrorSurface
+      data-testid="runtime-error-boundary"
+      eyebrow={t(`runtime.${variant}.eyebrow`)}
+      title={t(`runtime.${variant}.title`)}
+      description={t(`runtime.${variant}.body`)}
+      tone={variant === 'offline' ? 'warning' : 'error'}
+      role={variant === 'offline' ? 'status' : 'alert'}
+      primaryAction={
+        <button
+          type="button"
+          onClick={() => reset()}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-5 py-3 text-sm font-medium text-action-on-primary"
+          data-testid="runtime-error-retry"
         >
-          <circle cx="28" cy="28" r="26" stroke="#C5A059" strokeWidth="2" fill="white" />
-          <text
-            x="50%"
-            y="50%"
-            dominantBaseline="central"
-            textAnchor="middle"
-            fontSize="24"
-            fontWeight="600"
-            fill="#715828"
-            fontFamily="inherit"
-          >
-            B
-          </text>
-        </svg>
-
-        <h2 style={{ fontSize: '28px', fontWeight: '600', color: '#1A1A1A', margin: 0 }}>
-          Coś poszło nie tak
-        </h2>
-
-        <p style={{ fontSize: '16px', color: '#1A1A1A', margin: 0, lineHeight: '1.6' }}>
-          Przepraszamy, wystąpił nieoczekiwany błąd. Możesz spróbować ponownie lub
-          wrócić na stronę główną.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-          <button
-            type="button"
-            onClick={() => reset()}
-            style={{
-              backgroundColor: '#907032',
-              color: '#FAF8F5',
-              border: 'none',
-              padding: '12px 24px',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              borderRadius: '4px',
-              fontFamily: 'inherit'
-            }}
-          >
-            Spróbuj ponownie
-          </button>
-
+          {t(`runtime.${variant}.primary_cta`)}
+        </button>
+      }
+      utilityLink={
+        <a
+          href="https://status.bonbeauty.pl"
+          className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-primary underline"
+        >
+          {t('runtime.status_link')}
+        </a>
+      }
+      supportTitle={t('runtime.support_title')}
+      supportPaths={[
+        { id: 'self-service', label: t('runtime.support.self_service.label'), description: t('runtime.support.self_service.description') },
+        { id: 'async', label: t('runtime.support.async.label'), description: t('runtime.support.async.description') },
+        { id: 'panic', label: t('runtime.support.panic.label'), description: t('runtime.support.panic.description') },
+      ]}
+      technicalDetailsLabel={t('runtime.technical_details')}
+      technicalDetails={details}
+      secondaryAction={
+        variant === 'offline' ? (
           <Link
-            href="/"
-            style={{
-              color: '#907032',
-              fontSize: '16px',
-              textDecoration: 'underline',
-              fontWeight: '500'
-            }}
+            href={`/${locale}/pomoc`}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[rgba(113,88,40,0.16)] px-5 py-3 text-sm font-medium text-primary no-underline"
           >
-            Wróć na stronę główną
+            {t('runtime.offline.secondary_cta')}
           </Link>
-        </div>
-      </div>
-    </div>
+        ) : undefined
+      }
+    />
   );
 }

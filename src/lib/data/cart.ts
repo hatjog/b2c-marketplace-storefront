@@ -107,6 +107,10 @@ const CART_RETRIEVE_FIELDS = [
   '*payment_collection.payment_sessions',
   '+payment_collection.payment_sessions.data',
   '*promotions',
+  '*shipping_address',
+  '*billing_address',
+  '*shipping_methods',
+  'email',
   '+shipping_methods.name',
   '*items.product.seller'
 ].join(',');
@@ -724,6 +728,21 @@ export async function setAddresses(currentState: unknown, payload: CheckoutAddre
  */
 export async function placeOrder(cartId?: string) {
   const id = cartId || (await getCartId());
+  const res = await completeCartOrder(id);
+  const orderId =
+    resolveCompletedOrderId(res) ??
+    (id ? await resolveCompletedOrderIdForCart(id) : null);
+
+  if (orderId) {
+    removeCartId();
+    redirect(`/order/${orderId}/confirmed`);
+  }
+
+  return res;
+}
+
+async function completeCartOrder(cartId?: string) {
+  const id = cartId || (await getCartId());
 
   if (!id) {
     throw new Error('No existing cart found when placing an order');
@@ -762,14 +781,59 @@ export async function placeOrder(cartId?: string) {
   const cartCacheTag = await getCacheTag('carts');
   revalidateTag(cartCacheTag);
 
-  if (res?.data?.order_group) {
+  return res;
+}
+
+function resolveCompletedOrderId(res: any): string | null {
+  return (
+    res?.data?.order_group?.orders?.[0]?.id ??
+    res?.order_group?.orders?.[0]?.id ??
+    res?.data?.order?.id ??
+    res?.order?.id ??
+    null
+  );
+}
+
+async function resolveCompletedOrderIdForCart(cartId: string): Promise<string | null> {
+  const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
+    method: 'GET'
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const orderId = res.data?.order_id;
+  return typeof orderId === 'string' ? orderId : null;
+}
+
+export async function completeOrderAfterStripePayment(cartId?: string) {
+  try {
+    const res = await completeCartOrder(cartId);
+    const orderId =
+      resolveCompletedOrderId(res) ??
+      (cartId ? await resolveCompletedOrderIdForCart(cartId) : null);
+
+    if (!orderId) {
+      return {
+        ok: false,
+        error: { message: 'Order completion did not return an order id' }
+      };
+    }
+
     revalidatePath('/user/reviews');
     revalidatePath('/user/orders');
     removeCartId();
-    redirect(`/order/${res?.data?.order_group.orders[0].id}/confirmed`);
-  }
 
-  return res;
+    return { ok: true, orderId };
+  } catch (error: any) {
+    return {
+      ok: false,
+      error: {
+        message: error?.message?.replace('Error setting up the request: ', '') ?? 'Failed to complete order'
+      }
+    };
+  }
 }
 
 /**

@@ -987,7 +987,11 @@
         "withdrawal_required": "Bestätigung der Widerrufspolitik ist erforderlich"
       }
     },
-    "pay_now": "Bezahlen"
+    "pay_now": "Bezahlen",
+    "cross_actor": {
+      "for_you": "Sie bestätigen Warenkorb, Daten und Zustimmung vor der Zahlung.",
+      "for_us": "Wir teilen die Bestellung auf die Salons auf und übermitteln erst nach Zahlungsbestätigung nur die nötigen Angaben."
+    }
   },
   "confirmation": {
     "meta_title": "Bestellung bestätigt",

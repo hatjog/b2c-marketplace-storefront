@@ -1,79 +1,40 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: '404 – Strona nie istnieje',
-  description: 'Przepraszamy, ta strona nie istnieje lub została przeniesiona.'
+import plMessages from '../../messages/pl.json';
+
+import { ErrorSurface } from '@/components/templates/ErrorSurface';
+
+export const metadata = {
+  title: plMessages.wave5_errors.not_found.meta_title,
+  description: plMessages.wave5_errors.not_found.meta_description,
 };
 
 export default function NotFound() {
+  const t = plMessages.wave5_errors.not_found;
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        padding: '48px 24px',
-        backgroundColor: '#FAF8F5',
-        fontFamily: 'inherit'
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '480px',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
-          textAlign: 'center'
-        }}
-      >
-        <svg
-          width="56"
-          height="56"
-          viewBox="0 0 56 56"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="28" cy="28" r="26" stroke="#C5A059" strokeWidth="2" fill="white" />
-          <text
-            x="50%"
-            y="50%"
-            dominantBaseline="central"
-            textAnchor="middle"
-            fontSize="24"
-            fontWeight="600"
-            fill="#715828"
-            fontFamily="inherit"
-          >
-            B
-          </text>
-        </svg>
-
-        <h1 style={{ fontSize: '28px', fontWeight: '600', color: '#1A1A1A', margin: 0 }}>
-          Strona nie istnieje
-        </h1>
-
-        <p style={{ fontSize: '16px', color: '#1A1A1A', margin: 0, lineHeight: '1.6' }}>
-          Przepraszamy, ta strona nie istnieje lub została przeniesiona. Sprawdź adres
-          URL lub wróć na stronę główną.
-        </p>
-
+    <ErrorSurface
+      data-testid="root-not-found"
+      eyebrow={t.generic.eyebrow}
+      title={t.title}
+      description={t.generic.body}
+      tone="neutral"
+      primaryAction={
         <Link
-          href="/"
-          style={{
-            color: '#907032',
-            fontSize: '16px',
-            textDecoration: 'underline',
-            fontWeight: '500'
-          }}
+          href="/pl"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-action px-5 py-3 text-sm font-medium text-action-on-primary no-underline"
         >
-          Wróć na stronę główną
+          {t.primary_cta}
         </Link>
-      </div>
-    </div>
+      }
+      secondaryAction={
+        <Link
+          href="/pl/categories"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[rgba(113,88,40,0.16)] px-5 py-3 text-sm font-medium text-primary no-underline"
+        >
+          {t.secondary_cta}
+        </Link>
+      }
+    />
   );
 }

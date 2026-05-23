@@ -7,6 +7,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { resolveMedusaBackendUrl } from '@/lib/env';
+import { normalizeVoucherRules } from '@/lib/voucher/voucher-rules';
+
+type RawEntitlement = Record<string, unknown>;
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
@@ -35,7 +38,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     const data = (await res.json()) as unknown;
-    const entitlements = Array.isArray(data) ? data : [];
+    const entitlements = Array.isArray(data)
+      ? data.map((entry) => {
+          const raw = entry as RawEntitlement;
+          return {
+            ...raw,
+            voucherRules: normalizeVoucherRules(raw),
+          };
+        })
+      : [];
     return NextResponse.json(entitlements, { status: 200 });
   } catch {
     return NextResponse.json([], { status: 200 });

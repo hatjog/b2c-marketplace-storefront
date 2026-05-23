@@ -1,8 +1,10 @@
+// @trust-invariant-scope: v180
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { SellerProof } from '@/components/atoms/SellerProof/SellerProof';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { DirectionsBlock } from '@/components/organisms/DirectionsBlock';
 import { SellerTabs } from '@/components/organisms/SellerTabs/SellerTabs';
@@ -17,6 +19,13 @@ import { assessSellerStructuredData } from '@/lib/seo/sellerStructuredData';
 export const revalidate = 60;
 
 type SellerDetailTab = 'products' | 'about' | 'location' | 'policy';
+
+function deriveSellerYears(joinDate?: string): number | undefined {
+  if (!joinDate) return undefined;
+  const joined = new Date(joinDate);
+  if (Number.isNaN(joined.getTime())) return undefined;
+  return Math.max(0, new Date().getFullYear() - joined.getFullYear());
+}
 
 function parseSellerDetailTab(raw: string | string[] | undefined): SellerDetailTab {
   const value = Array.isArray(raw) ? raw[0] : raw;
@@ -144,6 +153,18 @@ export default async function SellerPage({
   const sellerLat = (seller as { lat?: number | null }).lat ?? null;
   const sellerLng = (seller as { lng?: number | null }).lng ?? null;
   const structuredData = assessSellerStructuredData(seller);
+  const sellerYears = deriveSellerYears(seller.created_at);
+  const sellerReviews = Array.isArray(seller.reviews)
+    ? (seller.reviews.filter(Boolean) as Array<{ rating?: number | null }>)
+    : [];
+  const sellerRatingCount = sellerReviews.length;
+  const sellerRating = sellerRatingCount
+    ? sellerReviews.reduce((sum, review) => sum + Number(review?.rating ?? 0), 0) / sellerRatingCount
+    : undefined;
+  const sellerTreatments =
+    Array.isArray(seller.products) && seller.products.length > 0
+      ? seller.products.length
+      : sellerRatingCount;
 
   return (
     <main
@@ -172,6 +193,17 @@ export default async function SellerPage({
         seller={seller}
         user={user}
       />
+      <div className="container py-4">
+        {/* Trust Invariant #2: <SellerProof with >=3 proof points on seller detail. */}
+        <SellerProof
+          years={sellerYears}
+          treatments={sellerTreatments}
+          rating={sellerRating}
+          ratingCount={sellerRatingCount}
+          sellerName={seller.name}
+          data-testid="seller-detail-seller-proof"
+        />
+      </div>
       <div className="container py-6">
         {!structuredData.canIndex && (
           <div
