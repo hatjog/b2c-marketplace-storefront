@@ -2816,5 +2816,67 @@
       "missing_image": "Missing category image",
       "count_label": "subcategories"
     }
+  },
+  "wave5_errors": {
+    "not_found": {
+      "meta_title": "This page is not here",
+      "meta_description": "Empathetic BonBeauty 404 surface with a safe return path.",
+      "title": "This page is not here",
+      "primary_cta": "Back to homepage",
+      "secondary_cta": "Use search",
+      "generic": {
+        "eyebrow": "404 · Page not found",
+        "body": "This may be an older link or a path that has already moved. The quickest way back is the homepage or category browse path."
+      },
+      "product": {
+        "eyebrow": "404 · Product no longer available",
+        "body": "This product card is no longer available in the current offer set. We can take you back to current discovery paths."
+      },
+      "seller": {
+        "eyebrow": "404 · Seller profile unavailable",
+        "body": "We cannot open this seller profile right now. You can return to the directory or use search."
+      }
+    },
+    "runtime": {
+      "technical_details": "Show technical details",
+      "status_link": "Check platform status",
+      "support_title": "Three support paths",
+      "support": {
+        "self_service": {
+          "label": "Self-service",
+          "description": "Status and legal documents help separate a system-wide issue from a local one."
+        },
+        "async": {
+          "label": "Async support",
+          "description": "Send the order number and request_id and we will answer with a concrete next step."
+        },
+        "panic": {
+          "label": "Urgent contact",
+          "description": "If the redemption date is close or a payment looks risky, mark the request as urgent."
+        }
+      },
+      "server-error": {
+        "eyebrow": "500 · Something failed on our side",
+        "title": "We cannot complete this page right now",
+        "body": "This looks like a local application error. You can try again, and if it returns, send the details to support.",
+        "primary_cta": "Try again",
+        "suggested_action": "Refresh the surface and send the request_id to support if the error returns."
+      },
+      "service-unavailable": {
+        "eyebrow": "503 · Temporary system interruption",
+        "title": "The service is temporarily unavailable",
+        "body": "The signal points to a broader system issue, not just your session. Check status first, then return when service is restored.",
+        "primary_cta": "Refresh in a moment",
+        "suggested_action": "Check the status page and return after the service is confirmed healthy."
+      },
+      "offline": {
+        "eyebrow": "Offline · No network connection",
+        "title": "Checkout needs a network connection",
+        "body": "Your device appears to be offline. We do not continue the purchase silently and we do not pretend this is an empty state.",
+        "primary_cta": "Try again when you are back online",
+        "secondary_cta": "Open help",
+        "suggested_action": "Restore the network connection and only then retry the purchase flow."
+      }
+    }
   }
 }

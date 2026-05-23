@@ -2816,5 +2816,67 @@
       "missing_image": "Brak zdjęcia kategorii",
       "count_label": "podkategorii"
     }
+  },
+  "wave5_errors": {
+    "not_found": {
+      "meta_title": "Tej strony tu nie ma",
+      "meta_description": "Empatyczna powierzchnia 404 BonBeauty z bezpieczną ścieżką powrotu.",
+      "title": "Tej strony tu nie ma",
+      "primary_cta": "Wróć do strony głównej",
+      "secondary_cta": "Skorzystaj z wyszukiwarki",
+      "generic": {
+        "eyebrow": "404 · Strona nie została odnaleziona",
+        "body": "To może być stary link albo ścieżka, która już się zmieniła. Najszybciej wrócisz do przeglądania od strony głównej lub kategorii."
+      },
+      "product": {
+        "eyebrow": "404 · Produkt nie jest już dostępny",
+        "body": "Ta karta produktu nie jest już dostępna w obecnym układzie oferty. Pokażemy Ci bezpieczniejszą drogę do aktualnych propozycji."
+      },
+      "seller": {
+        "eyebrow": "404 · Profil sprzedawcy nie jest dostępny",
+        "body": "Nie możemy teraz otworzyć tego profilu sprzedawcy. Możesz wrócić do listy i sprawdzić inne salony lub skorzystać z wyszukiwarki."
+      }
+    },
+    "runtime": {
+      "technical_details": "Pokaż szczegóły techniczne",
+      "status_link": "Sprawdź status platformy",
+      "support_title": "Trzy ścieżki wsparcia",
+      "support": {
+        "self_service": {
+          "label": "Self-service",
+          "description": "Status platformy i dokumenty prawne pomogą odróżnić problem systemowy od lokalnego."
+        },
+        "async": {
+          "label": "Wsparcie asynchroniczne",
+          "description": "Wyślij numer zamówienia i request_id, a wrócimy z konkretną odpowiedzią."
+        },
+        "panic": {
+          "label": "Kontakt pilny",
+          "description": "Jeśli termin realizacji jest bliski albo płatność wygląda niepokojąco, oznacz zgłoszenie jako pilne."
+        }
+      },
+      "server-error": {
+        "eyebrow": "500 · Coś poszło nie tak po naszej stronie",
+        "title": "Nie możemy teraz dokończyć tej strony",
+        "body": "To wygląda na lokalny błąd po stronie aplikacji. Możesz spróbować ponownie, a jeśli komunikat wraca, prześlij szczegóły do wsparcia.",
+        "primary_cta": "Spróbuj ponownie",
+        "suggested_action": "Odśwież surface i jeśli błąd wróci, przekaż request_id do wsparcia."
+      },
+      "service-unavailable": {
+        "eyebrow": "503 · Chwilowa przerwa systemowa",
+        "title": "Usługa jest chwilowo niedostępna",
+        "body": "Widoczny sygnał sugeruje problem systemowy, a nie błąd tylko po Twojej stronie. Najpierw sprawdź status platformy, potem wróć do próby.",
+        "primary_cta": "Odśwież za chwilę",
+        "suggested_action": "Sprawdź status platformy i wróć po potwierdzeniu przywrócenia usługi."
+      },
+      "offline": {
+        "eyebrow": "Offline · Brak połączenia",
+        "title": "Zakup wymaga połączenia z siecią",
+        "body": "Wygląda na to, że urządzenie jest offline. Nie kontynuujemy zakupu w tle ani nie udajemy pustego stanu, dopóki połączenie nie wróci.",
+        "primary_cta": "Spróbuj ponownie po połączeniu",
+        "secondary_cta": "Przejdź do pomocy",
+        "suggested_action": "Przywróć połączenie z siecią i dopiero wtedy ponów próbę."
+      }
+    }
   }
 }
