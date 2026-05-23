@@ -43,7 +43,11 @@ export interface SellerCardProps {
 }
 
 export function SellerCard({ name, handle, photo_url, city, district, product_count }: SellerCardProps) {
-  const location = [city, district].filter(Boolean).join(' / ');
+  // Story 6.2 AC3 — district format per epic example: `Salon · Praga-Południe`.
+  // U+00B7 middot separator matches mockup `wave-4-rest/01-sellers-index.html`.
+  // Display dzielnica first when present so the seller name + neighborhood pair
+  // reads as a single trust signal (J4 Marek proximity check before click).
+  const location = [district, city].filter(Boolean).join(' · ');
 
   return (
     <Link

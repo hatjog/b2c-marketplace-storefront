@@ -131,6 +131,67 @@ describe('SellerCard', () => {
     });
   });
 
+  describe('district display (Story 6.2 AC3)', () => {
+    it('renders district before city with middot separator', () => {
+      const el = SellerCard({
+        name: 'Salon Belle',
+        handle: 'salon-belle',
+        city: 'Warszawa',
+        district: 'Praga-Południe',
+        product_count: 12
+      }) as ReactEl;
+
+      const text = collectText(el);
+      expect(text).toContain('Praga-Południe · Warszawa');
+      // No fallback '/' separator (old contract).
+      expect(text).not.toContain('Praga-Południe / Warszawa');
+    });
+
+    it('renders only district when city is null without leading separator', () => {
+      const el = SellerCard({
+        name: 'Salon Mokotów',
+        handle: 'salon-mokotow',
+        city: null,
+        district: 'Mokotów',
+        product_count: 1
+      }) as ReactEl;
+
+      const text = collectText(el);
+      expect(text).toContain('Mokotów');
+      expect(text).not.toContain('· Mokotów');
+      expect(text).not.toContain('Mokotów ·');
+    });
+
+    it('renders only city when district is null without trailing separator', () => {
+      const el = SellerCard({
+        name: 'Salon Stare Miasto',
+        handle: 'salon-sm',
+        city: 'Warszawa',
+        district: null,
+        product_count: 1
+      }) as ReactEl;
+
+      const text = collectText(el);
+      expect(text).toContain('Warszawa');
+      expect(text).not.toContain('· Warszawa');
+      expect(text).not.toContain('Warszawa ·');
+    });
+
+    it('omits location line entirely when both city and district are null', () => {
+      const el = SellerCard({
+        name: 'Salon Anonymous',
+        handle: 'anon',
+        city: null,
+        district: null,
+        product_count: 1
+      }) as ReactEl;
+
+      const text = collectText(el);
+      expect(text).not.toContain('·');
+      expect(text).not.toContain('undefined');
+    });
+  });
+
   describe('hover and navigation', () => {
     it('wraps card in link pointing to /sellers/[handle]', () => {
       const el = SellerCard({

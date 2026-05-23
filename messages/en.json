@@ -68,7 +68,9 @@
         "popup_view_details": "View details",
         "loading": "Loading map...",
         "aria_map": "Sellers map",
-        "aria_marker": "Marker for {name}"
+        "aria_marker": "Marker for {name}",
+        "placeholder_title": "Seller locations preview",
+        "placeholder_body": "Interactive map will be available soon. See the list of nearby salons below."
       }
     },
     "search": {
@@ -115,7 +117,8 @@
       "directions_external_notice": "Opening external maps, you leave BonBeauty.",
       "context_chip_label": "From salon: {name}",
       "context_chip_back": "Back to salon",
-      "context_chip_close": "Close"
+      "context_chip_close": "Close",
+      "runtime_fallback_notice": "Some salon details are still being filled in. Full information will appear shortly."
     },
     "directory_v180": {
       "meta_title": "Salon directory | BonBeauty",

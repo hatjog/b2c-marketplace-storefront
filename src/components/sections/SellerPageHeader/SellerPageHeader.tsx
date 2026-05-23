@@ -21,7 +21,11 @@ export const SellerPageHeader = async ({
   const rating = reviewCount
     ? reviews.reduce((sum: number, review: { rating?: number | null }) => sum + Number(review?.rating ?? 0), 0) / reviewCount
     : null;
-  const locationText = [seller.city, seller.address_line]
+  // Story 6.2 AC5 — hero band must surface dzielnica when backend exposes it.
+  // `seller.district` propagates from SellerProps (types/seller.ts) — backend
+  // Mercur 2.1.1 will populate it via FR7.4 admin-edit; for now nullable fields
+  // silently drop without an empty leading separator (defensive filter pipeline).
+  const locationText = [seller.district, seller.city, seller.address_line]
     .map((value: string | null | undefined) => value?.trim())
     .filter(Boolean)
     .join(' · ');

@@ -97,7 +97,8 @@ function SellerMapPlaceholder({
             <span>{seller.name}</span>
             {(seller.city || seller.district) && (
               <span className="ml-2 text-gray-500">
-                {[seller.city, seller.district].filter(Boolean).join(' / ')}
+                {/* Story 6.2 AC3 — consistent district-first format with SellerCard. */}
+                {[seller.district, seller.city].filter(Boolean).join(' · ')}
               </span>
             )}
           </div>

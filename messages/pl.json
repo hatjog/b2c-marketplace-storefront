@@ -68,7 +68,9 @@
         "popup_view_details": "Zobacz szczegóły",
         "loading": "Ładowanie mapy...",
         "aria_map": "Mapa salonów",
-        "aria_marker": "Marker salonu {name}"
+        "aria_marker": "Marker salonu {name}",
+        "placeholder_title": "Podgląd lokalizacji salonów",
+        "placeholder_body": "Mapa interaktywna będzie dostępna wkrótce. Poniżej lista najbliższych salonów."
       }
     },
     "search": {
@@ -115,7 +117,8 @@
       "directions_external_notice": "Otwierając mapy zewnętrzne, opuszczasz BonBeauty.",
       "context_chip_label": "Z salonu: {name}",
       "context_chip_back": "Wróć do salonu",
-      "context_chip_close": "Zamknij"
+      "context_chip_close": "Zamknij",
+      "runtime_fallback_notice": "Niektóre informacje o salonie są nadal uzupełniane. Wkrótce zobaczysz pełne dane lokalu."
     },
     "directory_v180": {
       "meta_title": "Katalog salonów | BonBeauty",

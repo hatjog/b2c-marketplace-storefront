@@ -57,6 +57,8 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
   const latitude = normalizeNumber(seller.lat);
   const longitude = normalizeNumber(seller.lng);
   const taxId = normalizeString(seller.tax_id);
+  const regon = normalizeString(seller.regon);
+  const krs = normalizeString(seller.krs);
   const openingHours = buildOpeningHours(seller.opening_hours);
   const { ratingValue, reviewCount } = collectReviewAggregate(seller);
 
@@ -106,6 +108,21 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
 
   if (taxId) {
     jsonLd.taxID = taxId;
+  }
+
+  // Story 6.2 AC12 / FR7.1 — surface PL business identifiers (REGON, KRS)
+  // as schema.org `identifier` PropertyValue array so Knowledge Graph and
+  // EU business directories can cross-reference. NIP remains the canonical
+  // `taxID`; REGON/KRS are supplementary trust signals for J4 Marek persona.
+  const identifiers: Array<{ '@type': 'PropertyValue'; propertyID: string; value: string }> = [];
+  if (regon) {
+    identifiers.push({ '@type': 'PropertyValue', propertyID: 'REGON', value: regon });
+  }
+  if (krs) {
+    identifiers.push({ '@type': 'PropertyValue', propertyID: 'KRS', value: krs });
+  }
+  if (identifiers.length > 0) {
+    jsonLd.identifier = identifiers;
   }
 
   if (latitude !== null && longitude !== null) {

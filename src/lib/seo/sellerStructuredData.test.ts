@@ -66,4 +66,37 @@ describe('assessSellerStructuredData', () => {
     expect(result.jsonLd).toBeNull();
     expect(result.missingRequired).toEqual(['address.streetAddress', 'address.addressLocality']);
   });
+
+  it('emits REGON and KRS as schema.org identifier PropertyValue array (Story 6.2 I-1)', () => {
+    const result = assessSellerStructuredData({
+      ...baseSeller,
+      regon: '123456785',
+      krs: '0000123456'
+    });
+
+    expect(result.canIndex).toBe(true);
+    expect(result.jsonLd?.identifier).toEqual([
+      { '@type': 'PropertyValue', propertyID: 'REGON', value: '123456785' },
+      { '@type': 'PropertyValue', propertyID: 'KRS', value: '0000123456' }
+    ]);
+  });
+
+  it('skips identifier array entirely when REGON and KRS are absent', () => {
+    const result = assessSellerStructuredData(baseSeller);
+    expect(result.canIndex).toBe(true);
+    expect(result.jsonLd?.identifier).toBeUndefined();
+  });
+
+  it('emits only REGON identifier when KRS is missing (KRS is conditional per AC12)', () => {
+    const result = assessSellerStructuredData({
+      ...baseSeller,
+      regon: '987654321',
+      krs: null
+    });
+
+    expect(result.canIndex).toBe(true);
+    expect(result.jsonLd?.identifier).toEqual([
+      { '@type': 'PropertyValue', propertyID: 'REGON', value: '987654321' }
+    ]);
+  });
 });
