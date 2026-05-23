@@ -13,6 +13,7 @@ import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { toast } from '@/lib/helpers/toast';
+import { buildEntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -178,6 +179,17 @@ export const ProductDetailsHeader = ({
     // Optimistic update
     onAddToCart(storeCartLineItem, variantPrice?.currency_code || 'eur');
 
+    // Story 1.10.1 — derive embedded entitlement_profile triad from
+    // product.metadata.gp.entitlement_profile (set by gp-config-sync-catalog
+    // from market.yaml + products.yaml entitlement_profile_id). Undefined for
+    // non-voucher SKUs → metadata stays clean (legacy flow).
+    const entitlement = buildEntitlementLineItemMetadata(
+      product,
+      typeof variantPrice?.calculated_price_number === 'number'
+        ? Math.round(variantPrice.calculated_price_number * 100)
+        : null
+    );
+
     try {
       await addToCart({
         variantId: variantId,
@@ -190,7 +202,8 @@ export const ProductDetailsHeader = ({
         selectedSellerName,
         // cleanup-12d AC1 — propagate seller handle.
         selectedSellerHandle,
-        purchaseMode
+        purchaseMode,
+        entitlement
       });
     } catch {
       toast.error({

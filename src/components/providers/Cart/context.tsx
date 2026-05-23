@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 
+import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
 
 export type CartPurchaseMode = 'self' | 'gift';
@@ -21,6 +22,11 @@ interface CartContextInterface {
     selectedSellerHandle?: string | null;
     /** W1-04 PDP gift mode. Persisted as cart_item metadata.is_gift / purchase_mode. */
     purchaseMode?: CartPurchaseMode;
+    /** Story 1.10.1 — embedded entitlement_profile triad written to
+     *  cart_item.metadata so the backend stripe-payment-audit workflow can
+     *  resolve and issue entitlement_instance on payment.captured. Derived
+     *  at the PDP from `product.metadata.gp.entitlement_profile`. */
+    entitlement?: EntitlementLineItemMetadata;
   }) => Promise<void>;
   removeCartItem: (lineId: string) => Promise<void>;
   updateCartItem: (lineId: string, quantity: number) => Promise<void>;

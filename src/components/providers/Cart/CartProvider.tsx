@@ -6,6 +6,7 @@ import {
   updateLineItem as apiUpdateLineItem,
   retrieveCart
 } from '@/lib/data/cart';
+import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
 
 import { CartContext, type CartPurchaseMode } from './context';
@@ -140,7 +141,8 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     selectedSellerId,
     selectedSellerName,
     selectedSellerHandle,
-    purchaseMode
+    purchaseMode,
+    entitlement
   }: {
     variantId: string;
     quantity: number;
@@ -153,6 +155,11 @@ export function CartProvider({ cart, children }: CartProviderProps) {
     selectedSellerHandle?: string | null;
     /** W1-04 PDP gift/self mode. */
     purchaseMode?: CartPurchaseMode;
+    /** Story 1.10.1 — embedded entitlement_profile triad for the
+     *  stripe-payment-audit → issueEntitlementWithinPaymentTransaction →
+     *  entitlement_instance INSERT chain (ADR-099 Layer 4 / ADR-118 Path Y).
+     *  Derived at the PDP call site via `buildEntitlementLineItemMetadata`. */
+    entitlement?: EntitlementLineItemMetadata;
   }) => {
     setIsAddingItem(true);
     setIsUpdating(true);
@@ -165,7 +172,8 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         selectedSellerId,
         selectedSellerName,
         selectedSellerHandle,
-        purchaseMode
+        purchaseMode,
+        entitlement
       });
       await refreshCart();
     } catch (error) {
