@@ -15,6 +15,10 @@ export const paymentInfoMap: Record<string, { title: string; icon: React.JSX.Ele
 		title: 'Credit card',
 		icon: React.createElement(CreditCard),
 	},
+	pp_stripe: {
+		title: 'Credit card',
+		icon: React.createElement(CreditCard),
+	},
 	'pp_stripe-ideal_stripe': {
 		title: 'iDeal',
 		icon: React.createElement(CreditCard),
@@ -33,8 +37,11 @@ export const paymentInfoMap: Record<string, { title: string; icon: React.JSX.Ele
 	},
 }
 
-// This only checks if it is native stripe for card payments, it ignores the other stripe-based providers
-export const isStripe = (providerId?: string) => providerId?.startsWith('pp_card_stripe-connect')
+// Native Stripe card/provider ids used across Mercur/Medusa versions and GP resolver variants.
+export const isStripe = (providerId?: string) =>
+	providerId === 'pp_stripe' ||
+	providerId === 'pp_stripe_stripe' ||
+	providerId?.startsWith('pp_card_stripe-connect')
 
 export const isPaypal = (providerId?: string) => providerId?.startsWith('pp_paypal')
 

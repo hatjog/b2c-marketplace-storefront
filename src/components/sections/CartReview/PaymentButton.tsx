@@ -13,6 +13,9 @@ import { placeOrder } from '@/lib/data/cart';
 
 import { isManual, isStripe } from '../../../lib/constants';
 
+const isLegacyStripeCard = (providerId?: string) =>
+  providerId?.startsWith('pp_card_stripe-connect');
+
 /**
  * Story v160-5-9 — typeguard dla FlagDriftError przepuszczonego przez
  * server action boundary. Server-side `class FlagDriftError extends Error`
@@ -56,7 +59,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
   const paymentSession = cart.payment_collection?.payment_sessions?.[0];
 
   switch (true) {
-    case isStripe(paymentSession?.provider_id):
+    case isLegacyStripeCard(paymentSession?.provider_id):
       return (
         <StripePaymentButton
           notReady={notReady}
@@ -64,6 +67,16 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
           cart={cart}
           data-testid={dataTestId}
         />
+      );
+    case isStripe(paymentSession?.provider_id):
+      return (
+        <Button
+          disabled
+          className="w-full min-h-11"
+          aria-disabled="true"
+        >
+          Place order
+        </Button>
       );
     case isManual(paymentSession?.provider_id):
       return (

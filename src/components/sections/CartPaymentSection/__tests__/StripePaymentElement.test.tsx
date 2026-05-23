@@ -30,6 +30,9 @@ import StripePaymentElement, {
 vi.mock('@/lib/stripe/appearance', () => ({
   getPaymentElementAppearanceRuntime: () => ({ theme: 'flat' })
 }));
+vi.mock('@/lib/data/cart', () => ({
+  completeOrderAfterStripePayment: vi.fn()
+}));
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key
 }));
@@ -77,23 +80,42 @@ describe('buildPaymentElementOptions — AC1 / D6', () => {
 });
 
 describe('submitStripePayment — AC7', () => {
-  it('confirmPayment z return_url (M-4: bez re-inicjalizacji session w submit)', async () => {
+  it('confirmPayment z return_url i completes cart after inline success', async () => {
     const confirmPayment = vi.fn().mockResolvedValue({});
+    const completeOrder = vi.fn().mockResolvedValue({ ok: true, orderId: 'order_1' });
     const stripe = { confirmPayment } as any;
     const elements = { __el: true } as any;
 
     const res = await submitStripePayment({
       stripe,
       elements,
-      returnUrl: 'https://shop.test/pl/order/cart_1/payment-status'
+      returnUrl: 'https://shop.test/pl/order/cart_1/payment-status',
+      completeOrder
     });
 
-    expect(res).toEqual({});
+    expect(res).toEqual({ orderId: 'order_1' });
     // AC7 — confirmPayment args + return_url (Story 1.5 surface).
     expect(confirmPayment).toHaveBeenCalledWith({
       elements,
-      confirmParams: { return_url: 'https://shop.test/pl/order/cart_1/payment-status' }
+      confirmParams: { return_url: 'https://shop.test/pl/order/cart_1/payment-status' },
+      redirect: 'if_required'
     });
+    expect(completeOrder).toHaveBeenCalledOnce();
+  });
+
+  it('does not complete order when Stripe returns a confirm error', async () => {
+    const completeOrder = vi.fn();
+    const stripe = {
+      confirmPayment: vi.fn().mockResolvedValue({ error: { message: 'card_declined' } })
+    } as any;
+    const res = await submitStripePayment({
+      stripe,
+      elements: {} as any,
+      returnUrl: '/pl/order/cart_1/payment-status',
+      completeOrder
+    });
+    expect(res.error).toBe('card_declined');
+    expect(completeOrder).not.toHaveBeenCalled();
   });
 
   it('surfaces confirmPayment error (NOT silent)', async () => {
@@ -121,6 +143,7 @@ describe('submitStripePayment — AC7', () => {
 describe('StripePaymentElement wrapper — AC1/AC4 graceful reject (F-NEW-H2)', () => {
   const base = {
     cart: { id: 'c1' },
+    cartId: 'c1',
     providerId: 'pp_stripe_stripe',
     clientSecret: 'cs_test_1',
     returnUrl: '/pl/order/c1/payment-status'

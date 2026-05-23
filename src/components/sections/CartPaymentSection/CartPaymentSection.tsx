@@ -200,6 +200,7 @@ const CartPaymentSection = ({
                       selectedPaymentMethod === paymentMethod.id &&
                       stripeClientSecret && (
                         <StripePaymentElement
+                          cartId={cart.id}
                           clientSecret={stripeClientSecret}
                           returnUrl={paymentStatusReturnUrl}
                         />

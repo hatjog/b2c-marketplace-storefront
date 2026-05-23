@@ -5,8 +5,6 @@ import React from 'react';
 import type { HttpTypes } from '@medusajs/types';
 import { loadStripe } from '@stripe/stripe-js';
 
-import { isStripe } from '@/lib/constants';
-
 import StripeWrapper from './StripeWrapper';
 
 type PaymentWrapperProps = {
@@ -22,7 +20,7 @@ const PaymentWrapper: React.FC<PaymentWrapperProps> = ({ cart, children }) => {
     s => s.status === 'pending'
   );
 
-  if (isStripe(paymentSession?.provider_id) && paymentSession && stripePromise) {
+  if (paymentSession?.provider_id?.startsWith('pp_card_stripe-connect') && paymentSession && stripePromise) {
     return (
       <StripeWrapper
         paymentSession={paymentSession}

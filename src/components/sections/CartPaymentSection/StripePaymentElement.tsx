@@ -36,6 +36,7 @@ import { useTranslations } from 'next-intl';
 // (anti-pattern z storefront/CLAUDE.md "Barrel exports leak server modules").
 import { Button } from '@/components/atoms/Button/Button';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
+import { completeOrderAfterStripePayment } from '@/lib/data/cart';
 import { getPaymentElementAppearanceRuntime } from '@/lib/stripe/appearance';
 import {
   getEnabledPaymentMethodTypes,
@@ -45,6 +46,7 @@ import {
 
 type StripePaymentElementProps = {
   cart?: any;
+  cartId?: string;
   providerId?: string;
   /** Stripe PaymentIntent client_secret z aktywnej payment session. */
   clientSecret: string;
@@ -88,20 +90,35 @@ export async function submitStripePayment(args: {
   stripe: Stripe | null;
   elements: StripeElements | null;
   returnUrl: string;
-}): Promise<{ error?: string }> {
-  const { stripe, elements, returnUrl } = args;
+  completeOrder?: () => Promise<
+    { ok: boolean; orderId?: string; error?: { message?: string } }
+  >;
+}): Promise<{ error?: string; orderId?: string }> {
+  const { stripe, elements, returnUrl, completeOrder } = args;
   if (!stripe || !elements) {
     return { error: PAYMENT_NOT_AVAILABLE_MESSAGE };
   }
   try {
     const { error: confirmError } = await stripe.confirmPayment({
       elements,
-      confirmParams: { return_url: returnUrl }
+      confirmParams: { return_url: returnUrl },
+      redirect: 'if_required'
     });
 
     if (confirmError) {
       return { error: confirmError.message ?? PAYMENT_NOT_AVAILABLE_MESSAGE };
     }
+
+    if (completeOrder) {
+      const completion = await completeOrder();
+      if (!completion.ok || !completion.orderId) {
+        return {
+          error: completion.error?.message ?? PAYMENT_NOT_AVAILABLE_MESSAGE
+        };
+      }
+      return { orderId: completion.orderId };
+    }
+
     return {};
   } catch (err: any) {
     return { error: err?.message ?? PAYMENT_NOT_AVAILABLE_MESSAGE };
@@ -113,9 +130,11 @@ export async function submitStripePayment(args: {
  * Deleguje do czystego `submitStripePayment` (testowalność AC7).
  */
 function PaymentElementForm({
+  cartId,
   enabledMethods,
   returnUrl
 }: {
+  cartId?: string;
   enabledMethods: readonly string[];
   returnUrl: string;
 }) {
@@ -124,22 +143,38 @@ function PaymentElementForm({
   const t = useTranslations('checkout');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const options = useMemo(() => buildPaymentElementOptions(enabledMethods), [enabledMethods]);
 
-  const options = buildPaymentElementOptions(enabledMethods);
+  const redirectToOrderStatus = useCallback(
+    (orderId: string) => {
+      const statusUrl = cartId
+        ? returnUrl.replace(`/order/${cartId}/payment-status`, `/order/${orderId}/payment-status`)
+        : returnUrl;
+      window.location.assign(statusUrl);
+    },
+    [returnUrl, cartId]
+  );
 
   // L-5: cart i providerId usunięte z deps — initiatePaymentSession przeniesione
   // do setPaymentMethod w CartPaymentSection (fix M-4). Deps są teraz minimalne.
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const { error: submitError } = await submitStripePayment({
+    const { error: submitError, orderId } = await submitStripePayment({
       stripe,
       elements,
-      returnUrl
+      returnUrl,
+      completeOrder: cartId
+        ? () => completeOrderAfterStripePayment(cartId)
+        : undefined
     });
     if (submitError) setError(submitError);
+    if (!submitError && orderId) {
+      redirectToOrderStatus(orderId);
+      return;
+    }
     setIsLoading(false);
-  }, [stripe, elements, returnUrl]);
+  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus]);
 
   return (
     <div
@@ -174,17 +209,13 @@ function PaymentElementForm({
  * message (NIE crash, NIE silent).
  */
 export default function StripePaymentElement({
+  cartId,
   clientSecret,
   returnUrl
 }: StripePaymentElementProps) {
   const stripePromise = getStripePromise();
   const enabledMethods = getEnabledPaymentMethodTypes();
-  // L-4 fix: memoizuj appearance — getPaymentElementAppearanceRuntime() wywołuje
-  // getComputedStyle przy każdym renderze wrappera, co powoduje elements.update()
-  // w react-stripe-js. Theme CSS jest synchronicznie załadowany w <head> (AC6),
-  // więc puste deps [] są poprawne — wartości tokenów nie zmieniają się po mountu.
   const appearance = useMemo(() => getPaymentElementAppearanceRuntime(), []);
-
   if (!stripePromise || !enabledMethods || !clientSecret) {
     return (
       <Text
@@ -202,6 +233,7 @@ export default function StripePaymentElement({
       options={{ clientSecret, appearance }}
     >
       <PaymentElementForm
+        cartId={cartId}
         enabledMethods={enabledMethods}
         returnUrl={returnUrl}
       />

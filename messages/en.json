@@ -546,6 +546,10 @@
       "group_title": "{seller} ({count, plural, one {# item} other {# items}})",
       "seller_fallback": "Salon"
     },
+    "cross_actor": {
+      "for_you": "You confirm the basket, details, and consent before payment.",
+      "for_us": "We split the order between salons and share only the needed details after payment is confirmed."
+    },
     "consent": {
       "required_heading": "Required confirmations",
       "required_summary_error": "Please tick both required confirmations to continue.",

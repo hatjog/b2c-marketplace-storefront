@@ -546,6 +546,10 @@
       "group_title": "{seller} ({count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}})",
       "seller_fallback": "Salon"
     },
+    "cross_actor": {
+      "for_you": "Ty potwierdzasz koszyk, dane i zgodę przed płatnością.",
+      "for_us": "My rozdzielimy zamówienie między salony i przekażemy im tylko potrzebne informacje po potwierdzeniu płatności."
+    },
     "consent": {
       "required_heading": "Wymagane potwierdzenia",
       "required_summary_error": "Aby kontynuować, zaznacz oba wymagane potwierdzenia.",

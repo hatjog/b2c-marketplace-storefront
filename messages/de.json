@@ -547,6 +547,10 @@
       "group_title": "{seller} ({count, plural, one {# Artikel} other {# Artikel}})",
       "seller_fallback": "Salon"
     },
+    "cross_actor": {
+      "for_you": "Sie bestätigen Warenkorb, Daten und Zustimmung vor der Zahlung.",
+      "for_us": "Wir teilen die Bestellung auf die Salons auf und übermitteln erst nach Zahlungsbestätigung nur die nötigen Angaben."
+    },
     "consent": {
       "required_heading": "Erforderliche Bestätigungen",
       "required_summary_error": "Bitte bestätigen Sie beide erforderlichen Punkte, um fortzufahren.",

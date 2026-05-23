@@ -6,9 +6,10 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
+import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
-import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import { CartAddressSection } from '@/components/sections/CartAddressSection/CartAddressSection';
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
 import CartReview from '@/components/sections/CartReview/CartReview';
@@ -62,6 +63,8 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
 async function CheckoutPageContent({ locale }: { locale: string }) {
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
+  const tCheckout = await getTranslations({ locale, namespace: 'checkout' });
+  const tPaymentStatus = await getTranslations({ locale, namespace: 'payment_status' });
   const cart = await retrieveCart();
 
   if (!cart) {
@@ -111,6 +114,14 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             data-testid="checkout-review-container"
           >
             {isMultiVendorEnabled() && <MultiVendorOrderSummary cart={cart} />}
+            {/* Trust Invariant #5: <CrossActorHandoff names buyer/salon duties before payment. */}
+            <CrossActorHandoff
+              forYou={tCheckout('cross_actor.for_you')}
+              forUs={tCheckout('cross_actor.for_us')}
+              labelForYou={tPaymentStatus('cross_actor.for_you')}
+              labelForUs={tPaymentStatus('cross_actor.for_us')}
+              data-testid="checkout-cross-actor-handoff"
+            />
             {/* Trust Invariant #3: <VoucherRulesCard stays visible even when
                 seller grouping drops every item due to missing seller.id. */}
             <VoucherRulesCard
