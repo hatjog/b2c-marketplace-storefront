@@ -88,6 +88,11 @@
   --bb-radius-card: 28px;
   --bb-radius-panel: 36px;
   --bb-radius-pill: 999px;
+  --card-journal: rgba(255, 252, 247, 0.92);
+  --journal-card-bg: var(--card-journal);
+  --journal-card-border: rgba(144, 112, 50, 0.12);
+  --journal-card-radius: 16px;
+  --journal-card-shadow: 0 10px 30px rgba(90, 67, 28, 0.06);
   --bb-hero-overlay: linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
   --bb-soft-gradient: linear-gradient(135deg, rgba(255, 249, 240, 0.98) 0%, rgba(246, 237, 222, 0.96) 100%);
   --bb-dark-gradient: linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
