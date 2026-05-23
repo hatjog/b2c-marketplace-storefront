@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
-import { ForgotPasswordForm } from '@/components/molecules/ForgotPasswordForm/ForgotPasswordForm';
+import { ForgotPasswordAuthForm } from '@/components/auth/AuthForms';
+import { AuthLayout } from '@/components/templates/AuthLayout';
 
 type ForgotPasswordPageProps = {
   params: Promise<{ locale: string }>;
@@ -12,17 +13,21 @@ export async function generateMetadata({ params }: ForgotPasswordPageProps): Pro
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'auth' });
   return {
-    title: t('forgot_password_heading'),
-    description: t('forgot_password_description')
+    title: t('forgot_title'),
+    description: t('forgot_subtitle')
   };
 }
 
 export default async function ForgotPasswordPage({ params }: ForgotPasswordPageProps) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
   return (
-    <main
-      id="main-content"
-      className="container"
+    <AuthLayout
+      surface="W3-03"
+      locale={locale}
+      eyebrow={t('forgot_eyebrow')}
+      pageTitle={t('forgot_title')}
+      subtitle={t('forgot_subtitle')}
     >
       <StorefrontRouteStateSignal
         route="auth-forgot-password"
@@ -32,7 +37,7 @@ export default async function ForgotPasswordPage({ params }: ForgotPasswordPageP
         locale={locale}
         surface="account-recovery"
       />
-      <ForgotPasswordForm />
-    </main>
+      <ForgotPasswordAuthForm />
+    </AuthLayout>
   );
 }

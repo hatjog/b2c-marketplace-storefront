@@ -1,33 +1,47 @@
-import {
-  Card,
-  StorefrontI18nLongContentProbe,
-  StorefrontRouteStateSignal
-} from '@/components/atoms';
-import { ProfilePasswordForm } from '@/components/molecules/ProfilePasswordForm/ProfilePasswordForm';
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-export default async function ResetPasswordPage({
-  params,
-  searchParams
-}: {
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { ResetPasswordAuthForm } from '@/components/auth/AuthForms';
+import { AuthLayout } from '@/components/templates/AuthLayout';
+
+type ResetPasswordPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ token: string }>;
-}) {
+  searchParams: Promise<{ token?: string }>;
+};
+
+export async function generateMetadata({ params }: ResetPasswordPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+
+  return {
+    title: t('reset_title'),
+    description: t('reset_subtitle')
+  };
+}
+
+export default async function ResetPasswordPage({ params, searchParams }: ResetPasswordPageProps) {
   const { locale } = await params;
   const { token } = await searchParams;
+  const t = await getTranslations({ locale, namespace: 'auth' });
 
   return (
-    <main className="container flex justify-center">
+    <AuthLayout
+      surface="W3-04"
+      locale={locale}
+      eyebrow={t('reset_eyebrow')}
+      pageTitle={t('reset_title')}
+      subtitle={t('reset_subtitle')}
+    >
       <StorefrontRouteStateSignal
-        route="auth-reset-password"
+        route="auth-forgot-password"
         surface="auth-forgot-password"
       />
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="password-reset"
       />
-      <Card className="w-full max-w-lg">
-        <ProfilePasswordForm token={token} />
-      </Card>
-    </main>
+      <ResetPasswordAuthForm token={token} />
+    </AuthLayout>
   );
 }
