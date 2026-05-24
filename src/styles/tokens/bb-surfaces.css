@@ -65,6 +65,8 @@
   --bb-hero-overlay:   linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
   --bb-soft-gradient:  linear-gradient(135deg, rgba(255, 249, 240, 0.98) 0%, rgba(246, 237, 222, 0.96) 100%);
   --bb-dark-gradient:  linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
+  /* v1.9.1 Wave G5 — voucher recipient page warm hero gradient */
+  --bb-voucher-page-gradient: radial-gradient(circle at top left, rgba(214, 180, 112, 0.18), transparent 32%), radial-gradient(circle at bottom right, rgba(214, 180, 112, 0.12), transparent 28%);
 
   /* ------------------------------------------------------------------
    * Semantic text tokens (brand layer)
@@ -145,6 +147,64 @@
   --bb-border-error:         rgb(245, 165, 160);        /* low-saturation error border      */
   --bb-surface-expired:      rgba(239, 229, 210, 0.32); /* cream-grey, quieter than cart    */
   --bb-border-expired:       rgba(144, 112, 50, 0.22);  /* gold-tinted hairline             */
+
+  /* ------------------------------------------------------------------
+   * Gold-tinted surface fills (v1.9.1 Wave G5 — CC-3 H1 closure)
+   * Centralises the rgba(144,112,50, <a>) opacity ladder that was
+   * previously inlined as bracket literals in 53 storefront files.
+   * Same RGB anchor as --bb-border-soft (gold).
+   * ------------------------------------------------------------------ */
+  --bb-tint-gold-05:  rgba(144, 112, 50, 0.05);  /* near-invisible gold wash         */
+  --bb-tint-gold-08:  rgba(144, 112, 50, 0.08);  /* alias of --bb-border-hairline    */
+  --bb-tint-gold-12:  rgba(144, 112, 50, 0.12);  /* code/chip backgrounds            */
+  --bb-tint-gold-16:  rgba(144, 112, 50, 0.16);  /* chip borders / soft pill bg      */
+  --bb-tint-gold-18:  rgba(144, 112, 50, 0.18);  /* badge subtle bg                  */
+  --bb-tint-gold-22:  rgba(144, 112, 50, 0.22);  /* alias of --bb-border-expired     */
+  --bb-tint-gold-24:  rgba(144, 112, 50, 0.24);  /* near-strong border               */
+  --bb-tint-gold-26:  rgba(144, 112, 50, 0.26);  /* near-strong border               */
+
+  /* Brown-warm tints (anchors brand-700/800 #715828 / #53411D)         */
+  --bb-tint-brown-16: rgba(113, 88, 40, 0.16);   /* global-error border, auth chrome */
+  --bb-tint-brown-18: rgba(93, 67, 22, 0.18);    /* sticky cta border                */
+  /* Solid brown text/ring (NOT a tint — direct brand text color)       */
+  --bb-text-brown:    rgb(93, 67, 22);           /* voucher CTA text                 */
+  --bb-ring-brown:    rgb(143, 106, 43);         /* voucher focus ring (#8f6a2b)     */
+
+  /* Accent warm tan (brand --accent anchor rgb(168,146,121))           */
+  --bb-tint-accent-12: rgba(168, 146, 121, 0.12);
+  --bb-tint-accent-18: rgba(168, 146, 121, 0.18);
+
+  /* Cream surface ladder (warm white #FFFCF7 / brand-25 #FAF8F5)       */
+  --bb-cream-60:      rgba(250, 248, 245, 0.60);
+  --bb-cream-75:      rgba(250, 248, 245, 0.75);
+  --bb-cream-90:      rgba(250, 248, 245, 0.90);
+  --bb-surface-60:    rgba(255, 252, 247, 0.60);
+  --bb-surface-75:    rgba(255, 252, 247, 0.75);
+  --bb-surface-82:    rgba(255, 252, 247, 0.82);
+  --bb-surface-86:    rgba(255, 252, 247, 0.86);
+  --bb-surface-90:    rgba(255, 252, 247, 0.90);
+  --bb-surface-96:    rgba(255, 252, 247, 0.96);
+  --bb-white-75:      rgba(255, 255, 255, 0.75);
+  --bb-white-84:      rgba(255, 255, 255, 0.84);
+  --bb-white-86:      rgba(255, 255, 255, 0.86);
+  --bb-white-90:      rgba(255, 255, 255, 0.90);
+
+  /* Muted gold-tinted surface ladder (anchor rgb(239,229,210))         */
+  --bb-muted-35:      rgba(239, 229, 210, 0.35);
+  --bb-muted-72:      rgba(239, 229, 210, 0.72);
+  --bb-muted-80:      rgba(239, 229, 210, 0.80);
+
+  /* Neutral text tints (anchor rgb(26,26,26) — brand-900)              */
+  --bb-text-tint-10:  rgba(26, 26, 26, 0.10);    /* low-contrast border/divider      */
+  --bb-text-tint-22:  rgba(26, 26, 26, 0.22);    /* link underline decoration        */
+
+  /* Trust channel opacity ladder (anchor rgb(22,101,52) — green-700)   */
+  --bb-trust-tint-10: rgba(22, 101, 52, 0.10);
+  --bb-trust-tint-18: rgba(22, 101, 52, 0.18);
+
+  /* Surface-3 neutral cream-grey (anchor rgb(243,241,237))             */
+  --bb-surface-3-60:  rgba(243, 241, 237, 0.60);
+  --bb-surface-3-72:  rgba(243, 241, 237, 0.72);
 
   /* ------------------------------------------------------------------
    * font-display alias (theme interop with layout.tsx Funnel_Display var)

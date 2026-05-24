@@ -27,7 +27,7 @@ export const SellerReviewTab = async ({ seller_handle }: { seller_handle: string
         />
       </div>
       <div className="bb-section-shell">
-        <h3 className="heading-sm border-b border-[rgba(144,112,50,0.14)] pb-4 uppercase">{t('seller_reviews')}</h3>
+        <h3 className="heading-sm border-b border-[var(--bb-border-soft)] pb-4 uppercase">{t('seller_reviews')}</h3>
         <SellerReviewList reviews={seller.reviews} />
       </div>
     </div>

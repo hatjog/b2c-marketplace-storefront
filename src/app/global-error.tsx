@@ -103,7 +103,7 @@ export default function GlobalError({
             variant === 'offline' ? (
               <Link
                 href={`/${locale}/pomoc`}
-                className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[rgba(113,88,40,0.16)] px-5 py-3 text-sm font-medium text-primary no-underline"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[var(--bb-tint-brown-16)] px-5 py-3 text-sm font-medium text-primary no-underline"
               >
                 {messages.runtime.offline.secondary_cta}
               </Link>

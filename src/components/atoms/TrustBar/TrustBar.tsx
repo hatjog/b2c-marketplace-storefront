@@ -34,7 +34,7 @@ export function TrustBar({
           role="listitem"
         >
           <span
-            className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(22,101,52,0.1)] text-[rgb(22,101,52)]"
+            className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--bb-trust-tint-10)] text-[var(--color-trust)]"
             aria-hidden="true"
           >
             <svg

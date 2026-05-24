@@ -97,7 +97,7 @@ export const SellerTabs = async ({
         activeTab={tab}
         idBase="seller-tabs"
       >
-        <section className="rounded-sm border border-[rgba(144,112,50,0.14)] p-4">
+        <section className="rounded-sm border border-[var(--bb-border-soft)] p-4">
           <h2 className="heading-sm mb-3 uppercase">{sellerT('about')}</h2>
           <p className="text-sm leading-6 text-secondary">
             {seller.description?.trim() || sellerT('no_description')}
@@ -109,7 +109,7 @@ export const SellerTabs = async ({
         activeTab={tab}
         idBase="seller-tabs"
       >
-        <section className="rounded-sm border border-[rgba(144,112,50,0.14)] p-4">
+        <section className="rounded-sm border border-[var(--bb-border-soft)] p-4">
           <h2 className="heading-sm mb-3 uppercase">{sellerT('location_label')}</h2>
           <p className="text-sm text-secondary">{address || sellerT('no_address')}</p>
           {openingHours.length > 0 && (
@@ -138,7 +138,7 @@ export const SellerTabs = async ({
         activeTab={tab}
         idBase="seller-tabs"
       >
-        <section className="rounded-sm border border-[rgba(144,112,50,0.14)] p-4">
+        <section className="rounded-sm border border-[var(--bb-border-soft)] p-4">
           <h2 className="heading-sm mb-3 uppercase">{sellerT('policy_label')}</h2>
           <p className="text-sm leading-6 text-secondary">{productsT('shipping_info')}</p>
         </section>

@@ -103,10 +103,14 @@ function renderRefundLine(
   policy: VoucherRecipientPolicyView | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>,
 ) {
+  // v1.9.1 Wave G3 / CC-2 #5 — canonicalise to backend SSOT 3-value
+  // REFUND_CHANNELS (`original_payment | store_credit | vendor_wallet`).
+  // `bank_transfer` removed — it was never in the backend boundary and
+  // caused recipient-side blank refund lines for `vendor_wallet` policies.
   switch (policy?.refund_channel) {
     case 'original_payment':
     case 'store_credit':
-    case 'bank_transfer':
+    case 'vendor_wallet':
       return t(`rules.refund_channel_values.${policy.refund_channel}`);
     default:
       return t('rules.refund_fallback');
@@ -117,11 +121,16 @@ function renderNoShowLine(
   policy: VoucherRecipientPolicyView | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>,
 ) {
+  // v1.9.1 Wave G3 / CC-2 #6 — canonicalise to backend SSOT 5-value
+  // NO_SHOW_POLICIES (adds `vendor_decision`). Previously `vendor_decision`
+  // policies rendered blank no-show lines on recipient page (Trust Invariant
+  // UX-DR16 violation — invisible policy ≡ "no policy applies").
   switch (policy?.no_show_policy) {
     case 'charge_full':
     case 'charge_partial':
     case 'no_charge':
     case 'forfeit_voucher':
+    case 'vendor_decision':
       return t(`rules.no_show_values.${policy.no_show_policy}`);
     default:
       return t('rules.no_show_fallback');

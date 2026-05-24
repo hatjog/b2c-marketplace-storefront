@@ -103,7 +103,7 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
                   'flex w-full items-center gap-2.5 px-3 py-2 text-sm',
                   'transition-colors duration-[var(--anim-duration-fast,150ms)]',
                   selected
-                    ? 'bg-[color:rgba(144,112,50,0.08)] font-medium text-[var(--text-primary)]'
+                    ? 'bg-[var(--bb-tint-gold-08)] font-medium text-[var(--text-primary)]'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bb-surface-muted)] hover:text-[var(--text-primary)]'
                 )}
               >

@@ -52,7 +52,7 @@ export default async function Page({ params, searchParams }: PageProps) {
         locale={locale}
         surface="auth-inline-register"
       />
-      <header className="mb-4 rounded-[20px] border border-[rgba(22,101,52,0.18)] bg-[rgba(22,101,52,0.08)] px-5 py-4 text-sm text-[var(--text-primary)]">
+      <header className="mb-4 rounded-[20px] border border-[var(--bb-trust-tint-18)] bg-[var(--bb-trust-card-bg)] px-5 py-4 text-sm text-[var(--text-primary)]">
         {order
           ? t('inline.order_notice', { orderReference: order, email: inlineEmail })
           : t('inline.header_fallback', { email: inlineEmail || t('email_placeholder') })}
