@@ -1,5 +1,4 @@
 {
-  "_review": "REVIEW: pre-MT translation; v1.7.0 human review pending. translation_source=stub_copy_pending_human_review_v170",
   "common": {
     "loading": "Завантаження...",
     "error": "Виникла помилка",
@@ -1414,7 +1413,11 @@
           "saved_addresses": "Збережені адреси",
           "reviews_to_write": "Відгуки до написання",
           "written_reviews": "Мої відгуки",
-          "account_settings": "Налаштування акаунта"
+          "account_settings": "Налаштування акаунта",
+          "voucher_history": "Ваучери",
+          "returns_history": "Повернення",
+          "wishlist": "Список бажань",
+          "messages": "Повідомлення"
         }
       },
       "snapshot": {

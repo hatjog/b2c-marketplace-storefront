@@ -1,5 +1,4 @@
 {
-  "_review": "REVIEW: pre-MT translation; v1.7.0 human review pending. translation_source=stub_copy_pending_human_review_v170",
   "common": {
     "loading": "Wird geladen...",
     "error": "Ein Fehler ist aufgetreten",
@@ -1414,7 +1413,11 @@
           "saved_addresses": "Gespeicherte Adressen",
           "reviews_to_write": "Zu schreibende Bewertungen",
           "written_reviews": "Meine Bewertungen",
-          "account_settings": "Kontoeinstellungen"
+          "account_settings": "Kontoeinstellungen",
+          "voucher_history": "Gutscheine",
+          "returns_history": "Rücksendungen",
+          "wishlist": "Wunschliste",
+          "messages": "Nachrichten"
         }
       },
       "snapshot": {

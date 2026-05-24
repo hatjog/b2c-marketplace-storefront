@@ -1413,7 +1413,11 @@
           "saved_addresses": "Zapisane adresy",
           "reviews_to_write": "Opinie do napisania",
           "written_reviews": "Moje opinie",
-          "account_settings": "Ustawienia konta"
+          "account_settings": "Ustawienia konta",
+          "voucher_history": "Vouchery",
+          "returns_history": "Zwroty",
+          "wishlist": "Wishlist",
+          "messages": "Wiadomości"
         }
       },
       "snapshot": {

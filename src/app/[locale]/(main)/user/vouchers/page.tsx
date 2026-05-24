@@ -173,7 +173,12 @@ function VoucherRow({ voucher, locale, t }: VoucherRowProps) {
   return (
     <article
       className="bb-card flex h-full flex-col gap-4"
-      style={{ background: 'var(--card-journal-bg, var(--bb-surface))' }}
+      style={{
+        background: 'var(--journal-card-bg, var(--bb-surface))',
+        borderColor: 'var(--journal-card-border)',
+        borderRadius: 'var(--journal-card-radius, 16px)',
+        boxShadow: 'var(--journal-card-shadow)'
+      }}
       data-testid="voucher-row"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
