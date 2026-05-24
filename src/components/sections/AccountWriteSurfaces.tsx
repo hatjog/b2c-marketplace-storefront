@@ -174,7 +174,7 @@ function SurfaceHero({
   cta?: ReactNode;
 }) {
   return (
-    <section className="rounded-[28px] bg-[linear-gradient(135deg,rgba(168,146,121,0.18),rgba(243,241,237,0.96))] p-6">
+    <section className="rounded-[28px] bg-[var(--bb-gradient-accent-cream)] p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-secondary">{eyebrow}</p>
       <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">

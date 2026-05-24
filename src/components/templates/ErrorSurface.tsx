@@ -64,8 +64,7 @@ export function ErrorSurface({
         minHeight: 'calc(100vh - 6rem)',
         display: 'grid',
         placeItems: 'center',
-        background:
-          'radial-gradient(circle at top, rgba(255,245,232,0.85), rgba(250,248,245,1) 60%)',
+        background: 'var(--bb-gradient-seller-radial)',
         padding: '2rem 1.5rem 4rem',
       }}
     >
@@ -78,7 +77,7 @@ export function ErrorSurface({
           border: `1px solid ${colors.border}`,
           borderRadius: '2rem',
           backgroundColor: 'var(--bb-white-90)',
-          boxShadow: '0 20px 60px rgba(113, 88, 40, 0.08)',
+          boxShadow: 'var(--bb-shadow-seller-soft)',
           padding: 'clamp(1.5rem, 4vw, 3rem)',
         }}
       >
@@ -97,8 +96,7 @@ export function ErrorSurface({
               height: '120px',
               borderRadius: '999px',
               border: `1px solid ${colors.border}`,
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,240,229,0.9))',
+              background: 'var(--bb-gradient-seller-card)',
               display: 'grid',
               placeItems: 'center',
             }}

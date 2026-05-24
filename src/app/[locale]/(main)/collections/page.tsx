@@ -84,7 +84,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
 
         {featured ? (
           <section
-            className="relative overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#1f1b17,#4b3a21)] px-6 py-8 text-white md:px-8 md:py-10"
+            className="relative overflow-hidden rounded-[36px] bg-[var(--bb-gradient-dark-warm)] px-6 py-8 text-white md:px-8 md:py-10"
             data-testid="collections-index-hero"
           >
             {featured.imageUrl ? (
@@ -166,7 +166,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
                 aria-label={t('grid.cardAria', { title: card.title })}
                 data-testid="collection-item"
               >
-                <div className="relative min-h-[220px] overflow-hidden bg-[linear-gradient(135deg,rgba(239,229,210,0.9),rgba(250,248,245,0.96))]">
+                <div className="relative min-h-[220px] overflow-hidden bg-[var(--bb-gradient-cream-soft)]">
                   {card.imageUrl ? (
                     <Image
                       src={card.imageUrl}

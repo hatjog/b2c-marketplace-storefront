@@ -1,0 +1,10 @@
+{
+  "name": "eslint-plugin-gp",
+  "version": "1.0.0",
+  "description": "GP storefront local ESLint plugin — enforces DS token discipline (CC-3 H1, v1.9.1 Wave G5).",
+  "main": "index.js",
+  "private": true,
+  "peerDependencies": {
+    "eslint": ">=8"
+  }
+}

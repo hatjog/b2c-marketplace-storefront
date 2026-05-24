@@ -196,7 +196,7 @@ export default async function SellerReviewsPage({
             data-testid="seller-reviews-hero"
           >
             <div className="grid gap-4 p-5 md:grid-cols-[120px_minmax(0,1fr)] md:p-6">
-              <div className="relative min-h-[120px] overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,rgba(239,229,210,0.78),rgba(250,248,245,0.96))]">
+              <div className="relative min-h-[120px] overflow-hidden rounded-[24px] bg-[var(--bb-gradient-cream-wisp)]">
                 {data.seller.imageUrl ? (
                   <Image
                     src={data.seller.imageUrl}

@@ -60,7 +60,7 @@ export async function AuthLayout({
 
   return (
     <div
-      className="min-h-dvh bg-[linear-gradient(135deg,rgba(249,244,236,1)_0%,rgba(244,241,235,1)_100%)]"
+      className="min-h-dvh bg-[var(--bb-gradient-page-warm)]"
       data-auth-surface={surface}
       style={
         {

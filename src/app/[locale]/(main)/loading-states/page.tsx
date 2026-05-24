@@ -102,7 +102,7 @@ export default async function LoadingStatesCataloguePage({
                     height: '16px',
                     width: `${w}%`,
                     borderRadius: '4px',
-                    background: 'linear-gradient(90deg, var(--bb-surface, #F5F0E8) 25%, var(--bb-surface-muted, #EDE8DC) 50%, var(--bb-surface, #F5F0E8) 75%)',
+                    background: 'var(--bb-gradient-loading-shimmer)',
                     backgroundSize: '200% 100%',
                     animation: 'bb-shimmer 1.5s ease-in-out infinite'
                   }}

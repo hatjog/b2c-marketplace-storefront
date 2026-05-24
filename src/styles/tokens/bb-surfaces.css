@@ -67,6 +67,18 @@
   --bb-dark-gradient:  linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
   /* v1.9.1 Wave G5 — voucher recipient page warm hero gradient */
   --bb-voucher-page-gradient: radial-gradient(circle at top left, rgba(214, 180, 112, 0.18), transparent 32%), radial-gradient(circle at bottom right, rgba(214, 180, 112, 0.12), transparent 28%);
+  /* v1.9.1 Wave G5 — additional gradient tokens for collections / sellers / loading-states surfaces */
+  --bb-gradient-cream-card:    linear-gradient(135deg, rgba(239, 229, 210, 0.86), rgba(250, 248, 245, 0.98));
+  --bb-gradient-cream-soft:    linear-gradient(135deg, rgba(239, 229, 210, 0.9),  rgba(250, 248, 245, 0.96));
+  --bb-gradient-cream-wisp:    linear-gradient(135deg, rgba(239, 229, 210, 0.78), rgba(250, 248, 245, 0.96));
+  --bb-gradient-page-warm:     linear-gradient(135deg, rgba(249, 244, 236, 1) 0%, rgba(244, 241, 235, 1) 100%);
+  --bb-gradient-dark-warm:     linear-gradient(135deg, #1f1b17, #4b3a21);
+  --bb-gradient-accent-cream:  linear-gradient(135deg, rgba(168, 146, 121, 0.18), rgba(243, 241, 237, 0.96));
+  --bb-gradient-loading-shimmer: linear-gradient(90deg, var(--bb-surface, #F5F0E8) 25%, var(--bb-surface-muted, #EDE8DC) 50%, var(--bb-surface, #F5F0E8) 75%);
+  --bb-gradient-seller-radial: radial-gradient(circle at top, rgba(255, 245, 232, 0.85), rgba(250, 248, 245, 1) 60%);
+  --bb-gradient-seller-veil:   linear-gradient(180deg, rgba(255, 248, 239, 0.85) 0%, rgba(250, 248, 245, 1) 30%, rgba(250, 248, 245, 1) 100%);
+  --bb-gradient-seller-card:   linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 240, 229, 0.9));
+  --bb-shadow-seller-soft:     0 20px 60px rgba(113, 88, 40, 0.08);
 
   /* ------------------------------------------------------------------
    * Semantic text tokens (brand layer)
