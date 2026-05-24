@@ -28,7 +28,7 @@ export function CategoryCard({
   return (
     <LocalizedClientLink
       href={`/categories/${category.handle}`}
-      className="group relative flex min-h-[320px] overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.75)] shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1"
+      className="group relative flex min-h-[320px] overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1"
       data-testid="category-item"
     >
       <div className="absolute inset-0">

@@ -1,7 +1,7 @@
 module.exports = {
   extends: ["next/core-web-vitals"],
   parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "import"],
+  plugins: ["@typescript-eslint", "import", "gp"],
   settings: {
     "import/resolver": {
       typescript: true,
@@ -22,6 +22,12 @@ module.exports = {
     ],
     "import/no-relative-parent-imports": "off",
     "eqeqeq": ["error", "always", { "null": "ignore" }],
+    // v1.9.1 Wave G5 — CC-3 H1 closure. Disallow raw color literals
+    // (#hex, rgb(), rgba(), hsl(), hsla()) in storefront source files.
+    // All color values must consume the DS token registry via
+    // var(--token-name) from src/styles/tokens/*.css. Companion Python
+    // validator: _grow/tools/validate_storefront_ds_literals.py.
+    "gp/no-storefront-color-literals": "error",
     "no-restricted-syntax": [
       "error",
       {

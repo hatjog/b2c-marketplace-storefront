@@ -95,8 +95,7 @@ export function HelpCenter({
       data-help-source={sourceMarker}
       style={{
         padding: '2rem 1rem 4rem',
-        background:
-          'linear-gradient(180deg, rgba(255,248,239,0.85) 0%, rgba(250,248,245,1) 30%, rgba(250,248,245,1) 100%)',
+        background: 'var(--bb-gradient-seller-veil)',
       }}
     >
       <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gap: '1.5rem' }}>
@@ -105,8 +104,8 @@ export function HelpCenter({
             border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
             borderRadius: '2rem',
             padding: 'clamp(1.5rem, 4vw, 3rem)',
-            backgroundColor: 'rgba(255,255,255,0.86)',
-            boxShadow: '0 20px 60px rgba(113, 88, 40, 0.08)',
+            backgroundColor: 'var(--bb-white-86)',
+            boxShadow: 'var(--bb-shadow-seller-soft)',
           }}
         >
           <div style={{ display: 'grid', gap: '1rem' }}>
@@ -118,7 +117,7 @@ export function HelpCenter({
                 alignItems: 'center',
                 padding: '0 1rem',
                 borderRadius: '999px',
-                backgroundColor: 'rgba(144,112,50,0.12)',
+                backgroundColor: 'var(--bb-tint-gold-12)',
                 color: 'var(--text-primary)',
                 fontSize: '0.875rem',
                 fontWeight: 600,
@@ -153,7 +152,7 @@ export function HelpCenter({
                   borderRadius: '999px',
                   border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
                   padding: '0 1.25rem',
-                  backgroundColor: 'rgba(255,255,255,0.95)',
+                  backgroundColor: 'var(--bb-white-90)',
                   color: 'var(--text-primary)',
                 }}
               />
@@ -174,7 +173,7 @@ export function HelpCenter({
               border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
               borderRadius: '2rem',
               padding: 'clamp(1.25rem, 3vw, 2rem)',
-              backgroundColor: 'rgba(255,255,255,0.86)',
+              backgroundColor: 'var(--bb-white-86)',
             }}
           >
             <h2
@@ -205,7 +204,7 @@ export function HelpCenter({
                       border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
                       borderRadius: '1.5rem',
                       padding: '1rem',
-                      backgroundColor: 'rgba(250,248,245,0.9)',
+                      backgroundColor: 'var(--bb-cream-90)',
                     }}
                   >
                     <div style={{ marginBottom: '0.75rem' }}>
@@ -333,7 +332,7 @@ export function HelpCenter({
                 border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
                 borderRadius: '2rem',
                 padding: '1.5rem',
-                backgroundColor: 'rgba(255,255,255,0.86)',
+                backgroundColor: 'var(--bb-white-86)',
               }}
             >
               <h2 style={{ margin: '0 0 0.75rem', color: 'var(--text-primary)' }}>{relatedLinksTitle}</h2>

@@ -41,7 +41,7 @@ const variantStyles: Record<AlertVariant, { container: string; text: string; ico
     icon: '#be123c'
   },
   neutral: {
-    container: 'border border-[var(--bb-border-soft)] bg-[rgba(243,241,237,0.72)]',
+    container: 'border border-[var(--bb-border-soft)] bg-[var(--bb-surface-3-72)]',
     text: 'text-primary',
     icon: '#090909'
   }

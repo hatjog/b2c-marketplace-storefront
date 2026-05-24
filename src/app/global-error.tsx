@@ -66,12 +66,18 @@ export default function GlobalError({
             </button>
           }
           utilityLink={
-            <a
-              href="https://status.bonbeauty.pl"
-              className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-primary underline"
-            >
-              {messages.runtime.status_link}
-            </a>
+            // v1.9.0 Wave F7 hardening (CC-6 F-CC6-08): only render the
+            // status-page link when NEXT_PUBLIC_STATUS_PAGE_URL is set.
+            // Story 7.5 explicitly OOS the status.bonbeauty.pl product
+            // build; hardcoding the URL was a broken trust signal #1.
+            process.env.NEXT_PUBLIC_STATUS_PAGE_URL ? (
+              <a
+                href={process.env.NEXT_PUBLIC_STATUS_PAGE_URL}
+                className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-primary underline"
+              >
+                {messages.runtime.status_link}
+              </a>
+            ) : undefined
           }
           supportTitle={messages.runtime.support_title}
           supportPaths={[
@@ -97,7 +103,7 @@ export default function GlobalError({
             variant === 'offline' ? (
               <Link
                 href={`/${locale}/pomoc`}
-                className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[rgba(113,88,40,0.16)] px-5 py-3 text-sm font-medium text-primary no-underline"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-[var(--bb-tint-brown-16)] px-5 py-3 text-sm font-medium text-primary no-underline"
               >
                 {messages.runtime.offline.secondary_cta}
               </Link>

@@ -28,21 +28,32 @@ import { loadStripe, type Stripe } from '@stripe/stripe-js';
 export const PAYMENT_NOT_AVAILABLE_MESSAGE = 'Payment is not available for this market';
 
 /**
- * Markets z aktywnym Stripe w v1.8.0 (D10). Mirror Story 1.1
- * `STRIPE_ENABLED_MARKETS` — tylko BonBeauty; pozostałe 4 markety
- * (bonevent/bongarden/mercur/testmarketb) → graceful reject. Rozszerzenie
- * = v1.10.0+ (poza scope tej story).
- */
-const STRIPE_ENABLED_MARKETS = new Set<string>(['bonbeauty']);
-
-/**
- * Per-market `payment.stripe.enabled_methods` (D6). Schema autorowana
- * w Story 0.17; storefront czyta aktywny market i mapuje na Stripe
- * `paymentMethodTypes`. BonBeauty: card/blik/p24.
+ * v1.9.0 wf5 (H-4 / L-9 / F-CC1-007): collapse dual SSOTs.
+ *
+ * Per-market `payment.stripe.enabled_methods` (D6). Source of truth is
+ * `GP/config/gp-dev/markets/<market>/market.yaml#payments.stripe.enabled_methods`.
+ * BonBeauty live config currently lists 5 methods (card/blik/p24/apple_pay/
+ * google_pay) — storefront aligned to the same 5 here (pre-v1.9.0 the
+ * storefront hardcoded only 3 and silently dropped wallet methods). For
+ * v1.10.0+ multi-market activation this MUST switch to a build-time codegen
+ * step that reads the same gp-config YAML (planned: `gp-cli storefront
+ * codegen` produces `src/lib/stripe/enabled-methods.generated.ts`); until
+ * then the manual mirror is annotated with the parity validator
+ * `_grow/tools/validate_stripe_enabled_methods_parity.py`.
+ *
+ * STRIPE_ENABLED_MARKETS is derived from the keys of this map (L-9 fix):
+ * adding a market = a single change here, not two.
  */
 const MARKET_ENABLED_METHODS: Record<string, readonly string[]> = {
-  bonbeauty: ['card', 'blik', 'p24']
+  bonbeauty: ['card', 'blik', 'p24', 'apple_pay', 'google_pay']
 };
+
+/**
+ * v1.9.0 wf5 L-9 fix: derive enabled markets from MARKET_ENABLED_METHODS keys
+ * so adding a market requires updating a single map (was two: Set + Record).
+ * Mirror Story 1.1 backend resolver `STRIPE_ENABLED_MARKETS`.
+ */
+const STRIPE_ENABLED_MARKETS = new Set<string>(Object.keys(MARKET_ENABLED_METHODS));
 
 /** Aktywny market id (build-embedded, spójne z market-filter helper). */
 export function getActiveMarketId(): string {

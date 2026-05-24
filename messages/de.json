@@ -1,5 +1,4 @@
 {
-  "_review": "REVIEW: pre-MT translation; v1.7.0 human review pending. translation_source=stub_copy_pending_human_review_v170",
   "common": {
     "loading": "Wird geladen...",
     "error": "Ein Fehler ist aufgetreten",
@@ -603,6 +602,33 @@
       "submit": "Konto erstellen",
       "skip": "Jetzt nicht",
       "success": "Konto bereit. Weiterleitung läuft."
+    },
+    "magic_link_recover": {
+      "meta_title": "Zugang wiederherstellen — BonBeauty",
+      "meta_description": "Stellen Sie Ihren Kontozugang sicher per E-Mail-Link wieder her.",
+      "request_eyebrow": "Zugang wiederherstellen",
+      "request_title": "Wir senden Ihnen einen Anmeldelink.",
+      "request_subtitle": "Kein Passwort nötig. Sie erhalten eine E-Mail mit einem sicheren Einmal-Link zu Ihrem Konto.",
+      "request_attempted_notice": "Dieser Link ist abgelaufen oder wurde bereits verwendet. Sie können einen neuen anfordern.",
+      "email_label": "E-Mail",
+      "email_placeholder": "Ihre E-Mail-Adresse",
+      "ttl_helper": "Der Link ist 7 Tage nach dem Versand gültig.",
+      "submit": "Anmeldelink senden",
+      "submit_pending": "Wird gesendet…",
+      "success_body": "Wenn dieses Konto existiert, ist der Link unterwegs. Bitte prüfen Sie Ihren Posteingang.",
+      "invalid_email": "Bitte prüfen Sie die E-Mail-Adresse.",
+      "network_error": "Wir konnten den Link gerade nicht senden. Bitte versuchen Sie es gleich noch einmal.",
+      "landing": {
+        "eyebrow": "Anmeldung per Link",
+        "title": "Bestätigen Sie, dass Sie es sind.",
+        "subtitle": "Klicken Sie auf die Schaltfläche, um die Anmeldung abzuschließen.",
+        "continue_title": "Anmeldung sicher abschließen",
+        "continue_body": "Nach dem Klick melden wir Sie an und führen Sie zu Ihren Gutscheinen.",
+        "continue_cta": "Anmelden",
+        "neutral_title": "Dieser Link ist nicht mehr gültig.",
+        "neutral_body": "Der Link ist möglicherweise abgelaufen oder wurde bereits verwendet. Fordern Sie einen neuen Link an — wir senden ihn frisch in Ihren Posteingang.",
+        "request_new_link": "Neuen Link anfordern"
+      }
     }
   },
   "forms": {
@@ -807,7 +833,8 @@
     "cart_description": "Überprüfen Sie die Artikel in Ihrem Warenkorb und fahren Sie zur Kasse fort.",
     "checkout_title": "Kasse",
     "checkout_description": "Prüfen Sie Ihre Bestelldaten und schließen Sie den Kauf sicher ab.",
-    "loading": "Wird geladen..."
+    "loading": "Wird geladen...",
+    "checkout_verified_label": "Verifizierter Marktplatz"
   },
   "legal": {
     "title_privacy": "Datenschutzrichtlinie",
@@ -1179,7 +1206,7 @@
         "refund_channel_values": {
           "original_payment": "Die Rückerstattung erfolgt auf die ursprüngliche Zahlungsmethode.",
           "store_credit": "Die Rückerstattung erfolgt als Guthaben.",
-          "bank_transfer": "Die Rückerstattung erfolgt per Banküberweisung."
+          "vendor_wallet": "Die Rückerstattung erfolgt über das Wallet des Salons."
         },
         "no_show_label": "No-show:",
         "no_show_fallback": "Die No-show-Regel ist vorübergehend nicht verfügbar.",
@@ -1187,7 +1214,8 @@
           "charge_full": "Ein Nichterscheinen kann zu einer vollständigen Belastung führen.",
           "charge_partial": "Ein Nichterscheinen kann zu einer teilweisen Belastung führen.",
           "no_charge": "Ein Nichterscheinen verursacht keine zusätzliche Gebühr, bitte kontaktieren Sie aber den Salon.",
-          "forfeit_voucher": "Ein Nichterscheinen kann zum Verlust des Gutscheins führen."
+          "forfeit_voucher": "Ein Nichterscheinen kann zum Verlust des Gutscheins führen.",
+          "vendor_decision": "Der Salon entscheidet über das Vorgehen bei Nichterscheinen."
         }
       },
       "expired": {
@@ -1414,7 +1442,11 @@
           "saved_addresses": "Gespeicherte Adressen",
           "reviews_to_write": "Zu schreibende Bewertungen",
           "written_reviews": "Meine Bewertungen",
-          "account_settings": "Kontoeinstellungen"
+          "account_settings": "Kontoeinstellungen",
+          "voucher_history": "Gutscheine",
+          "returns_history": "Rücksendungen",
+          "wishlist": "Wunschliste",
+          "messages": "Nachrichten"
         }
       },
       "snapshot": {
@@ -2714,11 +2746,6 @@
     "categories": {
       "image_alt": "Kategorie {name}"
     },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Beliebt im Moment",
-      "empty_state": "Wir aktualisieren gerade die Liste beliebter Rituale. Bitte schauen Sie in Kürze erneut vorbei."
-    },
     "editorial": {
       "aria_label": "Editorial — Leiser Luxus",
       "eyebrow": "Redaktionelle Auswahl",
@@ -2785,6 +2812,11 @@
         "3": "Sichere Online-Zahlungen",
         "4": "Klare Gutscheinregeln"
       }
+    },
+    "editorial_choice": {
+      "eyebrow": "Redaktionsempfehlung",
+      "heading": "Redaktionsempfehlung",
+      "empty_state": "Wir stellen gerade eine neue redaktionelle Auswahl zusammen. Schauen Sie bitte gleich noch einmal vorbei."
     }
   },
   "category_plp": {

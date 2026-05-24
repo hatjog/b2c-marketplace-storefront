@@ -15,11 +15,11 @@ export const OrderTimeline = ({ currentStatus }: OrderTimelineProps) => {
     <div className="w-full pb-4 pt-6">
       <div className="relative flex items-center justify-around">
         {/* Base line */}
-        <div className="absolute left-0 right-0 h-0.5 bg-[#EEEEEE]" />
+        <div className="absolute left-0 right-0 h-0.5 bg-[var(--color-neutral-50)]" />
 
         {/* Progress line */}
         <div
-          className="absolute left-0 h-0.5 bg-[#1B1B1B] transition-all duration-300"
+          className="absolute left-0 h-0.5 bg-[var(--bg-action)] transition-all duration-300"
           style={{
             width:
               currentIndex >= 0 ? `calc(${(currentIndex / statuses.length) * 100}% + 105px)` : '0%'
@@ -41,7 +41,7 @@ export const OrderTimeline = ({ currentStatus }: OrderTimelineProps) => {
               <span
                 className={cn(
                   'heading-xs -translate-y-4 whitespace-nowrap uppercase text-primary',
-                  isActive ? 'text-[#1B1B1B]' : 'text-[#EEEEEE]'
+                  isActive ? 'text-[var(--bg-action)]' : 'text-[var(--color-neutral-50)]'
                 )}
               >
                 {status}
@@ -49,7 +49,7 @@ export const OrderTimeline = ({ currentStatus }: OrderTimelineProps) => {
               <div
                 className={cn(
                   'size-2.5 -translate-y-2.5 rounded-full transition-colors duration-300',
-                  isActive ? 'bg-[#1B1B1B]' : 'bg-[#EEEEEE]'
+                  isActive ? 'bg-[var(--bg-action)]' : 'bg-[var(--color-neutral-50)]'
                 )}
               />
             </div>

@@ -44,6 +44,12 @@ export interface ProductEntitlementProfile {
 /**
  * Line-item metadata fragment carrying the embedded entitlement_profile.
  *
+ * v1.9.0 wf5 H-7 / CC-1 F-CC1-009 (ra-E2): authoritative shape contract is
+ * `specs/contracts/config/schemas/entitlement-line-item-metadata.v1.schema.json`.
+ * Storefront writes + backend reads MUST agree on the shape; the schema is the
+ * single source of truth and is loaded by CI (validate_event_contracts.py
+ * equivalent for config schemas) to enforce parity.
+ *
  * Backend `resolveEntitlementProfile()` reads either:
  *   - the embedded `metadata.entitlement_profile` (short-circuit, recommended);
  *   - or the destructured triad `metadata.entitlement_profile_id` /

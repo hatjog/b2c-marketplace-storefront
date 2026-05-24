@@ -1,0 +1,44 @@
+/**
+ * Per-locale typography deltas — Story 0.10 deliverable.
+ *
+ * v1.9.0 Wave F7 hardening (CC-3 M1):
+ *   - Spec sources (verbatim):
+ *     - specs/design-system/bonbeauty/typography-en.md
+ *     - specs/design-system/bonbeauty/typography-uk.md  (storefront locale `ua`)
+ *     - specs/design-system/bonbeauty/typography-de.md
+ *   - Activated via `<HtmlLangSetter>` setting `document.documentElement.lang`
+ *     to the active SUPPORTED_LOCALES code (pl/en/ua/de).
+ *   - PL has no deltas in v1.8.0 spec; hyphenation deferred to v1.9.0+
+ *     Hyphenopoly POC.
+ */
+
+/* English (en) — looser letter-spacing on display headings. */
+:lang(en) h1 { letter-spacing: -0.015em; }
+:lang(en) h2 { letter-spacing: -0.010em; }
+
+/* Ukrainian (ua per storefront, uk per BCP-47) — Cyrillic tracking
+   compensation + safe wrap behaviour for long compound words.
+   Funnel Display has no Cyrillic subset; per typography-uk.md §6 we
+   fall back to Inter (preloaded via `--font-cyrillic-fallback`). */
+:lang(ua) body,
+:lang(ua) {
+  font-family: var(--font-cyrillic-fallback), system-ui, -apple-system, sans-serif;
+}
+
+:lang(ua) p,
+:lang(ua) .body-text { letter-spacing: -0.01em; }
+
+:lang(ua) p,
+:lang(ua) .legal-doc-body {
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+/* German (de) — long compound words need defensive wrap + hyphenation. */
+:lang(de) p,
+:lang(de) .legal-doc-body,
+:lang(de) .long-text-container {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  hyphenate-limit-chars: 10 4 4;
+}

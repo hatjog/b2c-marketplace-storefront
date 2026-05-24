@@ -35,7 +35,7 @@ export const WishlistItem = async ({
   return (
     <div
       className={clsx(
-        'group relative flex w-full max-w-[370px] flex-col justify-between overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)]'
+        'group relative flex w-full max-w-[370px] flex-col justify-between overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)]'
       )}
       data-testid={testIdPrefix}
     >

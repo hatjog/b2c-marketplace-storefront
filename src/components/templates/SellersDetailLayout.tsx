@@ -41,7 +41,7 @@ export function SellersDetailLayout(props: SellersDetailLayoutProps) {
         className="bb-page-shell pb-10"
       >
         <div className="container py-4">{props.breadcrumbs}</div>
-        <section className="bb-section-shell bb-section-shell-strong border-y border-[rgba(144,112,50,0.14)]">
+        <section className="bb-section-shell bb-section-shell-strong border-y border-[var(--bb-border-soft)]">
           <div className="container space-y-4 py-8 md:py-10">
             <div className="max-w-3xl space-y-3">
               <h1 className="heading-lg text-primary">{props.title}</h1>

@@ -103,10 +103,14 @@ function renderRefundLine(
   policy: VoucherRecipientPolicyView | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>,
 ) {
+  // v1.9.1 Wave G3 / CC-2 #5 — canonicalise to backend SSOT 3-value
+  // REFUND_CHANNELS (`original_payment | store_credit | vendor_wallet`).
+  // `bank_transfer` removed — it was never in the backend boundary and
+  // caused recipient-side blank refund lines for `vendor_wallet` policies.
   switch (policy?.refund_channel) {
     case 'original_payment':
     case 'store_credit':
-    case 'bank_transfer':
+    case 'vendor_wallet':
       return t(`rules.refund_channel_values.${policy.refund_channel}`);
     default:
       return t('rules.refund_fallback');
@@ -117,11 +121,16 @@ function renderNoShowLine(
   policy: VoucherRecipientPolicyView | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>,
 ) {
+  // v1.9.1 Wave G3 / CC-2 #6 — canonicalise to backend SSOT 5-value
+  // NO_SHOW_POLICIES (adds `vendor_decision`). Previously `vendor_decision`
+  // policies rendered blank no-show lines on recipient page (Trust Invariant
+  // UX-DR16 violation — invisible policy ≡ "no policy applies").
   switch (policy?.no_show_policy) {
     case 'charge_full':
     case 'charge_partial':
     case 'no_charge':
     case 'forfeit_voucher':
+    case 'vendor_decision':
       return t(`rules.no_show_values.${policy.no_show_policy}`);
     default:
       return t('rules.no_show_fallback');
@@ -136,7 +145,7 @@ function FooterLinks({
   t: Awaited<ReturnType<typeof getTranslations<'voucher.recipient'>>>;
 }) {
   return (
-    <footer className="pt-10 text-center text-sm text-[#7e6c53]">
+    <footer className="pt-10 text-center text-sm text-[var(--text-secondary)]">
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
         <Link href={`/${locale}/zasady`} className="underline underline-offset-4">
           {t('footer.rules')}
@@ -172,38 +181,38 @@ export async function VoucherRecipientView({
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
         <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-          <span className="inline-flex rounded-full border border-[#d8bea2] bg-white/70 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#8f6a2b]">
+          <span className="inline-flex rounded-full border border-[var(--bb-border-soft)] bg-white/70 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">
             {t('expired.badge')}
           </span>
-          <h1 className="heading-lg max-w-2xl text-[#24190d]">{t('expired.heading')}</h1>
-          <p className="max-w-xl text-base leading-7 text-[#6f604a]">
+          <h1 className="heading-lg max-w-2xl text-[var(--text-primary)]">{t('expired.heading')}</h1>
+          <p className="max-w-xl text-base leading-7 text-[var(--text-secondary)]">
             {expiryDate
               ? t('expired.body_with_date', { date: expiryDate })
               : t('expired.body_fallback')}
           </p>
         </section>
 
-        <section className="mx-auto grid w-full max-w-3xl gap-4 rounded-[24px] border border-[rgba(93,67,22,0.12)] bg-white/80 p-6 shadow-[0_24px_60px_rgba(86,60,18,0.08)] md:grid-cols-2">
+        <section className="mx-auto grid w-full max-w-3xl gap-4 rounded-[24px] border border-[var(--bb-border-soft)] bg-white/80 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)] md:grid-cols-2">
           <div className="space-y-3">
-            <h2 className="heading-sm text-[#24190d]">{t('expired.contact_heading')}</h2>
-            <p className="text-sm leading-6 text-[#6f604a]">{t('expired.contact_body')}</p>
+            <h2 className="heading-sm text-[var(--text-primary)]">{t('expired.contact_heading')}</h2>
+            <p className="text-sm leading-6 text-[var(--text-secondary)]">{t('expired.contact_body')}</p>
             {voucher?.seller_phone && (
-              <a href={`tel:${voucher.seller_phone}`} className="block text-sm font-medium text-[#5d4316] underline underline-offset-4">
+              <a href={`tel:${voucher.seller_phone}`} className="block text-sm font-medium text-[var(--bg-action)] underline underline-offset-4">
                 {voucher.seller_phone}
               </a>
             )}
-            <Link href={`/${locale}/pomoc`} className="inline-flex min-h-12 items-center rounded-full bg-[#5d4316] px-5 py-3 text-sm font-medium text-[#fff9f0]">
+            <Link href={`/${locale}/pomoc`} className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]">
               {t('expired.support_cta')}
             </Link>
           </div>
-          <div className="space-y-3 rounded-[20px] border border-dashed border-[rgba(93,67,22,0.18)] bg-[#fff9f0] p-5">
-            <h2 className="heading-sm text-[#24190d]">{t('expired.privacy_heading')}</h2>
-            <p className="text-sm leading-6 text-[#6f604a]">
+          <div className="space-y-3 rounded-[20px] border border-dashed border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5">
+            <h2 className="heading-sm text-[var(--text-primary)]">{t('expired.privacy_heading')}</h2>
+            <p className="text-sm leading-6 text-[var(--text-secondary)]">
               {visibleCode
                 ? t('expired.privacy_known_code')
                 : t('expired.privacy_unknown_code')}
             </p>
-            <p className="text-xs text-[#8b7b63]">{t('expired.support_hint')}</p>
+            <p className="text-xs text-[var(--text-secondary)]">{t('expired.support_hint')}</p>
           </div>
         </section>
 
@@ -216,11 +225,11 @@ export async function VoucherRecipientView({
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
         <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-          <span className="inline-flex rounded-full border border-[#a8c99b] bg-[#f4fff1] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#3a6b2f]">
+          <span className="inline-flex rounded-full border border-[var(--color-success-500)] bg-[var(--color-success-50)] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--color-success-700)]">
             {t('redeemed.badge')}
           </span>
-          <h1 className="heading-lg max-w-2xl text-[#24190d]">{t('redeemed.heading')}</h1>
-          <p className="max-w-xl text-base leading-7 text-[#6f604a]">
+          <h1 className="heading-lg max-w-2xl text-[var(--text-primary)]">{t('redeemed.heading')}</h1>
+          <p className="max-w-xl text-base leading-7 text-[var(--text-secondary)]">
             {t('redeemed.body', {
               seller: voucher.seller_name,
               date: redeemedDate ?? t('redeemed.timestamp_fallback'),
@@ -228,22 +237,22 @@ export async function VoucherRecipientView({
           </p>
         </section>
 
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-[24px] border border-[rgba(58,107,47,0.16)] bg-white/85 p-6 shadow-[0_24px_60px_rgba(86,60,18,0.08)]">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-[24px] border border-[var(--color-success-500)] bg-white/85 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
           <div className="space-y-2">
-            <h2 className="heading-sm text-[#24190d]">{t('redeemed.contact_heading')}</h2>
-            <p className="text-sm text-[#6f604a]">{voucher.seller_name}</p>
-            {voucher.seller_address && <p className="text-sm text-[#6f604a]">{voucher.seller_address}</p>}
+            <h2 className="heading-sm text-[var(--text-primary)]">{t('redeemed.contact_heading')}</h2>
+            <p className="text-sm text-[var(--text-secondary)]">{voucher.seller_name}</p>
+            {voucher.seller_address && <p className="text-sm text-[var(--text-secondary)]">{voucher.seller_address}</p>}
             {voucher.seller_phone && (
-              <a href={`tel:${voucher.seller_phone}`} className="text-sm font-medium text-[#5d4316] underline underline-offset-4">
+              <a href={`tel:${voucher.seller_phone}`} className="text-sm font-medium text-[var(--bg-action)] underline underline-offset-4">
                 {voucher.seller_phone}
               </a>
             )}
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href={`/${locale}/sellers`} className="inline-flex min-h-12 items-center rounded-full bg-[#5d4316] px-5 py-3 text-sm font-medium text-[#fff9f0]">
+            <Link href={`/${locale}/sellers`} className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]">
               {t('redeemed.cta_explore')}
             </Link>
-            <Link href={`/${locale}/pomoc`} className="inline-flex min-h-12 items-center rounded-full border border-[rgba(93,67,22,0.18)] bg-white px-5 py-3 text-sm font-medium text-[#5d4316]">
+            <Link href={`/${locale}/pomoc`} className="inline-flex min-h-12 items-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-sm font-medium text-[var(--bg-action)]">
               {t('redeemed.cta_support')}
             </Link>
           </div>
@@ -257,37 +266,37 @@ export async function VoucherRecipientView({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <section className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
-        <span className="inline-flex rounded-full bg-[rgba(214,180,112,0.16)] px-4 py-2 text-xs uppercase tracking-[0.28em] text-[#8f6a2b]">
+        <span className="inline-flex rounded-full bg-[var(--bb-surface-strong)] px-4 py-2 text-xs uppercase tracking-[0.28em] text-[var(--cta-hover)]">
           {voucher.sender_disclosure_allowed && voucher.sender_name
             ? t('active.hero_sender_disclosed', { sender: voucher.sender_name })
             : t('active.hero_sender_fallback')}
         </span>
-        <h1 className="heading-lg max-w-3xl text-[#24190d]">
+        <h1 className="heading-lg max-w-3xl text-[var(--text-primary)]">
           {voucher.sender_message || t('active.heading')}
         </h1>
-        <p className="max-w-2xl text-base leading-7 text-[#6f604a]">
+        <p className="max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
           {t('active.subheading')}
         </p>
       </section>
 
-      <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 rounded-[28px] border border-[rgba(93,67,22,0.12)] bg-white/90 p-6 shadow-[0_24px_60px_rgba(86,60,18,0.08)]">
+      <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 rounded-[28px] border border-[var(--bb-border-soft)] bg-white/90 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#8f6a2b]">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">
             {voucher.seller_city
               ? t('active.card_eyebrow_with_city', { seller: voucher.seller_name, city: voucher.seller_city })
               : voucher.seller_name}
           </p>
-          <h2 className="heading-sm text-[#24190d]">{voucher.product_title || t('active.service_fallback')}</h2>
+          <h2 className="heading-sm text-[var(--text-primary)]">{voucher.product_title || t('active.service_fallback')}</h2>
         </div>
 
-        <div className="text-4xl font-medium tracking-[-0.02em] text-[#24190d]">
+        <div className="text-4xl font-medium tracking-[-0.02em] text-[var(--text-primary)]">
           {formatVoucherPrice(voucher.value_minor, voucher.currency_code, locale)}
         </div>
 
-        <div className="space-y-2 rounded-[22px] border border-[rgba(93,67,22,0.12)] bg-[#fff9f0] p-4">
+        <div className="space-y-2 rounded-[22px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[#8f6a2b]">{t('active.code_label')}</p>
-            <p className="mt-2 break-all font-mono text-lg text-[#24190d]">{voucher.code}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('active.code_label')}</p>
+            <p className="mt-2 break-all font-mono text-lg text-[var(--text-primary)]">{voucher.code}</p>
           </div>
           <VoucherCodeCopyButton
             code={voucher.code}
@@ -298,7 +307,7 @@ export async function VoucherRecipientView({
           />
         </div>
 
-        <div className="text-sm text-[#6f604a]">
+        <div className="text-sm text-[var(--text-secondary)]">
           {expiryDate
             ? t('active.validity', { date: expiryDate })
             : t('active.validity_fallback')}
@@ -307,56 +316,56 @@ export async function VoucherRecipientView({
         <div className="flex flex-col gap-3 sm:flex-row">
           <a
             href={voucher.pdf_url ?? `/api/voucher/${voucher.code}/pdf`}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-[#5d4316] px-5 py-3 text-sm font-medium text-[#fff9f0]"
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]"
           >
             {t('active.pdf_cta')}
           </a>
           <button
             type="button"
             disabled
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[rgba(93,67,22,0.18)] bg-white px-5 py-3 text-sm font-medium text-[#7e6c53] disabled:cursor-not-allowed disabled:opacity-100"
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-sm font-medium text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-100"
           >
             {t('active.wallet_soon')}
           </button>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-[rgba(93,67,22,0.1)] bg-white/70 p-6 md:p-8">
+      <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-[var(--bb-border-soft)] bg-white/70 p-6 md:p-8">
         <div className="mb-6 text-center">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#8f6a2b]">{t('steps.eyebrow')}</p>
-          <h2 className="heading-md mt-2 text-[#24190d]">{t('steps.heading')}</h2>
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('steps.eyebrow')}</p>
+          <h2 className="heading-md mt-2 text-[var(--text-primary)]">{t('steps.heading')}</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {['show_code', 'book_visit', 'enjoy_service'].map((stepKey, index) => (
-            <article key={stepKey} className="rounded-[22px] border border-[rgba(93,67,22,0.1)] bg-[#fffaf3] p-5">
-              <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(214,180,112,0.18)] text-sm font-semibold text-[#8f6a2b]">
+            <article key={stepKey} className="rounded-[22px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5">
+              <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--bb-surface-strong)] text-sm font-semibold text-[var(--cta-hover)]">
                 {index + 1}
               </div>
-              <h3 className="mb-2 text-base font-medium text-[#24190d]">{t(`steps.${stepKey}.title`)}</h3>
-              <p className="text-sm leading-6 text-[#6f604a]">{t(`steps.${stepKey}.body`)}</p>
+              <h3 className="mb-2 text-base font-medium text-[var(--text-primary)]">{t(`steps.${stepKey}.title`)}</h3>
+              <p className="text-sm leading-6 text-[var(--text-secondary)]">{t(`steps.${stepKey}.body`)}</p>
             </article>
           ))}
         </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <article className="rounded-[28px] border border-[rgba(93,67,22,0.1)] bg-white/80 p-6 md:p-8">
+        <article className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
           <div className="mb-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#8f6a2b]">{t('salon.eyebrow')}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('salon.eyebrow')}</p>
             {sellerHref ? (
-              <Link href={sellerHref} className="heading-sm mt-2 inline-block text-[#24190d] underline underline-offset-4">
+              <Link href={sellerHref} className="heading-sm mt-2 inline-block text-[var(--text-primary)] underline underline-offset-4">
                 {voucher.seller_name}
               </Link>
             ) : (
-              <h2 className="heading-sm mt-2 text-[#24190d]">{voucher.seller_name}</h2>
+              <h2 className="heading-sm mt-2 text-[var(--text-primary)]">{voucher.seller_name}</h2>
             )}
           </div>
 
-          <div className="space-y-3 text-sm leading-6 text-[#6f604a]">
+          <div className="space-y-3 text-sm leading-6 text-[var(--text-secondary)]">
             {voucher.seller_address && <p>{voucher.seller_address}</p>}
             {voucher.seller_phone && (
               <p>
-                <span className="font-medium text-[#24190d]">{t('salon.phone_label')} </span>
+                <span className="font-medium text-[var(--text-primary)]">{t('salon.phone_label')} </span>
                 <a href={`tel:${voucher.seller_phone}`} className="underline underline-offset-4">
                   {voucher.seller_phone}
                 </a>
@@ -364,7 +373,7 @@ export async function VoucherRecipientView({
             )}
             {voucher.seller_hours && (
               <p>
-                <span className="font-medium text-[#24190d]">{t('salon.hours_label')} </span>
+                <span className="font-medium text-[var(--text-primary)]">{t('salon.hours_label')} </span>
                 {voucher.seller_hours}
               </p>
             )}
@@ -372,7 +381,7 @@ export async function VoucherRecipientView({
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {sellerHref && (
-              <Link href={sellerHref} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[rgba(93,67,22,0.18)] bg-white px-5 py-3 text-sm font-medium text-[#5d4316]">
+              <Link href={sellerHref} className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-sm font-medium text-[var(--bg-action)]">
                 {t('salon.seller_cta')}
               </Link>
             )}
@@ -381,7 +390,7 @@ export async function VoucherRecipientView({
                 href={mapsHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[rgba(93,67,22,0.18)] bg-white px-5 py-3 text-sm font-medium text-[#5d4316]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-sm font-medium text-[var(--bg-action)]"
               >
                 {t('salon.maps_cta')}
               </a>
@@ -389,19 +398,19 @@ export async function VoucherRecipientView({
           </div>
         </article>
 
-        <aside className="rounded-[28px] border border-dashed border-[rgba(93,67,22,0.18)] bg-[#fff9f0] p-6">
+        <aside className="rounded-[28px] border border-dashed border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-6">
           <div className="flex h-full min-h-56 flex-col justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[#8f6a2b]">{t('map_placeholder.eyebrow')}</p>
-              <h2 className="heading-sm mt-2 text-[#24190d]">{t('map_placeholder.heading')}</h2>
-              <p className="mt-3 text-sm leading-6 text-[#6f604a]">{t('map_placeholder.body')}</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('map_placeholder.eyebrow')}</p>
+              <h2 className="heading-sm mt-2 text-[var(--text-primary)]">{t('map_placeholder.heading')}</h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{t('map_placeholder.body')}</p>
             </div>
             {mapsHref && (
               <a
                 href={mapsHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#5d4316] px-5 py-3 text-sm font-medium text-[#fff9f0]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]"
               >
                 {t('map_placeholder.primary_cta')}
               </a>
@@ -410,34 +419,34 @@ export async function VoucherRecipientView({
         </aside>
       </section>
 
-      <section className="rounded-[28px] border border-[rgba(93,67,22,0.1)] bg-white/80 p-6 md:p-8">
-        <h2 className="heading-sm text-[#24190d]">{t('handoff.heading')}</h2>
-        <p className="mt-3 text-sm leading-7 text-[#6f604a]">{t('handoff.body')}</p>
+      <section className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
+        <h2 className="heading-sm text-[var(--text-primary)]">{t('handoff.heading')}</h2>
+        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{t('handoff.body')}</p>
       </section>
 
-      <details className="rounded-[28px] border border-[rgba(93,67,22,0.1)] bg-white/80 p-6 md:p-8">
+      <details className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
         <summary className="cursor-pointer list-none text-left">
-          <span className="heading-sm text-[#24190d]">{t('rules.summary')}</span>
+          <span className="heading-sm text-[var(--text-primary)]">{t('rules.summary')}</span>
         </summary>
-        <div className="mt-5 grid gap-4 text-sm leading-7 text-[#6f604a]">
+        <div className="mt-5 grid gap-4 text-sm leading-7 text-[var(--text-secondary)]">
           <p>
-            <span className="font-medium text-[#24190d]">{t('rules.validity_label')} </span>
+            <span className="font-medium text-[var(--text-primary)]">{t('rules.validity_label')} </span>
             {expiryDate ? t('rules.validity_value', { date: expiryDate }) : t('rules.validity_fallback')}
           </p>
           <p>
-            <span className="font-medium text-[#24190d]">{t('rules.extension_label')} </span>
+            <span className="font-medium text-[var(--text-primary)]">{t('rules.extension_label')} </span>
             {renderPolicyLine(voucher.policy_snapshot, t)}
           </p>
           <p>
-            <span className="font-medium text-[#24190d]">{t('rules.cancellation_label')} </span>
+            <span className="font-medium text-[var(--text-primary)]">{t('rules.cancellation_label')} </span>
             {renderCancellationLine(voucher.policy_snapshot, t)}
           </p>
           <p>
-            <span className="font-medium text-[#24190d]">{t('rules.refund_label')} </span>
+            <span className="font-medium text-[var(--text-primary)]">{t('rules.refund_label')} </span>
             {renderRefundLine(voucher.policy_snapshot, t)}
           </p>
           <p>
-            <span className="font-medium text-[#24190d]">{t('rules.no_show_label')} </span>
+            <span className="font-medium text-[var(--text-primary)]">{t('rules.no_show_label')} </span>
             {renderNoShowLine(voucher.policy_snapshot, t)}
           </p>
         </div>

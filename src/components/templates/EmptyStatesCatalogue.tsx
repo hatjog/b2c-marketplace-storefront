@@ -24,7 +24,7 @@ export function EmptyStatesCatalogue({
   return (
     <main
       data-testid="empty-states-page"
-      style={{ padding: '2rem 1rem 4rem', backgroundColor: '#faf8f5' }}
+      style={{ padding: '2rem 1rem 4rem', backgroundColor: 'var(--bb-page-bg)' }}
     >
       <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gap: '1.5rem' }}>
         <header style={{ display: 'grid', gap: '0.75rem', maxWidth: '46rem' }}>
@@ -55,7 +55,7 @@ export function EmptyStatesCatalogue({
               style={{
                 borderRadius: '2rem',
                 border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
-                backgroundColor: 'rgba(255,255,255,0.9)',
+                backgroundColor: 'var(--bb-white-90)',
                 padding: '1.5rem',
                 display: 'grid',
                 gap: '1rem',
@@ -67,7 +67,7 @@ export function EmptyStatesCatalogue({
                   width: '80px',
                   height: '80px',
                   borderRadius: '999px',
-                  backgroundColor: 'rgba(239,229,210,0.7)',
+                  backgroundColor: 'var(--bb-muted-72)',
                   display: 'grid',
                   placeItems: 'center',
                   color: 'var(--text-primary)',

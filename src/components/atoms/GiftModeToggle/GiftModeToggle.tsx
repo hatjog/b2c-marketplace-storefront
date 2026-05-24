@@ -44,7 +44,7 @@ export function GiftModeToggle({
     >
       <div className="mb-3 flex items-start gap-3">
         <span
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(197,160,89,0.18)] text-[var(--cta-hover)]"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--bb-tint-accent-18)] text-[var(--cta-hover)]"
           aria-hidden="true"
         >
           <svg

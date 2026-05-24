@@ -351,6 +351,11 @@ describe('getVoucherRecipientByCode', () => {
   });
 
   it('normalizes unknown recipient policy enum values to safe fallbacks', async () => {
+    // v1.9.1 Wave G3 / CC-2 #5+#6: canonical enums post-canonicalization are
+    // `original_payment | store_credit | vendor_wallet` (refund_channel) and
+    // `charge_full | charge_partial | no_charge | forfeit_voucher |
+    // vendor_decision` (no_show.policy). Anything outside these must fall
+    // through to `null` so the recipient page renders the safe fallback copy.
     mockMercurClient.store = {
       vouchers: {
         byCode: vi.fn().mockResolvedValue({
@@ -359,8 +364,8 @@ describe('getVoucherRecipientByCode', () => {
             status: 'active',
             is_public_entry_confirmed: true,
             policy_snapshot: {
-              refund_channel: 'vendor_wallet',
-              no_show: { policy: 'manual_review' },
+              refund_channel: 'bank_transfer', // legacy alias removed by Wave G3
+              no_show: { policy: 'manual_review' }, // not in 5-value SSOT
             },
           },
         }),
@@ -370,6 +375,31 @@ describe('getVoucherRecipientByCode', () => {
     const result = await getVoucherRecipientByCode(REAL_CODE);
     expect(result?.policy_snapshot?.refund_channel).toBeNull();
     expect(result?.policy_snapshot?.no_show_policy).toBeNull();
+  });
+
+  it('passes through canonical refund_channel + no_show enum values', async () => {
+    // v1.9.1 Wave G3 / CC-2 #5+#6 — canonical SSOT enums must round-trip
+    // unchanged through the normalizers so the recipient page renders the
+    // matching i18n strings (no `fallback` regression on valid policies).
+    mockMercurClient.store = {
+      vouchers: {
+        byCode: vi.fn().mockResolvedValue({
+          voucher: {
+            ...VALID_VOUCHER_PAYLOAD,
+            status: 'active',
+            is_public_entry_confirmed: true,
+            policy_snapshot: {
+              refund_channel: 'vendor_wallet',
+              no_show: { policy: 'vendor_decision' },
+            },
+          },
+        }),
+      },
+    };
+
+    const result = await getVoucherRecipientByCode(REAL_CODE);
+    expect(result?.policy_snapshot?.refund_channel).toBe('vendor_wallet');
+    expect(result?.policy_snapshot?.no_show_policy).toBe('vendor_decision');
   });
 
   it('maps redeemed and expired backend states to recipient states', async () => {

@@ -602,6 +602,33 @@
       "submit": "Załóż konto",
       "skip": "Nie teraz",
       "success": "Konto gotowe. Już Cię przenosimy."
+    },
+    "magic_link_recover": {
+      "meta_title": "Odzyskiwanie dostępu — BonBeauty",
+      "meta_description": "Bezpieczne odzyskiwanie dostępu do konta przez link wysłany mailem.",
+      "request_eyebrow": "Odzyskaj dostęp",
+      "request_title": "Wyślemy link do logowania.",
+      "request_subtitle": "Bez hasła. Otrzymasz wiadomość z bezpiecznym, jednorazowym linkiem do Twojego konta.",
+      "request_attempted_notice": "Ten link już wygasł albo został użyty. Możesz poprosić o nowy.",
+      "email_label": "E-mail",
+      "email_placeholder": "Twój adres e-mail",
+      "ttl_helper": "Link jest aktywny przez 7 dni od wysłania.",
+      "submit": "Wyślij link logowania",
+      "submit_pending": "Wysyłamy...",
+      "success_body": "Jeśli to konto istnieje, link już do Ciebie zmierza. Sprawdź skrzynkę.",
+      "invalid_email": "Sprawdź czy adres e-mail jest poprawny.",
+      "network_error": "Nie udało się wysłać teraz. Spróbuj ponownie za chwilę.",
+      "landing": {
+        "eyebrow": "Logowanie linkiem",
+        "title": "Sprawdź czy to Ty.",
+        "subtitle": "Kliknij przycisk, aby dokończyć logowanie do swojego konta.",
+        "continue_title": "Bezpieczne dokończenie logowania",
+        "continue_body": "Po kliknięciu zalogujemy Cię w Twoim koncie i przeniesiemy do voucherów.",
+        "continue_cta": "Zaloguj mnie",
+        "neutral_title": "Ten link jest już nieaktywny.",
+        "neutral_body": "Link mógł wygasnąć lub został już użyty. Poproś o nowy, a wyślemy świeży na Twoją skrzynkę.",
+        "request_new_link": "Poproś o nowy link"
+      }
     }
   },
   "forms": {
@@ -806,7 +833,8 @@
     "cart_description": "Przejrzyj produkty w koszyku i przejdź do kasy.",
     "checkout_title": "Kasa",
     "checkout_description": "Sprawdź dane zamówienia i bezpiecznie zakończ zakup.",
-    "loading": "Ładowanie..."
+    "loading": "Ładowanie...",
+    "checkout_verified_label": "Zweryfikowany marketplace"
   },
   "legal": {
     "title_privacy": "Polityka Prywatności",
@@ -1178,7 +1206,7 @@
         "refund_channel_values": {
           "original_payment": "Zwrot wraca na pierwotną metodę płatności.",
           "store_credit": "Zwrot jest rozliczany jako saldo do wykorzystania.",
-          "bank_transfer": "Zwrot jest rozliczany przelewem bankowym."
+          "vendor_wallet": "Zwrot jest rozliczany przez portfel salonu."
         },
         "no_show_label": "No-show:",
         "no_show_fallback": "Polityka no-show jest chwilowo niedostępna.",
@@ -1186,7 +1214,8 @@
           "charge_full": "Brak obecności może oznaczać pełne obciążenie.",
           "charge_partial": "Brak obecności może oznaczać częściowe obciążenie.",
           "no_charge": "Brak obecności nie powoduje dodatkowej opłaty, ale wymaga kontaktu z salonem.",
-          "forfeit_voucher": "Brak obecności może skutkować utratą vouchera."
+          "forfeit_voucher": "Brak obecności może skutkować utratą vouchera.",
+          "vendor_decision": "Decyzję o postępowaniu przy braku obecności podejmuje salon."
         }
       },
       "expired": {
@@ -1413,7 +1442,11 @@
           "saved_addresses": "Zapisane adresy",
           "reviews_to_write": "Opinie do napisania",
           "written_reviews": "Moje opinie",
-          "account_settings": "Ustawienia konta"
+          "account_settings": "Ustawienia konta",
+          "voucher_history": "Vouchery",
+          "returns_history": "Zwroty",
+          "wishlist": "Wishlist",
+          "messages": "Wiadomości"
         }
       },
       "snapshot": {
@@ -2713,11 +2746,6 @@
     "categories": {
       "image_alt": "Kategoria {name}"
     },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Popularne teraz",
-      "empty_state": "W tej chwili kompletujemy listę popularnych rytuałów. Zajrzyj ponownie za moment."
-    },
     "editorial": {
       "aria_label": "Editorial — Cichy luksus",
       "eyebrow": "Wybór redakcji",
@@ -2784,6 +2812,11 @@
         "3": "Bezpieczne płatności online",
         "4": "Jasne zasady voucherów"
       }
+    },
+    "editorial_choice": {
+      "eyebrow": "Wybór redakcji",
+      "heading": "Wybór redakcji",
+      "empty_state": "W tej chwili kompletujemy nową selekcję redakcyjną. Zajrzyj ponownie za moment."
     }
   },
   "category_plp": {

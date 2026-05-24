@@ -602,6 +602,33 @@
       "submit": "Create account",
       "skip": "Not now",
       "success": "Account ready. Redirecting you now."
+    },
+    "magic_link_recover": {
+      "meta_title": "Recover access — BonBeauty",
+      "meta_description": "Securely recover access to your account via an emailed link.",
+      "request_eyebrow": "Recover access",
+      "request_title": "We will send you a sign-in link.",
+      "request_subtitle": "No password needed. You will receive an e-mail with a secure single-use link to your account.",
+      "request_attempted_notice": "That link has expired or has already been used. You can request a new one.",
+      "email_label": "E-mail",
+      "email_placeholder": "Your e-mail address",
+      "ttl_helper": "The link is active for 7 days after sending.",
+      "submit": "Send sign-in link",
+      "submit_pending": "Sending…",
+      "success_body": "If that account exists, the link is on its way. Please check your inbox.",
+      "invalid_email": "Please check that the e-mail address is correct.",
+      "network_error": "We could not send the link right now. Please try again shortly.",
+      "landing": {
+        "eyebrow": "Sign in by link",
+        "title": "Confirm it is you.",
+        "subtitle": "Click the button to finish signing in to your account.",
+        "continue_title": "Securely finish signing in",
+        "continue_body": "When you click, we will sign you in and take you to your vouchers.",
+        "continue_cta": "Sign me in",
+        "neutral_title": "This link is no longer active.",
+        "neutral_body": "The link may have expired or has already been used. Ask for a new one and we will send a fresh link to your inbox.",
+        "request_new_link": "Request a new link"
+      }
     }
   },
   "forms": {
@@ -806,7 +833,8 @@
     "cart_description": "Review the items in your cart and continue to checkout.",
     "checkout_title": "Checkout",
     "checkout_description": "Review your order details and complete the purchase securely.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "checkout_verified_label": "Verified marketplace"
   },
   "legal": {
     "title_privacy": "Privacy Policy",
@@ -1178,7 +1206,7 @@
         "refund_channel_values": {
           "original_payment": "The refund goes back to the original payment method.",
           "store_credit": "The refund is settled as store credit.",
-          "bank_transfer": "The refund is settled by bank transfer."
+          "vendor_wallet": "The refund is settled through the salon's wallet."
         },
         "no_show_label": "No-show:",
         "no_show_fallback": "The no-show policy is temporarily unavailable.",
@@ -1186,7 +1214,8 @@
           "charge_full": "A no-show may result in a full charge.",
           "charge_partial": "A no-show may result in a partial charge.",
           "no_charge": "A no-show does not trigger an extra charge, but please contact the salon.",
-          "forfeit_voucher": "A no-show may cause the voucher to be forfeited."
+          "forfeit_voucher": "A no-show may cause the voucher to be forfeited.",
+          "vendor_decision": "The salon decides how to handle a no-show case."
         }
       },
       "expired": {
@@ -1413,7 +1442,11 @@
           "saved_addresses": "Saved addresses",
           "reviews_to_write": "Reviews to write",
           "written_reviews": "My reviews",
-          "account_settings": "Account settings"
+          "account_settings": "Account settings",
+          "voucher_history": "Vouchers",
+          "returns_history": "Returns",
+          "wishlist": "Wishlist",
+          "messages": "Messages"
         }
       },
       "snapshot": {
@@ -2713,11 +2746,6 @@
     "categories": {
       "image_alt": "Category {name}"
     },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Popular now",
-      "empty_state": "We are currently refreshing the popular rituals list. Please check again shortly."
-    },
     "editorial": {
       "aria_label": "Editorial — Quiet luxury",
       "eyebrow": "Editorial pick",
@@ -2784,6 +2812,11 @@
         "3": "Secure online payments",
         "4": "Clear voucher rules"
       }
+    },
+    "editorial_choice": {
+      "eyebrow": "Editor's choice",
+      "heading": "Editor's choice",
+      "empty_state": "We are putting together a new editorial selection right now. Please check back shortly."
     }
   },
   "category_plp": {

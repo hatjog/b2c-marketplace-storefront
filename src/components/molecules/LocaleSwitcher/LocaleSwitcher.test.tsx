@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+// @chrome-manifest: W6-10
 //
 // W6-10 LocaleSwitcher functional audit (Story 7.7 AC5 + AC6).
 // Verifies the contract from specs/design-system/bonbeauty/components/locale-switcher.yaml:

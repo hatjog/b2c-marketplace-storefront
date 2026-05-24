@@ -53,23 +53,29 @@ export interface AccountLayoutProps {
 export type AccountUser = AccountLayoutProps['user'];
 
 // Surface label mapping aligned with v1.8.0 Account Hub ownership:
-// - Story 4.2 read-heavy: W2-01..W2-04, W2-07, W2-09, W2-12
-// - Story 4.3 write-heavy: W2-05, W2-06, W2-08, W2-10, W2-11, W2-13
-// The labels MUST reflect the surface that actually renders at the route, otherwise
-// the sidebar nav highlights an item whose label points to a different page.
+// - Story 4.2 read-heavy: W2-01 dashboard, W2-02 voucher history, W2-03 order
+//   history, W2-04 order detail, W2-07 returns history, W2-09 wishlist,
+//   W2-12 messages.
+// - Story 4.3 write-heavy: W2-05 return request, W2-06 return success,
+//   W2-08 saved addresses, W2-10 reviews to write, W2-11 written reviews,
+//   W2-13 account settings.
+// The labels MUST reflect the surface that actually renders at the route,
+// otherwise sidebar nav `aria-current="page"` highlights an item whose label
+// describes a different page (Epic-4-Review F-01 — half-fix from Wave A L4
+// covered write-heavy only; v1.9.0 Wave F7 completes the read-heavy half).
 const SURFACE_NAV: Array<{ surface: AccountSurface; key: string }> = [
   { surface: 'W2-01', key: 'dashboard' },
-  { surface: 'W2-02', key: 'order_history' },
-  { surface: 'W2-03', key: 'order_detail' },
-  { surface: 'W2-04', key: 'active_vouchers' },
+  { surface: 'W2-02', key: 'voucher_history' },
+  { surface: 'W2-03', key: 'order_history' },
+  { surface: 'W2-04', key: 'order_detail' },
   { surface: 'W2-05', key: 'return_request' },
   { surface: 'W2-06', key: 'return_success' },
-  { surface: 'W2-07', key: 'payment_methods' },
+  { surface: 'W2-07', key: 'returns_history' },
   { surface: 'W2-08', key: 'saved_addresses' },
-  { surface: 'W2-09', key: 'loyalty' },
+  { surface: 'W2-09', key: 'wishlist' },
   { surface: 'W2-10', key: 'reviews_to_write' },
   { surface: 'W2-11', key: 'written_reviews' },
-  { surface: 'W2-12', key: 'password' },
+  { surface: 'W2-12', key: 'messages' },
   { surface: 'W2-13', key: 'account_settings' },
 ];
 

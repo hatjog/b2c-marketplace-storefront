@@ -22,7 +22,7 @@ const criticalSurfaces = [
   ['confirmation-handoff', 'src/app/[locale]/(main)/order/[id]/confirmed/page.tsx'],
   ['account', 'src/app/[locale]/(main)/user/page.tsx'],
   ['account-recovery', 'src/app/[locale]/(auth)/forgot-password/page.tsx'],
-  ['voucher-recovery', 'src/app/[locale]/(main)/user/recover/[token]/page.tsx'],
+  ['voucher-recovery', 'src/app/[locale]/(auth-recover)/user/recover/[token]/page.tsx'],
   ['password-reset', 'src/app/[locale]/(reset-password)/reset-password/page.tsx'],
   ['voucher-claim', 'src/app/[locale]/voucher/[code]/page.tsx'],
   ['seller-listing', 'src/app/[locale]/(main)/sellers/page.tsx'],
