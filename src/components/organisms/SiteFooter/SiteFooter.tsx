@@ -43,7 +43,7 @@ export async function SiteFooter({
 
   return (
     <footer
-      className="bg-[var(--bb-surface-dark)] text-[color:rgba(250,248,245,0.8)]"
+      className="bg-[var(--bb-surface-dark)] text-[var(--bb-cream-75)]"
       data-testid="site-footer"
     >
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
@@ -58,7 +58,7 @@ export async function SiteFooter({
             >
               BonBeauty
             </LocalizedClientLink>
-            <p className="text-sm leading-relaxed text-[color:rgba(250,248,245,0.6)]">
+            <p className="text-sm leading-relaxed text-[var(--bb-cream-60)]">
               Marketplace premium salonów beauty
             </p>
           </div>
@@ -69,7 +69,7 @@ export async function SiteFooter({
               key={section}
               className="space-y-3"
             >
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[color:rgba(250,248,245,0.6)]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--bb-cream-60)]">
                 {sectionLabel(section)}
               </h3>
               <ul className="space-y-2">
@@ -77,7 +77,7 @@ export async function SiteFooter({
                   <li key={link.path}>
                     <LocalizedClientLink
                       href={link.path}
-                      className="text-sm text-[color:rgba(250,248,245,0.75)] transition-colors hover:text-white"
+                      className="text-sm text-[var(--bb-cream-75)] transition-colors hover:text-white"
                     >
                       {link.label}
                     </LocalizedClientLink>
@@ -89,7 +89,7 @@ export async function SiteFooter({
 
           {/* Connect column */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[color:rgba(250,248,245,0.6)]">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--bb-cream-60)]">
               {t('section_connect')}
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -97,7 +97,7 @@ export async function SiteFooter({
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-[color:rgba(250,248,245,0.75)] transition-colors hover:text-white"
+                  className="text-sm text-[var(--bb-cream-75)] transition-colors hover:text-white"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -109,15 +109,15 @@ export async function SiteFooter({
         </div>
 
         {/* Divider */}
-        <div className="mt-10 border-t border-[color:rgba(250,248,245,0.12)] pt-8">
+        <div className="mt-10 border-t border-[var(--bb-tint-gold-12)] pt-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             {/* Copyright */}
-            <p className="text-xs text-[color:rgba(250,248,245,0.72)]">{copyright}</p>
+            <p className="text-xs text-[var(--bb-muted-72)]">{copyright}</p>
 
             {/* slot: legal-entity — dane prawne sprzedawcy NIP/REGON/KRS (W6-02 spec) */}
             {legalEntity && (
               <div
-                className="space-y-0.5 text-xs text-[color:rgba(250,248,245,0.78)]"
+                className="space-y-0.5 text-xs text-[var(--bb-muted-72)]"
                 data-testid="site-footer-legal-entity"
               >
                 {legalEntity.name && <p>{legalEntity.name}</p>}

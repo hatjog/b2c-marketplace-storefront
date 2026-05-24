@@ -137,7 +137,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
           {(['editorial', 'seasonal', 'recommended'] as const).map(bucket => (
             <article
               key={bucket}
-              className="rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-white p-5"
+              className="rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5"
             >
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-secondary">
                 {t(`buckets.${bucket}.eyebrow`)}
@@ -162,7 +162,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
               <LocalizedClientLink
                 key={card.handle}
                 href={`/collections/${card.handle}`}
-                className="group flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
+                className="group flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
                 aria-label={t('grid.cardAria', { title: card.title })}
                 data-testid="collection-item"
               >
@@ -191,7 +191,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
                     <span className="text-sm text-secondary">
                       {t('grid.itemCount', { count: card.itemCount })}
                     </span>
-                    <span className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-[rgba(144,112,50,0.08)] text-primary">
+                    <span className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-[var(--bb-tint-gold-08)] text-primary">
                       →
                     </span>
                   </div>

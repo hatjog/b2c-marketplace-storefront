@@ -96,8 +96,8 @@ export default async function BlogIndexPage({
           aria-current={!activeTag ? 'page' : undefined}
           className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
             !activeTag
-              ? 'border-[var(--bg-action)] bg-[rgba(144,112,50,0.12)] text-primary'
-              : 'border-[rgba(144,112,50,0.14)] text-secondary hover:text-primary'
+              ? 'border-[var(--bg-action)] bg-[var(--bb-tint-gold-12)] text-primary'
+              : 'border-[var(--bb-border-soft)] text-secondary hover:text-primary'
           }`}
         >
           {t('tag_all')}
@@ -109,8 +109,8 @@ export default async function BlogIndexPage({
             aria-current={activeTag === tag.slug ? 'page' : undefined}
             className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
               activeTag === tag.slug
-                ? 'border-[var(--bg-action)] bg-[rgba(144,112,50,0.12)] text-primary'
-                : 'border-[rgba(144,112,50,0.14)] text-secondary hover:text-primary'
+                ? 'border-[var(--bg-action)] bg-[var(--bb-tint-gold-12)] text-primary'
+                : 'border-[var(--bb-border-soft)] text-secondary hover:text-primary'
             }`}
           >
             {tag.label}
@@ -126,7 +126,7 @@ export default async function BlogIndexPage({
         <LocalizedClientLink
           key={post.slug}
           href={post.href}
-          className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-white transition-transform duration-300 hover:-translate-y-0.5"
+          className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-white transition-transform duration-300 hover:-translate-y-0.5"
         >
           <div className="relative aspect-[4/3] overflow-hidden">
             <Image
@@ -149,7 +149,7 @@ export default async function BlogIndexPage({
               {post.tags.slice(0, 2).map(tag => (
                 <span
                   key={tag.slug}
-                  className="rounded-full bg-[rgba(144,112,50,0.08)] px-2.5 py-1"
+                  className="rounded-full bg-[var(--bb-tint-gold-08)] px-2.5 py-1"
                 >
                   {tag.label}
                 </span>
@@ -164,7 +164,7 @@ export default async function BlogIndexPage({
 
   const emptyState = (
     <div
-      className="rounded-[28px] border border-dashed border-[rgba(144,112,50,0.24)] bg-[rgba(144,112,50,0.05)] px-6 py-10 text-center"
+      className="rounded-[28px] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] px-6 py-10 text-center"
       data-testid="blog-index-empty-state"
     >
       <h2 className="heading-sm text-primary">{t('empty_heading')}</h2>

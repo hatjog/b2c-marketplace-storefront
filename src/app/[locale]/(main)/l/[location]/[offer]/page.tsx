@@ -116,7 +116,7 @@ export default async function ProgrammaticLandingPage({
     >
       <script type="application/ld+json">{serializeJsonLd(jsonLd)}</script>
 
-      <section className="bb-section-shell bb-section-shell-strong border-y border-[rgba(144,112,50,0.14)]">
+      <section className="bb-section-shell bb-section-shell-strong border-y border-[var(--bb-border-soft)]">
         <div className="container grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
           <div className="space-y-5">
             <p className="text-xs font-medium uppercase tracking-[0.24em] text-secondary">
@@ -140,7 +140,7 @@ export default async function ProgrammaticLandingPage({
               {t('hero_cta')}
             </LocalizedClientLink>
           </div>
-          <dl className="grid gap-3 rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-white p-5">
+          <dl className="grid gap-3 rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5">
             <div>
               <dt className="text-xs font-medium uppercase tracking-[0.2em] text-secondary">
                 {t('geo_label')}
@@ -166,7 +166,7 @@ export default async function ProgrammaticLandingPage({
         {['trust_verified', 'trust_geo', 'trust_schema'].map(key => (
           <div
             key={key}
-            className="rounded-[20px] border border-[rgba(144,112,50,0.14)] bg-white p-5"
+            className="rounded-[20px] border border-[var(--bb-border-soft)] bg-white p-5"
           >
             <p className="text-sm font-semibold text-primary">{t(key)}</p>
           </div>
@@ -189,7 +189,7 @@ export default async function ProgrammaticLandingPage({
               <LocalizedClientLink
                 key={salon.handle}
                 href={salon.href}
-                className="block h-full rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
+                className="block h-full rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
               >
                 <h3 className="heading-sm text-primary">{salon.displayName}</h3>
                 <p className="mt-2 text-sm leading-6 text-secondary">{salon.streetAddress}</p>
@@ -206,7 +206,7 @@ export default async function ProgrammaticLandingPage({
           <p
             role="status"
             aria-label={t('empty_salons_aria')}
-            className="rounded-[20px] border border-dashed border-[rgba(144,112,50,0.24)] bg-[rgba(144,112,50,0.05)] p-5 text-sm leading-6 text-secondary"
+            className="rounded-[20px] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] p-5 text-sm leading-6 text-secondary"
           >
             {t('empty_salons')}
           </p>
@@ -225,7 +225,7 @@ export default async function ProgrammaticLandingPage({
             <LocalizedClientLink
               key={`${item.sellerName}-${item.href}`}
               href={item.href}
-              className="block rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
+              className="block rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
             >
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-secondary">
                 {item.sellerName}
@@ -253,7 +253,7 @@ export default async function ProgrammaticLandingPage({
             <LocalizedClientLink
               key={item.slug}
               href={`/l/${item.slug}/${data.offer.slug}`}
-              className="rounded-full border border-[rgba(144,112,50,0.18)] bg-white px-4 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
+              className="rounded-full border border-[var(--bb-tint-gold-18)] bg-white px-4 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
             >
               {item.labels[data.locale]}
             </LocalizedClientLink>

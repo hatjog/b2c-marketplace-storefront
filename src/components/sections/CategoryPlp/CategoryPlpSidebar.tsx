@@ -159,7 +159,7 @@ export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: Cat
       <section className="space-y-3" data-testid="category-plp-filter-salon">
         <h3 className="label-sm uppercase text-secondary">{t('filter_salon')}</h3>
         <select
-          className="w-full rounded-md border border-[rgba(144,112,50,0.26)] bg-white px-3 py-2 text-sm"
+          className="w-full rounded-md border border-[var(--bb-tint-gold-26)] bg-white px-3 py-2 text-sm"
           value={selectedSalon}
           onChange={event => setQueryValue('salon', event.target.value || null)}
           data-testid="category-plp-salon-select"
@@ -228,7 +228,7 @@ export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: Cat
             onClick={() => setQueryValue('mode', 'self')}
             role="radio"
             aria-checked={selectedMode !== 'gift'}
-            className={`rounded-full border px-3 py-2 text-sm ${selectedMode !== 'gift' ? 'border-action bg-action text-action-on-primary' : 'border-[rgba(144,112,50,0.26)] bg-white'}`}
+            className={`rounded-full border px-3 py-2 text-sm ${selectedMode !== 'gift' ? 'border-action bg-action text-action-on-primary' : 'border-[var(--bb-tint-gold-26)] bg-white'}`}
             data-testid="category-plp-mode-self"
           >
             {t('mode_self')}
@@ -238,7 +238,7 @@ export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: Cat
             onClick={() => setQueryValue('mode', 'gift')}
             role="radio"
             aria-checked={selectedMode === 'gift'}
-            className={`rounded-full border px-3 py-2 text-sm ${selectedMode === 'gift' ? 'border-action bg-action text-action-on-primary' : 'border-[rgba(144,112,50,0.26)] bg-white'}`}
+            className={`rounded-full border px-3 py-2 text-sm ${selectedMode === 'gift' ? 'border-action bg-action text-action-on-primary' : 'border-[var(--bb-tint-gold-26)] bg-white'}`}
             data-testid="category-plp-mode-gift"
           >
             {t('mode_gift')}
@@ -249,7 +249,7 @@ export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: Cat
       <section className="space-y-3" data-testid="category-plp-filter-sort">
         <h3 className="label-sm uppercase text-secondary">{t('filter_sort')}</h3>
         <select
-          className="w-full rounded-md border border-[rgba(144,112,50,0.26)] bg-white px-3 py-2 text-sm"
+          className="w-full rounded-md border border-[var(--bb-tint-gold-26)] bg-white px-3 py-2 text-sm"
           value={SORT_OPTIONS.includes(selectedSort as (typeof SORT_OPTIONS)[number]) ? selectedSort : 'recommended'}
           onChange={event => setQueryValue('sort', event.target.value)}
           data-testid="category-plp-sort-select"

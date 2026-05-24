@@ -71,7 +71,7 @@ export const WishlistButton = ({
     <Button
       onClick={isWishlisted ? () => handleRemoveFromWishlist() : () => handleAddToWishlist()}
       variant="tonal"
-      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/16 bg-[rgba(255,255,255,0.9)] p-0 text-primary hover:bg-white"
+      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/16 bg-[var(--bb-white-90)] p-0 text-primary hover:bg-white"
       loading={isWishlistAdding}
       disabled={isWishlistAdding}
     >

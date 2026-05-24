@@ -86,7 +86,7 @@ export const SalonContextChip = ({
         // Fixed overlay positioning — top-right; z-40 sits above sticky headers
         // (z-30) but below modals (z-50). Mobile: same offsets, max-w-[280px]
         // truncate ensures graceful narrow viewport rendering.
-        'fixed top-4 right-4 z-40 flex max-w-[320px] items-center gap-2 rounded-full border border-[rgba(144,112,50,0.16)] bg-white/95 px-4 py-2 shadow-[0_12px_32px_rgba(90,67,28,0.12)] backdrop-blur',
+        'fixed top-4 right-4 z-40 flex max-w-[320px] items-center gap-2 rounded-full border border-[var(--bb-tint-gold-16)] bg-white/95 px-4 py-2 shadow-[0_12px_32px_rgba(90,67,28,0.12)] backdrop-blur',
         className,
       )}
     >
@@ -122,7 +122,7 @@ export const SalonContextChip = ({
         aria-label={closeLabel}
         title={closeLabel}
         data-testid="salon-context-chip-close"
-        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-secondary transition-colors hover:bg-[rgba(144,112,50,0.1)] hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--gold,#c9a961)] focus:ring-offset-1"
+        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-secondary transition-colors hover:bg-[var(--bb-tint-gold-12)] hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--gold,#c9a961)] focus:ring-offset-1"
       >
         <svg
           aria-hidden="true"

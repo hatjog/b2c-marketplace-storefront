@@ -25,7 +25,7 @@ function Demo({ code }: { code: string }) {
           role="status"
           aria-busy="true"
           aria-live="polite"
-          className="flex h-28 items-center justify-center rounded-2xl bg-[rgba(255,245,232,0.9)] motion-reduce:animate-none animate-pulse"
+          className="flex h-28 items-center justify-center rounded-2xl bg-[var(--bb-surface-90)] motion-reduce:animate-none animate-pulse"
         >
           <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Processing…</span>
         </div>
@@ -56,7 +56,7 @@ function Demo({ code }: { code: string }) {
           style={{ display: 'grid', gap: '0.5rem' }}
         >
           <strong style={{ color: 'var(--text-primary)' }}>Odswieżamy status co 15 sekund</strong>
-          <div style={{ height: '10px', borderRadius: '999px', backgroundColor: 'rgba(239,229,210,0.8)' }}>
+          <div style={{ height: '10px', borderRadius: '999px', backgroundColor: 'var(--bb-muted-80)' }}>
             <div
               className="h-full rounded-full bg-[var(--bg-primary)] motion-reduce:animate-none animate-pulse"
               style={{ width: '58%' }}
@@ -73,7 +73,7 @@ function Demo({ code }: { code: string }) {
           style={{ display: 'grid', gap: '0.5rem' }}
         >
           <strong style={{ color: 'var(--text-primary)' }}>Krok 2 z 3</strong>
-          <div style={{ height: '12px', borderRadius: '999px', backgroundColor: 'rgba(239,229,210,0.8)' }}>
+          <div style={{ height: '12px', borderRadius: '999px', backgroundColor: 'var(--bb-muted-80)' }}>
             <div style={{ width: '66%', height: '100%', borderRadius: '999px', backgroundColor: 'var(--bg-primary)' }} />
           </div>
         </div>
@@ -87,7 +87,7 @@ function Demo({ code }: { code: string }) {
           className="flex min-h-[44px] items-center gap-3"
         >
           <span
-            className="inline-block h-5 w-5 rounded-full border-2 border-[rgba(144,112,50,0.24)] border-t-[var(--bg-primary)] motion-reduce:animate-none animate-spin"
+            className="inline-block h-5 w-5 rounded-full border-2 border-[var(--bb-tint-gold-24)] border-t-[var(--bg-primary)] motion-reduce:animate-none animate-spin"
             aria-hidden="true"
           />
           <span style={{ color: 'var(--text-secondary)' }}>Przechodzimy do kolejnego kroku…</span>
@@ -108,7 +108,7 @@ export function LoadingStatesCatalogue({
   return (
     <main
       data-testid="loading-states-page"
-      style={{ padding: '2rem 1rem 4rem', backgroundColor: '#faf8f5' }}
+      style={{ padding: '2rem 1rem 4rem', backgroundColor: 'var(--bb-page-bg)' }}
     >
       <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gap: '1.5rem' }}>
         <header style={{ display: 'grid', gap: '0.75rem', maxWidth: '46rem' }}>
@@ -139,13 +139,13 @@ export function LoadingStatesCatalogue({
               style={{
                 borderRadius: '2rem',
                 border: '1px solid var(--bb-border-soft, rgba(113,88,40,0.12))',
-                backgroundColor: 'rgba(255,255,255,0.9)',
+                backgroundColor: 'var(--bb-white-90)',
                 padding: '1.5rem',
                 display: 'grid',
                 gap: '1rem',
               }}
             >
-              <div style={{ minHeight: '124px', borderRadius: '1.5rem', padding: '1rem', backgroundColor: 'rgba(250,248,245,0.9)' }}>
+              <div style={{ minHeight: '124px', borderRadius: '1.5rem', padding: '1rem', backgroundColor: 'var(--bb-cream-90)' }}>
                 <Demo code={pattern.code} />
               </div>
               <div style={{ display: 'grid', gap: '0.5rem' }}>

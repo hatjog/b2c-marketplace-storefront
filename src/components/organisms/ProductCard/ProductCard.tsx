@@ -103,7 +103,7 @@ export const ProductCard = ({
   return (
     <div
       className={cn(
-        'group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
+        'group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
         className
       )}
       data-testid="product-card"
@@ -168,7 +168,7 @@ export const ProductCard = ({
             </h3>
             <div className="flex flex-wrap gap-2 text-[13px] text-secondary">
               {rating != null && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(239,229,210,0.72)] px-2.5 py-1">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bb-muted-72)] px-2.5 py-1">
                   <span className="text-[var(--gold)]">★</span>
                   <span>{rating.toFixed(1)}</span>
                   <span>·</span>
@@ -176,7 +176,7 @@ export const ProductCard = ({
                 </span>
               )}
               {sellerLocation && (
-                <span className="inline-flex items-center rounded-full bg-[rgba(239,229,210,0.42)] px-2.5 py-1">
+                <span className="inline-flex items-center rounded-full bg-[var(--bb-surface-muted)] px-2.5 py-1">
                   {sellerLocation}
                 </span>
               )}

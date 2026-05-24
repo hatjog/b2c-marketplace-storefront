@@ -149,7 +149,7 @@ export function NewsletterSlot({
   if (isModal && !isSuccess) {
     return (
       <div
-        className="fixed inset-0 z-[300] flex items-center justify-center bg-[rgba(9,9,9,0.6)] p-4"
+        className="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--bb-overlay-backdrop)] p-4"
         role="dialog"
         aria-modal="true"
         aria-label={t('aria_region')}

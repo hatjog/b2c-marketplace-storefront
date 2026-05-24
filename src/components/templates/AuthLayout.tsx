@@ -133,7 +133,7 @@ export async function AuthLayout({
 
             <section
               aria-label={t('trust_aria')}
-              className="mt-4 rounded-[24px] border border-[var(--bb-border-soft)] bg-[rgba(255,252,247,0.82)] px-4 py-3"
+              className="mt-4 rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-4 py-3"
             >
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 {items.map(item => (
@@ -163,19 +163,19 @@ export async function AuthLayout({
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link
               href={`/${locale}/regulamin`}
-              className="underline decoration-[rgba(26,26,26,0.22)] underline-offset-4"
+              className="underline decoration-[var(--bb-text-tint-22)] underline-offset-4"
             >
               {t('footer.terms')}
             </Link>
             <Link
               href={`/${locale}/polityka-prywatnosci`}
-              className="underline decoration-[rgba(26,26,26,0.22)] underline-offset-4"
+              className="underline decoration-[var(--bb-text-tint-22)] underline-offset-4"
             >
               {t('footer.privacy')}
             </Link>
             <Link
               href={`/${locale}/pomoc`}
-              className="underline decoration-[rgba(26,26,26,0.22)] underline-offset-4"
+              className="underline decoration-[var(--bb-text-tint-22)] underline-offset-4"
             >
               {t('footer.help')}
             </Link>

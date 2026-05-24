@@ -72,7 +72,7 @@ export function BlogTocNav({ label, entries, mobileLabel }: BlogTocNavProps) {
             entry.level === 3 && 'ml-3',
             entry.level === 4 && 'ml-6',
             activeId === entry.id
-              ? 'bg-[rgba(144,112,50,0.12)] text-primary'
+              ? 'bg-[var(--bb-tint-gold-12)] text-primary'
               : 'text-secondary hover:text-primary'
           )}
           onClick={() => setMobileOpen(false)}
@@ -85,14 +85,14 @@ export function BlogTocNav({ label, entries, mobileLabel }: BlogTocNavProps) {
 
   return (
     <>
-      <aside className="sticky top-24 hidden w-full max-w-[240px] self-start rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.8)] p-4 md:block">
+      <aside className="sticky top-24 hidden w-full max-w-[240px] self-start rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] p-4 md:block">
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-secondary">
           {label}
         </p>
         {nav}
       </aside>
 
-      <div className="space-y-3 rounded-[20px] border border-[rgba(144,112,50,0.14)] bg-white/80 p-4 md:hidden">
+      <div className="space-y-3 rounded-[20px] border border-[var(--bb-border-soft)] bg-white/80 p-4 md:hidden">
         <button
           type="button"
           className="flex w-full items-center justify-between text-left"
@@ -108,7 +108,7 @@ export function BlogTocNav({ label, entries, mobileLabel }: BlogTocNavProps) {
         {mobileOpen ? (
           <div
             id="blog-toc-mobile-panel"
-            className="border-t border-[rgba(144,112,50,0.14)] pt-3"
+            className="border-t border-[var(--bb-border-soft)] pt-3"
           >
             {nav}
           </div>

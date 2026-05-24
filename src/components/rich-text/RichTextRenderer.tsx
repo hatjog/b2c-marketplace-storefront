@@ -36,7 +36,7 @@ function renderInlineNode(node: BlogInlineNode, key: string): ReactNode {
       return (
         <code
           key={key}
-          className="whitespace-pre-wrap break-words rounded-md bg-[rgba(144,112,50,0.12)] px-1.5 py-0.5 font-mono text-[0.95em]"
+          className="whitespace-pre-wrap break-words rounded-md bg-[var(--bb-tint-gold-12)] px-1.5 py-0.5 font-mono text-[0.95em]"
         >
           {node.text}
         </code>
@@ -167,7 +167,7 @@ export function RichTextRenderer({
             return (
               <aside
                 key={`${node.type}-${index}`}
-                className="rounded-[24px] bg-[rgba(144,112,50,0.08)] px-6 py-8 text-center"
+                className="rounded-[24px] bg-[var(--bb-tint-gold-08)] px-6 py-8 text-center"
               >
                 <p className="heading-sm text-primary">{node.quote}</p>
                 {node.attribution ? (
@@ -182,7 +182,7 @@ export function RichTextRenderer({
               <LocalizedClientLink
                 key={`${node.type}-${index}`}
                 href={node.href}
-                className="block rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-white p-5 transition-opacity hover:opacity-90"
+                className="block rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5 transition-opacity hover:opacity-90"
               >
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-secondary">
                   {inlineEmbedLabel}
@@ -198,7 +198,7 @@ export function RichTextRenderer({
                 key={`${node.type}-${index}`}
                 className="space-y-3"
               >
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] bg-[rgba(144,112,50,0.08)]">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] bg-[var(--bb-tint-gold-08)]">
                   <Image
                     src={node.src}
                     alt={node.alt}
@@ -240,7 +240,7 @@ export function RichTextRenderer({
             return (
               <hr
                 key={`${node.type}-${index}`}
-                className="border-[rgba(144,112,50,0.14)]"
+                className="border-[var(--bb-border-soft)]"
               />
             );
           case 'table':
@@ -249,8 +249,8 @@ export function RichTextRenderer({
                 key={`${node.type}-${index}`}
                 className="space-y-3 overflow-x-auto"
               >
-                <table className="min-w-[640px] border-collapse rounded-[20px] border border-[rgba(144,112,50,0.14)] text-left">
-                  <thead className="bg-[rgba(144,112,50,0.08)]">
+                <table className="min-w-[640px] border-collapse rounded-[20px] border border-[var(--bb-border-soft)] text-left">
+                  <thead className="bg-[var(--bb-tint-gold-08)]">
                     <tr>
                       {node.headers.map(header => (
                         <th
@@ -266,7 +266,7 @@ export function RichTextRenderer({
                     {node.rows.map((row, rowIndex) => (
                       <tr
                         key={`${node.type}-row-${rowIndex}`}
-                        className="border-t border-[rgba(144,112,50,0.14)]"
+                        className="border-t border-[var(--bb-border-soft)]"
                       >
                         {row.map((cell, cellIndex) => (
                           <td
@@ -291,7 +291,7 @@ export function RichTextRenderer({
             return isAllowedIframeUrl(node.src) ? (
               <div
                 key={`${node.type}-${index}`}
-                className="overflow-hidden rounded-[24px] border border-[rgba(144,112,50,0.14)]"
+                className="overflow-hidden rounded-[24px] border border-[var(--bb-border-soft)]"
               >
                 <iframe
                   src={node.src}
@@ -306,7 +306,7 @@ export function RichTextRenderer({
             ) : (
               <p
                 key={`${node.type}-${index}`}
-                className="rounded-[20px] bg-[rgba(144,112,50,0.08)] p-4 text-sm text-secondary"
+                className="rounded-[20px] bg-[var(--bb-tint-gold-08)] p-4 text-sm text-secondary"
               >
                 {disallowedEmbedLabel}
               </p>
@@ -316,7 +316,7 @@ export function RichTextRenderer({
               <div
                 key={`${node.type}-${index}`}
                 id={`footnote-${node.id}`}
-                className="rounded-[20px] border border-[rgba(144,112,50,0.14)] bg-white px-4 py-3 text-sm leading-6 text-secondary"
+                className="rounded-[20px] border border-[var(--bb-border-soft)] bg-white px-4 py-3 text-sm leading-6 text-secondary"
               >
                 <span className="font-semibold text-primary">{node.label}. </span>
                 {node.content}
