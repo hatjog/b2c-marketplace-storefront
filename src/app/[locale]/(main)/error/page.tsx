@@ -28,7 +28,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const STATUS_PAGE_URL = process.env.NEXT_PUBLIC_STATUS_PAGE_URL ?? 'https://status.bonbeauty.pl';
+// v1.9.0 Wave F7 hardening (CC-6 F-CC6-08): drop the
+// `'https://status.bonbeauty.pl'` fallback; that domain does not exist
+// (Story 7.5 explicitly OOS the status page product build). When the
+// env var is unset the consumer should branch on `STATUS_PAGE_URL`
+// being truthy and skip the link entirely.
+const STATUS_PAGE_URL = process.env.NEXT_PUBLIC_STATUS_PAGE_URL ?? null;
 
 type ErrorVariant = 'server-error' | 'service-unavailable' | 'offline';
 
@@ -153,8 +158,9 @@ export default async function ErrorPreviewPage({
           </Link>
         )}
 
-        {/* Status page link — system signal per AC 3 */}
-        {(variant === 'server-error' || variant === 'service-unavailable') && (
+        {/* Status page link — system signal per AC 3.
+            v1.9.0 Wave F7: gated on STATUS_PAGE_URL presence (CC-6 F-CC6-08). */}
+        {STATUS_PAGE_URL && (variant === 'server-error' || variant === 'service-unavailable') && (
           <a
             href={STATUS_PAGE_URL}
             target="_blank"
