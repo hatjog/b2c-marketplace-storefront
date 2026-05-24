@@ -36,7 +36,7 @@ export const UserNavigation = () => {
           )}
         </NavigationItem>
       ))}
-      <Divider className="my-2 border-[rgba(144,112,50,0.14)]" />
+      <Divider className="my-2 border-[var(--bb-border-soft)]" />
       <NavigationItem
         href={'/user/settings'}
         active={path === '/user/settings'}

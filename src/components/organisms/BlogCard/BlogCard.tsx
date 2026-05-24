@@ -17,7 +17,7 @@ export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
     <LocalizedClientLink
       href={post.href}
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
+        'group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
         index > 2 && 'hidden xl:flex'
       )}
     >
@@ -36,7 +36,7 @@ export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
         <div className="bb-pill w-fit">{post.category}</div>
         <h3 className="heading-sm">{post.title}</h3>
         <p className="text-md line-clamp-3 text-secondary">{post.excerpt}</p>
-        <div className="label-md mt-auto flex items-center gap-4 uppercase text-[rgb(113,88,40)]">
+        <div className="label-md mt-auto flex items-center gap-4 uppercase text-[var(--cta-hover)]">
           {readMoreLabel ?? 'Read more'}{' '}
           <ArrowRightIcon
             size={20}

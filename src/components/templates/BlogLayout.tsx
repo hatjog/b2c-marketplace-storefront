@@ -308,7 +308,7 @@ export function BlogLayout(props: BlogLayoutProps) {
                 <p className="mt-8 text-sm">
                   <a
                     href="/blog"
-                    className="underline decoration-[rgba(26,26,26,0.22)] underline-offset-4"
+                    className="underline decoration-[var(--bb-text-tint-22)] underline-offset-4"
                   >
                     {backToBlogLabel}
                   </a>

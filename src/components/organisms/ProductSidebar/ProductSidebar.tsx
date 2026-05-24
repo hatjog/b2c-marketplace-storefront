@@ -54,7 +54,7 @@ export const ProductSidebar = ({
           {filterModal && (
             <div className="md:hidden">
               <div
-                className="mb-4 flex items-center justify-between border-b border-[rgba(144,112,50,0.14)] pb-4"
+                className="mb-4 flex items-center justify-between border-b border-[var(--bb-border-soft)] pb-4"
                 data-testid="sidebar-filter-header"
               >
                 <h3 className="heading-md">{t('filters')}</h3>
@@ -85,7 +85,7 @@ export const ProductSidebar = ({
           </div>
 
           <div
-            className="mt-4 flex w-full items-center gap-2 border-t border-[rgba(144,112,50,0.14)] pt-4 md:hidden"
+            className="mt-4 flex w-full items-center gap-2 border-t border-[var(--bb-border-soft)] pt-4 md:hidden"
             data-testid="sidebar-actions"
           >
             <Button

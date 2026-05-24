@@ -41,12 +41,12 @@ export function CartRecommendations({
         <LocalizedClientLink
           key={category.id}
           href={`/categories/${category.handle}`}
-          className="group relative flex min-h-[280px] overflow-hidden rounded-[28px] border border-[rgba(144,112,50,0.14)] bg-[rgba(255,255,255,0.75)] p-6 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1"
+          className="group relative flex min-h-[280px] overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] p-6 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1"
           data-testid={`cart-recommended-fallback-${category.handle}`}
         >
           <div className="mt-auto flex w-full items-end justify-between gap-3">
             <h3 className="heading-md max-w-[14ch]">{category.name}</h3>
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(144,112,50,0.24)] bg-white/70 text-xl text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--bb-tint-gold-24)] bg-white/70 text-xl text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
               +
             </span>
           </div>

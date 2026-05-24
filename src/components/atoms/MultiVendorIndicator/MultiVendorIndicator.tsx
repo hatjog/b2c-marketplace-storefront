@@ -42,7 +42,7 @@ export const MultiVendorIndicator = ({ vendorCount, className }: MultiVendorIndi
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full bg-[rgba(239,229,210,0.72)] px-2 py-0.5 text-xs text-secondary',
+        'inline-flex items-center rounded-full bg-[var(--bb-muted-72)] px-2 py-0.5 text-xs text-secondary',
         className
       )}
       title={t('indicator_tooltip', { count: vendorCount })}

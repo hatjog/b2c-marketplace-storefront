@@ -197,7 +197,7 @@ function PasswordStrengthMeter({ password, tAuth }: { password: string; tAuth: T
         {Array.from({ length: 4 }).map((_, index) => (
           <span
             key={index}
-            className={cn('h-1 flex-1 rounded-full bg-[rgba(26,26,26,0.1)]', index < score && tone)}
+            className={cn('h-1 flex-1 rounded-full bg-[var(--bb-text-tint-10)]', index < score && tone)}
           />
         ))}
       </div>
@@ -249,13 +249,13 @@ function AuthInput({
           aria-invalid={invalid || undefined}
           aria-describedby={helperId}
           className={cn(
-            'min-h-12 w-full rounded-[16px] border bg-[rgba(255,255,255,0.78)] px-4 py-3 text-[14px] text-[var(--text-primary)] outline-none transition-colors',
+            'min-h-12 w-full rounded-[16px] border bg-[var(--bb-white-75)] px-4 py-3 text-[14px] text-[var(--text-primary)] outline-none transition-colors',
             invalid
               ? 'border-[var(--state-failed,#b42318)]'
               : success
                 ? 'border-[var(--state-paid,#166534)]'
                 : 'border-[var(--bb-border-soft)] focus:border-[var(--color-focus-ring)]',
-            disabled && 'cursor-not-allowed bg-[rgba(26,26,26,0.04)] text-[var(--text-secondary)]',
+            disabled && 'cursor-not-allowed bg-[var(--bb-text-tint-10)] text-[var(--text-secondary)]',
             type === 'password' && 'pr-12'
           )}
           ref={element => {
@@ -703,7 +703,7 @@ export function ForgotPasswordAuthForm() {
         className="space-y-4 text-center"
         data-testid="forgot-password-success"
       >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(22,101,52,0.08)] text-[var(--state-paid,#166534)]">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--bb-trust-card-bg)] text-[var(--state-paid,#166534)]">
           ✓
         </div>
         <h2 className="heading-sm text-[var(--text-primary)]">{tAuth('forgot.success_title')}</h2>
@@ -935,13 +935,13 @@ export function InlineRegisterAuthForm({
   const authError = translateKey(state.formError, tAuth, tValidation);
 
   return (
-    <div className="bb-card grid gap-6 rounded-[28px] border border-[var(--bb-border-soft)] bg-[rgba(255,252,247,0.96)] p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="bb-card grid gap-6 rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-96)] p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-4">
         <p className="bb-eyebrow">{tAuth('inline.eyebrow')}</p>
         <h1 className="heading-md text-[var(--text-primary)]">{tAuth('inline.title')}</h1>
         <p className="text-md text-[var(--text-secondary)]">{tAuth('inline.subtitle')}</p>
         {orderReference ? (
-          <div className="rounded-[16px] border border-[rgba(22,101,52,0.18)] bg-[rgba(22,101,52,0.08)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          <div className="rounded-[16px] border border-[var(--bb-trust-tint-18)] bg-[var(--bb-trust-card-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
             {tAuth('inline.order_notice', { orderReference, email: email ?? '' })}
           </div>
         ) : null}

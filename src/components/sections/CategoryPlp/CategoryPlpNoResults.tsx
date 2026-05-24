@@ -17,7 +17,7 @@ export function CategoryPlpNoResults() {
       data-testid="category-plp-no-results"
     >
       <div
-        className="flex h-20 w-20 items-center justify-center rounded-full border border-[rgba(144,112,50,0.22)] bg-[rgba(239,229,210,0.35)]"
+        className="flex h-20 w-20 items-center justify-center rounded-full border border-[var(--bb-tint-gold-22)] bg-[var(--bb-muted-35)]"
         aria-hidden="true"
       >
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -39,7 +39,7 @@ export function CategoryPlpNoResults() {
         </button>
         <LocalizedClientLink
           href="/"
-          className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[rgba(144,112,50,0.24)] px-5 py-2 text-sm font-medium text-primary"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--bb-tint-gold-24)] px-5 py-2 text-sm font-medium text-primary"
           data-testid="category-plp-no-results-editorial"
         >
           {t('editorial_cta')}

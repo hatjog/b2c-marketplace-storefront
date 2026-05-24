@@ -307,7 +307,7 @@ export const ProductDetailsHeader = ({
           <Chat
             user={user}
             seller={product.seller}
-            buttonClassNames="w-full rounded-full bg-[rgba(9,9,9,0.06)] text-primary hover:bg-[rgba(9,9,9,0.12)] md:w-auto"
+            buttonClassNames="w-full rounded-full bg-[var(--bb-text-tint-10)] text-primary hover:bg-[var(--bb-text-tint-10)] md:w-auto"
             product={product}
           />
         )}

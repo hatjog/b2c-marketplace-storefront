@@ -77,7 +77,7 @@ export function SellerProof({
   return (
     <section
       className={cn(
-        'space-y-4 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[rgba(255,252,247,0.86)] p-5 shadow-[var(--bb-shadow-soft)]',
+        'space-y-4 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-86)] p-5 shadow-[var(--bb-shadow-soft)]',
         className
       )}
       data-testid={dataTestId}
@@ -129,7 +129,7 @@ export function SellerProof({
 
       {proofPointsCount < 3 ? (
         <div
-          className="rounded-[var(--bb-radius-card)] border border-[rgba(187,37,26,0.22)] bg-[rgba(187,37,26,0.06)] px-4 py-3 text-sm text-[var(--text-primary)]"
+          className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-error)] bg-[var(--bb-icon-bg-error)] px-4 py-3 text-sm text-[var(--text-primary)]"
           data-testid="pdp-seller-proof-warning"
         >
           <p className="font-medium">{labels.warningTitle}</p>

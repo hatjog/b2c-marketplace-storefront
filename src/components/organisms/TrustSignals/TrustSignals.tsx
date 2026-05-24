@@ -21,7 +21,7 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
     return (
       <div role="region" aria-label="Gwarancje BonBeauty" className="inline-flex flex-wrap gap-2">
         {capped.map((signal, i) => (
-          <span key={`signal-${i}`} className="inline-flex items-center gap-1 rounded-full bg-[rgba(239,229,210,0.72)] px-3 py-1 text-[13px] text-primary">
+          <span key={`signal-${i}`} className="inline-flex items-center gap-1 rounded-full bg-[var(--bb-muted-72)] px-3 py-1 text-[13px] text-primary">
             <span>✓</span>{' '}
             <SanitizedHTML html={signal} className="inline" />
           </span>
@@ -34,7 +34,7 @@ export function TrustSignals({ variant, signals, detailsUrl }: TrustSignalsProps
     <div
       role="region"
       aria-label="Gwarancje BonBeauty"
-      className="bb-section-shell h-full space-y-3 border-[rgba(22,101,52,0.14)] bg-[rgba(22,101,52,0.08)]"
+      className="bb-section-shell h-full space-y-3 border-[var(--bb-trust-tint-10)] bg-[var(--bb-trust-card-bg)]"
     >
       {capped.map((signal, i) => (
         <div key={`signal-${i}`} className="flex items-start gap-2 text-primary">

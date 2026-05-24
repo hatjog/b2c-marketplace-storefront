@@ -77,7 +77,7 @@ export function ErrorSurface({
           maxWidth: '48rem',
           border: `1px solid ${colors.border}`,
           borderRadius: '2rem',
-          backgroundColor: 'rgba(255,255,255,0.9)',
+          backgroundColor: 'var(--bb-white-90)',
           boxShadow: '0 20px 60px rgba(113, 88, 40, 0.08)',
           padding: 'clamp(1.5rem, 4vw, 3rem)',
         }}

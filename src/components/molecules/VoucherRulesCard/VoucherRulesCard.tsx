@@ -44,7 +44,7 @@ function RuleRow({ title, body }: { title: string; body: string }) {
   return (
     <div className="flex gap-3">
       <span
-        className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[rgba(197,160,89,0.15)] text-[var(--cta-hover)]"
+        className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--bb-tint-accent-18)] text-[var(--cta-hover)]"
         aria-hidden="true"
       >
         <svg
@@ -84,7 +84,7 @@ export function VoucherRulesCard({
   return (
     <section
       className={cn(
-        'rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[rgba(255,252,247,0.78)] shadow-[var(--bb-shadow-soft)]',
+        'rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-75)] shadow-[var(--bb-shadow-soft)]',
         className
       )}
       data-testid={dataTestId}

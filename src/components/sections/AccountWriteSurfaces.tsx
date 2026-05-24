@@ -386,7 +386,7 @@ function WrittenReviewForm({
                   className={cn(
                     'min-h-[44px] min-w-[44px] rounded-full border text-sm font-semibold',
                     form.watch('rating') >= rating
-                      ? 'border-[var(--accent,#A89279)] bg-[rgba(168,146,121,0.18)] text-primary'
+                      ? 'border-[var(--accent,#A89279)] bg-[var(--bb-tint-accent-18)] text-primary'
                       : 'border-[var(--bb-border-soft)] text-secondary'
                   )}
                 >
@@ -574,7 +574,7 @@ function CreateReviewForm({
                   className={cn(
                     'min-h-[44px] min-w-[44px] rounded-full border text-sm font-semibold',
                     form.watch('rating') >= rating
-                      ? 'border-[var(--accent,#A89279)] bg-[rgba(168,146,121,0.18)] text-primary'
+                      ? 'border-[var(--accent,#A89279)] bg-[var(--bb-tint-accent-18)] text-primary'
                       : 'border-[var(--bb-border-soft)] text-secondary'
                   )}
                 >
@@ -691,7 +691,7 @@ export function ReturnRequestSurface({ orderId, reasons }: ReturnSurfaceProps) {
                       className={cn(
                         'flex min-h-[44px] items-start gap-3 rounded-2xl border p-4',
                         field.value === reason.value
-                          ? 'border-[var(--accent,#A89279)] bg-[rgba(168,146,121,0.12)]'
+                          ? 'border-[var(--accent,#A89279)] bg-[var(--bb-tint-accent-12)]'
                           : 'border-[var(--bb-border-soft)]'
                       )}
                     >
@@ -1007,7 +1007,7 @@ export function SavedAddressesSurface({
             {addresses.map((address) => (
               <article
                 key={address.id}
-                className="rounded-2xl border border-[var(--bb-border-soft)] bg-[rgba(243,241,237,0.6)] p-4"
+                className="rounded-2xl border border-[var(--bb-border-soft)] bg-[var(--bb-surface-3-60)] p-4"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="space-y-1 text-sm text-secondary">
@@ -1123,7 +1123,7 @@ export function ReviewsToWriteSurface({ orders }: ReviewsToWriteProps) {
             {orders.map((order) => (
               <article
                 key={order.id}
-                className="rounded-2xl border border-[var(--bb-border-soft)] bg-[rgba(243,241,237,0.6)] p-4"
+                className="rounded-2xl border border-[var(--bb-border-soft)] bg-[var(--bb-surface-3-60)] p-4"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
@@ -1183,13 +1183,13 @@ export function WrittenReviewsSurface({ reviews }: WrittenReviewsProps) {
             {reviews.map((review) => (
               <article
                 key={review.id}
-                className="rounded-2xl border border-[var(--bb-border-soft)] bg-[rgba(243,241,237,0.6)] p-4"
+                className="rounded-2xl border border-[var(--bb-border-soft)] bg-[var(--bb-surface-3-60)] p-4"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <p className="font-semibold text-primary">{review.seller?.name || t('written_reviews.list.unknown_seller')}</p>
-                      <span className="rounded-full bg-[rgba(168,146,121,0.18)] px-3 py-1 text-xs font-semibold text-primary">
+                      <span className="rounded-full bg-[var(--bb-tint-accent-18)] px-3 py-1 text-xs font-semibold text-primary">
                         {t('written_reviews.list.rating', { rating: review.rating })}
                       </span>
                     </div>
@@ -1598,7 +1598,7 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                         className={cn(
                           'flex min-h-[44px] items-start gap-3 rounded-2xl border p-4',
                           privacyForm.watch('requestType') === value
-                            ? 'border-[var(--accent,#A89279)] bg-[rgba(168,146,121,0.12)]'
+                            ? 'border-[var(--accent,#A89279)] bg-[var(--bb-tint-accent-12)]'
                             : 'border-[var(--bb-border-soft)]'
                         )}
                       >
