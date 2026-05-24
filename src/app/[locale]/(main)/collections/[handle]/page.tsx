@@ -245,7 +245,7 @@ export default async function CollectionDetailPage({
                   className="group flex min-h-[280px] flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
                   aria-label={t('grid.cardAria', { title: item.title })}
                 >
-                  <div className="relative min-h-[200px] bg-[linear-gradient(135deg,rgba(239,229,210,0.86),rgba(250,248,245,0.98))]">
+                  <div className="relative min-h-[200px] bg-[var(--bb-gradient-cream-card)]">
                     {item.imageUrl ? (
                       <Image
                         src={item.imageUrl}

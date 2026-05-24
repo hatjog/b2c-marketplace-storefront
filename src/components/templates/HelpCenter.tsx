@@ -95,8 +95,7 @@ export function HelpCenter({
       data-help-source={sourceMarker}
       style={{
         padding: '2rem 1rem 4rem',
-        background:
-          'linear-gradient(180deg, rgba(255,248,239,0.85) 0%, rgba(250,248,245,1) 30%, rgba(250,248,245,1) 100%)',
+        background: 'var(--bb-gradient-seller-veil)',
       }}
     >
       <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gap: '1.5rem' }}>
@@ -106,7 +105,7 @@ export function HelpCenter({
             borderRadius: '2rem',
             padding: 'clamp(1.5rem, 4vw, 3rem)',
             backgroundColor: 'var(--bb-white-86)',
-            boxShadow: '0 20px 60px rgba(113, 88, 40, 0.08)',
+            boxShadow: 'var(--bb-shadow-seller-soft)',
           }}
         >
           <div style={{ display: 'grid', gap: '1rem' }}>
