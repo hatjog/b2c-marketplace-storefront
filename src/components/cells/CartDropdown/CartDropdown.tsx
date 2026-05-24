@@ -1,5 +1,7 @@
 'use client';
 
+// @chrome-manifest: W6-08 (cell renders <MiniCartDrawer> per Story 0.14)
+
 import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';

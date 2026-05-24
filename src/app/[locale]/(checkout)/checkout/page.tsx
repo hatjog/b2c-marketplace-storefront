@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal, VerifiedMark } from '@/components/atoms';
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
@@ -64,6 +64,7 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
   const tCheckout = await getTranslations({ locale, namespace: 'checkout' });
+  const tPage = await getTranslations({ locale, namespace: 'page' });
   const tPaymentStatus = await getTranslations({ locale, namespace: 'payment_status' });
   const cart = await retrieveCart();
 
@@ -114,6 +115,19 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             data-testid="checkout-review-container"
           >
             {isMultiVendorEnabled() && <MultiVendorOrderSummary cart={cart} />}
+            {/* Trust Invariant #1: <VerifiedMark> on checkout per Story 0.15.
+                v1.9.0 Wave F7 hardening (CC-3 M7) — wires the marker into the
+                checkout surface tree so validate_trust_invariant_verified_mark
+                exits 0 instead of FAIL. */}
+            <div
+              className="flex items-center justify-end gap-2 text-xs text-[var(--text-secondary)]"
+              data-testid="checkout-verified-mark"
+            >
+              <VerifiedMark
+                label={tPage('checkout_verified_label')}
+                surface="page"
+              />
+            </div>
             {/* Trust Invariant #5: <CrossActorHandoff names buyer/salon duties before payment. */}
             <CrossActorHandoff
               forYou={tCheckout('cross_actor.for_you')}

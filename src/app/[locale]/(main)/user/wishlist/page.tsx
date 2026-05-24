@@ -59,7 +59,17 @@ export default async function WishlistPage({ params }: { params: Promise<{ local
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {(result.data.products ?? []).map(product => (
-                <div key={product.id} className="bb-card" data-testid={`wishlist-item-${product.id}`}>
+                <div
+                  key={product.id}
+                  className="bb-card"
+                  style={{
+                    background: 'var(--journal-card-bg, var(--bb-surface))',
+                    borderColor: 'var(--journal-card-border)',
+                    borderRadius: 'var(--journal-card-radius, 16px)',
+                    boxShadow: 'var(--journal-card-shadow)'
+                  }}
+                  data-testid={`wishlist-item-${product.id}`}
+                >
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-secondary">{t('collection')}</p>
                   <WishlistItem
                     product={product as HttpTypes.StoreProduct & { calculated_amount: number; currency_code: string }}
