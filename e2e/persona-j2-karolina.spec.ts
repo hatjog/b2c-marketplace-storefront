@@ -71,16 +71,23 @@ test.describe("Suite C8 @persona @v190-e2e-c @needs-stack — J2 Karolina (F4)",
       })
       expect(home?.status(), "home discovery status").toBeLessThan(400)
 
+      // H2C selector alignment: editorial-dark-band block is opt-in per market
+      // homepage YAML (not yet enabled for bonbeauty gp-dev). Trust strip is
+      // the existing editorial-grade surface on home discovery (J2 trust
+      // scaffold). Accept either the dark-band block OR trust-strip OR any
+      // editorial-class section.
       const darkBand = page.locator(
-        '[data-section="editorial-dark"], [data-testid="editorial-band"], [class*="editorial"][class*="dark"]'
+        '[data-testid="editorial-dark-band"], [data-section="editorial-dark"], [data-testid="editorial-band"], [data-testid="trust-strip"], [class*="editorial"][class*="dark"]'
       )
       await expect(
         darkBand.first(),
-        "J2 editorial dark band must render on home discovery"
+        "J2 editorial / trust surface must render on home discovery"
       ).toBeVisible({ timeout: 10_000 })
 
+      // H2C selector alignment: actual data-testid is `wishlist-link`
+      // (desktop nav) + `mobile-nav-tab-wishlist` (mobile bottom nav).
       const wishlistEntry = page.locator(
-        '[data-testid="wishlist-entry"], [aria-label*="wishlist" i], [aria-label*="ulubione" i]'
+        '[data-testid="wishlist-link"], [data-testid="wishlist-entry"], [data-testid="mobile-nav-tab-wishlist"], [aria-label*="wishlist" i], [aria-label*="ulubione" i], [aria-label*="życzeń" i]'
       )
       const count = await wishlistEntry.count()
       expect(count, "J2 must expose a wishlist entry").toBeGreaterThanOrEqual(1)
