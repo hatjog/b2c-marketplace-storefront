@@ -2,7 +2,7 @@
 import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';
-import { Funnel_Display } from 'next/font/google';
+import { Funnel_Display, Inter } from 'next/font/google';
 
 import './globals.css';
 
@@ -26,6 +26,18 @@ const funnelDisplay = Funnel_Display({
   variable: '--font-funnel-sans',
   subsets: ['latin', 'latin-ext'],
   weight: ['300', '400', '500', '600', '700']
+});
+
+// v1.9.0 Wave F7 hardening (CC-3 M2): Funnel Display has no Cyrillic
+// subset in Google Fonts. Pair it with Inter (Cyrillic + Greek + Latin)
+// so UA Ukrainian glyphs render in a curated UI font rather than the
+// OS fallback. Inter is the per-`:lang(ua)` fallback per
+// `typography-uk.md` §6.
+const interFallback = Inter({
+  variable: '--font-cyrillic-fallback',
+  subsets: ['latin', 'latin-ext', 'cyrillic', 'cyrillic-ext'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap'
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -187,7 +199,7 @@ export default async function RootLayout({
         )}
       </head>
       <body
-        className={`${funnelDisplay.className} relative bg-primary text-secondary antialiased`}
+        className={`${funnelDisplay.className} ${interFallback.variable} relative bg-primary text-secondary antialiased`}
         suppressHydrationWarning
       >
         {showFallbackBanner && (

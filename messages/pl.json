@@ -833,7 +833,8 @@
     "cart_description": "Przejrzyj produkty w koszyku i przejdź do kasy.",
     "checkout_title": "Kasa",
     "checkout_description": "Sprawdź dane zamówienia i bezpiecznie zakończ zakup.",
-    "loading": "Ładowanie..."
+    "loading": "Ładowanie...",
+    "checkout_verified_label": "Zweryfikowany marketplace"
   },
   "legal": {
     "title_privacy": "Polityka Prywatności",

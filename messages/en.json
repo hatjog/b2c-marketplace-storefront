@@ -833,7 +833,8 @@
     "cart_description": "Review the items in your cart and continue to checkout.",
     "checkout_title": "Checkout",
     "checkout_description": "Review your order details and complete the purchase securely.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "checkout_verified_label": "Verified marketplace"
   },
   "legal": {
     "title_privacy": "Privacy Policy",

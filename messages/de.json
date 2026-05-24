@@ -833,7 +833,8 @@
     "cart_description": "Überprüfen Sie die Artikel in Ihrem Warenkorb und fahren Sie zur Kasse fort.",
     "checkout_title": "Kasse",
     "checkout_description": "Prüfen Sie Ihre Bestelldaten und schließen Sie den Kauf sicher ab.",
-    "loading": "Wird geladen..."
+    "loading": "Wird geladen...",
+    "checkout_verified_label": "Verifizierter Marktplatz"
   },
   "legal": {
     "title_privacy": "Datenschutzrichtlinie",
