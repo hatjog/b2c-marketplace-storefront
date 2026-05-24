@@ -73,26 +73,17 @@ test.describe("Suite C10 @persona @v190-e2e-c @needs-stack — J4 Marek trust (F
       const response = await page.goto(url, { waitUntil: "domcontentloaded" })
       expect(response?.status(), `${url} reachable`).toBeLessThan(400)
 
-      // Cookie modal step 1 (the banner / minimal preferences)
-      const cookieBanner = page.locator(
-        '[data-testid="cookie-banner"], [data-cookie-banner], [role="dialog"][aria-label*="cookie" i]'
+      // Cookie modal step 1 (the banner / minimal preferences) — H2C
+      // alignment: CookieBanner is a client component mounted in root
+      // layout. It transitions visible/hidden post-hydration via useEffect;
+      // wait for either banner OR the post-consent reopen trigger.
+      const cookieSurface = page.locator(
+        '[data-testid="cookie-banner"], [data-testid="cookie-settings-reopen"], [data-cookie-banner], [role="dialog"][aria-label*="cookie" i], [role="region"][aria-label*="cookie" i]'
       )
-      // Banner may have been dismissed in storage; accept either present-and-actionable
-      // OR already-dismissed (then check the cookie-preferences trigger exists).
-      const bannerCount = await cookieBanner.count()
-      if (bannerCount > 0) {
-        await expect(cookieBanner.first(), "cookie banner visible").toBeVisible({
-          timeout: 5_000,
-        })
-      } else {
-        const cookieTrigger = page.locator(
-          '[data-testid="cookie-preferences"], a[href*="cookie"], button:text("Cookies")'
-        )
-        expect(
-          await cookieTrigger.count(),
-          "cookie preferences trigger must exist when banner is hidden"
-        ).toBeGreaterThanOrEqual(1)
-      }
+      await expect(
+        cookieSurface.first(),
+        "cookie surface (banner or settings reopen) must hydrate"
+      ).toBeVisible({ timeout: 10_000 })
 
       // Trust signals: lastUpdated/version/locale switcher
       const localeSwitcher = page.locator(
