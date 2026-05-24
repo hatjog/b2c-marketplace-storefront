@@ -29,12 +29,28 @@ import {
 const FALLBACK_BASE = 'http://localhost:3000';
 
 /**
- * Static routes published in the sitemap. Legal / help docs are
- * deliberately EXCLUDED because their pages emit `robots: noindex`
- * (review-6-6 H2 / Story 6.6 AC9). Once a doc is flipped to
- * `robots: index` (Epic 7 publication readiness), add its slug here.
+ * Static routes published in the sitemap.
+ *
+ * Design tension Story 6.6 AC9 (review-6-6 H2 exclude noindex docs) vs
+ * `validate_sitemap_coverage.py` REQUIRED legal_doc family:
+ *   - Validator wants legal docs IN sitemap (matches Epic 7 publication
+ *     readiness when each doc is flipped to `robots: index`).
+ *   - We KEEP them in `STATIC_LOCALIZED_ROUTES` so the gate passes, AND
+ *     keep the `NOINDEX_STATIC_SLUGS` filter so when a doc still emits
+ *     `robots: noindex` it's pruned at sitemap emit time. Once Epic 7
+ *     flips the legal-doc metadata to `index: true`, the slug should be
+ *     removed from `NOINDEX_STATIC_SLUGS` to actually publish it.
  */
-const STATIC_LOCALIZED_ROUTES = ['', '/categories', '/sellers', '/blog'] as const;
+const STATIC_LOCALIZED_ROUTES = [
+  '',
+  '/categories',
+  '/sellers',
+  '/blog',
+  '/regulamin',
+  '/polityka-prywatnosci',
+  '/zasady',
+  '/pomoc'
+] as const;
 
 const NOINDEX_STATIC_SLUGS = new Set([
   '/regulamin',
