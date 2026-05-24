@@ -1,3 +1,4 @@
+// @chrome-manifest: W6-03 (renders <NewsletterSlot> chrome organism inline)
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';

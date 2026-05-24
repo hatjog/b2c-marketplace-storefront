@@ -147,7 +147,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const ctaRef = useRef<HTMLAnchorElement | null>(null);
+  const ctaRef = useRef<HTMLAnchorElement | HTMLButtonElement | null>(null);
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Detect prefers-reduced-motion
@@ -346,7 +346,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       case 'paid':
         return (
           <a
-            ref={ctaRef}
+            ref={ctaRef as React.RefObject<HTMLAnchorElement | null>}
             href={`/${locale}/order/${orderId}/confirmed`}
             data-testid="payment-status-v180-cta"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -357,16 +357,33 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       case 'pending_psp':
         return null;
       case 'failed_retryable':
-        // Navigation contract for Story 1.7 FR1.8 — passes orderId + retry_count
-        // (Story 1.7 implements the actual retry endpoint; this story owns CTA + nav only)
+        // v1.9.0 Wave F7 hardening (Epic-3-Review F-01): button + programmatic
+        // navigation with idempotency-key cookie (NFR — Story 1.7 FR1.8 retry
+        // contract). Anchor href ?retry_count=1 leaked retry semantics into
+        // URL + browser history; button + router.push keeps the retry intent
+        // server-action-friendly.
         return (
-          <a
-            href={`/${locale}/checkout?order_id=${encodeURIComponent(orderId)}&retry_count=1`}
+          <button
+            type="button"
+            ref={ctaRef as React.RefObject<HTMLButtonElement | null>}
+            onClick={() => {
+              try {
+                if (typeof document !== 'undefined') {
+                  const key = `${orderId}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+                  document.cookie = `payment_retry_idempotency_key=${encodeURIComponent(key)}; Path=/; Max-Age=900; SameSite=Lax`;
+                }
+              } catch {
+                // best-effort cookie write
+              }
+              router.push(
+                `/${locale}/checkout?order_id=${encodeURIComponent(orderId)}`
+              );
+            }}
             data-testid="payment-status-v180-cta"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2"
           >
             {t('payment_status.failed_retryable.cta')}
-          </a>
+          </button>
         );
       case 'failed_nonretryable':
         return (
