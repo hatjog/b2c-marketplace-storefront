@@ -65,8 +65,19 @@ export interface VoucherRecipientPolicyView {
     cutoff_hours: number | null;
     fee_pct: number | null;
   } | null;
-  refund_channel?: 'original_payment' | 'store_credit' | 'bank_transfer' | null;
-  no_show_policy?: 'charge_full' | 'charge_partial' | 'no_charge' | 'forfeit_voucher' | null;
+  // v1.9.0 Wave F6 / CC-2 #5 — canonicalise to backend SSOT
+  // (`GP/backend/.../entitlement-boundary.ts#REFUND_CHANNELS`):
+  // original_payment | store_credit | vendor_wallet (removed: bank_transfer).
+  refund_channel?: 'original_payment' | 'store_credit' | 'vendor_wallet' | null;
+  // v1.9.0 Wave F6 / CC-2 #6 — canonicalise to backend SSOT 5-value
+  // `NO_SHOW_POLICIES` (added: vendor_decision).
+  no_show_policy?:
+    | 'charge_full'
+    | 'charge_partial'
+    | 'no_charge'
+    | 'forfeit_voucher'
+    | 'vendor_decision'
+    | null;
 }
 
 export interface VoucherRecipientView {
@@ -413,10 +424,14 @@ function normalizeRefundChannel(
   value: string | null | undefined
 ): VoucherRecipientPolicyView['refund_channel'] {
   const normalized = (value ?? '').trim().toLowerCase();
+  // v1.9.0 Wave F6 / CC-2 #5 — canonicalise to backend SSOT
+  // (`GP/backend/.../entitlement-boundary.ts#REFUND_CHANNELS`).
+  // Removed: `bank_transfer` (legacy; was never in backend boundary).
+  // Added: `vendor_wallet` (Story 2.8 BE-7 substrate).
   if (
     normalized === 'original_payment' ||
     normalized === 'store_credit' ||
-    normalized === 'bank_transfer'
+    normalized === 'vendor_wallet'
   ) {
     return normalized;
   }
@@ -427,11 +442,14 @@ function normalizeNoShowPolicy(
   value: string | null | undefined
 ): VoucherRecipientPolicyView['no_show_policy'] {
   const normalized = (value ?? '').trim().toLowerCase();
+  // v1.9.0 Wave F6 / CC-2 #6 — canonicalise to backend SSOT 5-value enum
+  // (`NO_SHOW_POLICIES`). Added: `vendor_decision` (Story 2.7 BE-6).
   if (
     normalized === 'charge_full' ||
     normalized === 'charge_partial' ||
     normalized === 'no_charge' ||
-    normalized === 'forfeit_voucher'
+    normalized === 'forfeit_voucher' ||
+    normalized === 'vendor_decision'
   ) {
     return normalized;
   }
