@@ -202,9 +202,23 @@ function parseFrontMatter(content: string, sourcePath: string): ParsedMarkdown {
   const body = content.slice(endIdx + 5); // length of '\n---\n'
   let parsed: unknown;
   try {
-    parsed = yaml.load(yamlBlock);
+    // ADR-125 / H1 fix 2026-05-25: pin JSON_SCHEMA so ISO-8601 date strings
+    // (`last_updated: 2026-05-24`) stay as strings instead of being auto-
+    // converted to JS Date objects by js-yaml default CORE_SCHEMA. The Date
+    // object then flowed through `as unknown as LegalDocumentFrontMatter` cast
+    // and crashed React render with "Objects are not valid as a React child
+    // (found: [object Date])" on /pl/regulamin + /pl/polityka-prywatnosci.
+    parsed = yaml.load(yamlBlock, { schema: yaml.JSON_SCHEMA });
   } catch (err) {
     throw new Error(`Legal document YAML parse error at ${sourcePath}: ${(err as Error).message}`);
+  }
+  // Defensive coerce: even if upstream config flips back to CORE_SCHEMA, ensure
+  // last_updated stays a string for React render safety.
+  if (parsed && typeof parsed === 'object') {
+    const fm = parsed as Record<string, unknown>;
+    if (fm.last_updated instanceof Date) {
+      fm.last_updated = fm.last_updated.toISOString().slice(0, 10);
+    }
   }
   if (!parsed || typeof parsed !== 'object') {
     throw new Error(`Legal document front-matter must be a YAML mapping at ${sourcePath}`);
