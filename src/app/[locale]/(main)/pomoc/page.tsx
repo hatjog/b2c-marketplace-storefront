@@ -101,7 +101,10 @@ export default async function PomocPage({ params }: { params: Promise<{ locale: 
   ] as const;
 
   return (
-    <LegalPageLayout>
+    <LegalPageLayout showDisclaimer={false}>
+      {/* F-E7-CR-11 fix: /pomoc is informational; the
+          "BonBeauty jest pośrednikiem. Usługę świadczy salon."
+          disclaimer reads as wrong context here. */}
       <article
         aria-labelledby="pomoc-page-title"
         data-testid="help-page"
