@@ -1206,7 +1206,7 @@
         "refund_channel_values": {
           "original_payment": "Die Rückerstattung erfolgt auf die ursprüngliche Zahlungsmethode.",
           "store_credit": "Die Rückerstattung erfolgt als Guthaben.",
-          "bank_transfer": "Die Rückerstattung erfolgt per Banküberweisung."
+          "vendor_wallet": "Die Rückerstattung erfolgt über das Wallet des Salons."
         },
         "no_show_label": "No-show:",
         "no_show_fallback": "Die No-show-Regel ist vorübergehend nicht verfügbar.",
@@ -1214,7 +1214,8 @@
           "charge_full": "Ein Nichterscheinen kann zu einer vollständigen Belastung führen.",
           "charge_partial": "Ein Nichterscheinen kann zu einer teilweisen Belastung führen.",
           "no_charge": "Ein Nichterscheinen verursacht keine zusätzliche Gebühr, bitte kontaktieren Sie aber den Salon.",
-          "forfeit_voucher": "Ein Nichterscheinen kann zum Verlust des Gutscheins führen."
+          "forfeit_voucher": "Ein Nichterscheinen kann zum Verlust des Gutscheins führen.",
+          "vendor_decision": "Der Salon entscheidet über das Vorgehen bei Nichterscheinen."
         }
       },
       "expired": {

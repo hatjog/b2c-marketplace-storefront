@@ -1206,7 +1206,7 @@
         "refund_channel_values": {
           "original_payment": "The refund goes back to the original payment method.",
           "store_credit": "The refund is settled as store credit.",
-          "bank_transfer": "The refund is settled by bank transfer."
+          "vendor_wallet": "The refund is settled through the salon's wallet."
         },
         "no_show_label": "No-show:",
         "no_show_fallback": "The no-show policy is temporarily unavailable.",
@@ -1214,7 +1214,8 @@
           "charge_full": "A no-show may result in a full charge.",
           "charge_partial": "A no-show may result in a partial charge.",
           "no_charge": "A no-show does not trigger an extra charge, but please contact the salon.",
-          "forfeit_voucher": "A no-show may cause the voucher to be forfeited."
+          "forfeit_voucher": "A no-show may cause the voucher to be forfeited.",
+          "vendor_decision": "The salon decides how to handle a no-show case."
         }
       },
       "expired": {
