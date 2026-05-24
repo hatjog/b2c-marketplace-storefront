@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { CSP_DIRECTIVE_LIST, CSP_DIRECTIVES, resolveCspHeaderName } from '@/lib/security/csp';
+import {
+  CSP_DIRECTIVE_LIST,
+  CSP_DIRECTIVES,
+  buildCspDirectiveList,
+  resolveCspHeaderName,
+} from '@/lib/security/csp';
 
 /**
  * D-64 (architecture.md:328) — CSP header policy + env-var toggle tests.
@@ -12,6 +17,13 @@ import { CSP_DIRECTIVE_LIST, CSP_DIRECTIVES, resolveCspHeaderName } from '@/lib/
  * config consumes the same `CSP_DIRECTIVES` + `resolveCspHeaderName`
  * exports tested here, so this unit test guarantees the values that
  * Next.js will actually emit at runtime.
+ *
+ * v1.9.0 wf5 update (closes CC-1 F-CC1-005): the directive list dropped
+ * `https://api.mercurjs.com` (Mercur upstream marketing API — not the
+ * GP backend origin). connect-src now picks up the GP backend origin
+ * via `NEXT_PUBLIC_MEDUSA_BACKEND_URL` (or `MEDUSA_BACKEND_URL`) at
+ * build/runtime, so checkout in production talks to the real backend
+ * without CSP blocking the requests.
  */
 
 const EXPECTED_DIRECTIVES = [
@@ -20,7 +32,7 @@ const EXPECTED_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' fonts.gstatic.com",
   "img-src 'self' https: blob: data:",
-  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.mercurjs.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com",
+  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -28,12 +40,20 @@ const EXPECTED_DIRECTIVES = [
 ];
 
 describe('CSP directive list (D-64 AC #1)', () => {
-  it('contains the exact D-64 directives plus Stripe checkout origins', () => {
-    expect(CSP_DIRECTIVE_LIST).toEqual(EXPECTED_DIRECTIVES);
+  it('contains the exact D-64 directives plus Stripe checkout origins (no backend env)', () => {
+    // With no MEDUSA_BACKEND_URL env, the directive list is the static baseline.
+    expect(buildCspDirectiveList([])).toEqual(EXPECTED_DIRECTIVES);
+  });
+
+  it('appends GP backend origin to connect-src when provided', () => {
+    const list = buildCspDirectiveList(['https://api.bonbeauty.example']);
+    const connectSrc = list.find((d) => d.startsWith('connect-src'));
+    expect(connectSrc).toContain('https://api.bonbeauty.example');
+    expect(connectSrc).not.toContain('https://api.mercurjs.com');
   });
 
   it('joins directives with "; " separator for header value', () => {
-    expect(CSP_DIRECTIVES).toBe(EXPECTED_DIRECTIVES.join('; '));
+    expect(CSP_DIRECTIVES).toBe(CSP_DIRECTIVE_LIST.join('; '));
   });
 
   it('includes Tailwind unsafe-inline for styles only (NOT scripts)', () => {
@@ -49,11 +69,15 @@ describe('CSP directive list (D-64 AC #1)', () => {
     expect(CSP_DIRECTIVES).toContain("frame-ancestors 'none'");
   });
 
-  it('whitelists Sentry, PostHog, and Mercur in connect-src', () => {
+  it('whitelists Sentry, PostHog, and Stripe in connect-src (api.mercurjs.com REMOVED per F-CC1-005)', () => {
     const connectSrc = CSP_DIRECTIVE_LIST.find(d => d.startsWith('connect-src'));
     expect(connectSrc).toContain('https://*.sentry.io');
     expect(connectSrc).toContain('https://*.posthog.com');
-    expect(connectSrc).toContain('https://api.mercurjs.com');
+    expect(connectSrc).toContain('https://api.stripe.com');
+    // v1.9.0 wf5 (F-CC1-005): Mercur upstream marketing API was the WRONG
+    // backend origin — production storefront talks to GP-owned host, not
+    // api.mercurjs.com. The new default omits it.
+    expect(connectSrc).not.toContain('https://api.mercurjs.com');
   });
 
   it('allows Stripe Elements scripts, frames, and telemetry endpoints', () => {
@@ -100,8 +124,11 @@ describe('CSP header value parity between modes (D-64 AC #7)', () => {
     const reportOnlyName = resolveCspHeaderName('report-only');
 
     expect(enforceName).not.toBe(reportOnlyName);
-    // Both modes emit `CSP_DIRECTIVES` as the header value (proven by
-    // shared import in next.config.ts headers() function).
-    expect(CSP_DIRECTIVES).toBe(EXPECTED_DIRECTIVES.join('; '));
+    // Both modes emit `CSP_DIRECTIVES` as the header value. The directive
+    // list is built once from the running env; the joined value MUST match
+    // the source list. v1.9.0 wf5: assert structural parity, not byte-equal
+    // to a fixed string (env-dependent backend origin is appended at module
+    // load time).
+    expect(CSP_DIRECTIVES).toBe(CSP_DIRECTIVE_LIST.join('; '));
   });
 });
