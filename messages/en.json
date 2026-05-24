@@ -2745,11 +2745,6 @@
     "categories": {
       "image_alt": "Category {name}"
     },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Popular now",
-      "empty_state": "We are currently refreshing the popular rituals list. Please check again shortly."
-    },
     "editorial": {
       "aria_label": "Editorial — Quiet luxury",
       "eyebrow": "Editorial pick",
@@ -2816,6 +2811,11 @@
         "3": "Secure online payments",
         "4": "Clear voucher rules"
       }
+    },
+    "editorial_choice": {
+      "eyebrow": "Editor's choice",
+      "heading": "Editor's choice",
+      "empty_state": "We are putting together a new editorial selection right now. Please check back shortly."
     }
   },
   "category_plp": {

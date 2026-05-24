@@ -78,6 +78,11 @@ export function buildProgrammaticLandingJsonLd(
   const jsonLd = stripUndefined({
     '@context': 'https://schema.org',
     '@graph': [
+      // v1.9.0 Wave F7 hardening (Epic-6-Review F-11): Place schema no
+      // longer collapses district+city into `addressRegion`. District
+      // (dzielnica) goes to `containedInPlace.name` so the schema.org
+      // hierarchy reflects geographic reality (city is the administrative
+      // region until BE supplies voivodeship in gp-config geo dictionary).
       {
         '@type': 'Place',
         '@id': placeId,
@@ -85,10 +90,17 @@ export function buildProgrammaticLandingJsonLd(
         url: canonicalUrl,
         address: {
           '@type': 'PostalAddress',
-          addressLocality: data.location.addressLocality,
-          addressRegion: data.location.district ?? data.location.city,
+          addressLocality: data.location.city,
           addressCountry: 'PL'
         },
+        ...(data.location.district
+          ? {
+              containedInPlace: {
+                '@type': 'Place',
+                name: data.location.district
+              }
+            }
+          : {}),
         geo: {
           '@type': 'GeoCoordinates',
           latitude: data.location.geo.latitude,

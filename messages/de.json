@@ -2745,11 +2745,6 @@
     "categories": {
       "image_alt": "Kategorie {name}"
     },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Beliebt im Moment",
-      "empty_state": "Wir aktualisieren gerade die Liste beliebter Rituale. Bitte schauen Sie in Kürze erneut vorbei."
-    },
     "editorial": {
       "aria_label": "Editorial — Leiser Luxus",
       "eyebrow": "Redaktionelle Auswahl",
@@ -2816,6 +2811,11 @@
         "3": "Sichere Online-Zahlungen",
         "4": "Klare Gutscheinregeln"
       }
+    },
+    "editorial_choice": {
+      "eyebrow": "Redaktionsempfehlung",
+      "heading": "Redaktionsempfehlung",
+      "empty_state": "Wir stellen gerade eine neue redaktionelle Auswahl zusammen. Schauen Sie bitte gleich noch einmal vorbei."
     }
   },
   "category_plp": {

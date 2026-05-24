@@ -62,12 +62,24 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
   const openingHours = buildOpeningHours(seller.opening_hours);
   const { ratingValue, reviewCount } = collectReviewAggregate(seller);
 
+  // v1.9.0 Wave F7 hardening (Epic-6-Review F-05):
+  //   - `district` (Story 6.7 AC6 -> `addressRegion`) is now part of the
+  //     required-fields set. Sellers without a district go `canIndex:false`
+  //     and the LocalBusiness JSON-LD is suppressed instead of being
+  //     emitted incomplete (which would fail Marek J4 trust journey).
+  const districtCandidate =
+    normalizeString(seller.district) ??
+    normalizeString(
+      seller.locations?.find(location => normalizeString(location?.district))?.district
+    );
+
   const missingRequired = [
     !name ? 'name' : null,
     !streetAddress ? 'address.streetAddress' : null,
     !addressLocality ? 'address.addressLocality' : null,
     !postalCode ? 'address.postalCode' : null,
     !addressCountry ? 'address.addressCountry' : null,
+    !districtCandidate ? 'address.addressRegion' : null,
     !telephone ? 'telephone' : null,
     latitude === null || longitude === null ? 'geo' : null,
     openingHours.length === 0 ? 'openingHours' : null,
@@ -82,11 +94,7 @@ export function assessSellerStructuredData(seller: SellerProps): SellerStructure
     };
   }
 
-  const district =
-    normalizeString(seller.district) ??
-    normalizeString(
-      seller.locations?.find(location => normalizeString(location?.district))?.district
-    );
+  const district = districtCandidate;
 
   const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',

@@ -2745,11 +2745,6 @@
     "categories": {
       "image_alt": "Kategoria {name}"
     },
-    "popular_now": {
-      "eyebrow": "Popular now",
-      "heading": "Popularne teraz",
-      "empty_state": "W tej chwili kompletujemy listę popularnych rytuałów. Zajrzyj ponownie za moment."
-    },
     "editorial": {
       "aria_label": "Editorial — Cichy luksus",
       "eyebrow": "Wybór redakcji",
@@ -2816,6 +2811,11 @@
         "3": "Bezpieczne płatności online",
         "4": "Jasne zasady voucherów"
       }
+    },
+    "editorial_choice": {
+      "eyebrow": "Wybór redakcji",
+      "heading": "Wybór redakcji",
+      "empty_state": "W tej chwili kompletujemy nową selekcję redakcyjną. Zajrzyj ponownie za moment."
     }
   },
   "category_plp": {

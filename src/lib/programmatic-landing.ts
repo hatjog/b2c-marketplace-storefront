@@ -294,11 +294,19 @@ function buildSeoContent(
   ];
 }
 
+/**
+ * v1.9.0 Wave F7 hardening (Epic-6-Review F-06):
+ *   - `marketId` defaults to `process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID`,
+ *     not the previous hard-coded `'bonbeauty'` literal. This eliminates
+ *     the cross-market data leak risk when bonevent / bongarden go live
+ *     in v1.10.0+ — runtime market boundary is now read from env.
+ *   - Callers can override per-request via the explicit `marketId` prop.
+ */
 export function getProgrammaticLandingData({
   locale,
   locationSlug,
   offerSlug,
-  marketId = 'bonbeauty'
+  marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || 'bonbeauty'
 }: {
   locale: SupportedLocale;
   locationSlug: string;
