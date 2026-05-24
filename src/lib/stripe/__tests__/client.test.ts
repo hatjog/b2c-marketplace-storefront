@@ -35,8 +35,18 @@ describe('enabled markets matrix (Story 1.1 mirror, D10)', () => {
 });
 
 describe('getEnabledPaymentMethodTypes — AC1 / D6', () => {
-  it('returns card/blik/p24 for BonBeauty', () => {
-    expect(getEnabledPaymentMethodTypes('bonbeauty')).toEqual(['card', 'blik', 'p24']);
+  it('returns 5 BonBeauty methods (card/blik/p24/apple_pay/google_pay) matching gp-config (F-CC1-007 fix)', () => {
+    // v1.9.0 wf5 (closes CC-1 F-CC1-007): storefront-side list MUST match
+    // GP/config/gp-dev/markets/bonbeauty/market.yaml#payments.stripe.enabled_methods.
+    // Pre-v1.9.0 the storefront hardcoded only 3 methods and silently dropped
+    // wallet methods (apple_pay/google_pay) from the PaymentElement.
+    expect(getEnabledPaymentMethodTypes('bonbeauty')).toEqual([
+      'card',
+      'blik',
+      'p24',
+      'apple_pay',
+      'google_pay',
+    ]);
   });
 
   it('returns null (graceful reject) for unconfigured market', () => {

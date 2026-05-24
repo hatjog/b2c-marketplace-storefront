@@ -15,23 +15,72 @@
  */
 
 /**
+ * v1.9.0 wf5 (closes CC-1 F-CC1-005 HIGH): the `connect-src` directive used
+ * to whitelist `api.mercurjs.com` (Mercur upstream marketing API) which is
+ * NOT the origin the storefront actually talks to. In production the
+ * storefront calls the GP-owned BonBeauty backend host (resolved via
+ * `MEDUSA_BACKEND_URL` / `NEXT_PUBLIC_MEDUSA_BACKEND_URL`); CSP enforce mode
+ * would block every SDK call (cart, payment, status polling, etc.) with
+ * silent fetch failures. The new directive list:
+ *   - Removes the wrong `api.mercurjs.com` whitelist.
+ *   - Adds a build-time-injected `${MEDUSA_BACKEND_ORIGIN}` placeholder
+ *     resolved by `resolveCspDirectiveList()` at runtime from
+ *     `NEXT_PUBLIC_MEDUSA_BACKEND_URL` / `MEDUSA_BACKEND_URL`.
+ *   - For dev (`'self'` localhost setups) the placeholder resolves to the
+ *     dev origin so local checkout works under enforce mode too.
+ */
+function resolveMedusaBackendOriginsForCsp(): string[] {
+  const candidates = [
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
+    process.env.MEDUSA_BACKEND_URL,
+  ].filter((v): v is string => typeof v === 'string' && v.trim().length > 0);
+  const origins = new Set<string>();
+  for (const candidate of candidates) {
+    try {
+      const url = new URL(candidate);
+      origins.add(`${url.protocol}//${url.host}`);
+    } catch {
+      // ignore malformed values; fall back to 'self' coverage
+    }
+  }
+  return Array.from(origins);
+}
+
+/**
  * 10 CSP directives per D-64 (architecture.md:328) plus Stripe Elements
  * runtime origins required by checkout.
  * Tailwind requires `'unsafe-inline'` for styles only — NOT scripts.
  * `frame-ancestors 'none'` blocks clickjacking.
  */
-export const CSP_DIRECTIVE_LIST: readonly string[] = [
-  "default-src 'self'",
-  "script-src 'self' https://js.stripe.com",
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' fonts.gstatic.com",
-  "img-src 'self' https: blob: data:",
-  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.mercurjs.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'"
-] as const;
+export function buildCspDirectiveList(
+  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
+): readonly string[] {
+  const backendConnectFragments = medusaBackendOrigins.length
+    ? ' ' + medusaBackendOrigins.join(' ')
+    : '';
+  return [
+    "default-src 'self'",
+    "script-src 'self' https://js.stripe.com",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' fonts.gstatic.com",
+    "img-src 'self' https: blob: data:",
+    // v1.9.0 wf5 F-CC1-005 fix: `connect-src` whitelists GP backend origin
+    // (resolved from MEDUSA_BACKEND_URL) instead of the wrong
+    // `api.mercurjs.com`. Stripe edge origins (r/m/q.stripe.com) preserved.
+    `connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com${backendConnectFragments}`,
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ];
+}
+
+/**
+ * Back-compat: `CSP_DIRECTIVE_LIST` and `CSP_DIRECTIVES` are evaluated at
+ * module-load time using whatever env vars are set then. For runtime
+ * resolution under `next.config.ts` `headers()` use `buildCspDirectiveList()`.
+ */
+export const CSP_DIRECTIVE_LIST: readonly string[] = buildCspDirectiveList();
 
 /**
  * Pre-joined directive string ready for the CSP header value.

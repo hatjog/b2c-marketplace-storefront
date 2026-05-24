@@ -37,10 +37,20 @@ export const paymentInfoMap: Record<string, { title: string; icon: React.JSX.Ele
 	},
 }
 
-// Native Stripe card/provider ids used across Mercur/Medusa versions and GP resolver variants.
+/**
+ * v1.9.0 wf5 (H-5 / F-CC1-006/008): canonical Stripe provider id is
+ * `pp_stripe` (medusa-config.ts pins `id: "stripe"`; Medusa convention
+ * `pp_<id>`). The legacy `pp_stripe_stripe` (plugin-name-derived id when
+ * `id` is unset) is retained as a back-compat acceptor for transitional
+ * deployments and pre-migration data; new code MUST use `STRIPE_PROVIDER_ID`.
+ * `pp_card_stripe-connect` is the Mercur 2 connect-flow variant kept for
+ * upstream compatibility. paymentInfoMap maps all three to the same UI.
+ */
+export const STRIPE_PROVIDER_ID = 'pp_stripe' as const
+
 export const isStripe = (providerId?: string) =>
-	providerId === 'pp_stripe' ||
-	providerId === 'pp_stripe_stripe' ||
+	providerId === STRIPE_PROVIDER_ID ||
+	providerId === 'pp_stripe_stripe' || // back-compat: legacy id pre-medusa-config explicit id
 	providerId?.startsWith('pp_card_stripe-connect')
 
 export const isPaypal = (providerId?: string) => providerId?.startsWith('pp_paypal')
