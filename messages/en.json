@@ -602,6 +602,33 @@
       "submit": "Create account",
       "skip": "Not now",
       "success": "Account ready. Redirecting you now."
+    },
+    "magic_link_recover": {
+      "meta_title": "Recover access — BonBeauty",
+      "meta_description": "Securely recover access to your account via an emailed link.",
+      "request_eyebrow": "Recover access",
+      "request_title": "We will send you a sign-in link.",
+      "request_subtitle": "No password needed. You will receive an e-mail with a secure single-use link to your account.",
+      "request_attempted_notice": "That link has expired or has already been used. You can request a new one.",
+      "email_label": "E-mail",
+      "email_placeholder": "Your e-mail address",
+      "ttl_helper": "The link is active for 7 days after sending.",
+      "submit": "Send sign-in link",
+      "submit_pending": "Sending…",
+      "success_body": "If that account exists, the link is on its way. Please check your inbox.",
+      "invalid_email": "Please check that the e-mail address is correct.",
+      "network_error": "We could not send the link right now. Please try again shortly.",
+      "landing": {
+        "eyebrow": "Sign in by link",
+        "title": "Confirm it is you.",
+        "subtitle": "Click the button to finish signing in to your account.",
+        "continue_title": "Securely finish signing in",
+        "continue_body": "When you click, we will sign you in and take you to your vouchers.",
+        "continue_cta": "Sign me in",
+        "neutral_title": "This link is no longer active.",
+        "neutral_body": "The link may have expired or has already been used. Ask for a new one and we will send a fresh link to your inbox.",
+        "request_new_link": "Request a new link"
+      }
     }
   },
   "forms": {
