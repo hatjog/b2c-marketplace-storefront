@@ -49,3 +49,13 @@ next-env.d.ts
 /e2e/__snapshots__/*.jpeg
 # JSON state snapshots ARE committed (not pixel diffs)
 
+
+# Lighthouse Chrome user-data-dir artifacts (Windows-style paths leak from headless runs)
+C:\\Users\\
+**/C:\\Users\\
+lighthouse.[0-9]*/
+**/lighthouse.[0-9]*/
+
+
+# Lighthouse Chrome user-data-dir leaks (Windows paths from headless runs)
+C:\\Users\\
