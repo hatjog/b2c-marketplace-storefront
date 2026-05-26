@@ -26,6 +26,7 @@
  */
 
 @import "./colors.css";
+@import "./bonbeauty.generated.css";
 @import "./spacing.css";
 @import "./typography.css";
 @import "./radii.css";
