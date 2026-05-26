@@ -21,7 +21,7 @@
     "@internationalized/date": "^3.12.1",
     "@medusajs/js-sdk": "2.14.2",
     "@medusajs/types": "2.14.2",
-    "@medusajs/ui": "^4.0.33",
+    "@medusajs/ui": "^4.1.13",
     "@mercurjs/client": "2.1.1",
     "@sentry/nextjs": "^10.40.0",
     "@stripe/react-stripe-js": "^3.7.0",
