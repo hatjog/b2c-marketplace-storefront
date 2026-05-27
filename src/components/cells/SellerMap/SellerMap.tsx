@@ -2,18 +2,22 @@
 
 import 'leaflet/dist/leaflet.css';
 
+import { useEffect, useRef } from 'react';
+
 import L from 'leaflet';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
 import {
   Circle as CircleBase,
   MapContainer as MapContainerBase,
   Marker as MarkerBase,
   Popup,
   TileLayer as TileLayerBase,
-  useMap,
+  useMap
 } from 'react-leaflet';
+
+import type { SellerListItem } from '@/lib/data/seller';
+import { leafletAssets } from '@/lib/map/leafletAssets';
 
 // Cast to any to workaround react-leaflet 4.x / React 19 types mismatch
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,10 +28,6 @@ const TileLayer = TileLayerBase as any;
 const Circle = CircleBase as any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Marker = MarkerBase as any;
-
-import type { SellerListItem } from '@/lib/data/seller';
-
-import { LEAFLET_DEFAULT_ICON_OPTIONS } from './leafletAssets';
 
 /**
  * Story v160-4-2 — interactive seller map (UX-DR15, FR21).
@@ -49,9 +49,9 @@ import { LEAFLET_DEFAULT_ICON_OPTIONS } from './leafletAssets';
 // bundled locally (BSD-2-Clause; LICENSE under `public/leaflet-assets/`) —
 // no third-party CDN, eliminating supply-chain risk and third-party IP
 // exposure on every map render (TF-65, 2026-05-07). Path constants live
-// in `./leafletAssets.ts` so tests can runtime-assert them.
+// in `@/lib/map/leafletAssets` so tests can runtime-assert them.
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions(LEAFLET_DEFAULT_ICON_OPTIONS);
+L.Icon.Default.mergeOptions(leafletAssets);
 
 const PL_CENTER: [number, number] = [52.0, 19.0];
 const PL_DEFAULT_ZOOM = 6;
@@ -115,11 +115,7 @@ function FitBoundsToMarkers({ sellers, userLat, userLng, radiusKm }: FitBoundsPr
       const center = L.latLng(userLat as number, userLng as number);
       const radiusMeters = (radiusKm as number) * 1000;
       const bounds = center.toBounds(radiusMeters * 2);
-      const all = L.latLngBounds([
-        bounds.getNorthEast(),
-        bounds.getSouthWest(),
-        ...points
-      ]);
+      const all = L.latLngBounds([bounds.getNorthEast(), bounds.getSouthWest(), ...points]);
       map.fitBounds(all, { padding: [40, 40], maxZoom: 13 });
       return;
     }
@@ -155,9 +151,7 @@ export function SellerMap({
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' && skipped.current > 0) {
       // eslint-disable-next-line no-console
-      console.warn(
-        `[SellerMap] skipped ${skipped.current} seller(s) without finite lat/lng`
-      );
+      console.warn(`[SellerMap] skipped ${skipped.current} seller(s) without finite lat/lng`);
     }
   }, []);
 
@@ -202,7 +196,10 @@ export function SellerMap({
                   weight: 2
                 }}
               />
-              <Marker position={[userLat, userLng]} alt="user location" />
+              <Marker
+                position={[userLat, userLng]}
+                alt="user location"
+              />
             </>
           )}
         {validSellers.map(seller => (
