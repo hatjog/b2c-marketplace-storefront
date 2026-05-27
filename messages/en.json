@@ -1055,6 +1055,21 @@
     "payment_failed_title": "Payment failed",
     "payment_failed_description": "Try again or go back to the cart to change the payment method."
   },
+  "wallet": {
+    "google_label": "Add to Google Wallet",
+    "apple_label": "Add to Apple Wallet",
+    "pdf_label": "Download PDF",
+    "email_label": "Send again by email",
+    "eyebrow": "Keep your voucher your way — on your phone, in PDF, or in email",
+    "iphone_safari_eyebrow": "Save it on your phone as a PDF — Apple Wallet is coming soon",
+    "loading_label": "Saving...",
+    "email_loading_label": "Sending...",
+    "success_toast": "Voucher saved in Google Wallet",
+    "error_toast": "We could not save it in Google Wallet. Try again or save it as a PDF.",
+    "retry_label": "Try again",
+    "email_success_toast": "Voucher sent again by email.",
+    "email_error_toast": "We could not send the email. Try again."
+  },
   "voucher": {
     "qr_code_aria_label": "Voucher QR code",
     "qr_code_label": "Scan at the salon",
