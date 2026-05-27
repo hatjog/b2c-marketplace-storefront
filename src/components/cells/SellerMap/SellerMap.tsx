@@ -17,7 +17,7 @@ import {
 } from 'react-leaflet';
 
 import type { SellerListItem } from '@/lib/data/seller';
-import { leafletAssets } from '@/lib/map/leafletAssets';
+import { leafletIconUrls } from '@/lib/map/leafletAssets';
 
 // Cast to any to workaround react-leaflet 4.x / React 19 types mismatch
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +51,7 @@ const Marker = MarkerBase as any;
 // exposure on every map render (TF-65, 2026-05-07). Path constants live
 // in `@/lib/map/leafletAssets` so tests can runtime-assert them.
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions(leafletAssets);
+L.Icon.Default.mergeOptions(leafletIconUrls);
 
 const PL_CENTER: [number, number] = [52.0, 19.0];
 const PL_DEFAULT_ZOOM = 6;
