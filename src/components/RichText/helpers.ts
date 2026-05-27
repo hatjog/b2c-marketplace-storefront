@@ -13,6 +13,9 @@ const EMBED_HOST_ALLOWLIST: Record<RichTextEmbedProvider, ReadonlySet<string>> =
   spotify: new Set(['open.spotify.com'])
 };
 
+// AC1 §20-node renderer: 18 dyskryminowane block/inline mark types + 2 leaf
+// kategorie semantyczne (text, caption/citation) = 20 renderowanych wariantów.
+// Patrz story §T1 — counting methodology amendment z 2026-05-27 (H-01 fix).
 export const RICH_TEXT_NODE_TYPES = [
   'paragraph',
   'heading-h1',
@@ -31,7 +34,9 @@ export const RICH_TEXT_NODE_TYPES = [
   'quote',
   'hr',
   'image',
-  'embed'
+  'embed',
+  'text',
+  'caption'
 ] as const satisfies readonly RichTextNodeType[];
 
 export function assertNonEmptyString(
@@ -67,6 +72,8 @@ export function collectRichTextNodeTypes(document: RichTextDocument) {
     for (const child of children) {
       if ('type' in child) {
         types.add(child.type);
+      } else {
+        types.add('text');
       }
     }
   };
@@ -92,10 +99,18 @@ export function collectRichTextNodeTypes(document: RichTextDocument) {
           collectNode(item);
         }
         break;
-      case 'hr':
       case 'image':
+        if (node.caption) {
+          types.add('caption');
+        }
+        break;
+      case 'hr':
       case 'embed':
         break;
+    }
+
+    if (node.type === 'quote' && node.citation) {
+      types.add('citation');
     }
   };
 

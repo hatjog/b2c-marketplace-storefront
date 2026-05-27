@@ -12,7 +12,12 @@ export type RichTextNode =
   | RichTextImageNode
   | RichTextEmbedNode;
 
-export type RichTextNodeType = RichTextNode['type'] | RichTextInlineMarkNode['type'];
+export type RichTextLeafNodeType = 'text' | 'caption' | 'citation';
+
+export type RichTextNodeType =
+  | RichTextNode['type']
+  | RichTextInlineMarkNode['type']
+  | RichTextLeafNodeType;
 
 export type RichTextInlineNode = RichTextTextNode | RichTextInlineMarkNode;
 

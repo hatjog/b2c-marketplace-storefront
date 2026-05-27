@@ -161,26 +161,38 @@ function renderNode(node: RichTextNode, index: number, idBase: string) {
           className="border-[var(--bb-border-soft)]"
         />
       );
-    case 'image':
+    case 'image': {
       assertNonEmptyString(node.alt, 'image alt');
+      const hasDimensions = node.width != null && node.height != null;
       return (
         <figure
           key={`${node.type}-${index}`}
           className="space-y-3"
         >
-          <Image
-            src={node.src}
-            alt={node.alt}
-            width={node.width ?? 1200}
-            height={node.height ?? 800}
-            unoptimized={node.width == null || node.height == null}
-            className="h-auto w-full rounded-lg object-cover"
-          />
+          {hasDimensions ? (
+            <Image
+              src={node.src}
+              alt={node.alt}
+              width={node.width as number}
+              height={node.height as number}
+              className="h-auto w-full rounded-lg object-cover"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={node.src}
+              alt={node.alt}
+              loading="lazy"
+              decoding="async"
+              className="h-auto w-full rounded-lg object-cover"
+            />
+          )}
           {node.caption ? (
             <figcaption className="text-sm leading-6 text-secondary">{node.caption}</figcaption>
           ) : null}
         </figure>
       );
+    }
     case 'embed':
       assertNonEmptyString(node.title, 'embed title');
       if (!isAllowedEmbedUrl(node.provider, node.src)) {

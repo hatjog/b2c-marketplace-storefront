@@ -113,6 +113,23 @@ describe('Renderer CMS RichText', () => {
     );
   });
 
+  it('renderuje natywny <img> z loading=lazy gdy node nie dostarcza wymiarow', () => {
+    const document = [
+      {
+        type: 'image',
+        src: '/images/blog/no-dims.jpg',
+        alt: 'Brak wymiarow w payloadzie CMS'
+      }
+    ] as unknown as RichTextDocument;
+
+    const html = renderToStaticMarkup(<RichText document={document} />);
+
+    expect(html).toContain('loading="lazy"');
+    expect(html).not.toContain('width="1200"');
+    expect(html).not.toContain('height="800"');
+    expect(html).toContain('alt="Brak wymiarow w payloadzie CMS"');
+  });
+
   it('renderuje null i ostrzega dla embed URL spoza whitelist providera', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const document = [
