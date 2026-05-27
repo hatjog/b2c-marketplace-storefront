@@ -32,7 +32,7 @@ const EXPECTED_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' fonts.gstatic.com",
   "img-src 'self' https: blob: data:",
-  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com",
+  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com https://*.maptiler.com",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -78,6 +78,16 @@ describe('CSP directive list (D-64 AC #1)', () => {
     // backend origin — production storefront talks to GP-owned host, not
     // api.mercurjs.com. The new default omits it.
     expect(connectSrc).not.toContain('https://api.mercurjs.com');
+  });
+
+  it('allows MapTiler tile loading without broad connect-src wildcards (D-104, Story 4.4)', () => {
+    const connectSrc = CSP_DIRECTIVE_LIST.find(d => d.startsWith('connect-src'));
+
+    expect(connectSrc).toContain('https://*.maptiler.com');
+    expect(connectSrc).not.toBe("connect-src *");
+    expect(connectSrc).not.toContain('connect-src *');
+    expect(connectSrc).not.toContain("connect-src 'unsafe-inline'");
+    expect(connectSrc?.split(/\s+/)).not.toContain('*');
   });
 
   it('allows Stripe Elements scripts, frames, and telemetry endpoints', () => {
