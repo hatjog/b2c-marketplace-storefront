@@ -13,7 +13,9 @@ describe('buildMapDeepLink', () => {
     });
 
     expect(link.provider).toBe('apple');
-    expect(link.primary).toBe('maps://?q=52.2297%2C21.0122');
+    expect(link.primary).toBe(
+      'https://maps.apple.com/?ll=52.2297,21.0122&q=BonBeauty%20Centrum'
+    );
     expect(link.fallback).toBe(
       'https://www.google.com/maps/search/?api=1&query=52.2297%2C21.0122'
     );
@@ -27,7 +29,9 @@ describe('buildMapDeepLink', () => {
     });
 
     expect(link.provider).toBe('apple');
-    expect(link.primary).toBe('maps://?q=52.2297%2C21.0122');
+    expect(link.primary).toBe(
+      'https://maps.apple.com/?ll=52.2297,21.0122&q=BonBeauty%20Centrum'
+    );
   });
 
   it('buduje geo: URL dla Android Chrome', () => {

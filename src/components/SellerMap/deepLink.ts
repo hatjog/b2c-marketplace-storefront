@@ -32,8 +32,11 @@ export function buildMapDeepLink({
   const fallback = `https://www.google.com/maps/search/?api=1&query=${encodeLatLng(lat, lng)}`;
 
   if (/\b(iphone|ipad|ipod)\b/.test(ua)) {
+    // F-10: udokumentowany https://maps.apple.com endpoint zamiast custom scheme `maps://`
+    // (działa w SFSafariViewController / WKWebView / in-app browserach typu Telegram).
+    const label = name ? `&q=${encodeURIComponent(name)}` : '';
     return {
-      primary: `maps://?q=${encodeLatLng(lat, lng)}`,
+      primary: `https://maps.apple.com/?ll=${lat},${lng}${label}`,
       fallback,
       provider: 'apple',
       labelKey: 'openAppleMaps'

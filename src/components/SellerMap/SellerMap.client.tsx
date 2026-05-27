@@ -68,6 +68,32 @@ function getMapTilerApiKey(): string {
   return process.env.NEXT_PUBLIC_MAPTILER_API_KEY || '';
 }
 
+interface TileSource {
+  url: string;
+  attribution: string;
+  keyed: boolean;
+}
+
+// F-02/F-03 deferral note: klucz MapTiler trafia do bundle klienta (Story 4.4/4.5 wprowadza server-proxy + GCP SM rotation).
+// Dla braku klucza w dev/test używamy CartoDB no-key kafli (zgodnie z istniejącym cells/SellerMap), w produkcji renderujemy FallbackPanel.
+function resolveTileSource(apiKey: string, styleId: string): TileSource {
+  if (apiKey) {
+    return {
+      url: `https://api.maptiler.com/maps/${styleId}/{z}/{x}/{y}.png?key=${apiKey}`,
+      attribution:
+        '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      keyed: true
+    };
+  }
+
+  return {
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    keyed: false
+  };
+}
+
 const sellerIcon = L.divIcon({
   className: styles.marker,
   html: '',
@@ -84,6 +110,12 @@ interface MapBehaviorProps {
 
 function MapBehavior({ sellers, center, maxZoom }: MapBehaviorProps) {
   const map = useMap();
+  // F-08: stabilna identyfikacja zestawu pinów — fitBounds NIE retriggeruje przy każdym re-render parenta
+  // (typowy case: <SellerMap sellers={data.map(...)} /> tworzy nowy array reference per render).
+  const sellersKey = useMemo(
+    () => sellers.map(s => `${s.id}:${s.lat},${s.lng}`).join('|'),
+    [sellers]
+  );
 
   useEffect(() => {
     const zoomButtons = map.getContainer().querySelectorAll<HTMLAnchorElement>('.leaflet-control-zoom a');
@@ -106,15 +138,24 @@ function MapBehavior({ sellers, center, maxZoom }: MapBehaviorProps) {
       const bounds = L.latLngBounds(sellers.map(seller => [seller.lat, seller.lng]));
       map.fitBounds(bounds, { padding: [40, 40], maxZoom });
     }
-  }, [center, map, maxZoom, sellers]);
+    // sellersKey vs sellers reference — depend tylko na rzeczywistej zmianie identyfikatorów pinów.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center?.lat, center?.lng, map, maxZoom, sellersKey]);
 
   return null;
 }
 
 function useReducedMotion(): boolean {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  // F-04: lazy initializer — sczyt media query synchronicznie przy mount (komponent jest ssr:false, window dostępne).
+  const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return false;
+    }
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(media.matches);
     const onChange = () => setReducedMotion(media.matches);
@@ -131,11 +172,13 @@ function useLandingVisibility(enabled: boolean) {
 
   useEffect(() => {
     if (!enabled || visible) return;
-    const node = ref.current;
-    if (!node || typeof IntersectionObserver === 'undefined') {
+    // F-11: brak IO → graceful fallback. Brak node → poczekaj na kolejny effect (nie defetuj lazy mount).
+    if (typeof IntersectionObserver === 'undefined') {
       setVisible(true);
       return;
     }
+    const node = ref.current;
+    if (!node) return;
 
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) {
@@ -156,11 +199,12 @@ interface FallbackPanelProps {
   title: string;
   body: string;
   linkLabel: string;
+  userAgent: string;
 }
 
-function FallbackPanel({ seller, label, title, body, linkLabel }: FallbackPanelProps) {
+function FallbackPanel({ seller, label, title, body, linkLabel, userAgent }: FallbackPanelProps) {
   const link = seller
-    ? buildMapDeepLink({ lat: seller.lat, lng: seller.lng, name: seller.name, userAgent: getUserAgent() })
+    ? buildMapDeepLink({ lat: seller.lat, lng: seller.lng, name: seller.name, userAgent })
     : null;
 
   return (
@@ -201,6 +245,9 @@ export function SellerMap({
   const [tileFailed, setTileFailed] = useState(false);
   const apiKey = getMapTilerApiKey();
   const styleId = getMapTilerStyleId();
+  // F-09: UA stałe per page lifetime — jeden odczyt zamiast N×navigator.userAgent w pętli markerów.
+  const userAgent = useMemo(getUserAgent, []);
+  const tileSource = useMemo(() => resolveTileSource(apiKey, styleId), [apiKey, styleId]);
   const validSellers = useMemo(() => sellers.filter(isValidSeller), [sellers]);
   const primarySeller = validSellers[0];
   const initialCenter = center
@@ -211,7 +258,11 @@ export function SellerMap({
   const initialZoom = zoom ?? config.defaultZoom;
   const { ref, visible } = useLandingVisibility(config.lazyMount);
 
-  if (!apiKey || tileFailed || validSellers.length === 0) {
+  // F-03: w produkcji bez klucza MapTiler renderujemy FallbackPanel; w dev/test wpada CartoDB no-key fallback.
+  const isProdMissingKey =
+    !tileSource.keyed && process.env.NODE_ENV === 'production';
+
+  if (isProdMissingKey || tileFailed || validSellers.length === 0) {
     return (
       <div ref={ref} className={className}>
         <FallbackPanel
@@ -220,6 +271,7 @@ export function SellerMap({
           title={t('fallbackTitle')}
           body={t('fallbackBody')}
           linkLabel={t('openMaps')}
+          userAgent={userAgent}
         />
       </div>
     );
@@ -233,6 +285,7 @@ export function SellerMap({
       className={`${styles.shell} ${styles[`mode-${mode}`]} ${className ?? ''}`}
       data-map-mode={mode}
       data-map-max-zoom={config.maxAutoZoom}
+      data-map-tile-source={tileSource.keyed ? 'maptiler' : 'cartodb'}
       data-testid="seller-map"
       tabIndex={0}
     >
@@ -251,8 +304,8 @@ export function SellerMap({
           className={styles.map}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url={`https://api.maptiler.com/maps/${styleId}/{z}/{x}/{y}.png?key=${apiKey}`}
+            attribution={tileSource.attribution}
+            url={tileSource.url}
             eventHandlers={{
               tileerror: () => setTileFailed(true)
             }}
@@ -263,7 +316,7 @@ export function SellerMap({
               lat: seller.lat,
               lng: seller.lng,
               name: seller.name,
-              userAgent: getUserAgent()
+              userAgent
             });
             const showAddress = mode === 'detail' && seller.addressLine;
 
@@ -290,7 +343,8 @@ export function SellerMap({
                         rel="noopener noreferrer"
                         aria-label={t(link.labelKey)}
                       >
-                        {t('openMaps')}
+                        {/* F-06: provider-aware label (Apple vs Google) per UX-DR26. */}
+                        {t(link.labelKey)}
                       </a>
                     )}
                   </div>
