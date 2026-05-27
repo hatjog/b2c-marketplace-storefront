@@ -69,6 +69,7 @@
         "loading": "Loading map...",
         "aria_map": "Sellers map",
         "aria_marker": "Marker for {name}",
+        "clusterAriaLabel": "Group of {count} salons",
         "placeholder_title": "Seller locations preview",
         "placeholder_body": "Interactive map will be available soon. See the list of nearby salons below."
       }

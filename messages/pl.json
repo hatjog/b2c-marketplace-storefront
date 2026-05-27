@@ -69,6 +69,7 @@
         "loading": "Ładowanie mapy...",
         "aria_map": "Mapa salonów",
         "aria_marker": "Marker salonu {name}",
+        "clusterAriaLabel": "Grupa {count} salonów",
         "placeholder_title": "Podgląd lokalizacji salonów",
         "placeholder_body": "Mapa interaktywna będzie dostępna wkrótce. Poniżej lista najbliższych salonów."
       }

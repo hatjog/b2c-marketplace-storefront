@@ -1,6 +1,9 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 
 import { useEffect, useRef } from 'react';
 
@@ -18,6 +21,13 @@ import {
 
 import type { SellerListItem } from '@/lib/data/seller';
 import { leafletIconUrls } from '@/lib/map/leafletAssets';
+
+import {
+  DEFAULT_CLUSTER_OPTIONS,
+  resolveClusterEnabled,
+  type SellerMapClusterMode,
+  type SellerMapMode
+} from './clustering';
 
 // Cast to any to workaround react-leaflet 4.x / React 19 types mismatch
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +81,12 @@ export interface SellerMapProps {
   userLat?: number;
   userLng?: number;
   radiusKm?: number;
+  /**
+   * Story 4.6 — optional marker clustering. `auto` clusters list/landing maps
+   * only above the 50-seller threshold; detail/mini force clustering off.
+   */
+  clusterMode?: SellerMapClusterMode;
+  mode?: SellerMapMode;
 }
 
 function isFiniteNumber(value: unknown): value is number {
@@ -127,6 +143,107 @@ function FitBoundsToMarkers({ sellers, userLat, userLng, radiusKm }: FitBoundsPr
   return null;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+interface ClusteredSellerMarkersProps {
+  sellers: ReadonlyArray<SellerListItem & { lat: number; lng: number }>;
+  locale: string;
+  onMarkerClick?: (seller: SellerListItem) => void;
+  markerAriaLabel: (seller: SellerListItem) => string;
+  clusterAriaLabel: (count: number) => string;
+  fallbackAddress: string;
+  viewDetailsLabel: string;
+}
+
+function ClusteredSellerMarkers({
+  sellers,
+  locale,
+  onMarkerClick,
+  markerAriaLabel,
+  clusterAriaLabel,
+  fallbackAddress,
+  viewDetailsLabel
+}: ClusteredSellerMarkersProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    const group = L.markerClusterGroup({
+      ...DEFAULT_CLUSTER_OPTIONS,
+      iconCreateFunction: cluster => {
+        const count = cluster.getChildCount();
+        const bucket = count < 10 ? 'small' : count < 100 ? 'medium' : 'large';
+        const label = escapeHtml(clusterAriaLabel(count));
+
+        return L.divIcon({
+          html: `<div><span role="button" tabindex="0" aria-label="${label}">${count}</span></div>`,
+          className: `marker-cluster marker-cluster-${bucket}`,
+          iconSize: L.point(40, 40)
+        });
+      }
+    });
+
+    for (const seller of sellers) {
+      const marker = L.marker([seller.lat, seller.lng], {
+        alt: markerAriaLabel(seller),
+        title: seller.name
+      });
+      marker.on('click', () => onMarkerClick?.(seller));
+
+      const popup = document.createElement('div');
+      popup.dataset.testid = `seller-map-popup-${seller.handle}`;
+
+      const title = document.createElement('h3');
+      title.className = 'text-base font-semibold';
+      title.textContent = seller.name;
+      popup.appendChild(title);
+
+      const handle = document.createElement('code');
+      handle.className = 'text-xs text-gray-500';
+      handle.textContent = `@${seller.handle}`;
+      popup.appendChild(handle);
+
+      const address = document.createElement('p');
+      address.className = 'mt-1 text-sm';
+      address.textContent = seller.address ?? seller.city ?? fallbackAddress;
+      popup.appendChild(address);
+
+      const link = document.createElement('a');
+      link.href = `/${locale}/sellers/${seller.handle}`;
+      link.className = 'mt-2 inline-block text-sm font-medium text-primary underline';
+      link.setAttribute('aria-label', markerAriaLabel(seller));
+      link.textContent = viewDetailsLabel;
+      popup.appendChild(link);
+
+      marker.bindPopup(popup);
+      group.addLayer(marker);
+    }
+
+    map.addLayer(group);
+    return () => {
+      map.removeLayer(group);
+      group.clearLayers();
+    };
+  }, [
+    clusterAriaLabel,
+    fallbackAddress,
+    locale,
+    map,
+    markerAriaLabel,
+    onMarkerClick,
+    sellers,
+    viewDetailsLabel
+  ]);
+
+  return null;
+}
+
 export function SellerMap({
   sellers,
   locale,
@@ -134,7 +251,9 @@ export function SellerMap({
   className,
   userLat,
   userLng,
-  radiusKm
+  radiusKm,
+  clusterMode = 'auto',
+  mode = 'list'
 }: SellerMapProps) {
   const t = useTranslations('seller.list.map');
   const skipped = useRef(0);
@@ -147,6 +266,12 @@ export function SellerMap({
       skipped.current += 1;
     }
   }
+
+  const clusterEnabled = resolveClusterEnabled({
+    mode,
+    clusterMode,
+    sellersCount: validSellers.length
+  });
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' && skipped.current > 0) {
@@ -202,33 +327,45 @@ export function SellerMap({
               />
             </>
           )}
-        {validSellers.map(seller => (
-          <Marker
-            key={seller.handle}
-            position={[seller.lat, seller.lng]}
-            eventHandlers={{
-              click: () => onMarkerClick?.(seller)
-            }}
-            alt={t('aria_marker', { name: seller.name })}
-          >
-            <Popup>
-              <div data-testid={`seller-map-popup-${seller.handle}`}>
-                <h3 className="text-base font-semibold">{seller.name}</h3>
-                <code className="text-xs text-gray-500">@{seller.handle}</code>
-                <p className="mt-1 text-sm">
-                  {seller.address ?? seller.city ?? t('popup_address')}
-                </p>
-                <Link
-                  href={`/${locale}/sellers/${seller.handle}`}
-                  className="mt-2 inline-block text-sm font-medium text-primary underline"
-                  aria-label={t('aria_marker', { name: seller.name })}
-                >
-                  {t('popup_view_details')}
-                </Link>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {clusterEnabled ? (
+          <ClusteredSellerMarkers
+            sellers={validSellers}
+            locale={locale}
+            onMarkerClick={onMarkerClick}
+            markerAriaLabel={seller => t('aria_marker', { name: seller.name })}
+            clusterAriaLabel={count => t('clusterAriaLabel', { count })}
+            fallbackAddress={t('popup_address')}
+            viewDetailsLabel={t('popup_view_details')}
+          />
+        ) : (
+          validSellers.map(seller => (
+            <Marker
+              key={seller.handle}
+              position={[seller.lat, seller.lng]}
+              eventHandlers={{
+                click: () => onMarkerClick?.(seller)
+              }}
+              alt={t('aria_marker', { name: seller.name })}
+            >
+              <Popup>
+                <div data-testid={`seller-map-popup-${seller.handle}`}>
+                  <h3 className="text-base font-semibold">{seller.name}</h3>
+                  <code className="text-xs text-gray-500">@{seller.handle}</code>
+                  <p className="mt-1 text-sm">
+                    {seller.address ?? seller.city ?? t('popup_address')}
+                  </p>
+                  <Link
+                    href={`/${locale}/sellers/${seller.handle}`}
+                    className="mt-2 inline-block text-sm font-medium text-primary underline"
+                    aria-label={t('aria_marker', { name: seller.name })}
+                  >
+                    {t('popup_view_details')}
+                  </Link>
+                </div>
+              </Popup>
+            </Marker>
+          ))
+        )}
       </MapContainer>
     </div>
   );
