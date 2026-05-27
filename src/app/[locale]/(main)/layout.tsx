@@ -8,12 +8,28 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { SkipLink } from '@/components/atoms';
+import {
+  FALLBACK_LOCALE,
+  LocaleFallbackNotice,
+  type LocaleFallbackTargetLocale
+} from '@/components/locale';
+import { MobileBottomNav } from '@/components/organisms/MobileBottomNav/MobileBottomNav';
 import { SiteFooter } from '@/components/organisms/SiteFooter/SiteFooter';
 import { SiteHeader } from '@/components/organisms/SiteHeader/SiteHeader';
-import { MobileBottomNav } from '@/components/organisms/MobileBottomNav/MobileBottomNav';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { checkRegion } from '@/lib/helpers/check-region';
 import { resolveMarketConfig } from '@/lib/portal.server';
+
+const BCP47_LOCALE_BY_ROUTE_LOCALE: Record<string, LocaleFallbackTargetLocale> = {
+  pl: 'pl-PL',
+  en: 'en-US',
+  ua: 'uk-UA',
+  de: 'de-DE'
+};
+
+function resolveTargetLocale(locale: string): LocaleFallbackTargetLocale {
+  return BCP47_LOCALE_BY_ROUTE_LOCALE[locale] ?? FALLBACK_LOCALE;
+}
 
 export default async function RootLayout({
   children,
@@ -30,6 +46,9 @@ export default async function RootLayout({
   const user = await retrieveCustomer();
   const regionCheck = await checkRegion(locale);
   const tA11y = await getTranslations('accessibility');
+  const targetLocale = resolveTargetLocale(locale);
+  // TODO(Story 2.2): podmienić placeholder na SSR pageCoverage z missing-key probe.
+  const pageCoverage = targetLocale === FALLBACK_LOCALE ? 1 : 1;
 
   if (!regionCheck) {
     return redirect('/');
@@ -43,6 +62,11 @@ export default async function RootLayout({
         <SiteHeader
           locale={locale}
           marketConfig={marketConfig}
+        />
+        <LocaleFallbackNotice
+          fallbackLocale={FALLBACK_LOCALE}
+          pageCoverage={pageCoverage}
+          targetLocale={targetLocale}
         />
         {children}
         {/* W6-02 SiteFooter */}
@@ -66,6 +90,11 @@ export default async function RootLayout({
         <SiteHeader
           locale={locale}
           marketConfig={marketConfig}
+        />
+        <LocaleFallbackNotice
+          fallbackLocale={FALLBACK_LOCALE}
+          pageCoverage={pageCoverage}
+          targetLocale={targetLocale}
         />
         {children}
         {/* W6-02 SiteFooter */}

@@ -16,6 +16,16 @@
     "refresh": "Aktualisieren",
     "edit": "Bearbeiten"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Übersetzung in Arbeit.",
+      "pl-PL": "Wir arbeiten an der polnischen Übersetzung dieses Inhalts.",
+      "en-US": "Wir arbeiten an der englischen Übersetzung dieses Inhalts.",
+      "uk-UA": "Wir arbeiten an der ukrainischen Übersetzung dieses Inhalts.",
+      "de-DE": "Wir arbeiten an der deutschen Übersetzung dieses Inhalts.",
+      "dismissLabel": "Übersetzungshinweis schließen"
+    }
+  },
   "header": {
     "logo_alt": "Logo",
     "shipping_to": "Lieferung nach",
