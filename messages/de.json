@@ -40,6 +40,17 @@
     "blog_eyebrow": "BonBeauty Journal"
   },
   "seller": {
+    "map": {
+      "ariaLabel": "BonBeauty Salons-Karte",
+      "markerAlt": "Marker für {name}",
+      "loading": "Karte wird geladen...",
+      "fallbackEyebrow": "Karte vorübergehend nicht verfügbar",
+      "fallbackTitle": "Wir können die Kartenkacheln gerade nicht laden",
+      "fallbackBody": "Der Salonstandort bleibt als Text verfügbar.",
+      "openMaps": "In Google/Apple Maps öffnen",
+      "openGoogleMaps": "In Google Maps öffnen",
+      "openAppleMaps": "In Apple Maps öffnen"
+    },
     "list": {
       "title": "Partnersalons",
       "description": "Entdecken Sie BonBeauty Partnersalons. Finden Sie einen Salon in Ihrer Stadt und durchsuchen Sie deren Angebot.",

@@ -40,6 +40,17 @@
     "blog_eyebrow": "Журнал BonBeauty"
   },
   "seller": {
+    "map": {
+      "ariaLabel": "Карта салонів BonBeauty",
+      "markerAlt": "Маркер салону {name}",
+      "loading": "Завантаження карти...",
+      "fallbackEyebrow": "Карта тимчасово недоступна",
+      "fallbackTitle": "Зараз не можемо завантажити тайли карти",
+      "fallbackBody": "Локація салону доступна у текстовому вигляді.",
+      "openMaps": "Відкрити у Google/Apple Maps",
+      "openGoogleMaps": "Відкрити у Google Maps",
+      "openAppleMaps": "Відкрити у Apple Maps"
+    },
     "list": {
       "title": "Партнерські салони",
       "description": "Відкрийте партнерські салони BonBeauty. Знайдіть салон у вашому місті та переглядайте їхню пропозицію.",
