@@ -15,6 +15,10 @@
 
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
 
+// Canonical BCP47 mapping per D-122 (specs/releases/v1.10.0/architecture.md#D-122).
+// `en: 'en-US'` (was `en-GB` pre-v1.10.0) — świadoma re-kanonikalizacja per
+// architecture decision; UI formatery (Intl.DateTime/NumberFormat) z `en-GB`
+// pozostają poza scope Story 2.3 (flag for follow-up 2.x — patrz review R-4).
 const REGION_MAP: Record<string, string> = {
   pl: 'pl-PL',
   en: 'en-US',

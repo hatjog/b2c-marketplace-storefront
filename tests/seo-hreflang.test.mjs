@@ -60,7 +60,7 @@ describe('SEO hreflang matrix', () => {
       alternateLocale: ['pl-PL', 'en-US', 'uk-UA']
     });
     assert.deepEqual(social.other, {
-      'twitter:lang': 'de'
+      'twitter:lang': 'de-DE'
     });
   });
 });

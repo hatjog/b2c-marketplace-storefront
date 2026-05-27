@@ -41,6 +41,20 @@ export function resolveGpSeoMetadata(
   };
 }
 
+/**
+ * Builds Next.js Metadata for PDP including BCP47 hreflang matrix + OG/Twitter
+ * per locale (Story 2.3 / D-122).
+ *
+ * @param product Store product (handle drives canonical slug).
+ * @param locale  Request locale — MUST originate z route param (`params.locale`),
+ *                NIE z cookie/header, aby zachować deterministic crawler behavior
+ *                (R-7). Param wymagany — wszyscy callers muszą propagować locale.
+ *
+ * `metadataBase` (R-8) celowo ustawione na `baseUrl` (origin) — wszystkie URL w
+ * tym helperze są już absolutne, więc semantycznie no-op. Wcześniej było
+ * `${baseUrl}/products/${handle}` — bug, bo metadataBase powinno wskazywać na
+ * origin, nie konkretną stronę.
+ */
 export const generateProductMetadata = async (
   product: HttpTypes.StoreProduct,
   locale: string

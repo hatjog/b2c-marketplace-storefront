@@ -1,42 +1,21 @@
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
-import { toHreflang } from '@/lib/helpers/hreflang';
+import { buildLocaleAlternates, type LocaleSeoAlternates } from './hreflang';
 
 /**
  * Story v160-3-3: SEO continuity helper for `/[locale]/sellers/*` routes.
  *
- * Builds Next.js `Metadata.alternates` shape for `<link rel="canonical">`
- * + `<link rel="alternate" hreflang="...">` cross-locale tags.
+ * Thin wrapper na `buildLocaleAlternates` (SSOT) — Story 2.3 R-3 dedup:
+ * jeden helper iteruje SUPPORTED_LOCALES + x-default; seller-specific
+ * pozostaje tylko shape ścieżki (`/[locale]/sellers[<suffix>]`).
  *
- * Path semantics:
- *   - suffix `''` → list page    `/[locale]/sellers`
- *   - suffix `/<handle>` → detail page `/[locale]/sellers/<handle>`
+ * Suffix shape:
+ *   - `''` → list page    `/[locale]/sellers`
+ *   - `/<handle>` → detail page `/[locale]/sellers/<handle>`
+ *   - `/<handle>/reviews` → reviews tab `/[locale]/sellers/<handle>/reviews`
  *
- * Returns relative URLs (no scheme/host prefix). Next.js resolves them
- * against `metadataBase` (or current request origin) when rendering. This
- * mirrors the `robots.ts` pattern where `NEXT_PUBLIC_BASE_URL` is treated
- * as opt-in.
- *
- * BCP 47: `pl-PL`, `en-US`, `uk-UA`, `de-DE` for all active locales.
- *
- * `x-default`: per Google docs, points to canonical fallback (DEFAULT_LOCALE
- * = `pl`). Search engines use this when user locale matches none in the map.
+ * Returns relative URLs; Next.js resolves them against `metadataBase`.
  */
-export interface SellerAlternates {
-  canonical: string;
-  languages: Record<string, string>;
-}
-
-const buildPath = (locale: string, suffix: string): string => `/${locale}/sellers${suffix}`;
+export type SellerAlternates = LocaleSeoAlternates;
 
 export function buildSellerAlternates(locale: string, suffix: string = ''): SellerAlternates {
-  const languages: Record<string, string> = {};
-  for (const supported of SUPPORTED_LOCALES) {
-    languages[toHreflang(supported)] = buildPath(supported, suffix);
-  }
-  languages['x-default'] = buildPath(DEFAULT_LOCALE, suffix);
-
-  return {
-    canonical: buildPath(locale, suffix),
-    languages
-  };
+  return buildLocaleAlternates(locale, (loc) => `/${loc}/sellers${suffix}`);
 }

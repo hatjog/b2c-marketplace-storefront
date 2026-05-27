@@ -93,7 +93,14 @@ export default async function RootLayout({
       ? `/themes/${marketConfig.theme}.css`
       : null;
   const headersList = await headers();
-  const htmlLang = toHreflang(headersList.get('x-gp-locale') ?? 'pl');
+  const gpLocaleHeader = headersList.get('x-gp-locale');
+  if (!gpLocaleHeader && process.env.NODE_ENV !== 'production') {
+    // R-5 defensive: middleware powinno ustawić x-gp-locale dla każdej non-redirect
+    // gałęzi; brak nagłówka oznacza, że root layout renderuje z fallbackiem `pl`
+    // — sygnalizujemy w dev/preview, aby nie wyciekło na non-PL route.
+    console.warn('[layout] missing x-gp-locale header — falling back to pl-PL');
+  }
+  const htmlLang = toHreflang(gpLocaleHeader ?? 'pl');
 
   return (
     <html

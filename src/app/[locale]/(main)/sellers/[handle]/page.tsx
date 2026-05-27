@@ -75,12 +75,21 @@ export async function generateMetadata({
   const social = buildLocaleSocialMetadata(locale);
 
   if (!seller) {
+    // R-6: rozszerzony OG fallback — daje crawlerom title/description/type
+    // nawet gdy seller jest null (noindex+nofollow nadal aktywne).
+    const fallbackTitle = tDetail('meta_fallback_title');
+    const fallbackDescription = tDetail('meta_default_description');
     return {
-      title: tDetail('meta_fallback_title'),
-      description: tDetail('meta_default_description'),
+      title: fallbackTitle,
+      description: fallbackDescription,
       alternates,
       robots: { index: false, follow: false },
-      openGraph: social.openGraph,
+      openGraph: {
+        ...social.openGraph,
+        title: fallbackTitle,
+        description: fallbackDescription,
+        type: 'website'
+      },
       other: social.other
     };
   }
