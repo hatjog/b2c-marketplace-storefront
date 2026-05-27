@@ -88,4 +88,65 @@ describe('getLocalizedMetadataField', () => {
       })
     ).toThrow('gp-config: invalid path');
   });
+
+  it('deduplikuje fallback chain, gdy locale === marketDefaultLocale (M-01)', () => {
+    expect(() =>
+      getLocalizedMetadataField({
+        source,
+        path: 'editorial.does-not-exist',
+        locale: 'pl-PL',
+        marketDefaultLocale: 'pl-PL'
+      })
+    ).toThrow(
+      "gp-config: missing key 'editorial.does-not-exist' for locales [pl-PL]"
+    );
+  });
+
+  it.each([['.'], ['a..b'], ['a.'], ['.a'], [' '], [' . . ']])(
+    'rzuca invalid path dla śmieciowej ścieżki %p (L-02)',
+    (badPath) => {
+      expect(() =>
+        getLocalizedMetadataField({
+          source,
+          path: badPath,
+          locale: 'de-DE',
+          marketDefaultLocale: 'en-US'
+        })
+      ).toThrow('gp-config: invalid path');
+    }
+  );
+
+  it('pomija wartość non-string i fallbackuje dalej (L-04)', () => {
+    const corruptSource = {
+      editorial: {
+        hero: {
+          title: {
+            'de-DE': { nested: 'wrong shape' } as unknown as string,
+            'en-US': 'Canonical English title',
+            'pl-PL': 'Tytuł kanoniczny PL'
+          }
+        }
+      }
+    };
+    expect(
+      getLocalizedMetadataField({
+        source: corruptSource,
+        path: 'editorial.hero.title',
+        locale: 'de-DE',
+        marketDefaultLocale: 'en-US'
+      })
+    ).toBe('Canonical English title');
+  });
+
+  it('toleruje jawny undefined w canonicalLocale (L-03 defense-in-depth)', () => {
+    expect(
+      getLocalizedMetadataField({
+        source,
+        path: 'editorial.hero.subtitle',
+        locale: 'uk-UA',
+        marketDefaultLocale: 'de-DE',
+        canonicalLocale: undefined
+      })
+    ).toBe('Polski podtytuł');
+  });
 });

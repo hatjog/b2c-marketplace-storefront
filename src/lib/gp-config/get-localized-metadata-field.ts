@@ -46,14 +46,22 @@ export function getLocalizedMetadataField({
   path,
   locale,
   marketDefaultLocale,
-  canonicalLocale = DEFAULT_CANONICAL_LOCALE
+  canonicalLocale
 }: GetLocalizedMetadataFieldOptions): string {
   if (typeof path !== 'string' || path.trim() === '') {
     throw new Error('gp-config: invalid path');
   }
 
+  const segments = path.split('.');
+  if (segments.some((segment) => segment.trim() === '')) {
+    throw new Error('gp-config: invalid path');
+  }
+
+  const effectiveCanonical = canonicalLocale ?? DEFAULT_CANONICAL_LOCALE;
   const localizedValue = resolveDotPath(source, path);
-  const fallbackLocales = [locale, marketDefaultLocale, canonicalLocale];
+  const fallbackLocales = Array.from(
+    new Set([locale, marketDefaultLocale, effectiveCanonical])
+  );
 
   if (typeof localizedValue === 'string') {
     return localizedValue;
