@@ -9,24 +9,25 @@ import {
   paymentSettingsSchema,
   privacyRequestSchema,
   profileSettingsSchema,
+  returnRequestSchema,
   reviewCreateSchema,
   reviewDeleteSchema,
   reviewMutationSchema,
-  returnRequestSchema,
   securitySettingsSchema,
-  validateReturnFiles,
+  validateReturnFiles
 } from '@/lib/account/account-write-schemas';
+import { getAuthHeaders } from '@/lib/data/cookies';
 import {
   addCustomerAddress,
   deleteCustomerAddress,
   retrieveCustomer,
   sendResetPasswordEmail,
   updateCustomer,
-  updateCustomerAddress,
+  updateCustomerAddress
 } from '@/lib/data/customer';
-import { getAuthHeaders } from '@/lib/data/cookies';
 import { createReturnRequest } from '@/lib/data/orders';
 import { resolveMedusaBackendUrl } from '@/lib/env';
+import { localeAwareFetch, localePath } from '@/lib/sdk/locale-interceptor';
 
 type ActionStatus = 'idle' | 'success' | 'error';
 
@@ -38,10 +39,14 @@ export interface AccountActionState {
 }
 
 const INITIAL_STATE: AccountActionState = {
-  status: 'idle',
+  status: 'idle'
 };
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
+
+async function revalidateLocalePath(path: string) {
+  revalidatePath(await localePath(path));
+}
 
 function zodErrorsToFieldMap(error: z.ZodError): Record<string, string> {
   return error.issues.reduce<Record<string, string>>((acc, issue) => {
@@ -57,7 +62,7 @@ function withFieldErrors(error: z.ZodError): AccountActionState {
   return {
     status: 'error',
     messageKey: 'common.form_error',
-    fieldErrors: zodErrorsToFieldMap(error),
+    fieldErrors: zodErrorsToFieldMap(error)
   };
 }
 
@@ -90,7 +95,7 @@ async function mutateReview(
   const headers = {
     ...(await getAuthHeaders()),
     'Content-Type': 'application/json',
-    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string
   };
 
   const endpoint =
@@ -98,10 +103,10 @@ async function mutateReview(
       ? `${MEDUSA_BACKEND_URL}/store/reviews`
       : `${MEDUSA_BACKEND_URL}/store/reviews/${reviewId}`;
 
-  const response = await fetch(endpoint, {
+  const response = await localeAwareFetch(endpoint, {
     method,
     headers,
-    body: payload ? JSON.stringify(payload) : undefined,
+    body: payload ? JSON.stringify(payload) : undefined
   });
 
   if (!response.ok) {
@@ -117,7 +122,10 @@ async function recordAccountRequest(
 
   if (!customer) return false;
 
-  const metadata = ((customer as { metadata?: Record<string, unknown> }).metadata ?? {}) as Record<string, unknown>;
+  const metadata = ((customer as { metadata?: Record<string, unknown> }).metadata ?? {}) as Record<
+    string,
+    unknown
+  >;
   const gpMetadata =
     metadata.gp && typeof metadata.gp === 'object' && !Array.isArray(metadata.gp)
       ? (metadata.gp as Record<string, unknown>)
@@ -139,11 +147,11 @@ async function recordAccountRequest(
               type: requestType,
               status: 'received',
               submitted_at: new Date().toISOString(),
-              payload,
-            },
-          ],
-        },
-      },
+              payload
+            }
+          ]
+        }
+      }
     } as unknown as Parameters<typeof updateCustomer>[0]);
   } catch {
     return false;
@@ -159,7 +167,7 @@ export async function submitReturnRequest(
   const parsed = returnRequestSchema.safeParse({
     orderId: formData.get('orderId'),
     reasonId: formData.get('reasonId'),
-    comment: formData.get('comment'),
+    comment: formData.get('comment')
   });
 
   if (!parsed.success) {
@@ -175,7 +183,7 @@ export async function submitReturnRequest(
     return {
       status: 'error',
       messageKey: 'common.form_error',
-      fieldErrors: { photos: fileError },
+      fieldErrors: { photos: fileError }
     };
   }
 
@@ -183,7 +191,7 @@ export async function submitReturnRequest(
   payload.set('order_id', parsed.data.orderId);
   payload.set('order_return_reason_id', parsed.data.reasonId);
   payload.set('customer_note', parsed.data.comment);
-  files.forEach((file) => {
+  files.forEach(file => {
     payload.append('photos', file, file.name);
     payload.append('attachment_names', file.name);
   });
@@ -193,18 +201,18 @@ export async function submitReturnRequest(
   if (response?.error) {
     return {
       status: 'error',
-      messageKey: 'return_request.errors.generic',
+      messageKey: 'return_request.errors.generic'
     };
   }
 
-  revalidatePath('/user/orders');
-  revalidatePath(`/user/orders/${parsed.data.orderId}/return`);
-  revalidatePath(`/user/orders/${parsed.data.orderId}/request-success`);
+  await revalidateLocalePath('/user/orders');
+  await revalidateLocalePath(`/user/orders/${parsed.data.orderId}/return`);
+  await revalidateLocalePath(`/user/orders/${parsed.data.orderId}/request-success`);
 
   return {
     status: 'success',
     messageKey: 'return_request.success.submitted',
-    redirectPath: `/user/orders/${parsed.data.orderId}/request-success`,
+    redirectPath: `/user/orders/${parsed.data.orderId}/request-success`
   };
 }
 
@@ -223,7 +231,7 @@ export async function submitAddress(
     countryCode: formData.get('countryCode'),
     postalCode: formData.get('postalCode'),
     province: formData.get('province'),
-    phone: formData.get('phone'),
+    phone: formData.get('phone')
   });
 
   if (!parsed.success) {
@@ -238,15 +246,17 @@ export async function submitAddress(
   if (!result?.success) {
     return {
       status: 'error',
-      messageKey: 'addresses.form.errors.generic',
+      messageKey: 'addresses.form.errors.generic'
     };
   }
 
-  revalidatePath('/user/addresses');
+  await revalidateLocalePath('/user/addresses');
 
   return {
     status: 'success',
-    messageKey: parsed.data.addressId ? 'addresses.form.success.updated' : 'addresses.form.success.created',
+    messageKey: parsed.data.addressId
+      ? 'addresses.form.success.updated'
+      : 'addresses.form.success.created'
   };
 }
 
@@ -260,7 +270,7 @@ export async function deleteAddressAction(
     return {
       status: 'error',
       messageKey: 'addresses.form.errors.generic',
-      fieldErrors: { addressId: 'addresses.form.errors.generic' },
+      fieldErrors: { addressId: 'addresses.form.errors.generic' }
     };
   }
 
@@ -269,15 +279,15 @@ export async function deleteAddressAction(
   if (!result.success) {
     return {
       status: 'error',
-      messageKey: 'addresses.form.errors.generic',
+      messageKey: 'addresses.form.errors.generic'
     };
   }
 
-  revalidatePath('/user/addresses');
+  await revalidateLocalePath('/user/addresses');
 
   return {
     status: 'success',
-    messageKey: 'addresses.form.success.deleted',
+    messageKey: 'addresses.form.success.deleted'
   };
 }
 
@@ -289,7 +299,7 @@ export async function createWrittenReview(
     orderId: formData.get('orderId'),
     sellerId: formData.get('sellerId'),
     rating: formData.get('rating'),
-    note: formData.get('note'),
+    note: formData.get('note')
   });
 
   if (!parsed.success) {
@@ -302,21 +312,21 @@ export async function createWrittenReview(
       rating: parsed.data.rating,
       reference: 'seller',
       reference_id: parsed.data.sellerId,
-      customer_note: parsed.data.note,
+      customer_note: parsed.data.note
     });
   } catch {
     return {
       status: 'error',
-      messageKey: 'written_reviews.form.errors.generic',
+      messageKey: 'written_reviews.form.errors.generic'
     };
   }
 
-  revalidatePath('/user/reviews');
-  revalidatePath('/user/reviews/written');
+  await revalidateLocalePath('/user/reviews');
+  await revalidateLocalePath('/user/reviews/written');
 
   return {
     status: 'success',
-    messageKey: 'written_reviews.form.success.created',
+    messageKey: 'written_reviews.form.success.created'
   };
 }
 
@@ -328,7 +338,7 @@ export async function updateWrittenReview(
     reviewId: formData.get('reviewId'),
     orderId: formData.get('orderId'),
     rating: formData.get('rating'),
-    note: formData.get('note'),
+    note: formData.get('note')
   });
 
   if (!parsed.success) {
@@ -339,21 +349,21 @@ export async function updateWrittenReview(
     await mutateReview('PATCH', parsed.data.reviewId, {
       rating: parsed.data.rating,
       customer_note: parsed.data.note,
-      order_id: parsed.data.orderId,
+      order_id: parsed.data.orderId
     });
   } catch {
     return {
       status: 'error',
-      messageKey: 'written_reviews.form.errors.generic',
+      messageKey: 'written_reviews.form.errors.generic'
     };
   }
 
-  revalidatePath('/user/reviews');
-  revalidatePath('/user/reviews/written');
+  await revalidateLocalePath('/user/reviews');
+  await revalidateLocalePath('/user/reviews/written');
 
   return {
     status: 'success',
-    messageKey: 'written_reviews.form.success.updated',
+    messageKey: 'written_reviews.form.success.updated'
   };
 }
 
@@ -362,7 +372,7 @@ export async function deleteWrittenReview(
   formData: FormData
 ): Promise<AccountActionState> {
   const parsed = reviewDeleteSchema.safeParse({
-    reviewId: formData.get('reviewId'),
+    reviewId: formData.get('reviewId')
   });
 
   if (!parsed.success) {
@@ -374,16 +384,16 @@ export async function deleteWrittenReview(
   } catch {
     return {
       status: 'error',
-      messageKey: 'written_reviews.form.errors.generic',
+      messageKey: 'written_reviews.form.errors.generic'
     };
   }
 
-  revalidatePath('/user/reviews');
-  revalidatePath('/user/reviews/written');
+  await revalidateLocalePath('/user/reviews');
+  await revalidateLocalePath('/user/reviews/written');
 
   return {
     status: 'success',
-    messageKey: 'written_reviews.form.success.deleted',
+    messageKey: 'written_reviews.form.success.deleted'
   };
 }
 
@@ -396,7 +406,7 @@ export async function updateProfileSettings(
     lastName: formData.get('lastName'),
     phone: formData.get('phone'),
     email: formData.get('email'),
-    locale: formData.get('locale'),
+    locale: formData.get('locale')
   });
 
   if (!parsed.success) {
@@ -407,20 +417,20 @@ export async function updateProfileSettings(
     await updateCustomer({
       first_name: parsed.data.firstName,
       last_name: parsed.data.lastName,
-      phone: parsed.data.phone,
+      phone: parsed.data.phone
     });
   } catch {
     return {
       status: 'error',
-      messageKey: 'settings.profile.errors.generic',
+      messageKey: 'settings.profile.errors.generic'
     };
   }
 
-  revalidatePath('/user/settings');
+  await revalidateLocalePath('/user/settings');
 
   return {
     status: 'success',
-    messageKey: 'settings.profile.success.updated',
+    messageKey: 'settings.profile.success.updated'
   };
 }
 
@@ -431,7 +441,7 @@ export async function updateSecuritySettings(
   const parsed = securitySettingsSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
-    confirmPassword: formData.get('confirmPassword'),
+    confirmPassword: formData.get('confirmPassword')
   });
 
   if (!parsed.success) {
@@ -443,13 +453,13 @@ export async function updateSecuritySettings(
   if (!result?.success) {
     return {
       status: 'error',
-      messageKey: 'settings.security.errors.generic',
+      messageKey: 'settings.security.errors.generic'
     };
   }
 
   return {
     status: 'success',
-    messageKey: 'settings.security.success.reset_email_sent',
+    messageKey: 'settings.security.success.reset_email_sent'
   };
 }
 
@@ -460,34 +470,34 @@ export async function updateNotificationSettings(
   const parsed = notificationSettingsSchema.safeParse({
     emailUpdates: formData.get('emailUpdates') ?? undefined,
     smsUpdates: formData.get('smsUpdates') ?? undefined,
-    productNews: formData.get('productNews') ?? undefined,
+    productNews: formData.get('productNews') ?? undefined
   });
 
   if (!parsed.success) {
     return {
       status: 'error',
-      messageKey: 'settings.notifications.errors.generic',
+      messageKey: 'settings.notifications.errors.generic'
     };
   }
 
   const recorded = await recordAccountRequest('notification_preferences', {
     emailUpdates: parsed.data.emailUpdates === 'on',
     smsUpdates: parsed.data.smsUpdates === 'on',
-    productNews: parsed.data.productNews === 'on',
+    productNews: parsed.data.productNews === 'on'
   });
 
   if (!recorded) {
     return {
       status: 'error',
-      messageKey: 'settings.notifications.errors.generic',
+      messageKey: 'settings.notifications.errors.generic'
     };
   }
 
-  revalidatePath('/user/settings');
+  await revalidateLocalePath('/user/settings');
 
   return {
     status: 'success',
-    messageKey: 'settings.notifications.success.request_received',
+    messageKey: 'settings.notifications.success.request_received'
   };
 }
 
@@ -499,7 +509,7 @@ export async function updatePaymentSettings(
   // A full PAN / CVV reaching this action is rejected before any persistence call.
   const parsed = paymentSettingsSchema.safeParse({
     defaultCard: formData.get('defaultCard'),
-    invoicesByEmail: formData.get('invoicesByEmail') ?? undefined,
+    invoicesByEmail: formData.get('invoicesByEmail') ?? undefined
   });
 
   if (!parsed.success) {
@@ -508,21 +518,21 @@ export async function updatePaymentSettings(
 
   const recorded = await recordAccountRequest('payment_preferences', {
     defaultCard: parsed.data.defaultCard,
-    invoicesByEmail: parsed.data.invoicesByEmail === 'on',
+    invoicesByEmail: parsed.data.invoicesByEmail === 'on'
   });
 
   if (!recorded) {
     return {
       status: 'error',
-      messageKey: 'settings.payments.errors.generic',
+      messageKey: 'settings.payments.errors.generic'
     };
   }
 
-  revalidatePath('/user/settings');
+  await revalidateLocalePath('/user/settings');
 
   return {
     status: 'success',
-    messageKey: 'settings.payments.success.request_received',
+    messageKey: 'settings.payments.success.request_received'
   };
 }
 
@@ -531,37 +541,37 @@ export async function submitPrivacyRequest(
   formData: FormData
 ): Promise<AccountActionState> {
   const parsed = privacyRequestSchema.safeParse({
-    requestType: formData.get('requestType'),
+    requestType: formData.get('requestType')
   });
 
   if (!parsed.success) {
     return {
       status: 'error',
-      messageKey: 'settings.privacy.errors.generic',
+      messageKey: 'settings.privacy.errors.generic'
     };
   }
 
   const { requestType } = parsed.data;
 
   const recorded = await recordAccountRequest('privacy_request', {
-    requestType,
+    requestType
   });
 
   if (!recorded) {
     return {
       status: 'error',
-      messageKey: 'settings.privacy.errors.generic',
+      messageKey: 'settings.privacy.errors.generic'
     };
   }
 
-  revalidatePath('/user/settings');
+  await revalidateLocalePath('/user/settings');
 
   return {
     status: 'success',
     messageKey:
       requestType === 'export'
         ? 'settings.privacy.success.export_request_received'
-        : 'settings.privacy.success.delete_request_received',
+        : 'settings.privacy.success.delete_request_received'
   };
 }
 

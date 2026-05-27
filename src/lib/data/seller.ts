@@ -1,8 +1,13 @@
 import type { SellerProps } from '@/types/seller';
 
-import { haversineKm } from '../helpers/distance';
-import { fetchSellerById, fetchSellerSummaryByHandle, resolveSellerHandleToId } from '../sdk-adapters/sellers';
 import { mercurClient } from '../config';
+import { haversineKm } from '../helpers/distance';
+import {
+  fetchSellerById,
+  fetchSellerSummaryByHandle,
+  resolveSellerHandleToId
+} from '../sdk-adapters/sellers';
+import { withMercurLocaleOptions } from '../sdk/locale-interceptor';
 
 export interface SellerListItem {
   handle: string;
@@ -50,7 +55,11 @@ type SellerApiItem = {
  * `{ sellers: SellerApiItem[] }` cast.
  */
 export const getSellers = async (): Promise<SellerListItem[]> => {
-  return (mercurClient.store.sellers.query({ fetchOptions: { cache: 'no-cache' } }) as Promise<{ sellers: SellerApiItem[] }>)
+  return (
+    mercurClient.store.sellers.query(
+      await withMercurLocaleOptions({ fetchOptions: { cache: 'no-cache' } })
+    ) as Promise<{ sellers: SellerApiItem[] }>
+  )
     .then(({ sellers }) => {
       const mapped: SellerListItem[] = (sellers ?? []).map(v => ({
         handle: v.handle,
@@ -142,15 +151,13 @@ export const searchSellers = async ({
 
   let filtered = all;
   if (queryNeedle) {
-    filtered = filtered.filter(s =>
-      s.name.toLowerCase().includes(queryNeedle) ||
-      s.handle.toLowerCase().includes(queryNeedle)
+    filtered = filtered.filter(
+      s =>
+        s.name.toLowerCase().includes(queryNeedle) || s.handle.toLowerCase().includes(queryNeedle)
     );
   }
   if (cityNeedle) {
-    filtered = filtered.filter(s =>
-      (s.city ?? '').toLowerCase().includes(cityNeedle)
-    );
+    filtered = filtered.filter(s => (s.city ?? '').toLowerCase().includes(cityNeedle));
   }
 
   // Story v160-4-3 — geolocation post-filter. AR48: client-side filter
@@ -174,12 +181,17 @@ export const searchSellers = async ({
           Number.isFinite(s.lat) &&
           Number.isFinite(s.lng)
       )
-      .map((s) => ({
+      .map(s => ({
         ...s,
-        _distanceKm: haversineKm(userLat as number, userLng as number, s.lat as number, s.lng as number)
+        _distanceKm: haversineKm(
+          userLat as number,
+          userLng as number,
+          s.lat as number,
+          s.lng as number
+        )
       }))
       .filter(
-        (s) => Number.isFinite(s._distanceKm) && (s._distanceKm as number) <= (radiusKm as number)
+        s => Number.isFinite(s._distanceKm) && (s._distanceKm as number) <= (radiusKm as number)
       );
   }
 
@@ -205,8 +217,10 @@ export const searchSellers = async ({
         return bRating - aRating;
       }
 
-      const aReviewCount = typeof a.review_count === 'number' ? a.review_count : Number.NEGATIVE_INFINITY;
-      const bReviewCount = typeof b.review_count === 'number' ? b.review_count : Number.NEGATIVE_INFINITY;
+      const aReviewCount =
+        typeof a.review_count === 'number' ? a.review_count : Number.NEGATIVE_INFINITY;
+      const bReviewCount =
+        typeof b.review_count === 'number' ? b.review_count : Number.NEGATIVE_INFINITY;
       if (aReviewCount !== bReviewCount) {
         return bReviewCount - aReviewCount;
       }
@@ -247,8 +261,7 @@ export const searchSellers = async ({
 export const getSellerByHandle = async (handle: string): Promise<SellerProps | null> => {
   const SELLER_FIELDS =
     '+created_at,+email,+phone,+social_links,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name';
-  const SAFE_SELLER_FIELDS = SELLER_FIELDS
-    .split(',')
+  const SAFE_SELLER_FIELDS = SELLER_FIELDS.split(',')
     .filter(field => !field.includes('reviews'))
     .join(',');
 

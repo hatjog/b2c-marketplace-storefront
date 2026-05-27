@@ -1,9 +1,8 @@
+import type { VoucherAuditEvent, VoucherAuditEventType } from '@/types/voucher';
+
 import { mercurClient, sdk } from '../config';
+import { withMercurLocaleOptions } from '../sdk/locale-interceptor';
 import { getAuthHeaders } from './cookies';
-import type {
-  VoucherAuditEvent,
-  VoucherAuditEventType
-} from '@/types/voucher';
 
 /**
  * Story v160-6-1: Recipient claim page voucher data layer (Path B).
@@ -25,11 +24,7 @@ import type {
  *   the page calls `notFound()` or renders the empty-state copy respectively.
  */
 
-export type VoucherStatus =
-  | 'idle'
-  | 'consent_pending'
-  | 'claimed'
-  | 'withdrawn';
+export type VoucherStatus = 'idle' | 'consent_pending' | 'claimed' | 'withdrawn';
 
 export interface VoucherPublicView {
   /** Recipient-visible code (URL fragment + redemption identifier). */
@@ -209,15 +204,15 @@ const E2E_RECIPIENT_FIXTURES: Record<string, VoucherRecipientView> = {
         allowed: true,
         paid: true,
         fee_pct: 10,
-        max_extension_months: 6,
+        max_extension_months: 6
       },
       cancellation: {
         cutoff_hours: 24,
-        fee_pct: 0,
+        fee_pct: 0
       },
       refund_channel: 'original_payment',
-      no_show_policy: 'forfeit_voucher',
-    },
+      no_show_policy: 'forfeit_voucher'
+    }
   },
   [E2E_RECIPIENT_EXPIRED_CODE]: {
     code: E2E_RECIPIENT_EXPIRED_CODE,
@@ -245,12 +240,12 @@ const E2E_RECIPIENT_FIXTURES: Record<string, VoucherRecipientView> = {
         allowed: true,
         paid: true,
         fee_pct: 10,
-        max_extension_months: 6,
+        max_extension_months: 6
       },
       cancellation: null,
       refund_channel: 'original_payment',
-      no_show_policy: 'forfeit_voucher',
-    },
+      no_show_policy: 'forfeit_voucher'
+    }
   },
   [E2E_RECIPIENT_REDEEMED_CODE]: {
     code: E2E_RECIPIENT_REDEEMED_CODE,
@@ -277,9 +272,9 @@ const E2E_RECIPIENT_FIXTURES: Record<string, VoucherRecipientView> = {
       extension: null,
       cancellation: null,
       refund_channel: 'original_payment',
-      no_show_policy: null,
-    },
-  },
+      no_show_policy: null
+    }
+  }
 };
 
 const E2E_VOUCHER_EVENTS: Record<string, VoucherAuditEvent[]> = {
@@ -311,9 +306,7 @@ function projectAllowlist(p: VoucherApiPayload | null | undefined): VoucherPubli
 
   const rawStatus = (p.status ?? 'idle').toLowerCase();
   const status: VoucherStatus =
-    rawStatus === 'consent_pending' ||
-    rawStatus === 'consent-pending' ||
-    rawStatus === 'pending'
+    rawStatus === 'consent_pending' || rawStatus === 'consent-pending' || rawStatus === 'pending'
       ? 'consent_pending'
       : rawStatus === 'claimed' || rawStatus === 'redeemed'
         ? 'claimed'
@@ -327,11 +320,8 @@ function projectAllowlist(p: VoucherApiPayload | null | undefined): VoucherPubli
     seller_name: String(p.seller_name),
     seller_handle: String(p.seller_handle ?? p.seller_id),
     product_title: String(p.product_title ?? ''),
-    value_minor: typeof p.value_minor === 'number'
-      ? p.value_minor
-      : typeof p.value === 'number'
-        ? p.value
-        : 0,
+    value_minor:
+      typeof p.value_minor === 'number' ? p.value_minor : typeof p.value === 'number' ? p.value : 0,
     currency_code: String(p.currency_code ?? 'PLN'),
     status,
     expires_at: p.expires_at ?? null
@@ -369,22 +359,17 @@ function pickNumber(...values: Array<number | null | undefined>): number | null 
 }
 
 function buildSellerAddress(payload: VoucherApiPayload): string | null {
-  const nestedAddress = pickString(
-    payload.seller?.address,
-    payload.seller?.address_line,
-  );
+  const nestedAddress = pickString(payload.seller?.address, payload.seller?.address_line);
   const postalCity = [payload.seller?.postal_code, payload.seller?.city]
     .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
     .join(' ');
 
-  return pickString(
-    payload.seller_address,
-    nestedAddress,
-    postalCity || null,
-  );
+  return pickString(payload.seller_address, nestedAddress, postalCity || null);
 }
 
-function normalizeRecipientState(rawStatus: string | null | undefined): VoucherRecipientState | null {
+function normalizeRecipientState(
+  rawStatus: string | null | undefined
+): VoucherRecipientState | null {
   const normalized = (rawStatus ?? '').trim().toLowerCase();
   if (
     normalized === 'active' ||
@@ -467,12 +452,12 @@ function projectRecipientAllowlist(
   const isPublicEntryConfirmed = pickBoolean(
     payload.is_public_entry_confirmed,
     payload.public_entry_confirmed,
-    payload.gift_entry_confirmed,
+    payload.gift_entry_confirmed
   );
   const state: VoucherRecipientState =
     normalizedState === 'active' && !isPublicEntryConfirmed
       ? 'expired'
-      : normalizedState ?? 'expired';
+      : (normalizedState ?? 'expired');
   const publicEntryVisible = normalizedState === null ? false : isPublicEntryConfirmed;
   const sellerAddress = buildSellerAddress(payload);
   const sellerPhone = pickString(payload.seller_phone, payload.seller?.phone);
@@ -499,7 +484,7 @@ function projectRecipientAllowlist(
     sender_name: pickString(payload.sender_name),
     sender_disclosure_allowed: pickBoolean(
       payload.sender_disclosure_allowed,
-      payload.sender_disclosure_opt_in,
+      payload.sender_disclosure_opt_in
     ),
     sender_message: pickString(payload.sender_message),
     pdf_url: pickString(payload.pdf_url),
@@ -517,19 +502,21 @@ function projectRecipientAllowlist(
                 allowed: Boolean(payload.policy_snapshot.extension.allowed),
                 paid: Boolean(payload.policy_snapshot.extension.paid),
                 fee_pct: pickNumber(payload.policy_snapshot.extension.fee_pct),
-                max_extension_months: pickNumber(payload.policy_snapshot.extension.max_extension_months),
+                max_extension_months: pickNumber(
+                  payload.policy_snapshot.extension.max_extension_months
+                )
               }
             : null,
           cancellation: payload.policy_snapshot.cancellation
             ? {
                 cutoff_hours: pickNumber(payload.policy_snapshot.cancellation.cutoff_hours),
-                fee_pct: pickNumber(payload.policy_snapshot.cancellation.fee_pct),
+                fee_pct: pickNumber(payload.policy_snapshot.cancellation.fee_pct)
               }
             : null,
           refund_channel: normalizeRefundChannel(payload.policy_snapshot.refund_channel),
-          no_show_policy: normalizeNoShowPolicy(payload.policy_snapshot.no_show?.policy),
+          no_show_policy: normalizeNoShowPolicy(payload.policy_snapshot.no_show?.policy)
         }
-      : null,
+      : null
   };
 }
 
@@ -547,10 +534,14 @@ export async function getVoucherByCode(code: string): Promise<VoucherPublicView 
   // Path B preferred: typed mercurClient call (when SDK surface lands).
   try {
     const client = mercurClient as unknown as {
-      store?: { vouchers?: { byCode?: (args: { code: string }) => Promise<{ voucher?: VoucherApiPayload }> } };
+      store?: {
+        vouchers?: {
+          byCode?: (args: { code: string }) => Promise<{ voucher?: VoucherApiPayload }>;
+        };
+      };
     };
     if (client.store?.vouchers?.byCode) {
-      const res = await client.store.vouchers.byCode({ code });
+      const res = await client.store.vouchers.byCode(await withMercurLocaleOptions({ code }));
       const view = projectAllowlist(res?.voucher);
       if (view) return view;
     }
@@ -561,9 +552,9 @@ export async function getVoucherByCode(code: string): Promise<VoucherPublicView 
   // Fallback A: Medusa SDK raw fetch (cleanup-13b backend endpoint).
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}`;
-    const res = (await sdk.client.fetch(url, { method: 'GET' })) as
-      | { voucher?: VoucherApiPayload }
-      | null;
+    const res = (await sdk.client.fetch(url, { method: 'GET' })) as {
+      voucher?: VoucherApiPayload;
+    } | null;
     const view = projectAllowlist(res?.voucher ?? (res as VoucherApiPayload));
     if (view) return view;
   } catch {
@@ -584,10 +575,14 @@ export async function getVoucherRecipientByCode(
 
   try {
     const client = mercurClient as unknown as {
-      store?: { vouchers?: { byCode?: (args: { code: string }) => Promise<{ voucher?: VoucherApiPayload }> } };
+      store?: {
+        vouchers?: {
+          byCode?: (args: { code: string }) => Promise<{ voucher?: VoucherApiPayload }>;
+        };
+      };
     };
     if (client.store?.vouchers?.byCode) {
-      const res = await client.store.vouchers.byCode({ code });
+      const res = await client.store.vouchers.byCode(await withMercurLocaleOptions({ code }));
       const view = projectRecipientAllowlist(res?.voucher);
       if (view) return view;
     }
@@ -597,9 +592,9 @@ export async function getVoucherRecipientByCode(
 
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}`;
-    const res = (await sdk.client.fetch(url, { method: 'GET' })) as
-      | { voucher?: VoucherApiPayload }
-      | null;
+    const res = (await sdk.client.fetch(url, { method: 'GET' })) as {
+      voucher?: VoucherApiPayload;
+    } | null;
     const view = projectRecipientAllowlist(res?.voucher ?? (res as VoucherApiPayload));
     if (view) return view;
   } catch {
@@ -664,9 +659,7 @@ function projectAuditEvent(
  * Privacy: all surfaces apply `projectAuditEvent()` allowlist BEFORE return,
  * so no buyer-side metadata can reach the React tree (AR45 invariant).
  */
-export async function getVoucherEvents(
-  code: string
-): Promise<VoucherAuditEvent[]> {
+export async function getVoucherEvents(code: string): Promise<VoucherAuditEvent[]> {
   if (!code || code.length < 3) return [];
 
   // Path B preferred: typed mercurClient call.
@@ -674,14 +667,12 @@ export async function getVoucherEvents(
     const client = mercurClient as unknown as {
       store?: {
         vouchers?: {
-          events?: (args: {
-            code: string;
-          }) => Promise<{ events?: VoucherAuditEventApiPayload[] }>;
+          events?: (args: { code: string }) => Promise<{ events?: VoucherAuditEventApiPayload[] }>;
         };
       };
     };
     if (client.store?.vouchers?.events) {
-      const res = await client.store.vouchers.events({ code });
+      const res = await client.store.vouchers.events(await withMercurLocaleOptions({ code }));
       const projected = (res?.events ?? [])
         .map(projectAuditEvent)
         .filter((e): e is VoucherAuditEvent => e !== null);
@@ -697,9 +688,9 @@ export async function getVoucherEvents(
   // Fallback A: Medusa SDK raw fetch (cleanup-13b backend endpoint).
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}/events`;
-    const res = (await sdk.client.fetch(url, { method: 'GET' })) as
-      | { events?: VoucherAuditEventApiPayload[] }
-      | null;
+    const res = (await sdk.client.fetch(url, { method: 'GET' })) as {
+      events?: VoucherAuditEventApiPayload[];
+    } | null;
     const projected = (res?.events ?? [])
       .map(projectAuditEvent)
       .filter((e): e is VoucherAuditEvent => e !== null);
@@ -758,7 +749,7 @@ export interface VoucherListItem {
 
 type VoucherListApiPayload = {
   code?: string;
-  seller_id?: string;       // internal routing only — NOT projected to customer
+  seller_id?: string; // internal routing only — NOT projected to customer
   seller_name?: string;
   seller_handle?: string;
   product_title?: string;
@@ -811,7 +802,7 @@ function projectListAllowlist(p: VoucherListApiPayload | null | undefined): Vouc
     value_minor: valueMinor,
     currency_code: String(p.currency_code ?? 'PLN'),
     status,
-    expires_at: p.expires_at ?? null,
+    expires_at: p.expires_at ?? null
   };
 }
 
@@ -856,7 +847,7 @@ export async function listCustomerVouchers(): Promise<CustomerVoucherListResult>
       };
     };
     if (client.store?.vouchers?.list) {
-      const res = await client.store.vouchers.list();
+      const res = await client.store.vouchers.list(await withMercurLocaleOptions());
       const items = (res?.vouchers ?? [])
         .map(projectListAllowlist)
         .filter((v): v is VoucherListItem => v !== null);
@@ -876,13 +867,10 @@ export async function listCustomerVouchers(): Promise<CustomerVoucherListResult>
 
   // Path A (fallback): raw SDK fetch with auth headers.
   try {
-    const res = await sdk.client.fetch<{ vouchers?: VoucherListApiPayload[] }>(
-      '/store/vouchers',
-      {
-        method: 'GET',
-        headers: authHeaders,
-      }
-    );
+    const res = await sdk.client.fetch<{ vouchers?: VoucherListApiPayload[] }>('/store/vouchers', {
+      method: 'GET',
+      headers: authHeaders
+    });
     const items = (res?.vouchers ?? [])
       .map(projectListAllowlist)
       .filter((v): v is VoucherListItem => v !== null);

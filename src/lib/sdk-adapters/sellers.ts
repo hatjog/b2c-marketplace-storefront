@@ -21,6 +21,7 @@ import { unstable_cache } from 'next/cache';
 import type { SellerProps } from '@/types/seller';
 
 import { mercurClient } from '../config';
+import { withMercurLocaleOptions } from '../sdk/locale-interceptor';
 
 /**
  * Internal Mercur 2 seller list item shape returned by `/store/sellers`.
@@ -131,7 +132,7 @@ async function querySellersByHandle(
     ...(options?.useNoCache ? { fetchOptions: { cache: 'no-cache' as const } } : {})
   };
 
-  const result = (await mercurClient.store.sellers.query(query)) as {
+  const result = (await mercurClient.store.sellers.query(await withMercurLocaleOptions(query))) as {
     sellers?: SellerListApiItem[];
   };
   return pickSellerByHandle(result?.sellers, handle);
@@ -155,16 +156,20 @@ export const resolveSellerHandleToId = unstable_cache(
       // memoizes per-handle for 600s; underlying HTTP cache is harmless
       // within that window and reduces backend pressure on cache misses.
       // cleanup-28 review CACHE-2.
-      const result = (await mercurClient.store.sellers.query({
-        handle,
-        limit: 1
-      })) as { sellers?: SellerListApiItem[] };
+      const result = (await mercurClient.store.sellers.query(
+        await withMercurLocaleOptions({
+          handle,
+          limit: 1
+        })
+      )) as { sellers?: SellerListApiItem[] };
       const filteredId = pickSellerIdByHandle(result?.sellers, handle);
       if (filteredId) return filteredId;
 
-      const fallback = (await mercurClient.store.sellers.query({
-        fetchOptions: { cache: 'no-cache' }
-      })) as { sellers?: SellerListApiItem[] };
+      const fallback = (await mercurClient.store.sellers.query(
+        await withMercurLocaleOptions({
+          fetchOptions: { cache: 'no-cache' }
+        })
+      )) as { sellers?: SellerListApiItem[] };
       return pickSellerIdByHandle(fallback?.sellers, handle);
     } catch (err) {
       // cleanup-28 review CACHE-1: surface adapter failures to server logs
@@ -204,10 +209,12 @@ export async function fetchSellerById(id: string, fields?: string): Promise<Sell
     // once Mercur 2 client codegen lands typed proxy support (likely v1.7.0+).
     // Dropped inner `cache: 'no-cache'` — Next default fetch cache is the
     // right tier for ID-stable seller-detail reads. cleanup-28 review CACHE-2.
-    const result = (await (mercurClient.store.sellers.$id as any).query({
-      $id: id,
-      ...(fields ? { fields } : {})
-    })) as { seller?: SellerListApiItem };
+    const result = (await (mercurClient.store.sellers.$id as any).query(
+      await withMercurLocaleOptions({
+        $id: id,
+        ...(fields ? { fields } : {})
+      })
+    )) as { seller?: SellerListApiItem };
     const s = result?.seller;
     if (!s) return null;
     return mapSellerApiToProps(s);

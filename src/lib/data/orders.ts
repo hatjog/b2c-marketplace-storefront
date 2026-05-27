@@ -7,6 +7,7 @@ import type { MercurOrder, MercurOrderWithOrderGroup, OrderGroup } from '@/types
 import { sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
 import medusaError from '../helpers/medusa-error';
+import { localeAwareFetch } from '../sdk/locale-interceptor';
 import { getAuthHeaders, getCacheOptions } from './cookies';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
@@ -65,7 +66,7 @@ export const createReturnRequest = async (data: ReturnRequestPayload) => {
   };
 
   try {
-    const response = await fetch(`${MEDUSA_BACKEND_URL}/store/return-request`, {
+    const response = await localeAwareFetch(`${MEDUSA_BACKEND_URL}/store/return-request`, {
       method: 'POST',
       headers,
       body: multipart ? data : JSON.stringify(data)
@@ -75,7 +76,8 @@ export const createReturnRequest = async (data: ReturnRequestPayload) => {
 
     if (!response.ok) {
       return {
-        error: payload?.message ?? payload?.error ?? `Return request failed with ${response.status}`,
+        error:
+          payload?.message ?? payload?.error ?? `Return request failed with ${response.status}`,
         order_return_request: payload?.order_return_request ?? {}
       };
     }
