@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -14,6 +14,23 @@ export const LOCALE_FALLBACK_NOTICE_STORAGE_KEY = 'gp.locale-fallback-notice';
 export type LocaleFallbackTargetLocale = 'pl-PL' | 'en-US' | 'uk-UA' | 'de-DE';
 export type LocaleFallbackNoticeState = 'visible' | 'hidden';
 
+/**
+ * Banner page-level dla fallbacku locale (non-PL route z niskim coverage).
+ *
+ * Kontrakt konsumenta (NFR5.4 — `<html lang>` integrity dla fallback fragments):
+ * fragment treści, który faktycznie pochodzi z PL fallback messages, MUSI być
+ * opakowany przez konsumenta w `<div lang="pl">` aby screenreader poprawnie
+ * przełączył pronunciation. Sam banner używa user-locale tekstu (route locale).
+ *
+ * Hysteresis (anti-flicker):
+ * - coverage ≤ THRESHOLD_LOW (0.80) → `visible`
+ * - coverage ≥ THRESHOLD_HIGH (0.85) → `hidden`
+ * - 0.80 < coverage < 0.85 → zachowaj poprzedni stan (z sessionStorage; default
+ *   po pierwszym wejściu = `visible`, bias do show per Trust Invariant #7).
+ *
+ * Zero CLS przy hide/show: po pierwszej widoczności w sesji slot rezerwuje
+ * wysokość (48/56 px) i toggluje `aria-hidden` + opacity zamiast unmountu.
+ */
 export interface LocaleFallbackNoticeProps {
   pageCoverage: number;
   targetLocale: LocaleFallbackTargetLocale;
@@ -88,6 +105,7 @@ export function LocaleFallbackNotice({
   const [hydrated, setHydrated] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const hasBeenVisibleRef = useRef(false);
 
   const isFallbackRequest = targetLocale !== fallbackLocale;
 
@@ -109,8 +127,14 @@ export function LocaleFallbackNotice({
       return;
     }
 
-    const previousState = storedForLocale?.lastState ?? 'hidden';
+    // M5 fix: bias do `visible` przy pierwszym wejściu w bandzie 0.80-0.85,
+    // żeby uczciwie ostrzec o fallbacku zamiast chować notice przy braku kontekstu.
+    const previousState = storedForLocale?.lastState ?? 'visible';
     const nextState = resolveLocaleFallbackNoticeState(pageCoverage, previousState, threshold);
+
+    if (storedForLocale?.lastState === 'visible' || nextState === 'visible') {
+      hasBeenVisibleRef.current = true;
+    }
 
     setDismissed(false);
     setState(nextState);
@@ -140,16 +164,27 @@ export function LocaleFallbackNotice({
     return () => mediaQuery.removeEventListener?.('change', handleChange);
   }, []);
 
+  const isHidden = state === 'hidden' || dismissed;
+
   const className = useMemo(() => {
     const motionClass = reducedMotion ? '' : ' transition-opacity duration-150 ease-out';
+    const visibilityClass = isHidden ? ' opacity-0 pointer-events-none' : '';
 
     return [
       'flex min-h-[56px] w-full items-center border-l-[3px] border-[var(--bb-border-strong)] bg-[var(--bb-surface-muted)] px-4 py-3 text-primary sm:min-h-[48px] sm:py-2',
-      motionClass
+      motionClass,
+      visibilityClass
     ].join('');
-  }, [reducedMotion]);
+  }, [reducedMotion, isHidden]);
 
-  if (!hydrated || !isFallbackRequest || dismissed || state === 'hidden') {
+  if (!hydrated || !isFallbackRequest) {
+    return null;
+  }
+
+  // H2 fix: po pierwszej widoczności w sesji renderuj slot z rezerwacją wysokości
+  // (aria-hidden + opacity-0) zamiast unmountu — eliminuje CLS przy hysteresis
+  // toggling visible↔hidden. Dismiss permanentnie unmountuje (brak slotu).
+  if (dismissed || (isHidden && !hasBeenVisibleRef.current)) {
     return null;
   }
 
@@ -167,17 +202,9 @@ export function LocaleFallbackNotice({
     setState('hidden');
   };
 
-  const handleDismissKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key !== 'Enter' && event.key !== ' ') {
-      return;
-    }
-
-    event.preventDefault();
-    handleDismiss();
-  };
-
   return (
     <section
+      aria-hidden={isHidden ? true : undefined}
       aria-live="polite"
       className={className}
       data-locale-fallback-notice
@@ -185,14 +212,16 @@ export function LocaleFallbackNotice({
     >
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
         <p className="min-w-0 flex-1 text-sm font-medium leading-5 sm:truncate">
-          <span className="sr-only">{t('eyebrow')} </span>
-          {t(targetLocale)}
+          <span className="block text-xs font-semibold uppercase tracking-wide opacity-70">
+            {t('eyebrow')}
+          </span>
+          {t('message')}
         </p>
         <button
           aria-label={t('dismissLabel')}
           className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-gp-xs text-action transition-colors hover:bg-[var(--bb-tint-gold-08)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           onClick={handleDismiss}
-          onKeyDown={handleDismissKeyDown}
+          tabIndex={isHidden ? -1 : 0}
           type="button"
         >
           <CloseIcon

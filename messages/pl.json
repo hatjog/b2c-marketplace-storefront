@@ -18,11 +18,8 @@
   },
   "banner": {
     "workingOnIt": {
-      "eyebrow": "Pracujemy nad tłumaczeniem.",
-      "pl-PL": "Pracujemy nad polską wersją tej treści.",
-      "en-US": "Pracujemy nad angielską wersją tej treści.",
-      "uk-UA": "Pracujemy nad ukraińską wersją tej treści.",
-      "de-DE": "Pracujemy nad niemiecką wersją tej treści.",
+      "eyebrow": "Tłumaczenie w toku",
+      "message": "Pracujemy nad polską wersją tej treści.",
       "dismissLabel": "Zamknij powiadomienie o tłumaczeniu"
     }
   },

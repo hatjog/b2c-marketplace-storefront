@@ -18,11 +18,8 @@
   },
   "banner": {
     "workingOnIt": {
-      "eyebrow": "Translation in progress.",
-      "pl-PL": "We are still translating this content into Polish.",
-      "en-US": "We are still translating this content into English.",
-      "uk-UA": "We are still translating this content into Ukrainian.",
-      "de-DE": "We are still translating this content into German.",
+      "eyebrow": "Translation in progress",
+      "message": "We are still translating this content into English.",
       "dismissLabel": "Close translation notice"
     }
   },

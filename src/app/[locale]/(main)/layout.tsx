@@ -48,7 +48,11 @@ export default async function RootLayout({
   const tA11y = await getTranslations('accessibility');
   const targetLocale = resolveTargetLocale(locale);
   // TODO(Story 2.2): podmienić placeholder na SSR pageCoverage z missing-key probe.
-  const pageCoverage = targetLocale === FALLBACK_LOCALE ? 1 : 1;
+  // Wartość 0.5 dla non-PL daje deterministyczny page-level proof point (banner widoczny
+  // na realnych route'ach `en/de/ua`); PL route zawsze 1 (canonical fallback locale).
+  // TODO(Story 2.x): fragmenty pochodzące z PL fallback messages MUSZĄ być w
+  // `<div lang="pl">` per NFR5.4 (`<html lang>` integrity dla fallback fragments).
+  const pageCoverage = targetLocale === FALLBACK_LOCALE ? 1 : 0.5;
 
   if (!regionCheck) {
     return redirect('/');

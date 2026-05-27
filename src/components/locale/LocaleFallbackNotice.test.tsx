@@ -83,7 +83,7 @@ describe('LocaleFallbackNotice', () => {
     return container.querySelector('[role="status"]');
   }
 
-  it('renders null when coverage is above the upper threshold', async () => {
+  it('renders null when coverage is above the upper threshold on first visit', async () => {
     await renderNotice({ pageCoverage: 0.9 });
 
     expect(getStatus()).toBeNull();
@@ -92,7 +92,16 @@ describe('LocaleFallbackNotice', () => {
   it('renders banner when coverage is below threshold', async () => {
     await renderNotice({ pageCoverage: 0.5 });
 
-    expect(getStatus()?.textContent).toContain('English');
+    const status = getStatus();
+    expect(status?.textContent).toContain('Translation in progress');
+    expect(status?.textContent).toContain('We are still translating this content into English.');
+    expect(status?.getAttribute('aria-hidden')).toBeNull();
+  });
+
+  it('biases initial render in the hysteresis band to visible (M5 fix)', async () => {
+    await renderNotice({ pageCoverage: 0.82 });
+
+    expect(getStatus()).not.toBeNull();
   });
 
   it('keeps hysteresis state in the threshold band', () => {
@@ -101,6 +110,19 @@ describe('LocaleFallbackNotice', () => {
     expect(resolveLocaleFallbackNoticeState(0.86, 'visible')).toBe('hidden');
     expect(resolveLocaleFallbackNoticeState(0.83, 'hidden')).toBe('hidden');
     expect(resolveLocaleFallbackNoticeState(0.79, 'hidden')).toBe('visible');
+  });
+
+  it('reserves slot (aria-hidden + opacity-0) after hysteresis hide instead of unmount (H2 zero-CLS)', async () => {
+    await renderNotice({ pageCoverage: 0.5 });
+    expect(getStatus()).not.toBeNull();
+
+    // hysteresis: coverage rośnie ≥0.85 → state hidden, slot zostaje zarezerwowany
+    await renderNotice({ pageCoverage: 0.9 });
+    const slot = getStatus();
+    expect(slot).not.toBeNull();
+    expect(slot?.getAttribute('aria-hidden')).toBe('true');
+    expect(slot?.className).toContain('opacity-0');
+    expect(slot?.className).toContain('pointer-events-none');
   });
 
   it('dismiss click hides the banner and persists state for the same session locale', async () => {
@@ -137,7 +159,7 @@ describe('LocaleFallbackNotice', () => {
 
     await renderNotice({ pageCoverage: 0.5, targetLocale: 'de-DE' });
 
-    expect(getStatus()?.textContent).toContain('German');
+    expect(getStatus()?.textContent).toContain('We are still translating this content');
   });
 
   it('renders null for canonical fallback locale requests', async () => {
@@ -156,15 +178,18 @@ describe('LocaleFallbackNotice', () => {
     );
   });
 
-  it('dismisses on Enter key', async () => {
+  it('dismisses on native button activation (Enter triggers click on HTMLButtonElement)', async () => {
     await renderNotice({ pageCoverage: 0.5 });
 
     const button = container.querySelector<HTMLButtonElement>(
       'button[aria-label="Close translation notice"]'
     );
 
+    // Native button activation: Enter on focused button → click. jsdom nie
+    // synthesizuje click z keydown, więc testujemy aktywację bezpośrednio przez
+    // .click() — semantycznie ekwiwalentnie do Enter/Space na buttonie.
     await act(async () => {
-      button?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+      button?.click();
     });
 
     expect(getStatus()).toBeNull();
