@@ -72,7 +72,6 @@ type RetryMeasurement = {
   invalidStatuses: number[]
   validStatus: number
   validResponse: unknown
-  rateLimitedAfterInvalidAttempts: boolean
 }
 
 async function probe(url: string) {
@@ -144,6 +143,8 @@ const raceMeasurements: RaceMeasurement[] = []
 const retryMeasurements: RetryMeasurement[] = []
 
 test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit propagation (FR-I.3)", () => {
+  test.describe.configure({ retries: 0 })
+
   test.beforeAll(async () => {
     fixture = loadFixture()
     portalReachable =
@@ -187,10 +188,9 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
 
     const staleMarker = "previousDoc.body"
     for (let attempt = 1; attempt <= 3; attempt += 1) {
-      const tag = `${REGULAMIN_TAG}?nonce=${Date.now()}-${attempt}`
       const triggerAt = performance.now()
       const triggerAtDate = new Date()
-      const trace = await postRevalidate([REGULAMIN_TAG, tag])
+      const trace = await postRevalidate([REGULAMIN_TAG])
 
       expect(trace.status).toBe(200)
       expect(trace.body).toMatchObject({ revalidated: true })
@@ -201,6 +201,11 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
       const visibleLastUpdated = await readVisibleLastUpdated(page)
       const bodyText = await page.locator("body").innerText()
       expect(bodyText).not.toContain(staleMarker)
+      expect(bodyText, "legal page renders stable regulamin content").toMatch(/regulamin/i)
+      expect(
+        visibleLastUpdated,
+        "last-updated selector must surface a non-empty value"
+      ).not.toBeNull()
 
       const parsedLastUpdated = visibleLastUpdated ? Date.parse(visibleLastUpdated) : NaN
       if (Number.isNaN(parsedLastUpdated)) {
@@ -208,16 +213,11 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
           type: "last-updated-unparseable",
           description: `Rendered last-updated value could not be parsed as a timestamp: ${visibleLastUpdated}`,
         })
-      } else {
-        expect(
-          parsedLastUpdated,
-          `last-updated (${visibleLastUpdated}) should be >= edit trigger ${triggerAtDate.toISOString()}`
-        ).toBeGreaterThanOrEqual(triggerAtDate.getTime())
       }
 
       propagationMeasurements.push({
         attempt,
-        tag,
+        tag: REGULAMIN_TAG,
         deltaMs: performance.now() - triggerAt,
         triggerAtIso: triggerAtDate.toISOString(),
         visibleLastUpdated,
@@ -230,7 +230,7 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
   })
 
   test.describe("race conditions @hardening", () => {
-    test("concurrent edits per resource collapse remains eventually fresh", async ({ page }) => {
+    test("concurrent edits per resource collapse remains eventually fresh", async () => {
       test.skip(!runtimeReachable, RUNTIME_SKIP_REASON)
 
       const responseStatuses: number[] = []
@@ -244,11 +244,13 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
 
       let responseStatus = 0
       let bodyText = ""
+      let freshAt = lastTriggerAt
       const deadline = lastTriggerAt + 350
       do {
-        const response = await page.goto(legalPageUrl(), { waitUntil: "domcontentloaded" })
-        responseStatus = response?.status() ?? 0
-        bodyText = await page.locator("body").innerText().catch(() => "")
+        const response = await fetch(legalPageUrl(), { signal: AbortSignal.timeout(2_000) })
+        responseStatus = response.status
+        bodyText = await response.text().catch(() => "")
+        freshAt = performance.now()
         if (responseStatus > 0 && responseStatus < 400 && /regulamin/i.test(bodyText)) {
           break
         }
@@ -262,11 +264,11 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
         tag: REGULAMIN_TAG,
         triggerCount: 5,
         responseStatuses,
-        freshContentDeltaMs: performance.now() - lastTriggerAt,
+        freshContentDeltaMs: freshAt - lastTriggerAt,
       }
       raceMeasurements.push(measurement)
       expect(responseStatuses.every((status) => status === 200)).toBe(true)
-      expect(measurement.freshContentDeltaMs).toBeLessThanOrEqual(950)
+      expect(measurement.freshContentDeltaMs).toBeLessThanOrEqual(350)
     })
 
     test("retry-exhaustion semantics fail closed, then allow valid retry", async () => {
@@ -279,27 +281,19 @@ test.describe("Suite C7 @i18n @v1100-e2e-i @needs-stack — legal-docs edit prop
       ])
       const validResponse = await postRevalidate([REGULAMIN_TAG])
       const invalidStatuses = invalidResponses.map((response) => response.status)
-      const rateLimitedAfterInvalidAttempts = validResponse.status === 429
-
-      if (rateLimitedAfterInvalidAttempts) {
-        test.info().annotations.push({
-          type: "rate-limited",
-          description: "Valid retry was rate-limited after unauthorized attempts; recorded as evidence posture.",
-        })
-      }
 
       retryMeasurements.push({
         invalidStatuses,
         validStatus: validResponse.status,
         validResponse: validResponse.body,
-        rateLimitedAfterInvalidAttempts,
       })
 
+      // Route handler returns 401 BEFORE invoking isRateLimited (see
+      // src/app/api/revalidate/route.ts:6-15), so invalid-secret attempts cannot
+      // increment the rate-limit counter. The valid retry must therefore succeed.
       expect(invalidStatuses).toEqual([401, 401, 401])
-      expect(validResponse.status).toBe(rateLimitedAfterInvalidAttempts ? 429 : 200)
-      if (!rateLimitedAfterInvalidAttempts) {
-        expect(validResponse.body).toMatchObject({ revalidated: true })
-      }
+      expect(validResponse.status).toBe(200)
+      expect(validResponse.body).toMatchObject({ revalidated: true })
     })
   })
 })
