@@ -23,18 +23,22 @@ type PostHogWindow = Window & {
 }
 
 export function emitWalletSaved(props: WalletSavedClientProps): void {
+  // F3: SSR / edge runtime guard.
+  if (typeof window === "undefined") return
+
   const storageKey = `wallet_saved_${props.entitlement_instance_id}`
-  if (sessionStorage.getItem(storageKey)) return
+  if (readSessionStorage(storageKey)) return
 
   captureWalletEvent("wallet.pass_saved", {
     ...props,
     device_class: getDeviceClass(),
     os_family: getOsFamily(),
   })
-  sessionStorage.setItem(storageKey, "1")
+  writeSessionStorage(storageKey, "1")
 }
 
 export function emitWalletFailed(props: WalletFailedClientProps): void {
+  if (typeof window === "undefined") return
   captureWalletEvent("wallet.pass_failed", {
     ...props,
     error_message: sanitizeTelemetryErrorMessage(props.error_message),
@@ -42,15 +46,20 @@ export function emitWalletFailed(props: WalletFailedClientProps): void {
 }
 
 export function getDeviceClass(): "mobile" | "desktop" {
+  // F11: SSR guard.
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return "desktop"
+  }
   if (window.matchMedia?.("(max-width: 768px)").matches) return "mobile"
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
     ? "mobile"
     : "desktop"
 }
 
-export function getOsFamily(userAgent = navigator.userAgent): "ios" | "android" | "other" {
-  if (/iPhone|iPad|iPod/i.test(userAgent)) return "ios"
-  if (/Android/i.test(userAgent)) return "android"
+export function getOsFamily(userAgent?: string): "ios" | "android" | "other" {
+  const ua = userAgent ?? (typeof navigator !== "undefined" ? navigator.userAgent : "")
+  if (/iPhone|iPad|iPod/i.test(ua)) return "ios"
+  if (/Android/i.test(ua)) return "android"
   return "other"
 }
 
@@ -73,5 +82,22 @@ function captureWalletEvent(
     ;(window as PostHogWindow).posthog?.capture?.(event, properties)
   } catch {
     // Telemetry is best-effort; wallet save UX must continue.
+  }
+}
+
+function readSessionStorage(key: string): string | null {
+  try {
+    return window.sessionStorage?.getItem(key) ?? null
+  } catch {
+    return null
+  }
+}
+
+function writeSessionStorage(key: string, value: string): void {
+  try {
+    window.sessionStorage?.setItem(key, value)
+  } catch {
+    // Best-effort: idempotency guard degrades to "may double-emit" if storage
+    // is unavailable, which is preferable to dropping the metric.
   }
 }
