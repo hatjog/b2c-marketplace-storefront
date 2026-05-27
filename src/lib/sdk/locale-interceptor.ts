@@ -5,6 +5,9 @@ export type CanonicalLocale = (typeof CANONICAL_LOCALES)[number];
 
 const DEFAULT_CANONICAL_LOCALE: CanonicalLocale = 'pl-PL';
 
+// `ua`/`ua-ua`/`ua_ua` to legacy route slug storefront (D-55); canonical
+// Ukrainian BCP 47 to `uk-UA` per ADR-124. Aliasy normalizują wejście do
+// canonical; nie kopiuj `ua-*` jako BCP 47 w nowym kodzie.
 const LOCALE_ALIASES: Record<string, CanonicalLocale> = {
   pl: 'pl-PL',
   'pl-pl': 'pl-PL',

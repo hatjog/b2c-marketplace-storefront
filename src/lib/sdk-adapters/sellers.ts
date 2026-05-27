@@ -21,7 +21,11 @@ import { unstable_cache } from 'next/cache';
 import type { SellerProps } from '@/types/seller';
 
 import { mercurClient } from '../config';
-import { withMercurLocaleOptions } from '../sdk/locale-interceptor';
+import {
+  type CanonicalLocale,
+  resolveStorefrontLocale,
+  withMercurLocaleOptions
+} from '../sdk/locale-interceptor';
 
 /**
  * Internal Mercur 2 seller list item shape returned by `/store/sellers`.
@@ -149,13 +153,15 @@ async function querySellersByHandle(
  * Replaces legacy: `sdk.client.fetch('/store/seller/:handle')` (Mercur 1.5 path).
  * @see TF-51 (getSellerByHandle shape-break, Option B)
  */
-export const resolveSellerHandleToId = unstable_cache(
-  async (handle: string): Promise<string | null> => {
+// Story 2.2 R9 audit M-2: locale jest częścią arg listy (a więc key) unstable_cache
+// oraz częścią tagu, dzięki czemu cache split per locale (per-handle slot per locale).
+// Backend seller ID jest aktualnie locale-agnostic, ale per-locale cache slot chroni
+// przed przyszłym driftem (np. soft-delete per market locale, lokalizowane attributes).
+const resolveSellerHandleToIdCached = unstable_cache(
+  async (handle: string, locale: CanonicalLocale): Promise<string | null> => {
     try {
-      // Note: no inner `cache: 'no-cache'` — outer `unstable_cache`
-      // memoizes per-handle for 600s; underlying HTTP cache is harmless
-      // within that window and reduces backend pressure on cache misses.
-      // cleanup-28 review CACHE-2.
+      // cleanup-28 review CACHE-2: outer unstable_cache memoizes per (handle, locale)
+      // for 600s; inner HTTP cache harmless w tym oknie.
       const result = (await mercurClient.store.sellers.query(
         await withMercurLocaleOptions({
           handle,
@@ -172,11 +178,10 @@ export const resolveSellerHandleToId = unstable_cache(
       )) as { sellers?: SellerListApiItem[] };
       return pickSellerIdByHandle(fallback?.sellers, handle);
     } catch (err) {
-      // cleanup-28 review CACHE-1: surface adapter failures to server logs
-      // / Sentry instead of swallowing silently. Distinguishes "backend
-      // down" from "handle not found" in production diagnostics.
+      // cleanup-28 review CACHE-1: surface adapter failures to server logs / Sentry.
       console.error('[sdk-adapters/sellers] resolveSellerHandleToId failed', {
         handle,
+        locale,
         error: err instanceof Error ? err.message : String(err)
       });
       return null;
@@ -185,6 +190,11 @@ export const resolveSellerHandleToId = unstable_cache(
   ['seller-handle-to-id'],
   { revalidate: 600, tags: ['sellers'] }
 );
+
+export const resolveSellerHandleToId = async (handle: string): Promise<string | null> => {
+  const locale = await resolveStorefrontLocale();
+  return resolveSellerHandleToIdCached(handle, locale);
+};
 
 /**
  * Fetch full seller details by ID via Mercur 2 typed proxy.

@@ -31,6 +31,14 @@ export const sdk = applyLocaleInterceptor(
  * Note: createClient() returns `any` until backend codegen produces a
  * `@mercurjs/core/_generated` Routes export. When that lands, swap to
  * `createClient<Routes>({...})` for full type inference.
+ *
+ * LOCALE DISCIPLINE (Story 2.2): `mercurClient` to równoległy klient SDK
+ * względem singletona `sdk` powyżej i NIE przechodzi przez `applyLocaleInterceptor`.
+ * Każde wywołanie `mercurClient.store.*.query(...)` MUSI być opakowane w
+ * `await withMercurLocaleOptions(...)` z `@/lib/sdk/locale-interceptor`, inaczej
+ * `x-medusa-locale` nie zostanie wysłany i dostaniemy default-locale leak.
+ * Enforcement = code review discipline (brak typesafe gate w obecnym v1.10.0;
+ * follow-up ESLint rule planowany w Story 2.3+).
  */
 export const mercurClient = createClient({
   baseUrl: MEDUSA_BACKEND_URL,

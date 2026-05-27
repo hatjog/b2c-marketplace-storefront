@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   applyLocaleInterceptor,
@@ -9,6 +9,13 @@ import {
 } from '../locale-interceptor';
 
 describe('locale interceptor', () => {
+  // I-3 hardening: guarantujemy cleanup globalThis nawet jeśli assertion failuje,
+  // żeby `window`/`document` nie przeciekały do innych testów w tym worker thread.
+  afterEach(() => {
+    Reflect.deleteProperty(globalThis, 'window');
+    Reflect.deleteProperty(globalThis, 'document');
+  });
+
   it.each([
     ['pl', 'pl-PL'],
     ['en', 'en-US'],
@@ -73,9 +80,6 @@ describe('locale interceptor', () => {
     await expect(withLocaleHeader()).resolves.toMatchObject({
       'x-medusa-locale': 'uk-UA'
     });
-
-    Reflect.deleteProperty(globalThis, 'window');
-    Reflect.deleteProperty(globalThis, 'document');
   });
 
   it('localePath generuje locale-prefixed path z canonical locale', async () => {
