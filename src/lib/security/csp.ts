@@ -55,6 +55,18 @@ function resolveMedusaBackendOriginsForCsp(): string[] {
  * v1.10.0 D-104 / FR-D.2 / Story 4.4: `connect-src` also allows
  * `https://*.maptiler.com` for MapTiler vector + raster tile loading from
  * the GP-owned style ID.
+ *
+ * Coupling note (Story 4.4 INFO-1 review): MapTiler raster sprite/glyph PNGs
+ * are covered by the permissive `img-src 'self' https: blob: data:` directive
+ * — NIE zawężać `img-src` do explicit originów bez równoczesnego audytu
+ * MapTiler tile endpointów, inaczej zepsujesz raster tile loading bez sygnału
+ * w `connect-src` testach.
+ *
+ * Forward-looking (Story 4.4 INFO-2 review): jeżeli future story przełączy
+ * `SellerMap` z `react-leaflet` (raster) na MapLibre GL JS (vector tiles),
+ * MapLibre tworzy blob workers — wtedy dopisać `worker-src 'self' blob:`
+ * (lub `child-src 'self' blob:` fallback) do directive listy. Aktualny stack
+ * (raster) workerów nie używa.
  */
 export function buildCspDirectiveList(
   medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
