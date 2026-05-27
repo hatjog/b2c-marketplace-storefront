@@ -13,6 +13,7 @@ import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
 import { assessSellerStructuredData } from '@/lib/seo/sellerStructuredData';
 
@@ -71,13 +72,16 @@ export async function generateMetadata({
   // so that crawlers reaching the URL via a stale link see the right
   // cross-locale signal (the page itself stays `noindex`).
   const alternates = buildSellerAlternates(locale, `/${handle}`);
+  const social = buildLocaleSocialMetadata(locale);
 
   if (!seller) {
     return {
       title: tDetail('meta_fallback_title'),
       description: tDetail('meta_default_description'),
       alternates,
-      robots: { index: false, follow: false }
+      robots: { index: false, follow: false },
+      openGraph: social.openGraph,
+      other: social.other
     };
   }
 
@@ -98,11 +102,13 @@ export async function generateMetadata({
       ? { index: true, follow: true }
       : { index: false, follow: false },
     openGraph: {
+      ...social.openGraph,
       title,
       description,
       type: 'website',
       ...(ogImage ? { images: [{ url: ogImage }] } : {})
-    }
+    },
+    other: social.other
   };
 }
 
@@ -160,7 +166,8 @@ export default async function SellerPage({
     : [];
   const sellerRatingCount = sellerReviews.length;
   const sellerRating = sellerRatingCount
-    ? sellerReviews.reduce((sum, review) => sum + Number(review?.rating ?? 0), 0) / sellerRatingCount
+    ? sellerReviews.reduce((sum, review) => sum + Number(review?.rating ?? 0), 0) /
+      sellerRatingCount
     : undefined;
   const sellerTreatments =
     Array.isArray(seller.products) && seller.products.length > 0

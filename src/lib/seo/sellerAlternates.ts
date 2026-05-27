@@ -16,8 +16,7 @@ import { toHreflang } from '@/lib/helpers/hreflang';
  * mirrors the `robots.ts` pattern where `NEXT_PUBLIC_BASE_URL` is treated
  * as opt-in.
  *
- * BCP 47: `pl`, `en` only (per `routing.ts` SUPPORTED_LOCALES). Region-
- * specific codes (`pl-PL`, `en-GB`) NOT used — out-of-scope v1.6.0.
+ * BCP 47: `pl-PL`, `en-US`, `uk-UA`, `de-DE` for all active locales.
  *
  * `x-default`: per Google docs, points to canonical fallback (DEFAULT_LOCALE
  * = `pl`). Search engines use this when user locale matches none in the map.

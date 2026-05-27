@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/routing';
 import { PROTECTED_ROUTES } from './lib/constants';
 import { isTokenExpired } from './lib/helpers/token';
-import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/routing';
 
 const GP_LANG_COOKIE = '_gp_lang';
 const GP_REGION_COOKIE = '_gp_region';
@@ -92,7 +92,12 @@ export async function middleware(request: NextRequest) {
     const queryString = request.nextUrl.search ?? '';
     const redirectUrl = `${request.nextUrl.origin}/${lang}${redirectPath}${queryString}`;
     const response = NextResponse.redirect(redirectUrl, 307);
-    response.cookies.set(GP_LANG_COOKIE, lang, { maxAge: 60 * 60 * 24 * 365, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+    response.cookies.set(GP_LANG_COOKIE, lang, {
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
+    });
     return response;
   }
 
@@ -109,11 +114,22 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-gp-locale', lang);
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders
+    }
+  });
 
   // Set _gp_lang cookie from URL lang
   if (langCookieValue !== lang) {
-    response.cookies.set(GP_LANG_COOKIE, lang, { maxAge: 60 * 60 * 24 * 365, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+    response.cookies.set(GP_LANG_COOKIE, lang, {
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
+    });
   }
 
   // Set _gp_region cookie from geo IP if not already set
@@ -122,7 +138,13 @@ export async function middleware(request: NextRequest) {
     const geoCountry = request.headers.get('x-vercel-ip-country')?.toLowerCase();
     const region = resolveRegion(geoCountry, undefined);
     if (region) {
-      response.cookies.set(GP_REGION_COOKIE, region, { maxAge: 60 * 60 * 24 * 365, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production', httpOnly: true });
+      response.cookies.set(GP_REGION_COOKIE, region, {
+        maxAge: 60 * 60 * 24 * 365,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
+      });
     }
   }
 

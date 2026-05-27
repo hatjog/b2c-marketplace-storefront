@@ -280,9 +280,11 @@ test("ShopByStyleSection: renders runtime items instead of hardcoded styles", as
 
 // Task 4 — regression: dynamic blocks return null on empty data
 
-test("ProductsCarouselBlock: returns null when products array is empty", () => {
+test("ProductsCarouselBlock: renders localized empty state when products array is empty", () => {
   const source = read("src/components/blocks/ProductsCarouselBlock.tsx");
-  assert.match(source, /if\s*\(products\.length\s*===\s*0\)\s*\{\s*\n\s*return null/);
+  assert.match(source, /if\s*\(products\.length\s*===\s*0\)/);
+  assert.match(source, /data-testid="products-carousel-empty"/);
+  assert.match(source, /editorial_choice\.empty_state/);
 });
 
 test("CategoriesGridBlock: renders HomeCategories even when fetched categories array is empty", () => {
