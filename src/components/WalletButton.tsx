@@ -1,8 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import type { WalletProviderKind } from '../../../backend/packages/wallet/src';
+// Provider-neutral kind aligned with `@gp/wallet` (Story 3.1). Workspace package
+// `@gp/wallet` is not wired into storefront (see Story 3.5 KNOWN_GAP F-19/F-01);
+// local type kept until alias lands to avoid cross-submodule relative import.
+export type WalletProviderKind = 'google' | 'apple';
 
 export type WalletButtonLocale = 'pl' | 'en' | 'de' | 'ua';
 
@@ -128,8 +131,11 @@ export async function requestWalletSave(input: {
     }
 
     const payload = (await response.json()) as Partial<WalletSaveResult>;
-    if (!payload.saveUrl || !payload.saveUrl.startsWith('https://pay.google.com/gp/v/save/')) {
-      throw new Error('Wallet save response did not include a Google Wallet save URL');
+    if (!payload.saveUrl) {
+      throw new Error('Wallet save response did not include a save URL');
+    }
+    if (input.provider === 'google' && !payload.saveUrl.startsWith('https://pay.google.com/gp/v/save/')) {
+      throw new Error('Google Wallet save URL did not match the expected scheme');
     }
 
     return { saveUrl: payload.saveUrl };
@@ -157,19 +163,31 @@ export function WalletButton({
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
+  const dismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (dismissRef.current) clearTimeout(dismissRef.current);
+    },
+    [],
+  );
 
   const save = async () => {
     setIsLoading(true);
     setHasError(false);
     setToast(null);
+    if (dismissRef.current) clearTimeout(dismissRef.current);
 
     try {
+      // TODO(story-3.7): emit `pass_saved` telemetry to PostHog.
       const result = await requestWalletSave({ voucherCode, provider });
-      setToast(copy.successToast);
+      // Skip success toast: redirect to provider save URL is the AC1 confirmation.
       window.location.assign(result.saveUrl);
     } catch {
+      // TODO(story-3.7): emit `pass_failed` telemetry to PostHog with reason.
       setHasError(true);
       setToast(copy.errorToast);
+      dismissRef.current = setTimeout(() => setToast(null), 8000);
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +197,6 @@ export function WalletButton({
     <div className="flex flex-1 flex-col gap-2">
       <button
         type="button"
-        role="button"
         aria-label={copy.ariaLabel}
         aria-busy={isLoading}
         disabled={disabled || isLoading}
@@ -209,7 +226,7 @@ export function WalletButton({
           {hasError && (
             <button
               type="button"
-              className="ml-2 font-medium text-[var(--bg-action)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bg-action)]"
+              className="ml-2 inline-flex min-h-11 min-w-11 items-center justify-center px-3 py-2 font-medium text-[var(--bg-action)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bg-action)]"
               onClick={save}
             >
               {copy.retryLabel}

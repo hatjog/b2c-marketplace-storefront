@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import type { VoucherRecipientPolicyView, VoucherRecipientView as VoucherRecipientModel } from '@/lib/data/voucher';
@@ -168,6 +169,8 @@ export async function VoucherRecipientView({
   voucher,
 }: VoucherRecipientViewProps) {
   const t = await getTranslations({ locale, namespace: 'voucher.recipient' });
+  const reqHeaders = await headers();
+  const requestUserAgent = reqHeaders.get('user-agent') ?? '';
 
   const expiryDate = formatDate(voucher?.expires_at, locale);
   const redeemedDate = formatDate(voucher?.redeemed_at, locale);
@@ -318,6 +321,7 @@ export async function VoucherRecipientView({
           voucherCode={voucher.code}
           locale={locale === 'en' || locale === 'de' || locale === 'ua' ? locale : 'pl'}
           pdfHref={voucher.pdf_url ?? `/api/voucher/${voucher.code}/pdf`}
+          userAgent={requestUserAgent}
         />
       </section>
 

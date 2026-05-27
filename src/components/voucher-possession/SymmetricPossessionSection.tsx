@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { WalletButton, type WalletButtonLocale } from '../WalletButton';
 
 type SymmetricPossessionCopy = {
   eyebrow: string;
-  iphoneSafariEyebrow: string;
   pdfLabel: string;
   pdfAriaLabel: string;
   emailLabel: string;
@@ -19,7 +18,6 @@ type SymmetricPossessionCopy = {
 const COPY: Record<WalletButtonLocale, SymmetricPossessionCopy> = {
   pl: {
     eyebrow: 'Zachowaj voucher jak chcesz — w telefonie, w PDF, lub w mailu',
-    iphoneSafariEyebrow: 'Zapisz na telefonie jako PDF — Apple Wallet wkrótce',
     pdfLabel: 'Pobierz PDF',
     pdfAriaLabel: 'Pobierz voucher jako PDF',
     emailLabel: 'Wyślij ponownie na e-mail',
@@ -30,7 +28,6 @@ const COPY: Record<WalletButtonLocale, SymmetricPossessionCopy> = {
   },
   en: {
     eyebrow: 'Keep your voucher your way — on your phone, in PDF, or in email',
-    iphoneSafariEyebrow: 'Save it on your phone as a PDF — Apple Wallet is coming soon',
     pdfLabel: 'Download PDF',
     pdfAriaLabel: 'Download voucher as PDF',
     emailLabel: 'Send again by email',
@@ -41,7 +38,6 @@ const COPY: Record<WalletButtonLocale, SymmetricPossessionCopy> = {
   },
   de: {
     eyebrow: 'Bewahre deinen Voucher so auf, wie du möchtest — im Telefon, als PDF oder per E-Mail',
-    iphoneSafariEyebrow: 'Auf dem Telefon als PDF speichern — Apple Wallet kommt bald',
     pdfLabel: 'PDF herunterladen',
     pdfAriaLabel: 'Voucher als PDF herunterladen',
     emailLabel: 'Erneut per E-Mail senden',
@@ -52,7 +48,6 @@ const COPY: Record<WalletButtonLocale, SymmetricPossessionCopy> = {
   },
   ua: {
     eyebrow: 'Збережіть ваучер як зручно — у телефоні, PDF або листі',
-    iphoneSafariEyebrow: 'Збережіть на телефоні як PDF — Apple Wallet незабаром',
     pdfLabel: 'Завантажити PDF',
     pdfAriaLabel: 'Завантажити ваучер як PDF',
     emailLabel: 'Надіслати ще раз на e-mail',
@@ -94,6 +89,10 @@ export type SymmetricPossessionSectionProps = {
   locale: WalletButtonLocale;
   pdfHref: string;
   className?: string;
+  // SSR-resolved UA marker; server passes pre-detected value to avoid hydration mismatch (F-04).
+  userAgent?: string;
+  // Allows hosting page to disable wallet CTA when entitlement gate denies (F-17).
+  walletDisabled?: boolean;
 };
 
 export function SymmetricPossessionSection({
@@ -101,31 +100,50 @@ export function SymmetricPossessionSection({
   locale,
   pdfHref,
   className,
+  userAgent,
+  walletDisabled = false,
 }: SymmetricPossessionSectionProps) {
   const copy = useMemo(() => getPossessionCopy(locale), [locale]);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailToast, setEmailToast] = useState<string | null>(null);
-  const [isIphone, setIsIphone] = useState(false);
+  const emailDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (typeof navigator !== 'undefined') {
-      setIsIphone(isIphoneSafari(navigator.userAgent));
-    }
-  }, []);
+  const appleEnabled = isAppleWalletEnabled();
+  const renderApple = shouldRenderAppleWallet({
+    provider: 'apple',
+    appleWalletEnabled: appleEnabled,
+    userAgent,
+  });
+
+  useEffect(
+    () => () => {
+      if (emailDismissRef.current) clearTimeout(emailDismissRef.current);
+    },
+    [],
+  );
 
   const resendEmail = async () => {
     setIsSendingEmail(true);
     setEmailToast(null);
+    if (emailDismissRef.current) clearTimeout(emailDismissRef.current);
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const response = await fetch(getEmailResendEndpoint(voucherCode), { method: 'POST' });
+      const response = await fetch(getEmailResendEndpoint(voucherCode), {
+        method: 'POST',
+        signal: controller.signal,
+      });
       if (!response.ok) {
         throw new Error(`Email resend failed with ${response.status}`);
       }
       setEmailToast(copy.emailSuccessToast);
+      emailDismissRef.current = setTimeout(() => setEmailToast(null), 6000);
     } catch {
       setEmailToast(copy.emailErrorToast);
+      emailDismissRef.current = setTimeout(() => setEmailToast(null), 8000);
     } finally {
+      clearTimeout(timer);
       setIsSendingEmail(false);
     }
   };
@@ -140,23 +158,30 @@ export function SymmetricPossessionSection({
         .filter(Boolean)
         .join(' ')}
     >
-      <p id="voucher-possession-heading" className="text-xs uppercase tracking-[0.18em] text-[var(--cta-hover)]">
-        {isIphone ? copy.iphoneSafariEyebrow : copy.eyebrow}
-      </p>
+      <h2
+        id="voucher-possession-heading"
+        className="m-0 text-xs uppercase tracking-[0.18em] text-[var(--cta-hover)]"
+      >
+        {copy.eyebrow}
+      </h2>
       <div className="flex flex-col gap-3 sm:flex-row">
-        <WalletButton voucherCode={voucherCode} provider="google" locale={locale} />
-        <a
-          href={pdfHref}
-          role="button"
-          aria-label={copy.pdfAriaLabel}
-          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-center text-sm font-medium text-[var(--bg-action)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bg-action)]"
-        >
-          {copy.pdfLabel}
-        </a>
+        <WalletButton voucherCode={voucherCode} provider="google" locale={locale} disabled={walletDisabled} />
+        {renderApple && (
+          <WalletButton voucherCode={voucherCode} provider="apple" locale={locale} disabled={walletDisabled} />
+        )}
+        <div className="flex flex-1 flex-col gap-2">
+          <a
+            href={pdfHref}
+            role="button"
+            aria-label={copy.pdfAriaLabel}
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-center text-sm font-medium text-[var(--bg-action)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bg-action)]"
+          >
+            {copy.pdfLabel}
+          </a>
+        </div>
         <div className="flex flex-1 flex-col gap-2">
           <button
             type="button"
-            role="button"
             aria-label={copy.emailAriaLabel}
             aria-busy={isSendingEmail}
             onClick={resendEmail}
@@ -185,5 +210,13 @@ export function SymmetricPossessionSection({
     </section>
   );
 }
+
+// KNOWN_GAP-Story-3.5-AC4 (F-10): runtime LocaleFallbackNotice integration is deferred —
+// wallet copy ships full 4-locale coverage so the AC4 invariant holds by construction.
+// Pickup ticket once Story 2.4 component lands & locale gaps appear.
+
+// KNOWN_GAP-Story-3.5-T6 (F-11): jest-axe / vitest-axe harness is not installed in this
+// workspace; component test asserts ARIA invariants statically. Full axe coverage is the
+// Story 1.8 Playwright runtime axe pass.
 
 export default SymmetricPossessionSection;

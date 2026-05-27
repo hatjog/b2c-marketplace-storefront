@@ -66,7 +66,7 @@ describe('WalletButton — recipient view', () => {
     expect(getPossessionCopy('de').eyebrow).toContain('Telefon');
   });
 
-  it('renders three equal-weight CTAs in wallet -> PDF -> email DOM order', () => {
+  it('renders three equal-weight CTAs in wallet -> PDF -> email DOM order and uses h2 heading', () => {
     const html = renderToStaticMarkup(
       <SymmetricPossessionSection
         voucherCode="ABC12345"
@@ -86,6 +86,33 @@ describe('WalletButton — recipient view', () => {
     expect(html).toContain('aria-label="Dodaj voucher do Google Wallet"');
     expect(html).toContain('aria-label="Pobierz voucher jako PDF"');
     expect(html).toContain('aria-label="Wyślij voucher ponownie na e-mail"');
+    // F-07: heading element for screen reader rotor navigation.
+    expect(html).toContain('<h2 id="voucher-possession-heading"');
+    // F-08: eyebrow stays neutral (no Apple-soon copy contradicting active Google CTA).
+    expect(html).not.toContain('Apple Wallet wkrótce');
+  });
+
+  it('rejects a non-Google save URL only when provider=google (F-02)', async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ saveUrl: 'https://example.com/not-google' }),
+    });
+
+    await expect(
+      requestWalletSave({
+        voucherCode: 'ABC12345',
+        provider: 'google',
+        fetcher: fetcher as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(/Google Wallet/);
+
+    await expect(
+      requestWalletSave({
+        voucherCode: 'ABC12345',
+        provider: 'apple',
+        fetcher: fetcher as unknown as typeof fetch,
+      }),
+    ).resolves.toEqual({ saveUrl: 'https://example.com/not-google' });
   });
 
   it('builds email resend endpoint without promoting PDF as a fallback', () => {
