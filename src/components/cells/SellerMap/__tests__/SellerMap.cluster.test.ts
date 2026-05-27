@@ -1,39 +1,147 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+// @vitest-environment jsdom
+//
+// Story 4.6 T4 — render-level coverage for the cluster/raw branch switch.
+// The cluster branch mounts `<ClusteredSellerMarkers>` (which returns null
+// from React's perspective and creates DOM imperatively inside a useEffect),
+// while the raw branch maps `validSellers` to `<Marker>` elements. We mock
+// `react-leaflet` + `leaflet` + `leaflet.markercluster` to keep this test
+// hermetic and assert the branch selection by counting raw-marker test-ids
+// emitted in the DOM (cluster branch yields zero, raw branch one per seller).
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import { act } from 'react';
 
-const COMPONENT_DIR = resolve(__dirname, '..');
-const SELLER_MAP_PATH = resolve(COMPONENT_DIR, 'SellerMap.tsx');
-const SELLER_MAP_SRC = readFileSync(SELLER_MAP_PATH, 'utf-8');
+import type { SellerListItem } from '@/lib/data/seller';
 
-describe('SellerMap cluster integration smoke', () => {
-  it('imports Leaflet.markercluster and its local node_modules CSS assets', () => {
-    expect(SELLER_MAP_SRC).toContain("import 'leaflet.markercluster';");
-    expect(SELLER_MAP_SRC).toContain("import 'leaflet.markercluster/dist/MarkerCluster.css';");
-    expect(SELLER_MAP_SRC).toContain(
-      "import 'leaflet.markercluster/dist/MarkerCluster.Default.css';"
-    );
-    expect(SELLER_MAP_SRC).not.toMatch(/unpkg\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com/);
+vi.mock('next-intl', () => ({
+  useTranslations:
+    () =>
+    (key: string, vars?: Record<string, unknown>) =>
+      vars ? `${key}:${JSON.stringify(vars)}` : key
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ children, ...rest }: { children: React.ReactNode }) =>
+    createElement('a', rest, children)
+}));
+
+vi.mock('leaflet/dist/leaflet.css', () => ({}));
+vi.mock('leaflet.markercluster/dist/MarkerCluster.css', () => ({}));
+vi.mock('leaflet.markercluster/dist/MarkerCluster.Default.css', () => ({}));
+vi.mock('leaflet.markercluster', () => ({}));
+
+vi.mock('leaflet', () => {
+  const proto: { _getIconUrl?: unknown } = { _getIconUrl: () => '' };
+  const Icon = { Default: { prototype: proto, mergeOptions: vi.fn() } };
+  const stubLayer = {
+    addLayer: vi.fn(),
+    removeLayer: vi.fn(),
+    clearLayers: vi.fn(),
+    on: vi.fn(),
+    bindPopup: vi.fn()
+  };
+  return {
+    default: {
+      Icon,
+      marker: vi.fn(() => stubLayer),
+      markerClusterGroup: vi.fn(() => stubLayer),
+      divIcon: vi.fn(() => ({})),
+      point: vi.fn(() => ({})),
+      latLng: vi.fn(() => ({ toBounds: () => ({ getNorthEast: () => [0, 0], getSouthWest: () => [0, 0] }) })),
+      latLngBounds: vi.fn(() => ({}))
+    }
+  };
+});
+
+vi.mock('react-leaflet', () => {
+  const passthrough =
+    (testid: string) =>
+    ({ children, ...rest }: { children?: React.ReactNode } & Record<string, unknown>) =>
+      createElement('div', { 'data-testid': testid, ...rest }, children);
+  return {
+    MapContainer: passthrough('seller-map-container'),
+    TileLayer: passthrough('seller-map-tile'),
+    Circle: passthrough('seller-map-circle'),
+    Marker: ({ children, ...rest }: { children?: React.ReactNode } & Record<string, unknown>) =>
+      createElement('div', rest, children),
+    Popup: ({ children }: { children?: React.ReactNode }) =>
+      createElement('div', { 'data-testid': 'seller-map-popup' }, children),
+    useMap: () => ({ addLayer: vi.fn(), removeLayer: vi.fn(), fitBounds: vi.fn() })
+  };
+});
+
+vi.mock('@/lib/map/leafletAssets', () => ({
+  leafletIconUrls: { iconUrl: '', iconRetinaUrl: '', shadowUrl: '' }
+}));
+
+import { SellerMap } from '../SellerMap';
+
+function makeSellers(count: number): SellerListItem[] {
+  return Array.from({ length: count }, (_, i) => ({
+    handle: `s${i}`,
+    name: `Seller ${i}`,
+    lat: 52 + i * 0.001,
+    lng: 19 + i * 0.001,
+    address: 'a',
+    city: 'c'
+  })) as unknown as SellerListItem[];
+}
+
+let container: HTMLDivElement;
+let root: ReturnType<typeof createRoot>;
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+});
+
+describe('SellerMap cluster branch selection (T4)', () => {
+  it('mode=list with 51 sellers → cluster branch, no raw marker test-ids', () => {
+    act(() => {
+      root.render(createElement(SellerMap, { sellers: makeSellers(51), locale: 'pl', mode: 'list' }));
+    });
+    const raw = container.querySelectorAll('[data-testid^="seller-map-raw-marker-"]');
+    expect(raw.length).toBe(0);
   });
 
-  it('renders clusters only through resolveClusterEnabled', () => {
-    expect(SELLER_MAP_SRC).toContain('const clusterEnabled = resolveClusterEnabled({');
-    expect(SELLER_MAP_SRC).toContain('sellersCount: validSellers.length');
-    expect(SELLER_MAP_SRC).toContain('clusterEnabled ? (');
-    expect(SELLER_MAP_SRC).toContain('<ClusteredSellerMarkers');
+  it('mode=list with 49 sellers → raw branch, 49 marker test-ids', () => {
+    act(() => {
+      root.render(createElement(SellerMap, { sellers: makeSellers(49), locale: 'pl', mode: 'list' }));
+    });
+    const raw = container.querySelectorAll('[data-testid^="seller-map-raw-marker-"]');
+    expect(raw.length).toBe(49);
   });
 
-  it('keeps raw Marker rendering for the non-cluster path', () => {
-    expect(SELLER_MAP_SRC).toContain('validSellers.map(seller => (');
-    expect(SELLER_MAP_SRC).toContain('<Marker');
-    expect(SELLER_MAP_SRC).toContain('<Popup>');
+  it('mode=detail with 100 sellers → raw branch always (clustering forced off)', () => {
+    act(() => {
+      root.render(
+        createElement(SellerMap, { sellers: makeSellers(100), locale: 'pl', mode: 'detail' })
+      );
+    });
+    const raw = container.querySelectorAll('[data-testid^="seller-map-raw-marker-"]');
+    expect(raw.length).toBe(100);
   });
 
-  it('adds the cluster a11y label and expected cluster options', () => {
-    expect(SELLER_MAP_SRC).toContain("t('clusterAriaLabel', { count })");
-    expect(SELLER_MAP_SRC).toContain('role="button"');
-    expect(SELLER_MAP_SRC).toContain('tabindex="0"');
-    expect(SELLER_MAP_SRC).toContain('...DEFAULT_CLUSTER_OPTIONS');
+  it('clusterMode=on overrides threshold even with 10 sellers (no raw test-ids)', () => {
+    act(() => {
+      root.render(
+        createElement(SellerMap, {
+          sellers: makeSellers(10),
+          locale: 'pl',
+          mode: 'list',
+          clusterMode: 'on'
+        })
+      );
+    });
+    const raw = container.querySelectorAll('[data-testid^="seller-map-raw-marker-"]');
+    expect(raw.length).toBe(0);
   });
 });
