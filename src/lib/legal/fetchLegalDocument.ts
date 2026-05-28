@@ -135,6 +135,34 @@ function legalFileForLocale(locale: LegalDocumentLocale): string {
   }
 }
 
+function templateLocaleFor(locale: LegalDocumentLocale): string {
+  switch (locale) {
+    case 'pl':
+      return 'pl-PL';
+    case 'en':
+      return 'en-US';
+    case 'ua':
+      return 'uk-UA';
+    case 'de':
+      return 'de-DE';
+  }
+}
+
+function templateDocTypeForDocId(docId: string): string | null {
+  switch (docId) {
+    case 'regulamin':
+      return 'regulamin';
+    case 'polityka-prywatnosci':
+      return 'polityka_prywatnosci';
+    case 'zasady':
+      return 'zasady_voucher';
+    case 'pomoc':
+      return 'pomoc';
+    default:
+      return null;
+  }
+}
+
 /**
  * Derive doc_id from canonical slug. "/regulamin" → "regulamin".
  *
@@ -182,6 +210,30 @@ function legalPathsFor(marketId: string, docId: string, locale: LegalDocumentLoc
   const file = legalFileForLocale(locale);
   return candidateRoots().map(root =>
     path.join(root, 'gp-ops', 'markets', marketId, 'legal', 'portal', docId, file)
+  );
+}
+
+function legalTemplatePathsFor(
+  marketId: string,
+  docId: string,
+  locale: LegalDocumentLocale
+): string[] {
+  const docType = templateDocTypeForDocId(docId);
+  if (!docType) {
+    return [];
+  }
+
+  return candidateRoots().map(root =>
+    path.join(
+      root,
+      'specs',
+      'legal',
+      'v1.10.0',
+      'templates',
+      marketId,
+      templateLocaleFor(locale),
+      `${docType}.md`
+    )
   );
 }
 
@@ -245,6 +297,53 @@ function parseFrontMatter(content: string, sourcePath: string): ParsedMarkdown {
   };
 }
 
+function reviewStatusFromTemplateStatus(status: unknown): LegalReviewStatus {
+  return status === 'accepted-in-house' ? 'approved' : 'published_draft_status';
+}
+
+function parseTemplateDocument(
+  content: string,
+  sourcePath: string,
+  docId: string,
+  canonicalSlug: string,
+  requestedLocale: LegalDocumentLocale,
+  localeFallback: boolean
+): LegalDocument {
+  if (!content.startsWith('---\n')) {
+    throw new Error(`Legal template missing YAML front-matter (--- header) at ${sourcePath}`);
+  }
+  const endIdx = content.indexOf('\n---\n', 4);
+  if (endIdx === -1) {
+    throw new Error(`Legal template front-matter not terminated at ${sourcePath}`);
+  }
+  const yamlBlock = content.slice(4, endIdx);
+  const body = content.slice(endIdx + 5);
+  const parsed = yaml.load(yamlBlock, { schema: yaml.JSON_SCHEMA });
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error(`Legal template front-matter must be a YAML mapping at ${sourcePath}`);
+  }
+  const fm = parsed as Record<string, unknown>;
+  const version = typeof fm.version === 'string' ? fm.version : '0.1.0-DRAFT';
+  const lastReviewedAt =
+    typeof fm.last_reviewed_at === 'string' && fm.last_reviewed_at.trim()
+      ? fm.last_reviewed_at
+      : new Date().toISOString();
+
+  return {
+    docId,
+    canonicalSlug,
+    version,
+    lastUpdated: lastReviewedAt.slice(0, 10),
+    reviewStatus: reviewStatusFromTemplateStatus(fm.status),
+    authoringSource: 'in_house',
+    legalReviewRef: 'in_house_draft',
+    locale: localeFallback ? 'pl' : requestedLocale,
+    localeFallback,
+    body,
+    sourcePath
+  };
+}
+
 async function readFirstExisting(
   paths: string[]
 ): Promise<{ content: string; sourcePath: string } | null> {
@@ -285,9 +384,33 @@ async function _fetchLegalDocumentImpl(
   }
 
   if (!read) {
+    const templateLocalePaths = legalTemplatePathsFor(marketId, docId, locale);
+    read = await readFirstExisting(templateLocalePaths);
+    localeFallback = false;
+
+    let templateFallbackPaths: string[] = [];
+    if (!read && locale !== 'pl') {
+      templateFallbackPaths = legalTemplatePathsFor(marketId, docId, 'pl');
+      read = await readFirstExisting(templateFallbackPaths);
+      localeFallback = read !== null;
+    }
+
+    if (read) {
+      return parseTemplateDocument(
+        read.content,
+        read.sourcePath,
+        docId,
+        canonicalSlug,
+        locale,
+        localeFallback
+      );
+    }
+
     throw new LegalDocumentNotFoundError(marketId, canonicalSlug, locale, [
       ...localePaths,
-      ...fallbackPaths
+      ...fallbackPaths,
+      ...templateLocalePaths,
+      ...templateFallbackPaths
     ]);
   }
 

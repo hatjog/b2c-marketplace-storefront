@@ -366,6 +366,8 @@
     "section_connect": "Verbinden",
     "go_to_social": "Zur {name}-Seite",
     "section_legal": "Rechtliche Verkäuferinformationen",
+    "legal_signoff_badge": "Intern freigegeben ✓ (Review vor Prod v1.15.0)",
+    "legal_signoff_badge_aria": "Dokument intern freigegeben; externe Prüfung ist vor Produktion v1.15.0 geplant",
     "rights_reserved": "Alle Rechte vorbehalten",
     "privacy_policy": "Datenschutzrichtlinie",
     "terms_of_service": "Nutzungsbedingungen",

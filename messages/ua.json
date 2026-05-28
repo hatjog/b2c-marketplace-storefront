@@ -366,6 +366,8 @@
     "section_connect": "Соціальні мережі",
     "go_to_social": "Перейти на сторінку {name}",
     "section_legal": "Юридичні дані продавця",
+    "legal_signoff_badge": "Підписано внутрішньо ✓ (перегляд перед prod v1.15.0)",
+    "legal_signoff_badge_aria": "Документ підписано внутрішньо; зовнішній перегляд заплановано перед production v1.15.0",
     "rights_reserved": "Всі права захищені",
     "privacy_policy": "Політика конфіденційності",
     "terms_of_service": "Умови використання",

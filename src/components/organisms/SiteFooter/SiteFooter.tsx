@@ -75,12 +75,23 @@ export async function SiteFooter({
               <ul className="space-y-2">
                 {links.map(link => (
                   <li key={link.path}>
-                    <LocalizedClientLink
-                      href={link.path}
-                      className="text-sm text-[var(--bb-cream-75)] transition-colors hover:text-white"
-                    >
-                      {link.label}
-                    </LocalizedClientLink>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <LocalizedClientLink
+                        href={link.path}
+                        className="text-sm text-[var(--bb-cream-75)] transition-colors hover:text-white"
+                      >
+                        {link.label}
+                      </LocalizedClientLink>
+                      {link.legalSignoffBadge && (
+                        <span
+                          className="inline-flex max-w-full items-center rounded-sm border border-emerald-300/40 px-2 py-0.5 text-xs leading-tight text-emerald-100"
+                          aria-label={t('legal_signoff_badge_aria')}
+                          data-testid={`site-footer-legal-signoff-badge-${link.legalSignoffBadge.docType}`}
+                        >
+                          {t('legal_signoff_badge')}
+                        </span>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>

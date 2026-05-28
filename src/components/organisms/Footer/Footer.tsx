@@ -47,16 +47,29 @@ export async function Footer({
               className="space-y-3"
               aria-label={sectionLabel(section)}
             >
-              {links.map(({ label, path }) => (
-                <LocalizedClientLink
+              {links.map(({ label, path, legalSignoffBadge }) => (
+                <span
                   key={`${section}-${path}`}
-                  href={path}
-                  locale={locale}
-                  className="label-md block"
-                  data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                  className="flex flex-wrap items-center gap-2"
                 >
-                  {label}
-                </LocalizedClientLink>
+                  <LocalizedClientLink
+                    href={path}
+                    locale={locale}
+                    className="label-md block"
+                    data-testid={`footer-link-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    {label}
+                  </LocalizedClientLink>
+                  {legalSignoffBadge && (
+                    <span
+                      className="inline-flex max-w-full items-center rounded-sm border border-emerald-600/50 px-2 py-0.5 text-xs leading-tight text-emerald-700"
+                      aria-label={t('legal_signoff_badge_aria')}
+                      data-testid={`footer-legal-signoff-badge-${legalSignoffBadge.docType}`}
+                    >
+                      {t('legal_signoff_badge')}
+                    </span>
+                  )}
+                </span>
               ))}
             </nav>
           </div>

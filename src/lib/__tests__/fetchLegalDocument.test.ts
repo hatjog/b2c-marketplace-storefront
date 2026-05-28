@@ -68,6 +68,12 @@ describe('fetchLegalDocument', () => {
     await writeFile(path.join(dir, file), content, 'utf-8');
   }
 
+  async function writeTemplate(market: string, locale: string, doc: string, content: string) {
+    const dir = path.join(root, 'specs', 'legal', 'v1.10.0', 'templates', market, locale);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, `${doc}.md`), content, 'utf-8');
+  }
+
   it('returns the PL canonical document for locale=pl', async () => {
     await writeDoc('bonbeauty', 'regulamin', 'master.md', MASTER_PL);
     const doc = await fetchLegalDocument('bonbeauty', '/regulamin', 'pl');
@@ -101,6 +107,40 @@ describe('fetchLegalDocument', () => {
     await expect(
       fetchLegalDocument('bonbeauty', '/regulamin', 'pl')
     ).rejects.toBeInstanceOf(LegalDocumentNotFoundError);
+  });
+
+  it('falls back to Story 9.2 in-house template when portal content is absent', async () => {
+    await writeTemplate(
+      'bonevent',
+      'de-DE',
+      'pomoc',
+      `---
+market: bonevent
+locale: de-DE
+doc_type: pomoc
+version: 0.1.0-DRAFT
+authored_by: agent-persona-legal
+status: WAIVED-demo
+last_reviewed_at: '2026-05-28T12:23:38Z'
+signoff_chain: []
+market_posture: demo
+---
+
+# Hilfe — Template
+
+Template body.
+`
+    );
+
+    const doc = await fetchLegalDocument('bonevent', '/pomoc', 'de');
+    expect(doc.docId).toBe('pomoc');
+    expect(doc.canonicalSlug).toBe('/pomoc');
+    expect(doc.version).toBe('0.1.0-DRAFT');
+    expect(doc.reviewStatus).toBe('published_draft_status');
+    expect(doc.authoringSource).toBe('in_house');
+    expect(doc.locale).toBe('de');
+    expect(doc.localeFallback).toBe(false);
+    expect(doc.body).toContain('Template body.');
   });
 
   it('maps ua → master.uk.md per F-NEW-S3', async () => {

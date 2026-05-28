@@ -1,7 +1,12 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { resolveFooterConnectLinks, resolveFooterCopyright, resolveFooterNavLinks } = await import('../src/lib/footer.ts');
+const {
+  resolveFooterConnectLinks,
+  resolveFooterCopyright,
+  resolveFooterLegalSignoffBadge,
+  resolveFooterNavLinks
+} = await import('../src/lib/footer.ts');
 
 describe('footer social links resolution', () => {
   test('prefers MarketConfig footer.social when available', () => {
@@ -192,6 +197,35 @@ describe('footer nav links resolution', () => {
     assert.deepEqual(sections, [
       { section: 'about', links: [{ label: 'Safe', path: '/about' }] }
     ]);
+  });
+
+  test('marks BonBeauty legal document links with in-house sign-off badge metadata', () => {
+    const sections = resolveFooterNavLinks({
+      market_id: 'bonbeauty',
+      footer: {
+        nav_links: [
+          { label: 'Regulamin', href: '/regulamin' },
+          { label: 'Blog', href: '/blog' }
+        ]
+      }
+    });
+
+    assert.deepEqual(sections[0].links[0].legalSignoffBadge, {
+      docType: 'regulamin',
+      status: 'accepted-in-house'
+    });
+    assert.equal(sections[0].links[1].legalSignoffBadge, undefined);
+  });
+});
+
+describe('footer legal sign-off badge resolution', () => {
+  test('returns badge metadata only for bonbeauty accepted-in-house legal docs', () => {
+    assert.deepEqual(resolveFooterLegalSignoffBadge({ market_id: 'bonbeauty' }, '/pomoc'), {
+      docType: 'pomoc',
+      status: 'accepted-in-house'
+    });
+    assert.equal(resolveFooterLegalSignoffBadge({ market_id: 'bongarden' }, '/pomoc'), null);
+    assert.equal(resolveFooterLegalSignoffBadge({ market_id: 'bonbeauty' }, '/not-legal'), null);
   });
 });
 

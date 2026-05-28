@@ -112,12 +112,44 @@ export function resolveFooterConnectLinks(marketConfig?: MarketConfig | null) {
 type FooterNavLink = {
   label: string;
   path: string;
+  legalSignoffBadge?: FooterLegalSignoffBadge | null;
 };
 
 type FooterNavSection = {
   section: string;
   links: FooterNavLink[];
 };
+
+type LegalDocType = 'regulamin' | 'polityka_prywatnosci' | 'zasady_voucher' | 'pomoc';
+
+type FooterLegalSignoffBadge = {
+  docType: LegalDocType;
+  status: 'accepted-in-house';
+};
+
+const LEGAL_DOC_PATHS: Record<string, LegalDocType> = {
+  '/regulamin': 'regulamin',
+  '/polityka-prywatnosci': 'polityka_prywatnosci',
+  '/zasady': 'zasady_voucher',
+  '/pomoc': 'pomoc'
+};
+
+export function resolveFooterLegalSignoffBadge(
+  marketConfig: MarketConfig | null | undefined,
+  path: string
+): FooterLegalSignoffBadge | null {
+  const docType = LEGAL_DOC_PATHS[path];
+  const marketId = normalizeString(marketConfig?.market_id);
+
+  if (!docType || marketId !== 'bonbeauty') {
+    return null;
+  }
+
+  return {
+    docType,
+    status: 'accepted-in-house'
+  };
+}
 
 export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): FooterNavSection[] {
   const navLinks = marketConfig?.footer?.nav_links;
@@ -143,7 +175,8 @@ export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): Foote
       return [];
     }
 
-    return [{ label, path }];
+    const legalSignoffBadge = resolveFooterLegalSignoffBadge(marketConfig, path);
+    return [{ label, path, ...(legalSignoffBadge ? { legalSignoffBadge } : {}) }];
   });
 
   if (links.length === 0) {
