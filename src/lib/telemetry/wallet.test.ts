@@ -54,6 +54,11 @@ describe("storefront wallet telemetry", () => {
         ...props,
         device_class: "mobile",
         os_family: "other",
+        // P1: $distinct_id reserved property for backend funnel join.
+        $distinct_id: `actor:P4:${props.entitlement_instance_id}`,
+      }),
+      expect.objectContaining({
+        $distinct_id: `actor:P4:${props.entitlement_instance_id}`,
       })
     )
   })
@@ -75,6 +80,9 @@ describe("storefront wallet telemetry", () => {
       expect.objectContaining({
         failure_code: "network",
         error_message: expect.not.stringContaining("anna@example.com"),
+      }),
+      expect.objectContaining({
+        $distinct_id: `actor:P4:${props.entitlement_instance_id}`,
       })
     )
   })
@@ -103,11 +111,8 @@ describe("storefront wallet telemetry", () => {
     expect(message.length).toBeLessThanOrEqual(120)
   })
 
-  it("treats sessionStorage failures as best-effort (F3)", () => {
+  it("P10: sessionStorage failures fail-closed (no double-emit on retry)", () => {
     const capture = vi.fn()
-    ;(window as unknown as { posthog: { capture: typeof capture } }).posthog = {
-      capture,
-    }
     const throwingStorage = {
       getItem: vi.fn(() => {
         throw new Error("QuotaExceededError")
@@ -123,6 +128,49 @@ describe("storefront wallet telemetry", () => {
     })
 
     expect(() => emitWalletSaved(props)).not.toThrow()
-    expect(capture).toHaveBeenCalledTimes(1)
+    // Fail-closed: a throwing storage means "treat as already emitted".
+    expect(capture).not.toHaveBeenCalled()
+  })
+
+  it("P9 / P12: rejects empty error_message and unknown failure_code", () => {
+    const capture = vi.fn()
+    ;(window as unknown as { posthog: { capture: typeof capture } }).posthog = {
+      capture,
+    }
+
+    emitWalletFailed({
+      ...props,
+      failure_code: "network",
+      error_message: "",
+    })
+    expect(capture).not.toHaveBeenCalled()
+
+    emitWalletFailed({
+      ...props,
+      // @ts-expect-error testing runtime guard
+      failure_code: "bogus",
+      error_message: "x",
+    })
+    expect(capture).not.toHaveBeenCalled()
+  })
+
+  it("P25: accepts auth_expired and client_error", () => {
+    const capture = vi.fn()
+    ;(window as unknown as { posthog: { capture: typeof capture } }).posthog = {
+      capture,
+    }
+
+    emitWalletFailed({
+      ...props,
+      failure_code: "auth_expired",
+      error_message: "session expired",
+    })
+    emitWalletFailed({
+      ...props,
+      failure_code: "client_error",
+      error_message: "shape mismatch",
+    })
+
+    expect(capture).toHaveBeenCalledTimes(2)
   })
 })
