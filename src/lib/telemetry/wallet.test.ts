@@ -111,7 +111,7 @@ describe("storefront wallet telemetry", () => {
     expect(message.length).toBeLessThanOrEqual(120)
   })
 
-  it("P10: sessionStorage failures fail-closed (no double-emit on retry)", () => {
+  it("R-H4 (phase-4): sessionStorage THROW fail-CLOSES (Safari Private Mode)", () => {
     const capture = vi.fn()
     const throwingStorage = {
       getItem: vi.fn(() => {
@@ -128,8 +128,28 @@ describe("storefront wallet telemetry", () => {
     })
 
     expect(() => emitWalletSaved(props)).not.toThrow()
-    // Fail-closed: a throwing storage means "treat as already emitted".
+    // Throwing storage means "treat as already emitted".
     expect(capture).not.toHaveBeenCalled()
+    // R-L3 (phase-4): assert capture binding observed via window.posthog so
+    // the test cannot trivially pass on a dangling vi.fn.
+    expect(
+      ((window as unknown as { posthog: { capture: typeof capture } }).posthog
+        .capture as unknown) === capture
+    ).toBe(true)
+  })
+
+  it("R-H4 (phase-4): sessionStorage ABSENT fail-OPENS (embedded webview)", () => {
+    const capture = vi.fn()
+    vi.stubGlobal("window", {
+      sessionStorage: undefined,
+      matchMedia: vi.fn(() => ({ matches: false })),
+      posthog: { capture },
+    })
+
+    expect(() => emitWalletSaved(props)).not.toThrow()
+    // Absent storage means "no prior emit" -> the save event must fire so
+    // the embedded-webview mobile cohort does not zero out the counter.
+    expect(capture).toHaveBeenCalledTimes(1)
   })
 
   it("P9 / P12: rejects empty error_message and unknown failure_code", () => {
@@ -172,5 +192,86 @@ describe("storefront wallet telemetry", () => {
     })
 
     expect(capture).toHaveBeenCalledTimes(2)
+  })
+
+  it("R-L7 (phase-4): pins literal redaction tokens", () => {
+    expect(sanitizeTelemetryErrorMessage("user@example.com")).toContain(
+      "<redacted_email>"
+    )
+    expect(sanitizeTelemetryErrorMessage("+48 501 222 333")).toContain(
+      "<redacted_phone>"
+    )
+    expect(
+      sanitizeTelemetryErrorMessage("123e4567-e89b-12d3-a456-426614174000")
+    ).toContain("<entitlement_id>")
+  })
+
+  it("R-M2 (phase-4): phone regex does not over-match dates/IPs/timestamps/IDs", () => {
+    expect(
+      sanitizeTelemetryErrorMessage("at 2026-05-28T18:00:00Z")
+    ).not.toContain("<redacted_phone>")
+    expect(
+      sanitizeTelemetryErrorMessage("from 127.0.0.1:8080")
+    ).not.toContain("<redacted_phone>")
+    expect(sanitizeTelemetryErrorMessage("ts 1700000000")).not.toContain(
+      "<redacted_phone>"
+    )
+    expect(sanitizeTelemetryErrorMessage("pi_3OAbCdEf1234567890")).not.toContain(
+      "<redacted_phone>"
+    )
+    expect(sanitizeTelemetryErrorMessage("call +48 123 456 789")).toContain(
+      "<redacted_phone>"
+    )
+  })
+
+  it("R-M3 (phase-4): emitWalletFailed drops null/undefined error_message", () => {
+    const capture = vi.fn()
+    ;(window as unknown as { posthog: { capture: typeof capture } }).posthog = {
+      capture,
+    }
+
+    emitWalletFailed({
+      ...props,
+      failure_code: "network",
+      // @ts-expect-error testing runtime guard
+      error_message: null,
+    })
+    emitWalletFailed({
+      ...props,
+      failure_code: "network",
+      // @ts-expect-error testing runtime guard
+      error_message: undefined,
+    })
+
+    expect(capture).not.toHaveBeenCalled()
+  })
+
+  it("R-M4 (phase-4): pass_saved skipped on empty id; pass_failed uses anon distinct_id", () => {
+    const capture = vi.fn()
+    ;(window as unknown as { posthog: { capture: typeof capture } }).posthog = {
+      capture,
+    }
+
+    emitWalletSaved({ ...props, entitlement_instance_id: "" })
+    expect(capture).not.toHaveBeenCalled()
+
+    emitWalletFailed({
+      ...props,
+      entitlement_instance_id: "",
+      failure_code: "client_error",
+      error_message: "boom",
+    })
+    emitWalletFailed({
+      ...props,
+      entitlement_instance_id: "",
+      failure_code: "client_error",
+      error_message: "boom2",
+    })
+    expect(capture).toHaveBeenCalledTimes(2)
+    const d1 = capture.mock.calls[0]![1].$distinct_id as string
+    const d2 = capture.mock.calls[1]![1].$distinct_id as string
+    expect(d1).toMatch(/^actor:P4:anon-/)
+    expect(d2).toMatch(/^actor:P4:anon-/)
+    expect(d1).not.toBe(d2)
   })
 })

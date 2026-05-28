@@ -48,15 +48,43 @@ export function buildWalletDistinctId(entitlement_instance_id: string): string {
   return `actor:P4:${entitlement_instance_id}`
 }
 
+// R-M4 (phase-4): caller-aware variant for failure counters. Anon suffix is
+// substituted when entitlement_instance_id is empty so each failure stays
+// distinct in PostHog instead of collapsing into `actor:P4:`.
+function buildWalletDistinctIdForFailure(
+  entitlement_instance_id: string
+): string {
+  if (entitlement_instance_id.length > 0)
+    return `actor:P4:${entitlement_instance_id}`
+  const cryptoRef = (globalThis as { crypto?: { randomUUID?: () => string } })
+    .crypto
+  const suffix =
+    typeof cryptoRef?.randomUUID === "function"
+      ? cryptoRef.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+  return `actor:P4:anon-${suffix}`
+}
+
 export function emitWalletSaved(props: WalletSavedClientProps): void {
   // F3: SSR / edge runtime guard.
   if (typeof window === "undefined") return
+  // R-M4 (phase-4): skip emit on empty entitlement_instance_id — success
+  // counters carry no diagnostic value without an id, and merging into
+  // `actor:P4:` would collapse the PostHog person.
+  if (
+    typeof props.entitlement_instance_id !== "string" ||
+    props.entitlement_instance_id.length === 0
+  ) {
+    return
+  }
 
   const storageKey = `wallet_saved_${props.entitlement_instance_id}`
-  // P10: fail-closed semantics — sessionStorage read failure means "treat as
-  // already emitted" so we never double-count on retry.
+  // R-H4 (phase-4): split semantics for sessionStorage absence vs throw.
+  // - ABSENT (embedded webviews stripping storage APIs) -> fail OPEN.
+  // - FAILED (throw on Safari Private Mode etc.) -> fail CLOSED.
   const prior = readSessionStorage(storageKey)
   if (prior === "1" || prior === "FAILED") return
+  // prior === "ABSENT" or null -> allow emit.
 
   captureWalletEvent(
     "wallet.pass_saved",
@@ -72,7 +100,16 @@ export function emitWalletSaved(props: WalletSavedClientProps): void {
 
 export function emitWalletFailed(props: WalletFailedClientProps): void {
   if (typeof window === "undefined") return
-  // P9: drop empty / whitespace-only error_message rather than ship empty.
+  // R-M3 (phase-4): empty-check BEFORE sanitization (matches backend).
+  // `sanitizeTelemetryErrorMessage(null/undefined/"")` returns the synthetic
+  // placeholder `"unknown_error"` which would otherwise be shipped as a
+  // useless diagnostic.
+  if (
+    typeof props.error_message !== "string" ||
+    props.error_message.trim().length === 0
+  ) {
+    return
+  }
   const message = sanitizeTelemetryErrorMessage(props.error_message)
   if (!message || message.trim().length === 0) return
   captureWalletEvent(
@@ -81,7 +118,12 @@ export function emitWalletFailed(props: WalletFailedClientProps): void {
       ...props,
       error_message: message,
     },
-    buildWalletDistinctId(props.entitlement_instance_id)
+    // R-M4 (phase-4): failure path uses anon-uuid suffix when id is empty.
+    buildWalletDistinctIdForFailure(
+      typeof props.entitlement_instance_id === "string"
+        ? props.entitlement_instance_id
+        : ""
+    )
   )
 }
 
@@ -124,8 +166,10 @@ export function getOsFamily(userAgent?: string): "ios" | "android" | "other" {
 
 // P4/P8/P23/P24: harden sanitizer.
 const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g
+// R-M2 (phase-4): conservative phone regex; previous over-matched dates,
+// IPv4 literals, epoch timestamps, and Stripe IDs.
 const PHONE_REGEX =
-  /(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?)?\d{3}[\s.-]?\d{2,4}[\s.-]?\d{2,4}/g
+  /\+\d{1,3}[\s.-]\d{2,3}[\s.-]\d{3}[\s.-]\d{3,4}\b|\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/g
 const UUID_REGEX =
   /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi
 
@@ -151,15 +195,15 @@ function truncateGraphemes(input: string, limit: number): string {
       ) => { segment(s: string): Iterable<{ segment: string }> })
     | undefined
   if (typeof SegmenterCtor === "function") {
+    // R-M1 (phase-4): count GRAPHEMES, not UTF-16 code units.
     const segmenter = new SegmenterCtor(undefined, { granularity: "grapheme" })
-    const out: string[] = []
-    let total = 0
+    let out = ""
+    let count = 0
     for (const { segment } of segmenter.segment(input)) {
-      if (total + segment.length > limit) break
-      out.push(segment)
-      total += segment.length
+      if (++count > limit) break
+      out += segment
     }
-    return out.join("")
+    return out
   }
   return Array.from(input).slice(0, limit).join("")
 }
@@ -231,11 +275,13 @@ function captureWalletEvent(
   }
 }
 
-// F3 + P10: sessionStorage may throw or be undefined. Return "FAILED" sentinel
-// so the emit path fail-closes (skips emit) instead of repeatedly retrying.
+// R-H4 (phase-4): split semantics. ABSENT (storage API stripped, e.g.
+// embedded webviews) -> caller fail-OPENs. FAILED (throw at runtime) ->
+// caller fail-CLOSEs.
 function readSessionStorage(key: string): string | null {
+  if (typeof window === "undefined") return "ABSENT"
+  if (!window.sessionStorage) return "ABSENT"
   try {
-    if (typeof window === "undefined" || !window.sessionStorage) return "FAILED"
     return window.sessionStorage.getItem(key) ?? null
   } catch {
     return "FAILED"
