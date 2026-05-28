@@ -37,8 +37,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import yaml from 'js-yaml';
 import { cache } from 'react';
+
+import yaml from 'js-yaml';
 
 export type LegalDocumentLocale = 'pl' | 'en' | 'ua' | 'de';
 export type LegalReviewStatus =
@@ -49,11 +50,7 @@ export type LegalReviewStatus =
   | 'approved'
   | 'published';
 export type LegalAuthoringSource = 'in_house' | 'external_counsel';
-export type LegalReviewRef =
-  | 'in_house_draft'
-  | 'in_house_translated'
-  | null
-  | string; // `kancelaria_review_*` for external_counsel
+export type LegalReviewRef = 'in_house_draft' | 'in_house_translated' | null | string; // `kancelaria_review_*` for external_counsel
 
 export interface LegalDocumentFrontMatter {
   doc_id: string;
@@ -198,11 +195,7 @@ function candidateRoots(): string[] {
   // GP/storefront → repo root is ../..
   // monorepo apps/web etc — common ancestors
   return Array.from(
-    new Set([
-      path.resolve(cwd, '..', '..'),
-      path.resolve(cwd, '..', '..', '..'),
-      path.resolve(cwd)
-    ])
+    new Set([path.resolve(cwd, '..', '..'), path.resolve(cwd, '..', '..', '..'), path.resolve(cwd)])
   );
 }
 
@@ -298,7 +291,19 @@ function parseFrontMatter(content: string, sourcePath: string): ParsedMarkdown {
 }
 
 function reviewStatusFromTemplateStatus(status: unknown): LegalReviewStatus {
-  return status === 'accepted-in-house' ? 'approved' : 'published_draft_status';
+  if (status === 'accepted-in-house') {
+    return 'approved';
+  }
+  // Story 9.2 review-fix L12 (2026-05-28): demo markets (bongarden / bonevent)
+  // emit `WAIVED-demo` per AMEND-2026-05-26 §B i NIE eksponują legal docs end-userom
+  // (Subtask 4.4 — badge hidden + storefront footer route to demo market in dev only).
+  // Mapowanie na `published_draft_status` daje draft-watermark fallback gdyby reachable;
+  // dedykowany `LegalReviewStatus` `waived_demo` celowo NIE wprowadzany (cross-cutting
+  // surface change w 7-9 stories — odłożone do v1.15.0 reintegration).
+  if (status === 'WAIVED-demo' || status === 'WAIVED-interim') {
+    return 'published_draft_status';
+  }
+  return 'published_draft_status';
 }
 
 function parseTemplateDocument(
