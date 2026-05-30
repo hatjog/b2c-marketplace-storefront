@@ -14,13 +14,12 @@ import {
 import { SanitizedHTML } from '@/components/molecules';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { ProductListing } from '@/components/sections/ProductListing/ProductListing';
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { getCategoryByHandle } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
 export const revalidate = 60;
 
@@ -40,11 +39,6 @@ export async function generateMetadata({
     return {};
   }
 
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
-    acc[toHreflang(code)] = `${baseUrl}/${code}/categories/${categoryHandle}`;
-    return acc;
-  }, {});
-
   const seo = resolveGpSeoMetadata(cat.metadata as Record<string, unknown> | null | undefined);
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
   const title = seo.meta_title ?? cat.name;
@@ -55,23 +49,19 @@ export async function generateMetadata({
   const description =
     seo.meta_description ?? tMeta('fallback_description', { categoryName: cat.name, siteName });
   const ogImage = seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
-  const canonical = `${baseUrl}/${locale}/categories/${categoryHandle}`;
+  const alternates = buildLocaleSeoAlternates(baseUrl, locale, 'categories', categoryHandle);
+  const social = buildLocaleSocialMetadata(locale);
 
   return {
     title,
     description,
-    alternates: {
-      canonical,
-      languages: {
-        ...languages,
-        'x-default': `${baseUrl}/pl/categories/${categoryHandle}`
-      }
-    },
+    alternates,
     robots: { index: true, follow: true },
     openGraph: {
+      ...social.openGraph,
       title,
       description,
-      url: canonical,
+      url: alternates.canonical,
       siteName,
       images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
       type: 'website'
@@ -81,7 +71,8 @@ export async function generateMetadata({
       title,
       description,
       images: [ogImage]
-    }
+    },
+    other: social.other
   };
 }
 

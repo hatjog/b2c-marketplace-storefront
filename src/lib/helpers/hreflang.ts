@@ -3,7 +3,7 @@
  *
  * v1.9.0 Wave F7 hardening (Epic-6-Review F-03, CC-3 L7):
  *   - SUPPORTED_LOCALES = {pl, en, ua, de}.
- *   - `toHreflang(code)` produces region-coded BCP-47 (pl-PL, en-GB, uk-UA, de-DE)
+ *   - `toHreflang(code)` produces region-coded BCP-47 (pl-PL, en-US, uk-UA, de-DE)
  *     for use in HTML `<link rel="alternate" hreflang="...">` HEAD elements.
  *   - `toHreflangBare(code)` produces bare ISO 639-1 codes (pl, en, uk, de)
  *     for sitemap `<xhtml:link>` per Story 6.6 AC4 / Story 6.7 AC8.
@@ -15,9 +15,13 @@
 
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
 
+// Canonical BCP47 mapping per D-122 (specs/releases/v1.10.0/architecture.md#D-122).
+// `en: 'en-US'` (was `en-GB` pre-v1.10.0) — świadoma re-kanonikalizacja per
+// architecture decision; UI formatery (Intl.DateTime/NumberFormat) z `en-GB`
+// pozostają poza scope Story 2.3 (flag for follow-up 2.x — patrz review R-4).
 const REGION_MAP: Record<string, string> = {
   pl: 'pl-PL',
-  en: 'en-GB',
+  en: 'en-US',
   ua: 'uk-UA',
   de: 'de-DE'
 };

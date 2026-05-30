@@ -24,7 +24,7 @@ test('root layout shows fallback banner and uses head tag', () => {
 
   assert.match(source, /Korzystasz z fallback MarketConfig/);
   assert.match(source, /<head>/);
-  assert.doesNotMatch(source, /next\/head/);
+  assert.doesNotMatch(source, /next\/head['"]/);
   assert.match(source, /<html[\s\S]*suppressHydrationWarning/);
   assert.match(source, /<body[\s\S]*suppressHydrationWarning/);
 });

@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';
 import { Funnel_Display, Inter } from 'next/font/google';
+import { headers } from 'next/headers';
 
 import './globals.css';
 
@@ -11,6 +12,7 @@ import { Toaster } from '@medusajs/ui';
 import { CookieBanner } from '@/components/cmp';
 import { retrieveCart } from '@/lib/data/cart';
 import { resolveStorefrontBaseUrl, validateStorefrontEnv } from '@/lib/env';
+import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 import { Providers } from './providers';
@@ -90,12 +92,15 @@ export default async function RootLayout({
     marketConfig.theme && (VALID_THEMES as readonly string[]).includes(marketConfig.theme)
       ? `/themes/${marketConfig.theme}.css`
       : null;
-  // KNOWN LIMITATION: Root layout sits outside the [locale] segment so
-  // params.locale is unavailable here. The static default is corrected
-  // client-side by <HtmlLangSetter /> (uses next-intl useLocale()).
-  // Crawlers that execute JS will see the correct lang; those that don't
-  // will see 'pl'. A future middleware-based approach could inject a header.
-  const htmlLang = 'pl';
+  const headersList = await headers();
+  const gpLocaleHeader = headersList.get('x-gp-locale');
+  if (!gpLocaleHeader && process.env.NODE_ENV !== 'production') {
+    // R-5 defensive: middleware powinno ustawić x-gp-locale dla każdej non-redirect
+    // gałęzi; brak nagłówka oznacza, że root layout renderuje z fallbackiem `pl`
+    // — sygnalizujemy w dev/preview, aby nie wyciekło na non-PL route.
+    console.warn('[layout] missing x-gp-locale header — falling back to pl-PL');
+  }
+  const htmlLang = toHreflang(gpLocaleHeader ?? 'pl');
 
   return (
     <html
