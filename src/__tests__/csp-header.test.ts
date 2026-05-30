@@ -32,7 +32,7 @@ const EXPECTED_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' fonts.gstatic.com",
   "img-src 'self' https: blob: data:",
-  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com",
+  "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com https://*.maptiler.com",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -78,6 +78,32 @@ describe('CSP directive list (D-64 AC #1)', () => {
     // backend origin — production storefront talks to GP-owned host, not
     // api.mercurjs.com. The new default omits it.
     expect(connectSrc).not.toContain('https://api.mercurjs.com');
+  });
+
+  it('allows MapTiler tile loading without broad connect-src wildcards (D-104, Story 4.4)', () => {
+    const connectSrc = CSP_DIRECTIVE_LIST.find(d => d.startsWith('connect-src'));
+
+    expect(connectSrc).toContain('https://*.maptiler.com');
+    // Reject standalone `*` token (wildcard) i `'unsafe-inline'` regression
+    // — `.split(/\s+/)` operuje na directive-level tokenach po nazwie
+    // directive (HG-5 zero `connect-src *`).
+    expect(connectSrc?.split(/\s+/)).not.toContain('*');
+    expect(connectSrc?.split(/\s+/)).not.toContain("'unsafe-inline'");
+  });
+
+  it('orders MapTiler before backend origin in connect-src (Story 4.4 T2 spec)', () => {
+    // Per Story 4.4 T2: MapTiler MUSI byc "po q.stripe.com, przed
+    // `${backendConnectFragments}`" — guard przeciwko regresji, w ktorej
+    // future edit wstawia backend origin miedzy Stripe a MapTiler.
+    const list = buildCspDirectiveList(['https://api.bonbeauty.example']);
+    const connectSrc = list.find((d) => d.startsWith('connect-src'));
+    expect(connectSrc).toBeDefined();
+    const stripeIdx = connectSrc!.indexOf('https://q.stripe.com');
+    const maptilerIdx = connectSrc!.indexOf('https://*.maptiler.com');
+    const backendIdx = connectSrc!.indexOf('https://api.bonbeauty.example');
+    expect(stripeIdx).toBeGreaterThan(-1);
+    expect(maptilerIdx).toBeGreaterThan(stripeIdx);
+    expect(backendIdx).toBeGreaterThan(maptilerIdx);
   });
 
   it('allows Stripe Elements scripts, frames, and telemetry endpoints', () => {
