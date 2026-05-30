@@ -16,6 +16,13 @@
     "refresh": "Aktualisieren",
     "edit": "Bearbeiten"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Übersetzung in Arbeit",
+      "message": "Wir arbeiten an der deutschen Übersetzung dieses Inhalts.",
+      "dismissLabel": "Übersetzungshinweis schließen"
+    }
+  },
   "header": {
     "logo_alt": "Logo",
     "shipping_to": "Lieferung nach",

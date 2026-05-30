@@ -16,6 +16,13 @@
     "refresh": "Refresh",
     "edit": "Edit"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Translation in progress",
+      "message": "We are still translating this content into English.",
+      "dismissLabel": "Close translation notice"
+    }
+  },
   "header": {
     "logo_alt": "Logo",
     "shipping_to": "Shipping to",

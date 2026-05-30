@@ -16,6 +16,13 @@
     "refresh": "Odśwież",
     "edit": "Edytuj"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Tłumaczenie w toku",
+      "message": "Pracujemy nad polską wersją tej treści.",
+      "dismissLabel": "Zamknij powiadomienie o tłumaczeniu"
+    }
+  },
   "header": {
     "logo_alt": "Logo",
     "shipping_to": "Dostawa do",
