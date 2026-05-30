@@ -76,6 +76,7 @@
         "loading": "Karte wird geladen...",
         "aria_map": "Salons-Karte",
         "aria_marker": "Marker für {name}",
+        "clusterAriaLabel": "Gruppe von {count} Salons",
         "placeholder_title": "Vorschau der Salon-Standorte",
         "placeholder_body": "Die interaktive Karte ist bald verfügbar. Siehe unten die Liste der nahegelegenen Salons."
       }

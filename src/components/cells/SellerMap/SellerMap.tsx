@@ -1,8 +1,11 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import L from 'leaflet';
 import { useTranslations } from 'next-intl';
@@ -18,6 +21,13 @@ import {
 
 import type { SellerListItem } from '@/lib/data/seller';
 import { leafletIconUrls } from '@/lib/map/leafletAssets';
+
+import {
+  DEFAULT_CLUSTER_OPTIONS,
+  resolveClusterEnabled,
+  type SellerMapClusterMode,
+  type SellerMapMode
+} from './clustering';
 
 // Cast to any to workaround react-leaflet 4.x / React 19 types mismatch
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +81,12 @@ export interface SellerMapProps {
   userLat?: number;
   userLng?: number;
   radiusKm?: number;
+  /**
+   * Story 4.6 — optional marker clustering. `auto` clusters list/landing maps
+   * only above the 50-seller threshold; detail/mini force clustering off.
+   */
+  clusterMode?: SellerMapClusterMode;
+  mode?: SellerMapMode;
 }
 
 function isFiniteNumber(value: unknown): value is number {
@@ -127,6 +143,160 @@ function FitBoundsToMarkers({ sellers, userLat, userLng, radiusKm }: FitBoundsPr
   return null;
 }
 
+// Defense-in-depth: translations are repo-controlled and `count` is numeric,
+// so XSS surface here is zero today. We still escape in case a future i18n
+// edit introduces `<` / `&` / quote characters into the cluster label.
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+interface PopupContentArgs {
+  seller: SellerListItem & { lat: number; lng: number };
+  locale: string;
+  fallbackAddress: string;
+  viewDetailsLabel: string;
+  markerAriaLabel: string;
+}
+
+// Shared popup builder for the cluster branch (imperative DOM) — the raw
+// branch uses the JSX equivalent inline below. Keep both in sync.
+function buildSellerPopupElement({
+  seller,
+  locale,
+  fallbackAddress,
+  viewDetailsLabel,
+  markerAriaLabel
+}: PopupContentArgs): HTMLElement {
+  const popup = document.createElement('div');
+  popup.dataset.testid = `seller-map-popup-${seller.handle}`;
+
+  const title = document.createElement('h3');
+  title.className = 'text-base font-semibold';
+  title.textContent = seller.name;
+  popup.appendChild(title);
+
+  const handle = document.createElement('code');
+  handle.className = 'text-xs text-gray-500';
+  handle.textContent = `@${seller.handle}`;
+  popup.appendChild(handle);
+
+  const address = document.createElement('p');
+  address.className = 'mt-1 text-sm';
+  address.textContent = seller.address ?? seller.city ?? fallbackAddress;
+  popup.appendChild(address);
+
+  const link = document.createElement('a');
+  link.href = `/${locale}/sellers/${seller.handle}`;
+  link.className = 'mt-2 inline-block text-sm font-medium text-primary underline';
+  link.setAttribute('aria-label', markerAriaLabel);
+  link.textContent = viewDetailsLabel;
+  popup.appendChild(link);
+
+  return popup;
+}
+
+interface ClusteredSellerMarkersProps {
+  sellers: ReadonlyArray<SellerListItem & { lat: number; lng: number }>;
+  locale: string;
+  onMarkerClick?: (seller: SellerListItem) => void;
+  markerAriaLabel: (seller: SellerListItem) => string;
+  clusterAriaLabel: (count: number) => string;
+  fallbackAddress: string;
+  viewDetailsLabel: string;
+}
+
+function ClusteredSellerMarkers({
+  sellers,
+  locale,
+  onMarkerClick,
+  markerAriaLabel,
+  clusterAriaLabel,
+  fallbackAddress,
+  viewDetailsLabel
+}: ClusteredSellerMarkersProps) {
+  const map = useMap();
+  const groupRef = useRef<L.MarkerClusterGroup | null>(null);
+
+  // Mount the cluster group once per map; the iconCreateFunction reads the
+  // current `clusterAriaLabel` through a ref so layer cleanup is not coupled
+  // to callback identity (story 4.6 review H1).
+  const clusterAriaLabelRef = useRef(clusterAriaLabel);
+  useEffect(() => {
+    clusterAriaLabelRef.current = clusterAriaLabel;
+  }, [clusterAriaLabel]);
+
+  useEffect(() => {
+    const group = L.markerClusterGroup({
+      ...DEFAULT_CLUSTER_OPTIONS,
+      iconCreateFunction: cluster => {
+        const count = cluster.getChildCount();
+        const bucket = count < 10 ? 'small' : count < 100 ? 'medium' : 'large';
+        const label = escapeHtml(clusterAriaLabelRef.current(count));
+
+        // a11y: aria-label belongs on the focusable role="button" element.
+        // Leaflet.markercluster provides built-in keyboard activation on the
+        // outer `.leaflet-marker-icon` via `marker.options.keyboard` (default
+        // true), so we expose a single accessible name here without adding a
+        // duplicate inner tab stop (story 4.6 review L1).
+        return L.divIcon({
+          html: `<div role="button" aria-label="${label}"><span aria-hidden="true">${count}</span></div>`,
+          className: `marker-cluster marker-cluster-${bucket}`,
+          iconSize: L.point(40, 40)
+        });
+      }
+    });
+    groupRef.current = group;
+    map.addLayer(group);
+    return () => {
+      map.removeLayer(group);
+      group.clearLayers();
+      groupRef.current = null;
+    };
+  }, [map]);
+
+  // Markers are (re)bound whenever the actual seller set or i18n strings
+  // change — parent re-renders that only mutate callback identity no longer
+  // tear the cluster group down and rebuild >50 markers (story 4.6 review
+  // H1). Click handler is read through a ref so callback identity changes do
+  // not invalidate this effect either.
+  const onMarkerClickRef = useRef(onMarkerClick);
+  useEffect(() => {
+    onMarkerClickRef.current = onMarkerClick;
+  }, [onMarkerClick]);
+
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!group) return;
+
+    group.clearLayers();
+    for (const seller of sellers) {
+      const ariaLabel = markerAriaLabel(seller);
+      const marker = L.marker([seller.lat, seller.lng], {
+        alt: ariaLabel,
+        title: seller.name
+      });
+      marker.on('click', () => onMarkerClickRef.current?.(seller));
+      marker.bindPopup(
+        buildSellerPopupElement({
+          seller,
+          locale,
+          fallbackAddress,
+          viewDetailsLabel,
+          markerAriaLabel: ariaLabel
+        })
+      );
+      group.addLayer(marker);
+    }
+  }, [sellers, locale, markerAriaLabel, fallbackAddress, viewDetailsLabel]);
+
+  return null;
+}
+
 export function SellerMap({
   sellers,
   locale,
@@ -134,26 +304,56 @@ export function SellerMap({
   className,
   userLat,
   userLng,
-  radiusKm
+  radiusKm,
+  clusterMode = 'auto',
+  mode = 'list'
 }: SellerMapProps) {
   const t = useTranslations('seller.list.map');
-  const skipped = useRef(0);
 
-  const validSellers: Array<SellerListItem & { lat: number; lng: number }> = [];
-  for (const seller of sellers) {
-    if (hasCoords(seller)) {
-      validSellers.push(seller);
-    } else {
-      skipped.current += 1;
+  // Compute validSellers + skipped count together so neither pass mutates a
+  // ref during render (review M2) and both are stable across renders when
+  // `sellers` identity is stable.
+  const { validSellers, skippedCount } = useMemo(() => {
+    const valid: Array<SellerListItem & { lat: number; lng: number }> = [];
+    let skipped = 0;
+    for (const seller of sellers) {
+      if (hasCoords(seller)) {
+        valid.push(seller);
+      } else {
+        skipped += 1;
+      }
     }
-  }
+    return { validSellers: valid, skippedCount: skipped };
+  }, [sellers]);
+
+  const clusterEnabled = resolveClusterEnabled({
+    mode,
+    clusterMode,
+    sellersCount: validSellers.length
+  });
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production' && skipped.current > 0) {
+    if (process.env.NODE_ENV !== 'production' && skippedCount > 0) {
       // eslint-disable-next-line no-console
-      console.warn(`[SellerMap] skipped ${skipped.current} seller(s) without finite lat/lng`);
+      console.warn(`[SellerMap] skipped ${skippedCount} seller(s) without finite lat/lng`);
     }
-  }, []);
+  }, [skippedCount]);
+
+  // Story 4.6 review H1 — stable callback identities so the cluster group
+  // mount effect (deps: [map]) and the markers effect (deps include the i18n
+  // callbacks) only re-run when their actual inputs change. Without these
+  // wrappers, every parent render produced fresh arrow functions and tore
+  // the cluster group down on every zoom/pan.
+  const markerAriaLabel = useCallback(
+    (seller: SellerListItem) => t('aria_marker', { name: seller.name }),
+    [t]
+  );
+  const clusterAriaLabel = useCallback(
+    (count: number) => t('clusterAriaLabel', { count }),
+    [t]
+  );
+  const fallbackAddress = useMemo(() => t('popup_address'), [t]);
+  const viewDetailsLabel = useMemo(() => t('popup_view_details'), [t]);
 
   return (
     <div
@@ -202,33 +402,46 @@ export function SellerMap({
               />
             </>
           )}
-        {validSellers.map(seller => (
-          <Marker
-            key={seller.handle}
-            position={[seller.lat, seller.lng]}
-            eventHandlers={{
-              click: () => onMarkerClick?.(seller)
-            }}
-            alt={t('aria_marker', { name: seller.name })}
-          >
-            <Popup>
-              <div data-testid={`seller-map-popup-${seller.handle}`}>
-                <h3 className="text-base font-semibold">{seller.name}</h3>
-                <code className="text-xs text-gray-500">@{seller.handle}</code>
-                <p className="mt-1 text-sm">
-                  {seller.address ?? seller.city ?? t('popup_address')}
-                </p>
-                <Link
-                  href={`/${locale}/sellers/${seller.handle}`}
-                  className="mt-2 inline-block text-sm font-medium text-primary underline"
-                  aria-label={t('aria_marker', { name: seller.name })}
-                >
-                  {t('popup_view_details')}
-                </Link>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {clusterEnabled ? (
+          <ClusteredSellerMarkers
+            sellers={validSellers}
+            locale={locale}
+            onMarkerClick={onMarkerClick}
+            markerAriaLabel={markerAriaLabel}
+            clusterAriaLabel={clusterAriaLabel}
+            fallbackAddress={fallbackAddress}
+            viewDetailsLabel={viewDetailsLabel}
+          />
+        ) : (
+          validSellers.map(seller => (
+            <Marker
+              key={seller.handle}
+              position={[seller.lat, seller.lng]}
+              eventHandlers={{
+                click: () => onMarkerClick?.(seller)
+              }}
+              alt={markerAriaLabel(seller)}
+              data-testid={`seller-map-raw-marker-${seller.handle}`}
+            >
+              <Popup>
+                <div data-testid={`seller-map-popup-${seller.handle}`}>
+                  <h3 className="text-base font-semibold">{seller.name}</h3>
+                  <code className="text-xs text-gray-500">@{seller.handle}</code>
+                  <p className="mt-1 text-sm">
+                    {seller.address ?? seller.city ?? t('popup_address')}
+                  </p>
+                  <Link
+                    href={`/${locale}/sellers/${seller.handle}`}
+                    className="mt-2 inline-block text-sm font-medium text-primary underline"
+                    aria-label={t('aria_marker', { name: seller.name })}
+                  >
+                    {t('popup_view_details')}
+                  </Link>
+                </div>
+              </Popup>
+            </Marker>
+          ))
+        )}
       </MapContainer>
     </div>
   );
