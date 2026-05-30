@@ -65,14 +65,17 @@ export function buildLocaleSocialMetadata(locale: string): LocaleSocialMetadata 
   const current = toHreflang(locale);
   const alternateLocale = SUPPORTED_LOCALES.map(toHreflang).filter(code => code !== current);
 
+  // Open Graph requires `language_TERRITORY` (underscore: pl_PL); crawlers ignore
+  // the hyphenated BCP-47 form. hreflang/<html lang> keep the hyphen (correct there).
+  const toOgLocale = (code: string): string => code.replace('-', '_');
+
   return {
     openGraph: {
-      locale: current,
-      alternateLocale
+      locale: toOgLocale(current),
+      alternateLocale: alternateLocale.map(toOgLocale)
     },
     other: {
-      // Use BCP47 canonical (R-2): aligns with invariant "BCP 47 canonical only"
-      // and with og:locale shape. Twitter accepts both forms.
+      // Twitter accepts BCP-47 hyphenated form.
       'twitter:lang': current
     }
   };

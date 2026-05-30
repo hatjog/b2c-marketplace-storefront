@@ -13,7 +13,7 @@ import {
   useMap,
 } from 'react-leaflet';
 
-import { LEAFLET_DEFAULT_ICON_OPTIONS } from '@/components/cells/SellerMap/leafletAssets';
+import { leafletIconUrls } from '@/lib/map/leafletAssets';
 
 import { buildMapDeepLink } from './deepLink';
 import styles from './SellerMap.module.css';
@@ -28,7 +28,7 @@ const TileLayer = TileLayerBase as any;
 const Marker = MarkerBase as any;
 
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions(LEAFLET_DEFAULT_ICON_OPTIONS);
+L.Icon.Default.mergeOptions(leafletIconUrls);
 
 export interface SellerMapSeller {
   id: string;
