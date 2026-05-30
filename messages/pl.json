@@ -47,6 +47,17 @@
     "blog_eyebrow": "Dziennik BonBeauty"
   },
   "seller": {
+    "map": {
+      "ariaLabel": "Mapa salonów BonBeauty",
+      "markerAlt": "Marker salonu {name}",
+      "loading": "Ładowanie mapy...",
+      "fallbackEyebrow": "Mapa chwilowo niedostępna",
+      "fallbackTitle": "Nie możemy teraz załadować kafli mapy",
+      "fallbackBody": "Dane salonu pozostają dostępne w formie tekstowej.",
+      "openMaps": "Otwórz w Google/Apple Maps",
+      "openGoogleMaps": "Otwórz w Google Maps",
+      "openAppleMaps": "Otwórz w Apple Maps"
+    },
     "list": {
       "title": "Salony partnerskie",
       "description": "Odkryj salony partnerskie BonBeauty. Znajdź salon w swoim mieście i przeglądaj ich ofertę.",
