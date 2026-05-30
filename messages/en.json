@@ -366,6 +366,8 @@
     "section_connect": "Connect",
     "go_to_social": "Go to {name} page",
     "section_legal": "Seller legal information",
+    "legal_signoff_badge": "Signed in-house ✓ (review before prod v1.15.0)",
+    "legal_signoff_badge_aria": "Document signed in-house; external review is scheduled before production v1.15.0",
     "rights_reserved": "All rights reserved",
     "privacy_policy": "Privacy policy",
     "terms_of_service": "Terms of service",

@@ -1,7 +1,12 @@
-import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
+import test, { describe } from 'node:test';
 
-const { resolveFooterConnectLinks, resolveFooterCopyright, resolveFooterNavLinks } = await import('../src/lib/footer.ts');
+const {
+  resolveFooterConnectLinks,
+  resolveFooterCopyright,
+  resolveFooterLegalSignoffBadge,
+  resolveFooterNavLinks
+} = await import('../src/lib/footer.ts');
 
 describe('footer social links resolution', () => {
   test('prefers MarketConfig footer.social when available', () => {
@@ -172,9 +177,7 @@ describe('footer nav links resolution', () => {
       }
     });
 
-    assert.deepEqual(sections, [
-      { section: 'about', links: [{ label: 'About', path: '/about' }] }
-    ]);
+    assert.deepEqual(sections, [{ section: 'about', links: [{ label: 'About', path: '/about' }] }]);
   });
 
   test('rejects nav link hrefs that do not start with /', () => {
@@ -189,9 +192,90 @@ describe('footer nav links resolution', () => {
       }
     });
 
-    assert.deepEqual(sections, [
-      { section: 'about', links: [{ label: 'Safe', path: '/about' }] }
-    ]);
+    assert.deepEqual(sections, [{ section: 'about', links: [{ label: 'Safe', path: '/about' }] }]);
+  });
+
+  test('marks BonBeauty legal document links with in-house sign-off badge metadata when ledger status is accepted-in-house', () => {
+    const sections = resolveFooterNavLinks(
+      {
+        market_id: 'bonbeauty',
+        footer: {
+          nav_links: [
+            { label: 'Regulamin', href: '/regulamin' },
+            { label: 'Blog', href: '/blog' }
+          ]
+        }
+      },
+      { regulamin: 'accepted-in-house' }
+    );
+
+    assert.deepEqual(sections[0].links[0].legalSignoffBadge, {
+      docType: 'regulamin',
+      status: 'accepted-in-house'
+    });
+    assert.equal(sections[0].links[1].legalSignoffBadge, undefined);
+  });
+
+  test('hides legal sign-off badge when ledger status map is missing (no opt-in)', () => {
+    const sections = resolveFooterNavLinks({
+      market_id: 'bonbeauty',
+      footer: {
+        nav_links: [{ label: 'Regulamin', href: '/regulamin' }]
+      }
+    });
+
+    assert.equal(sections[0].links[0].legalSignoffBadge, undefined);
+  });
+
+  test('hides legal sign-off badge when ledger status is WAIVED-demo (demo market)', () => {
+    const sections = resolveFooterNavLinks(
+      {
+        market_id: 'bongarden',
+        footer: {
+          nav_links: [{ label: 'Regulamin', href: '/regulamin' }]
+        }
+      },
+      { regulamin: 'WAIVED-demo' }
+    );
+
+    assert.equal(sections[0].links[0].legalSignoffBadge, undefined);
+  });
+});
+
+describe('footer legal sign-off badge resolution', () => {
+  test('returns badge metadata only when ledger status map says accepted-in-house', () => {
+    assert.deepEqual(
+      resolveFooterLegalSignoffBadge({ market_id: 'bonbeauty' }, '/pomoc', {
+        pomoc: 'accepted-in-house'
+      }),
+      {
+        docType: 'pomoc',
+        status: 'accepted-in-house'
+      }
+    );
+    assert.equal(
+      resolveFooterLegalSignoffBadge({ market_id: 'bonbeauty' }, '/pomoc', {
+        pomoc: 'WAIVED-demo'
+      }),
+      null
+    );
+    assert.deepEqual(
+      resolveFooterLegalSignoffBadge({ market_id: 'bongarden' }, '/pomoc', {
+        pomoc: 'accepted-in-house'
+      }),
+      {
+        docType: 'pomoc',
+        status: 'accepted-in-house'
+      },
+      "when ledger explicitly flags accepted-in-house for any market the badge MUST surface — gating by market is the ledger's job, not hard-coded marketId checks"
+    );
+    assert.equal(resolveFooterLegalSignoffBadge({ market_id: 'bonbeauty' }, '/pomoc'), null);
+    assert.equal(
+      resolveFooterLegalSignoffBadge({ market_id: 'bonbeauty' }, '/not-legal', {
+        pomoc: 'accepted-in-house'
+      }),
+      null
+    );
   });
 });
 

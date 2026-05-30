@@ -55,7 +55,9 @@ function normalizeHttpUrl(value: unknown) {
   }
 }
 
-function normalizeFooterConnectLinks(value: NonNullable<NonNullable<MarketConfig['footer']>['social']> | null | undefined) {
+function normalizeFooterConnectLinks(
+  value: NonNullable<NonNullable<MarketConfig['footer']>['social']> | null | undefined
+) {
   if (!Array.isArray(value)) {
     return [] satisfies FooterConnectLink[];
   }
@@ -112,6 +114,7 @@ export function resolveFooterConnectLinks(marketConfig?: MarketConfig | null) {
 type FooterNavLink = {
   label: string;
   path: string;
+  legalSignoffBadge?: FooterLegalSignoffBadge | null;
 };
 
 type FooterNavSection = {
@@ -119,7 +122,57 @@ type FooterNavSection = {
   links: FooterNavLink[];
 };
 
-export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): FooterNavSection[] {
+type LegalDocType = 'regulamin' | 'polityka_prywatnosci' | 'zasady_voucher' | 'pomoc';
+
+type FooterLegalSignoffBadge = {
+  docType: LegalDocType;
+  status: 'accepted-in-house';
+};
+
+// Per-docType ledger status snapshot (Story 9.2 review-fix H1 2026-05-28):
+// caller (Footer / SiteFooter async server component) loads ledger via
+// `loadLegalSignoffStatusMap(marketId, runtimeLocale)` and passes the map in.
+// Without the map (legacy callsite) badge stays hidden — explicit opt-in only.
+export type LegalSignoffStatusByDocType = Partial<Record<LegalDocType, string>>;
+
+const LEGAL_DOC_PATHS: Record<string, LegalDocType> = {
+  '/regulamin': 'regulamin',
+  '/polityka-prywatnosci': 'polityka_prywatnosci',
+  '/zasady': 'zasady_voucher',
+  '/pomoc': 'pomoc'
+};
+
+export function resolveFooterLegalSignoffBadge(
+  marketConfig: MarketConfig | null | undefined,
+  path: string,
+  statusByDocType?: LegalSignoffStatusByDocType | null
+): FooterLegalSignoffBadge | null {
+  const docType = LEGAL_DOC_PATHS[path];
+  const marketId = normalizeString(marketConfig?.market_id);
+
+  if (!docType || !marketId) {
+    return null;
+  }
+
+  // Ledger-driven: badge tylko jeśli (market, locale, docType) ma faktyczny
+  // `status: accepted-in-house` w sign-off ledger. Brak mapy lub status inny
+  // niż `accepted-in-house` (DRAFT / WAIVED-demo / WAIVED-interim / published) =
+  // badge hidden. Hard-coded `marketId === 'bonbeauty'` shortcut usunięty.
+  const ledgerStatus = statusByDocType?.[docType];
+  if (ledgerStatus !== 'accepted-in-house') {
+    return null;
+  }
+
+  return {
+    docType,
+    status: 'accepted-in-house'
+  };
+}
+
+export function resolveFooterNavLinks(
+  marketConfig?: MarketConfig | null,
+  legalSignoffStatusByDocType?: LegalSignoffStatusByDocType | null
+): FooterNavSection[] {
   const navLinks = marketConfig?.footer?.nav_links;
 
   if (!Array.isArray(navLinks)) {
@@ -143,7 +196,12 @@ export function resolveFooterNavLinks(marketConfig?: MarketConfig | null): Foote
       return [];
     }
 
-    return [{ label, path }];
+    const legalSignoffBadge = resolveFooterLegalSignoffBadge(
+      marketConfig,
+      path,
+      legalSignoffStatusByDocType
+    );
+    return [{ label, path, ...(legalSignoffBadge ? { legalSignoffBadge } : {}) }];
   });
 
   if (links.length === 0) {

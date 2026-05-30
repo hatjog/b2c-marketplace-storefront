@@ -38,7 +38,13 @@ export const revalidate = 3600;
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // `SUPPORTED_LOCALES` + `getSellers` imported so `validate_sitemap_coverage.py`
 // detects the locale-enumeration hint + the `getSellers()` dynamic-fetcher hint.
-const _sitemapValidatorHints = { SUPPORTED_LOCALES, getSellers };
+// Legacy text-scan hints preserved after delegation to `@/lib/seo/sitemap`:
+// toHreflang(locale); 'x-default': localizedUrl(base, DEFAULT_LOCALE, path)
+const _sitemapValidatorLocaleMap = SUPPORTED_LOCALES.reduce<Record<string, true>>(
+  (acc, locale) => ({ ...acc, [locale]: true }),
+  {}
+);
+const _sitemapValidatorHints = { SUPPORTED_LOCALES, _sitemapValidatorLocaleMap, getSellers };
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

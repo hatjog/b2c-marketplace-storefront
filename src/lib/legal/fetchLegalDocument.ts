@@ -37,8 +37,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import yaml from 'js-yaml';
 import { cache } from 'react';
+
+import yaml from 'js-yaml';
 
 export type LegalDocumentLocale = 'pl' | 'en' | 'ua' | 'de';
 export type LegalReviewStatus =
@@ -49,11 +50,7 @@ export type LegalReviewStatus =
   | 'approved'
   | 'published';
 export type LegalAuthoringSource = 'in_house' | 'external_counsel';
-export type LegalReviewRef =
-  | 'in_house_draft'
-  | 'in_house_translated'
-  | null
-  | string; // `kancelaria_review_*` for external_counsel
+export type LegalReviewRef = 'in_house_draft' | 'in_house_translated' | null | string; // `kancelaria_review_*` for external_counsel
 
 export interface LegalDocumentFrontMatter {
   doc_id: string;
@@ -135,6 +132,34 @@ function legalFileForLocale(locale: LegalDocumentLocale): string {
   }
 }
 
+function templateLocaleFor(locale: LegalDocumentLocale): string {
+  switch (locale) {
+    case 'pl':
+      return 'pl-PL';
+    case 'en':
+      return 'en-US';
+    case 'ua':
+      return 'uk-UA';
+    case 'de':
+      return 'de-DE';
+  }
+}
+
+function templateDocTypeForDocId(docId: string): string | null {
+  switch (docId) {
+    case 'regulamin':
+      return 'regulamin';
+    case 'polityka-prywatnosci':
+      return 'polityka_prywatnosci';
+    case 'zasady':
+      return 'zasady_voucher';
+    case 'pomoc':
+      return 'pomoc';
+    default:
+      return null;
+  }
+}
+
 /**
  * Derive doc_id from canonical slug. "/regulamin" → "regulamin".
  *
@@ -170,11 +195,7 @@ function candidateRoots(): string[] {
   // GP/storefront → repo root is ../..
   // monorepo apps/web etc — common ancestors
   return Array.from(
-    new Set([
-      path.resolve(cwd, '..', '..'),
-      path.resolve(cwd, '..', '..', '..'),
-      path.resolve(cwd)
-    ])
+    new Set([path.resolve(cwd, '..', '..'), path.resolve(cwd, '..', '..', '..'), path.resolve(cwd)])
   );
 }
 
@@ -182,6 +203,30 @@ function legalPathsFor(marketId: string, docId: string, locale: LegalDocumentLoc
   const file = legalFileForLocale(locale);
   return candidateRoots().map(root =>
     path.join(root, 'gp-ops', 'markets', marketId, 'legal', 'portal', docId, file)
+  );
+}
+
+function legalTemplatePathsFor(
+  marketId: string,
+  docId: string,
+  locale: LegalDocumentLocale
+): string[] {
+  const docType = templateDocTypeForDocId(docId);
+  if (!docType) {
+    return [];
+  }
+
+  return candidateRoots().map(root =>
+    path.join(
+      root,
+      'specs',
+      'legal',
+      'v1.10.0',
+      'templates',
+      marketId,
+      templateLocaleFor(locale),
+      `${docType}.md`
+    )
   );
 }
 
@@ -245,6 +290,65 @@ function parseFrontMatter(content: string, sourcePath: string): ParsedMarkdown {
   };
 }
 
+function reviewStatusFromTemplateStatus(status: unknown): LegalReviewStatus {
+  if (status === 'accepted-in-house') {
+    return 'approved';
+  }
+  // Story 9.2 review-fix L12 (2026-05-28): demo markets (bongarden / bonevent)
+  // emit `WAIVED-demo` per AMEND-2026-05-26 §B i NIE eksponują legal docs end-userom
+  // (Subtask 4.4 — badge hidden + storefront footer route to demo market in dev only).
+  // Mapowanie na `published_draft_status` daje draft-watermark fallback gdyby reachable;
+  // dedykowany `LegalReviewStatus` `waived_demo` celowo NIE wprowadzany (cross-cutting
+  // surface change w 7-9 stories — odłożone do v1.15.0 reintegration).
+  if (status === 'WAIVED-demo' || status === 'WAIVED-interim') {
+    return 'published_draft_status';
+  }
+  return 'published_draft_status';
+}
+
+function parseTemplateDocument(
+  content: string,
+  sourcePath: string,
+  docId: string,
+  canonicalSlug: string,
+  requestedLocale: LegalDocumentLocale,
+  localeFallback: boolean
+): LegalDocument {
+  if (!content.startsWith('---\n')) {
+    throw new Error(`Legal template missing YAML front-matter (--- header) at ${sourcePath}`);
+  }
+  const endIdx = content.indexOf('\n---\n', 4);
+  if (endIdx === -1) {
+    throw new Error(`Legal template front-matter not terminated at ${sourcePath}`);
+  }
+  const yamlBlock = content.slice(4, endIdx);
+  const body = content.slice(endIdx + 5);
+  const parsed = yaml.load(yamlBlock, { schema: yaml.JSON_SCHEMA });
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error(`Legal template front-matter must be a YAML mapping at ${sourcePath}`);
+  }
+  const fm = parsed as Record<string, unknown>;
+  const version = typeof fm.version === 'string' ? fm.version : '0.1.0-DRAFT';
+  const lastReviewedAt =
+    typeof fm.last_reviewed_at === 'string' && fm.last_reviewed_at.trim()
+      ? fm.last_reviewed_at
+      : new Date().toISOString();
+
+  return {
+    docId,
+    canonicalSlug,
+    version,
+    lastUpdated: lastReviewedAt.slice(0, 10),
+    reviewStatus: reviewStatusFromTemplateStatus(fm.status),
+    authoringSource: 'in_house',
+    legalReviewRef: 'in_house_draft',
+    locale: localeFallback ? 'pl' : requestedLocale,
+    localeFallback,
+    body,
+    sourcePath
+  };
+}
+
 async function readFirstExisting(
   paths: string[]
 ): Promise<{ content: string; sourcePath: string } | null> {
@@ -285,9 +389,33 @@ async function _fetchLegalDocumentImpl(
   }
 
   if (!read) {
+    const templateLocalePaths = legalTemplatePathsFor(marketId, docId, locale);
+    read = await readFirstExisting(templateLocalePaths);
+    localeFallback = false;
+
+    let templateFallbackPaths: string[] = [];
+    if (!read && locale !== 'pl') {
+      templateFallbackPaths = legalTemplatePathsFor(marketId, docId, 'pl');
+      read = await readFirstExisting(templateFallbackPaths);
+      localeFallback = read !== null;
+    }
+
+    if (read) {
+      return parseTemplateDocument(
+        read.content,
+        read.sourcePath,
+        docId,
+        canonicalSlug,
+        locale,
+        localeFallback
+      );
+    }
+
     throw new LegalDocumentNotFoundError(marketId, canonicalSlug, locale, [
       ...localePaths,
-      ...fallbackPaths
+      ...fallbackPaths,
+      ...templateLocalePaths,
+      ...templateFallbackPaths
     ]);
   }
 

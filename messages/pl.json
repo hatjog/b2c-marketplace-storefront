@@ -366,6 +366,8 @@
     "section_connect": "Media społecznościowe",
     "go_to_social": "Przejdź do strony {name}",
     "section_legal": "Dane prawne sprzedawcy",
+    "legal_signoff_badge": "Sygnowane wewnętrznie ✓ (rewizja przed prod v1.15.0)",
+    "legal_signoff_badge_aria": "Dokument sygnowany wewnętrznie; rewizja zewnętrzna zaplanowana przed wejściem na prod v1.15.0",
     "rights_reserved": "Wszelkie prawa zastrzeżone",
     "privacy_policy": "Polityka prywatności",
     "terms_of_service": "Regulamin",
