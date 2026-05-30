@@ -9,6 +9,7 @@ import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import medusaError from '@/lib/helpers/medusa-error';
 import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
+import { localeAwareFetch, localePath } from '@/lib/sdk/locale-interceptor';
 import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 
 import { fetchQuery, sdk } from '../config';
@@ -662,7 +663,7 @@ export async function removeShippingMethod(shippingMethodId: string) {
     'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string
   };
 
-  return fetch(`${MEDUSA_BACKEND_URL}/store/carts/${cartId}/shipping-methods`, {
+  return localeAwareFetch(`${MEDUSA_BACKEND_URL}/store/carts/${cartId}/shipping-methods`, {
     method: 'DELETE',
     body: JSON.stringify({ shipping_method_ids: [shippingMethodId] }),
     headers
@@ -686,7 +687,7 @@ export async function deletePromotionCode(promoId: string) {
     'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string
   };
 
-  return fetch(`${MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`, {
+  return localeAwareFetch(`${MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`, {
     method: 'DELETE',
     body: JSON.stringify({ promo_codes: [promoId] }),
     headers
@@ -741,7 +742,7 @@ export async function setAddresses(currentState: unknown, payload: CheckoutAddre
     };
 
     await updateCart(data);
-    await revalidatePath('/cart');
+    await revalidatePath(await localePath('/cart'));
     return 'success';
   } catch (e: any) {
     return e.message;
@@ -757,8 +758,7 @@ export async function placeOrder(cartId?: string) {
   const id = cartId || (await getCartId());
   const res = await completeCartOrder(id);
   const orderId =
-    resolveCompletedOrderId(res) ??
-    (id ? await resolveCompletedOrderIdForCart(id) : null);
+    resolveCompletedOrderId(res) ?? (id ? await resolveCompletedOrderIdForCart(id) : null);
 
   if (orderId) {
     removeCartId();
@@ -848,8 +848,8 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
       };
     }
 
-    revalidatePath('/user/reviews');
-    revalidatePath('/user/orders');
+    revalidatePath(await localePath('/user/reviews'));
+    revalidatePath(await localePath('/user/orders'));
     removeCartId();
 
     return { ok: true, orderId };
@@ -857,7 +857,9 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
     return {
       ok: false,
       error: {
-        message: error?.message?.replace('Error setting up the request: ', '') ?? 'Failed to complete order'
+        message:
+          error?.message?.replace('Error setting up the request: ', '') ??
+          'Failed to complete order'
       }
     };
   }

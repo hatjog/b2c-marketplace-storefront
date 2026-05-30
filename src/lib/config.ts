@@ -2,15 +2,18 @@ import Medusa from '@medusajs/js-sdk';
 import { createClient } from '@mercurjs/client';
 
 import { resolveMedusaBackendUrl } from './env';
+import { applyLocaleInterceptor, withLocaleHeader } from './sdk/locale-interceptor';
 import { stripInternalHeadersForThirdParty } from './security/header-allowlist';
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
 
-export const sdk = new Medusa({
-  baseUrl: MEDUSA_BACKEND_URL,
-  debug: false,
-  publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
-});
+export const sdk = applyLocaleInterceptor(
+  new Medusa({
+    baseUrl: MEDUSA_BACKEND_URL,
+    debug: false,
+    publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  })
+);
 
 /**
  * Mercur 2.x typed client (story v160-2-4, Path B dual-SDK).
@@ -28,6 +31,14 @@ export const sdk = new Medusa({
  * Note: createClient() returns `any` until backend codegen produces a
  * `@mercurjs/core/_generated` Routes export. When that lands, swap to
  * `createClient<Routes>({...})` for full type inference.
+ *
+ * LOCALE DISCIPLINE (Story 2.2): `mercurClient` to równoległy klient SDK
+ * względem singletona `sdk` powyżej i NIE przechodzi przez `applyLocaleInterceptor`.
+ * Każde wywołanie `mercurClient.store.*.query(...)` MUSI być opakowane w
+ * `await withMercurLocaleOptions(...)` z `@/lib/sdk/locale-interceptor`, inaczej
+ * `x-medusa-locale` nie zostanie wysłany i dostaniemy default-locale leak.
+ * Enforcement = code review discipline (brak typesafe gate w obecnym v1.10.0;
+ * follow-up ESLint rule planowany w Story 2.3+).
  */
 export const mercurClient = createClient({
   baseUrl: MEDUSA_BACKEND_URL,
@@ -62,11 +73,14 @@ export async function fetchQuery(url: string, { method, query, headers, body }: 
   // — zero market-isolation impact. The guard is wired in as a forward-looking
   // contract: any FUTURE callsite that points fetchQuery at a Stripe host
   // cannot leak internal multi-tenant headers.
-  const safeHeaders = stripInternalHeadersForThirdParty(requestUrl, {
-    'Content-Type': 'application/json',
-    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
-    ...headers
-  });
+  const safeHeaders = stripInternalHeadersForThirdParty(
+    requestUrl,
+    await withLocaleHeader({
+      'Content-Type': 'application/json',
+      'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+      ...headers
+    })
+  );
 
   const res = await fetch(requestUrl, {
     method,

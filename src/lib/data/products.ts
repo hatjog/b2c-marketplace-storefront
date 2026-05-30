@@ -12,6 +12,8 @@ import { sortProducts } from '@/lib/helpers/sort-products';
 import { sortByRecommended } from '@/lib/helpers/sort-utils';
 import type { SortOptions } from '@/types/product';
 
+import { localeCacheTag } from '@/lib/sdk/locale-interceptor';
+
 import { sdk } from '../config';
 import { getAuthHeaders } from './cookies';
 import { retrieveCustomer } from './customer';
@@ -119,6 +121,7 @@ export const listProducts = async ({
   ].join(',');
 
   const useCached = forceCache || (limit <= 8 && !category_id && !collection_id);
+  const productsTag = useCached ? await localeCacheTag('products') : undefined;
 
   return sdk.client
     .fetch<{
@@ -137,7 +140,7 @@ export const listProducts = async ({
         region_id: region.id,
       },
       headers,
-      next: useCached ? { revalidate: 60 } : undefined,
+      next: useCached ? { revalidate: 60, tags: productsTag ? [productsTag] : undefined } : undefined,
       cache: useCached ? 'force-cache' : 'no-cache'
     })
     .then(({ products: productsRaw, count: backendCount }) => {

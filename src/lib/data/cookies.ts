@@ -2,6 +2,8 @@ import 'server-only';
 
 import { cookies as nextCookies } from 'next/headers';
 
+import { resolveStorefrontLocale } from '@/lib/sdk/locale-interceptor';
+
 export const getAuthHeaders = async (): Promise<{ authorization: string } | {}> => {
   const cookies = await nextCookies();
   const token = cookies.get('_medusa_jwt')?.value;
@@ -17,12 +19,13 @@ export const getCacheTag = async (tag: string): Promise<string> => {
   try {
     const cookies = await nextCookies();
     const cacheId = cookies.get('_medusa_cache_id')?.value;
+    const locale = await resolveStorefrontLocale();
 
     if (!cacheId) {
-      return '';
+      return `${tag}-${locale}`;
     }
 
-    return `${tag}-${cacheId}`;
+    return `${tag}-${cacheId}-${locale}`;
   } catch {
     return '';
   }

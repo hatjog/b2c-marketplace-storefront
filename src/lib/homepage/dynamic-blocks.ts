@@ -1,15 +1,16 @@
 import type { HttpTypes } from '@medusajs/types';
 
-import {
-  fetchHomepageBlogPageDocs,
-  getPayloadApiUrl,
-  mapPayloadPageToBlogPost
-} from '@/lib/blog';
+import { fetchHomepageBlogPageDocs, getPayloadApiUrl, mapPayloadPageToBlogPost } from '@/lib/blog';
 import { buildMedusaUrl } from '@/lib/env';
 import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { filterByMarket, filterByMarketOrKeepUntagged, getMarketId } from '@/lib/helpers/market-filter';
+import {
+  filterByMarket,
+  filterByMarketOrKeepUntagged,
+  getMarketId
+} from '@/lib/helpers/market-filter';
 import { sortProducts } from '@/lib/helpers/sort-products';
+import { localeCacheTag, withLocaleHeader } from '@/lib/sdk/locale-interceptor';
 import type { BlogPost } from '@/types/blog';
 import type { SortOptions } from '@/types/product';
 
@@ -27,17 +28,17 @@ function normalizeHomepageProductAssets(
           const url = resolveMarketAssetUrl(image?.url, marketId);
           return url ? [{ ...image, url }] : [];
         })
-      : product.images,
+      : product.images
   }));
 }
 
-function getPublishableHeaders() {
+async function getPublishableHeaders() {
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
 
-  return {
+  return withLocaleHeader({
     'Content-Type': 'application/json',
     ...(publishableKey ? { 'x-publishable-api-key': publishableKey } : {})
-  };
+  });
 }
 
 function mapSortToStorefront(sort: HomepageProductsSort): SortOptions {
@@ -53,14 +54,14 @@ async function resolveRegionId(countryCode: string): Promise<string | null> {
     const url = buildMedusaUrl('/store/regions');
     const response = await fetch(url.toString(), {
       method: 'GET',
-      headers: getPublishableHeaders(),
-      next: { revalidate: 3600, tags: ['regions'] }
+      headers: await getPublishableHeaders(),
+      next: { revalidate: 3600, tags: [await localeCacheTag('regions')] }
     });
     if (!response.ok) return null;
-    const data = (await response.json()) as { regions?: Array<{ id: string; countries?: Array<{ iso_2?: string }> }> };
-    const region = data.regions?.find(r =>
-      r.countries?.some(c => c.iso_2 === countryCode)
-    );
+    const data = (await response.json()) as {
+      regions?: Array<{ id: string; countries?: Array<{ iso_2?: string }> }>;
+    };
+    const region = data.regions?.find(r => r.countries?.some(c => c.iso_2 === countryCode));
     return region?.id ?? null;
   } catch {
     return null;
@@ -102,10 +103,10 @@ export async function fetchHomepageProducts({
   try {
     const response = await fetch(url.toString(), {
       method: 'GET',
-      headers: getPublishableHeaders(),
+      headers: await getPublishableHeaders(),
       next: {
         revalidate: 3600,
-        tags: ['products']
+        tags: [await localeCacheTag('products')]
       }
     });
 
@@ -123,10 +124,10 @@ export async function fetchHomepageProducts({
     if (products.length === 0) {
       const fallbackResponse = await fetch(fallbackUrl.toString(), {
         method: 'GET',
-        headers: getPublishableHeaders(),
+        headers: await getPublishableHeaders(),
         next: {
           revalidate: 3600,
-          tags: ['products']
+          tags: [await localeCacheTag('products')]
         }
       });
 
@@ -150,7 +151,7 @@ export async function fetchHomepageProducts({
 
 export async function fetchHomepageCategories({
   limit,
-  hideEmpty = false,
+  hideEmpty = false
 }: {
   limit?: number | null;
   hideEmpty?: boolean;
@@ -169,10 +170,10 @@ export async function fetchHomepageCategories({
   try {
     const response = await fetch(url.toString(), {
       method: 'GET',
-      headers: getPublishableHeaders(),
+      headers: await getPublishableHeaders(),
       next: {
         revalidate: 86400,
-        tags: ['categories']
+        tags: [await localeCacheTag('categories')]
       }
     });
 
@@ -192,7 +193,10 @@ export async function fetchHomepageCategories({
     const marketFiltered = filterByMarket(allCategories, marketId);
     const rootCategories = marketFiltered
       .filter(cat => !cat.parent_category_id)
-      .filter(cat => !hideEmpty || (Array.isArray(cat.category_children) && cat.category_children.length > 0));
+      .filter(
+        cat =>
+          !hideEmpty || (Array.isArray(cat.category_children) && cat.category_children.length > 0)
+      );
     const mapped = rootCategories
       .map(cat => {
         const metadata = cat.metadata ? { ...(cat.metadata as Record<string, any>) } : undefined;
@@ -205,7 +209,7 @@ export async function fetchHomepageCategories({
         return {
           name: cat.name,
           handle: cat.handle,
-          ...(metadata ? { metadata } : {}),
+          ...(metadata ? { metadata } : {})
         };
       })
       .filter(cat => Boolean(cat.name && cat.handle));

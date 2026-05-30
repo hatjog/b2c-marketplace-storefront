@@ -252,6 +252,10 @@ export const updateCustomerAddress = async (formData: FormData): Promise<any> =>
 };
 
 export const updateCustomerPassword = async (password: string, token: string): Promise<any> => {
+  // TODO(v1.11.0+): propagate x-medusa-locale do `/auth/*` gdy backend Auth
+  // zacznie wysyłać localized email templates (reset-password). Story 2.2 audit
+  // klasyfikuje `/auth/*` jako poza locale-scope w v1.10.0 (Translation Module
+  // dotyczy `/store/*`).
   const res = await fetch(`${MEDUSA_BACKEND_URL}/auth/customer/emailpass/update`, {
     method: 'POST',
     headers: {
