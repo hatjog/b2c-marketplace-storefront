@@ -103,14 +103,17 @@ describe('W6-06 ToastAlert a11y', () => {
   it('cites the Wave 6 manifest', () => {
     expect(src).toMatch(/@chrome-manifest:\s*W6-06/);
   });
-  it('viewport is a polite aria-live log region', () => {
-    expect(src).toMatch(/role="log"/);
-    expect(src).toMatch(/aria-live="polite"/);
-    expect(src).toMatch(/aria-atomic="true"/);
+  it('viewport is a labelled region (live announcements live on each toast)', () => {
+    // Canonical pattern: the viewport is a labelled region; the live semantics
+    // moved to each toast (role=status|alert) to avoid nested live regions and
+    // duplicate SR reads. (was role="log"/aria-live on the viewport pre-W6 refactor)
+    expect(src).toMatch(/role="region"/);
+    expect(src).toMatch(/aria-label=\{t\('aria_region'\)\}/);
   });
-  it('error severity escalates to role=alert / assertive', () => {
+  it('error severity escalates to role=alert via per-toast live role', () => {
+    // role=alert implies aria-live=assertive; role=status implies polite — the
+    // explicit aria-live attributes were dropped in favour of role semantics.
     expect(src).toMatch(/isError \? 'alert' : 'status'/);
-    expect(src).toMatch(/isError \? 'assertive' : 'polite'/);
   });
   it('every toast has a keyboard-dismissible close button', () => {
     expect(src).toMatch(/aria-label=\{t\('dismiss'\)\}/);

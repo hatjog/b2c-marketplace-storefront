@@ -67,8 +67,8 @@ describe('VoucherValidityInfo', () => {
     expect(icons).toHaveLength(1);
   });
 
-  it('has bg-primary class on wrapper', () => {
+  it('has bb-card-muted class on wrapper', () => {
     const result = VoucherValidityInfo({ validityPeriod: '12 miesięcy', defaultInfo: null }) as ReactEl;
-    expect(result.props.className).toContain('bg-primary');
+    expect(result.props.className).toContain('bb-card-muted');
   });
 });

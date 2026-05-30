@@ -15,6 +15,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Stub the `server-only` build guard so server modules (and their
+      // transitive importers) are unit-testable under vitest's node env, which
+      // has no RSC boundary. Without this, importing such modules throws
+      // "This module cannot be imported from a Client Component module."
+      'server-only': path.resolve(__dirname, './src/test/stubs/server-only.ts'),
     },
   },
   // v1.7.0 Story 2.1 review fix: explicit JSX automatic transform so component

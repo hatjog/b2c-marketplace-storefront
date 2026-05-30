@@ -14,6 +14,7 @@ const baseSeller: SellerProps = {
   created_at: '2024-01-01T00:00:00.000Z',
   address_line: 'ul. Testowa 1',
   city: 'Warszawa',
+  district: 'Śródmieście',
   postal_code: '00-001',
   country_code: 'pl',
   phone: '+48 500 600 700',

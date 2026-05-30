@@ -15,6 +15,13 @@ vi.mock('next/image', () => ({
   }
 }));
 
+// CartDropdownItem calls useTranslations('seller.cart') (added 2026-05-07); the
+// unit renders it without a NextIntlClientProvider, so stub next-intl to a
+// passthrough that echoes the key.
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key
+}));
+
 import { CartDropdownItem } from './CartDropdownItem';
 
 describe('CartDropdownItem', () => {
