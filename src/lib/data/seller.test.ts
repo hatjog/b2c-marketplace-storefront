@@ -1,4 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { getSellers, searchSellers } from './seller';
 
 const { mockFetch } = vi.hoisted(() => ({ mockFetch: vi.fn() }));
 
@@ -20,8 +22,6 @@ vi.mock('../config', () => ({
     }
   }
 }));
-
-import { getSellers, searchSellers } from './seller';
 
 const makeSeller = (overrides: Record<string, unknown> = {}) => ({
   handle: 'salon-a',
@@ -49,7 +49,12 @@ describe('getSellers', () => {
     });
     await getSellers();
 
-    expect(mockFetch).toHaveBeenCalledWith({ fetchOptions: { cache: 'no-cache' } });
+    expect(mockFetch).toHaveBeenCalledWith({
+      fetchOptions: {
+        cache: 'no-cache',
+        headers: { 'x-medusa-locale': 'pl-PL' }
+      }
+    });
   });
 
   it('returns all sellers provided by the API regardless of product_count', async () => {
@@ -138,26 +143,41 @@ describe('getSellers', () => {
       sellers: [
         makeSeller({ handle: 'gamma', name: 'Gamma', avg_rating: 4.2, review_count: 6 }),
         makeSeller({ handle: 'alpha', name: 'Alpha', avg_rating: 4.8, review_count: 2 }),
-        makeSeller({ handle: 'beta', name: 'Beta', avg_rating: 4.8, review_count: 9 }),
+        makeSeller({ handle: 'beta', name: 'Beta', avg_rating: 4.8, review_count: 9 })
       ]
     });
 
     const result = await searchSellers({ limit: 10, offset: 0, sort: 'rating_desc' });
 
-    expect(result.items.map((seller) => seller.handle)).toEqual(['beta', 'alpha', 'gamma']);
+    expect(result.items.map(seller => seller.handle)).toEqual(['beta', 'alpha', 'gamma']);
   });
 
   it('falls back to name ordering when rating_desc has no rating data', async () => {
     mockFetch.mockResolvedValue({
       sellers: [
-        makeSeller({ handle: 'zeta', name: 'Żaneta', avg_rating: undefined, review_count: undefined }),
-        makeSeller({ handle: 'anna', name: 'Anna', avg_rating: undefined, review_count: undefined }),
-        makeSeller({ handle: 'basia', name: 'Basia', avg_rating: undefined, review_count: undefined }),
+        makeSeller({
+          handle: 'zeta',
+          name: 'Żaneta',
+          avg_rating: undefined,
+          review_count: undefined
+        }),
+        makeSeller({
+          handle: 'anna',
+          name: 'Anna',
+          avg_rating: undefined,
+          review_count: undefined
+        }),
+        makeSeller({
+          handle: 'basia',
+          name: 'Basia',
+          avg_rating: undefined,
+          review_count: undefined
+        })
       ]
     });
 
     const result = await searchSellers({ limit: 10, offset: 0, sort: 'rating_desc' });
 
-    expect(result.items.map((seller) => seller.name)).toEqual(['Anna', 'Basia', 'Żaneta']);
+    expect(result.items.map(seller => seller.name)).toEqual(['Anna', 'Basia', 'Żaneta']);
   });
 });

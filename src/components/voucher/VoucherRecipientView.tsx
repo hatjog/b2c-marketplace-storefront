@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import type { VoucherRecipientPolicyView, VoucherRecipientView as VoucherRecipientModel } from '@/lib/data/voucher';
@@ -6,6 +7,7 @@ import { buildGoogleMapsDeeplink, buildSearchFallbackDeeplink } from '@/lib/help
 import { formatVoucherPrice } from '@/lib/voucher/voucher-copy';
 
 import { VoucherCodeCopyButton } from './VoucherCodeCopyButton';
+import { SymmetricPossessionSection } from '../voucher-possession/SymmetricPossessionSection';
 
 type VoucherRecipientViewProps = {
   locale: string;
@@ -167,6 +169,8 @@ export async function VoucherRecipientView({
   voucher,
 }: VoucherRecipientViewProps) {
   const t = await getTranslations({ locale, namespace: 'voucher.recipient' });
+  const reqHeaders = await headers();
+  const requestUserAgent = reqHeaders.get('user-agent') ?? '';
 
   const expiryDate = formatDate(voucher?.expires_at, locale);
   const redeemedDate = formatDate(voucher?.redeemed_at, locale);
@@ -313,21 +317,12 @@ export async function VoucherRecipientView({
             : t('active.validity_fallback')}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <a
-            href={voucher.pdf_url ?? `/api/voucher/${voucher.code}/pdf`}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]"
-          >
-            {t('active.pdf_cta')}
-          </a>
-          <button
-            type="button"
-            disabled
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-sm font-medium text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-100"
-          >
-            {t('active.wallet_soon')}
-          </button>
-        </div>
+        <SymmetricPossessionSection
+          voucherCode={voucher.code}
+          locale={locale === 'en' || locale === 'de' || locale === 'ua' ? locale : 'pl'}
+          pdfHref={voucher.pdf_url ?? `/api/voucher/${voucher.code}/pdf`}
+          userAgent={requestUserAgent}
+        />
       </section>
 
       <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-[var(--bb-border-soft)] bg-white/70 p-6 md:p-8">

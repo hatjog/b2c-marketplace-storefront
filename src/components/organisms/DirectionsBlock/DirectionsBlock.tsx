@@ -115,6 +115,7 @@ export function DirectionsBlock({ seller, locale, className }: DirectionsBlockPr
             }
           ]}
           locale={locale}
+          mode="detail"
           className="h-64 w-full"
         />
       ) : (

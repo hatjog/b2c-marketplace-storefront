@@ -16,6 +16,13 @@
     "refresh": "Aktualisieren",
     "edit": "Bearbeiten"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Übersetzung in Arbeit",
+      "message": "Wir arbeiten an der deutschen Übersetzung dieses Inhalts.",
+      "dismissLabel": "Übersetzungshinweis schließen"
+    }
+  },
   "header": {
     "logo_alt": "Logo",
     "shipping_to": "Lieferung nach",
@@ -40,6 +47,17 @@
     "blog_eyebrow": "BonBeauty Journal"
   },
   "seller": {
+    "map": {
+      "ariaLabel": "BonBeauty Salons-Karte",
+      "markerAlt": "Marker für {name}",
+      "loading": "Karte wird geladen...",
+      "fallbackEyebrow": "Karte vorübergehend nicht verfügbar",
+      "fallbackTitle": "Wir können die Kartenkacheln gerade nicht laden",
+      "fallbackBody": "Der Salonstandort bleibt als Text verfügbar.",
+      "openMaps": "In Google/Apple Maps öffnen",
+      "openGoogleMaps": "In Google Maps öffnen",
+      "openAppleMaps": "In Apple Maps öffnen"
+    },
     "list": {
       "title": "Partnersalons",
       "description": "Entdecken Sie BonBeauty Partnersalons. Finden Sie einen Salon in Ihrer Stadt und durchsuchen Sie deren Angebot.",
@@ -69,6 +87,7 @@
         "loading": "Karte wird geladen...",
         "aria_map": "Salons-Karte",
         "aria_marker": "Marker für {name}",
+        "clusterAriaLabel": "Gruppe von {count} Salons",
         "placeholder_title": "Vorschau der Salon-Standorte",
         "placeholder_body": "Die interaktive Karte ist bald verfügbar. Siehe unten die Liste der nahegelegenen Salons."
       }
@@ -1056,6 +1075,21 @@
     "recovery_cta": "Zu meinen Bestellungen",
     "payment_failed_title": "Zahlung fehlgeschlagen",
     "payment_failed_description": "Erneut versuchen oder zum Warenkorb zurückkehren, um die Zahlungsmethode zu ändern."
+  },
+  "wallet": {
+    "google_label": "Zu Google Wallet hinzufügen",
+    "apple_label": "Zu Apple Wallet hinzufügen",
+    "pdf_label": "PDF herunterladen",
+    "email_label": "Erneut per E-Mail senden",
+    "eyebrow": "Bewahre deinen Voucher so auf, wie du möchtest — im Telefon, als PDF oder per E-Mail",
+    "iphone_safari_eyebrow": "Auf dem Telefon als PDF speichern — Apple Wallet kommt bald",
+    "loading_label": "Wird gespeichert...",
+    "email_loading_label": "Wird gesendet...",
+    "success_toast": "Voucher in Google Wallet gespeichert",
+    "error_toast": "Der Voucher konnte nicht in Google Wallet gespeichert werden. Versuche es erneut oder speichere ihn als PDF.",
+    "retry_label": "Erneut versuchen",
+    "email_success_toast": "Voucher wurde erneut per E-Mail gesendet.",
+    "email_error_toast": "Die E-Mail konnte nicht gesendet werden. Versuche es erneut."
   },
   "voucher": {
     "qr_code_aria_label": "QR-Code des Gutscheins",

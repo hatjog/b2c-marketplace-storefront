@@ -16,6 +16,13 @@
     "refresh": "Refresh",
     "edit": "Edit"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Translation in progress",
+      "message": "We are still translating this content into English.",
+      "dismissLabel": "Close translation notice"
+    }
+  },
   "header": {
     "logo_alt": "Logo",
     "shipping_to": "Shipping to",
@@ -40,6 +47,17 @@
     "blog_eyebrow": "BonBeauty journal"
   },
   "seller": {
+    "map": {
+      "ariaLabel": "BonBeauty salons map",
+      "markerAlt": "Marker for {name}",
+      "loading": "Loading map...",
+      "fallbackEyebrow": "Map temporarily unavailable",
+      "fallbackTitle": "We cannot load map tiles right now",
+      "fallbackBody": "Salon location remains available as text.",
+      "openMaps": "Open in Google/Apple Maps",
+      "openGoogleMaps": "Open in Google Maps",
+      "openAppleMaps": "Open in Apple Maps"
+    },
     "list": {
       "title": "Partner salons",
       "description": "Discover BonBeauty partner salons. Find a salon in your city and browse their offering.",
@@ -69,6 +87,7 @@
         "loading": "Loading map...",
         "aria_map": "Sellers map",
         "aria_marker": "Marker for {name}",
+        "clusterAriaLabel": "Group of {count} salons",
         "placeholder_title": "Seller locations preview",
         "placeholder_body": "Interactive map will be available soon. See the list of nearby salons below."
       }
@@ -1056,6 +1075,21 @@
     "recovery_cta": "Go to my orders",
     "payment_failed_title": "Payment failed",
     "payment_failed_description": "Try again or go back to the cart to change the payment method."
+  },
+  "wallet": {
+    "google_label": "Add to Google Wallet",
+    "apple_label": "Add to Apple Wallet",
+    "pdf_label": "Download PDF",
+    "email_label": "Send again by email",
+    "eyebrow": "Keep your voucher your way — on your phone, in PDF, or in email",
+    "iphone_safari_eyebrow": "Save it on your phone as a PDF — Apple Wallet is coming soon",
+    "loading_label": "Saving...",
+    "email_loading_label": "Sending...",
+    "success_toast": "Voucher saved in Google Wallet",
+    "error_toast": "We could not save it in Google Wallet. Try again or save it as a PDF.",
+    "retry_label": "Try again",
+    "email_success_toast": "Voucher sent again by email.",
+    "email_error_toast": "We could not send the email. Try again."
   },
   "voucher": {
     "qr_code_aria_label": "Voucher QR code",

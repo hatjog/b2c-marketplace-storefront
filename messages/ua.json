@@ -16,6 +16,13 @@
     "refresh": "Оновити",
     "edit": "Редагувати"
   },
+  "banner": {
+    "workingOnIt": {
+      "eyebrow": "Переклад у роботі",
+      "message": "Ми працюємо над українським перекладом цього вмісту.",
+      "dismissLabel": "Закрити сповіщення про переклад"
+    }
+  },
   "header": {
     "logo_alt": "Логотип",
     "shipping_to": "Доставка до",
@@ -40,6 +47,17 @@
     "blog_eyebrow": "Журнал BonBeauty"
   },
   "seller": {
+    "map": {
+      "ariaLabel": "Карта салонів BonBeauty",
+      "markerAlt": "Маркер салону {name}",
+      "loading": "Завантаження карти...",
+      "fallbackEyebrow": "Карта тимчасово недоступна",
+      "fallbackTitle": "Зараз не можемо завантажити тайли карти",
+      "fallbackBody": "Локація салону доступна у текстовому вигляді.",
+      "openMaps": "Відкрити у Google/Apple Maps",
+      "openGoogleMaps": "Відкрити у Google Maps",
+      "openAppleMaps": "Відкрити у Apple Maps"
+    },
     "list": {
       "title": "Партнерські салони",
       "description": "Відкрийте партнерські салони BonBeauty. Знайдіть салон у вашому місті та переглядайте їхню пропозицію.",
@@ -69,6 +87,7 @@
         "loading": "Завантаження карти...",
         "aria_map": "Карта салонів",
         "aria_marker": "Маркер салону {name}",
+        "clusterAriaLabel": "Група з {count} салонів",
         "placeholder_title": "Попередній перегляд локацій салонів",
         "placeholder_body": "Інтерактивна карта буде доступна незабаром. Нижче — список найближчих салонів."
       }
@@ -1056,6 +1075,21 @@
     "recovery_cta": "Перейти до моїх замовлень",
     "payment_failed_title": "Оплата не вдалася",
     "payment_failed_description": "Спробуйте знову або поверніться до кошика, щоб змінити метод оплати."
+  },
+  "wallet": {
+    "google_label": "Додати до Google Wallet",
+    "apple_label": "Додати до Apple Wallet",
+    "pdf_label": "Завантажити PDF",
+    "email_label": "Надіслати ще раз на e-mail",
+    "eyebrow": "Збережіть ваучер як зручно — у телефоні, PDF або листі",
+    "iphone_safari_eyebrow": "Збережіть на телефоні як PDF — Apple Wallet незабаром",
+    "loading_label": "Зберігаємо...",
+    "email_loading_label": "Надсилаємо...",
+    "success_toast": "Ваучер збережено в Google Wallet",
+    "error_toast": "Не вдалося зберегти ваучер у Google Wallet. Спробуйте ще раз або збережіть PDF.",
+    "retry_label": "Спробувати ще раз",
+    "email_success_toast": "Ваучер повторно надіслано на e-mail.",
+    "email_error_toast": "Не вдалося надіслати e-mail. Спробуйте ще раз."
   },
   "voucher": {
     "qr_code_aria_label": "QR-код ваучера",

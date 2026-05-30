@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { buildMedusaUrl } from '@/lib/env';
+import { localeAwareFetch } from '@/lib/sdk/locale-interceptor';
 import type { VoucherConsentErrorKey } from '@/lib/voucher-consent/schema';
 
 export type VoucherConsentContext =
@@ -74,7 +75,7 @@ export async function getVoucherConsentContext(token: string): Promise<VoucherCo
   }
 
   try {
-    const response = await fetch(
+    const response = await localeAwareFetch(
       buildMedusaUrl(`/store/voucher-consent/${encodeURIComponent(token)}`),
       {
         method: 'GET',

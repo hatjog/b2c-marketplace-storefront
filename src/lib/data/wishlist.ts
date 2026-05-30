@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { getRegion } from '@/lib/data/regions';
+import { localePath } from '@/lib/sdk/locale-interceptor';
 import type { Wishlist } from '@/types/wishlist';
 
 import { fetchQuery, sdk } from '../config';
@@ -81,7 +82,7 @@ export const addWishlistItem = async ({
     }
   });
 
-  revalidatePath('/wishlist');
+  revalidatePath(await localePath('/wishlist'));
 
   if (!response.ok) {
     throw new Error(response.error?.message || 'An error occured');
@@ -100,7 +101,7 @@ export const removeWishlistItem = async ({ product_id }: { product_id: string })
     method: 'DELETE'
   });
 
-  revalidatePath('/wishlist');
+  revalidatePath(await localePath('/wishlist'));
 
   if (!response.ok) {
     throw new Error(response.error?.message || 'An error occured');

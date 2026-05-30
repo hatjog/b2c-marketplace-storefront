@@ -1,0 +1,146 @@
+.shell {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgb(214 211 209);
+  border-radius: 8px;
+  background: rgb(245 245 244);
+}
+
+.mode-list,
+.mode-detail,
+.mode-landing {
+  aspect-ratio: 1 / 1;
+}
+
+.mode-mini {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 640px) {
+  .mode-list,
+  .mode-detail,
+  .mode-landing {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mode-list,
+  .mode-detail,
+  .mode-landing {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+}
+
+.shell :global(.leaflet-container) {
+  height: 100%;
+  width: 100%;
+  font: inherit;
+}
+
+.shell :global(.leaflet-bar a) {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  line-height: 44px;
+}
+
+.shell :global(.leaflet-marker-icon) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.marker {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 2px solid rgb(255 255 255);
+  border-radius: 999px;
+  background: rgb(126 34 206);
+  box-shadow: 0 8px 18px rgb(68 64 60 / 24%);
+}
+
+.marker::after {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgb(255 255 255);
+  content: '';
+}
+
+.fallback,
+.skeleton {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.fallbackInner {
+  display: grid;
+  max-width: 420px;
+  gap: 10px;
+}
+
+.eyebrow {
+  color: rgb(120 113 108);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.fallbackTitle {
+  color: rgb(28 25 23);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fallbackText {
+  color: rgb(87 83 78);
+  font-size: 0.875rem;
+}
+
+.deepLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgb(28 25 23);
+  color: rgb(255 255 255);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.popup {
+  display: grid;
+  min-width: 180px;
+  gap: 6px;
+}
+
+.popupTitle {
+  color: rgb(28 25 23);
+  font-weight: 700;
+}
+
+.popupMeta {
+  color: rgb(87 83 78);
+  font-size: 0.875rem;
+}
+
+.skeleton {
+  color: rgb(87 83 78);
+}

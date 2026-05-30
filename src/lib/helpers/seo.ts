@@ -1,16 +1,16 @@
 import type { HttpTypes } from '@medusajs/types';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+
+import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
+
 import { getGpField } from './metadata-utils';
 
 /**
  * Returns `url` unless it points to an SVG file, in which case returns `fallback`.
  * SVG is not supported as OG image by Facebook, Twitter/X, LinkedIn, or Slack crawlers.
  */
-export function toSafeOgImageUrl(
-  url: string | null | undefined,
-  fallback: string
-): string {
+export function toSafeOgImageUrl(url: string | null | undefined, fallback: string): string {
   if (!url) return fallback;
   // Block SVG data URIs (unsupported by social crawlers, not remotely fetchable)
   if (url.toLowerCase().startsWith('data:image/svg')) return fallback;
@@ -37,12 +37,27 @@ export function resolveGpSeoMetadata(
   return {
     meta_title: gpSeo?.meta_title,
     meta_description: gpSeo?.meta_description,
-    og_image_url: gpSeo?.og_image_url,
+    og_image_url: gpSeo?.og_image_url
   };
 }
 
+/**
+ * Builds Next.js Metadata for PDP including BCP47 hreflang matrix + OG/Twitter
+ * per locale (Story 2.3 / D-122).
+ *
+ * @param product Store product (handle drives canonical slug).
+ * @param locale  Request locale — MUST originate z route param (`params.locale`),
+ *                NIE z cookie/header, aby zachować deterministic crawler behavior
+ *                (R-7). Param wymagany — wszyscy callers muszą propagować locale.
+ *
+ * `metadataBase` (R-8) celowo ustawione na `baseUrl` (origin) — wszystkie URL w
+ * tym helperze są już absolutne, więc semantycznie no-op. Wcześniej było
+ * `${baseUrl}/products/${handle}` — bug, bo metadataBase powinno wskazywać na
+ * origin, nie konkretną stronę.
+ */
 export const generateProductMetadata = async (
-  product: HttpTypes.StoreProduct
+  product: HttpTypes.StoreProduct,
+  locale: string
 ): Promise<Metadata> => {
   const headersList = await headers();
   const host = headersList.get('host');
@@ -51,28 +66,34 @@ export const generateProductMetadata = async (
   const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
-  const gpVendor = getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
+  const gpVendor =
+    getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
   const title = seo.meta_title ?? product?.title ?? siteName;
   const description =
     seo.meta_description ??
     `${product?.title} — voucher na zabieg w ${gpVendor}. Kup na ${siteName}.`;
-  const ogImageRaw =
-    seo.og_image_url ??
-    product?.thumbnail ??
-    null;
-  const ogImage = toSafeOgImageUrl(ogImageRaw, `${protocol}://${host}/B2C_Storefront_Open_Graph.png`);
+  const ogImageRaw = seo.og_image_url ?? product?.thumbnail ?? null;
+  const ogImage = toSafeOgImageUrl(
+    ogImageRaw,
+    `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
+  );
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+  const alternates = buildLocaleSeoAlternates(baseUrl, locale, 'products', product?.handle ?? '');
+  const social = buildLocaleSocialMetadata(locale);
 
   return {
     title,
     description,
     robots: 'index, follow',
-    metadataBase: new URL(`${protocol}://${host}/products/${product?.handle}`),
+    metadataBase: new URL(baseUrl),
+    alternates,
 
     openGraph: {
+      ...social.openGraph,
       title,
       description,
-      url: `${protocol}://${host}/products/${product?.handle}`,
+      url: alternates.canonical,
       siteName,
       images: [
         {
@@ -89,7 +110,8 @@ export const generateProductMetadata = async (
       title,
       description,
       images: [ogImage]
-    }
+    },
+    other: social.other
   };
 };
 
@@ -107,8 +129,7 @@ export const generateCategoryMetadata = async (
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const title = seo.meta_title ?? category.name;
   const description =
-    seo.meta_description ??
-    `${category.name} — zabiegi i vouchery na ${siteName}.`;
+    seo.meta_description ?? `${category.name} — zabiegi i vouchery na ${siteName}.`;
   const ogImage = toSafeOgImageUrl(
     seo.og_image_url,
     `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
@@ -156,9 +177,11 @@ export const generateCollectionMetadata = (
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const title = seo.meta_title ?? collection.title;
   const description =
-    seo.meta_description ??
-    `${collection.title} — zabiegi i vouchery na ${siteName}.`;
-  const canonical = new URL(`/${locale}/collections/${collection.handle}`, `${baseUrl}/`).toString();
+    seo.meta_description ?? `${collection.title} — zabiegi i vouchery na ${siteName}.`;
+  const canonical = new URL(
+    `/${locale}/collections/${collection.handle}`,
+    `${baseUrl}/`
+  ).toString();
   const ogImage = toSafeOgImageUrl(seo.og_image_url, `${baseUrl}/B2C_Storefront_Open_Graph.png`);
 
   return {

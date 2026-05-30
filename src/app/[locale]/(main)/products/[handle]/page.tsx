@@ -66,7 +66,7 @@ export async function generateMetadata({
   const { handle, locale } = await params;
   const prod = await fetchProductForPage(handle, locale);
 
-  return generateProductMetadata(prod);
+  return generateProductMetadata(prod, locale);
 }
 
 export default async function ProductPage({

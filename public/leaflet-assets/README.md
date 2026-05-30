@@ -1,39 +1,37 @@
-# Leaflet Assets
+# Leaflet marker assets — lokalny bundling (TF-65)
 
-These static assets are bundled from `leaflet@1.9.4` (BSD-2-Clause license).
+Te trzy PNG-i (`marker-icon.png`, `marker-icon-2x.png`, `marker-shadow.png`)
+sa bit-for-bit kopia upstream `leaflet@1.9.4/dist/images/*` (BSD-2-Clause,
+`LICENSE` w tym katalogu).
 
-## Files
+## Dlaczego lokalnie
 
-- `marker-icon.png` — default Leaflet marker icon (25x41 px, 1466 bytes,
-  sha256 `574c3a5cca85f4114085b6841596d62f00d7c892c7b03f28cbfa301deb1dc437`)
-- `marker-icon-2x.png` — retina default marker icon (50x82 px, 2464 bytes,
-  sha256 `00179c4c1ee830d3a108412ae0d294f55776cfeb085c60129a39aa6fc4ae2528`)
-- `marker-shadow.png` — default marker shadow (41x41 px, 618 bytes,
-  sha256 `264f5c640339f042dd729062cfc04c17f8ea0f29882b538e3848ed8f10edb4da`)
-- `LICENSE` — BSD-2-Clause license (Volodymyr Agafonkin, CloudMade)
+- **Supply-chain (TF-65):** zaden third-party CDN nie jest queryowany przy
+  renderze mapy — assety serwowane same-origin pod `/leaflet-assets/...`.
+- **CSP:** ulatwia przyszle tighten `img-src 'self' data: blob:` + explicit
+  tile origins (CSP §`src/lib/security/csp.ts`).
+- **GDPR / IP exposure:** brak leaku IP uzytkownika do third-party na kazdy
+  render mapy.
 
-## Why bundled locally (TF-65)
+## SSOT scieżek
 
-Previously, `SellerMap.tsx` hard-coded URLs to
-`https://unpkg.com/leaflet@1.9.4/dist/images/...`. This caused three
-security/privacy issues:
+Konstanty URL + geometria ikony zyja w
+`src/lib/map/leafletAssets.ts` (Story 4.3). Komponenty (np. `SellerMap.tsx`)
+importuja `leafletIconUrls` dla `L.Icon.Default.mergeOptions(...)` oraz
+`leafletAssets` / `getDefaultMarkerIcon(L)` dla jawnych instancji markera.
 
-1. **Supply-chain risk** — third-party CDN asset injection if leaflet@1.9.4
-   on npm/unpkg is compromised; no SRI hash protection for images.
-2. **CSP-tightening blocker** — the storefront CSP `img-src` directive is
-   currently `'self' https: blob: data:`, which permits any HTTPS origin
-   (including unpkg.com) via the wildcard. Bundling locally is the
-   precondition for a future tighten-pass that drops the `https:` wildcard
-   in favour of `'self' data: blob:` plus an explicit allowlist for tile
-   servers (e.g. `*.basemaps.cartocdn.com`). Bundling here does NOT itself
-   tighten CSP — it removes one of the obstacles to doing so.
-3. **GDPR third-party IP exposure** — every map render sent the user's
-   browser IP to Cloudflare/unpkg edge logs without a DPA or consent gate.
+## Update procedure
 
-Bundling locally (Next.js `public/` -> served as `'self'`) eliminates the
-supply-chain and IP-exposure risks immediately.
+1. Bump `leaflet` w `package.json` storefrontu.
+2. Skopiuj `node_modules/leaflet/dist/images/{marker-icon,marker-icon-2x,marker-shadow}.png`
+   do `public/leaflet-assets/`.
+3. Sprawdz sha256 (`shasum -a 256 public/leaflet-assets/*.png`) i porownaj
+   z upstream w evidence releaseu.
+4. Uruchom `SellerMap.assets.test.ts` (vitest) — gate na CDN URL musi pozostac
+   GREEN.
+5. **NIE** wprowadzaj URL-i CDN-owych dla Leaflet ikon — gate w testach +
+   grep gate w sprint statusu odrzuca PR.
 
-## License attribution
+## License
 
-See `LICENSE` (BSD-2-Clause). Copyright (c) 2010-2023 Volodymyr Agafonkin,
-CloudMade. Redistribution permitted with copyright notice preserved.
+`LICENSE` w tym katalogu zawiera BSD-2-Clause Leaflet plus header TF-65.

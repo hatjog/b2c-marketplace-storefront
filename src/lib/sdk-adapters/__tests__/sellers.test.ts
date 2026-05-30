@@ -127,7 +127,12 @@ describe('resolveSellerHandleToId', () => {
     );
     expect(mockSellersQuery).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ fetchOptions: { cache: 'no-cache' } })
+      expect.objectContaining({
+        fetchOptions: {
+          cache: 'no-cache',
+          headers: { 'x-medusa-locale': 'pl-PL' }
+        }
+      })
     );
   });
 
@@ -382,7 +387,14 @@ describe('fetchSellerSummaryByHandle', () => {
     expect(result?.handle).toBe('city-beauty');
     expect(mockSellersQuery).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ handle: 'city-beauty', limit: 1, fetchOptions: { cache: 'no-cache' } })
+      expect.objectContaining({
+        handle: 'city-beauty',
+        limit: 1,
+        fetchOptions: {
+          cache: 'no-cache',
+          headers: { 'x-medusa-locale': 'pl-PL' }
+        }
+      })
     );
   });
 });

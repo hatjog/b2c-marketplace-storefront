@@ -54,10 +54,10 @@ describe('Story 6.3 storefront i18n hardening', () => {
   });
 
   test('sitemap emits native alternates for active locales with x-default pointing to PL', () => {
-    const source = read('src/app/sitemap.ts');
+    const source = read('src/lib/seo/sitemap.ts');
 
     assert.match(source, /SUPPORTED_LOCALES\.reduce/);
-    assert.match(source, /toHreflang\(locale\)/);
+    assert.match(source, /toHreflangBare\(locale\)/);
     assert.match(source, /'x-default': localizedUrl\(base, DEFAULT_LOCALE, path\)/);
     assert.match(source, /\/regulamin/);
     assert.match(source, /\/polityka-prywatnosci/);

@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types';
 
 import { sdk } from '@/lib/config';
 import { filterByMarket, getMarketId } from '@/lib/helpers/market-filter';
+import { localeCacheTag } from '@/lib/sdk/locale-interceptor';
 
 interface CategoriesProps {
   query?: Record<string, unknown>;
@@ -23,7 +24,7 @@ export const listCategories = async ({ query }: Partial<CategoriesProps> = {}) =
         ...query
       },
       cache: 'force-cache',
-      next: { revalidate: 3600 }
+      next: { revalidate: 3600, tags: [await localeCacheTag('product-categories')] }
     })
     .then(({ product_categories }) => product_categories);
 
@@ -64,7 +65,7 @@ export const getCategoryByHandle = async (categoryHandle: string) => {
         handle: categoryHandle
       },
       cache: 'force-cache',
-      next: { revalidate: 300 }
+      next: { revalidate: 300, tags: [await localeCacheTag('product-categories')] }
     })
     .then(({ product_categories }) => product_categories[0]);
 };

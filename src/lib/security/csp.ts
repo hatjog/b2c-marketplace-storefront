@@ -51,6 +51,22 @@ function resolveMedusaBackendOriginsForCsp(): string[] {
  * runtime origins required by checkout.
  * Tailwind requires `'unsafe-inline'` for styles only — NOT scripts.
  * `frame-ancestors 'none'` blocks clickjacking.
+ *
+ * v1.10.0 D-104 / FR-D.2 / Story 4.4: `connect-src` also allows
+ * `https://*.maptiler.com` for MapTiler vector + raster tile loading from
+ * the GP-owned style ID.
+ *
+ * Coupling note (Story 4.4 INFO-1 review): MapTiler raster sprite/glyph PNGs
+ * are covered by the permissive `img-src 'self' https: blob: data:` directive
+ * — NIE zawężać `img-src` do explicit originów bez równoczesnego audytu
+ * MapTiler tile endpointów, inaczej zepsujesz raster tile loading bez sygnału
+ * w `connect-src` testach.
+ *
+ * Forward-looking (Story 4.4 INFO-2 review): jeżeli future story przełączy
+ * `SellerMap` z `react-leaflet` (raster) na MapLibre GL JS (vector tiles),
+ * MapLibre tworzy blob workers — wtedy dopisać `worker-src 'self' blob:`
+ * (lub `child-src 'self' blob:` fallback) do directive listy. Aktualny stack
+ * (raster) workerów nie używa.
  */
 export function buildCspDirectiveList(
   medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
@@ -67,7 +83,8 @@ export function buildCspDirectiveList(
     // v1.9.0 wf5 F-CC1-005 fix: `connect-src` whitelists GP backend origin
     // (resolved from MEDUSA_BACKEND_URL) instead of the wrong
     // `api.mercurjs.com`. Stripe edge origins (r/m/q.stripe.com) preserved.
-    `connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com${backendConnectFragments}`,
+    // v1.10.0 D-104 / Story 4.4 adds MapTiler without broad `connect-src *`.
+    `connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com https://*.maptiler.com${backendConnectFragments}`,
     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",

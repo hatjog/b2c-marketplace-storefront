@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { buildMedusaUrl } from '@/lib/env';
+import { normalizeToCanonicalLocale, withLocaleHeader } from '@/lib/sdk/locale-interceptor';
 import {
   createVoucherConsentSchema,
   firstVoucherConsentError,
@@ -59,12 +60,14 @@ export async function submitVoucherConsent(
     return { status: 'error', error: firstVoucherConsentError(parsed.error) };
   }
 
+  const canonicalLocale = normalizeToCanonicalLocale(locale);
+
   try {
     const response = await fetch(
       buildMedusaUrl(`/store/voucher-consent/${encodeURIComponent(token)}`),
       {
         method: 'POST',
-        headers: publishableHeaders(),
+        headers: await withLocaleHeader(publishableHeaders(), canonicalLocale),
         body: JSON.stringify(parsed.data),
         cache: 'no-store'
       }
