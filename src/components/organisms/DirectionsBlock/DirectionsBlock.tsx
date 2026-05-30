@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { SellerMap } from '@/components/cells/SellerMap';
+import { SellerMap } from '@/components/SellerMap';
 import {
   buildAppleMapsDeeplink,
   buildGoogleMapsDeeplink,
@@ -17,14 +17,17 @@ import { cn } from '@/lib/utils';
  * tabs) z mini-mapką + 2 deeplink buttons (Google Maps + Apple Maps) +
  * privacy notice.
  *
- * Decision (T4 — re-use vs variant): RE-USE `SellerMap` cell z `sellers={[seller]}`
- * array-of-1 + `className="h-64 w-full"` mini sizing. Rationale:
- * - DRY — leverages tested AC1-AC3 z Story 4.2.
- * - SellerMap defensive filter handles 0-1 markers gracefully (FitBoundsToMarkers
- *   skips fitBounds when points.length < 2, falls back to PL_DEFAULT_ZOOM 6).
- *   Trade-off: zoom-out na PL bbox dla single marker = sub-optimal mini-map UX.
- *   Acceptable dla MVP; future polish defer Story 4.5.1 (extend SellerMap z
- *   optional `centerOverride` + `zoomOverride` props dla mini-mode).
+ * Decision (R1-HIGH consolidation): RE-USE the mode-prop MapTiler-capable
+ * `@/components/SellerMap` (mode="detail") z `sellers={[seller]}` array-of-1 +
+ * `className="h-64 w-full"`. Rationale:
+ * - Single SellerMap implementation — Epic-4 MapTiler/CSP work (4-1/4-2/4-4)
+ *   plus the locally-bundled Leaflet marker assets (TF-65) now actually reach
+ *   the seller detail page instead of a divergent legacy CartoDB component.
+ * - mode="detail" centers on the single seller (SellerMap MapBehavior uses
+ *   `map.setView` to the marker at `maxAutoZoom` for a 1-seller set) — no PL
+ *   bbox zoom-out, so single-marker mini-map UX is correct without overrides.
+ * - When MapTiler tiles are unavailable the component renders its FallbackPanel
+ *   with the user-agent-aware maps deep-link (graceful no-tile fallback).
  *
  * Defensive fallback (AC4): jeśli ani lat/lng ANI address → return null
  * (graceful skip; no empty placeholder section in detail page).
@@ -42,7 +45,13 @@ export interface DirectionsBlockProps {
     lat?: number | null;
     lng?: number | null;
   };
-  locale: string;
+  /**
+   * Accepted for caller compatibility. The map deep-links are derived from the
+   * user-agent client-side (see SellerMap deepLink builder), so DirectionsBlock
+   * no longer threads `locale` into the map; it is retained on the public props
+   * so existing callers (seller detail page) keep compiling unchanged.
+   */
+  locale?: string;
   className?: string;
 }
 
@@ -50,7 +59,7 @@ function isFiniteCoord(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-export function DirectionsBlock({ seller, locale, className }: DirectionsBlockProps) {
+export function DirectionsBlock({ seller, className }: DirectionsBlockProps) {
   const t = useTranslations('seller.detail');
 
   const hasCoords = isFiniteCoord(seller.lat) && isFiniteCoord(seller.lng);
@@ -104,17 +113,13 @@ export function DirectionsBlock({ seller, locale, className }: DirectionsBlockPr
         <SellerMap
           sellers={[
             {
-              handle: seller.handle,
+              id: seller.handle,
               name: seller.name,
-              photo_url: null,
-              city: null,
-              product_count: 0,
               lat: seller.lat as number,
               lng: seller.lng as number,
-              address: seller.address ?? null
+              addressLine: seller.address ?? undefined
             }
           ]}
-          locale={locale}
           mode="detail"
           className="h-64 w-full"
         />

@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';
 import { Funnel_Display, Inter } from 'next/font/google';
+import { getLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 
 import './globals.css';
@@ -94,13 +95,19 @@ export default async function RootLayout({
       : null;
   const headersList = await headers();
   const gpLocaleHeader = headersList.get('x-gp-locale');
+  // R1-LOW fix: when middleware did not set `x-gp-locale` (routes that bypass
+  // the middleware matcher), do NOT hardcode `pl` — derive the locale from the
+  // URL segment via next-intl's request-scoped `getLocale()` so `<html lang>`
+  // stays correct on /en|/ua|/de. `getLocale()` itself falls back to the
+  // default locale only when the segment is missing/unsupported.
   if (!gpLocaleHeader && process.env.NODE_ENV !== 'production') {
     // R-5 defensive: middleware powinno ustawić x-gp-locale dla każdej non-redirect
-    // gałęzi; brak nagłówka oznacza, że root layout renderuje z fallbackiem `pl`
-    // — sygnalizujemy w dev/preview, aby nie wyciekło na non-PL route.
-    console.warn('[layout] missing x-gp-locale header — falling back to pl-PL');
+    // gałęzi; brak nagłówka → deryfujemy locale z URL segmentu (getLocale),
+    // sygnalizujemy w dev/preview aby wychwycić ewentualny matcher gap.
+    console.warn('[layout] missing x-gp-locale header — deriving lang from URL locale segment');
   }
-  const htmlLang = toHreflang(gpLocaleHeader ?? 'pl');
+  const resolvedLocale = gpLocaleHeader ?? (await getLocale());
+  const htmlLang = toHreflang(resolvedLocale);
 
   return (
     <html

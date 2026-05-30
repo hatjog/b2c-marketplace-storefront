@@ -18,6 +18,7 @@ import { SiteFooter } from '@/components/organisms/SiteFooter/SiteFooter';
 import { SiteHeader } from '@/components/organisms/SiteHeader/SiteHeader';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { checkRegion } from '@/lib/helpers/check-region';
+import { computeLocaleCoverage } from '@/lib/i18n/localeCoverage';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 const BCP47_LOCALE_BY_ROUTE_LOCALE: Record<string, LocaleFallbackTargetLocale> = {
@@ -47,12 +48,13 @@ export default async function RootLayout({
   const regionCheck = await checkRegion(locale);
   const tA11y = await getTranslations('accessibility');
   const targetLocale = resolveTargetLocale(locale);
-  // TODO(Story 2.2): podmienić placeholder na SSR pageCoverage z missing-key probe.
-  // Wartość 0.5 dla non-PL daje deterministyczny page-level proof point (banner widoczny
-  // na realnych route'ach `en/de/ua`); PL route zawsze 1 (canonical fallback locale).
+  // Real SSR catalog-coverage probe (FR-B.4 / Trust Invariant #7): fraction of
+  // PL leaf translation keys that the active locale ships as non-empty strings.
+  // PL (canonical fallback) is always 1; non-PL locales surface the banner only
+  // when they are materially behind PL (per LocaleFallbackNotice hysteresis).
   // TODO(Story 2.x): fragmenty pochodzące z PL fallback messages MUSZĄ być w
   // `<div lang="pl">` per NFR5.4 (`<html lang>` integrity dla fallback fragments).
-  const pageCoverage = targetLocale === FALLBACK_LOCALE ? 1 : 0.5;
+  const pageCoverage = computeLocaleCoverage(locale);
 
   if (!regionCheck) {
     return redirect('/');
