@@ -1064,6 +1064,21 @@
     "payment_failed_title": "Zahlung fehlgeschlagen",
     "payment_failed_description": "Erneut versuchen oder zum Warenkorb zurückkehren, um die Zahlungsmethode zu ändern."
   },
+  "wallet": {
+    "google_label": "Zu Google Wallet hinzufügen",
+    "apple_label": "Zu Apple Wallet hinzufügen",
+    "pdf_label": "PDF herunterladen",
+    "email_label": "Erneut per E-Mail senden",
+    "eyebrow": "Bewahre deinen Voucher so auf, wie du möchtest — im Telefon, als PDF oder per E-Mail",
+    "iphone_safari_eyebrow": "Auf dem Telefon als PDF speichern — Apple Wallet kommt bald",
+    "loading_label": "Wird gespeichert...",
+    "email_loading_label": "Wird gesendet...",
+    "success_toast": "Voucher in Google Wallet gespeichert",
+    "error_toast": "Der Voucher konnte nicht in Google Wallet gespeichert werden. Versuche es erneut oder speichere ihn als PDF.",
+    "retry_label": "Erneut versuchen",
+    "email_success_toast": "Voucher wurde erneut per E-Mail gesendet.",
+    "email_error_toast": "Die E-Mail konnte nicht gesendet werden. Versuche es erneut."
+  },
   "voucher": {
     "qr_code_aria_label": "QR-Code des Gutscheins",
     "qr_code_label": "Im Salon scannen",

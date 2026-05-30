@@ -1064,6 +1064,21 @@
     "payment_failed_title": "Płatność nie powiodła się",
     "payment_failed_description": "Spróbuj ponownie albo wróć do koszyka, aby zmienić metodę płatności."
   },
+  "wallet": {
+    "google_label": "Dodaj do Google Wallet",
+    "apple_label": "Dodaj do Apple Wallet",
+    "pdf_label": "Pobierz PDF",
+    "email_label": "Wyślij ponownie na e-mail",
+    "eyebrow": "Zachowaj voucher jak chcesz — w telefonie, w PDF, lub w mailu",
+    "iphone_safari_eyebrow": "Zapisz na telefonie jako PDF — Apple Wallet wkrótce",
+    "loading_label": "Zapisuję...",
+    "email_loading_label": "Wysyłam...",
+    "success_toast": "Voucher zapisany w Google Wallet",
+    "error_toast": "Nie udało się zapisać w Google Wallet. Spróbuj ponownie lub zapisz w PDF.",
+    "retry_label": "Spróbuj ponownie",
+    "email_success_toast": "Voucher wysłany ponownie na e-mail.",
+    "email_error_toast": "Nie udało się wysłać e-maila. Spróbuj ponownie."
+  },
   "voucher": {
     "qr_code_aria_label": "Kod QR vouchera",
     "qr_code_label": "Zeskanuj w salonie",
