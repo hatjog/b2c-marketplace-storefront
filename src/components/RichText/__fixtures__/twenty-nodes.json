@@ -1,0 +1,104 @@
+[
+  {
+    "type": "paragraph",
+    "children": [
+      { "text": "Lead text with " },
+      { "type": "bold", "text": "bold" },
+      { "text": ", " },
+      { "type": "italic", "text": "italic" },
+      { "text": ", " },
+      { "type": "code", "text": "code" },
+      { "text": " and " },
+      {
+        "type": "link",
+        "href": "https://example.com/editorial",
+        "text": "external reference",
+        "external": true,
+        "ariaLabel": "External editorial reference"
+      },
+      { "text": "." }
+    ]
+  },
+  {
+    "type": "heading-h1",
+    "children": [{ "text": "CMS RichText baseline" }]
+  },
+  {
+    "type": "heading-h2",
+    "children": [{ "text": "Editorial hierarchy" }]
+  },
+  {
+    "type": "heading-h3",
+    "children": [{ "text": "Product storytelling" }]
+  },
+  {
+    "type": "heading-h4",
+    "children": [{ "text": "Details" }]
+  },
+  {
+    "type": "heading-h5",
+    "children": [{ "text": "Fine print" }]
+  },
+  {
+    "type": "heading-h6",
+    "children": [{ "text": "Footnote heading" }]
+  },
+  {
+    "type": "heading-h2",
+    "children": [{ "text": "Second section" }]
+  },
+  {
+    "type": "list-ordered",
+    "children": [
+      {
+        "type": "listitem",
+        "children": [{ "text": "First ordered item" }]
+      },
+      {
+        "type": "listitem",
+        "children": [
+          { "text": "Second ordered item with " },
+          { "type": "bold", "text": "emphasis" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "list-unordered",
+    "children": [
+      {
+        "type": "listitem",
+        "children": [{ "text": "First unordered item" }]
+      },
+      {
+        "type": "listitem",
+        "children": [
+          { "text": "Second unordered item with " },
+          { "type": "italic", "text": "tone" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "quote",
+    "children": [{ "text": "A quoted CMS passage keeps semantic blockquote output." }],
+    "citation": "Grow Platform editorial"
+  },
+  {
+    "type": "hr"
+  },
+  {
+    "type": "image",
+    "src": "/images/blog/post-1.jpg",
+    "alt": "Editorial product arrangement",
+    "width": 1200,
+    "height": 800,
+    "caption": "Fixture image with mandatory alt text."
+  },
+  {
+    "type": "embed",
+    "provider": "youtube",
+    "src": "https://www.youtube.com/embed/aqz-KE-bpKQ",
+    "title": "CMS RichText embedded video"
+  }
+]
