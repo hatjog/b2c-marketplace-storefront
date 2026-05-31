@@ -74,18 +74,25 @@ export function buildCspDirectiveList(
   const backendConnectFragments = medusaBackendOrigins.length
     ? ' ' + medusaBackendOrigins.join(' ')
     : '';
+  // v1.11.0 Gate A (ra-1 live-render finding 2026-05-31): the TalkJS chat widget
+  // loads https://cdn.talkjs.com/talk.js, talks to https://api.talkjs.com over a
+  // wss://*.talkjs.com websocket, and renders its UI in an https://*.talkjs.com
+  // iframe. Under enforce mode the prior directive list blocked all of these (the
+  // live-render gate B1 caught the script-src block). Add the TalkJS origins to the
+  // matching directives. img-src `https:` already covers TalkJS avatars; style-src
+  // `'unsafe-inline'` already covers its injected styles.
   return [
     "default-src 'self'",
-    "script-src 'self' https://js.stripe.com",
+    "script-src 'self' https://js.stripe.com https://cdn.talkjs.com",
     "style-src 'self' 'unsafe-inline'",
-    "font-src 'self' fonts.gstatic.com",
+    "font-src 'self' fonts.gstatic.com https://cdn.talkjs.com",
     "img-src 'self' https: blob: data:",
     // v1.9.0 wf5 F-CC1-005 fix: `connect-src` whitelists GP backend origin
     // (resolved from MEDUSA_BACKEND_URL) instead of the wrong
     // `api.mercurjs.com`. Stripe edge origins (r/m/q.stripe.com) preserved.
     // v1.10.0 D-104 / Story 4.4 adds MapTiler without broad `connect-src *`.
-    `connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com https://*.maptiler.com${backendConnectFragments}`,
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    `connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com https://*.maptiler.com https://api.talkjs.com wss://*.talkjs.com${backendConnectFragments}`,
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.talkjs.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'"
@@ -112,7 +119,7 @@ export function buildCspDirectiveListWithNonce(
 ): readonly string[] {
   return buildCspDirectiveList(medusaBackendOrigins).map((directive) =>
     directive.startsWith('script-src ')
-      ? `script-src 'self' 'nonce-${nonce}' https://js.stripe.com`
+      ? `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://cdn.talkjs.com`
       : directive
   );
 }
