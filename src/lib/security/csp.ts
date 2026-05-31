@@ -93,6 +93,31 @@ export function buildCspDirectiveList(
 }
 
 /**
+ * Per-request nonce variant of {@link buildCspDirectiveList}.
+ *
+ * v1.10.0 ra-1 (clean-boot / live-render fix): a static `script-src 'self'`
+ * (no nonce, no `'unsafe-inline'`) emitted from `next.config.ts` `headers()`
+ * BLOCKS Next.js App Router's own inline hydration scripts under enforce mode
+ * (prod default) → blank page in any real browser. The fix is a per-request
+ * nonce injected by `src/middleware.ts` into BOTH the request CSP header (so
+ * Next auto-stamps the same nonce onto its inline `<script>` tags) and the
+ * response CSP header (what the browser enforces). Everything except
+ * `script-src` is identical to {@link buildCspDirectiveList}; `'unsafe-inline'`
+ * is deliberately NOT added (it would defeat the policy). `js.stripe.com`
+ * stays host-allowlisted; `'self'` still covers Next's external chunks.
+ */
+export function buildCspDirectiveListWithNonce(
+  nonce: string,
+  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
+): readonly string[] {
+  return buildCspDirectiveList(medusaBackendOrigins).map((directive) =>
+    directive.startsWith('script-src ')
+      ? `script-src 'self' 'nonce-${nonce}' https://js.stripe.com`
+      : directive
+  );
+}
+
+/**
  * Back-compat: `CSP_DIRECTIVE_LIST` and `CSP_DIRECTIVES` are evaluated at
  * module-load time using whatever env vars are set then. For runtime
  * resolution under `next.config.ts` `headers()` use `buildCspDirectiveList()`.

@@ -71,20 +71,12 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true
   },
   async headers() {
-    const cspMode =
-      process.env.STOREFRONT_CSP_MODE ??
-      (process.env.NODE_ENV !== 'production' ? 'report-only' : undefined);
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: resolveCspHeaderName(cspMode),
-            value: CSP_DIRECTIVES,
-          },
-        ],
-      },
-    ];
+    // v1.10.0 ra-1: CSP moved to src/middleware.ts so it can carry a
+    // per-request nonce. A static header here cannot hold a nonce and would
+    // emit a second, no-nonce CSP that still blocks Next's inline hydration
+    // scripts (blank page under enforce mode). The STOREFRONT_CSP_MODE
+    // enforce/report-only toggle is preserved in the middleware.
+    return [];
   },
   async redirects() {
     return [

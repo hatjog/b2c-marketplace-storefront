@@ -3,6 +3,19 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/routing';
 import { PROTECTED_ROUTES } from './lib/constants';
 import { isTokenExpired } from './lib/helpers/token';
+import { buildCspDirectiveListWithNonce, resolveCspHeaderName } from './lib/security/csp';
+
+/**
+ * v1.10.0 ra-1: emit a per-request nonce CSP. A static `script-src 'self'`
+ * (the old `next.config.ts` `headers()` approach) blocks Next's own inline
+ * hydration scripts under enforce mode → blank page. Setting the CSP (with a
+ * fresh nonce) on the REQUEST headers makes Next stamp the same nonce on its
+ * inline `<script>` tags; the matching RESPONSE header is what the browser
+ * enforces. `STOREFRONT_CSP_MODE` still flips enforce ↔ report-only.
+ */
+function generateCspNonce(): string {
+  return btoa(crypto.randomUUID());
+}
 
 const GP_LANG_COOKIE = '_gp_lang';
 const GP_REGION_COOKIE = '_gp_region';
@@ -114,13 +127,23 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const nonce = generateCspNonce();
+  const cspValue = buildCspDirectiveListWithNonce(nonce).join('; ');
+  const cspHeaderName = resolveCspHeaderName();
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-gp-locale', lang);
+  // Next reads the nonce from the request CSP header and stamps it onto its
+  // inline hydration scripts; x-nonce lets RSC/app code reuse the same nonce.
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', cspValue);
   const response = NextResponse.next({
     request: {
       headers: requestHeaders
     }
   });
+  // Browser-enforced header (name flips enforce ↔ report-only via STOREFRONT_CSP_MODE).
+  response.headers.set(cspHeaderName, cspValue);
 
   // Set _gp_lang cookie from URL lang
   if (langCookieValue !== lang) {
