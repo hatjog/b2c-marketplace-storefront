@@ -2,7 +2,6 @@
 import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';
-import { Funnel_Display, Inter } from 'next/font/google';
 import { getLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 
@@ -21,27 +20,6 @@ import { Providers } from './providers';
 const VALID_THEMES = ['bonbeauty'] as const;
 
 validateStorefrontEnv();
-
-// v1.7.0 Story 2.1 review fix (MEDIUM): include weight 700 so Tailwind `font-bold`
-// consumers (Header, SellerHero, TabsTrigger, ReturnMethodsTab, ...) render with the
-// real Funnel Display 700 face rather than synthetic-bolded 600.
-const funnelDisplay = Funnel_Display({
-  variable: '--font-funnel-sans',
-  subsets: ['latin', 'latin-ext'],
-  weight: ['300', '400', '500', '600', '700']
-});
-
-// v1.9.0 Wave F7 hardening (CC-3 M2): Funnel Display has no Cyrillic
-// subset in Google Fonts. Pair it with Inter (Cyrillic + Greek + Latin)
-// so UA Ukrainian glyphs render in a curated UI font rather than the
-// OS fallback. Inter is the per-`:lang(ua)` fallback per
-// `typography-uk.md` §6.
-const interFallback = Inter({
-  variable: '--font-cyrillic-fallback',
-  subsets: ['latin', 'latin-ext', 'cyrillic', 'cyrillic-ext'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap'
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
@@ -211,7 +189,7 @@ export default async function RootLayout({
         )}
       </head>
       <body
-        className={`${funnelDisplay.className} ${interFallback.variable} relative bg-primary text-secondary antialiased`}
+        className="relative bg-primary text-secondary antialiased"
         suppressHydrationWarning
       >
         {showFallbackBanner && (
