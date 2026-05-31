@@ -79,9 +79,17 @@ function ledgerCandidateRoots(path: NodePath): string[] {
 let cached: { mtimeMs: number; entries: LedgerEntry[]; sourcePath: string } | null = null;
 
 async function readLedger(): Promise<{ entries: LedgerEntry[]; sourcePath: string } | null> {
+  // `webpackIgnore` keeps webpack from trying to bundle these node: builtins. The
+  // lazy import alone is not enough: this server-only module is still reachable from
+  // the client graph via the `@/components/organisms` barrel, so a production
+  // `next build` (webpack, not the lenient dev/turbopack path) statically analyses
+  // the dynamic import and fails with `UnhandledSchemeError: node:fs/promises`.
+  // With webpackIgnore the import is left as a native runtime import — resolved by
+  // Node when a server component actually calls readLedger(), never reached on the
+  // client. (Turbopack already handles node: schemes, so dev is unaffected.)
   const [{ default: fs }, path] = await Promise.all([
-    import('node:fs/promises'),
-    import('node:path')
+    import(/* webpackIgnore: true */ 'node:fs/promises'),
+    import(/* webpackIgnore: true */ 'node:path')
   ]);
   for (const root of ledgerCandidateRoots(path)) {
     const candidate = path.join(root, LEDGER_RELATIVE_PATH);
