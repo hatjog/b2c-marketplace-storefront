@@ -14,8 +14,23 @@ function missingEnvError(primaryName: string, fallbackNames: string[]): Error {
   )
 }
 
+// Next.js only inlines NEXT_PUBLIC_* env vars into the client bundle when they
+// are accessed as a STATIC literal (`process.env.NEXT_PUBLIC_FOO`). The dynamic
+// `readEnv(name)` (`process.env[name]`) is NOT inlined, so any client component
+// that transitively reaches these helpers would otherwise see `undefined` and
+// throw "Missing MEDUSA_BACKEND_URL" at hydration → the app 500 error boundary.
+// We therefore add explicit literal NEXT_PUBLIC_ fallbacks (same normalization
+// as readEnv). Server keeps preferring the non-public vars.
+function normalizeEnvValue(value: string | undefined): string | undefined {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed.replace(/\/+$/, '') : undefined
+}
+
 export function resolveMedusaBackendUrl(): string {
-  const value = readEnv('MEDUSA_BACKEND_URL') ?? readEnv('MEDUSA_URL')
+  const value =
+    readEnv('MEDUSA_BACKEND_URL') ??
+    readEnv('MEDUSA_URL') ??
+    normalizeEnvValue(process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL)
 
   if (value) {
     return value
@@ -25,7 +40,7 @@ export function resolveMedusaBackendUrl(): string {
     return LOCAL_MEDUSA_BACKEND_URL
   }
 
-  throw missingEnvError('MEDUSA_BACKEND_URL', ['MEDUSA_URL'])
+  throw missingEnvError('MEDUSA_BACKEND_URL', ['MEDUSA_URL', 'NEXT_PUBLIC_MEDUSA_BACKEND_URL'])
 }
 
 export function buildMedusaUrl(pathname: string): URL {
@@ -36,7 +51,10 @@ export function buildMedusaUrl(pathname: string): URL {
 }
 
 export function resolveStorefrontBaseUrl(): string {
-  const value = readEnv('STOREFRONT_BASE_URL') ?? readEnv('NEXT_PUBLIC_BASE_URL')
+  // Literal NEXT_PUBLIC_BASE_URL so it inlines client-side (see note above).
+  const value =
+    readEnv('STOREFRONT_BASE_URL') ??
+    normalizeEnvValue(process.env.NEXT_PUBLIC_BASE_URL)
 
   if (value) {
     return value
