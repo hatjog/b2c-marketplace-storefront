@@ -685,6 +685,8 @@
     "email_validation": "Введіть правильну адресу e-mail, наприклад ivan@example.com."
   },
   "cart": {
+    "open_cart_drawer_aria": "Відкрити кошик",
+    "item_fallback_name": "Товар",
     "go_to_cart_aria": "Перейти до кошика",
     "shopping_cart": "Кошик",
     "items": "Товари",

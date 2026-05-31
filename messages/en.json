@@ -685,6 +685,8 @@
     "email_validation": "Enter a valid e-mail address, for example jane@example.com."
   },
   "cart": {
+    "open_cart_drawer_aria": "Open cart",
+    "item_fallback_name": "Item",
     "go_to_cart_aria": "Go to cart",
     "shopping_cart": "Shopping cart",
     "items": "Items",
