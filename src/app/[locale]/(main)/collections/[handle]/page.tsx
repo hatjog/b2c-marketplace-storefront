@@ -10,11 +10,11 @@ import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 import { BlogLayout } from '@/components/templates/BlogLayout';
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import {
   getEditorialCollectionDetail,
   type EditorialCollectionSortKey
 } from '@/lib/data/editorial-collections';
+import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 60;
 
@@ -35,18 +35,14 @@ async function getBaseUrl() {
 }
 
 function buildAlternates(baseUrl: string, locale: string, handle: string) {
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, current) => {
-    acc[current] = `${baseUrl}/${current}/collections/${handle}`;
-    return acc;
-  }, {});
-
-  return {
-    canonical: `${baseUrl}/${locale}/collections/${handle}`,
-    languages: {
-      ...languages,
-      'x-default': `${baseUrl}/pl/collections/${handle}`
-    }
-  };
+  // SSOT hreflang builder → canonical BCP47 keys (pl-PL/en-US/uk-UA/de-DE) + x-default.
+  // Pre-v1.10.0 this emitted bare locale codes (pl/en/ua/de), which are non-canonical
+  // for <link rel="alternate" hreflang> and broke parity with PDP/category/seller routes.
+  return buildLocaleAlternates(
+    locale,
+    (loc) => `/${loc}/collections/${handle}`,
+    baseUrl
+  );
 }
 
 function buildQueryString(sort: EditorialCollectionSortKey) {

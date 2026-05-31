@@ -4,10 +4,20 @@
 // przekazują wynik do `resolveFooterNavLinks` — badge pokazywany TYLKO dla entries, których ledger
 // rzeczywiście stwierdza `status: accepted-in-house` per (market, locale, doc_type).
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-
 import yaml from 'js-yaml';
+
+// `node:fs/promises` and `node:path` are imported LAZILY inside readLedger()
+// rather than at module top-level. This server-only reader is transitively
+// reachable from the `@/components/organisms` barrel (Footer/SiteFooter are
+// re-exported via `export * from './index.server'`), and several `'use client'`
+// components import that combined barrel. A static `node:` import therefore
+// leaks into the app-client chunk and crashes BOTH bundlers at build time:
+//   - webpack:   UnhandledSchemeError: Reading from "node:fs/promises" ...
+//   - turbopack: chunking context does not support external modules (node:fs/promises)
+// Deferring the import keeps the module free of any static `node:` external, so
+// it is harmless if pulled into a client chunk; the dynamic import only resolves
+// when readLedger() actually runs (server components only).
+type NodePath = typeof import('node:path');
 
 export type LegalSignoffDocType = 'regulamin' | 'polityka_prywatnosci' | 'zasady_voucher' | 'pomoc';
 
@@ -55,7 +65,7 @@ const RUNTIME_TO_LEDGER_LOCALE: Record<string, LegalSignoffLocale> = {
   de: 'de-DE'
 };
 
-function ledgerCandidateRoots(): string[] {
+function ledgerCandidateRoots(path: NodePath): string[] {
   const env = process.env.LEGAL_SIGNOFF_LEDGER_ROOT;
   if (env && env.trim()) {
     return [path.resolve(env)];
@@ -69,7 +79,11 @@ function ledgerCandidateRoots(): string[] {
 let cached: { mtimeMs: number; entries: LedgerEntry[]; sourcePath: string } | null = null;
 
 async function readLedger(): Promise<{ entries: LedgerEntry[]; sourcePath: string } | null> {
-  for (const root of ledgerCandidateRoots()) {
+  const [{ default: fs }, path] = await Promise.all([
+    import('node:fs/promises'),
+    import('node:path')
+  ]);
+  for (const root of ledgerCandidateRoots(path)) {
     const candidate = path.join(root, LEDGER_RELATIVE_PATH);
     let stat;
     try {

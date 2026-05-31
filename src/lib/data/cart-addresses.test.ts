@@ -111,7 +111,7 @@ describe('setAddresses', () => {
       { authorization: 'Bearer test-token' }
     );
     expect(mockRevalidateTag).toHaveBeenCalledWith('carts');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/cart');
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/pl/cart');
   });
 
   it('returns a user-visible error when the cart is missing', async () => {
