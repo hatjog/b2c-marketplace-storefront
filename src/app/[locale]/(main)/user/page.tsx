@@ -44,7 +44,7 @@ export default async function UserPage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <StorefrontRouteStateSignal route="user-account" surface="w2-01-dashboard" />
-      <StorefrontI18nLongContentProbe locale={locale} surface="account-dashboard" />
+      <StorefrontI18nLongContentProbe locale={locale} surface="account" />
       <AccountLayoutWithChrome
         locale={locale}
         activeSurface="W2-01"
