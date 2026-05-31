@@ -80,13 +80,17 @@ export function buildCspDirectiveList(
   // iframe. Under enforce mode the prior directive list blocked all of these (the
   // live-render gate B1 caught the script-src block). Add the TalkJS origins to the
   // matching directives. img-src `https:` already covers TalkJS avatars; style-src
-  // `'unsafe-inline'` already covers its injected styles.
+  // `'unsafe-inline'` already covers its injected styles. media-src is added because
+  // TalkJS loads notification sounds from cdn.talkjs.com/__assets/*.mp3 (a live re-run
+  // after the script-src fix surfaced the media block — there was no explicit media-src,
+  // so it fell back to default-src 'self').
   return [
     "default-src 'self'",
     "script-src 'self' https://js.stripe.com https://cdn.talkjs.com",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' fonts.gstatic.com https://cdn.talkjs.com",
     "img-src 'self' https: blob: data:",
+    "media-src 'self' https://cdn.talkjs.com",
     // v1.9.0 wf5 F-CC1-005 fix: `connect-src` whitelists GP backend origin
     // (resolved from MEDUSA_BACKEND_URL) instead of the wrong
     // `api.mercurjs.com`. Stripe edge origins (r/m/q.stripe.com) preserved.

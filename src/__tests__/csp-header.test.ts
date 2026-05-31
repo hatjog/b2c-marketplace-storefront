@@ -33,6 +33,7 @@ const EXPECTED_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' fonts.gstatic.com https://cdn.talkjs.com",
   "img-src 'self' https: blob: data:",
+  "media-src 'self' https://cdn.talkjs.com",
   "connect-src 'self' https://*.sentry.io https://*.posthog.com https://api.stripe.com https://r.stripe.com https://m.stripe.com https://q.stripe.com https://*.maptiler.com https://api.talkjs.com wss://*.talkjs.com",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.talkjs.com",
   "frame-ancestors 'none'",
@@ -53,6 +54,7 @@ describe('CSP directive list (D-64 AC #1)', () => {
     expect(dir('connect-src')).toContain('https://api.talkjs.com');
     expect(dir('connect-src')).toContain('wss://*.talkjs.com');
     expect(dir('frame-src')).toContain('https://*.talkjs.com');
+    expect(dir('media-src')).toContain('https://cdn.talkjs.com'); // TalkJS notification sounds
     // the per-request nonce variant (what prod emits) must also allow the TalkJS script
     const nonceScript = buildCspDirectiveListWithNonce('abc123', []).find((d) => d.startsWith('script-src '));
     expect(nonceScript).toContain("'nonce-abc123'");
