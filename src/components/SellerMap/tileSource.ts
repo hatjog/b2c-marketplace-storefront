@@ -30,10 +30,11 @@ export const CARTODB_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 // CartoDB no-key voyager — używane WYŁĄCZNIE jako fallback bez klucza w dev/test.
-// `{r}` (retina) bywa pominięte przez warianty Leaflet które go nie podstawiają;
-// zachowujemy `{s}` subdomenę zgodnie z istniejącym kontraktem SellerMap.
+// `{r}` (retina) — Leaflet podstawia `@2x` gdy `detectRetina=true`, pusty string
+// gdy retina nieobsługiwane; zachowujemy `{s}` subdomenę zgodnie z istniejącym
+// kontraktem SellerMap. Przywrócone w story 7.5 fix (L1 — mapa listy cells).
 const CARTODB_NOKEY_URL =
-  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
 export function getMapTilerStyleId(): string {
   return process.env.NEXT_PUBLIC_MAPTILER_BONBEAUTY_STYLE_ID || 'streets-v2';

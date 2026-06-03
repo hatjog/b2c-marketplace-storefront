@@ -13,10 +13,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
 
-// Przechwyć eventHandlers TileLayer aby w teście wywołać error-path (tileerror).
+// Przechwyć eventHandlers i attribution TileLayer dla assertów error-path i attribution.
 declare global {
   // eslint-disable-next-line no-var
   var __lastTileEventHandlers: Record<string, (...a: unknown[]) => void> | undefined;
+  // eslint-disable-next-line no-var
+  var __lastTileAttribution: string | undefined;
   // eslint-disable-next-line no-var
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
@@ -30,7 +32,8 @@ vi.mock('react-leaflet', () => {
       globalThis.__lastTileEventHandlers = rest.eventHandlers as
         | Record<string, (...a: unknown[]) => void>
         | undefined;
-      return <div data-mock-tag="TileLayer" />;
+      globalThis.__lastTileAttribution = rest.attribution as string | undefined;
+      return <div data-mock-tag="TileLayer" data-attribution={rest.attribution as string} />;
     },
     Marker: ({ children }: { children?: React.ReactNode }) => (
       <div data-mock-tag="Marker">{children}</div>
@@ -100,6 +103,7 @@ describe('SellerMap zero-console-error guard (AC1, FR-D.2 AC3)', () => {
     warnSpy.mockRestore();
     while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
     delete process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
+    globalThis.__lastTileAttribution = undefined;
     // Przywróć NODE_ENV/env po wariancie prod (NODE_ENV bywa non-configurable).
     vi.unstubAllEnvs();
   });
@@ -151,8 +155,15 @@ describe('SellerMap zero-console-error guard (AC1, FR-D.2 AC3)', () => {
   it('attribution MapTiler + OpenStreetMap obecne na ścieżce keyed (FR-D.2 AC3)', async () => {
     process.env.NEXT_PUBLIC_MAPTILER_API_KEY = 'test-key';
     const { container, root } = await mount(Comp => <Comp mode="list" sellers={sellers} />);
+    // Guard data-attr (wskaźnik keyed tile source na SellerMap.client).
     const shell = container.querySelector('[data-testid="seller-map"]');
     expect(shell?.getAttribute('data-map-tile-source')).toBe('maptiler');
+    // (L2 fix) Sprawdź faktyczną wartość attribution przekazaną do TileLayer —
+    // gwarantuje, że tekst "MapTiler" i "OpenStreetMap" jest w props, nie tylko
+    // że data-attr jest ustawiony.
+    expect(globalThis.__lastTileAttribution).toBeDefined();
+    expect(globalThis.__lastTileAttribution).toContain('MapTiler');
+    expect(globalThis.__lastTileAttribution).toContain('OpenStreetMap');
     await act(async () => root.unmount());
   });
 });
