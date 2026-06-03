@@ -2,9 +2,9 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  border: 1px solid rgb(214 211 209);
+  border: 1px solid var(--bb-border-soft, rgb(214 211 209));
   border-radius: 8px;
-  background: rgb(245 245 244);
+  background: var(--bb-surface-strong, rgb(245 245 244));
 }
 
 .mode-list,
@@ -64,17 +64,17 @@
   width: 44px;
   height: 44px;
   place-items: center;
-  border: 2px solid rgb(255 255 255);
+  border: 2px solid var(--seller-map-marker-ring, rgb(255 255 255));
   border-radius: 999px;
-  background: rgb(126 34 206);
-  box-shadow: 0 8px 18px rgb(68 64 60 / 24%);
+  background: var(--seller-map-marker, rgb(126 34 206));
+  box-shadow: 0 8px 18px var(--seller-map-marker-shadow, rgb(68 64 60 / 24%));
 }
 
 .marker::after {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  background: rgb(255 255 255);
+  background: var(--seller-map-marker-ring, rgb(255 255 255));
   content: '';
 }
 
@@ -94,7 +94,7 @@
 }
 
 .eyebrow {
-  color: rgb(120 113 108);
+  color: var(--text-muted, rgb(120 113 108));
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -102,13 +102,13 @@
 }
 
 .fallbackTitle {
-  color: rgb(28 25 23);
+  color: var(--text-primary, rgb(28 25 23));
   font-size: 1rem;
   font-weight: 700;
 }
 
 .fallbackText {
-  color: rgb(87 83 78);
+  color: var(--text-secondary, rgb(87 83 78));
   font-size: 0.875rem;
 }
 
@@ -118,8 +118,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  background: rgb(28 25 23);
-  color: rgb(255 255 255);
+  background: var(--bg-action, rgb(28 25 23));
+  color: var(--text-on-action, rgb(255 255 255));
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
@@ -132,15 +132,15 @@
 }
 
 .popupTitle {
-  color: rgb(28 25 23);
+  color: var(--text-primary, rgb(28 25 23));
   font-weight: 700;
 }
 
 .popupMeta {
-  color: rgb(87 83 78);
+  color: var(--text-secondary, rgb(87 83 78));
   font-size: 0.875rem;
 }
 
 .skeleton {
-  color: rgb(87 83 78);
+  color: var(--text-secondary, rgb(87 83 78));
 }
