@@ -7,6 +7,9 @@ import { SELLER_MAP_MODES } from '../modes';
 const COMPONENT_DIR = resolve(__dirname, '..');
 const CLIENT_SRC = readFileSync(resolve(COMPONENT_DIR, 'SellerMap.client.tsx'), 'utf-8');
 const CSS_SRC = readFileSync(resolve(COMPONENT_DIR, 'SellerMap.module.css'), 'utf-8');
+// Story 7.5: attribution/tile-source przeniesione do współdzielonego SSOT
+// `tileSource.ts` (konsolidacja mode-aware MapTiler dla obu map).
+const TILE_SRC = readFileSync(resolve(COMPONENT_DIR, 'tileSource.ts'), 'utf-8');
 
 describe('SellerMap contract', () => {
   it('ma cztery wymagane mode oraz auto-zoom nie większy niż poziom dzielnicy', () => {
@@ -41,9 +44,9 @@ describe('SellerMap contract', () => {
     expect(CSS_SRC).toContain('min-height: 44px');
   });
 
-  it('zawiera MapTiler i OpenStreetMap attribution oraz nie renderuje raw coords w popupie', () => {
-    expect(CLIENT_SRC).toContain('MapTiler');
-    expect(CLIENT_SRC).toContain('OpenStreetMap');
+  it('zawiera MapTiler i OpenStreetMap attribution (tileSource SSOT) oraz nie renderuje raw coords w popupie', () => {
+    expect(TILE_SRC).toContain('MapTiler');
+    expect(TILE_SRC).toContain('OpenStreetMap');
     expect(CLIENT_SRC).not.toContain('{seller.lat}');
     expect(CLIENT_SRC).not.toContain('{seller.lng}');
   });

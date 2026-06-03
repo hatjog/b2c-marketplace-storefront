@@ -21,6 +21,8 @@ import {
 
 import type { SellerListItem } from '@/lib/data/seller';
 import { leafletIconUrls } from '@/lib/map/leafletAssets';
+import { MapResizeInvalidator } from '@/components/SellerMap/MapResizeInvalidator';
+import { resolveTileSource } from '@/components/SellerMap/tileSource';
 
 import {
   DEFAULT_CLUSTER_OPTIONS,
@@ -42,11 +44,17 @@ const Marker = MarkerBase as any;
 /**
  * Story v160-4-2 — interactive seller map (UX-DR15, FR21).
  *
- * Why react-leaflet + Leaflet 1.9 + CartoDB Voyager tiles:
- * - MIT / OSS / no API key / no usage limits (vs Mapbox commercial tiers)
+ * Tile source (Story 7.5 / FR7 / ra-2): mode-aware swap CartoDB→MapTiler przez
+ * współdzielony `@/components/SellerMap/tileSource` — klucz MapTiler ⇒ kafle
+ * MapTiler (attribution MapTiler+OpenStreetMap); brak klucza w dev/test ⇒
+ * CartoDB no-key voyager fallback. Zamiast zahardkodowanego, divergentnego
+ * CartoDB (R1-HIGH consolidation — jeden resolver dla obu map).
+ *
+ * Why react-leaflet + Leaflet 1.9:
+ * - MIT / OSS / no usage limits (vs Mapbox commercial tiers)
  * - ~50KB gzip (vs Google Maps ~200KB) — fits NFR-PERF-4 LCP budget when
  *   lazy-loaded behind `next/dynamic({ ssr: false })` (see SellerMap.dynamic).
- * - Voyager tiles are OSM-upstream + Polish labels visible (PL/EN locale parity).
+ * - OSM-upstream + Polish labels visible (PL/EN locale parity).
  *
  * SSR caveat: `react-leaflet` accesses `window` at module init — must be
  * imported via `next/dynamic` with `ssr: false`. Use `SellerMapDynamic` from
@@ -355,6 +363,11 @@ export function SellerMap({
   const fallbackAddress = useMemo(() => t('popup_address'), [t]);
   const viewDetailsLabel = useMemo(() => t('popup_view_details'), [t]);
 
+  // Story 7.5 (FR7/ra-2): mode-aware swap CartoDB→MapTiler — współdzielony
+  // resolver (klucz ⇒ MapTiler, brak klucza dev/test ⇒ CartoDB no-key fallback),
+  // zamiast zahardkodowanego, divergentnego URL-a CartoDB.
+  const tileSource = useMemo(() => resolveTileSource(), []);
+
   return (
     <div
       role="region"
@@ -369,9 +382,10 @@ export function SellerMap({
         className="h-full w-full rounded-sm"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution={tileSource.attribution}
+          url={tileSource.url}
         />
+        <MapResizeInvalidator />
         <FitBoundsToMarkers
           sellers={validSellers}
           userLat={userLat}

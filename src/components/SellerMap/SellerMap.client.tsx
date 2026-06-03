@@ -16,8 +16,15 @@ import {
 import { leafletIconUrls } from '@/lib/map/leafletAssets';
 
 import { buildMapDeepLink } from './deepLink';
+import { MapResizeInvalidator } from './MapResizeInvalidator';
 import styles from './SellerMap.module.css';
 import { getSellerMapModeConfig, type SellerMapMode } from './modes';
+import {
+  getMapTilerApiKey,
+  getMapTilerStyleId,
+  isProdMissingMapTilerKey,
+  resolveTileSource
+} from './tileSource';
 
 // React 19 i react-leaflet 4 mają rozjazd typów, runtime pozostaje zgodny.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,40 +65,6 @@ function isValidSeller(seller: SellerMapSeller): boolean {
 
 function getUserAgent(): string {
   return typeof navigator === 'undefined' ? '' : navigator.userAgent;
-}
-
-function getMapTilerStyleId(): string {
-  return process.env.NEXT_PUBLIC_MAPTILER_BONBEAUTY_STYLE_ID || 'streets-v2';
-}
-
-function getMapTilerApiKey(): string {
-  return process.env.NEXT_PUBLIC_MAPTILER_API_KEY || '';
-}
-
-interface TileSource {
-  url: string;
-  attribution: string;
-  keyed: boolean;
-}
-
-// F-02/F-03 deferral note: klucz MapTiler trafia do bundle klienta (Story 4.4/4.5 wprowadza server-proxy + GCP SM rotation).
-// Dla braku klucza w dev/test używamy CartoDB no-key kafli (zgodnie z istniejącym cells/SellerMap), w produkcji renderujemy FallbackPanel.
-function resolveTileSource(apiKey: string, styleId: string): TileSource {
-  if (apiKey) {
-    return {
-      url: `https://api.maptiler.com/maps/${styleId}/{z}/{x}/{y}.png?key=${apiKey}`,
-      attribution:
-        '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      keyed: true
-    };
-  }
-
-  return {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    keyed: false
-  };
 }
 
 const sellerIcon = L.divIcon({
@@ -259,8 +232,7 @@ export function SellerMap({
   const { ref, visible } = useLandingVisibility(config.lazyMount);
 
   // F-03: w produkcji bez klucza MapTiler renderujemy FallbackPanel; w dev/test wpada CartoDB no-key fallback.
-  const isProdMissingKey =
-    !tileSource.keyed && process.env.NODE_ENV === 'production';
+  const isProdMissingKey = isProdMissingMapTilerKey(tileSource);
 
   if (isProdMissingKey || tileFailed || validSellers.length === 0) {
     return (
@@ -310,6 +282,7 @@ export function SellerMap({
               tileerror: () => setTileFailed(true)
             }}
           />
+          <MapResizeInvalidator />
           <MapBehavior sellers={validSellers} center={center} maxZoom={config.maxAutoZoom} />
           {validSellers.map(seller => {
             const link = buildMapDeepLink({
