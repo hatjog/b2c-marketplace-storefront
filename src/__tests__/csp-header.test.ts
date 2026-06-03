@@ -61,6 +61,27 @@ describe('CSP directive list (D-64 AC #1)', () => {
     expect(nonceScript).toContain('https://cdn.talkjs.com');
   });
 
+  it('keeps cdn.talkjs.com ADDITIVE to the nonce — no unsafe-inline, nonce preserved (Story 7.2 AC2 anti-pattern guard)', () => {
+    // KRYTYCZNE (Story 7.2): `cdn.talkjs.com` musi być allowlistowany OBOK
+    // `'nonce-...'`, addytywnie. NIE wolno osłabiać nonce-mechanizmu (fix
+    // 5465e50d7): brak `'unsafe-inline'` (osłabiłoby nonce ⇒ utrata XSS-ochrony)
+    // i brak usunięcia nonce (zepsułoby App Router inline hydration ⇒ regresja
+    // blank page). Nonce chroni inline hydration scripts, host-allowlist
+    // przepuszcza zewnętrzny skrypt TalkJS — oba w jednej dyrektywie.
+    const nonceScript = buildCspDirectiveListWithNonce('xyz789', []).find((d) =>
+      d.startsWith('script-src ')
+    );
+    expect(nonceScript).toBeDefined();
+    // addytywność: nonce ORAZ host TalkJS obecne jednocześnie
+    expect(nonceScript).toContain("'nonce-xyz789'");
+    expect(nonceScript).toContain('https://cdn.talkjs.com');
+    // self nadal pokrywa zewnętrzne chunki Next; nonce NIE usunięty
+    expect(nonceScript).toContain("'self'");
+    // brak osłabienia: ZERO 'unsafe-inline' w script-src z nonce
+    expect(nonceScript).not.toContain("'unsafe-inline'");
+    expect(nonceScript?.split(/\s+/)).not.toContain('*');
+  });
+
   it('appends GP backend origin to connect-src when provided', () => {
     const list = buildCspDirectiveList(['https://api.bonbeauty.example']);
     const connectSrc = list.find((d) => d.startsWith('connect-src'));

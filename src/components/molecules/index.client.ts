@@ -24,6 +24,8 @@ export { SellerScore } from './SellerScore/SellerScore';
 export { UserNavigation } from './UserNavigation/UserNavigation';
 // v1.7.0 Story 2.6: Magic-link recovery state + voucher history empty state (client components)
 export { MagicLinkRecoveryState } from './MagicLinkRecoveryState/MagicLinkRecoveryState';
+// v1.11.0 Story 7.4 (ADR-138 DEC-2): 410 magic-link expiry → recovery boundary.
+export { VoucherClaimRecoveryBoundary } from './VoucherClaimRecoveryBoundary/VoucherClaimRecoveryBoundary';
 export { VoucherHistoryEmptyState } from './VoucherHistoryEmptyState/VoucherHistoryEmptyState';
 // v1.7.0 Story 2.2 re-review fix (LOW L4'): canonical client-side export for
 // ProductListingLoadingView (also re-exported from index.server.ts for backcompat).

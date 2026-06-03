@@ -10,6 +10,7 @@ import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { FlagDriftErrorModal } from '@/components/molecules/FlagDriftErrorModal';
 import { placeOrder } from '@/lib/data/cart';
+import { classifyConfirmCardPaymentResult } from '@/lib/payments/confirm-card-payment';
 
 import { isManual, isStripe } from '../../../lib/constants';
 
@@ -162,46 +163,54 @@ const StripePaymentButton = ({
       return;
     }
 
-    await stripe
-      .confirmCardPayment(session?.data.client_secret as string, {
-        payment_method: {
-          card: card,
-          billing_details: {
-            name: cart.billing_address?.first_name + ' ' + cart.billing_address?.last_name,
-            address: {
-              city: cart.billing_address?.city ?? undefined,
-              country: cart.billing_address?.country_code ?? undefined,
-              line1: cart.billing_address?.address_1 ?? undefined,
-              line2: cart.billing_address?.address_2 ?? undefined,
-              postal_code: cart.billing_address?.postal_code ?? undefined,
-              state: cart.billing_address?.province ?? undefined
-            },
-            email: cart.email,
-            phone: cart.billing_address?.phone ?? undefined
-          }
+    // Story 7.4 (ADR-138 DEC-3) — hardening real confirmCardPayment TEST:
+    // happy path / 3DS challenge (requires_action) / card decline są mapowane
+    // przez czysty klasyfikator (testowalny na mockach Stripe TEST). Naprawia
+    // też latentny TypeError w gałęzi sukcesu, gdy `paymentIntent` był undefined.
+    const result = await stripe.confirmCardPayment(session?.data.client_secret as string, {
+      payment_method: {
+        card: card,
+        billing_details: {
+          name: cart.billing_address?.first_name + ' ' + cart.billing_address?.last_name,
+          address: {
+            city: cart.billing_address?.city ?? undefined,
+            country: cart.billing_address?.country_code ?? undefined,
+            line1: cart.billing_address?.address_1 ?? undefined,
+            line2: cart.billing_address?.address_2 ?? undefined,
+            postal_code: cart.billing_address?.postal_code ?? undefined,
+            state: cart.billing_address?.province ?? undefined
+          },
+          email: cart.email,
+          phone: cart.billing_address?.phone ?? undefined
         }
-      })
-      .then(({ error, paymentIntent }) => {
-        if (error) {
-          const pi = error.payment_intent;
+      }
+    });
 
-          if ((pi && pi.status === 'requires_capture') || (pi && pi.status === 'succeeded')) {
-            onPaymentCompleted();
-          }
-
-          setErrorMessage(error.message || null);
-          return;
-        }
-
-        if (
-          (paymentIntent && paymentIntent.status === 'requires_capture') ||
-          paymentIntent.status === 'succeeded'
-        ) {
-          return onPaymentCompleted();
-        }
-
+    const outcome = classifyConfirmCardPaymentResult(result);
+    switch (outcome.kind) {
+      case 'complete':
+        await onPaymentCompleted();
         return;
-      });
+      case 'requires_action':
+        // 3DS wciąż wymagane (Stripe nie domknął challenge) — NIE składaj
+        // zamówienia; pozwól użytkownikowi ponowić. Zdejmij stan przetwarzania.
+        setSubmitting(false);
+        return;
+      case 'requires_new_payment_method':
+        // Karta wymaga wymiany (np. po nieudanym 3DS / odrzuceniu bez błędu).
+        // Pokaż komunikat — nie cicha „nie-akcja".
+        setErrorMessage(outcome.message);
+        setSubmitting(false);
+        return;
+      case 'error':
+        setErrorMessage(outcome.message);
+        setSubmitting(false);
+        return;
+      case 'noop':
+      default:
+        setSubmitting(false);
+        return;
+    }
   };
 
   // R5 review fix (second pass): when only consent blocks the submit, keep
