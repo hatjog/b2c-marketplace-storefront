@@ -9,12 +9,13 @@ describe('env validation', () => {
   const storefrontUrl = 'http://localhost:3002'
 
   beforeEach(() => {
+    vi.unstubAllEnvs()
     vi.resetModules()
     process.env = { ...originalEnv }
-    vi.unstubAllEnvs()
   })
 
   afterEach(() => {
+    vi.unstubAllEnvs()
     process.env = originalEnv
   })
 
@@ -110,12 +111,13 @@ describe('client backend URL inlining contract (Story 7.2, FR3/NFR5)', () => {
   const storefrontUrl = 'http://localhost:3002'
 
   beforeEach(() => {
+    vi.unstubAllEnvs()
     vi.resetModules()
     process.env = { ...originalEnv }
-    vi.unstubAllEnvs()
   })
 
   afterEach(() => {
+    vi.unstubAllEnvs()
     process.env = originalEnv
   })
 
@@ -164,6 +166,13 @@ describe('client backend URL inlining contract (Story 7.2, FR3/NFR5)', () => {
     // bo dynamiczny odczyt NIE jest inline'owany ⇒ wartość server-only nie
     // trafia do client bundlu (NFR5 — brak leaku). Statyczny skan źródła
     // `env.ts` blokuje ten kontrakt bez `next build` (C8 determinizm).
+    //
+    // KNOWN LIMITATION (L2): ten guard działa na surowym tekście pliku
+    // (łącznie z komentarzami). Refaktor do notacji bracket-string
+    // (`process.env["MEDUSA_BACKEND_URL"]`) lub przeniesienie odczytu
+    // do innej zmiennej poza `env.ts` ominąłby ten guard bez realnej
+    // zmiany semantyki. Docelowym rozwiązaniem jest skan artefaktu
+    // `.next/static` z `next build` (M1 — deferred: live-evidence ra-1 7-6).
     const source = readFileSync(
       fileURLToPath(new URL('../env.ts', import.meta.url)),
       'utf8'
@@ -176,6 +185,7 @@ describe('client backend URL inlining contract (Story 7.2, FR3/NFR5)', () => {
     // jako statyczny literał `process.env.MEDUSA_BACKEND_URL` (zostałyby
     // potraktowane przez Next jako inline-candidate). Dozwolony jest wyłącznie
     // dynamiczny odczyt przez `readEnv(...)` (`process.env[name]`).
+    // Note: guard covers only env.ts — whole-bundle scan deferred (see above).
     expect(source).not.toContain('process.env.MEDUSA_BACKEND_URL')
     expect(source).not.toContain('process.env.MEDUSA_URL')
   })
