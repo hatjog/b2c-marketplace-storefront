@@ -34,6 +34,8 @@ export type ConfirmCardPaymentOutcome =
   | { kind: 'complete' }
   /** 3DS / dodatkowa autoryzacja wciąż wymagana ⇒ NIE składaj, poinformuj. */
   | { kind: 'requires_action'; message: string | null }
+  /** Karta wymaga wymiany (requires_payment_method) — pokaż prośbę o nową kartę. */
+  | { kind: 'requires_new_payment_method'; message: string }
   /** Błąd karty (decline / inny) ⇒ pokaż komunikat, NIE składaj. */
   | { kind: 'error'; message: string | null; reason: ConfirmCardPaymentErrorReason }
   /** Brak akcji (stan nieterminalny, np. processing) — zachowanie zachowawcze. */
@@ -48,12 +50,18 @@ export type ConfirmCardPaymentErrorReason =
 /** Stany PaymentIntent traktowane jako „opłacone" (złóż zamówienie). */
 const COMPLETE_STATUSES: ReadonlySet<string> = new Set(['requires_capture', 'succeeded'])
 
-/** Stany wymagające dalszej akcji użytkownika (3DS challenge / ponowna karta). */
+/** Stany wymagające dalszej akcji użytkownika (3DS challenge). */
 const ACTION_STATUSES: ReadonlySet<string> = new Set([
   'requires_action',
   'requires_confirmation',
-  'requires_payment_method',
 ])
+
+/**
+ * Stan wymagający nowej metody płatności (np. po nieudanym 3DS / odrzuceniu karty
+ * bez towarzyszącego `error`). Wymaga osobnego komunikatu — nie jest 3DS challenge,
+ * lecz prośbą o zmianę karty.
+ */
+const NEEDS_NEW_PAYMENT_METHOD_STATUS = 'requires_payment_method'
 
 function classifyErrorReason(error: NonNullable<ConfirmCardPaymentResultLike['error']>): ConfirmCardPaymentErrorReason {
   const code = (error.code ?? error.decline_code ?? '').toLowerCase()
@@ -95,6 +103,14 @@ export function classifyConfirmCardPaymentResult(
   }
   if (status && ACTION_STATUSES.has(status)) {
     return { kind: 'requires_action', message: null }
+  }
+  // requires_payment_method: karta wymaga wymiany (np. po nieudanym 3DS / odrzuceniu
+  // bez towarzyszącego `error`). Wyświetl komunikat proszący o nową kartę.
+  if (status === NEEDS_NEW_PAYMENT_METHOD_STATUS) {
+    return {
+      kind: 'requires_new_payment_method',
+      message: 'Płatność nie powiodła się. Spróbuj ponownie z inną kartą.',
+    }
   }
   return { kind: 'noop' }
 }

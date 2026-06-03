@@ -35,6 +35,17 @@ describe('Story 7.4 — classifyConfirmCardPaymentResult (Stripe TEST hardening)
     ).toEqual({ kind: 'requires_action', message: null });
   });
 
+  it('requires_payment_method ⇒ requires_new_payment_method z komunikatem (nie cicha nie-akcja)', () => {
+    const outcome = classifyConfirmCardPaymentResult({
+      paymentIntent: { status: 'requires_payment_method' },
+    });
+    expect(outcome.kind).toBe('requires_new_payment_method');
+    if (outcome.kind === 'requires_new_payment_method') {
+      expect(typeof outcome.message).toBe('string');
+      expect(outcome.message.length).toBeGreaterThan(0);
+    }
+  });
+
   it('card decline: error.code=card_declined ⇒ error reason=declined + komunikat', () => {
     const outcome = classifyConfirmCardPaymentResult({
       error: {

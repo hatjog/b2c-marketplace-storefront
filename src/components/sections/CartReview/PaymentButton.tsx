@@ -196,6 +196,12 @@ const StripePaymentButton = ({
         // zamówienia; pozwól użytkownikowi ponowić. Zdejmij stan przetwarzania.
         setSubmitting(false);
         return;
+      case 'requires_new_payment_method':
+        // Karta wymaga wymiany (np. po nieudanym 3DS / odrzuceniu bez błędu).
+        // Pokaż komunikat — nie cicha „nie-akcja".
+        setErrorMessage(outcome.message);
+        setSubmitting(false);
+        return;
       case 'error':
         setErrorMessage(outcome.message);
         setSubmitting(false);

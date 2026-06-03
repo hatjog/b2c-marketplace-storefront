@@ -17,10 +17,19 @@ import {
   isRecoverableExpiry,
 } from '@/lib/voucher-recovery/magic-link-claim-status';
 
-describe('Story 7.4 — classifyVoucherClaimLinkStatus (410 ⇒ expired)', () => {
-  it('HTTP 410 ⇒ expired (TTL magic-linka ⇒ recovery)', () => {
-    expect(classifyVoucherClaimLinkStatus(410)).toBe('expired');
+describe('Story 7.4 — classifyVoucherClaimLinkStatus (410 ⇒ expired/terminal)', () => {
+  it('HTTP 410 + type=magic_link_expired ⇒ expired (TTL magic-linka ⇒ recovery)', () => {
+    expect(classifyVoucherClaimLinkStatus(410, 'magic_link_expired')).toBe('expired');
     expect(isRecoverableExpiry('expired')).toBe(true);
+  });
+
+  it('HTTP 410 bez bodyType (lub inny type) ⇒ terminal (stan końcowy vouchera, nie recovery)', () => {
+    // Bez body: domyślnie terminal (ostrożnie, nie mylić z recovery).
+    expect(classifyVoucherClaimLinkStatus(410)).toBe('terminal');
+    expect(classifyVoucherClaimLinkStatus(410, null)).toBe('terminal');
+    expect(classifyVoucherClaimLinkStatus(410, 'refunded')).toBe('terminal');
+    expect(classifyVoucherClaimLinkStatus(410, 'voided')).toBe('terminal');
+    expect(isRecoverableExpiry('terminal')).toBe(false);
   });
 
   it('HTTP 200/303 ⇒ claimable (normalny claim path)', () => {
@@ -69,5 +78,15 @@ describe('Story 7.4 — VoucherClaimRecoveryBoundary (DEC-2 wiring)', () => {
       }) as React.ReactElement;
       expect(element.type).not.toBe(MagicLinkRecoveryState);
     }
+  });
+
+  it('terminal (410 stan końcowy vouchera) ⇒ NIE recovery, data-terminal=true wrapper', () => {
+    const element = VoucherClaimRecoveryBoundary({
+      status: 'terminal',
+      locale: 'pl',
+      children: 'TERMINAL_UI',
+    }) as React.ReactElement;
+    expect(element.type).not.toBe(MagicLinkRecoveryState);
+    expect((element.props as { 'data-terminal'?: string })['data-terminal']).toBe('true');
   });
 });
