@@ -59,7 +59,15 @@ export const getRegion = async (countryCode: string) => {
       });
     });
 
-    const region = countryCode ? regionMap.get(countryCode) : regionMap.get('us');
+    // Opcja A (locale-decoupled region, ADR-121): BonBeauty is a PL-only market;
+    // locale is UI language only, not a separate market/region. For any country
+    // code without a dedicated region (e.g. 'gb' from locale 'en', 'ua', 'de'),
+    // fall back to the first available region instead of the hardcoded 'us'
+    // which does not exist on gp-dev (single-region: Poland → ['pl']).
+    // This prevents getRegion from returning undefined → empty product fetch → PDP 404.
+    // Opcja C (defensive fallback) is applied alongside A: regionMap.get('us')
+    // was a bug regardless — replaced with first available region.
+    const region = regionMap.get(countryCode) ?? regionMap.values().next().value ?? undefined;
 
     return region;
   } catch {
