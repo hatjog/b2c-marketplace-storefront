@@ -84,7 +84,13 @@ export function PurchaseModeToggle({
                   name={`purchase-mode-${groupId}`}
                   value={opt.value}
                   checked={checked}
+                  // onChange + onClick: dla controlled radio sterowanego async stanem
+                  // (mode pochodzi z URL via router.replace) natywny `change` bywa
+                  // suppressowany (checked nie zmienia się synchronicznie) → onChange
+                  // nie odpala. onClick odpala niezawodnie (mysz + klawiatura Space),
+                  // przez co toggle "W prezencie" reaguje (poprzednio martwy).
                   onChange={() => onChange(opt.value)}
+                  onClick={() => onChange(opt.value)}
                   className="size-4 accent-action"
                   data-testid={`purchase-mode-input-${opt.value}`}
                 />
