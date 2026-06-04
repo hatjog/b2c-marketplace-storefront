@@ -26,4 +26,12 @@ describe('convertToLocale', () => {
 
     expect(formatted).toContain('180.00');
   });
+
+  it('coerces non-finite amounts to 0 (never renders "NaN" — e.g. shipping option without price)', () => {
+    for (const amount of [undefined, null, NaN] as unknown as number[]) {
+      const formatted = convertToLocale({ amount, currency_code: 'PLN', locale: 'en-US' });
+      expect(formatted).not.toMatch(/NaN/);
+      expect(formatted).toContain('0.00');
+    }
+  });
 });
