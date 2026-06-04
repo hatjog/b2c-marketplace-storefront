@@ -62,21 +62,32 @@ export const CartAddressSection = ({
     });
   };
 
+  // Build a checkout-step URL that PRESERVES existing query params (e.g. ?mode=gift
+  // from the purchase-mode toggle). Hardcoding `pathname + '?step=address'` dropped
+  // every other param, clobbering the toggle's ?mode= write (race → toggle "nie reaguje").
+  const buildStepUrl = (step: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('step', step);
+    return `${pathname}?${params.toString()}`;
+  };
+
   useEffect(() => {
     if (!isAddress && message !== 'success') {
-      router.replace(pathname + '?step=address');
+      router.replace(buildStepUrl('address'));
     }
-  }, [isAddress, message, pathname, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAddress, message, pathname, router, searchParams]);
 
   useEffect(() => {
     if (message === 'success') {
-      router.replace(`${pathname}?step=delivery`);
+      router.replace(buildStepUrl('delivery'));
       router.refresh();
     }
-  }, [message, pathname, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message, pathname, router, searchParams]);
 
   const handleEdit = () => {
-    router.replace(pathname + '?step=address');
+    router.replace(buildStepUrl('address'));
   };
 
   return (
