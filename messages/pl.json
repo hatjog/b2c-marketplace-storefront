@@ -709,7 +709,9 @@
     "promo_code_heading": "Masz kod promocyjny?",
     "promo_code_placeholder": "Wpisz kod",
     "promo_code_button": "Aktywuj",
-    "gift_card": "Karta upominkowa"
+    "gift_card": "Karta upominkowa",
+    "thumbnail_alt": "Miniatura produktu",
+    "quantity_label": "Ilość"
   },
   "navigation": {
     "menu": "Menu",

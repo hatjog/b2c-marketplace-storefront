@@ -709,7 +709,9 @@
     "promo_code_heading": "Маєте промо-код?",
     "promo_code_placeholder": "Введіть код",
     "promo_code_button": "Активувати",
-    "gift_card": "Подарункова картка"
+    "gift_card": "Подарункова картка",
+    "thumbnail_alt": "Мініатюра товару",
+    "quantity_label": "Кількість"
   },
   "navigation": {
     "menu": "Меню",
