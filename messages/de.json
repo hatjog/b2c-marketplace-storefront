@@ -709,7 +709,9 @@
     "promo_code_heading": "Haben Sie einen Aktionscode?",
     "promo_code_placeholder": "Code eingeben",
     "promo_code_button": "Aktivieren",
-    "gift_card": "Geschenkkarte"
+    "gift_card": "Geschenkkarte",
+    "thumbnail_alt": "Produktminiatur",
+    "quantity_label": "Menge"
   },
   "navigation": {
     "menu": "Menü",

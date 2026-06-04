@@ -709,7 +709,9 @@
     "promo_code_heading": "Have promo code?",
     "promo_code_placeholder": "Enter code",
     "promo_code_button": "Activate",
-    "gift_card": "Gift card"
+    "gift_card": "Gift card",
+    "thumbnail_alt": "Product thumbnail",
+    "quantity_label": "Quantity"
   },
   "navigation": {
     "menu": "Menu",
