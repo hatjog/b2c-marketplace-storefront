@@ -73,8 +73,12 @@ export interface UseCircuitBreakerResult {
 
 // ---- Env-configurable defaults (TF-71) ----
 
-function getEnvInt(key: string, defaultValue: number): number {
-  const raw = process.env[key];
+// ⚠️ Next.js inline'uje NEXT_PUBLIC_* do bundla klienta TYLKO przy statycznym
+// odwołaniu `process.env.NEXT_PUBLIC_FOO`. Dostęp dynamiczny (`process.env[key]`)
+// NIE jest podmieniany → na kliencie zawsze `undefined`, więc override TF-71
+// był cicho ignorowany i breaker zawsze brał defaulty. Dlatego parsujemy już
+// rozwiązaną wartość, a samo odwołanie do env trzymamy statyczne w callerach.
+function parseEnvInt(raw: string | undefined, defaultValue: number): number {
   if (raw) {
     const parsed = parseInt(raw, 10);
     if (Number.isFinite(parsed) && parsed > 0) return parsed;
@@ -83,11 +87,11 @@ function getEnvInt(key: string, defaultValue: number): number {
 }
 
 function getDefaultFailureThreshold(): number {
-  return getEnvInt('NEXT_PUBLIC_CB_FAILURE_THRESHOLD', 3);
+  return parseEnvInt(process.env.NEXT_PUBLIC_CB_FAILURE_THRESHOLD, 3);
 }
 
 function getDefaultCooldownMs(): number {
-  return getEnvInt('NEXT_PUBLIC_CB_COOLDOWN_MS', 60_000);
+  return parseEnvInt(process.env.NEXT_PUBLIC_CB_COOLDOWN_MS, 60_000);
 }
 
 const DEFAULT_WINDOW_MS = 10_000;
