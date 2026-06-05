@@ -349,7 +349,11 @@
       "flag_changed_title": "Bestellkonfiguration geändert",
       "flag_changed_message": "Die Multi-Vendor-Angebotseinstellungen haben sich während Ihrer Bestellung geändert. Bitte überprüfen Sie Ihren Warenkorb und versuchen Sie es erneut.",
       "review_cart_cta": "Warenkorb überprüfen",
-      "flag_changed_close_cta": "Schließen"
+      "flag_changed_close_cta": "Schließen",
+      "address_heading": "Lieferadresse",
+      "address_edit_cta": "Bearbeiten",
+      "address_save_cta": "Adresse speichern und fortfahren",
+      "continue_to_delivery_cta": "Weiter zur Lieferung"
     },
     "multi_vendor": {
       "indicator_label": "{count} Salons bieten an",

@@ -6,6 +6,7 @@ import { CheckCircleSolid } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { Heading, Text, useToggleState } from '@medusajs/ui';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
@@ -29,6 +30,7 @@ export const CartAddressSection = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('seller.checkout');
 
   const isAddress = Boolean(
     cart?.shipping_address &&
@@ -100,7 +102,7 @@ export const CartAddressSection = ({
           level="h2"
           className="text-3xl-regular flex flex-row items-center items-baseline gap-x-2"
         >
-          {!isOpen && <CheckCircleSolid />} Shipping Address
+          {!isOpen && <CheckCircleSolid />} {t('address_heading')}
         </Heading>
         {!isOpen && isAddress && (
           <Text>
@@ -109,7 +111,7 @@ export const CartAddressSection = ({
               variant="tonal"
               data-testid="checkout-address-edit-button"
             >
-              Edit
+              {t('address_edit_cta')}
             </Button>
           </Text>
         )}
@@ -130,7 +132,7 @@ export const CartAddressSection = ({
               variant="tonal"
               disabled={isPending}
             >
-              Save
+              {t('address_save_cta')}
             </Button>
             <ErrorMessage
               error={message && message !== 'success' ? message : null}
@@ -172,7 +174,7 @@ export const CartAddressSection = ({
               className="mt-6 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
               variant="tonal"
             >
-              Continue to Delivery
+              {t('continue_to_delivery_cta')}
             </Button>
           </LocalizedClientLink>
         )}

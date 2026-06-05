@@ -349,7 +349,11 @@
       "flag_changed_title": "Order configuration changed",
       "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",
       "review_cart_cta": "Review cart",
-      "flag_changed_close_cta": "Close"
+      "flag_changed_close_cta": "Close",
+      "address_heading": "Shipping address",
+      "address_edit_cta": "Edit",
+      "address_save_cta": "Save address and continue",
+      "continue_to_delivery_cta": "Continue to delivery"
     },
     "multi_vendor": {
       "indicator_label": "{count} salons offer this",

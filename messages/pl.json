@@ -349,7 +349,11 @@
       "flag_changed_title": "Konfiguracja zamówienia uległa zmianie",
       "flag_changed_message": "Ustawienia oferty wielosprzedawcowej zostały zmienione w trakcie Twojego zamówienia. Sprawdź zawartość koszyka i spróbuj ponownie.",
       "review_cart_cta": "Przejdź do koszyka",
-      "flag_changed_close_cta": "Zamknij"
+      "flag_changed_close_cta": "Zamknij",
+      "address_heading": "Adres dostawy",
+      "address_edit_cta": "Edytuj",
+      "address_save_cta": "Zapisz adres i przejdź dalej",
+      "continue_to_delivery_cta": "Przejdź do dostawy"
     },
     "multi_vendor": {
       "indicator_label": "{count} salonów oferuje",
