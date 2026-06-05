@@ -101,8 +101,12 @@ export const StickyAddToCart = ({
     // it and issue entitlement_instance (parity with PDP CTA).
     const entitlement = buildEntitlementLineItemMetadata(
       product,
+      // `calculated_price_number` is ALREADY in minor units (grosze) — it is the
+      // raw `calculated_amount[_with_tax]` (see get-product-price.ts), and
+      // buildEntitlementLineItemMetadata expects `amountMinor` in grosze too.
+      // The previous `* 100` double-scaled it → entitlement amount_minor was 100×.
       typeof variantPrice?.calculated_price_number === 'number'
-        ? Math.round(variantPrice.calculated_price_number * 100)
+        ? Math.round(variantPrice.calculated_price_number)
         : null
     );
 
