@@ -1039,6 +1039,11 @@
       "unknown_seller": "Salon"
     },
     "pay_now": "Zapłać",
+    "payment_processing": "Płatność jest przetwarzana. Potwierdź ją w aplikacji bankowej, aby dokończyć zamówienie.",
+    "payment_not_completed": "Płatność nie została ukończona. Spróbuj ponownie lub wybierz inną metodę płatności.",
+    "payment_unavailable": "Płatność jest chwilowo niedostępna. Spróbuj ponownie za chwilę.",
+    "payment_failed": "Płatność nie powiodła się. Spróbuj ponownie lub wybierz inną metodę płatności.",
+    "payment_no_order": "Nie udało się utworzyć zamówienia, ponieważ płatność nie została potwierdzona. Jeśli środki zostały pobrane, skontaktuj się z nami.",
     "payment_details": "Szczegóły płatności",
     "payment_heading": "Płatność",
     "payment_method": "Metoda płatności",

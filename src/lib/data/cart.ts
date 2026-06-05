@@ -842,9 +842,13 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
       (cartId ? await resolveCompletedOrderIdForCart(cartId) : null);
 
     if (!orderId) {
+      // Completion returned no order — the payment was not captured (e.g. an
+      // async BLIK/P24 push the customer never confirmed in their bank app).
+      // Return a STABLE code, not an English sentence: the locale belongs to
+      // the UI layer (the client component maps it via next-intl).
       return {
         ok: false,
-        error: { message: 'Order completion did not return an order id' }
+        error: { code: 'no_order_id' as const }
       };
     }
 
@@ -857,9 +861,9 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
     return {
       ok: false,
       error: {
-        message:
-          error?.message?.replace('Error setting up the request: ', '') ??
-          'Failed to complete order'
+        code: 'completion_failed' as const,
+        // English detail kept for server logs only — never rendered.
+        detail: error?.message?.replace('Error setting up the request: ', '')
       }
     };
   }
