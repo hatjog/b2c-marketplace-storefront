@@ -78,6 +78,28 @@ export function getEnabledPaymentMethodTypes(
 }
 
 /**
+ * Per-market publishable key z env, przez STATYCZNE odwołanie do
+ * `process.env.NEXT_PUBLIC_STRIPE_KEY_<MARKET>`.
+ *
+ * ⚠️ Next.js inline'uje do bundla klienta WYŁĄCZNIE statyczne odwołania
+ * `process.env.NEXT_PUBLIC_*`. Dostęp dynamiczny (`process.env[`...${market}`]`)
+ * NIE jest podmieniany przy buildzie i daje `undefined` po stronie klienta —
+ * wcześniej powodowało to ciche pominięcie klucza per-market i fallback na
+ * wspólny `NEXT_PUBLIC_STRIPE_KEY`. Dlatego klucze MUSZĄ być odwołane wprost
+ * (switch), a nie składane z nazwy marketu. Lista musi pozostawać w parytecie
+ * z `MARKET_ENABLED_METHODS` (docelowo zastąpione przez `gp-cli storefront
+ * codegen`, patrz komentarz przy `MARKET_ENABLED_METHODS`).
+ */
+function perMarketPublishableKey(marketId: string): string | undefined {
+  switch (marketId) {
+    case 'bonbeauty':
+      return process.env.NEXT_PUBLIC_STRIPE_KEY_BONBEAUTY;
+    default:
+      return undefined;
+  }
+}
+
+/**
  * Per-market publishable key z env (NIE hardcoded, NIE sekret w repo).
  * Preferuje `NEXT_PUBLIC_STRIPE_KEY_<MARKET>`, fallback wspólny
  * `NEXT_PUBLIC_STRIPE_KEY`. `null` gdy market unconfigured albo brak klucza
@@ -85,7 +107,7 @@ export function getEnabledPaymentMethodTypes(
  */
 export function getPublishableKey(marketId: string = getActiveMarketId()): string | null {
   if (!isStripeEnabledMarket(marketId)) return null;
-  const perMarket = process.env[`NEXT_PUBLIC_STRIPE_KEY_${marketId.toUpperCase()}`];
+  const perMarket = perMarketPublishableKey(marketId);
   const key = perMarket || process.env.NEXT_PUBLIC_STRIPE_KEY;
   return key && key.trim() ? key : null;
 }
