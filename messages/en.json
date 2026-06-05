@@ -1044,6 +1044,7 @@
     "payment_unavailable": "Payment is temporarily unavailable. Please try again shortly.",
     "payment_failed": "Payment failed. Please try again or choose another payment method.",
     "payment_no_order": "We couldn't create your order because the payment wasn't confirmed. If you were charged, please contact us.",
+    "payment_not_available_market": "Payment is not available for this market.",
     "payment_details": "Payment details",
     "payment_heading": "Payment",
     "payment_method": "Payment method",
