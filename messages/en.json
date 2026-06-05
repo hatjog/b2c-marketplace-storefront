@@ -1008,27 +1008,9 @@
     "error_generic": "An error occurred"
   },
   "checkout": {
-    "payment_heading": "Payment",
-    "payment_method": "Payment method",
-    "payment_details": "Payment details",
-    "enter_card_details": "Enter card details",
-    "continue_to_review": "Continue to review",
     "another_step_appears": "Another step will appear",
-    "delivery_heading": "Delivery",
-    "no_shipping_options": "No shipping options available",
-    "error_generic": "An error occurred",
-    "continue_to_payment": "Continue to payment",
+    "back_to_cart": "Back to cart",
     "choose_delivery_option": "Choose delivery option",
-    "place_order": "Place order",
-    "payment_obligation_notice": "Order with obligation to pay",
-    "order_set_summary": {
-      "heading": "Order split by seller",
-      "unknown_seller": "Seller"
-    },
-    "voucher_summary": {
-      "group_title": "{seller} ({count, plural, one {# item} other {# items}})",
-      "seller_fallback": "Salon"
-    },
     "consent": {
       "required_heading": "Required confirmations",
       "required_summary_error": "Please tick both required confirmations to continue.",
@@ -1041,6 +1023,28 @@
       "withdrawal_status_note": "Your withdrawal right status changes as the service progresses. More information:",
       "withdrawal_status_link": "Terms & Conditions"
     },
+    "continue_to_payment": "Continue to payment",
+    "continue_to_review": "Continue to review",
+    "cross_actor": {
+      "for_you": "You confirm the basket, details, and consent before payment.",
+      "for_us": "We split the order between salons and share only the needed details after payment is confirmed."
+    },
+    "delivery_heading": "Delivery",
+    "enter_card_details": "Enter card details",
+    "error_generic": "An error occurred",
+    "method_label": "Delivery method",
+    "no_shipping_options": "No shipping options available",
+    "order_set_summary": {
+      "heading": "Order split by seller",
+      "unknown_seller": "Seller"
+    },
+    "pay_now": "Pay",
+    "payment_details": "Payment details",
+    "payment_heading": "Payment",
+    "payment_method": "Payment method",
+    "payment_obligation_notice": "Order with obligation to pay",
+    "place_order": "Place order",
+    "select_payment_method": "Select a payment method",
     "validation": {
       "address": {
         "first_name_required": "First name is required",
@@ -1064,10 +1068,9 @@
         "withdrawal_required": "Acknowledgement of the withdrawal policy is required"
       }
     },
-    "pay_now": "Pay",
-    "cross_actor": {
-      "for_you": "You confirm the basket, details, and consent before payment.",
-      "for_us": "We split the order between salons and share only the needed details after payment is confirmed."
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# item} other {# items}})",
+      "seller_fallback": "Salon"
     }
   },
   "confirmation": {

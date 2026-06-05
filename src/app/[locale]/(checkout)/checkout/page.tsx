@@ -76,6 +76,15 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
   const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? '');
   const customer = await retrieveCustomer();
 
+  // Reflect the PDP "buy as gift" choice (persisted as line-item
+  // metadata.is_gift / purchase_mode) in the checkout purchase-mode toggle.
+  const cartPurchaseMode = cart.items?.some(item => {
+    const meta = item.metadata as Record<string, unknown> | null | undefined;
+    return meta?.is_gift === true || meta?.is_gift === 'true' || meta?.purchase_mode === 'gift';
+  })
+    ? 'gift'
+    : 'self';
+
   return (
     <PaymentWrapper cart={cart}>
       <main
@@ -103,7 +112,7 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
               cart={cart}
               availableShippingMethods={shippingMethods}
             />
-            <CheckoutPurchaseMode />
+            <CheckoutPurchaseMode cartPurchaseMode={cartPurchaseMode} />
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}

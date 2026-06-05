@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useState, useTransition, type FC } from 'react';
+import { Fragment, useEffect, useRef, useState, useTransition, type FC } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckCircleSolid, ChevronUpDown, Loader } from '@medusajs/icons';
@@ -117,6 +117,16 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   const [calculatedPricesMap, setCalculatedPricesMap] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [isPendingDeleteRow, startTransitionDeleteRow] = useTransition();
+  // Optimistic flag: enables the "continue to payment" button the moment a
+  // shipping method is selected. router.refresh() does NOT reliably re-render
+  // this section with the updated `cart` prop after setShippingMethod, so the
+  // button stayed `disabled` even though the method persisted on the backend —
+  // stranding the user on the delivery step. The backend cart IS updated, so
+  // the next step's SSR sees the method; this flag only bridges the in-place
+  // re-enable. One-directional sync below never resets it from a stale prop.
+  const [hasShippingMethod, setHasShippingMethod] = useState(
+    (cart.shipping_methods?.length ?? 0) > 0
+  );
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -176,8 +186,19 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     }
   }, [normalizedShippingMethods, _shippingMethods, cart.id]);
 
+  // Advance to the given step, preserving existing params (e.g. ?mode=gift).
+  // Uses a full navigation (window.location) on purpose: client-side soft nav
+  // to a ?step= change is swallowed in this checkout (router.push never reaches
+  // history; a <button> nested in next/link's <a> eats the click). The target
+  // step is fully SSR-rendered, so a hard nav lands correctly and reliably.
+  const goToStep = (step: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('step', step);
+    window.location.assign(`${pathname}?${params.toString()}`);
+  };
+
   const handleSubmit = () => {
-    router.push(pathname + '?step=payment', { scroll: false });
+    goToStep('payment');
   };
 
   const handleSetShippingMethod = async (id: string | null) => {
@@ -195,6 +216,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
       if (!res.ok) {
         return setError(res.error?.message);
       }
+      setHasShippingMethod(true);
     } catch (error: any) {
       setError(error?.message?.replace('Error setting up the request: ', '') || t('error_generic'));
     } finally {
@@ -204,6 +226,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   };
 
   const handleRemoveShippingMethod = (methodId: string) => {
+    setHasShippingMethod(false);
     startTransitionDeleteRow(async () => {
       await removeShippingMethod(methodId);
     });
@@ -213,6 +236,33 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   useEffect(() => {
     setError(null);
   }, [isOpen]);
+
+  // One-directional sync: when the (eventually) refreshed cart prop carries a
+  // method, keep the flag true. Never reset to false here — a stale prop would
+  // otherwise undo the optimistic enable. Removal flips it false explicitly.
+  useEffect(() => {
+    if ((cart.shipping_methods?.length ?? 0) > 0) {
+      setHasShippingMethod(true);
+    }
+  }, [cart.shipping_methods?.length]);
+
+  // Auto-select the sole available delivery option. A single-option checkout
+  // (the BonBeauty case) otherwise strands the user: the Listbox requires an
+  // explicit pick, and until one is made `cart.shipping_methods` is empty, so
+  // the "continue to payment" button stays `disabled` and clicking it does
+  // nothing. Guarded by a ref so it fires once per mount; once the cart carries
+  // a method the guard short-circuits (and multi-option groups are untouched —
+  // the user must choose).
+  const autoSelectedShippingRef = useRef(false);
+  useEffect(() => {
+    if (autoSelectedShippingRef.current) return;
+    if (!isOpen) return;
+    if ((cart.shipping_methods?.length ?? 0) > 0) return;
+    if (_shippingMethods.length !== 1) return;
+    autoSelectedShippingRef.current = true;
+    handleSetShippingMethod(_shippingMethods[0].id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, cart.shipping_methods?.length, _shippingMethods.length]);
 
   const groupedBySellerId = _shippingMethods?.reduce((acc: any, method) => {
     const sellerId = method.seller?.id ?? method.seller_id ?? fallbackSeller?.id ?? 'market';
@@ -330,7 +380,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
                                     {' - '}
                                     {option.price_type === 'flat' ? (
                                       convertToLocale({
-                                        amount: option.amount!,
+                                        amount: option.amount ?? 0,
                                         currency_code: cart?.currency_code
                                       })
                                     ) : calculatedPricesMap[option.id] ? (
@@ -374,7 +424,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
             <Button
               onClick={handleSubmit}
               variant="tonal"
-              disabled={!cart.shipping_methods?.[0] || isPendingDeleteRow}
+              disabled={!hasShippingMethod || isPendingDeleteRow}
               loading={isLoadingPrices}
               className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
             >
@@ -392,11 +442,11 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
                     key={method.id}
                     className="mb-4 rounded-md border p-4"
                   >
-                    <Text className="txt-medium-plus text-ui-fg-base mb-1">Method</Text>
+                    <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('method_label')}</Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {method.name}{' '}
                       {convertToLocale({
-                        amount: method.amount!,
+                        amount: method.amount ?? 0,
                         currency_code: cart?.currency_code
                       })}
                     </Text>

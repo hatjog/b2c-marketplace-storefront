@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -15,6 +16,8 @@ export default async function RootLayout({
   const { marketConfig } = await resolveMarketConfig(marketId);
   const marketLogoUrl = getMarketLogoUrl(marketConfig);
   const marketName = marketConfig?.name ?? null;
+  const t = await getTranslations('checkout');
+  const tHeader = await getTranslations('header');
 
   return (
     <>
@@ -27,7 +30,7 @@ export default async function RootLayout({
                 className="flex items-center gap-2"
               >
                 <CollapseIcon className="rotate-90" />
-                <span className="hidden lg:block">Back to cart</span>
+                <span className="hidden lg:block">{t('back_to_cart')}</span>
               </Button>
             </LocalizedClientLink>
           </div>
@@ -48,7 +51,7 @@ export default async function RootLayout({
               {marketName ? (
                 <span className="font-bold text-xl">{marketName}</span>
               ) : !marketLogoUrl ? (
-                <span className="font-bold text-xl">Home</span>
+                <span className="font-bold text-xl">{tHeader('home_fallback')}</span>
               ) : null}
             </LocalizedClientLink>
           </div>

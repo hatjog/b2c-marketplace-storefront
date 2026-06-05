@@ -1008,27 +1008,9 @@
     "error_generic": "Wystąpił błąd"
   },
   "checkout": {
-    "payment_heading": "Płatność",
-    "payment_method": "Metoda płatności",
-    "payment_details": "Szczegóły płatności",
-    "enter_card_details": "Wprowadź dane karty",
-    "continue_to_review": "Przejdź do podsumowania",
     "another_step_appears": "Kolejny krok zostanie wyświetlony",
-    "delivery_heading": "Dostawa",
-    "no_shipping_options": "Brak opcji dostawy",
-    "error_generic": "Wystąpił błąd",
-    "continue_to_payment": "Kontynuuj do płatności",
+    "back_to_cart": "Powrót do koszyka",
     "choose_delivery_option": "Wybierz opcję dostawy",
-    "place_order": "Złóż zamówienie",
-    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty",
-    "order_set_summary": {
-      "heading": "Podział zamówienia na salony",
-      "unknown_seller": "Salon"
-    },
-    "voucher_summary": {
-      "group_title": "{seller} ({count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}})",
-      "seller_fallback": "Salon"
-    },
     "consent": {
       "required_heading": "Wymagane potwierdzenia",
       "required_summary_error": "Aby kontynuować, zaznacz oba wymagane potwierdzenia.",
@@ -1041,6 +1023,28 @@
       "withdrawal_status_note": "Stan prawa odstąpienia zmienia się wraz z realizacją usługi. Więcej informacji:",
       "withdrawal_status_link": "Regulamin"
     },
+    "continue_to_payment": "Kontynuuj do płatności",
+    "continue_to_review": "Przejdź do podsumowania",
+    "cross_actor": {
+      "for_you": "Ty potwierdzasz koszyk, dane i zgodę przed płatnością.",
+      "for_us": "My rozdzielimy zamówienie między salony i przekażemy im tylko potrzebne informacje po potwierdzeniu płatności."
+    },
+    "delivery_heading": "Dostawa",
+    "enter_card_details": "Wprowadź dane karty",
+    "error_generic": "Wystąpił błąd",
+    "method_label": "Sposób dostawy",
+    "no_shipping_options": "Brak opcji dostawy",
+    "order_set_summary": {
+      "heading": "Podział zamówienia na salony",
+      "unknown_seller": "Salon"
+    },
+    "pay_now": "Zapłać",
+    "payment_details": "Szczegóły płatności",
+    "payment_heading": "Płatność",
+    "payment_method": "Metoda płatności",
+    "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty",
+    "place_order": "Złóż zamówienie",
+    "select_payment_method": "Wybierz metodę płatności",
     "validation": {
       "address": {
         "first_name_required": "Imię jest wymagane",
@@ -1064,10 +1068,9 @@
         "withdrawal_required": "Wymagane jest potwierdzenie zapoznania się z polityką cofnięcia zgody"
       }
     },
-    "pay_now": "Zapłać",
-    "cross_actor": {
-      "for_you": "Ty potwierdzasz koszyk, dane i zgodę przed płatnością.",
-      "for_us": "My rozdzielimy zamówienie między salony i przekażemy im tylko potrzebne informacje po potwierdzeniu płatności."
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}})",
+      "seller_fallback": "Salon"
     }
   },
   "confirmation": {

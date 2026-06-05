@@ -1008,27 +1008,9 @@
     "error_generic": "Виникла помилка"
   },
   "checkout": {
-    "payment_heading": "Оплата",
-    "payment_method": "Метод оплати",
-    "payment_details": "Деталі оплати",
-    "enter_card_details": "Введіть дані картки",
-    "continue_to_review": "Перейти до огляду",
     "another_step_appears": "З'явиться наступний крок",
-    "delivery_heading": "Доставка",
-    "no_shipping_options": "Немає варіантів доставки",
-    "error_generic": "Виникла помилка",
-    "continue_to_payment": "Продовжити до оплати",
+    "back_to_cart": "Назад до кошика",
     "choose_delivery_option": "Виберіть варіант доставки",
-    "place_order": "Оформити замовлення",
-    "payment_obligation_notice": "Замовлення з обов'язком оплати",
-    "order_set_summary": {
-      "heading": "Поділ замовлення по салонах",
-      "unknown_seller": "Салон"
-    },
-    "voucher_summary": {
-      "group_title": "{seller} ({count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}})",
-      "seller_fallback": "Салон"
-    },
     "consent": {
       "required_heading": "Необхідні підтвердження",
       "required_summary_error": "Щоб продовжити, позначте обидва обов’язкові підтвердження.",
@@ -1041,6 +1023,28 @@
       "withdrawal_status_note": "Статус вашого права на відмову змінюється в процесі надання послуги. Детальніше:",
       "withdrawal_status_link": "Правила та умови"
     },
+    "continue_to_payment": "Продовжити до оплати",
+    "continue_to_review": "Перейти до огляду",
+    "cross_actor": {
+      "for_you": "Ви підтверджуєте кошик, дані та згоду перед оплатою.",
+      "for_us": "Ми розділимо замовлення між салонами й передамо лише потрібні дані після підтвердження оплати."
+    },
+    "delivery_heading": "Доставка",
+    "enter_card_details": "Введіть дані картки",
+    "error_generic": "Виникла помилка",
+    "method_label": "Спосіб доставки",
+    "no_shipping_options": "Немає варіантів доставки",
+    "order_set_summary": {
+      "heading": "Поділ замовлення по салонах",
+      "unknown_seller": "Салон"
+    },
+    "pay_now": "Оплатити",
+    "payment_details": "Деталі оплати",
+    "payment_heading": "Оплата",
+    "payment_method": "Метод оплати",
+    "payment_obligation_notice": "Замовлення з обов'язком оплати",
+    "place_order": "Оформити замовлення",
+    "select_payment_method": "Виберіть спосіб оплати",
     "validation": {
       "address": {
         "first_name_required": "Ім'я є обов'язковим",
@@ -1064,10 +1068,9 @@
         "withdrawal_required": "Потрібне підтвердження ознайомлення з політикою відкликання"
       }
     },
-    "pay_now": "Оплатити",
-    "cross_actor": {
-      "for_you": "Ви підтверджуєте кошик, дані та згоду перед оплатою.",
-      "for_us": "Ми розділимо замовлення між салонами й передамо лише потрібні дані після підтвердження оплати."
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позицій}})",
+      "seller_fallback": "Салон"
     }
   },
   "confirmation": {

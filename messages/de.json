@@ -1008,27 +1008,9 @@
     "error_generic": "Ein Fehler ist aufgetreten"
   },
   "checkout": {
-    "payment_heading": "Zahlung",
-    "payment_method": "Zahlungsmethode",
-    "payment_details": "Zahlungsdetails",
-    "enter_card_details": "Kartendaten eingeben",
-    "continue_to_review": "Weiter zur Überprüfung",
     "another_step_appears": "Ein weiterer Schritt erscheint",
-    "delivery_heading": "Lieferung",
-    "no_shipping_options": "Keine Lieferoptionen verfügbar",
-    "error_generic": "Ein Fehler ist aufgetreten",
-    "continue_to_payment": "Weiter zur Zahlung",
+    "back_to_cart": "Zurück zum Warenkorb",
     "choose_delivery_option": "Lieferoption auswählen",
-    "place_order": "Bestellung aufgeben",
-    "payment_obligation_notice": "Bestellung mit Zahlungspflicht",
-    "order_set_summary": {
-      "heading": "Bestellaufteilung nach Verkäufer",
-      "unknown_seller": "Verkäufer"
-    },
-    "voucher_summary": {
-      "group_title": "{seller} ({count, plural, one {# Artikel} other {# Artikel}})",
-      "seller_fallback": "Salon"
-    },
     "consent": {
       "required_heading": "Erforderliche Bestätigungen",
       "required_summary_error": "Bitte bestätigen Sie beide erforderlichen Punkte, um fortzufahren.",
@@ -1041,6 +1023,28 @@
       "withdrawal_status_note": "Ihr Widerrufsstatus ändert sich mit dem Fortschritt der Dienstleistung. Mehr Informationen:",
       "withdrawal_status_link": "Allgemeine Geschäftsbedingungen"
     },
+    "continue_to_payment": "Weiter zur Zahlung",
+    "continue_to_review": "Weiter zur Überprüfung",
+    "cross_actor": {
+      "for_you": "Sie bestätigen Warenkorb, Daten und Zustimmung vor der Zahlung.",
+      "for_us": "Wir teilen die Bestellung auf die Salons auf und übermitteln erst nach Zahlungsbestätigung nur die nötigen Angaben."
+    },
+    "delivery_heading": "Lieferung",
+    "enter_card_details": "Kartendaten eingeben",
+    "error_generic": "Ein Fehler ist aufgetreten",
+    "method_label": "Versandart",
+    "no_shipping_options": "Keine Lieferoptionen verfügbar",
+    "order_set_summary": {
+      "heading": "Bestellaufteilung nach Verkäufer",
+      "unknown_seller": "Verkäufer"
+    },
+    "pay_now": "Bezahlen",
+    "payment_details": "Zahlungsdetails",
+    "payment_heading": "Zahlung",
+    "payment_method": "Zahlungsmethode",
+    "payment_obligation_notice": "Bestellung mit Zahlungspflicht",
+    "place_order": "Bestellung aufgeben",
+    "select_payment_method": "Zahlungsart auswählen",
     "validation": {
       "address": {
         "first_name_required": "Vorname ist erforderlich",
@@ -1064,10 +1068,9 @@
         "withdrawal_required": "Bestätigung der Widerrufspolitik ist erforderlich"
       }
     },
-    "pay_now": "Bezahlen",
-    "cross_actor": {
-      "for_you": "Sie bestätigen Warenkorb, Daten und Zustimmung vor der Zahlung.",
-      "for_us": "Wir teilen die Bestellung auf die Salons auf und übermitteln erst nach Zahlungsbestätigung nur die nötigen Angaben."
+    "voucher_summary": {
+      "group_title": "{seller} ({count, plural, one {# Artikel} other {# Artikel}})",
+      "seller_fallback": "Salon"
     }
   },
   "confirmation": {
