@@ -349,7 +349,11 @@
       "flag_changed_title": "Конфігурацію замовлення змінено",
       "flag_changed_message": "Налаштування пропозиції кількох продавців були змінені під час вашого замовлення. Перевірте вміст кошика та спробуйте знову.",
       "review_cart_cta": "Перейти до кошика",
-      "flag_changed_close_cta": "Закрити"
+      "flag_changed_close_cta": "Закрити",
+      "address_heading": "Адреса доставки",
+      "address_edit_cta": "Редагувати",
+      "address_save_cta": "Зберегти адресу та продовжити",
+      "continue_to_delivery_cta": "Перейти до доставки"
     },
     "multi_vendor": {
       "indicator_label": "{count} салонів пропонують",
