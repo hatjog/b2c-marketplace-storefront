@@ -191,7 +191,10 @@ describe('StripePaymentElement wrapper — AC1/AC4 graceful reject (F-NEW-H2)', 
       e => (e.props as any)?.['data-testid'] === 'stripe-payment-element-unavailable'
     );
     expect(reject).toHaveLength(1);
-    expect(JSON.stringify(tree)).toContain('Payment is not available for this market');
+    // F-NEW-H2 reject is now localized via next-intl; the test mock returns the
+    // key verbatim. Market-uniformity invariant (no market-specific text) is
+    // still enforced on the PAYMENT_NOT_AVAILABLE_MESSAGE constant in client.test.ts.
+    expect(JSON.stringify(tree)).toContain('payment_not_available_market');
   });
 
   it('mounts Elements with clientSecret + runtime appearance when configured', () => {

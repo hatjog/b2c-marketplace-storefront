@@ -1044,6 +1044,7 @@
     "payment_unavailable": "Płatność jest chwilowo niedostępna. Spróbuj ponownie za chwilę.",
     "payment_failed": "Płatność nie powiodła się. Spróbuj ponownie lub wybierz inną metodę płatności.",
     "payment_no_order": "Nie udało się utworzyć zamówienia, ponieważ płatność nie została potwierdzona. Jeśli środki zostały pobrane, skontaktuj się z nami.",
+    "payment_not_available_market": "Płatność nie jest dostępna dla tego rynku.",
     "payment_details": "Szczegóły płatności",
     "payment_heading": "Płatność",
     "payment_method": "Metoda płatności",

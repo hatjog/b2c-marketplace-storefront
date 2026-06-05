@@ -40,8 +40,7 @@ import { completeOrderAfterStripePayment } from '@/lib/data/cart';
 import { getPaymentElementAppearanceRuntime } from '@/lib/stripe/appearance';
 import {
   getEnabledPaymentMethodTypes,
-  getStripePromise,
-  PAYMENT_NOT_AVAILABLE_MESSAGE
+  getStripePromise
 } from '@/lib/stripe/client';
 
 type StripePaymentElementProps = {
@@ -262,6 +261,7 @@ export default function StripePaymentElement({
   clientSecret,
   returnUrl
 }: StripePaymentElementProps) {
+  const t = useTranslations('checkout');
   const stripePromise = getStripePromise();
   const enabledMethods = getEnabledPaymentMethodTypes();
   const appearance = useMemo(() => getPaymentElementAppearanceRuntime(), []);
@@ -276,12 +276,16 @@ export default function StripePaymentElement({
   };
   const stripeLocale = STRIPE_LOCALE_BY_LOCALE[locale] ?? 'auto';
   if (!stripePromise || !enabledMethods || !clientSecret) {
+    // F-NEW-H2 graceful reject (market unconfigured). Localized per-locale; the
+    // invariant is market-UNIFORMITY (no market-specific text), not English —
+    // the stable `PAYMENT_NOT_AVAILABLE_MESSAGE` constant is kept for the
+    // contract test + backend parity, this is just the user-facing render.
     return (
       <Text
         className="txt-medium text-ui-fg-subtle my-4"
         data-testid="stripe-payment-element-unavailable"
       >
-        {PAYMENT_NOT_AVAILABLE_MESSAGE}
+        {t('payment_not_available_market')}
       </Text>
     );
   }
