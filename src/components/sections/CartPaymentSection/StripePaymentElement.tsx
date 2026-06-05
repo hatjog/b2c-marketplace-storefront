@@ -29,7 +29,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Text } from '@medusajs/ui';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import type { Stripe, StripeElements, StripePaymentElementOptions } from '@stripe/stripe-js';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 // Import bezpośrednio z modułu komponentu (NIE barrel `@/components/atoms`):
 // barrel re-eksportuje index.server → server-only leak do client componentu
@@ -86,42 +86,75 @@ export function buildPaymentElementOptions(
  * jeśli backend zwróciłby nowy client_secret, instancja Elements (zbudowana
  * ze starym secretem) confirmowałaby zły PaymentIntent.
  */
+/**
+ * Outcome of a payment submit as a DISCRIMINATED status the UI maps to a
+ * localized message — mirrors Medusa's native cart-complete contract (order
+ * vs. cart-with-error) rather than leaking a raw English provider string:
+ *  - completed:     order created → redirect to the status page
+ *  - processing:    async pull-payment (BLIK / P24) accepted but not yet
+ *                   authorized by the customer in their bank app
+ *  - not_completed: PaymentIntent still needs action / was abandoned/canceled
+ *  - failed:        confirm error or order-completion failure
+ *  - unavailable:   Stripe / Elements not ready (market unconfigured)
+ */
+export type StripeSubmitResult =
+  | { status: 'completed'; orderId: string }
+  | { status: 'processing' }
+  | { status: 'not_completed' }
+  | { status: 'failed'; providerMessage?: string; code?: string }
+  | { status: 'unavailable' };
+
 export async function submitStripePayment(args: {
   stripe: Stripe | null;
   elements: StripeElements | null;
   returnUrl: string;
-  completeOrder?: () => Promise<
-    { ok: boolean; orderId?: string; error?: { message?: string } }
-  >;
-}): Promise<{ error?: string; orderId?: string }> {
+  completeOrder?: () => Promise<{
+    ok: boolean;
+    orderId?: string;
+    error?: { code?: string; detail?: string };
+  }>;
+}): Promise<StripeSubmitResult> {
   const { stripe, elements, returnUrl, completeOrder } = args;
   if (!stripe || !elements) {
-    return { error: PAYMENT_NOT_AVAILABLE_MESSAGE };
+    return { status: 'unavailable' };
   }
   try {
-    const { error: confirmError } = await stripe.confirmPayment({
+    const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: returnUrl },
       redirect: 'if_required'
     });
 
     if (confirmError) {
-      return { error: confirmError.message ?? PAYMENT_NOT_AVAILABLE_MESSAGE };
+      // Stripe localizes confirmError.message when <Elements locale> is set,
+      // so it is safe to surface directly.
+      return { status: 'failed', providerMessage: confirmError.message };
+    }
+
+    // NATIVE-FLOW GUARD: only attempt order completion once the PaymentIntent
+    // actually succeeded. With `redirect: 'if_required'` an async/pull payment
+    // (BLIK, Przelewy24) returns here WITHOUT an error while still `processing`
+    // or `requires_action` when the customer never confirmed in their bank app
+    // — blindly completing then produced the opaque "no order id" failure.
+    const piStatus = paymentIntent?.status;
+    if (piStatus === 'processing') {
+      return { status: 'processing' };
+    }
+    if (piStatus && piStatus !== 'succeeded' && piStatus !== 'requires_capture') {
+      return { status: 'not_completed' };
     }
 
     if (completeOrder) {
       const completion = await completeOrder();
-      if (!completion.ok || !completion.orderId) {
-        return {
-          error: completion.error?.message ?? PAYMENT_NOT_AVAILABLE_MESSAGE
-        };
+      if (completion.ok && completion.orderId) {
+        return { status: 'completed', orderId: completion.orderId };
       }
-      return { orderId: completion.orderId };
+      return { status: 'failed', code: completion.error?.code };
     }
 
-    return {};
+    return { status: 'not_completed' };
   } catch (err: any) {
-    return { error: err?.message ?? PAYMENT_NOT_AVAILABLE_MESSAGE };
+    return { status: 'failed', providerMessage: err?.message };
   }
 }
 
@@ -160,7 +193,7 @@ function PaymentElementForm({
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const { error: submitError, orderId } = await submitStripePayment({
+    const result = await submitStripePayment({
       stripe,
       elements,
       returnUrl,
@@ -168,13 +201,29 @@ function PaymentElementForm({
         ? () => completeOrderAfterStripePayment(cartId)
         : undefined
     });
-    if (submitError) setError(submitError);
-    if (!submitError && orderId) {
-      redirectToOrderStatus(orderId);
-      return;
+    switch (result.status) {
+      case 'completed':
+        redirectToOrderStatus(result.orderId);
+        return; // keep the spinner up while navigating away
+      case 'processing':
+        setError(t('payment_processing'));
+        break;
+      case 'not_completed':
+        setError(t('payment_not_completed'));
+        break;
+      case 'unavailable':
+        setError(t('payment_unavailable'));
+        break;
+      case 'failed':
+        // Prefer Stripe's own (locale-aware) message; otherwise map our code.
+        setError(
+          result.providerMessage ||
+            t(result.code === 'no_order_id' ? 'payment_no_order' : 'payment_failed')
+        );
+        break;
     }
     setIsLoading(false);
-  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus]);
+  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus, t]);
 
   return (
     <div
@@ -216,6 +265,16 @@ export default function StripePaymentElement({
   const stripePromise = getStripePromise();
   const enabledMethods = getEnabledPaymentMethodTypes();
   const appearance = useMemo(() => getPaymentElementAppearanceRuntime(), []);
+  // Localize Stripe's own UI + error strings (card declines, BLIK prompts) to
+  // the active storefront locale. Stripe has no Ukrainian Elements locale → let
+  // it auto-detect for `ua` (our own keys still cover the GP-side messages).
+  const locale = useLocale();
+  const STRIPE_LOCALE_BY_LOCALE: Record<string, 'pl' | 'en' | 'de'> = {
+    pl: 'pl',
+    en: 'en',
+    de: 'de'
+  };
+  const stripeLocale = STRIPE_LOCALE_BY_LOCALE[locale] ?? 'auto';
   if (!stripePromise || !enabledMethods || !clientSecret) {
     return (
       <Text
@@ -230,7 +289,7 @@ export default function StripePaymentElement({
   return (
     <Elements
       stripe={stripePromise}
-      options={{ clientSecret, appearance }}
+      options={{ clientSecret, appearance, locale: stripeLocale }}
     >
       <PaymentElementForm
         cartId={cartId}

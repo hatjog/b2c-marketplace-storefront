@@ -1039,6 +1039,11 @@
       "unknown_seller": "Verkäufer"
     },
     "pay_now": "Bezahlen",
+    "payment_processing": "Ihre Zahlung wird verarbeitet. Bestätigen Sie sie in Ihrer Banking-App, um die Bestellung abzuschließen.",
+    "payment_not_completed": "Die Zahlung wurde nicht abgeschlossen. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.",
+    "payment_unavailable": "Die Zahlung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in Kürze erneut.",
+    "payment_failed": "Die Zahlung ist fehlgeschlagen. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.",
+    "payment_no_order": "Wir konnten Ihre Bestellung nicht erstellen, da die Zahlung nicht bestätigt wurde. Falls Ihnen ein Betrag belastet wurde, kontaktieren Sie uns bitte.",
     "payment_details": "Zahlungsdetails",
     "payment_heading": "Zahlung",
     "payment_method": "Zahlungsmethode",

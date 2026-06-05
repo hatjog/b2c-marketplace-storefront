@@ -34,7 +34,8 @@ vi.mock('@/lib/data/cart', () => ({
   completeOrderAfterStripePayment: vi.fn()
 }));
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'pl'
 }));
 vi.mock('@stripe/react-stripe-js', () => ({
   Elements: ({ children }: { children: React.ReactNode }) =>
@@ -81,7 +82,7 @@ describe('buildPaymentElementOptions — AC1 / D6', () => {
 
 describe('submitStripePayment — AC7', () => {
   it('confirmPayment z return_url i completes cart after inline success', async () => {
-    const confirmPayment = vi.fn().mockResolvedValue({});
+    const confirmPayment = vi.fn().mockResolvedValue({ paymentIntent: { status: 'succeeded' } });
     const completeOrder = vi.fn().mockResolvedValue({ ok: true, orderId: 'order_1' });
     const stripe = { confirmPayment } as any;
     const elements = { __el: true } as any;
@@ -93,7 +94,7 @@ describe('submitStripePayment — AC7', () => {
       completeOrder
     });
 
-    expect(res).toEqual({ orderId: 'order_1' });
+    expect(res).toEqual({ status: 'completed', orderId: 'order_1' });
     // AC7 — confirmPayment args + return_url (Story 1.5 surface).
     expect(confirmPayment).toHaveBeenCalledWith({
       elements,
@@ -114,29 +115,60 @@ describe('submitStripePayment — AC7', () => {
       returnUrl: '/pl/order/cart_1/payment-status',
       completeOrder
     });
-    expect(res.error).toBe('card_declined');
+    expect(res).toEqual({ status: 'failed', providerMessage: 'card_declined' });
     expect(completeOrder).not.toHaveBeenCalled();
   });
 
-  it('surfaces confirmPayment error (NOT silent)', async () => {
+  it('native-flow guard: BLIK not confirmed (status=processing) does NOT complete the order', async () => {
+    const completeOrder = vi.fn();
     const stripe = {
-      confirmPayment: vi.fn().mockResolvedValue({ error: { message: 'card_declined' } })
+      confirmPayment: vi.fn().mockResolvedValue({ paymentIntent: { status: 'processing' } })
     } as any;
     const res = await submitStripePayment({
       stripe,
       elements: {} as any,
-      returnUrl: '/pl/order/cart_1/payment-status'
+      returnUrl: '/pl/order/cart_1/payment-status',
+      completeOrder
     });
-    expect(res.error).toBe('card_declined');
+    expect(res).toEqual({ status: 'processing' });
+    expect(completeOrder).not.toHaveBeenCalled();
   });
 
-  it('returns uniform message when stripe/elements not ready', async () => {
+  it('native-flow guard: abandoned auth (status=requires_action) → not_completed, no completion', async () => {
+    const completeOrder = vi.fn();
+    const stripe = {
+      confirmPayment: vi.fn().mockResolvedValue({ paymentIntent: { status: 'requires_action' } })
+    } as any;
+    const res = await submitStripePayment({
+      stripe,
+      elements: {} as any,
+      returnUrl: '/pl/order/cart_1/payment-status',
+      completeOrder
+    });
+    expect(res).toEqual({ status: 'not_completed' });
+    expect(completeOrder).not.toHaveBeenCalled();
+  });
+
+  it('maps a completion failure to a stable code (no English leak)', async () => {
+    const stripe = {
+      confirmPayment: vi.fn().mockResolvedValue({ paymentIntent: { status: 'succeeded' } })
+    } as any;
+    const res = await submitStripePayment({
+      stripe,
+      elements: {} as any,
+      returnUrl: '/pl/order/cart_1/payment-status',
+      completeOrder: vi.fn().mockResolvedValue({ ok: false, error: { code: 'no_order_id' } })
+    });
+    expect(res).toEqual({ status: 'failed', code: 'no_order_id' });
+  });
+
+  it('returns unavailable when stripe/elements not ready', async () => {
     const res = await submitStripePayment({
       stripe: null,
       elements: null,
       returnUrl: '/x'
     });
-    expect(res.error).toBe('Payment is not available for this market');
+    expect(res).toEqual({ status: 'unavailable' });
   });
 });
 
