@@ -17,6 +17,20 @@ function optionLabel(title: string, t: (key: 'size' | 'duration' | 'package') =>
   return title;
 }
 
+// Medusa requires every product to carry at least one option + value, so
+// single-variant products (most of the imported catalog) get a synthetic
+// placeholder option titled "Default" with a single "Default" value. That has
+// no merchandising meaning and rendered as a dead "Default: Default" selector
+// on the PDP — hide it. A real option (Size/Color/Denomination…) or any option
+// offering an actual choice (>1 value) is always kept.
+const SYNTHETIC_DEFAULT_OPTION_TITLES = new Set(['default', 'default option']);
+
+function isSyntheticDefaultOption(option: HttpTypes.StoreProductOption): boolean {
+  const normalizedTitle = option.title?.trim().toLowerCase() ?? '';
+  if (!SYNTHETIC_DEFAULT_OPTION_TITLES.has(normalizedTitle)) return false;
+  return (option.values?.length ?? 0) <= 1;
+}
+
 export const ProductVariants = ({
   product,
   selectedVariant
@@ -32,12 +46,19 @@ export const ProductVariants = ({
     if (value) updateSearchParams(optionId, value);
   };
 
+  const visibleOptions = (product.options || []).filter(
+    option => !isSyntheticDefaultOption(option)
+  );
+
+  // Single-variant product (only the synthetic "Default" option) → no selector.
+  if (visibleOptions.length === 0) return null;
+
   return (
     <div
       className="my-4 space-y-2"
       data-testid="product-variants"
     >
-      {(product.options || []).map(({ id, title, values }: HttpTypes.StoreProductOption) => (
+      {visibleOptions.map(({ id, title, values }: HttpTypes.StoreProductOption) => (
         <div
           key={id}
           data-testid={`product-variant-${title.toLowerCase()}`}

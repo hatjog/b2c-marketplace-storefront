@@ -41,27 +41,45 @@ export function normalizePurchaseMode(
   return normalizedMode === 'gift' ? 'gift' : 'self';
 }
 
-export function CheckoutPurchaseMode(): ReactElement {
+export function CheckoutPurchaseMode({
+  cartPurchaseMode
+}: {
+  /** Mode persisted on the cart line items at the PDP (metadata.is_gift /
+   *  purchase_mode). Used as the initial display when the URL carries no
+   *  explicit `?mode`, so a "buy as gift" choice survives navigation from the
+   *  product page into checkout. Defaults to 'self' when absent. */
+  cartPurchaseMode?: PurchaseMode;
+} = {}): ReactElement {
   const t = useTranslations('seller.checkout');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const rawMode = searchParams.get('mode');
+  const hasExplicitUrlMode = (rawMode?.trim() ?? '') !== '';
   // TF-74: case-insensitive parse + injection-resistant whitelist via parsePurchaseMode helper.
   const parsedMode = parsePurchaseMode(rawMode);
   const urlMode: PurchaseMode = parsedMode === SelfPurchaseMode.GIFT ? 'gift' : 'self';
+
+  // Initial display precedence: an EXPLICIT `?mode` wins (shareable link /
+  // prior toggle), otherwise fall back to the cart-persisted mode so the PDP
+  // gift selection is reflected here. Plain default stays 'self'.
+  const initialMode: PurchaseMode = hasExplicitUrlMode ? urlMode : cartPurchaseMode ?? 'self';
 
   // Local state is the RESPONSIVE source of truth for display so a click flips the
   // toggle/placeholder synchronously — independent of router.replace, which raced with
   // CartAddressSection's own ?step= write (two URL owners → soft-nav dropped → toggle
   // appeared dead). URL is kept in sync as a write target (shareable links + SSR read).
-  const [mode, setMode] = useState<PurchaseMode>(urlMode);
+  const [mode, setMode] = useState<PurchaseMode>(initialMode);
 
-  // Sync from URL on external changes (e.g. shareable ?mode=gift, back/forward).
+  // Sync only from an EXPLICIT URL mode (shareable ?mode=gift, back/forward).
+  // When the URL has no mode we must NOT re-apply urlMode (it resolves to
+  // 'self' and would erase the cart-derived gift state on mount).
   useEffect(() => {
-    setMode(urlMode);
-  }, [urlMode]);
+    if (hasExplicitUrlMode) {
+      setMode(urlMode);
+    }
+  }, [hasExplicitUrlMode, urlMode]);
 
   const handleChange = useCallback(
     (newMode: PurchaseMode): void => {

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import type { HttpTypes } from '@medusajs/types';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
@@ -50,6 +51,7 @@ type PaymentButtonProps = {
 };
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': dataTestId, consentBlocked = false }) => {
+  const t = useTranslations('checkout');
   const notReady =
     !cart ||
     !cart.shipping_address ||
@@ -76,7 +78,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
           className="w-full min-h-11"
           aria-disabled="true"
         >
-          Place order
+          {t('place_order')}
         </Button>
       );
     case isManual(paymentSession?.provider_id):
@@ -94,7 +96,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': data
           className="w-full"
           aria-disabled="true"
         >
-          Select a payment method
+          {t('select_payment_method')}
         </Button>
       );
   }
@@ -111,6 +113,7 @@ const StripePaymentButton = ({
   consentBlocked?: boolean;
   'data-testid'?: string;
 }) => {
+  const t = useTranslations('checkout');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [disabled, setDisabled] = useState(true);
@@ -232,7 +235,7 @@ const StripePaymentButton = ({
         data-testid="stripe-pay-button"
         data-consent-blocked={consentBlocked ? 'true' : undefined}
       >
-        Place order
+        {t('place_order')}
       </Button>
       <ErrorMessage
         error={errorMessage}
@@ -257,6 +260,7 @@ const ManualTestPaymentButton = ({
   notReady: boolean;
   consentBlocked?: boolean;
 }) => {
+  const t = useTranslations('checkout');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Story v160-5-9 — AC4 modal state.
@@ -301,7 +305,7 @@ const ManualTestPaymentButton = ({
         data-testid="manual-pay-button"
         data-consent-blocked={consentBlocked ? 'true' : undefined}
       >
-        Place order
+        {t('place_order')}
       </Button>
       <ErrorMessage
         error={errorMessage}
