@@ -130,7 +130,7 @@ export const SiteHeader = async ({
           {/* slot: account-actions */}
           <MessageButton />
           <LocalizedClientLink
-            href="/wishlist"
+            href="/user/wishlist"
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             aria-label={tHeader('wishlist')}
             data-testid="wishlist-link"
@@ -145,7 +145,7 @@ export const SiteHeader = async ({
             <UserDropdown isLoggedIn />
           ) : (
             <LocalizedClientLink
-              href="/account"
+              href="/user/account"
               className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               data-testid="account-link"
             >
