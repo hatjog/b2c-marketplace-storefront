@@ -24,6 +24,7 @@
 import type { ReactNode } from 'react';
 
 import type { LegalDocument } from '@/lib/legal/fetchLegalDocument';
+import { AlertIcon, TimeIcon, TagIcon, DocumentIcon } from '@/icons';
 
 export interface LegalDocLayoutProps {
   /** Pre-fetched legal document body + metadata. */
@@ -182,7 +183,10 @@ export function LegalDocLayout({
               className="text-sm font-semibold"
               style={{ color: 'var(--text-primary)', margin: 0 }}
             >
-              ⚠ {strings.draftBadge}
+              <AlertIcon className="inline-block h-4 w-4 align-text-bottom"
+                color="currentColor"
+              />{' '}
+              {strings.draftBadge}
             </p>
             <p
               className="text-xs"
@@ -281,7 +285,7 @@ export function LegalDocLayout({
                 background: 'var(--bb-surface-muted, rgba(0,0,0,0.04))'
               }}
             >
-              <span aria-hidden="true">🕒</span>
+              <TimeIcon className="h-4 w-4" color="currentColor" />
               <span>{strings.lastUpdatedLabel}:</span>
               <time dateTime={document.lastUpdated}>{document.lastUpdated}</time>
             </span>
@@ -302,7 +306,7 @@ export function LegalDocLayout({
                 background: 'var(--bb-surface-muted, rgba(0,0,0,0.04))'
               }}
             >
-              <span aria-hidden="true">🏷</span>
+              <TagIcon className="h-4 w-4" color="currentColor" />
               <span>
                 {strings.versionLabel} {document.version}
               </span>
@@ -325,7 +329,7 @@ export function LegalDocLayout({
                 background: 'var(--bb-surface-muted, rgba(0,0,0,0.04))'
               }}
             >
-              <span aria-hidden="true">📜</span>
+              <DocumentIcon className="h-4 w-4" color="currentColor" />
               <span>{provenance}</span>
             </span>
 

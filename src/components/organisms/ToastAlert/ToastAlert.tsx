@@ -27,6 +27,9 @@ import {
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
+import { InfoIcon, DoneIcon, AlertIcon, ErrorIcon } from '@/icons';
+
+type ToastIcon = (props: { className?: string; color?: string }) => ReactNode;
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
 export type ToastPlacement = 'top-right' | 'top-full-width';
@@ -64,11 +67,11 @@ const VARIANT_STYLES: Record<ToastVariant, string> = {
     'bg-[var(--color-error-bg)] border-[var(--color-error)] text-[var(--text-primary)]',
 };
 
-const VARIANT_ICON: Record<ToastVariant, string> = {
-  info: 'ℹ️',
-  success: '✓',
-  warning: '⚠️',
-  error: '✕',
+const VARIANT_ICON: Record<ToastVariant, ToastIcon> = {
+  info: InfoIcon,
+  success: DoneIcon,
+  warning: AlertIcon,
+  error: ErrorIcon,
 };
 
 export interface ToastProviderProps {
@@ -178,8 +181,8 @@ export function ToastViewport({
               VARIANT_STYLES[toast.variant]
             )}
           >
-            <span aria-hidden="true" className="text-base leading-none">
-              {VARIANT_ICON[toast.variant]}
+            <span aria-hidden="true" className="leading-none">
+              {VARIANT_ICON[toast.variant]({ className: 'h-5 w-5', color: 'currentColor' })}
             </span>
             <p className="flex-1 text-sm">{toast.message}</p>
             {toast.action && (

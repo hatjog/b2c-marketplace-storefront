@@ -2,12 +2,14 @@
 // Trust Invariant #1: <VerifiedMark must appear on home surface once @trust-invariant-scope: v180 is set.
 // BonBeauty DS v2.1.0: color-trust, bb-surface, bb-border-hairline tokens.
 // Story 3.0 Sprint 1 thin slice gate.
+import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 
 import { VerifiedMark } from '@/components/atoms/VerifiedMark/VerifiedMark';
+import { AwardIcon, StarIcon, LockIcon } from '@/icons';
 
 interface TrustPoint {
-  icon: string;
+  icon: ReactNode;
   text: string;
 }
 
@@ -19,10 +21,10 @@ interface TrustStripBlockProps {
 
 function buildDefaultTrustPoints(t: Awaited<ReturnType<typeof getTranslations>>): TrustPoint[] {
   return [
-    { icon: '🏅', text: t('trust_strip.points.1') },
-    { icon: '⭐', text: t('trust_strip.points.2') },
-    { icon: '🔒', text: t('trust_strip.points.3') },
-    { icon: '↩', text: t('trust_strip.points.4') },
+    { icon: <AwardIcon className="h-4 w-4" color="currentColor" />, text: t('trust_strip.points.1') },
+    { icon: <StarIcon className="h-4 w-4" color="currentColor" />, text: t('trust_strip.points.2') },
+    { icon: <LockIcon className="h-4 w-4" color="currentColor" />, text: t('trust_strip.points.3') },
+    { icon: <span aria-hidden="true">↩</span>, text: t('trust_strip.points.4') },
   ];
 }
 
