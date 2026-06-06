@@ -47,7 +47,7 @@ export const SellerTabs = async ({
   const tabsList = [
     { label: sellerT('products_label'), link: `/sellers/${seller_handle}/`, value: 'products' },
     { label: sellerT('about'), link: `/sellers/${seller_handle}/?tab=about`, value: 'about' },
-    { label: sellerT('location_label'), link: `/sellers/${seller_handle}/?tab=location`, value: 'location' },
+    { label: sellerT('address_label'), link: `/sellers/${seller_handle}/?tab=location`, value: 'location' },
     {
       label: productsT('reviews'),
       link: `/sellers/${seller_handle}/reviews`,
@@ -110,7 +110,7 @@ export const SellerTabs = async ({
         idBase="seller-tabs"
       >
         <section className="rounded-sm border border-[var(--bb-border-soft)] p-4">
-          <h2 className="heading-sm mb-3 uppercase">{sellerT('location_label')}</h2>
+          <h2 className="heading-sm mb-3 uppercase">{sellerT('address_label')}</h2>
           <p className="text-sm text-secondary">{address || sellerT('no_address')}</p>
           {openingHours.length > 0 && (
             <div className="mt-4">

@@ -11,7 +11,12 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchSellerById, fetchSellerSummaryByHandle, resolveSellerHandleToId } from '../sellers';
+import {
+  fetchSellerById,
+  fetchSellerProfileByHandle,
+  fetchSellerSummaryByHandle,
+  resolveSellerHandleToId
+} from '../sellers';
 
 // ---- Mock mercurClient + unstable_cache BEFORE module imports ----
 
@@ -23,8 +28,14 @@ vi.mock('next/cache', () => ({
 
 const mockSellersQuery = vi.fn();
 const mockSellersIdQuery = vi.fn();
+const mockSdkFetch = vi.fn();
 
 vi.mock('../../config', () => ({
+  sdk: {
+    client: {
+      fetch: (...args: unknown[]) => mockSdkFetch(...args)
+    }
+  },
   mercurClient: {
     store: {
       sellers: new Proxy(
@@ -277,6 +288,26 @@ describe('fetchSellerById', () => {
     expect(result?.photo).toBe('');
   });
 
+  it('falls back to logo and metadata photo when direct photo is absent', async () => {
+    mockSellersIdQuery.mockResolvedValue({
+      seller: makeSeller({
+        photo: null,
+        logo: null,
+        metadata: {
+          gp: {
+            photo_url: 'https://img.example.com/metadata-photo.jpg',
+            gallery: ['https://img.example.com/gallery-1.jpg']
+          }
+        }
+      })
+    });
+
+    const result = await fetchSellerById('seller-abc');
+
+    expect(result?.photo).toBe('https://img.example.com/metadata-photo.jpg');
+    expect(result?.gallery).toEqual([{ url: 'https://img.example.com/gallery-1.jpg' }]);
+  });
+
   it('maps email and phone when present', async () => {
     mockSellersIdQuery.mockResolvedValue({
       seller: makeSeller({ email: 'test@test.pl', phone: '+48600000001' })
@@ -357,6 +388,57 @@ describe('fetchSellerById', () => {
     expect(result?.postal_code).toBe('30-001');
     expect(result?.country_code).toBe('pl');
     expect(result?.district).toBe('Kazimierz');
+  });
+
+  it('falls back to lat/lng from the first location when direct geo fields are absent', async () => {
+    mockSellersIdQuery.mockResolvedValue({
+      seller: makeSeller({
+        lat: null,
+        lng: null,
+        locations: [
+          {
+            address_line: 'ul. Geo 3',
+            postal_code: '00-003',
+            city: 'Warszawa',
+            country_code: 'pl',
+            district: 'Centrum',
+            lat: 52.2297,
+            lng: 21.0122
+          }
+        ]
+      })
+    });
+
+    const result = await fetchSellerById('seller-abc');
+
+    expect(result?.lat).toBe(52.2297);
+    expect(result?.lng).toBe(21.0122);
+  });
+});
+
+describe('fetchSellerProfileByHandle', () => {
+  beforeEach(() => {
+    mockSdkFetch.mockReset();
+  });
+
+  it('returns a mapped seller from the enriched handle route', async () => {
+    mockSdkFetch.mockResolvedValue({ seller: makeSeller({ photo: 'https://img.example.com/profile.jpg' }) });
+
+    const result = await fetchSellerProfileByHandle('studio-nova');
+
+    expect(result?.photo).toBe('https://img.example.com/profile.jpg');
+    expect(mockSdkFetch).toHaveBeenCalledWith('/store/seller/studio-nova', {
+      method: 'GET',
+      cache: 'no-cache'
+    });
+  });
+
+  it('returns null when the enriched handle route fails', async () => {
+    mockSdkFetch.mockRejectedValue(new Error('Not Found'));
+
+    const result = await fetchSellerProfileByHandle('missing');
+
+    expect(result).toBeNull();
   });
 });
 

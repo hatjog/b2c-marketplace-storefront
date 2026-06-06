@@ -4,6 +4,7 @@ import { mercurClient } from '../config';
 import { haversineKm } from '../helpers/distance';
 import {
   fetchSellerById,
+  fetchSellerProfileByHandle,
   fetchSellerSummaryByHandle,
   resolveSellerHandleToId
 } from '../sdk-adapters/sellers';
@@ -260,7 +261,7 @@ export const searchSellers = async ({
  */
 export const getSellerByHandle = async (handle: string): Promise<SellerProps | null> => {
   const SELLER_FIELDS =
-    '+created_at,+email,+phone,+social_links,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name';
+    '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name';
   const SAFE_SELLER_FIELDS = SELLER_FIELDS.split(',')
     .filter(field => !field.includes('reviews'))
     .join(',');
@@ -273,19 +274,65 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
         .sort((a, b) => b.created_at.localeCompare(a.created_at)) ?? []
   });
 
+  const mergeSellerProfile = (base: SellerProps, profile: SellerProps | null): SellerProps => {
+    if (!profile) return base;
+    return normalizeSeller({
+      ...base,
+      description: base.description || profile.description,
+      photo: base.photo || profile.photo,
+      email: base.email ?? profile.email,
+      phone: base.phone ?? profile.phone,
+      social_links: base.social_links ?? profile.social_links,
+      gallery: base.gallery ?? profile.gallery,
+      opening_hours: base.opening_hours ?? profile.opening_hours,
+      locations: base.locations ?? profile.locations,
+      city: base.city ?? profile.city,
+      address_line: base.address_line ?? profile.address_line,
+      postal_code: base.postal_code ?? profile.postal_code,
+      country_code: base.country_code ?? profile.country_code,
+      district: base.district ?? profile.district,
+      lat: base.lat ?? profile.lat,
+      lng: base.lng ?? profile.lng,
+      tax_id: base.tax_id || profile.tax_id,
+      regon: base.regon ?? profile.regon,
+      krs: base.krs ?? profile.krs
+    });
+  };
+
+  const needsProfileEnrichment = (seller: SellerProps): boolean =>
+    !seller.photo ||
+    !seller.gallery?.length ||
+    !seller.address_line ||
+    !seller.city ||
+    !seller.phone ||
+    !seller.social_links;
+
   const id = await resolveSellerHandleToId(handle);
   if (!id) return null;
 
   const seller = await fetchSellerById(id, SELLER_FIELDS);
   if (seller) {
-    return normalizeSeller(seller);
+    const normalized = normalizeSeller(seller);
+    return needsProfileEnrichment(normalized)
+      ? mergeSellerProfile(normalized, await fetchSellerProfileByHandle(handle))
+      : normalized;
   }
 
   const sellerWithoutReviews = await fetchSellerById(id, SAFE_SELLER_FIELDS);
   if (sellerWithoutReviews) {
-    return normalizeSeller(sellerWithoutReviews);
+    const normalized = normalizeSeller(sellerWithoutReviews);
+    return needsProfileEnrichment(normalized)
+      ? mergeSellerProfile(normalized, await fetchSellerProfileByHandle(handle))
+      : normalized;
   }
 
   const sellerSummary = await fetchSellerSummaryByHandle(handle, SAFE_SELLER_FIELDS);
-  return sellerSummary ? normalizeSeller(sellerSummary) : null;
+  if (sellerSummary) {
+    const normalized = normalizeSeller(sellerSummary);
+    return needsProfileEnrichment(normalized)
+      ? mergeSellerProfile(normalized, await fetchSellerProfileByHandle(handle))
+      : normalized;
+  }
+
+  return (await fetchSellerProfileByHandle(handle)) ?? null;
 };
