@@ -91,30 +91,33 @@ export default async function BlogIndexPage({
         role="list"
         aria-label={t('filter_label')}
       >
-        <LocalizedClientLink
-          href="/blog"
-          aria-current={!activeTag ? 'page' : undefined}
-          className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
-            !activeTag
-              ? 'border-[var(--bg-action)] bg-[var(--bb-tint-gold-12)] text-primary'
-              : 'border-[var(--bb-border-soft)] text-secondary hover:text-primary'
-          }`}
-        >
-          {t('tag_all')}
-        </LocalizedClientLink>
-        {availableTags.map(tag => (
+        <span role="listitem">
           <LocalizedClientLink
-            key={tag.slug}
-            href={`/blog?tag=${encodeURIComponent(tag.slug)}`}
-            aria-current={activeTag === tag.slug ? 'page' : undefined}
-            className={`rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
-              activeTag === tag.slug
+            href="/blog"
+            aria-current={!activeTag ? 'page' : undefined}
+            className={`inline-block rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
+              !activeTag
                 ? 'border-[var(--bg-action)] bg-[var(--bb-tint-gold-12)] text-primary'
                 : 'border-[var(--bb-border-soft)] text-secondary hover:text-primary'
             }`}
           >
-            {tag.label}
+            {t('tag_all')}
           </LocalizedClientLink>
+        </span>
+        {availableTags.map(tag => (
+          <span role="listitem" key={tag.slug}>
+            <LocalizedClientLink
+              href={`/blog?tag=${encodeURIComponent(tag.slug)}`}
+              aria-current={activeTag === tag.slug ? 'page' : undefined}
+              className={`inline-block rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)] ${
+                activeTag === tag.slug
+                  ? 'border-[var(--bg-action)] bg-[var(--bb-tint-gold-12)] text-primary'
+                  : 'border-[var(--bb-border-soft)] text-secondary hover:text-primary'
+              }`}
+            >
+              {tag.label}
+            </LocalizedClientLink>
+          </span>
         ))}
       </div>
     </div>
