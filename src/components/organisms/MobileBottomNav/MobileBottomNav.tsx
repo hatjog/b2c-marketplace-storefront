@@ -44,16 +44,16 @@ export function MobileBottomNav({
     { id: 'home', label: 'Home', href: localizedHref(locale, '/'), icon: '🏠', badge: 0 },
     { id: 'search', label: 'Szukaj', href: localizedHref(locale, '/categories'), icon: '🔍', badge: 0 },
     { id: 'cart', label: 'Koszyk', href: localizedHref(locale, '/cart'), icon: '🛒', badge: cartCount },
-    { id: 'wishlist', label: 'Ulubione', href: localizedHref(locale, '/wishlist'), icon: '🤍', badge: wishlistCount },
-    { id: 'account', label: 'Konto', href: localizedHref(locale, '/account'), icon: '👤', badge: 0 },
+    { id: 'wishlist', label: 'Ulubione', href: localizedHref(locale, '/user/wishlist'), icon: '🤍', badge: wishlistCount },
+    { id: 'account', label: 'Konto', href: localizedHref(locale, '/user/account'), icon: '👤', badge: 0 },
   ] as const;
 
   function isActive(tabId: string) {
     if (tabId === 'home') return pathname === `/${locale}` || pathname === `/${locale}/`;
     if (tabId === 'search') return pathname.startsWith(`/${locale}/categories`);
     if (tabId === 'cart') return pathname.startsWith(`/${locale}/cart`);
-    if (tabId === 'wishlist') return pathname.startsWith(`/${locale}/wishlist`);
-    if (tabId === 'account') return pathname.startsWith(`/${locale}/account`);
+    if (tabId === 'wishlist') return pathname.startsWith(`/${locale}/user/wishlist`);
+    if (tabId === 'account') return pathname.startsWith(`/${locale}/user/account`);
     return false;
   }
 
