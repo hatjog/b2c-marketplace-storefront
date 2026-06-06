@@ -14,6 +14,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { HomeIcon, SearchIcon, CartIcon, HeartIcon, ProfileIcon } from '@/icons';
 
 interface MobileBottomNavProps {
   locale: string;
@@ -41,11 +42,11 @@ export function MobileBottomNav({
   if (isCheckout) return null;
 
   const tabs = [
-    { id: 'home', label: 'Home', href: localizedHref(locale, '/'), icon: '🏠', badge: 0 },
-    { id: 'search', label: 'Szukaj', href: localizedHref(locale, '/categories'), icon: '🔍', badge: 0 },
-    { id: 'cart', label: 'Koszyk', href: localizedHref(locale, '/cart'), icon: '🛒', badge: cartCount },
-    { id: 'wishlist', label: 'Ulubione', href: localizedHref(locale, '/user/wishlist'), icon: '🤍', badge: wishlistCount },
-    { id: 'account', label: 'Konto', href: localizedHref(locale, '/user/account'), icon: '👤', badge: 0 },
+    { id: 'home', label: 'Home', href: localizedHref(locale, '/'), Icon: HomeIcon, badge: 0 },
+    { id: 'search', label: 'Szukaj', href: localizedHref(locale, '/categories'), Icon: SearchIcon, badge: 0 },
+    { id: 'cart', label: 'Koszyk', href: localizedHref(locale, '/cart'), Icon: CartIcon, badge: cartCount },
+    { id: 'wishlist', label: 'Ulubione', href: localizedHref(locale, '/user/wishlist'), Icon: HeartIcon, badge: wishlistCount },
+    { id: 'account', label: 'Konto', href: localizedHref(locale, '/user/account'), Icon: ProfileIcon, badge: 0 },
   ] as const;
 
   function isActive(tabId: string) {
@@ -78,6 +79,7 @@ export function MobileBottomNav({
       <div className="flex h-16 items-center justify-around px-1">
         {tabs.map((tab) => {
           const active = isActive(tab.id);
+          const Icon = tab.Icon;
           return (
             <Link
               key={tab.id}
@@ -92,8 +94,8 @@ export function MobileBottomNav({
               aria-current={active ? 'page' : undefined}
               data-testid={`mobile-nav-tab-${tab.id}`}
             >
-              <span className="relative text-xl leading-none" aria-hidden="true">
-                {tab.icon}
+              <span className="relative leading-none" aria-hidden="true">
+                <Icon className="h-6 w-6" />
                 {tab.badge > 0 && (
                   <span className="absolute -right-1.5 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-0.5 text-[9px] font-semibold text-white">
                     {tab.badge > 99 ? '99+' : tab.badge}
