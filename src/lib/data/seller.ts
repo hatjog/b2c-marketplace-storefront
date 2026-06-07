@@ -260,8 +260,24 @@ export const searchSellers = async ({
  * @see sdk-adapters/sellers.ts (resolveSellerHandleToId, fetchSellerById)
  */
 export const getSellerByHandle = async (handle: string): Promise<SellerProps | null> => {
+  // `reviews.*` is intentionally NOT expanded here: `reviews` is not a
+  // populatable relation on the Mercur 2 `/store/sellers/:id` endpoint (no
+  // seller↔review module link), so requesting it makes mikro-orm throw
+  // (`expandDotPaths` → HTTP 500) and forced a wasteful fallback re-fetch on
+  // every seller page load. Removing it is behavior-preserving: that 500 meant
+  // the primary fetch already fell through to the reviews-free SAFE fetch, so
+  // `seller.reviews` was always `[]` in production. The seller-facing review
+  // surfaces (SellerReviewTab and /sellers/[handle]/reviews via
+  // getSellerReviewsSurfaceData) re-derive reviews from this same
+  // `getSellerByHandle().reviews`, so they keep rendering the existing empty
+  // state; wiring real seller reviews (the dedicated `/store/reviews` graph —
+  // today consumed only by the user written-reviews page) is a separate
+  // follow-up. Mirrors the `*seller.reviews` constraint documented for
+  // /store/products in lib/data/products.ts.
   const SELLER_FIELDS =
-    '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery,+reviews.seller.name,+reviews.rating,+reviews.customer_note,+reviews.seller_note,+reviews.created_at,+reviews.updated_at,+reviews.customer.first_name,+reviews.customer.last_name';
+    '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery';
+  // Retained as the resilient fallback field set for any other transient 5xx
+  // on the primary fetch (already reviews-free given the literal above).
   const SAFE_SELLER_FIELDS = SELLER_FIELDS.split(',')
     .filter(field => !field.includes('reviews'))
     .join(',');
