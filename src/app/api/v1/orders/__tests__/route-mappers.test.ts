@@ -15,7 +15,7 @@ import {
   isGuestCheckout,
   mapMedusaOrderStatusToLifecycle,
   mapMedusaPaymentStatusToLifecycle,
-} from '../[id]/route';
+} from '../[id]/lifecycle-mappers';
 
 describe('mapMedusaPaymentStatusToLifecycle', () => {
   it('maps captured → paid', () => {

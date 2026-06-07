@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { NextRequest } from 'next/server';
 
-import { isAllowedOrigin } from '../[id]/payment-status/route';
+import { isAllowedOrigin } from '../[id]/payment-status/origin-guard';
 
 function requestWithHeaders(headers: Record<string, string>) {
   return {
