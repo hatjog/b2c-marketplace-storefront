@@ -166,7 +166,7 @@ describe('getSellerByHandle', () => {
     expect(result?.reviews).toEqual([]);
   });
 
-  it('passes enriched fields string to fetchSellerById', async () => {
+  it('passes enriched (reviews-free) fields string to fetchSellerById', async () => {
     mockResolveHandleToId.mockResolvedValue('seller-abc');
     mockFetchSellerById.mockResolvedValue(makeSeller());
 
@@ -176,7 +176,12 @@ describe('getSellerByHandle', () => {
     expect(fieldsArg).toContain('+email');
     expect(fieldsArg).toContain('+phone');
     expect(fieldsArg).toContain('+social_links');
-    expect(fieldsArg).toContain('+reviews.rating');
+    expect(fieldsArg).toContain('+gallery');
+    // `reviews` is NOT an expandable relation on /store/sellers/:id (no
+    // seller↔review module link) — requesting it 500s the endpoint, so it is
+    // omitted. seller.reviews was already empty in production (the 500 forced
+    // the reviews-free fallback), so dropping the expansion is behavior-preserving.
+    expect(fieldsArg).not.toContain('reviews');
   });
 
   it('retries without reviews when expanded seller fetch fails', async () => {
