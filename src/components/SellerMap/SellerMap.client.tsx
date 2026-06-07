@@ -300,6 +300,17 @@ export function SellerMap({
                 icon={sellerIcon}
                 keyboard
                 alt={t('markerAlt', { name: seller.name })}
+                eventHandlers={{
+                  // a11y (7-1): Leaflet renders the marker as a div with
+                  // role="button" tabindex="0"; `alt` is ignored for a divIcon, so
+                  // the focusable command would have no accessible name (axe
+                  // aria-command-name). Set aria-label on the marker element on add.
+                  add: (event: { target: { getElement: () => HTMLElement | undefined } }) => {
+                    event.target
+                      .getElement()
+                      ?.setAttribute('aria-label', t('markerAlt', { name: seller.name }))
+                  },
+                }}
               >
                 <Popup>
                   <div className={styles.popup} data-testid={`seller-map-popup-${seller.id}`}>
