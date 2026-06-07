@@ -4,15 +4,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-
-const CATEGORY_IMAGE_HANDLES = new Set([
-  'accessories',
-  'boots',
-  'sandals',
-  'shirt',
-  'sneakers',
-  'sport',
-]);
+import { categoryImageSrc } from '@/lib/category-images';
 
 export function CategoryCard({
   category,
@@ -20,10 +12,7 @@ export function CategoryCard({
   category: { name: string; handle: string; metadata?: { photo_url?: string } | null };
 }) {
   const t = useTranslations('home_v3.categories');
-  const imageSrc = category.metadata?.photo_url
-    ?? (CATEGORY_IMAGE_HANDLES.has(category.handle)
-        ? `/images/categories/${category.handle}.png`
-        : '/images/placeholder.svg');
+  const imageSrc = categoryImageSrc(category.handle, category.metadata?.photo_url);
 
   return (
     <LocalizedClientLink

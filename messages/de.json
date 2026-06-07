@@ -120,6 +120,7 @@
       "title_template": "{name} — Partnersalons | BonBeauty",
       "description_label": "Beschreibung",
       "address_label": "Adresse",
+      "policy_label": "Regeln",
       "opening_hours_label": "Öffnungszeiten",
       "products_label": "Salon-Produkte",
       "not_found_message": "Kein Salon für diese Adresse gefunden.",

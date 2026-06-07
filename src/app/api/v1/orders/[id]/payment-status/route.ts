@@ -28,39 +28,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { resolveMedusaBackendUrl } from '@/lib/env';
 
+import { isAllowedOrigin } from './origin-guard';
+
 type RouteContext = { params: Promise<{ id: string }> };
-
-export function isAllowedOrigin(request: NextRequest): boolean {
-  const origin = request.headers.get('origin');
-  const referer = request.headers.get('referer');
-  const allowedOrigin =
-    process.env.NEXT_PUBLIC_STOREFRONT_URL ??
-    process.env.NEXT_PUBLIC_BASE_URL ??
-    null;
-
-  if (!origin && !referer) {
-    return true;
-  }
-
-  let candidate: string | null = origin;
-  if (!candidate && referer) {
-    try {
-      candidate = new URL(referer).origin;
-    } catch {
-      return false;
-    }
-  }
-
-  if (!candidate) {
-    return false;
-  }
-
-  if (allowedOrigin && candidate !== allowedOrigin) {
-    return false;
-  }
-
-  return candidate.startsWith('http://') || candidate.startsWith('https://');
-}
 
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
   if (!isAllowedOrigin(request)) {

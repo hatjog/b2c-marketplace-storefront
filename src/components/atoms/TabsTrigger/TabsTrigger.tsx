@@ -12,7 +12,7 @@ export const TabsTrigger = ({
   return (
     <p
       className={cn(
-        'cursor-pointer px-2 pb-2 capitalize',
+        'cursor-pointer whitespace-nowrap px-2 pb-2 capitalize',
         isActive && 'border-b border-primary font-bold'
       )}
       data-testid={dataTestId ?? 'tabs-trigger'}

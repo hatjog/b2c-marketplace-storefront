@@ -120,6 +120,7 @@
       "title_template": "{name} — Партнерські салони | BonBeauty",
       "description_label": "Опис",
       "address_label": "Адреса",
+      "policy_label": "Правила",
       "opening_hours_label": "Години роботи",
       "products_label": "Продукти салону",
       "not_found_message": "Салон за вказаною адресою не знайдено.",

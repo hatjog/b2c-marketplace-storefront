@@ -55,9 +55,11 @@ describe('SEO hreflang matrix', () => {
   test('builds Open Graph locale alternates and Twitter language', () => {
     const social = buildLocaleSocialMetadata('de');
 
+    // Open Graph requires the underscore `language_TERRITORY` form (pl_PL);
+    // crawlers ignore the hyphenated BCP-47 form. hreflang/twitter keep hyphens.
     assert.deepEqual(social.openGraph, {
-      locale: 'de-DE',
-      alternateLocale: ['pl-PL', 'en-US', 'uk-UA']
+      locale: 'de_DE',
+      alternateLocale: ['pl_PL', 'en_US', 'uk_UA']
     });
     assert.deepEqual(social.other, {
       'twitter:lang': 'de-DE'

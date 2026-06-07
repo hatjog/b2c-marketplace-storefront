@@ -17,10 +17,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockResolveHandleToId = vi.fn();
 const mockFetchSellerById = vi.fn();
 const mockFetchSellerSummaryByHandle = vi.fn();
+const mockFetchSellerProfileByHandle = vi.fn();
 
 vi.mock('../sdk-adapters/sellers', () => ({
   resolveSellerHandleToId: (...args: unknown[]) => mockResolveHandleToId(...args),
   fetchSellerById: (...args: unknown[]) => mockFetchSellerById(...args),
+  fetchSellerProfileByHandle: (...args: unknown[]) => mockFetchSellerProfileByHandle(...args),
   fetchSellerSummaryByHandle: (...args: unknown[]) => mockFetchSellerSummaryByHandle(...args)
 }));
 
@@ -56,11 +58,21 @@ describe('getSellerByHandle', () => {
     mockResolveHandleToId.mockReset();
     mockFetchSellerById.mockReset();
     mockFetchSellerSummaryByHandle.mockReset();
+    mockFetchSellerProfileByHandle.mockReset();
   });
 
   it('returns seller when handle resolves to id and seller is fetched', async () => {
     mockResolveHandleToId.mockResolvedValue('seller-abc');
     mockFetchSellerById.mockResolvedValue(makeSeller());
+    mockFetchSellerProfileByHandle.mockResolvedValue(
+      makeSeller({
+        gallery: [{ url: 'https://img.example.com/gallery.jpg' }],
+        address_line: 'ul. Testowa 1',
+        city: 'Warszawa',
+        phone: '+48600000000',
+        social_links: { instagram: '@bonbeauty' }
+      })
+    );
 
     const result = await getSellerByHandle('bonbeauty');
 
@@ -69,6 +81,27 @@ describe('getSellerByHandle', () => {
     expect(result?.handle).toBe('bonbeauty');
     expect(mockResolveHandleToId).toHaveBeenCalledWith('bonbeauty');
     expect(mockFetchSellerById).toHaveBeenCalledWith('seller-abc', expect.stringContaining('+created_at'));
+  });
+
+  it('enriches missing media from the handle profile fallback', async () => {
+    mockResolveHandleToId.mockResolvedValue('seller-abc');
+    mockFetchSellerById.mockResolvedValue(makeSeller({ photo: '', gallery: null }));
+    mockFetchSellerProfileByHandle.mockResolvedValue(
+      makeSeller({
+        photo: 'https://img.example.com/profile.jpg',
+        gallery: [{ url: 'https://img.example.com/gallery.jpg' }],
+        address_line: 'ul. Profilowa 2',
+        city: 'Warszawa',
+        phone: '+48600000000',
+        social_links: { instagram: '@bonbeauty' }
+      })
+    );
+
+    const result = await getSellerByHandle('bonbeauty');
+
+    expect(result?.photo).toBe('https://img.example.com/profile.jpg');
+    expect(result?.gallery).toEqual([{ url: 'https://img.example.com/gallery.jpg' }]);
+    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty');
   });
 
   it('returns null when handle is not found (resolveSellerHandleToId returns null)', async () => {

@@ -26,7 +26,11 @@ export const ParentCategoryLinks = ({ parentCategories, categories }: ParentCate
 
   return (
     <nav
-      className="hidden items-center gap-4 lg:flex"
+      // Quick parent-category links live in the (lg:w-1/3) logo slot. They only
+      // fit there once the viewport is wide enough (~1600px); below that they
+      // overflowed into the centre search slot, so gate to min-[1600px]. Below it
+      // categories stay reachable via the "WSZYSTKIE PRODUKTY" Navbar + MobileNavbar.
+      className="hidden items-center gap-4 whitespace-nowrap min-[1600px]:flex"
       aria-label={t('parent_categories_aria')}
     >
       {parentCategories.map(({ id, handle, name }) => {

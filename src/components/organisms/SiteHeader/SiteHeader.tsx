@@ -82,18 +82,14 @@ export const SiteHeader = async ({
     >
       <div className="flex px-[var(--space-4,16px)] py-2 md:px-[var(--space-6,24px)] lg:px-8">
         {/* slot: logo */}
-        <div className="flex items-center lg:w-1/3">
+        <div className="flex min-w-0 items-center gap-4 lg:w-1/3">
           <MobileNavbar
-            parentCategories={parentCategories}
-            categories={categories}
-          />
-          <ParentCategoryLinks
             parentCategories={parentCategories}
             categories={categories}
           />
           <LocalizedClientLink
             href="/"
-            className="inline-flex items-center"
+            className="inline-flex shrink-0 items-center"
             data-testid="site-header-logo"
             aria-label={marketName ?? 'BonBeauty'}
           >
@@ -112,6 +108,10 @@ export const SiteHeader = async ({
               </span>
             )}
           </LocalizedClientLink>
+          <ParentCategoryLinks
+            parentCategories={parentCategories}
+            categories={categories}
+          />
         </div>
 
         {/* slot: nav-primary */}
@@ -130,7 +130,7 @@ export const SiteHeader = async ({
           {/* slot: account-actions */}
           <MessageButton />
           <LocalizedClientLink
-            href="/wishlist"
+            href="/user/wishlist"
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             aria-label={tHeader('wishlist')}
             data-testid="wishlist-link"
@@ -145,7 +145,7 @@ export const SiteHeader = async ({
             <UserDropdown isLoggedIn />
           ) : (
             <LocalizedClientLink
-              href="/account"
+              href="/user/account"
               className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               data-testid="account-link"
             >

@@ -74,7 +74,18 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
           'hover:border-[var(--bb-border-strong)] hover:bg-[var(--bb-surface-strong)]'
         )}
       >
-        <span aria-hidden="true">{current.flag}</span>
+        {/* Local SVG flag (bundled in public/flags) — NOT emoji: flag emoji has
+            no glyphs on Windows and falls back to the country letters, which made
+            the pill read "PL PL". No external flag CDN (GDPR/supply-chain). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/flags/${current.countryCode.toLowerCase()}.svg`}
+          alt=""
+          aria-hidden="true"
+          width={18}
+          height={13}
+          className="h-3.5 w-[18px] rounded-[2px] object-cover ring-1 ring-black/10"
+        />
         <span>{current.countryCode}</span>
       </button>
 
@@ -107,7 +118,15 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bb-surface-muted)] hover:text-[var(--text-primary)]'
                 )}
               >
-                <span aria-hidden="true" className="text-base">{option.flag}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/flags/${option.countryCode.toLowerCase()}.svg`}
+                  alt=""
+                  aria-hidden="true"
+                  width={20}
+                  height={14}
+                  className="h-3.5 w-5 rounded-[2px] object-cover ring-1 ring-black/10"
+                />
                 <span>{option.nativeName}</span>
                 {selected && <span className="ml-auto text-[var(--cta)]">✓</span>}
               </button>

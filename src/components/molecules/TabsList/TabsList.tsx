@@ -31,7 +31,10 @@ export const TabsList = ({
       ref={containerRef}
       role="tablist"
       aria-orientation="horizontal"
-      className="flex w-full gap-4"
+      // overflow-x-auto: on narrow viewports the tab row exceeds the page width;
+      // scroll the tablist horizontally instead of overflowing the document
+      // (was causing ~81px horizontal page scroll on the seller detail page @375).
+      className="flex w-full gap-4 overflow-x-auto"
       data-testid={dataTestId ?? 'tabs-list'}
     >
       {list.map(({ label, link, value }, index) => {

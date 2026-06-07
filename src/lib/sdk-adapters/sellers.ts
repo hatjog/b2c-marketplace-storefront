@@ -20,7 +20,7 @@ import { unstable_cache } from 'next/cache';
 
 import type { SellerProps } from '@/types/seller';
 
-import { mercurClient } from '../config';
+import { mercurClient, sdk } from '../config';
 import {
   type CanonicalLocale,
   resolveStorefrontLocale,
@@ -37,6 +37,8 @@ type SellerListApiItem = {
   handle: string;
   name: string;
   photo?: string | null;
+  logo?: string | null;
+  banner?: string | null;
   description?: string | null;
   city?: string | null;
   product_count?: number;
@@ -59,9 +61,13 @@ type SellerListApiItem = {
   locations?: Array<{
     city?: string | null;
     address_line?: string | null;
+    address?: string | null;
     postal_code?: string | null;
     country_code?: string | null;
+    region?: string | null;
     district?: string | null;
+    lat?: number | null;
+    lng?: number | null;
   }> | null;
   tax_id?: string | null;
   regon?: string | null;
@@ -90,6 +96,8 @@ type SellerListApiItem = {
       regon?: string | null;
       krs?: string | null;
       phone?: string | null;
+      photo_url?: string | null;
+      gallery?: Array<string | { url?: string | null; alt?: string | null; is_primary?: boolean | null }> | null;
     } | null;
   } | null;
 };
@@ -258,6 +266,30 @@ export async function fetchSellerSummaryByHandle(
 }
 
 /**
+ * Fetch enriched seller profile by handle from GP's custom store route.
+ *
+ * This is intentionally a fallback/enrichment path for fields that Mercur 2
+ * native `/store/sellers/:id` may omit even when they exist in seeded GP
+ * metadata, such as `metadata.gp.photo_url` and `metadata.gp.gallery`.
+ */
+export async function fetchSellerProfileByHandle(handle: string): Promise<SellerProps | null> {
+  try {
+    const result = (await sdk.client.fetch(`/store/seller/${handle}`, {
+      method: 'GET',
+      cache: 'no-cache'
+    })) as { seller?: SellerListApiItem };
+
+    return result?.seller ? mapSellerApiToProps(result.seller) : null;
+  } catch (err) {
+    console.error('[sdk-adapters/sellers] fetchSellerProfileByHandle failed', {
+      handle,
+      error: err instanceof Error ? err.message : String(err)
+    });
+    return null;
+  }
+}
+
+/**
  * Map Mercur 2 seller API item to GP `SellerProps` domain type.
  */
 function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
@@ -267,13 +299,20 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     ? (gpMetadata.locations.find(Boolean) ?? null)
     : null;
   const metadataLegal = gpMetadata?.legal ?? null;
+  const metadataGallery = Array.isArray(gpMetadata?.gallery)
+    ? gpMetadata.gallery
+        .map(item => (typeof item === 'string' ? { url: item } : item))
+        .filter((item): item is { url: string; alt?: string | null; is_primary?: boolean | null } =>
+          Boolean(item?.url)
+        )
+    : null;
 
   return {
     id: s.id,
     name: s.name,
     handle: s.handle,
     description: s.description ?? gpMetadata?.description ?? '',
-    photo: s.photo ?? '',
+    photo: s.photo ?? s.logo ?? gpMetadata?.photo_url ?? '',
     tax_id: s.tax_id ?? metadataLegal?.tax_id ?? gpMetadata?.tax_id ?? '',
     created_at: s.created_at ?? '',
     reviews: Array.isArray(s.reviews) ? s.reviews : [],
@@ -282,7 +321,7 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     status: s.status as SellerProps['status'],
     store_status: s.store_status as SellerProps['store_status'],
     social_links: (s.social_links as SellerProps['social_links']) ?? null,
-    gallery: s.gallery ?? null,
+    gallery: s.gallery ?? metadataGallery,
     opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? null,
     locations:
       s.locations ??
@@ -318,12 +357,16 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     lat:
       typeof s.lat === 'number'
         ? s.lat
+        : typeof primaryLocation?.lat === 'number'
+          ? primaryLocation.lat
         : typeof primaryMetadataLocation?.lat === 'number'
           ? primaryMetadataLocation.lat
           : null,
     lng:
       typeof s.lng === 'number'
         ? s.lng
+        : typeof primaryLocation?.lng === 'number'
+          ? primaryLocation.lng
         : typeof primaryMetadataLocation?.lng === 'number'
           ? primaryMetadataLocation.lng
           : null,

@@ -20,6 +20,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/atoms';
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 import { cn } from '@/lib/utils';
+import { CartIcon } from '@/icons';
 
 export interface CartItem {
   id: string;
@@ -166,9 +167,8 @@ export function MiniCartDrawer({
             className="flex flex-1 flex-col items-center justify-center gap-4 p-[var(--space-8,32px)] text-center"
             data-testid="mini-cart-empty"
           >
-            <span aria-hidden="true" className="text-4xl">
-              🛍️
-            </span>
+            <CartIcon className="h-12 w-12 text-[var(--text-secondary)]" color="currentColor" />
+
             <p className="text-sm text-[var(--text-secondary)]">
               {t('empty_title')}
             </p>
