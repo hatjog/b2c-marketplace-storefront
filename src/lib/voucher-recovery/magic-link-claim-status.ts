@@ -31,8 +31,17 @@ export type VoucherClaimLinkStatus =
   /** Backend niedostępny / rate-limit (429/5xx) — spróbuj ponownie później. */
   | 'unavailable'
 
-/** Typ `type` z body odpowiedzi 410. Backend ustawia "magic_link_expired" dla TTL. */
-const MAGIC_LINK_EXPIRED_TYPE = 'magic_link_expired'
+/**
+ * Typ `type` z body odpowiedzi 410. Backend ustawia "magic_link_expired" dla TTL.
+ *
+ * CONTRACT-PIN (ADR-138 DEC-2, MEDIUM-1): ta wartość MUSI być identyczna z
+ * backendowym SSOT `EXPIRED_CLAIM_LINK_GONE_BODY.type` w
+ * `packages/api/src/lib/voucher-claim-magic-link-ttl.ts` (GP/backend). Drift
+ * cichego rozjazdu (np. zmiana po stronie backendu) złamałby recovery flow —
+ * pin-test w `__tests__/magic-link-claim-status.test.ts` łapie to głośno.
+ * Eksportowane wyłącznie po to, by test mógł przypiąć kontrakt cross-repo.
+ */
+export const MAGIC_LINK_EXPIRED_TYPE = 'magic_link_expired'
 
 /**
  * Mapuje surowy status HTTP + opcjonalny body type na {@link VoucherClaimLinkStatus}.
