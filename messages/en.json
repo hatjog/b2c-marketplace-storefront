@@ -1043,6 +1043,8 @@
     "payment_processing": "Your payment is processing. Confirm it in your banking app to complete the order.",
     "payment_not_completed": "Payment was not completed. Please try again or choose another payment method.",
     "payment_unavailable": "Payment is temporarily unavailable. Please try again shortly.",
+    "shipping_incomplete_block": "Select a delivery method for every salon ({sellers}) before paying.",
+    "shipping_select_each_salon": "Select delivery for each salon.",
     "payment_failed": "Payment failed. Please try again or choose another payment method.",
     "payment_failed_retry_other_card": "Payment failed. Please try again with a different card.",
     "payment_requires_action_hint": "Confirm the payment to complete your order.",

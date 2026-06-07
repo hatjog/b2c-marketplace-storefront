@@ -51,6 +51,14 @@ type StripePaymentElementProps = {
   clientSecret: string;
   /** `/order/:id/payment-status` (Story 1.5 surface) — ta story tylko routuje. */
   returnUrl: string;
+  /**
+   * Orphaned-charge guard: when true, the cart cannot yet be completed (e.g.
+   * a seller still lacks a shipping method, which `/store/carts/:id/complete`
+   * rejects). Charging anyway would capture funds for an order that cannot be
+   * created. The submit is refused and `blockedReason` is surfaced.
+   */
+  blocked?: boolean;
+  blockedReason?: string;
 };
 
 /**
@@ -164,11 +172,15 @@ export async function submitStripePayment(args: {
 function PaymentElementForm({
   cartId,
   enabledMethods,
-  returnUrl
+  returnUrl,
+  blocked = false,
+  blockedReason
 }: {
   cartId?: string;
   enabledMethods: readonly string[];
   returnUrl: string;
+  blocked?: boolean;
+  blockedReason?: string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -190,6 +202,12 @@ function PaymentElementForm({
   // L-5: cart i providerId usunięte z deps — initiatePaymentSession przeniesione
   // do setPaymentMethod w CartPaymentSection (fix M-4). Deps są teraz minimalne.
   const handleSubmit = useCallback(async () => {
+    // Orphaned-charge guard: never call confirmPayment (which captures funds)
+    // while the cart cannot be completed. Surface the reason instead.
+    if (blocked) {
+      setError(blockedReason ?? t('payment_unavailable'));
+      return;
+    }
     setIsLoading(true);
     setError(null);
     const result = await submitStripePayment({
@@ -222,7 +240,7 @@ function PaymentElementForm({
         break;
     }
     setIsLoading(false);
-  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus, t]);
+  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus, t, blocked, blockedReason]);
 
   return (
     <div
@@ -232,6 +250,15 @@ function PaymentElementForm({
       {/* AC9 — Apple Pay / Google Pay auto-aktywują się natywnie przez
           PaymentElement (brak osobnego przycisku). */}
       <PaymentElement options={options} />
+      {blocked && blockedReason && (
+        <Text
+          className="txt-medium text-ui-fg-subtle mt-3"
+          data-testid="stripe-payment-element-blocked"
+          role="status"
+        >
+          {blockedReason}
+        </Text>
+      )}
       <ErrorMessage
         error={error}
         data-testid="stripe-payment-element-error"
@@ -240,7 +267,8 @@ function PaymentElementForm({
         onClick={handleSubmit}
         variant="tonal"
         loading={isLoading}
-        disabled={!stripe || !elements || isLoading}
+        disabled={!stripe || !elements || isLoading || blocked}
+        aria-disabled={blocked || undefined}
         data-testid="stripe-payment-element-submit"
         className="mt-4 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
       >
@@ -259,7 +287,9 @@ function PaymentElementForm({
 export default function StripePaymentElement({
   cartId,
   clientSecret,
-  returnUrl
+  returnUrl,
+  blocked = false,
+  blockedReason
 }: StripePaymentElementProps) {
   const t = useTranslations('checkout');
   const stripePromise = getStripePromise();
@@ -299,6 +329,8 @@ export default function StripePaymentElement({
         cartId={cartId}
         enabledMethods={enabledMethods}
         returnUrl={returnUrl}
+        blocked={blocked}
+        blockedReason={blockedReason}
       />
     </Elements>
   );

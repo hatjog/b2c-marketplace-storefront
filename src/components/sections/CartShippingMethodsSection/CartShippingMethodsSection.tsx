@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState, useTransition, type FC } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, useTransition, type FC } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckCircleSolid, ChevronUpDown, Loader } from '@medusajs/icons';
@@ -157,14 +157,54 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true'
   );
 
-  useEffect(() => {
-    const set = new Set<string>();
-    cart.items?.forEach(item => {
-      if (item?.product?.seller?.id) {
-        set.add(item.product.seller.id);
+  // Per-seller shipping coverage (orphaned-charge guard). Mercur completes one
+  // order per seller and `/store/carts/:id/complete` requires a shipping method
+  // for EVERY seller; gate "continue to payment" on full per-seller coverage,
+  // not just `length >= 1` (a multi-seller cart with one method otherwise
+  // advanced, got charged, then failed completion → orphaned charge).
+  const optionToSeller = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const m of _shippingMethods) {
+      const sellerId = m.seller?.id ?? m.seller_id ?? fallbackSeller?.id;
+      if (m.id && sellerId) {
+        map.set(m.id, sellerId);
       }
-    });
-  }, [cart]);
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [normalizedShippingMethods, fallbackSeller?.id]);
+
+  const requiredSellerIds = useMemo(
+    () => Array.from(new Set(optionToSeller.values())),
+    [optionToSeller]
+  );
+
+  // Optimistically track selected option ids (seeded from cart). Mirrors the
+  // `hasShippingMethod` optimism: router.refresh() does not reliably re-render
+  // this section with the updated `cart` prop, so we add on select / drop on
+  // remove and only ever MERGE (never reset) from the eventual fresh prop.
+  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(
+    () =>
+      new Set(
+        (cart.shipping_methods ?? [])
+          .map((m: { shipping_option_id?: string | null }) => m?.shipping_option_id)
+          .filter((id: unknown): id is string => typeof id === 'string')
+      )
+  );
+
+  const coveredSellerIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const optionId of selectedOptionIds) {
+      const sellerId = optionToSeller.get(optionId);
+      if (sellerId) set.add(sellerId);
+    }
+    return set;
+  }, [selectedOptionIds, optionToSeller]);
+
+  const isShippingComplete =
+    requiredSellerIds.length === 0
+      ? hasShippingMethod
+      : requiredSellerIds.every(id => coveredSellerIds.has(id));
 
   useEffect(() => {
     if (_shippingMethods?.length) {
@@ -217,6 +257,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
         return setError(res.error?.message);
       }
       setHasShippingMethod(true);
+      setSelectedOptionIds(prev => new Set(prev).add(id));
     } catch (error: any) {
       setError(error?.message?.replace('Error setting up the request: ', '') || t('error_generic'));
     } finally {
@@ -227,6 +268,18 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
 
   const handleRemoveShippingMethod = (methodId: string) => {
     setHasShippingMethod(false);
+    // Drop the removed option from the optimistic set so per-seller coverage
+    // reflects the removal immediately (map the cart method id → option id).
+    const removedOptionId = (cart.shipping_methods ?? []).find(
+      (m: { id?: string; shipping_option_id?: string | null }) => m?.id === methodId
+    )?.shipping_option_id;
+    if (removedOptionId) {
+      setSelectedOptionIds(prev => {
+        const next = new Set(prev);
+        next.delete(removedOptionId);
+        return next;
+      });
+    }
     startTransitionDeleteRow(async () => {
       await removeShippingMethod(methodId);
     });
@@ -245,6 +298,22 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
       setHasShippingMethod(true);
     }
   }, [cart.shipping_methods?.length]);
+
+  // One-directional MERGE of the (eventually) fresh cart's selected option ids
+  // into the optimistic set, so a re-entered/SSR-fresh delivery step seeds
+  // per-seller coverage. Never resets here — explicit removal handles drops.
+  useEffect(() => {
+    const ids = (cart.shipping_methods ?? [])
+      .map((m: { shipping_option_id?: string | null }) => m?.shipping_option_id)
+      .filter((id: unknown): id is string => typeof id === 'string');
+    if (ids.length) {
+      setSelectedOptionIds(prev => {
+        const next = new Set(prev);
+        ids.forEach(id => next.add(id));
+        return next;
+      });
+    }
+  }, [cart.shipping_methods]);
 
   // Auto-select the sole available delivery option. A single-option checkout
   // (the BonBeauty case) otherwise strands the user: the Listbox requires an
@@ -421,10 +490,19 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
               error={error}
               data-testid="delivery-option-error-message"
             />
+            {!isShippingComplete && requiredSellerIds.length > 1 && (
+              <Text
+                className="label-sm mb-2 text-[var(--text-secondary)]"
+                data-testid="delivery-incomplete-hint"
+                role="status"
+              >
+                {t('shipping_select_each_salon')}
+              </Text>
+            )}
             <Button
               onClick={handleSubmit}
               variant="tonal"
-              disabled={!hasShippingMethod || isPendingDeleteRow}
+              disabled={!isShippingComplete || isPendingDeleteRow}
               loading={isLoadingPrices}
               className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
             >

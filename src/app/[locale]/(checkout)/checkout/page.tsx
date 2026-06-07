@@ -16,6 +16,10 @@ import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
 import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode/CheckoutPurchaseMode';
 import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
+import {
+  getShippingCoverage,
+  missingShippingSellerNames
+} from '@/lib/checkout/shippingCoverage';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
@@ -76,6 +80,12 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
   const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? '');
   const customer = await retrieveCustomer();
 
+  // Per-seller shipping coverage (orphaned-charge guard). Mercur completes one
+  // order per seller and `/store/carts/:id/complete` requires a shipping method
+  // for EVERY seller; the pay button must stay blocked until that holds, or the
+  // card is charged for an order that cannot be created.
+  const shippingCoverage = getShippingCoverage(cart, shippingMethods);
+
   // Reflect the PDP "buy as gift" choice (persisted as line-item
   // metadata.is_gift / purchase_mode) in the checkout purchase-mode toggle.
   const cartPurchaseMode = cart.items?.some(item => {
@@ -116,6 +126,8 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}
+              shippingComplete={shippingCoverage.isComplete}
+              missingShippingSellers={missingShippingSellerNames(shippingCoverage)}
             />
           </div>
 
