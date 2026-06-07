@@ -3,6 +3,7 @@
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { useMemo, useState } from "react"
 import Image from "next/image"
+import { categoryImageSrc } from "@/lib/category-images"
 
 interface GridCategory {
   id: string
@@ -51,7 +52,7 @@ function CategoryTile({
           </div>
         ) : (
           <Image
-            src={`/images/categories/${category.handle}.png`}
+            src={categoryImageSrc(category.handle)}
             alt={imageAlt}
             fill
             className="object-cover transition duration-300 group-hover:scale-105"

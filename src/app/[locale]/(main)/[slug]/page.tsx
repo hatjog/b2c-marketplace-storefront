@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { BlogRichText } from '@/components/templates';
 import { fetchPayloadPage } from '@/data/payload-pages/fetchPayloadPage';
@@ -40,7 +41,10 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
 export default async function ContentPage({ params }: { params: PageParams }) {
   const { locale, slug } = await params;
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const page = await fetchPayloadPage({ locale, slug, marketId });
+  const [page, t] = await Promise.all([
+    fetchPayloadPage({ locale, slug, marketId }),
+    getTranslations('blog'),
+  ]);
 
   if (!page) {
     notFound();
@@ -56,7 +60,12 @@ export default async function ContentPage({ params }: { params: PageParams }) {
           <p className="mb-8 text-lg text-[var(--text-secondary)]">{page.excerpt}</p>
         ) : null}
         <div className="bb-prose">
-          <BlogRichText content={page.content} />
+          <BlogRichText
+            slug={page.slug}
+            content={page.content}
+            disallowedEmbedLabel={t('disallowed_embed')}
+            inlineEmbedLabel={t('inline_embed_label')}
+          />
         </div>
       </article>
     </main>

@@ -37,9 +37,14 @@ test('header uses next/image for logo', () => {
 });
 
 test('category cards fall back to placeholder image for unknown category handles', () => {
-  const source = read('src/components/organisms/CategoryCard/CategoryCard.tsx');
+  // Fallback logic was extracted to the shared `category-images` helper so both
+  // CategoryCard and AllCategoriesGrid resolve a guaranteed-valid <Image> src.
+  const helper = read('src/lib/category-images.ts');
 
-  assert.match(source, /CATEGORY_IMAGE_HANDLES/);
-  assert.match(source, /\? `\/images\/categories\/\$\{category\.handle\}\.png`/);
-  assert.match(source, /: '\/images\/placeholder\.svg'/);
+  assert.match(helper, /CATEGORY_IMAGE_HANDLES/);
+  assert.match(helper, /`\/images\/categories\/\$\{handle\}\.png`/);
+  assert.match(helper, /CATEGORY_IMAGE_PLACEHOLDER = '\/images\/placeholder\.svg'/);
+
+  const card = read('src/components/organisms/CategoryCard/CategoryCard.tsx');
+  assert.match(card, /categoryImageSrc\(category\.handle, category\.metadata\?\.photo_url\)/);
 });
