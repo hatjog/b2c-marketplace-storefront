@@ -29,3 +29,8 @@ export { TabsContent } from './TabsContent/TabsContent';
 export { TabsList } from './TabsList/TabsList';
 export { PriceDisplay } from './PriceDisplay/PriceDisplay';
 export { VoucherValidityInfo } from './VoucherValidityInfo/VoucherValidityInfo';
+// v1.11.0 Story 7.4 (ADR-138 DEC-2): 410 magic-link expiry → recovery boundary.
+// Server component (no 'use client', no hooks) — belongs in the server barrel.
+// It renders the client `MagicLinkRecoveryState`, which is a valid server→client
+// composition (the SSR boundary lives in the child, not here).
+export { VoucherClaimRecoveryBoundary } from './VoucherClaimRecoveryBoundary/VoucherClaimRecoveryBoundary';

@@ -196,13 +196,15 @@ const StripePaymentButton = ({
         return;
       case 'requires_action':
         // 3DS wciąż wymagane (Stripe nie domknął challenge) — NIE składaj
-        // zamówienia; pozwól użytkownikowi ponowić. Zdejmij stan przetwarzania.
+        // zamówienia; pozwól użytkownikowi ponowić. Pokaż neutralną podpowiedź
+        // (a11y: nie zostawiaj użytkownika bez informacji po nieukończonym 3DS).
+        setErrorMessage(t('payment_requires_action_hint'));
         setSubmitting(false);
         return;
       case 'requires_new_payment_method':
         // Karta wymaga wymiany (np. po nieudanym 3DS / odrzuceniu bez błędu).
-        // Pokaż komunikat — nie cicha „nie-akcja".
-        setErrorMessage(outcome.message);
+        // Lib jest locale-agnostic — rozwiąż klucz i18n przez `t(...)`.
+        setErrorMessage(t(outcome.messageKey));
         setSubmitting(false);
         return;
       case 'error':
@@ -211,6 +213,9 @@ const StripePaymentButton = ({
         return;
       case 'noop':
       default:
+        // Stan nieterminalny (np. processing): NIE składaj zamówienia, ale pokaż
+        // neutralną podpowiedź zamiast cichego zatrzymania spinnera.
+        setErrorMessage(t('payment_processing_hint'));
         setSubmitting(false);
         return;
     }

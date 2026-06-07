@@ -35,14 +35,16 @@ describe('Story 7.4 — classifyConfirmCardPaymentResult (Stripe TEST hardening)
     ).toEqual({ kind: 'requires_action', message: null });
   });
 
-  it('requires_payment_method ⇒ requires_new_payment_method z komunikatem (nie cicha nie-akcja)', () => {
+  it('requires_payment_method ⇒ requires_new_payment_method ze STABILNYM kluczem i18n (locale-agnostic, nie surowy literał PL)', () => {
     const outcome = classifyConfirmCardPaymentResult({
       paymentIntent: { status: 'requires_payment_method' },
     });
     expect(outcome.kind).toBe('requires_new_payment_method');
     if (outcome.kind === 'requires_new_payment_method') {
-      expect(typeof outcome.message).toBe('string');
-      expect(outcome.message.length).toBeGreaterThan(0);
+      // Lib jest locale-agnostic — zwraca klucz i18n, nie surowy polski tekst.
+      // Komponent rozwiązuje copy przez `t('payment_failed_retry_other_card')`.
+      // Klucz musi istnieć w messages/{pl,en,ua,de}.json → checkout.<key>.
+      expect(outcome.messageKey).toBe('payment_failed_retry_other_card');
     }
   });
 

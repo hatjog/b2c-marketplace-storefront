@@ -34,8 +34,15 @@ export type ConfirmCardPaymentOutcome =
   | { kind: 'complete' }
   /** 3DS / dodatkowa autoryzacja wciąż wymagana ⇒ NIE składaj, poinformuj. */
   | { kind: 'requires_action'; message: string | null }
-  /** Karta wymaga wymiany (requires_payment_method) — pokaż prośbę o nową kartę. */
-  | { kind: 'requires_new_payment_method'; message: string }
+  /**
+   * Karta wymaga wymiany (requires_payment_method) — pokaż prośbę o nową kartę.
+   *
+   * Lib jest locale-agnostic (4-locale storefront): zamiast surowego literału
+   * zwraca STABILNY klucz i18n (`messageKey`), który komponent rozwiązuje przez
+   * `useTranslations('checkout')`. Klucz musi istnieć we WSZYSTKICH katalogach
+   * `messages/{pl,en,ua,de}.json` (namespace `checkout`).
+   */
+  | { kind: 'requires_new_payment_method'; messageKey: ConfirmCardPaymentMessageKey }
   /** Błąd karty (decline / inny) ⇒ pokaż komunikat, NIE składaj. */
   | { kind: 'error'; message: string | null; reason: ConfirmCardPaymentErrorReason }
   /** Brak akcji (stan nieterminalny, np. processing) — zachowanie zachowawcze. */
@@ -46,6 +53,13 @@ export type ConfirmCardPaymentErrorReason =
   | 'card_error'
   | 'stripe_error'
   | 'unknown'
+
+/**
+ * Stabilny klucz i18n (namespace `checkout`) zwracany przez lib zamiast surowego
+ * literału. Komponent rozwiązuje go przez `useTranslations('checkout')`. Wartość
+ * MUSI istnieć w `messages/{pl,en,ua,de}.json` → `checkout.<key>`.
+ */
+export type ConfirmCardPaymentMessageKey = 'payment_failed_retry_other_card'
 
 /** Stany PaymentIntent traktowane jako „opłacone" (złóż zamówienie). */
 const COMPLETE_STATUSES: ReadonlySet<string> = new Set(['requires_capture', 'succeeded'])
@@ -109,7 +123,9 @@ export function classifyConfirmCardPaymentResult(
   if (status === NEEDS_NEW_PAYMENT_METHOD_STATUS) {
     return {
       kind: 'requires_new_payment_method',
-      message: 'Płatność nie powiodła się. Spróbuj ponownie z inną kartą.',
+      // Locale-agnostic: zwracamy stabilny klucz i18n (nie literał). Komponent
+      // rozwiązuje copy przez `t('payment_failed_retry_other_card')`.
+      messageKey: 'payment_failed_retry_other_card',
     }
   }
   return { kind: 'noop' }
