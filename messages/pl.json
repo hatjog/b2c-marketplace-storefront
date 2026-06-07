@@ -1043,6 +1043,8 @@
     "payment_processing": "Płatność jest przetwarzana. Potwierdź ją w aplikacji bankowej, aby dokończyć zamówienie.",
     "payment_not_completed": "Płatność nie została ukończona. Spróbuj ponownie lub wybierz inną metodę płatności.",
     "payment_unavailable": "Płatność jest chwilowo niedostępna. Spróbuj ponownie za chwilę.",
+    "shipping_incomplete_block": "Najpierw wybierz metodę dostawy dla wszystkich salonów ({sellers}), zanim zapłacisz.",
+    "shipping_select_each_salon": "Wybierz dostawę osobno dla każdego salonu.",
     "payment_failed": "Płatność nie powiodła się. Spróbuj ponownie lub wybierz inną metodę płatności.",
     "payment_failed_retry_other_card": "Płatność nie powiodła się. Spróbuj ponownie z inną kartą.",
     "payment_requires_action_hint": "Potwierdź płatność, aby dokończyć zamówienie.",

@@ -1043,6 +1043,8 @@
     "payment_processing": "Ihre Zahlung wird verarbeitet. Bestätigen Sie sie in Ihrer Banking-App, um die Bestellung abzuschließen.",
     "payment_not_completed": "Die Zahlung wurde nicht abgeschlossen. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.",
     "payment_unavailable": "Die Zahlung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in Kürze erneut.",
+    "shipping_incomplete_block": "Wählen Sie zuerst eine Versandart für alle Salons ({sellers}), bevor Sie bezahlen.",
+    "shipping_select_each_salon": "Wählen Sie die Lieferung für jeden Salon einzeln.",
     "payment_failed": "Die Zahlung ist fehlgeschlagen. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.",
     "payment_failed_retry_other_card": "Die Zahlung ist fehlgeschlagen. Bitte versuchen Sie es erneut mit einer anderen Karte.",
     "payment_requires_action_hint": "Bestätigen Sie die Zahlung, um Ihre Bestellung abzuschließen.",

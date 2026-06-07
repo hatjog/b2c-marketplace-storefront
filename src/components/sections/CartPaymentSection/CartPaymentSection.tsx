@@ -32,10 +32,21 @@ type StoreCardPaymentMethod = any & {
 
 const CartPaymentSection = ({
   cart,
-  availablePaymentMethods
+  availablePaymentMethods,
+  shippingComplete = true,
+  missingShippingSellers = []
 }: {
   cart: any;
   availablePaymentMethods: StoreCardPaymentMethod[] | null;
+  /**
+   * Orphaned-charge guard (per-seller shipping). When false, at least one
+   * seller in the cart still lacks a shipping method, so
+   * `/store/carts/:id/complete` would reject AFTER the card is charged. The
+   * pay action is blocked until every salon has a delivery method.
+   */
+  shippingComplete?: boolean;
+  /** Names of salons still missing a delivery method (for the block message). */
+  missingShippingSellers?: string[];
 }) => {
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
@@ -203,6 +214,14 @@ const CartPaymentSection = ({
                           cartId={cart.id}
                           clientSecret={stripeClientSecret}
                           returnUrl={paymentStatusReturnUrl}
+                          blocked={!shippingComplete}
+                          blockedReason={
+                            !shippingComplete
+                              ? t('shipping_incomplete_block', {
+                                  sellers: missingShippingSellers.join(', ')
+                                })
+                              : undefined
+                          }
                         />
                       )}
                   </div>
