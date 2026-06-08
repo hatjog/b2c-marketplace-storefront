@@ -11,7 +11,10 @@
  *   Admin/vendor/operator panels MUST use --font-ops (Inter) — never Funnel Display.
  *   GP CLI and backend MUST NOT import these tokens.
  *
- * RUNTIME: layout.tsx loads Funnel Display via next/font/google into --font-funnel-sans.
+ * RUNTIME: layout.tsx loads Funnel Display via next/font/local (self-hosted variable
+ *   font, src/app/fonts/FunnelDisplay-VariableFont_wght.ttf) into --font-funnel-sans,
+ *   and applies that variable on <html>. globals.css `body` sets
+ *   `font-family: var(--font-family-sans)` so the brand face actually cascades.
  *   The --font-family-display token below mirrors the brand font token for consistency.
  *   next/font injects the @font-face automatically; no duplication needed here.
  *

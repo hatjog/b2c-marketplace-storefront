@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
+import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 
 import './globals.css';
@@ -18,6 +19,21 @@ import { resolveMarketConfig } from '@/lib/portal.server';
 import { Providers } from './providers';
 
 const VALID_THEMES = ['bonbeauty'] as const;
+
+/**
+ * BonBeauty brand face — Funnel Display variable font (weight axis 300–800).
+ * Self-hosted via next/font/local (no runtime Google request → GDPR-safe,
+ * reproducible build). Exposes `--font-funnel-sans`, consumed by the
+ * `--font-family-sans` / `--font-display` token chain (src/styles/tokens/typography.css).
+ * Storefront-only per ARCH-007; admin/vendor/operator surfaces use --font-ops (Inter).
+ */
+const funnelDisplay = localFont({
+  src: './fonts/FunnelDisplay-VariableFont_wght.ttf',
+  variable: '--font-funnel-sans',
+  weight: '300 800',
+  style: 'normal',
+  display: 'swap'
+});
 
 validateStorefrontEnv();
 
@@ -90,7 +106,7 @@ export default async function RootLayout({
   return (
     <html
       lang={htmlLang}
-      className=""
+      className={funnelDisplay.variable}
       style={htmlStyle}
       suppressHydrationWarning
     >
