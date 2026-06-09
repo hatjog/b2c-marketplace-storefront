@@ -25,6 +25,7 @@ import {
   deriveSellerYears,
   formatSellerDistrictAddress,
   normalizePdpGalleryImages,
+  resolveProductCatalogDisplayFields,
   resolvePdpVoucherRules
 } from '@/lib/helpers/pdp';
 import type { GpProductMetadata } from '@/types/product';
@@ -92,6 +93,7 @@ export const ProductDetailsPage = async ({
   const hasPrice = prod.variants?.some(v => v.calculated_price);
 
   const gpMeta = getGpMetadata<GpProductMetadata>(prod.metadata as Record<string, unknown>);
+  const catalogFields = resolveProductCatalogDisplayFields(prod, gpMeta);
   const voucherRules = resolvePdpVoucherRules(gpMeta, {
     usageConditions: [t('voucher_rules.usage_body')],
     refundPolicy: t('voucher_rules.refund_body'),
@@ -152,7 +154,10 @@ export const ProductDetailsPage = async ({
           )}
 
           <ProductDetails
-            product={product}
+            product={{
+              ...product,
+              ...(catalogFields.subtitle ? { subtitle: catalogFields.subtitle } : {})
+            }}
             locale={locale}
             showTrustSurfaces={false}
             showExtendedSections={false}

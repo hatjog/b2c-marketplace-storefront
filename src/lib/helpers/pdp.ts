@@ -29,6 +29,13 @@ export type SellerProofInput = {
   ratingCount?: number | null;
 };
 
+export type ProductCatalogDisplayFields = {
+  subtitle: string | null;
+  durationMinutes: number | null;
+  regulatoryClass: string | null;
+  entitlementProfileId: string | null;
+};
+
 function positiveNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
@@ -158,6 +165,48 @@ export function resolvePdpVoucherRules(
       typeof metadata?.no_show_policy === 'string' && metadata.no_show_policy.trim()
         ? metadata.no_show_policy
         : fallbackCopy.noShowPolicy
+  };
+}
+
+export function resolveProductCatalogDisplayFields(
+  product:
+    | (HttpTypes.StoreProduct & {
+        subtitle?: string | null;
+      })
+    | null
+    | undefined,
+  metadata: GpProductMetadata | null | undefined
+): ProductCatalogDisplayFields {
+  const nativeSubtitle =
+    typeof product?.subtitle === 'string' && product.subtitle.trim().length > 0
+      ? product.subtitle.trim()
+      : null;
+  const metadataSubtitle =
+    typeof metadata?.subtitle === 'string' && metadata.subtitle.trim().length > 0
+      ? metadata.subtitle.trim()
+      : null;
+  const durationMinutes =
+    typeof metadata?.duration_minutes === 'number' && Number.isFinite(metadata.duration_minutes)
+      ? metadata.duration_minutes
+      : null;
+  const regulatoryClass =
+    typeof metadata?.regulatory_class === 'string' && metadata.regulatory_class.trim().length > 0
+      ? metadata.regulatory_class.trim()
+      : null;
+  const entitlementProfileId =
+    typeof metadata?.entitlement_profile_id === 'string' &&
+    metadata.entitlement_profile_id.trim().length > 0
+      ? metadata.entitlement_profile_id.trim()
+      : typeof metadata?.entitlement_profile?.profile_id === 'string' &&
+          metadata.entitlement_profile.profile_id.trim().length > 0
+        ? metadata.entitlement_profile.profile_id.trim()
+        : null;
+
+  return {
+    subtitle: nativeSubtitle ?? metadataSubtitle,
+    durationMinutes,
+    regulatoryClass,
+    entitlementProfileId
   };
 }
 
