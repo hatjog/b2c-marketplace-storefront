@@ -302,6 +302,7 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
       social_links: base.social_links ?? profile.social_links,
       gallery: base.gallery ?? profile.gallery,
       opening_hours: base.opening_hours ?? profile.opening_hours,
+      seo: base.seo ?? profile.seo,
       locations: base.locations ?? profile.locations,
       city: base.city ?? profile.city,
       address_line: base.address_line ?? profile.address_line,
@@ -322,7 +323,8 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
     !seller.address_line ||
     !seller.city ||
     !seller.phone ||
-    !seller.social_links;
+    !seller.social_links ||
+    !seller.opening_hours;
 
   const id = await resolveSellerHandleToId(handle);
   if (!id) return null;

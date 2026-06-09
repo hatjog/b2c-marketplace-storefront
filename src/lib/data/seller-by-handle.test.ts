@@ -104,6 +104,47 @@ describe('getSellerByHandle', () => {
     expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty');
   });
 
+  it('enriches opening hours and SEO from the handle profile when native seller omits them', async () => {
+    mockResolveHandleToId.mockResolvedValue('seller-abc');
+    mockFetchSellerById.mockResolvedValue(
+      makeSeller({
+        gallery: [{ url: 'https://img.example.com/base-gallery.jpg' }],
+        address_line: 'ul. Bazowa 1',
+        city: 'Warszawa',
+        phone: '+48600000000',
+        social_links: { instagram: '@bonbeauty' },
+        opening_hours: null,
+        seo: null
+      })
+    );
+    mockFetchSellerProfileByHandle.mockResolvedValue(
+      makeSeller({
+        opening_hours: {
+          monday: { open: '10:00', close: '19:00' },
+          sunday: null
+        },
+        seo: {
+          meta_title: 'BonBeauty Studio',
+          meta_description: 'Realny profil salonu',
+          og_image_url: 'https://img.example.com/og.jpg'
+        }
+      })
+    );
+
+    const result = await getSellerByHandle('bonbeauty');
+
+    expect(result?.opening_hours).toEqual({
+      monday: { open: '10:00', close: '19:00' },
+      sunday: null
+    });
+    expect(result?.seo).toEqual({
+      meta_title: 'BonBeauty Studio',
+      meta_description: 'Realny profil salonu',
+      og_image_url: 'https://img.example.com/og.jpg'
+    });
+    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty');
+  });
+
   it('returns null when handle is not found (resolveSellerHandleToId returns null)', async () => {
     mockResolveHandleToId.mockResolvedValue(null);
 
