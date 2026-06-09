@@ -103,6 +103,7 @@ type SellerListApiItem = {
       phone?: string | null;
       photo_url?: string | null;
       gallery?: Array<string | { url?: string | null; alt?: string | null; is_primary?: boolean | null }> | null;
+      opening_hours?: Record<string, { open: string; close: string } | null> | null;
       seo?: {
         meta_title?: string | null;
         meta_description?: string | null;
@@ -332,7 +333,7 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     store_status: s.store_status as SellerProps['store_status'],
     social_links: (s.social_links as SellerProps['social_links']) ?? null,
     gallery: s.gallery ?? metadataGallery,
-    opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? null,
+    opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? (gpMetadata?.opening_hours as SellerProps['opening_hours']) ?? null,
     seo: (s.seo as SellerProps['seo']) ?? gpMetadata?.seo ?? null,
     locations:
       s.locations ??
