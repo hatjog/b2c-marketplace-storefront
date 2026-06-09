@@ -37,7 +37,8 @@ export type SellerReviewItem = {
   id: string;
   author: string;
   rating: number;
-  serviceName: string;
+  /** null when the review payload does not carry a genuine service reference (L1) */
+  serviceName: string | null;
   body: string;
   createdAt: string;
   verifiedVisit: boolean;
@@ -68,12 +69,12 @@ export type SellerReviewsSurfaceData = {
   hasPreviousPage: boolean;
 };
 
-const FALLBACK_SERVICE_NAMES = [
-  'Rytuał twarzy',
-  'Manicure z pielęgnacją',
-  'Masaż relaksacyjny',
-  'Konsultacja pielęgnacyjna'
-] as const;
+// FALLBACK_SERVICE_NAMES removed: assigning a service name by positional index
+// fabricates a label that has no real link to the service the review is about,
+// which conflicts with the HG-6 "real data" requirement. serviceName is now null
+// when the review payload does not carry a genuine service reference.
+// A future story (e.g. 2.5/2.6) should materialise the review→service relationship
+// and pass it through the Store API so this field can be populated from real data.
 
 function normalizeString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
@@ -95,7 +96,7 @@ function buildAuthorName(review: RawSellerReview) {
 function buildReviewFromRaw(
   review: RawSellerReview,
   index: number,
-  offers: SellerReviewOffer[]
+  _offers: SellerReviewOffer[]
 ): SellerReviewItem | null {
   const body = normalizeString(review.customer_note);
   const createdAt = normalizeString(review.created_at);
@@ -109,9 +110,11 @@ function buildReviewFromRaw(
     id: normalizeString(review.id) ?? `seller-review-${index + 1}`,
     author: buildAuthorName(review),
     rating,
-    serviceName:
-      offers[index % Math.max(offers.length, 1)]?.title ??
-      FALLBACK_SERVICE_NAMES[index % FALLBACK_SERVICE_NAMES.length],
+    // serviceName is null when the review payload does not carry a genuine
+    // service reference. Positional fabrication from the offers list was removed
+    // (L1 finding) because it showed buyers a label unrelated to the actual
+    // reviewed service. UI components should treat null as "not available".
+    serviceName: null,
     body,
     createdAt,
     verifiedVisit: true,

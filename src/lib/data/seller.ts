@@ -268,12 +268,13 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
   // the primary fetch already fell through to the reviews-free SAFE fetch, so
   // `seller.reviews` was always `[]` in production. The seller-facing review
   // surfaces (SellerReviewTab and /sellers/[handle]/reviews via
-  // getSellerReviewsSurfaceData) re-derive reviews from this same
-  // `getSellerByHandle().reviews`, so they keep rendering the existing empty
-  // state; wiring real seller reviews (the dedicated `/store/reviews` graph —
-  // today consumed only by the user written-reviews page) is a separate
-  // follow-up. Mirrors the `*seller.reviews` constraint documented for
-  // /store/products in lib/data/products.ts.
+  // getSellerReviewsSurfaceData) now derive reviews via the dedicated
+  // `/store/reviews?seller_id=...` endpoint (wired in Story 2.4). The
+  // `/store/reviews` endpoint (without filters) is still consumed by the user
+  // written-reviews page at /user/reviews/written; as of Story 2.4 that
+  // unfiltered call returns only product-scoped reviews — seller reviews require
+  // an explicit seller_id filter. Mirrors the `*seller.reviews` constraint
+  // documented for /store/products in lib/data/products.ts.
   const SELLER_FIELDS =
     '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery';
   // Retained as the resilient fallback field set for any other transient 5xx

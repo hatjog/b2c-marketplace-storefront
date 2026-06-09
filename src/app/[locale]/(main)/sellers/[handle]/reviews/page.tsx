@@ -421,7 +421,7 @@ export default async function SellerReviewsPage({
                         </div>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-secondary">
                           <span>{formatReviewDate(locale, review.createdAt)}</span>
-                          <span>{review.serviceName}</span>
+                          {review.serviceName ? <span>{review.serviceName}</span> : null}
                         </div>
                       </div>
                       <div
