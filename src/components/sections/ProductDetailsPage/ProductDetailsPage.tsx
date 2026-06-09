@@ -16,6 +16,7 @@ import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/Vouche
 import { ProductGallery } from '@/components/organisms';
 import { ProductDetails } from '@/components/organisms/ProductDetails/ProductDetails';
 import { fetchProductForDetailPage } from '@/lib/data/product-detail-fetcher';
+import { getProductReviews, getSellerReviews } from '@/lib/data/reviews';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
 import {
@@ -63,9 +64,28 @@ export const ProductDetailsPage = async ({
   if (!prod) notFound();
   if (!isSellerActive(prod.seller)) notFound();
 
+  const [productReviewsResponse, sellerReviewsResponse] = await Promise.all([
+    getProductReviews(prod.id),
+    prod.seller?.id
+      ? getSellerReviews(prod.seller.id)
+      : Promise.resolve({
+          reviews: [],
+          count: 0,
+          offset: 0,
+          limit: 0,
+          average_rating: 0,
+          rating_count: 0
+        })
+  ]);
+
   const product = {
     ...prod,
-    seller: prod.seller ?? undefined
+    seller: prod.seller
+      ? {
+          ...prod.seller,
+          reviews: sellerReviewsResponse.reviews
+        }
+      : undefined
   };
   const galleryImages = normalizePdpGalleryImages(prod);
 
@@ -80,8 +100,14 @@ export const ProductDetailsPage = async ({
     noShowPolicy: t('voucher_rules.no_show_body')
   });
   const sellerYears = deriveSellerYears(prod.seller);
-  const sellerRating = (prod.seller as { rating?: number | null } | undefined)?.rating ?? null;
-  const sellerRatingCount = deriveSellerRatingCount(prod.seller);
+  const sellerRating =
+    sellerReviewsResponse.rating_count > 0
+      ? sellerReviewsResponse.average_rating
+      : ((prod.seller as { rating?: number | null } | undefined)?.rating ?? null);
+  const sellerRatingCount =
+    sellerReviewsResponse.rating_count > 0
+      ? sellerReviewsResponse.rating_count
+      : deriveSellerRatingCount(prod.seller);
   const sellerTreatments = deriveSellerTreatments(prod.seller);
   const sellerAddressDisplay = formatSellerDistrictAddress(prod.seller);
   const trustItems = [
@@ -194,10 +220,13 @@ export const ProductDetailsPage = async ({
                 gallery: prod.seller.gallery ?? null,
                 rating: sellerRating,
                 ratingCount: sellerRatingCount,
-                reviews: Array.isArray(prod.seller.reviews) ? prod.seller.reviews : []
+                reviews: sellerReviewsResponse.reviews
               }
             : null
         }
+        reviews={productReviewsResponse.reviews}
+        reviewsRating={productReviewsResponse.average_rating}
+        reviewsRatingCount={productReviewsResponse.rating_count}
       />
 
       <CrossSellSection

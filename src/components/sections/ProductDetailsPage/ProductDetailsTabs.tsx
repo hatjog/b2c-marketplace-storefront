@@ -15,6 +15,19 @@ type Review = {
   rating?: number | null;
   customer_note?: string | null;
   username?: string | null;
+  locale?: string | null;
+  provenance?: string | null;
+  provenance_tag?: string | null;
+  metadata?: {
+    gp?: {
+      locale?: string | null;
+      provenance?: string | null;
+      provenance_tag?: string | null;
+    } | null;
+    locale?: string | null;
+    provenance?: string | null;
+    provenance_tag?: string | null;
+  } | null;
   customer?: { first_name?: string | null; last_name?: string | null } | null;
 };
 
@@ -35,11 +48,21 @@ interface ProductDetailsTabsProps {
   description: string | null;
   voucherRules: PdpVoucherRules;
   seller: ProductDetailsTabsSeller | null;
+  reviews?: Review[];
+  reviewsRating?: number | null;
+  reviewsRatingCount?: number | null;
 }
 
 const TAB_IDS: TabId[] = ['description', 'voucher', 'salon', 'reviews', 'faq'];
 
-export function ProductDetailsTabs({ description, voucherRules, seller }: ProductDetailsTabsProps) {
+export function ProductDetailsTabs({
+  description,
+  voucherRules,
+  seller,
+  reviews = [],
+  reviewsRating = null,
+  reviewsRatingCount = null
+}: ProductDetailsTabsProps) {
   const t = useTranslations('pdp.tabs');
   const [activeTab, setActiveTab] = useState<TabId>('description');
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -157,7 +180,11 @@ export function ProductDetailsTabs({ description, voucherRules, seller }: Produc
           tabIndex={0}
           hidden={activeTab !== 'reviews'}
         >
-          <ReviewsPanel seller={seller} />
+          <ReviewsPanel
+            reviews={reviews}
+            rating={reviewsRating}
+            ratingCount={reviewsRatingCount}
+          />
         </div>
         <div
           role="tabpanel"
@@ -289,11 +316,33 @@ function SalonPanel({ seller }: { seller: ProductDetailsTabsSeller | null }) {
   );
 }
 
-function ReviewsPanel({ seller }: { seller: ProductDetailsTabsSeller | null }) {
-  const t = useTranslations('pdp.tabs.reviews');
-  const reviews = seller?.reviews?.slice(0, 3) ?? [];
+function pickReviewMeta(review: Review) {
+  return {
+    locale: review.locale ?? review.metadata?.gp?.locale ?? review.metadata?.locale ?? null,
+    provenance:
+      review.provenance ??
+      review.provenance_tag ??
+      review.metadata?.gp?.provenance ??
+      review.metadata?.gp?.provenance_tag ??
+      review.metadata?.provenance ??
+      review.metadata?.provenance_tag ??
+      null
+  };
+}
 
-  if (!reviews.length) {
+function ReviewsPanel({
+  reviews,
+  rating,
+  ratingCount
+}: {
+  reviews: Review[];
+  rating: number | null;
+  ratingCount: number | null;
+}) {
+  const t = useTranslations('pdp.tabs.reviews');
+  const visibleReviews = reviews.slice(0, 3);
+
+  if (!visibleReviews.length) {
     return (
       <div className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5 text-sm text-[var(--text-secondary)]">
         {t('empty')}
@@ -304,16 +353,17 @@ function ReviewsPanel({ seller }: { seller: ProductDetailsTabsSeller | null }) {
   return (
     <div className="space-y-4">
       <div className="text-sm text-[var(--text-secondary)]">
-        {seller?.rating != null && seller.ratingCount != null
-          ? t('summary', { rating: seller.rating.toFixed(1), count: seller.ratingCount })
+        {rating != null && ratingCount != null
+          ? t('summary', { rating: rating.toFixed(1), count: ratingCount })
           : t('summary_no_rating')}
       </div>
       <div className="grid gap-4 md:grid-cols-3">
-        {reviews.map((review, index) => {
+        {visibleReviews.map((review, index) => {
           const customerName = [review.customer?.first_name, review.customer?.last_name]
             .filter(Boolean)
             .join(' ');
           const author = review.username || customerName || t('anonymous');
+          const meta = pickReviewMeta(review);
 
           return (
             <article
@@ -329,6 +379,11 @@ function ReviewsPanel({ seller }: { seller: ProductDetailsTabsSeller | null }) {
                 {review.customer_note || t('review_fallback')}
               </p>
               <p className="mt-3 text-xs text-[var(--text-secondary)]">{author}</p>
+              {(meta.locale || meta.provenance) && (
+                <p className="mt-2 text-xs text-[var(--text-secondary)]">
+                  {[meta.locale, meta.provenance].filter(Boolean).join(' · ')}
+                </p>
+              )}
             </article>
           );
         })}
