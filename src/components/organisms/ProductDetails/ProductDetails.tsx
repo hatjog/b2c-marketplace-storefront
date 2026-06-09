@@ -54,6 +54,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpMetadata } from '@/lib/helpers/metadata-utils';
+import { resolveProductCatalogDisplayFields } from '@/lib/helpers/pdp';
 import { resolveDefaultValidityInfo, resolvePdpTrustSignals } from '@/lib/runtime-market-config';
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 import {
@@ -113,6 +114,7 @@ export const ProductDetails = async ({
   ]);
 
   const gpMeta = getGpMetadata<GpProductMetadata>(product.metadata as Record<string, unknown>);
+  const catalogFields = resolveProductCatalogDisplayFields(product, gpMeta);
   const validityPeriod = gpMeta?.validity_period ?? null;
 
   // cleanup-12c AC1/AC2/AC3/AC4 — explicit 4-branch vendor_offers dispatch.
@@ -281,7 +283,10 @@ export const ProductDetails = async ({
   return (
     <div className="space-y-4">
       <ProductDetailsHeader
-        product={product}
+        product={{
+          ...product,
+          ...(catalogFields.subtitle ? { subtitle: catalogFields.subtitle } : {})
+        }}
         locale={locale}
         countryCode={countryCode}
         user={user}

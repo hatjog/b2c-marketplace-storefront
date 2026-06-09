@@ -7,6 +7,7 @@ import {
   deriveSellerYears,
   formatSellerDistrictAddress,
   normalizePdpGalleryImages,
+  resolveProductCatalogDisplayFields,
   resolvePdpVoucherRules
 } from '../pdp';
 
@@ -61,6 +62,48 @@ describe('PDP helpers', () => {
     expect(rules.validityMonths).toBe(12);
     expect(rules.usageConditions).toEqual(['Pokaż PDF w salonie']);
     expect(rules.refundPolicy).toBe('30 dni na zwrot');
+  });
+
+  it('reads schema-declared product catalog fields from API metadata without defaults', () => {
+    const fields = resolveProductCatalogDisplayFields(
+      { id: 'prod_1', title: 'Kwas hialuronowy', subtitle: 'Natywny podtytuł' } as never,
+      {
+        subtitle: 'Podtytuł z metadata',
+        duration_minutes: 45,
+        regulatory_class: 'standard',
+        entitlement_profile_id: 'voucher-rezerwacja-otwarta'
+      }
+    );
+
+    expect(fields).toEqual({
+      subtitle: 'Natywny podtytuł',
+      durationMinutes: 45,
+      regulatoryClass: 'standard',
+      entitlementProfileId: 'voucher-rezerwacja-otwarta'
+    });
+  });
+
+  it('falls back only to API metadata.gp.subtitle when native subtitle is absent', () => {
+    const fields = resolveProductCatalogDisplayFields(
+      { id: 'prod_1', title: 'Kwas hialuronowy' } as never,
+      {
+        subtitle: 'Podtytuł z metadata',
+        duration_minutes: null,
+        regulatory_class: null,
+        entitlement_profile: {
+          profile_id: 'voucher-rezerwacja-otwarta',
+          entitlement_type: 'VOUCHER_SERVICE',
+          policy: { validity_months: 12 }
+        }
+      }
+    );
+
+    expect(fields).toEqual({
+      subtitle: 'Podtytuł z metadata',
+      durationMinutes: null,
+      regulatoryClass: null,
+      entitlementProfileId: 'voucher-rezerwacja-otwarta'
+    });
   });
 
   it('normalizes missing PDP images to a stable placeholder', () => {

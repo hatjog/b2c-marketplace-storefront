@@ -1,6 +1,8 @@
 import type { SellerProps } from './seller';
 
 export type GpProductMetadata = {
+  subtitle?: string | null;
+  duration_minutes?: number | null;
   validity_period?: string | null;
   /** F18 fix: typed slot for product-level realization rules — overrides
    *  market-level `pdp_trust_signals` when present. v1.7.0 backend may not yet
@@ -10,6 +12,14 @@ export type GpProductMetadata = {
   seo?: { meta_title?: string; meta_description?: string; og_image_url?: string } | null;
   has_vendor_pricing?: boolean | null;
   sort_rank?: number | null;
+  regulatory_class?: string | null;
+  entitlement_profile_id?: string | null;
+  entitlement_profile?: {
+    profile_id: string;
+    entitlement_type: string;
+    policy: Record<string, unknown>;
+    currency?: string;
+  } | null;
   vendor_id?: string | null;
   [key: string]: unknown;
 };

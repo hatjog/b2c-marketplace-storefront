@@ -422,11 +422,25 @@ describe('fetchSellerProfileByHandle', () => {
   });
 
   it('returns a mapped seller from the enriched handle route', async () => {
-    mockSdkFetch.mockResolvedValue({ seller: makeSeller({ photo: 'https://img.example.com/profile.jpg' }) });
+    mockSdkFetch.mockResolvedValue({
+      seller: makeSeller({
+        photo: 'https://img.example.com/profile.jpg',
+        seo: {
+          meta_title: 'Studio Nova',
+          meta_description: 'Realny profil salonu',
+          og_image_url: 'https://img.example.com/og.jpg'
+        }
+      })
+    });
 
     const result = await fetchSellerProfileByHandle('studio-nova');
 
     expect(result?.photo).toBe('https://img.example.com/profile.jpg');
+    expect(result?.seo).toEqual({
+      meta_title: 'Studio Nova',
+      meta_description: 'Realny profil salonu',
+      og_image_url: 'https://img.example.com/og.jpg'
+    });
     expect(mockSdkFetch).toHaveBeenCalledWith('/store/seller/studio-nova', {
       method: 'GET',
       cache: 'no-cache'

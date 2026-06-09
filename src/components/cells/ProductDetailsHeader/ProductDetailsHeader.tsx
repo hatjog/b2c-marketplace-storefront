@@ -51,7 +51,7 @@ export const ProductDetailsHeader = ({
   wishlist,
   initialPrice
 }: {
-  product: HttpTypes.StoreProduct & { seller?: SellerProps };
+  product: HttpTypes.StoreProduct & { seller?: SellerProps; subtitle?: string | null };
   locale: string;
   countryCode: string;
   user: HttpTypes.StoreCustomer | null;
@@ -241,6 +241,14 @@ export const ProductDetailsHeader = ({
           >
             {product.title}
           </h1>
+          {product.subtitle && (
+            <p
+              className="text-md text-secondary"
+              data-testid="product-subtitle"
+            >
+              {product.subtitle}
+            </p>
+          )}
           <div
             className="flex items-center gap-2"
             data-testid="product-price-container"

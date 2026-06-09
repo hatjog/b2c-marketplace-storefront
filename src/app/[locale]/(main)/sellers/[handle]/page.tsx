@@ -94,14 +94,15 @@ export async function generateMetadata({
     };
   }
 
-  const title = tDetail('title_template', { name: seller.name });
+  const sellerSeo = seller.seo ?? null;
+  const title = sellerSeo?.meta_title ?? tDetail('title_template', { name: seller.name });
   const rawDescription = (seller.description ?? '').trim();
-  const description = rawDescription
-    ? rawDescription.slice(0, 160)
-    : tDetail('meta_description', { name: seller.name });
+  const description =
+    sellerSeo?.meta_description ??
+    (rawDescription ? rawDescription.slice(0, 160) : tDetail('meta_description', { name: seller.name }));
   const structuredData = assessSellerStructuredData(seller);
 
-  const ogImage = seller.photo || null;
+  const ogImage = sellerSeo?.og_image_url || seller.photo || null;
 
   return {
     title,

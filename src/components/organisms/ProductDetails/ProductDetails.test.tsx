@@ -155,6 +155,18 @@ describe('ProductDetails — VoucherClaritySurface integration (Story 2.3)', () 
     expect(found[0].props.validityWording).toBe('12 miesięcy od daty zakupu');
   });
 
+  it('passes API product subtitle from metadata.gp to ProductDetailsHeader without placeholder fallback', async () => {
+    const product = makeProduct({
+      metadata: { gp: { subtitle: 'Podtytuł z API', duration_minutes: null } },
+    });
+
+    const result = await ProductDetails({ product: product as never, locale: 'pl' });
+
+    const found = findAll(result as ReactEl, el => el.type === 'ProductDetailsHeader');
+    expect(found).toHaveLength(1);
+    expect((found[0].props.product as { subtitle?: string }).subtitle).toBe('Podtytuł z API');
+  });
+
   it('derives variant via derivePdpVoucherClarityVariant (PDP wrapper; base helper available for Stories 2.4/2.5/2.6)', async () => {
     vi.mocked(getProductPrice).mockReturnValue({ cheapestVariant: null, cheapestPrice: null, variantPrice: null } as never);
     vi.mocked(derivePdpVoucherClarityVariant).mockReturnValue('error');

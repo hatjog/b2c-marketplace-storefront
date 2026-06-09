@@ -14,6 +14,7 @@ import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-meta
 
 import { fetchQuery, sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
+import { buildSellerLineItemMetadata } from '../helpers/vendor-product-traceability';
 import {
   FlagDriftError,
   snapshotFlagAtCartStart,
@@ -446,15 +447,11 @@ export async function addToCart({
   // Story 5.5 — only attach metadata gdy seller context provided. Defensive:
   // empty string treated jako absence (typescript-permissive callers).
   // TF-72: also include selected_seller_handle when present (enables CartGroupBySeller "visit seller" link).
-  const sellerMetadata =
-    selectedSellerId && selectedSellerName
-      ? {
-          selected_seller_id: selectedSellerId,
-          selected_seller_name: selectedSellerName,
-          // cleanup-12d AC1 / TF-72 — persist handle gdy provided.
-          ...(selectedSellerHandle ? { selected_seller_handle: selectedSellerHandle } : {})
-        }
-      : undefined;
+  const sellerMetadata = buildSellerLineItemMetadata({
+    selectedSellerId,
+    selectedSellerName,
+    selectedSellerHandle
+  });
   const purchaseModeMetadata = purchaseMode
     ? {
         purchase_mode: purchaseMode,

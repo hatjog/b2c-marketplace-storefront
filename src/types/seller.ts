@@ -31,6 +31,12 @@ export type SellerLocation = {
 
 export type SellerOpeningHours = Record<string, { open: string; close: string } | null>;
 
+export type SellerSeoMetadata = {
+  meta_title?: string | null;
+  meta_description?: string | null;
+  og_image_url?: string | null;
+};
+
 export type SellerProps = SellerAddress & {
   id: string;
   name: string;
@@ -59,6 +65,7 @@ export type SellerProps = SellerAddress & {
   social_links?: SellerSocialLinks | null;
   gallery?: SellerGalleryItem[] | null;
   opening_hours?: SellerOpeningHours | null;
+  seo?: SellerSeoMetadata | null;
   locations?: SellerLocation[] | null;
   regon?: string | null;
   krs?: string | null;
