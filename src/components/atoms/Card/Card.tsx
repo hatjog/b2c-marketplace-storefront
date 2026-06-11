@@ -11,7 +11,7 @@ export const Card = ({
 } & React.ComponentPropsWithoutRef<'div'>) => {
   return (
     <div
-      className={cn('rounded-sm border px-2 py-4', className)}
+      className={cn('rounded-[var(--bb-radius-card)] border px-2 py-4', className)}
       data-testid={dataTestId ?? 'card'}
       {...props}
     >

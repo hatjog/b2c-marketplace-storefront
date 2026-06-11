@@ -200,7 +200,7 @@ export function SymmetricPossessionSection({
             <div
               role="status"
               aria-live="polite"
-              className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-xs leading-5 text-[var(--text-secondary)]"
+              className="rounded-[var(--radius-md)] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-xs leading-5 text-[var(--text-secondary)]"
             >
               {emailToast}
             </div>

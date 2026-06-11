@@ -196,7 +196,7 @@ export default async function SellerReviewsPage({
             data-testid="seller-reviews-hero"
           >
             <div className="grid gap-4 p-5 md:grid-cols-[120px_minmax(0,1fr)] md:p-6">
-              <div className="relative min-h-[120px] overflow-hidden rounded-[24px] bg-[var(--bb-gradient-cream-wisp)]">
+              <div className="relative min-h-[120px] overflow-hidden rounded-[var(--bb-radius-panel)] bg-[var(--bb-gradient-cream-wisp)]">
                 {data.seller.imageUrl ? (
                   <Image
                     src={data.seller.imageUrl}
@@ -241,7 +241,7 @@ export default async function SellerReviewsPage({
       summary={
         <>
           <section
-            className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5"
+            className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
             aria-labelledby="seller-reviews-summary-heading"
             data-testid="seller-reviews-summary"
           >
@@ -278,7 +278,7 @@ export default async function SellerReviewsPage({
           </section>
 
           <section
-            className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5"
+            className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
             aria-labelledby="seller-reviews-filters-heading"
           >
             <div className="flex items-center justify-between gap-3">
@@ -315,7 +315,7 @@ export default async function SellerReviewsPage({
                       rating: isActive ? null : value
                     })}`}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`inline-flex min-h-11 items-center justify-between gap-3 rounded-full border px-4 py-2 text-sm lg:rounded-[20px] ${
+                    className={`inline-flex min-h-11 items-center justify-between gap-3 rounded-full border px-4 py-2 text-sm lg:rounded-[var(--bb-radius-panel)] ${
                       isActive
                         ? 'border-[var(--cta)] bg-[var(--bb-tint-gold-12)] text-primary'
                         : 'border-[var(--bb-tint-gold-16)] text-secondary'
@@ -337,7 +337,7 @@ export default async function SellerReviewsPage({
           className="space-y-4"
           data-testid="seller-reviews-page"
         >
-          <div className="flex flex-col gap-3 rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="heading-sm text-primary">{t('list.heading')}</h2>
               <p className="mt-1 text-sm text-secondary">
@@ -407,7 +407,7 @@ export default async function SellerReviewsPage({
                 return (
                   <article
                     key={review.id}
-                    className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5"
+                    className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div className="space-y-2">
@@ -450,7 +450,7 @@ export default async function SellerReviewsPage({
                       )}
 
                       {review.sellerReply ? (
-                        <section className="rounded-[24px] bg-[var(--bb-tint-gold-08)] p-4">
+                        <section className="rounded-[var(--bb-radius-panel)] bg-[var(--bb-tint-gold-08)] p-4">
                           <p className="label-sm text-secondary">{t('list.replyLabel')}</p>
                           <p className="mt-2 text-sm leading-7 text-primary">{review.sellerReply}</p>
                         </section>
@@ -464,7 +464,7 @@ export default async function SellerReviewsPage({
 
           {data.totalReviews > 0 ? (
             <nav
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
               aria-label={t('pagination.aria')}
             >
               <p className="text-sm text-secondary">

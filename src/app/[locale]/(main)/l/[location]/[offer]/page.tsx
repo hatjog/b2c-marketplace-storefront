@@ -140,7 +140,7 @@ export default async function ProgrammaticLandingPage({
               {t('hero_cta')}
             </LocalizedClientLink>
           </div>
-          <dl className="grid gap-3 rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5">
+          <dl className="grid gap-3 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5">
             <div>
               <dt className="text-xs font-medium uppercase tracking-[0.2em] text-secondary">
                 {t('geo_label')}
@@ -166,7 +166,7 @@ export default async function ProgrammaticLandingPage({
         {['trust_verified', 'trust_geo', 'trust_schema'].map(key => (
           <div
             key={key}
-            className="rounded-[20px] border border-[var(--bb-border-soft)] bg-white p-5"
+            className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5"
           >
             <p className="text-sm font-semibold text-primary">{t(key)}</p>
           </div>
@@ -189,7 +189,7 @@ export default async function ProgrammaticLandingPage({
               <LocalizedClientLink
                 key={salon.handle}
                 href={salon.href}
-                className="block h-full rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
+                className="block h-full rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
               >
                 <h3 className="heading-sm text-primary">{salon.displayName}</h3>
                 <p className="mt-2 text-sm leading-6 text-secondary">{salon.streetAddress}</p>
@@ -206,7 +206,7 @@ export default async function ProgrammaticLandingPage({
           <p
             role="status"
             aria-label={t('empty_salons_aria')}
-            className="rounded-[20px] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] p-5 text-sm leading-6 text-secondary"
+            className="rounded-[var(--bb-radius-panel)] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] p-5 text-sm leading-6 text-secondary"
           >
             {t('empty_salons')}
           </p>
@@ -225,7 +225,7 @@ export default async function ProgrammaticLandingPage({
             <LocalizedClientLink
               key={`${item.sellerName}-${item.href}`}
               href={item.href}
-              className="block rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
+              className="block rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--bg-action)]"
             >
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-secondary">
                 {item.sellerName}
@@ -262,7 +262,7 @@ export default async function ProgrammaticLandingPage({
       </section>
 
       <section className="container py-8">
-        <div className="flex flex-col gap-4 rounded-[24px] bg-[var(--bg-action)] p-6 text-white md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 rounded-[var(--bb-radius-panel)] bg-[var(--bg-action)] p-6 text-white md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="heading-sm">{t('bottom_cta_heading')}</h2>
             <p className="mt-2 text-sm leading-6 text-white/85">{t('bottom_cta_body')}</p>
