@@ -3,8 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { Button, LogoLockup } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CollapseIcon } from '@/icons';
-import { getMarketLogoUrl } from '@/lib/portal';
-import { resolveMarketConfig } from '@/lib/portal.server';
 
 // Minimal chrome: header-only by design (no footer) — standard checkout UX pattern
 // that reduces cognitive load during payment flow. AC1 "header i footer" applies to
@@ -14,9 +12,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig } = await resolveMarketConfig(marketId);
-  const marketLogoUrl = getMarketLogoUrl(marketConfig);
   const t = await getTranslations('checkout');
 
   return (
@@ -35,8 +30,10 @@ export default async function RootLayout({
             </LocalizedClientLink>
           </div>
           <div className="flex w-full items-center justify-center pl-4 lg:pl-0">
+            {/* Brand lockup parity (v1.12.0 chrome): gold monogram + wordmark,
+                not the market-configured Payload logo (off-brand placeholder). */}
             <LogoLockup
-              logoSrc={marketLogoUrl}
+              variant="light"
               className="flex items-center gap-2"
               data-testid="checkout-logo-link"
             />
