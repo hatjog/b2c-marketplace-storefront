@@ -21,6 +21,14 @@
  *
  * Contract enforced by `_grow/tools/validate_design_tokens.py` (UX-DR15 + UX-DR17).
  * DS boundary enforced by `_grow/tools/validate_ux_state_and_ds_boundary.py`.
+ *
+ * DRIFT GATE SCOPE: This file is a hand-authored complement layer — it is NOT
+ * a replica target of validate_ds_drift.py (not in REPLICA_TARGETS). Core
+ * --bb-surface* and --bb-page-bg values here intentionally match tokens.yaml
+ * SSOT (warm contract-A palette: pearl/gold, ADR-145). Additional tokens in
+ * this file (extended surface ladder, gradient aliases, tints) are storefront-
+ * local and have no corresponding tokens.yaml entry — they are owned here.
+ * If tokens.yaml surfaces change, update this file to maintain parity.
  */
 
 :root {

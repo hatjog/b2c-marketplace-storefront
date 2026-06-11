@@ -9,7 +9,7 @@
  *   1. colors.css        — gp-* neutral/accent/semantic RGB palette tokens
  *   2. spacing.css       — 8px base scale space tokens
  *   3. typography.css    — Funnel Display + type scale tokens
- *   4. radii.css         — --radius-* + --bb-radius-* tokens
+ *   4. radii.css         — --radius-none/xs/sm/md/lg/xl/full + --bb-radius-* tokens (radius-only subset)
  *   5. bb-surfaces.css   — --bb-* surface tokens (page-bg, surfaces, shadows,
  *                          gradients, text/CTA/gold semantic aliases)
  *
@@ -21,7 +21,7 @@
  *   colors.css      — neutral/accent/semantic RGB palette tokens
  *   spacing.css     — 8px base scale space tokens
  *   typography.css  — Funnel Display + type scale (see file header for runtime details)
- *   radii.css       — --radius-* + --bb-radius-* tokens
+ *   radii.css       — --radius-none/xs/sm/md/lg/xl/full + --bb-radius-* tokens (radius-only subset from SSOT)
  *   bb-surfaces.css — --bb-* surface tokens (page-bg, surfaces, shadows, CTA/gold aliases)
  */
 
