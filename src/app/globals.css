@@ -73,9 +73,7 @@
 body {
   background: var(--bb-page-bg, #f9f4ec);
   /* BonBeauty brand face — resolves to Funnel Display via the --font-funnel-sans
-     variable injected by next/font/local in layout.tsx (falls back to system-ui
-     until the font swaps in). Without this rule the page inherited Tailwind's
-     default sans stack and Funnel Display never rendered. */
+     variable injected by next/font/local in layout.tsx. */
   font-family: var(--font-family-sans);
 }
 
