@@ -261,6 +261,13 @@ describe('hashColor', () => {
     expect(color).toMatch(/^bg-/);
   });
 
+  it('uses token-driven avatar backgrounds', () => {
+    const colors = ['salon-one', 'salon-two', 'salon-three', 'salon-four'].map(hashColor);
+    const legacyRawPalettes = new RegExp(['amb', 'er-|emer', 'ald-'].join(''));
+    expect(colors.every(color => color.includes('var(--'))).toBe(true);
+    expect(colors.join(' ')).not.toMatch(legacyRawPalettes);
+  });
+
   it('returns deterministic result for same handle', () => {
     expect(hashColor('stable-handle')).toBe(hashColor('stable-handle'));
   });

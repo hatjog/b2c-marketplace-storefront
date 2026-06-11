@@ -47,7 +47,7 @@ export const CartDropdownItem = ({
   const usesPlaceholderImage = thumbnailSrc === STOREFRONT_PLACEHOLDER_IMAGE_SRC;
 
   return (
-    <div className="mb-4 flex gap-2 rounded-sm border p-1">
+    <div className="mb-4 flex gap-2 rounded-[var(--bb-radius-card)] border p-1">
       <div className="flex h-[132px] w-[100px] items-center justify-center">
         {!usesPlaceholderImage ? (
           <Image

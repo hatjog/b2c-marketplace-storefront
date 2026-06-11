@@ -85,7 +85,7 @@ export const CartSummary = ({
           >
             <p className="text-primary">{t('delivery_method_label')}</p>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-sm border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2">
                 <input
                   type="radio"
                   name="delivery-method"
@@ -95,7 +95,7 @@ export const CartSummary = ({
                 />
                 <span>{t('delivery_method_pdf_email')}</span>
               </label>
-              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-sm border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2">
                 <input
                   type="radio"
                   name="delivery-method"

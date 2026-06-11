@@ -13,7 +13,7 @@
  * (lower_snake_case) so caller passes raw backend status without mapping.
  *
  * Color semantics (UX-DR79):
- *   - open            → green   (success / active)
+ *   - open            → trust   (verified / active)
  *   - pending_approval → yellow  (caution / awaiting)
  *   - suspended        → orange  (warning / temporary)
  *   - terminated       → gray    (inactive / final)
@@ -41,7 +41,7 @@ export interface SellerStatusBadgeProps {
 }
 
 const STATUS_CLASSES: Record<SellerStatus, string> = {
-  open: 'bg-green-100 text-green-800',
+  open: 'bg-[var(--color-trust)] text-white',
   pending_approval: 'bg-yellow-100 text-yellow-800',
   suspended: 'bg-orange-100 text-orange-800',
   terminated: 'bg-gray-100 text-gray-800',

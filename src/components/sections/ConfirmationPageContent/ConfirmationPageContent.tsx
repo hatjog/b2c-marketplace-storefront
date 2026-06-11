@@ -365,9 +365,9 @@ export function ConfirmationPageContent({ orderId }: Props) {
         aria-live="polite"
       >
         <div className="space-y-4">
-          <div className="h-8 w-64 animate-pulse rounded bg-stone-200 motion-reduce:animate-none" />
-          <div className="h-4 w-96 animate-pulse rounded bg-stone-200 motion-reduce:animate-none" />
-          <div className="h-40 animate-pulse rounded bg-stone-100 motion-reduce:animate-none" />
+          <div className="h-8 w-64 animate-pulse rounded bg-[var(--bb-surface-muted)] motion-reduce:animate-none" />
+          <div className="h-4 w-96 animate-pulse rounded bg-[var(--bb-surface-muted)] motion-reduce:animate-none" />
+          <div className="h-40 animate-pulse rounded bg-[var(--bb-surface)] motion-reduce:animate-none" />
         </div>
       </section>
     );
@@ -459,7 +459,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
         </div>
 
         <ol
-          className="grid grid-cols-1 gap-4 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 md:grid-cols-4"
+          className="grid grid-cols-1 gap-4 rounded-[var(--bb-radius-card)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cta)] md:grid-cols-4"
           data-testid="voucher-stepper"
           role="list"
           tabIndex={0}
@@ -472,16 +472,16 @@ export function ConfirmationPageContent({ orderId }: Props) {
               <li
                 key={step.id}
                 className={[
-                  'rounded-sm border p-4 outline-none',
-                  isDone ? 'border-emerald-200 bg-emerald-50' : '',
-                  isActive ? 'border-amber-300 bg-amber-50' : '',
-                  step.state === 'future' ? 'border-stone-200 bg-white' : ''
+                  'rounded-[var(--bb-radius-card)] border p-4 outline-none',
+                  isDone ? 'border-[var(--gold)] bg-[var(--gold-light)]' : '',
+                  isActive ? 'border-[var(--cta)] bg-[var(--bb-surface-muted)]' : '',
+                  step.state === 'future' ? 'border-[var(--bb-border-soft)] bg-[var(--bb-surface)]' : ''
                 ].join(' ')}
                 data-step-id={step.id}
                 data-step-state={step.state}
                 aria-current={isActive ? 'step' : undefined}
               >
-                <p className="label-sm text-secondary">
+                <p className={`label-sm ${isDone ? 'text-[color:var(--gold)]' : 'text-secondary'}`}>
                   {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}
@@ -522,7 +522,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
 
         {showSecondTier && (
           <p
-            className="mt-4 rounded-sm border border-stone-200 bg-stone-50 p-3 text-sm text-secondary"
+            className="mt-4 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] p-3 text-sm text-secondary"
             data-testid="voucher-second-tier"
           >
             {t('second_tier_message', { elapsed: String(elapsedSeconds) })}
@@ -551,7 +551,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
           </p>
           <button
             type="button"
-            className="rounded-full border border-stone-300 px-3 py-1 text-xs text-primary"
+            className="rounded-full border border-[var(--bb-border-strong)] px-3 py-1 text-xs text-primary"
             onClick={onCopyOrderId}
           >
             {copied ? t('summary_copied') : t('summary_copy')}
@@ -568,7 +568,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
           {order.items.map(item => (
             <article
               key={item.id ?? `${item.title}-${item.quantity}`}
-              className="rounded-sm border border-stone-200 p-3"
+              className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm font-medium text-primary">
@@ -589,7 +589,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
           className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"
           data-testid="order-summary-meta"
         >
-          <div className="rounded-sm border border-stone-200 p-3">
+          <div className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-3">
             <p className="text-xs text-secondary">{t('summary_delivery_method')}</p>
             <p className="mt-1 text-sm font-medium text-primary">
               {deliveryMethod === 'email' ? t('delivery_email') : null}
@@ -598,7 +598,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
             </p>
           </div>
 
-          <div className="rounded-sm border border-stone-200 p-3">
+          <div className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-3">
             <dl className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-secondary">{t('summary_subtotal')}</dt>
@@ -612,7 +612,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
                   {formatMoney(order.shipping_total + order.tax_total, order.currency_code, locale)}
                 </dd>
               </div>
-              <div className="flex items-center justify-between border-t border-stone-200 pt-2 font-medium">
+              <div className="flex items-center justify-between border-t border-[var(--bb-border-soft)] pt-2 font-medium">
                 <dt className="text-primary">{t('summary_total')}</dt>
                 <dd className="text-primary">
                   {formatMoney(order.total, order.currency_code, locale)}
@@ -636,7 +636,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
         </h2>
 
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-          <article className="rounded-sm border border-stone-200 p-4">
+          <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-4">
             <h3 className="text-sm font-medium text-primary">{t('next_for_you_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_you_body')}</p>
             <LocalizedClientLink
@@ -647,7 +647,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
             </LocalizedClientLink>
           </article>
 
-          <article className="rounded-sm border border-stone-200 p-4">
+          <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-4">
             <h3 className="text-sm font-medium text-primary">{t('next_for_recipient_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_recipient_body')}</p>
             <LocalizedClientLink
@@ -658,7 +658,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
             </LocalizedClientLink>
           </article>
 
-          <article className="rounded-sm border border-stone-200 p-4">
+          <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-4">
             <h3 className="text-sm font-medium text-primary">{t('next_for_salon_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_salon_body')}</p>
             <LocalizedClientLink

@@ -12,11 +12,11 @@ export function getInitials(name: string): string {
 }
 
 const HASH_COLORS = [
-  'bg-amber-100',
-  'bg-rose-100',
-  'bg-violet-100',
-  'bg-emerald-100',
-  'bg-sky-100'
+  'bg-[var(--gold-light)]',
+  'bg-[var(--bb-surface-muted)]',
+  'bg-[var(--bb-surface-strong)]',
+  'bg-[var(--bb-tint-gold-08)]',
+  'bg-[var(--bb-surface)]'
 ] as const;
 
 export function hashColor(handle: string): string {
@@ -71,7 +71,7 @@ export function SellerCard({ name, handle, photo_url, city, district, product_co
           className="flex aspect-[16/9] items-center justify-center"
           style={{
             background:
-              'linear-gradient(to bottom right, var(--gold-light, #fef3c7), rgb(var(--brand-50, 238 238 238)))'
+              'linear-gradient(to bottom right, var(--gold-light), var(--bb-surface-muted))'
           }}
         >
           <span

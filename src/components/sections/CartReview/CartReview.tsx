@@ -117,7 +117,7 @@ const Review = ({ cart }: { cart: any }) => {
               NFR23: transactional only; no marketing consent bundled here. */}
           <div
             ref={consentBlockRef}
-            className="bb-section-shell bb-section-shell-strong border border-primary rounded-sm p-4 space-y-1"
+            className="bb-section-shell bb-section-shell-strong border border-primary rounded-[var(--bb-radius-card)] p-4 space-y-1"
             data-testid="checkout-review-consent-block"
             aria-labelledby={consentHeadingId}
           >

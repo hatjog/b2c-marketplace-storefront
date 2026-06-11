@@ -379,7 +379,7 @@ export function SellerMap({
         center={PL_CENTER}
         zoom={PL_DEFAULT_ZOOM}
         scrollWheelZoom
-        className="h-full w-full rounded-sm"
+        className="h-full w-full rounded-[var(--bb-radius-card)]"
       >
         <TileLayer
           attribution={tileSource.attribution}

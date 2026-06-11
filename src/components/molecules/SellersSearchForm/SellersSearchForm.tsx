@@ -66,7 +66,7 @@ export async function SellersSearchForm({
           type="search"
           defaultValue={q}
           placeholder={t('placeholder')}
-          className="w-full rounded-sm border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0"
+          className="w-full rounded-[var(--bb-radius-card)] border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0"
           data-testid="sellers-search-input"
         />
       </div>
@@ -82,7 +82,7 @@ export async function SellersSearchForm({
           id="sellers-search-city"
           name="city"
           defaultValue={city}
-          className="w-full rounded-sm border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0"
+          className="w-full rounded-[var(--bb-radius-card)] border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0"
           data-testid="sellers-search-city"
         >
           <option value="">{t('city_all')}</option>
@@ -105,7 +105,7 @@ export async function SellersSearchForm({
           id="sellers-search-sort"
           name="sort"
           defaultValue={sort}
-          className="w-full rounded-sm border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0"
+          className="w-full rounded-[var(--bb-radius-card)] border bg-component-secondary px-4 py-3 focus:border-primary focus:outline-none focus:ring-0"
           data-testid="sellers-search-sort"
         >
           {SORT_OPTIONS.map(option => (
@@ -145,7 +145,7 @@ export async function SellersSearchForm({
 
       <button
         type="submit"
-        className="rounded-sm border border-primary bg-primary px-6 py-3 text-white hover:bg-primary/90 md:self-end"
+        className="rounded-[var(--bb-radius-card)] border border-primary bg-primary px-6 py-3 text-white hover:bg-primary/90 md:self-end"
         data-testid="sellers-search-submit"
       >
         {t('submit')}

@@ -74,7 +74,7 @@ export async function SellersPagination({
         {hasPrev ? (
           <Link
             href={buildHref(prevOffset)}
-            className="rounded-sm border px-3 py-2 hover:bg-gray-50"
+            className="rounded-[var(--bb-radius-card)] border px-3 py-2 hover:bg-gray-50"
             data-testid="sellers-pagination-prev"
             rel="prev"
           >
@@ -82,7 +82,7 @@ export async function SellersPagination({
           </Link>
         ) : (
           <span
-            className="rounded-sm border px-3 py-2 opacity-40"
+            className="rounded-[var(--bb-radius-card)] border px-3 py-2 opacity-40"
             aria-disabled="true"
             data-testid="sellers-pagination-prev-disabled"
           >
@@ -97,7 +97,7 @@ export async function SellersPagination({
         {hasNext ? (
           <Link
             href={buildHref(nextOffset)}
-            className="rounded-sm border px-3 py-2 hover:bg-gray-50"
+            className="rounded-[var(--bb-radius-card)] border px-3 py-2 hover:bg-gray-50"
             data-testid="sellers-pagination-next"
             rel="next"
           >
@@ -105,7 +105,7 @@ export async function SellersPagination({
           </Link>
         ) : (
           <span
-            className="rounded-sm border px-3 py-2 opacity-40"
+            className="rounded-[var(--bb-radius-card)] border px-3 py-2 opacity-40"
             aria-disabled="true"
             data-testid="sellers-pagination-next-disabled"
           >

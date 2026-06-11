@@ -264,7 +264,7 @@ export const SellerSelector = ({
             <label
               key={seller.seller_id}
               className={cn(
-                'flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-2 transition-colors',
+                'flex cursor-pointer items-center gap-3 rounded-[var(--bb-radius-card)] border px-3 py-2 transition-colors',
                 isSelected
                   ? 'border-action bg-component-secondary-hover'
                   : 'border-tertiary hover:border-secondary',
@@ -319,7 +319,7 @@ export const SellerSelector = ({
                 type="button"
                 onClick={() => handleChange(seller.seller_id)}
                 className={cn(
-                  'rounded-sm border px-3 py-1 text-xs font-medium transition-colors',
+                  'rounded-[var(--bb-radius-card)] border px-3 py-1 text-xs font-medium transition-colors',
                   isSelected
                     ? 'border-action bg-action text-on-action'
                     : 'border-tertiary text-primary hover:border-secondary',

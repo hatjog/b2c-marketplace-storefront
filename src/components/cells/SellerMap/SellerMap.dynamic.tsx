@@ -23,7 +23,7 @@ export const SellerMapDynamic = dynamic<SellerMapProps>(
     loading: () => (
       <div
         aria-busy="true"
-        className="h-96 w-full animate-pulse rounded-sm bg-stone-100"
+        className="h-96 w-full animate-pulse rounded-[var(--bb-radius-card)] bg-[var(--bb-surface-muted)]"
         data-testid="seller-map-loading"
       />
     )

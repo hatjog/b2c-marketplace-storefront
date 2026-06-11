@@ -62,7 +62,7 @@ export function ResumeConfirmationModal({
         onClick={onCancel}
         className="absolute inset-0 bg-black/40"
       />
-      <div className="relative z-10 mx-4 flex max-w-md flex-col gap-4 rounded-sm border border-tertiary bg-primary p-6 shadow-lg">
+      <div className="relative z-10 mx-4 flex max-w-md flex-col gap-4 rounded-[var(--bb-radius-card)] border border-tertiary bg-primary p-6 shadow-lg">
         <h3 id={titleId} className="heading-sm">
           {t('resume_modal_title')}
         </h3>
@@ -72,7 +72,7 @@ export function ResumeConfirmationModal({
             type="button"
             data-testid="voucher-resume-modal-confirm"
             onClick={handleConfirm}
-            className="min-h-12 rounded-sm bg-action px-4 py-2 text-action-on-primary"
+            className="min-h-12 rounded-[var(--bb-radius-card)] bg-action px-4 py-2 text-action-on-primary"
           >
             {t('resume_confirm')}
           </button>
@@ -80,7 +80,7 @@ export function ResumeConfirmationModal({
             type="button"
             data-testid="voucher-resume-modal-cancel"
             onClick={onCancel}
-            className="min-h-12 rounded-sm border border-tertiary px-4 py-2 text-secondary"
+            className="min-h-12 rounded-[var(--bb-radius-card)] border border-tertiary px-4 py-2 text-secondary"
           >
             {t('resume_cancel')}
           </button>
