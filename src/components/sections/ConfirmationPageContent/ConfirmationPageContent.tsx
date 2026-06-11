@@ -481,7 +481,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
                 data-step-state={step.state}
                 aria-current={isActive ? 'step' : undefined}
               >
-                <p className={`label-sm ${isDone ? 'text-[color:var(--gold)]' : 'text-secondary'}`}>
+                <p className={`label-sm ${isDone ? 'text-[color:var(--cta-hover)]' : 'text-secondary'}`}>
                   {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}

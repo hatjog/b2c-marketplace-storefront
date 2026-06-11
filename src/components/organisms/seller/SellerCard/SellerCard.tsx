@@ -11,6 +11,9 @@ export function getInitials(name: string): string {
     .toUpperCase();
 }
 
+// Contract-A intentional: mono cream/gold palette (no raw amber/emerald). Visual variety
+// is minor — distinguishability relies on initials (text-gray-700, high contrast). If
+// multi-hue variety is needed in future, use --bb-tint-* tokens, never raw Tailwind colors.
 const HASH_COLORS = [
   'bg-[var(--gold-light)]',
   'bg-[var(--bb-surface-muted)]',
