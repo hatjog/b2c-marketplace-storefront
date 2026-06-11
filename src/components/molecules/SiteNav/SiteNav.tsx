@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
  * Polecane · Blog · Pomoc — replacing the legacy category dropdown in the
  * top bar. Active state is derived from the current path (locale-stripped).
  */
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { key: 'categories', href: '/categories' },
   { key: 'salons', href: '/sellers' },
   { key: 'featured', href: '/collections' },
@@ -30,10 +30,17 @@ export function SiteNav({ className }: { className?: string }) {
   const t = useTranslations('header.nav');
   const path = stripLocale(usePathname() || '/');
 
+  // BB-v1.8.0 mockup: ONLY the active link is underlined. On routes that match
+  // no nav item (e.g. home), the first item (Kategorie) is the initial active.
+  const matchedIndex = NAV_ITEMS.findIndex(
+    ({ href }) => path === href || path.startsWith(`${href}/`)
+  );
+  const activeIndex = matchedIndex >= 0 ? matchedIndex : 0;
+
   return (
     <nav className={cn('flex items-center gap-6', className)} data-testid="site-nav" aria-label="BonBeauty">
-      {NAV_ITEMS.map(({ key, href }) => {
-        const isActive = path === href || path.startsWith(`${href}/`);
+      {NAV_ITEMS.map(({ key, href }, index) => {
+        const isActive = index === activeIndex;
         return (
           <LocalizedClientLink
             key={key}
@@ -41,9 +48,11 @@ export function SiteNav({ className }: { className?: string }) {
             data-testid={`site-nav-${key}`}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'whitespace-nowrap text-sm transition-colors',
+              // Transparent bottom border reserves space (no layout shift); only
+              // the active link shows the underline + primary ink.
+              'whitespace-nowrap border-b border-transparent pb-0.5 text-sm transition-colors',
               isActive
-                ? 'font-semibold text-[var(--text-primary)]'
+                ? 'border-[var(--text-primary)] font-semibold text-[var(--text-primary)]'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             )}
           >

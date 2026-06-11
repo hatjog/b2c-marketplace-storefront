@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 
 import { IconButton } from '@/components/atoms';
 import { HeaderCategoryNavbar } from '@/components/molecules';
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { NAV_ITEMS } from '@/components/molecules/SiteNav/SiteNav';
 import { CloseIcon, HamburgerMenuIcon } from '@/icons';
 
 import { MobileCategoryNavbar } from './components';
@@ -19,6 +21,7 @@ export const MobileNavbar = ({
   parentCategories: HttpTypes.StoreProductCategory[];
 }) => {
   const t = useTranslations('navigation');
+  const tNav = useTranslations('header.nav');
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenuHandler = () => {
@@ -67,6 +70,25 @@ export const MobileNavbar = ({
             />
           </div>
           <div className="">
+            {/* Primary site nav (W6-01 contract-A parity) — same items as the
+                desktop SiteNav, surfaced at the top of the mobile drawer. */}
+            <nav
+              className="flex flex-col border-b"
+              aria-label="BonBeauty"
+              data-testid="mobile-site-nav"
+            >
+              {NAV_ITEMS.map(({ key, href }) => (
+                <LocalizedClientLink
+                  key={key}
+                  href={href}
+                  onClick={closeMenuHandler}
+                  data-testid={`mobile-site-nav-${key}`}
+                  className="px-4 py-3 text-base text-[var(--text-primary)] hover:bg-[var(--bb-surface-muted)]"
+                >
+                  {tNav(key)}
+                </LocalizedClientLink>
+              ))}
+            </nav>
             <HeaderCategoryNavbar
               onClose={closeMenuHandler}
               categories={categories}
