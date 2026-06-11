@@ -117,7 +117,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
                   </span>
                 </div>
               </div>
-              <article className="border-white/12 rounded-[28px] border bg-white/10 p-5 backdrop-blur-sm">
+              <article className="border-white/12 rounded-[var(--bb-radius-card)] border bg-white/10 p-5 backdrop-blur-sm">
                 <p className="label-sm text-white/70">{t('featured.label')}</p>
                 <h2 className="heading-md mt-3 text-white">{featured.title}</h2>
                 <p className="text-white/82 mt-3 text-sm leading-7">{featured.excerpt}</p>
@@ -137,7 +137,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
           {(['editorial', 'seasonal', 'recommended'] as const).map(bucket => (
             <article
               key={bucket}
-              className="rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5"
+              className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5"
             >
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-secondary">
                 {t(`buckets.${bucket}.eyebrow`)}
@@ -162,7 +162,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
               <LocalizedClientLink
                 key={card.handle}
                 href={`/collections/${card.handle}`}
-                className="group flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
+                className="group flex min-h-[320px] flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
                 aria-label={t('grid.cardAria', { title: card.title })}
                 data-testid="collection-item"
               >

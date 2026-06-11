@@ -26,14 +26,14 @@ export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) 
         {items.map(item => (
           <div
             key={`${item.href}-${item.label}`}
-            className="h-full overflow-hidden rounded-[24px] border border-white/12 bg-white/6"
+            className="h-full overflow-hidden rounded-[var(--bb-radius-panel)] border border-white/12 bg-white/6"
           >
             <LocalizedClientLink
               href={item.href}
               className="group flex h-full flex-col gap-4 p-4 text-white transition-colors md:p-5"
             >
               {item.imageUrl && (
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-white/8">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--bb-radius-panel)] bg-white/8">
                   <Image
                     loading="lazy"
                     src={safeDecodeURIComponent(item.imageUrl)}
@@ -45,7 +45,7 @@ export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
                 </div>
               )}
-              <div className="mt-auto flex items-center justify-between gap-4 rounded-[20px] border border-white/10 bg-white/8 p-4 backdrop-blur">
+              <div className="mt-auto flex items-center justify-between gap-4 rounded-[var(--bb-radius-panel)] border border-white/10 bg-white/8 p-4 backdrop-blur">
                 <span className="heading-md text-white">{item.label}</span>
                 <ArrowRightIcon className="translate-x-0 opacity-80 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
               </div>

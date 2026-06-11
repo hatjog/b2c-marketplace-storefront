@@ -1,12 +1,14 @@
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
-import { Button } from '@/components/atoms';
+import { Button, LogoLockup } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CollapseIcon } from '@/icons';
 import { getMarketLogoUrl } from '@/lib/portal';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
+// Minimal chrome: header-only by design (no footer) — standard checkout UX pattern
+// that reduces cognitive load during payment flow. AC1 "header i footer" applies to
+// (main) layout surfaces; checkout is intentionally footer-free.
 export default async function RootLayout({
   children
 }: Readonly<{
@@ -15,9 +17,7 @@ export default async function RootLayout({
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const { marketConfig } = await resolveMarketConfig(marketId);
   const marketLogoUrl = getMarketLogoUrl(marketConfig);
-  const marketName = marketConfig?.name ?? null;
   const t = await getTranslations('checkout');
-  const tHeader = await getTranslations('header');
 
   return (
     <>
@@ -35,25 +35,11 @@ export default async function RootLayout({
             </LocalizedClientLink>
           </div>
           <div className="flex w-full items-center justify-center pl-4 lg:pl-0">
-            <LocalizedClientLink
-              href="/"
+            <LogoLockup
+              logoSrc={marketLogoUrl}
               className="flex items-center gap-2"
-            >
-              {marketLogoUrl && (
-                <Image
-                  src={marketLogoUrl}
-                  width={126}
-                  height={40}
-                  alt={marketName ?? 'Logo'}
-                  priority
-                />
-              )}
-              {marketName ? (
-                <span className="font-bold text-xl">{marketName}</span>
-              ) : !marketLogoUrl ? (
-                <span className="font-bold text-xl">{tHeader('home_fallback')}</span>
-              ) : null}
-            </LocalizedClientLink>
+              data-testid="checkout-logo-link"
+            />
           </div>
         </div>
       </header>

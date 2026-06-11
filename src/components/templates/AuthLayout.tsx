@@ -120,7 +120,7 @@ export async function AuthLayout({
           className="flex flex-1 items-center justify-center"
         >
           <section className="w-full max-w-[var(--auth-form-max-width)]">
-            <div className="bb-card rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-6 md:p-8">
+            <div className="bb-card rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-6 md:p-8">
               <div className="mb-6 space-y-3">
                 {eyebrow ? <p className="bb-eyebrow">{eyebrow}</p> : null}
                 <h1 className="heading-md text-[var(--text-primary)]">{pageTitle}</h1>
@@ -133,7 +133,7 @@ export async function AuthLayout({
 
             <section
               aria-label={t('trust_aria')}
-              className="mt-4 rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-4 py-3"
+              className="mt-4 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-4 py-3"
             >
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 {items.map(item => (

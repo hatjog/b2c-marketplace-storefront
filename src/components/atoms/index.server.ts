@@ -11,6 +11,8 @@ export { Chip } from './Chip/Chip';
 export { Divider } from './Divider/Divider';
 export { IconButton } from './IconButton/IconButton';
 export { Label } from './Label/Label';
+export { LogoLockup, MONOGRAM_SRC } from './LogoLockup/LogoLockup';
+export type { LogoLockupProps, LogoLockupVariant } from './LogoLockup/LogoLockup';
 export { NavigationItem } from './NavigationItem/NavigationItem';
 export { PaginationButton } from './PaginationButton/PaginationButton';
 export { StorefrontI18nLongContentProbe } from './StorefrontI18nLongContentProbe/StorefrontI18nLongContentProbe';

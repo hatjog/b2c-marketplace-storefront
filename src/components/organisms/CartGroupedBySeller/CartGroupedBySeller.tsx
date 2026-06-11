@@ -103,7 +103,7 @@ export const CartGroupedBySeller = ({
             key={groupKey}
             data-testid="vendor-cart-group"
             data-seller-id={groupKey}
-            className="mb-4 rounded-sm border"
+            className="mb-4 rounded-[var(--bb-radius-card)] border"
           >
             <header
               data-testid="vendor-group-header"

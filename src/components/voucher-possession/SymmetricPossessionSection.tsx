@@ -152,7 +152,7 @@ export function SymmetricPossessionSection({
     <section
       aria-labelledby="voucher-possession-heading"
       className={[
-        'flex flex-col gap-3 rounded-[22px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4',
+        'flex flex-col gap-3 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4',
         className,
       ]
         .filter(Boolean)
@@ -200,7 +200,7 @@ export function SymmetricPossessionSection({
             <div
               role="status"
               aria-live="polite"
-              className="rounded-[12px] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-xs leading-5 text-[var(--text-secondary)]"
+              className="rounded-[var(--radius-md)] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-xs leading-5 text-[var(--text-secondary)]"
             >
               {emailToast}
             </div>

@@ -249,7 +249,7 @@ function AuthInput({
           aria-invalid={invalid || undefined}
           aria-describedby={helperId}
           className={cn(
-            'min-h-12 w-full rounded-[16px] border bg-[var(--bb-white-75)] px-4 py-3 text-[14px] text-[var(--text-primary)] outline-none transition-colors',
+            'min-h-12 w-full rounded-[var(--bb-radius-card)] border bg-[var(--bb-white-75)] px-4 py-3 text-[14px] text-[var(--text-primary)] outline-none transition-colors',
             invalid
               ? 'border-[var(--state-failed,#b42318)]'
               : success
@@ -358,7 +358,7 @@ export function LoginAuthForm() {
       data-testid="auth-login-form"
     >
       {authError ? (
-        <div className="rounded-[16px] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
+        <div className="rounded-[var(--bb-radius-card)] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
           {authError}
         </div>
       ) : null}
@@ -487,7 +487,7 @@ export function RegisterAuthForm() {
       data-testid="auth-register-form"
     >
       {authError ? (
-        <div className="rounded-[16px] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
+        <div className="rounded-[var(--bb-radius-card)] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
           {authError}
         </div>
       ) : null}
@@ -821,7 +821,7 @@ export function ResetPasswordAuthForm({ token }: { token?: string }) {
         className="space-y-4 text-center"
         data-testid="reset-password-invalid-token"
       >
-        <div className="rounded-[16px] border border-[var(--state-failed,#b42318)] px-4 py-4 text-sm text-[var(--state-failed,#b42318)]">
+        <div className="rounded-[var(--bb-radius-card)] border border-[var(--state-failed,#b42318)] px-4 py-4 text-sm text-[var(--state-failed,#b42318)]">
           {tAuth('reset.invalid_token')}
         </div>
       </div>
@@ -835,7 +835,7 @@ export function ResetPasswordAuthForm({ token }: { token?: string }) {
       data-testid="auth-reset-password-form"
     >
       {authError ? (
-        <div className="rounded-[16px] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
+        <div className="rounded-[var(--bb-radius-card)] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
           {authError}
         </div>
       ) : null}
@@ -935,13 +935,13 @@ export function InlineRegisterAuthForm({
   const authError = translateKey(state.formError, tAuth, tValidation);
 
   return (
-    <div className="bb-card grid gap-6 rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-96)] p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="bb-card grid gap-6 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-96)] p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-4">
         <p className="bb-eyebrow">{tAuth('inline.eyebrow')}</p>
         <h1 className="heading-md text-[var(--text-primary)]">{tAuth('inline.title')}</h1>
         <p className="text-md text-[var(--text-secondary)]">{tAuth('inline.subtitle')}</p>
         {orderReference ? (
-          <div className="rounded-[16px] border border-[var(--bb-trust-tint-18)] bg-[var(--bb-trust-card-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          <div className="rounded-[var(--bb-radius-card)] border border-[var(--bb-trust-tint-18)] bg-[var(--bb-trust-card-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
             {tAuth('inline.order_notice', { orderReference, email: email ?? '' })}
           </div>
         ) : null}
@@ -958,7 +958,7 @@ export function InlineRegisterAuthForm({
         data-testid="auth-inline-register-form"
       >
         {authError ? (
-          <div className="rounded-[16px] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
+          <div className="rounded-[var(--bb-radius-card)] border border-[var(--state-failed,#b42318)] px-4 py-3 text-sm text-[var(--state-failed,#b42318)]">
             {authError}
           </div>
         ) : null}

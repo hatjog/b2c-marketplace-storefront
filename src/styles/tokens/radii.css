@@ -1,35 +1,27 @@
-/**
- * v1.7.0 Design Tokens — Border Radii (BonBeauty fleek mobile-app feel)
+/* ============================================================
+ * do-not-edit-manually — GENERATED FILE
  *
- * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/colors_and_type.css
- *   (Layer 2b — radii: --radius-xs=4px, --radius-sm=8px, --radius-md=12px)
- * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/public/themes/bonbeauty.css
- *   (--bb-radius-card=28px, --bb-radius-panel=36px, --bb-radius-pill=999px)
- * Source: _bmad-output/specs/proposed/v1.7.0/bonbeauty-design-system/project/live-snapshots/computed-tokens.json
- *   (computed values: --bb-radius-card: "28px", --bb-radius-panel: "36px", --bb-radius-pill: "999px")
+ * Source of truth: specs/design-system/bonbeauty/v2.0/tokens.yaml
+ * Generator:       _grow/tools/generate_ds_tokens.py
+ * Drift validator: _grow/tools/validate_ds_drift.py
  *
- * BonBeauty uses "fleek" radii — moderately rounded, approachable.
- * Premium-as-clarity: soft, friendly, confident. Not architectural square edges.
- *
- * Tailwind: gp-* prefix wired in tailwind.config.ts extend.borderRadius.
- * Contract enforced by `_grow/tools/validate_design_tokens.py` (UX-DR15 + UX-DR17).
- */
+ * Hand-edits to this file are OVERWRITTEN on next generator run and are
+ * a fail-closed CI gate (ADR-119 / D-V180-ARCH-3 token replication).
+ * Edit tokens.yaml instead, then re-run the generator.
+ * ============================================================ */
 
+/* >>> GP-DS-TOKENS:BEGIN (generated — do-not-edit-manually) <<< */
 :root {
-  /* Base scale — BonBeauty spec (colors_and_type.css Layer 2b) */
-  --radius-none:   0;
-  --radius-xs:     4px;    /* stamps, hairline detail                          */
-  --radius-sm:     8px;    /* chips, tags, inputs, standard buttons            */
-  --radius-md:     12px;   /* cards (default), secondary surfaces, modals      */
-  --radius-lg:     16px;   /* primary card / product tile / section shell      */
-  --radius-xl:     20px;   /* featured panel / hero container                  */
-  --radius-full:   9999px; /* pill — avatars, status dots, tier selectors      */
-
-  /* BonBeauty brand surface radii
-   * Source: bonbeauty.css --bb-radius-card/panel/pill
-   * Computed: computed-tokens.json confirmed 28px/36px/999px
-   * These alias --radius-* above and provide named surface tokens. */
-  --bb-radius-card:  28px;   /* product tile · primary card · section shell    */
-  --bb-radius-panel: 36px;   /* modal · featured panel · hero container        */
-  --bb-radius-pill:  999px;  /* pills · avatars · tier selectors · CTA rounded */
+  --radius-none: 0;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  --bb-radius-card: 16px;
+  --bb-radius-panel: 20px;
+  --bb-radius-pill: 999px;
+  --journal-card-radius: 16px;
 }
+/* >>> GP-DS-TOKENS:END <<< */

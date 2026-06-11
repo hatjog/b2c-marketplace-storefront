@@ -72,7 +72,7 @@ const DefaultErrorFallback = ({ onRetry }: { onRetry: () => void }) => {
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-sm border border-action bg-action px-3 py-1 text-xs font-medium text-on-action transition-colors hover:opacity-90"
+        className="rounded-[var(--bb-radius-card)] border border-action bg-action px-3 py-1 text-xs font-medium text-on-action transition-colors hover:opacity-90"
         data-testid="seller-selector-error-retry"
       >
         {t('retry_button')}

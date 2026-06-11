@@ -60,7 +60,7 @@ export function MagicLinkRecoverForm({ locale, initialEmail = '' }: Props) {
         defaultValue={initialEmail}
         required
         placeholder={t('email_placeholder')}
-        className="min-h-12 rounded-[16px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-4 py-3 text-base text-[var(--text-primary)] focus:border-[var(--color-focus-ring)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
+        className="min-h-12 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-4 py-3 text-base text-[var(--text-primary)] focus:border-[var(--color-focus-ring)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
         aria-invalid={state.status === 'invalid' ? 'true' : undefined}
         data-testid="magic-link-recover-email"
       />
@@ -83,7 +83,7 @@ export function MagicLinkRecoverForm({ locale, initialEmail = '' }: Props) {
       {state.status === 'submitted' ? (
         <p
           role="status"
-          className="rounded-[16px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3 text-sm text-[var(--text-primary)]"
+          className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3 text-sm text-[var(--text-primary)]"
           data-testid="magic-link-recover-success"
         >
           {t('success_body')}

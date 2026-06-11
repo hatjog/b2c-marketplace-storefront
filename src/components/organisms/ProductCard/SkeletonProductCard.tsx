@@ -19,7 +19,7 @@ export const SkeletonProductCard = () => {
       role="status"
       aria-busy="true"
       aria-label="Ładowanie karty produktu..."
-      className="group relative flex h-[338px] w-full flex-col justify-between rounded-sm border p-1"
+      className="group relative flex h-[338px] w-full flex-col justify-between rounded-[var(--bb-radius-card)] border p-1"
       style={{ backgroundColor: 'var(--bb-skeleton-base, rgba(239,229,210,0.52))' }}
       data-testid="skeleton-product-card"
     >

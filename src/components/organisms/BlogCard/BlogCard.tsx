@@ -17,11 +17,11 @@ export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
     <LocalizedClientLink
       href={post.href}
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
+        'group relative flex h-full flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
         index > 2 && 'hidden xl:flex'
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[20px]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--bb-radius-panel)]">
         <Image
           loading="lazy"
           sizes="(min-width: 1024px) 33vw, 100vw"

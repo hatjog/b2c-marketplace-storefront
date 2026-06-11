@@ -111,6 +111,65 @@ function getHomepageConfigPath(configRoot: string, marketId: string) {
   return path.resolve(getMarketRootPath(configRoot, marketId), 'homepage.yaml');
 }
 
+// Single-tenant assumption: this function is invoked only when NEXT_PUBLIC_PAYLOAD_MARKET_ID
+// is empty (i.e. single-market / local deploy without Payload market configuration).
+// With multiple markets in the directory, it returns the first alphabetical market that has
+// a non-empty storefront.theme; if none has a theme, it returns the first parseable market.
+// In a true multi-tenant deploy NEXT_PUBLIC_PAYLOAD_MARKET_ID should always be set, so
+// reaching this function is unexpected and may silently pick the wrong market.
+async function discoverRuntimeMarketId(configRoot: string): Promise<string | null> {
+  const marketsRoot = path.resolve(configRoot, getRuntimeInstanceId(), 'markets');
+
+  let marketEntries: string[];
+  try {
+    const entries = await fs.readdir(marketsRoot, { withFileTypes: true });
+    marketEntries = entries
+      .filter(entry => entry.isDirectory())
+      .map(entry => entry.name)
+      .sort((left, right) => left.localeCompare(right));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
+      return null;
+    }
+
+    if (error instanceof Error) {
+      Sentry.captureException(error);
+    } else {
+      Sentry.captureMessage(`[runtime-market-config] failed to discover markets in ${marketsRoot}`);
+    }
+
+    console.error(`[runtime-market-config] failed to discover markets in ${marketsRoot}`, error);
+    return null;
+  }
+
+  let firstConfiguredMarket: string | null = null;
+
+  for (const marketId of marketEntries) {
+    const parsed = await readYamlRecord(getMarketConfigPath(configRoot, marketId), 'runtime-market-config');
+    if (!parsed) {
+      continue;
+    }
+
+    firstConfiguredMarket ??= marketId;
+
+    if (normalizeNonEmptyString((parsed as MarketRuntimeConfig).storefront?.theme)) {
+      return marketId;
+    }
+  }
+
+  return firstConfiguredMarket;
+}
+
+async function resolveRuntimeMarketId(marketId: string): Promise<string | null> {
+  const normalizedMarketId = normalizeNonEmptyString(marketId);
+  if (normalizedMarketId) {
+    return normalizedMarketId;
+  }
+
+  const configRoot = await resolveConfigRoot();
+  return discoverRuntimeMarketId(configRoot);
+}
+
 async function readYamlRecord(filePath: string, errorScope: string): Promise<Record<string, unknown> | null> {
   try {
     const raw = await fs.readFile(filePath, 'utf8');
@@ -133,13 +192,18 @@ async function readYamlRecord(filePath: string, errorScope: string): Promise<Rec
   }
 }
 
+// When marketId is empty, resolveRuntimeMarketId triggers market discovery, and ALL config
+// fields (name, logo, legal_entity, SEO, social_links, theme) are resolved from the
+// discovered market's YAML. This is intentional: it ensures full coherence of all fields
+// from a single source rather than a partial per-field fallback (ADR-145, ADR-126/127).
 const readRuntimeMarketConfig = cache(async (marketId: string): Promise<MarketRuntimeConfig | null> => {
-  if (!marketId) {
+  const resolvedMarketId = await resolveRuntimeMarketId(marketId);
+  if (!resolvedMarketId) {
     return null;
   }
 
   const configRoot = await resolveConfigRoot();
-  const marketConfigPath = getMarketConfigPath(configRoot, marketId);
+  const marketConfigPath = getMarketConfigPath(configRoot, resolvedMarketId);
 
   const parsed = await readYamlRecord(marketConfigPath, 'runtime-market-config');
   return parsed as MarketRuntimeConfig | null;
@@ -558,13 +622,14 @@ export const resolveLegalEntity = cache(async (marketId: string): Promise<LegalE
 export const resolveRuntimePortalMarketConfig = cache(async (
   marketId: string
 ): Promise<MarketConfig | null> => {
-  if (!marketId) {
+  const resolvedMarketId = await resolveRuntimeMarketId(marketId);
+  if (!resolvedMarketId) {
     return null;
   }
 
   const [marketConfig, homepageConfig] = await Promise.all([
-    readRuntimeMarketConfig(marketId),
-    readRuntimeHomepageConfig(marketId)
+    readRuntimeMarketConfig(resolvedMarketId),
+    readRuntimeHomepageConfig(resolvedMarketId)
   ]);
 
   if (!marketConfig && !homepageConfig) {
@@ -574,9 +639,9 @@ export const resolveRuntimePortalMarketConfig = cache(async (
   const titlePattern = normalizeTitlePattern(marketConfig?.storefront?.seo_defaults?.title_pattern);
 
   return {
-    market_id: normalizeNonEmptyString(marketConfig?.market_id) ?? marketId,
-    name: normalizeMarketName(marketConfig?.name, titlePattern, marketId),
-    logo: normalizeAssetReference(marketConfig?.storefront?.logo, marketId),
+    market_id: normalizeNonEmptyString(marketConfig?.market_id) ?? resolvedMarketId,
+    name: normalizeMarketName(marketConfig?.name, titlePattern, resolvedMarketId),
+    logo: normalizeAssetReference(marketConfig?.storefront?.logo, resolvedMarketId),
     primary_color: normalizeNonEmptyString(marketConfig?.storefront?.primary_color),
     theme: normalizeNonEmptyString(marketConfig?.storefront?.theme),
     seo_defaults: titlePattern ? { title_pattern: titlePattern } : null,
@@ -587,9 +652,9 @@ export const resolveRuntimePortalMarketConfig = cache(async (
     storefront_filters: Array.isArray(marketConfig?.storefront?.storefront_filters)
       ? (marketConfig.storefront.storefront_filters as MarketConfig['storefront_filters'])
       : null,
-    homepage_sections: normalizeHomepageSections(homepageConfig, marketId),
+    homepage_sections: normalizeHomepageSections(homepageConfig, resolvedMarketId),
     tenant: null,
-    favicon: normalizeAssetReference(marketConfig?.storefront?.favicon, marketId),
+    favicon: normalizeAssetReference(marketConfig?.storefront?.favicon, resolvedMarketId),
     vendor_panel_url: normalizeHttpUrl(marketConfig?.storefront?.vendor_panel_url),
     legal_entity: normalizeLegalEntity(marketConfig?.legal_entity)
   } satisfies MarketConfig;

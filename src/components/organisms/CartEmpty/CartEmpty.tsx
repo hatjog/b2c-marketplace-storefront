@@ -15,7 +15,7 @@ export function CartEmpty() {
       aria-labelledby="cart-empty-heading"
       data-testid="cart-empty"
     >
-      <div className="flex w-full max-w-[480px] flex-col items-center rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-8 py-10 text-center shadow-[0_16px_40px_rgba(90,67,28,0.08)]">
+      <div className="flex w-full max-w-[480px] flex-col items-center rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-8 py-10 text-center shadow-[0_16px_40px_rgba(90,67,28,0.08)]">
         <span
           aria-hidden="true"
           className="mb-5 inline-flex h-20 w-20 items-center justify-center rounded-full border border-[var(--bb-tint-gold-22)] bg-[var(--bb-cream-90)] text-primary"

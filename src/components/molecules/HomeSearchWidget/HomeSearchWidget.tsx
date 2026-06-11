@@ -146,7 +146,7 @@ export function HomeSearchWidget() {
 
   return (
     <div
-      className="rounded-[20px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3 shadow-[var(--bb-shadow-soft)] md:p-4"
+      className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3 shadow-[var(--bb-shadow-soft)] md:p-4"
       data-testid="home-search-widget"
     >
       <div
@@ -216,7 +216,7 @@ export function HomeSearchWidget() {
                   }))
                 }
                 placeholder={tab.placeholder}
-                className="min-h-[48px] w-full rounded-[14px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] px-4 text-sm text-primary outline-none transition-shadow placeholder:text-secondary focus:shadow-[0_0_0_2px_var(--accent)]"
+                className="min-h-[48px] w-full rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] px-4 text-sm text-primary outline-none transition-shadow placeholder:text-secondary focus:shadow-[0_0_0_2px_var(--accent)]"
               />
             </div>
           );
@@ -224,7 +224,7 @@ export function HomeSearchWidget() {
 
         <button
           type="submit"
-          className="inline-flex min-h-[48px] items-center justify-center rounded-[14px] bg-[var(--bg-action)] px-6 text-sm font-semibold text-[var(--text-on-action)] transition-colors hover:bg-[var(--bg-action-hover)]"
+          className="inline-flex min-h-[48px] items-center justify-center rounded-[var(--bb-radius-card)] bg-[var(--bg-action)] px-6 text-sm font-semibold text-[var(--text-on-action)] transition-colors hover:bg-[var(--bg-action-hover)]"
         >
           {t('submit')}
         </button>

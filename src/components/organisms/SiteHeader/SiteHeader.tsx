@@ -17,7 +17,7 @@
 
 import type { HttpTypes } from '@medusajs/types';
 
-import { Badge } from '@/components/atoms';
+import { Badge, LogoLockup } from '@/components/atoms';
 import { CartDropdown, MobileNavbar, Navbar } from '@/components/cells';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
 import { LocaleSwitcher } from '@/components/molecules/LocaleSwitcher/LocaleSwitcher';
@@ -45,7 +45,6 @@ export const SiteHeader = async ({
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
   const marketLogoUrl = getMarketLogoUrl(marketConfig);
-  const marketName = marketConfig?.name ?? null;
 
   const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
@@ -87,27 +86,10 @@ export const SiteHeader = async ({
             parentCategories={parentCategories}
             categories={categories}
           />
-          <LocalizedClientLink
-            href="/"
-            className="inline-flex shrink-0 items-center"
+          <LogoLockup
+            logoSrc={marketLogoUrl}
             data-testid="site-header-logo"
-            aria-label={marketName ?? 'BonBeauty'}
-          >
-            {marketLogoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={marketLogoUrl}
-                alt={marketName ?? 'BonBeauty logo'}
-                className="h-8 w-auto"
-                width={120}
-                height={32}
-              />
-            ) : (
-              <span className="font-semibold tracking-tight text-[var(--text-primary)]">
-                {marketName ?? 'BonBeauty'}
-              </span>
-            )}
-          </LocalizedClientLink>
+          />
           <ParentCategoryLinks
             parentCategories={parentCategories}
             categories={categories}

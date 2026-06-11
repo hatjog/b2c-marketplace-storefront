@@ -1,7 +1,8 @@
+// Legacy component — not exported from organisms barrel and not rendered by any app surface.
+// Kept as migration reference; safe to remove in a dedicated cleanup pass.
 import type { HttpTypes } from '@medusajs/types';
-import Image from 'next/image';
 
-import { Badge } from '@/components/atoms';
+import { Badge, LogoLockup } from '@/components/atoms';
 import { CartDropdown, MobileNavbar, Navbar } from '@/components/cells';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
 import { LanguageSwitcher } from '@/components/molecules/LanguageSwitcher/LanguageSwitcher';
@@ -28,7 +29,6 @@ export const Header = async ({
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
   const marketLogoUrl = getMarketLogoUrl(marketConfig);
-  const marketName = marketConfig?.name ?? null;
 
   const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
@@ -61,27 +61,12 @@ export const Header = async ({
           />
         </div>
         <div className="flex items-center pl-4 lg:w-1/3 lg:justify-center lg:pl-0">
-          <LocalizedClientLink
-            href="/"
+          <LogoLockup
             locale={locale}
+            logoSrc={marketLogoUrl}
             className="flex items-center gap-2"
             data-testid="header-logo-link"
-          >
-            {marketLogoUrl && (
-              <Image
-                src={marketLogoUrl}
-                width={126}
-                height={40}
-                alt={marketName ?? 'Logo'}
-                priority
-              />
-            )}
-            {marketName ? (
-              <span className="font-bold text-xl">{marketName}</span>
-            ) : !marketLogoUrl ? (
-              <span className="font-bold text-xl">{tHeader('home_fallback')}</span>
-            ) : null}
-          </LocalizedClientLink>
+          />
         </div>
         <div
           className="flex w-full items-center justify-end gap-2 py-2 lg:w-1/3 lg:gap-4"

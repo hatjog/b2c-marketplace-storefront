@@ -69,7 +69,7 @@ export const CartItemsProducts = ({
           <div
             key={product.id}
             data-testid={`cart-item-${product.id}`}
-            className="flex gap-2 rounded-sm border p-1"
+            className="flex gap-2 rounded-[var(--bb-radius-card)] border p-1"
           >
             <LocalizedClientLink href={`/products/${product.product_handle}`}>
               <div

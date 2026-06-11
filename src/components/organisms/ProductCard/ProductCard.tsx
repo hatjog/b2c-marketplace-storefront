@@ -103,14 +103,14 @@ export const ProductCard = ({
   return (
     <div
       className={cn(
-        'group relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
+        'group relative flex h-full w-full flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
         className
       )}
       data-testid="product-card"
       data-product-handle={product.handle}
     >
       <div
-        className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[22px] bg-primary"
+        className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[var(--bb-radius-panel)] bg-primary"
         data-testid="product-card-image-container"
       >
         {showVendor && seller?.name && (
@@ -126,7 +126,7 @@ export const ProductCard = ({
           data-product-handle={product.handle}
           className="block h-full"
         >
-          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[22px]">
+          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[var(--bb-radius-panel)]">
             {!usesPlaceholderImage ? (
               <Image
                 priority

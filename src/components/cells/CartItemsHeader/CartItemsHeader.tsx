@@ -10,7 +10,7 @@ export const CartItemsHeader = ({ seller }: { seller: SingleProductSeller }) => 
   const joinedDate = formatSellerJoinDate(seller.created_at);
 
   const content = (
-    <div className="flex items-center gap-4 rounded-sm border p-4">
+    <div className="flex items-center gap-4 rounded-[var(--bb-radius-card)] border p-4">
       <SellerAvatar
         photo={seller.photo}
         size={32}

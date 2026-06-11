@@ -20,7 +20,7 @@ export const SellerInfoHeader = ({
   bottomBorder?: boolean;
 }) => (
   <div className={clsx('flex w-full items-center gap-4 p-5', bottomBorder && 'border-b')}>
-    <div className="rounded-sm">
+    <div className="rounded-[var(--bb-radius-card)]">
       <SellerAvatar
         photo={photo}
         size={56}

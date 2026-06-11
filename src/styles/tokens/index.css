@@ -9,7 +9,7 @@
  *   1. colors.css        — gp-* neutral/accent/semantic RGB palette tokens
  *   2. spacing.css       — 8px base scale space tokens
  *   3. typography.css    — Funnel Display + type scale tokens
- *   4. radii.css         — --radius-* + --bb-radius-* tokens
+ *   4. radii.css         — --radius-none/xs/sm/md/lg/xl/full + --bb-radius-* tokens (radius-only subset)
  *   5. bb-surfaces.css   — --bb-* surface tokens (page-bg, surfaces, shadows,
  *                          gradients, text/CTA/gold semantic aliases)
  *
@@ -17,12 +17,12 @@
  * this bundle via layout.tsx <link> tag, winning over any defaults here.
  * This preserves: v1.4.0 deltas > brand layer > stock (ARCH-007).
  *
- * Source provenance:
- *   colors.css      → colors_and_type.css Layer 1+2a
- *   spacing.css     → colors_and_type.css Layer 2b spacing scale
- *   typography.css  → colors_and_type.css Layer 2b font families + bonbeauty.css
- *   radii.css       → colors_and_type.css Layer 2b + bonbeauty.css --bb-radius-*
- *   bb-surfaces.css → bonbeauty.css + computed-tokens.json --bb-* surfaces
+ * Token contents:
+ *   colors.css      — neutral/accent/semantic RGB palette tokens
+ *   spacing.css     — 8px base scale space tokens
+ *   typography.css  — Funnel Display + type scale (see file header for runtime details)
+ *   radii.css       — --radius-none/xs/sm/md/lg/xl/full + --bb-radius-* tokens (radius-only subset from SSOT)
+ *   bb-surfaces.css — --bb-* surface tokens (page-bg, surfaces, shadows, CTA/gold aliases)
  */
 
 @import "./colors.css";

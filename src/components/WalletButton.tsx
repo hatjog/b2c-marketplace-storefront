@@ -220,7 +220,7 @@ export function WalletButton({
         <div
           role="status"
           aria-live="polite"
-          className="rounded-[12px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2 text-xs leading-5 text-[var(--text-secondary)]"
+          className="rounded-[var(--radius-md)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2 text-xs leading-5 text-[var(--text-secondary)]"
         >
           <span>{toast}</span>
           {hasError && (

@@ -158,7 +158,7 @@ export default async function CollectionDetailPage({
                 <h1 className="heading-xl max-w-[14ch]">{data.title}</h1>
                 <p className="max-w-2xl text-sm leading-7 text-white/82">{data.intro}</p>
               </div>
-              <div className="border-white/14 rounded-[24px] border bg-white/10 p-4 backdrop-blur-sm">
+              <div className="border-white/14 rounded-[var(--bb-radius-panel)] border bg-white/10 p-4 backdrop-blur-sm">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-white/65">
                   {t('calloutLabel')}
                 </p>
@@ -166,7 +166,7 @@ export default async function CollectionDetailPage({
               </div>
             </div>
 
-            <aside className="border-white/12 rounded-[28px] border bg-white/10 p-5 backdrop-blur-sm">
+            <aside className="border-white/12 rounded-[var(--bb-radius-card)] border bg-white/10 p-5 backdrop-blur-sm">
               <p className="label-sm text-white/70">{t('quoteLabel')}</p>
               <blockquote className="heading-sm mt-3 text-white">“{data.quote}”</blockquote>
               <p className="mt-4 text-sm text-white/70">{data.quoteAttribution}</p>
@@ -180,7 +180,7 @@ export default async function CollectionDetailPage({
           data-testid="collection-detail-page"
         >
           <div
-            className="flex flex-col gap-3 rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5 md:flex-row md:items-center md:justify-between"
+            className="flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5 md:flex-row md:items-center md:justify-between"
             data-testid="collection-detail-toolbar"
           >
             <div>
@@ -238,7 +238,7 @@ export default async function CollectionDetailPage({
                 <LocalizedClientLink
                   key={item.id}
                   href={`/products/${item.handle}`}
-                  className="group flex min-h-[280px] flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
+                  className="group flex min-h-[280px] flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
                   aria-label={t('grid.cardAria', { title: item.title })}
                 >
                   <div className="relative min-h-[200px] bg-[var(--bb-gradient-cream-card)]">
@@ -283,7 +283,7 @@ export default async function CollectionDetailPage({
               <LocalizedClientLink
                 key={collection.handle}
                 href={`/collections/${collection.handle}`}
-                className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white p-5 shadow-[0_16px_40px_rgba(90,67,28,0.08)]"
+                className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5 shadow-[0_16px_40px_rgba(90,67,28,0.08)]"
                 aria-label={t('related.cardAria', { title: collection.title })}
               >
                 <p className="font-mono text-xs uppercase tracking-[0.22em] text-secondary">

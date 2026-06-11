@@ -129,7 +129,7 @@ export default async function BlogIndexPage({
         <LocalizedClientLink
           key={post.slug}
           href={post.href}
-          className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-white transition-transform duration-300 hover:-translate-y-0.5"
+          className="group flex h-full flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white transition-transform duration-300 hover:-translate-y-0.5"
         >
           <div className="relative aspect-[4/3] overflow-hidden">
             <Image
@@ -167,7 +167,7 @@ export default async function BlogIndexPage({
 
   const emptyState = (
     <div
-      className="rounded-[28px] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] px-6 py-10 text-center"
+      className="rounded-[var(--bb-radius-card)] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] px-6 py-10 text-center"
       data-testid="blog-index-empty-state"
     >
       <h2 className="heading-sm text-primary">{t('empty_heading')}</h2>

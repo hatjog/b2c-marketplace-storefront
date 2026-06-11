@@ -50,7 +50,7 @@ export default async function RecoverRequestPage({ params, searchParams }: PageP
       {attempted ? (
         <p
           role="status"
-          className="mb-4 rounded-[16px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3 text-sm text-[var(--text-primary)]"
+          className="mb-4 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3 text-sm text-[var(--text-primary)]"
           data-testid="magic-link-recover-attempted"
         >
           {t('request_attempted_notice')}

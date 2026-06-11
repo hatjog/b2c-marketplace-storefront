@@ -9,7 +9,7 @@ export const ProductDetailsSellerReviews = ({ reviews }: { reviews: SingleProduc
 
   return (
     <div
-      className="rounded-sm border p-4"
+      className="rounded-[var(--bb-radius-card)] border p-4"
       data-testid="product-seller-reviews-section"
     >
       <div className="mb-5 flex items-center justify-between">

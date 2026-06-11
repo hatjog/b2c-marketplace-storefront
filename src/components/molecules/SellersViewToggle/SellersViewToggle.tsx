@@ -42,9 +42,10 @@ export async function SellersViewToggle({
   }
 
   const baseClass =
-    'inline-flex items-center justify-center rounded-sm border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary';
+    'inline-flex items-center justify-center rounded-[var(--bb-radius-card)] border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary';
   const activeClass = 'border-primary bg-primary text-white';
-  const inactiveClass = 'border-stone-300 bg-white text-stone-700 hover:bg-stone-100';
+  const inactiveClass =
+    'border-[var(--bb-border-strong)] bg-[var(--bb-surface)] text-[var(--text-secondary)] hover:bg-[var(--bb-surface-muted)]';
 
   return (
     <div

@@ -73,9 +73,8 @@
 body {
   background: var(--bb-page-bg, #f9f4ec);
   /* BonBeauty brand face — resolves to Funnel Display via the --font-funnel-sans
-     variable injected by next/font/local in layout.tsx (falls back to system-ui
-     until the font swaps in). Without this rule the page inherited Tailwind's
-     default sans stack and Funnel Display never rendered. */
+     variable injected by next/font/local in layout.tsx. Without this rule the page
+     inherits Tailwind's default sans stack and Funnel Display never renders (ADR-145). */
   font-family: var(--font-family-sans);
 }
 
@@ -83,7 +82,7 @@ body {
 @layer components {
   /* BonBeauty Primary CTA — używa --cta (brand-600 #907032, 4.62:1 AA vs white) */
   .btn-cta {
-    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
            text-white text-[14px] font-medium leading-none
            transition-colors duration-150;
     background-color: var(--cta);
@@ -98,7 +97,7 @@ body {
 
   /* BonBeauty Secondary — rgba bg na --neutral-1000 */
   .btn-secondary {
-    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
            text-[14px] font-medium leading-none transition-colors duration-150;
     background-color: rgba(var(--neutral-1000), 0.05);
     color: var(--text-primary);
@@ -109,7 +108,7 @@ body {
 
   /* BonBeauty Ghost — transparent bg */
   .btn-ghost {
-    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
            text-[14px] font-medium leading-none bg-transparent transition-colors duration-150;
     color: var(--text-primary);
   }
@@ -119,7 +118,7 @@ body {
 
   /* Disabled state (standalone variant) */
   .btn-disabled {
-    @apply min-h-[44px] px-6 py-3 rounded-[8px] uppercase tracking-[0.3px]
+    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
            text-[14px] font-medium leading-none cursor-not-allowed opacity-50;
     background-color: rgba(var(--neutral-200), 1);
     color: rgba(var(--neutral-400), 1);
@@ -130,7 +129,7 @@ body {
   }
 
   .bb-section-shell {
-    @apply w-full rounded-[28px] border p-6 md:p-8 lg:p-10;
+    @apply w-full rounded-[var(--bb-radius-card)] border p-6 md:p-8 lg:p-10;
     background: var(--bb-surface, rgba(255, 252, 247, 0.92));
     border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
     box-shadow: var(--bb-shadow-soft, 0 20px 60px rgba(90, 67, 28, 0.08));
@@ -150,7 +149,7 @@ body {
   }
 
   .bb-card {
-    @apply rounded-[24px] border p-5 md:p-6;
+    @apply rounded-[var(--bb-radius-panel)] border p-5 md:p-6;
     /* v1.7.0 Story 2.1 review fix: token-bound (review HIGH/MEDIUM-3 — bb-* utilities) */
     background: var(--bb-surface, rgba(255, 255, 255, 0.84));
     border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
@@ -159,7 +158,7 @@ body {
   }
 
   .bb-card-muted {
-    @apply rounded-[24px] border p-5 md:p-6;
+    @apply rounded-[var(--bb-radius-panel)] border p-5 md:p-6;
     /* v1.7.0 Story 2.1 review fix: token-bound */
     background: var(--bb-surface-muted, rgba(239, 229, 210, 0.42));
     border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
