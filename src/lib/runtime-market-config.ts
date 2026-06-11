@@ -111,6 +111,12 @@ function getHomepageConfigPath(configRoot: string, marketId: string) {
   return path.resolve(getMarketRootPath(configRoot, marketId), 'homepage.yaml');
 }
 
+// Single-tenant assumption: this function is invoked only when NEXT_PUBLIC_PAYLOAD_MARKET_ID
+// is empty (i.e. single-market / local deploy without Payload market configuration).
+// With multiple markets in the directory, it returns the first alphabetical market that has
+// a non-empty storefront.theme; if none has a theme, it returns the first parseable market.
+// In a true multi-tenant deploy NEXT_PUBLIC_PAYLOAD_MARKET_ID should always be set, so
+// reaching this function is unexpected and may silently pick the wrong market.
 async function discoverRuntimeMarketId(configRoot: string): Promise<string | null> {
   const marketsRoot = path.resolve(configRoot, getRuntimeInstanceId(), 'markets');
 
@@ -186,6 +192,10 @@ async function readYamlRecord(filePath: string, errorScope: string): Promise<Rec
   }
 }
 
+// When marketId is empty, resolveRuntimeMarketId triggers market discovery, and ALL config
+// fields (name, logo, legal_entity, SEO, social_links, theme) are resolved from the
+// discovered market's YAML. This is intentional: it ensures full coherence of all fields
+// from a single source rather than a partial per-field fallback (ADR-145, ADR-126/127).
 const readRuntimeMarketConfig = cache(async (marketId: string): Promise<MarketRuntimeConfig | null> => {
   const resolvedMarketId = await resolveRuntimeMarketId(marketId);
   if (!resolvedMarketId) {

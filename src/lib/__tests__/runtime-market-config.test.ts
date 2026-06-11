@@ -61,6 +61,24 @@ describe('resolveRuntimePortalMarketConfig', () => {
     expect(secondResult?.theme).toBe('bonbeauty');
   });
 
+  it('resolves market id but returns null theme when market YAML has no storefront.theme', async () => {
+    // Covers the firstConfiguredMarket fallback branch in discoverRuntimeMarketId
+    // (market exists but has no theme → market_id resolved, theme null).
+    const configRoot = await createRuntimeMarketConfig(null);
+    vi.stubEnv('GP_CONFIG_ROOT', configRoot);
+    vi.stubEnv('GP_INSTANCE_ID', 'gp-dev');
+    vi.stubEnv('NEXT_PUBLIC_PAYLOAD_MARKET_ID', '');
+    vi.resetModules();
+
+    const { resolveRuntimePortalMarketConfig } = await import('../runtime-market-config');
+
+    const result = await resolveRuntimePortalMarketConfig('');
+
+    expect(result).not.toBeNull();
+    expect(result?.market_id).toBe('bonbeauty');
+    expect(result?.theme).toBeNull();
+  });
+
   it('returns null for empty market id when runtime YAML is absent', async () => {
     const configRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'gp-runtime-market-config-empty-'));
     vi.stubEnv('GP_CONFIG_ROOT', configRoot);
