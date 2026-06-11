@@ -29,11 +29,12 @@ test('root layout shows fallback banner and uses head tag', () => {
   assert.match(source, /<body[\s\S]*suppressHydrationWarning/);
 });
 
-test('header uses next/image for logo', () => {
+test('header uses LogoLockup for brand logo', () => {
   const source = read('src/components/organisms/Header/Header.tsx');
 
-  assert.match(source, /<Image/);
-  assert.doesNotMatch(source, /<img/);
+  assert.match(source, /LogoLockup/);
+  assert.match(source, /logoSrc=\{marketLogoUrl\}/);
+  assert.doesNotMatch(source, /\{marketName\}/);
 });
 
 test('category cards fall back to placeholder image for unknown category handles', () => {

@@ -80,12 +80,14 @@ describe('Header: config-driven branding', () => {
     assert.match(header, /getMarketLogoUrl\(marketConfig\)/);
   });
 
-  test('market name sourced from marketConfig', () => {
-    assert.match(header, /marketConfig\?\.name/);
+  test('market name is not rendered as brand wordmark', () => {
+    assert.doesNotMatch(header, /marketConfig\?\.name/);
+    assert.doesNotMatch(header, /\{marketName\}/);
   });
 
-  test('logo rendered conditionally (not hardcoded)', () => {
-    assert.match(header, /marketLogoUrl &&/);
+  test('logo lockup receives configured logo with monogram fallback', () => {
+    assert.match(header, /LogoLockup/);
+    assert.match(header, /logoSrc=\{marketLogoUrl\}/);
     assert.doesNotMatch(header, /['"]\/Logo\.svg['"]/);
   });
 

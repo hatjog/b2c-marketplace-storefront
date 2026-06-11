@@ -6,6 +6,7 @@
 
 import { getTranslations } from 'next-intl/server';
 
+import { LogoLockup } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import {
   resolveFooterConnectLinks,
@@ -56,13 +57,13 @@ export async function SiteFooter({
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo + tagline column */}
           <div className="space-y-3">
-            <LocalizedClientLink
-              href="/"
-              className="text-xl font-semibold text-white"
-              aria-label="BonBeauty home"
-            >
-              BonBeauty
-            </LocalizedClientLink>
+            <LogoLockup
+              variant="light"
+              className="text-white"
+              imageClassName="h-8"
+              wordmarkClassName="text-white"
+              data-testid="site-footer-logo"
+            />
             <p className="text-sm leading-relaxed text-[var(--bb-cream-60)]">
               Marketplace premium salonów beauty
             </p>
