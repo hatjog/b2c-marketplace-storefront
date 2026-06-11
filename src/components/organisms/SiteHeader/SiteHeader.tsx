@@ -29,23 +29,22 @@ import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { getMarketLogoUrl, type MarketConfig } from '@/lib/portal';
+import type { MarketConfig } from '@/lib/portal';
 import { getTranslations } from 'next-intl/server';
 import type { Wishlist } from '@/types/wishlist';
 import { cn } from '@/lib/utils';
 
 export const SiteHeader = async ({
   locale,
-  marketConfig,
 }: {
   locale: string;
+  // Accepted for caller backward-compat but intentionally unused: the header
+  // now renders the brand lockup (not the market-configured logo). See LogoLockup below.
   marketConfig?: MarketConfig | null;
 }) => {
   const tHeader = await getTranslations('header');
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
-  const marketLogoUrl = getMarketLogoUrl(marketConfig);
-
   const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
   if (user) {
@@ -86,8 +85,11 @@ export const SiteHeader = async ({
             parentCategories={parentCategories}
             categories={categories}
           />
+          {/* Brand lockup parity (v1.12.0 chrome fix): render the BonBeauty
+              monogram + wordmark like SiteFooter — NOT the market-configured
+              Payload logo (off-brand placeholder). 4-3 AC = "monogram + wordmark". */}
           <LogoLockup
-            logoSrc={marketLogoUrl}
+            variant="light"
             data-testid="site-header-logo"
           />
           <ParentCategoryLinks
