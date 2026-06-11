@@ -28,7 +28,7 @@
   --color-trust: rgb(22, 101, 52);
   --color-error: rgb(187, 37, 26);
   --color-warning: rgb(157, 83, 15);
-  --bb-page-bg: rgb(248, 248, 250);
+  --bb-page-bg: #F9F4EC;
   --bb-surface: rgba(255, 255, 255, 0.94);
   --bb-surface-strong: rgb(252, 252, 253);
   --bb-surface-muted: rgba(232, 234, 240, 0.42);

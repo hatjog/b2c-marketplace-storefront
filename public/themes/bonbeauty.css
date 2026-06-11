@@ -39,61 +39,91 @@
 }
 
 /* ============================================================
- * BonBeauty Semantic Tokens
- * Aliasy semantyczne dla komponentów storefront.
- * Format: rgb() (nie RGB tuple) — używane bezpośrednio jako var(--cta).
+ * do-not-edit-manually — GENERATED FILE
  *
- * SYNC NOTE: Claim page (apps/web) ma inline copy tych tokenów.
- * Każda zmiana tutaj → manual update w claim page story.
+ * Source of truth: specs/design-system/bonbeauty/v2.0/tokens.yaml
+ * Generator:       _grow/tools/generate_ds_tokens.py
+ * Drift validator: _grow/tools/validate_ds_drift.py
+ *
+ * Hand-edits to this file are OVERWRITTEN on next generator run and are
+ * a fail-closed CI gate (ADR-119 / D-V180-ARCH-3 token replication).
+ * Edit tokens.yaml instead, then re-run the generator.
  * ============================================================ */
+
+/* >>> GP-DS-TOKENS:BEGIN (generated — do-not-edit-manually) <<< */
 :root {
-  /* Text */
-  --text-primary:   rgb(9, 9, 9);          /* neutral-1000, 19.3:1 ✅ AAA */
-  --text-secondary: rgb(82, 82, 82);       /* neutral-500,  7.1:1  ✅ AAA */
-  --text-on-action: rgb(250, 248, 245);    /* brand-25,     17.1:1 na dark ✅ */
-
-  /* Backgrounds */
-  --bg-action:       rgb(26, 26, 26);      /* brand-900 #1A1A1A — dark sections */
-  --bg-action-hover: rgb(83, 65, 29);      /* brand-800 #53411D — dark hover */
-
-  /* Borders */
-  --border-action: rgb(26, 26, 26);        /* brand-900 #1A1A1A — active borders */
-
-  /* CTA (Primary button bg) */
-  --cta:       rgb(144, 112, 50);          /* brand-600 #907032, 4.62:1 ✅ AA vs white */
-  --cta-hover: rgb(113, 88, 40);           /* brand-700 #715828, 7.38:1 ✅ AA vs white */
-
-  /* Gold accents (NIE jako tekst na białym: 3.2:1 ❌) */
-  --gold:       rgb(197, 160, 89);         /* brand-400 #C5A059 — stars, dekoracje */
-  --gold-light: rgb(239, 229, 210);        /* brand-100 #EFE5D2 — avatar bg, tag bg */
-
-  /* Status colors */
-  --color-trust: rgb(22, 101, 52);         /* green-700 #166534, 6.5:1 ✅ AA */
-  --color-error: rgb(187, 37, 26);         /* red-600   #BB251A, 5.7:1 ✅ AA */
-
-  /* Misc */
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
-  --font-display: 'Funnel Display';
-
-  /* BonBeauty v4 storefront surfaces */
-  --bb-page-bg: rgb(249, 244, 236);
-  --bb-surface: rgba(255, 252, 247, 0.92);
-  --bb-surface-strong: rgb(255, 249, 240);
-  --bb-surface-muted: rgba(239, 229, 210, 0.52);
+  --text-primary: rgb(9, 9, 9);
+  --text-secondary: rgb(82, 82, 82);
+  --text-muted: rgb(115, 115, 115);
+  --text-on-action: rgb(250, 248, 245);
+  --bg-action: rgb(26, 26, 26);
+  --bg-action-hover: rgb(83, 65, 29);
+  --border-action: rgb(26, 26, 26);
+  --cta: rgb(144, 112, 50);
+  --cta-hover: rgb(113, 88, 40);
+  --cta-pressed: rgb(83, 65, 29);
+  --gold: rgb(197, 160, 89);
+  --gold-light: rgb(239, 229, 210);
+  --accent: rgb(168, 146, 121);
+  --color-trust: rgb(22, 101, 52);
+  --color-error: rgb(187, 37, 26);
+  --color-warning: rgb(157, 83, 15);
+  --bb-page-bg: #F9F4EC;
+  --bb-surface: rgba(255, 255, 255, 0.94);
+  --bb-surface-strong: rgb(252, 252, 253);
+  --bb-surface-muted: rgba(232, 234, 240, 0.42);
   --bb-surface-dark: rgba(20, 20, 20, 0.94);
   --bb-border-soft: rgba(144, 112, 50, 0.14);
   --bb-border-strong: rgba(144, 112, 50, 0.28);
+  --bb-border-hairline: rgba(144, 112, 50, 0.08);
   --bb-shadow-soft: 0 20px 60px rgba(90, 67, 28, 0.08);
   --bb-shadow-lift: 0 30px 80px rgba(37, 28, 12, 0.14);
-  --bb-radius-card: 28px;
-  --bb-radius-panel: 36px;
+  --bb-shadow-card: 0 12px 35px rgba(90, 67, 28, 0.08);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-inset-hairline: inset 0 0 0 1px rgba(144, 112, 50, 0.14);
+  --bb-hero-overlay: linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
+  --bb-soft-gradient: linear-gradient(135deg, rgba(252, 252, 253, 0.98) 0%, rgba(255, 249, 240, 0.96) 100%);
+  --bb-dark-gradient: linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --bb-radius-card: 16px;
+  --bb-radius-panel: 20px;
   --bb-radius-pill: 999px;
-  --card-journal: rgba(255, 252, 247, 0.92);
-  --journal-card-bg: var(--card-journal);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --font-display: 'Funnel Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Funnel Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-ops: 'Inter', system-ui, sans-serif;
+  --font-wordmark: 'Funnel Display', system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --anim-duration-fast: 150ms;
+  --anim-duration-base: 250ms;
+  --anim-duration-slow: 400ms;
+  --anim-ease-standard: ease;
+  --anim-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --color-focus-ring: rgb(168, 146, 121);
+  --color-disabled-bg: rgba(20, 20, 20, 0.06);
+  --color-disabled-text: rgba(20, 20, 20, 0.38);
+  --color-selected-bg: rgba(144, 112, 50, 0.10);
+  --color-success-bg: rgba(22, 101, 52, 0.08);
+  --color-error-bg: rgba(187, 37, 26, 0.08);
+  --color-warning-bg: rgba(157, 83, 15, 0.10);
+  --journal-card-bg: rgba(255, 255, 255, 0.97);
   --journal-card-border: rgba(144, 112, 50, 0.12);
   --journal-card-radius: 16px;
   --journal-card-shadow: 0 10px 30px rgba(90, 67, 28, 0.06);
-  --bb-hero-overlay: linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
-  --bb-soft-gradient: linear-gradient(135deg, rgba(255, 249, 240, 0.98) 0%, rgba(246, 237, 222, 0.96) 100%);
-  --bb-dark-gradient: linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
 }
+/* >>> GP-DS-TOKENS:END <<< */
