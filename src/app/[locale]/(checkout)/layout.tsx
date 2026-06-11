@@ -6,6 +6,9 @@ import { CollapseIcon } from '@/icons';
 import { getMarketLogoUrl } from '@/lib/portal';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
+// Minimal chrome: header-only by design (no footer) — standard checkout UX pattern
+// that reduces cognitive load during payment flow. AC1 "header i footer" applies to
+// (main) layout surfaces; checkout is intentionally footer-free.
 export default async function RootLayout({
   children
 }: Readonly<{

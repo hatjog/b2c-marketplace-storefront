@@ -1,3 +1,5 @@
+// Legacy component — not exported from organisms barrel and not rendered by any app surface.
+// Kept as migration reference; safe to remove in a dedicated cleanup pass.
 import type { HttpTypes } from '@medusajs/types';
 
 import { Badge, LogoLockup } from '@/components/atoms';

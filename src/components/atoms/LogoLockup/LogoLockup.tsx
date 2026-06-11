@@ -27,6 +27,7 @@ export function LogoLockup({
   locale,
   'data-testid': dataTestId = 'logo-lockup',
 }: LogoLockupProps) {
+  const isMonogram = !logoSrc;
   const resolvedLogoSrc = logoSrc || MONOGRAM_SRC[variant];
 
   return (
@@ -43,18 +44,19 @@ export function LogoLockup({
         alt=""
         aria-hidden="true"
         className={cn('h-8 w-auto shrink-0', imageClassName)}
-        width={32}
-        height={32}
+        {...(isMonogram ? { width: 32, height: 32 } : {})}
       />
-      <span
-        className={cn(
-          'text-xl font-semibold leading-none text-[var(--text-primary)]',
-          wordmarkClassName
-        )}
-        style={{ fontFamily: 'var(--font-wordmark)' }}
-      >
-        BonBeauty
-      </span>
+      {isMonogram && (
+        <span
+          className={cn(
+            'text-xl font-semibold leading-none text-[var(--text-primary)]',
+            wordmarkClassName
+          )}
+          style={{ fontFamily: 'var(--font-wordmark)' }}
+        >
+          BonBeauty
+        </span>
+      )}
     </LocalizedClientLink>
   );
 }
