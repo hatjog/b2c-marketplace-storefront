@@ -103,39 +103,46 @@ export const SiteHeader = async ({
         {/* slot: account-actions — order per BB-v1.8.0 mockup:
             Szukaj · PL · Konto · Lista życzeń · Koszyk (chat removed). */}
         <div className="ml-auto flex items-center gap-2 lg:w-1/3 lg:justify-end">
-          <HeaderSearch locale={locale} />
+          {/* Search / account / wishlist / cart live in MobileBottomNav (W6-07)
+              on mobile — hide them here to declutter the top bar (avoids the
+              search icon overlapping the wordmark). Locale stays on every size. */}
+          <div className="hidden lg:block">
+            <HeaderSearch locale={locale} />
+          </div>
 
           {/* slot: locale-switcher — W6-10 */}
           <LocaleSwitcher currentLocale={locale} />
 
-          {isLoggedIn ? (
-            <UserDropdown isLoggedIn />
-          ) : (
-            <LocalizedClientLink
-              href="/user/account"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              aria-label={tHeader('account')}
-              data-testid="account-link"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 21a8 8 0 0 1 16 0" />
-              </svg>
-            </LocalizedClientLink>
-          )}
-
-          <LocalizedClientLink
-            href="/user/wishlist"
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            aria-label={tHeader('wishlist')}
-            data-testid="wishlist-link"
-          >
-            <HeartIcon className="h-5 w-5" />
-            {wishlistCount > 0 && (
-              <Badge className="absolute -right-0.5 -top-0.5">{wishlistCount}</Badge>
+          <div className="hidden items-center gap-2 lg:flex">
+            {isLoggedIn ? (
+              <UserDropdown isLoggedIn />
+            ) : (
+              <LocalizedClientLink
+                href="/user/account"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                aria-label={tHeader('account')}
+                data-testid="account-link"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21a8 8 0 0 1 16 0" />
+                </svg>
+              </LocalizedClientLink>
             )}
-          </LocalizedClientLink>
-          <CartDropdown />
+
+            <LocalizedClientLink
+              href="/user/wishlist"
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              aria-label={tHeader('wishlist')}
+              data-testid="wishlist-link"
+            >
+              <HeartIcon className="h-5 w-5" />
+              {wishlistCount > 0 && (
+                <Badge className="absolute -right-0.5 -top-0.5">{wishlistCount}</Badge>
+              )}
+            </LocalizedClientLink>
+            <CartDropdown />
+          </div>
         </div>
       </div>
     </header>
