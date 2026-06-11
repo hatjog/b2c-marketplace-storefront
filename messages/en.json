@@ -36,7 +36,15 @@
     "login": "Log in",
     "logout": "Log out",
     "account": "My account",
-    "home_fallback": "Home"
+    "home_fallback": "Home",
+    "nav": {
+      "categories": "Categories",
+      "salons": "Salons",
+      "featured": "Featured",
+      "blog": "Blog",
+      "help": "Help",
+      "search": "Search"
+    }
   },
   "homepage": {
     "meta_title": "BonBeauty | Gift vouchers for the best beauty salons",

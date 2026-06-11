@@ -40,6 +40,8 @@ export interface SearchOverlayProps {
   onClose: () => void;
   onQueryChange: (q: string) => void;
   onResultSelect: (result: SearchResult) => void;
+  /** Fired on Enter when no suggestion is active (free-text search submit). */
+  onSubmit?: (query: string) => void;
   className?: string;
 }
 
@@ -55,6 +57,7 @@ export function SearchOverlay({
   onClose,
   onQueryChange,
   onResultSelect,
+  onSubmit,
   className,
 }: SearchOverlayProps) {
   const t = useTranslations('search_overlay');
@@ -98,6 +101,12 @@ export function SearchOverlay({
     if (event.key === 'Escape') {
       event.preventDefault();
       onClose();
+      return;
+    }
+    // Free-text submit: Enter with no active suggestion runs the search.
+    if (event.key === 'Enter' && activeSuggestionIndex < 0 && query.trim().length > 0) {
+      event.preventDefault();
+      onSubmit?.(query.trim());
       return;
     }
     if (!hasSuggestions) return;

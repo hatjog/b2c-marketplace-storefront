@@ -36,7 +36,15 @@
     "login": "Увійти",
     "logout": "Вийти",
     "account": "Мій акаунт",
-    "home_fallback": "Головна сторінка"
+    "home_fallback": "Головна сторінка",
+    "nav": {
+      "categories": "Категорії",
+      "salons": "Салони",
+      "featured": "Рекомендовані",
+      "blog": "Блог",
+      "help": "Допомога",
+      "search": "Пошук"
+    }
   },
   "homepage": {
     "meta_title": "BonBeauty | Ваучери до найкращих салонів краси",

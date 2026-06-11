@@ -36,7 +36,15 @@
     "login": "Anmelden",
     "logout": "Abmelden",
     "account": "Mein Konto",
-    "home_fallback": "Startseite"
+    "home_fallback": "Startseite",
+    "nav": {
+      "categories": "Kategorien",
+      "salons": "Salons",
+      "featured": "Empfohlen",
+      "blog": "Blog",
+      "help": "Hilfe",
+      "search": "Suche"
+    }
   },
   "homepage": {
     "meta_title": "BonBeauty | Gutscheine für die besten Beauty-Salons",
