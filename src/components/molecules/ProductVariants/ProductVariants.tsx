@@ -31,6 +31,17 @@ function isSyntheticDefaultOption(option: HttpTypes.StoreProductOption): boolean
   return (option.values?.length ?? 0) <= 1;
 }
 
+/**
+ * True when the product has at least one real (non-synthetic-default) variant
+ * option worth rendering. Single-variant products (only the synthetic "Default"
+ * option) return false — callers must NOT render the variant-selector wrapper,
+ * otherwise an empty muted card renders on the PDP (v1.12.0 chrome fix). Mirrors
+ * the `visibleOptions` guard below so the SSOT for "has variants" lives here.
+ */
+export function hasVisibleVariantOptions(product: HttpTypes.StoreProduct): boolean {
+  return (product.options || []).some(option => !isSyntheticDefaultOption(option));
+}
+
 export const ProductVariants = ({
   product,
   selectedVariant

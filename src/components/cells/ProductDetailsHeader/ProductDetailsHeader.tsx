@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/atoms';
 import { GiftModeToggle } from '@/components/atoms/GiftModeToggle/GiftModeToggle';
 import { ProductVariants } from '@/components/molecules';
+import { hasVisibleVariantOptions } from '@/components/molecules/ProductVariants/ProductVariants';
 import { Chat } from '@/components/organisms/Chat/Chat';
 import { useCartContext } from '@/components/providers';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
@@ -288,7 +289,10 @@ export const ProductDetailsHeader = ({
           />
         </div>
       </div>
-      {hasAnyPrice && (
+      {/* v1.12.0 chrome fix: only render the muted variant card when there are
+          real variant options. Single-variant voucher products (synthetic
+          "Default" only) previously left an empty rounded card above the CTA. */}
+      {hasAnyPrice && hasVisibleVariantOptions(product) && (
         <div className="bb-card-muted">
           <ProductVariants
             product={product}

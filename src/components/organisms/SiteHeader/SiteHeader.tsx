@@ -18,34 +18,33 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { Badge, LogoLockup } from '@/components/atoms';
-import { CartDropdown, MobileNavbar, Navbar } from '@/components/cells';
+import { CartDropdown, MobileNavbar } from '@/components/cells';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
+import { HeaderSearch } from '@/components/molecules/HeaderSearch/HeaderSearch';
 import { LocaleSwitcher } from '@/components/molecules/LocaleSwitcher/LocaleSwitcher';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { MessageButton } from '@/components/molecules/MessageButton/MessageButton';
-import { ParentCategoryLinks } from '@/components/molecules/ParentCategoryLinks/ParentCategoryLinks';
+import { SiteNav } from '@/components/molecules/SiteNav/SiteNav';
 import { HeartIcon } from '@/icons';
 import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { getMarketLogoUrl, type MarketConfig } from '@/lib/portal';
+import type { MarketConfig } from '@/lib/portal';
 import { getTranslations } from 'next-intl/server';
 import type { Wishlist } from '@/types/wishlist';
 import { cn } from '@/lib/utils';
 
 export const SiteHeader = async ({
   locale,
-  marketConfig,
 }: {
   locale: string;
+  // Accepted for caller backward-compat but intentionally unused: the header
+  // now renders the brand lockup (not the market-configured logo). See LogoLockup below.
   marketConfig?: MarketConfig | null;
 }) => {
   const tHeader = await getTranslations('header');
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
-  const marketLogoUrl = getMarketLogoUrl(marketConfig);
-
   const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
   if (user) {
@@ -86,31 +85,45 @@ export const SiteHeader = async ({
             parentCategories={parentCategories}
             categories={categories}
           />
+          {/* Brand lockup parity (v1.12.0 chrome fix): render the BonBeauty
+              monogram + wordmark like SiteFooter — NOT the market-configured
+              Payload logo (off-brand placeholder). 4-3 AC = "monogram + wordmark". */}
           <LogoLockup
-            logoSrc={marketLogoUrl}
+            variant="light"
             data-testid="site-header-logo"
           />
-          <ParentCategoryLinks
-            parentCategories={parentCategories}
-            categories={categories}
-          />
         </div>
 
-        {/* slot: nav-primary */}
+        {/* slot: nav-primary — W6-01 contract-A text nav (Kategorie · Salony ·
+            Polecane · Blog · Pomoc), replacing the legacy category dropdown. */}
         <div className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex">
-          <Navbar
-            categories={categories}
-            parentCategories={parentCategories}
-          />
+          <SiteNav />
         </div>
 
-        {/* slot: account-actions + locale-switcher */}
+        {/* slot: account-actions — order per BB-v1.8.0 mockup:
+            Szukaj · PL · Konto · Lista życzeń · Koszyk (chat removed). */}
         <div className="ml-auto flex items-center gap-2 lg:w-1/3 lg:justify-end">
+          <HeaderSearch locale={locale} />
+
           {/* slot: locale-switcher — W6-10 */}
           <LocaleSwitcher currentLocale={locale} />
 
-          {/* slot: account-actions */}
-          <MessageButton />
+          {isLoggedIn ? (
+            <UserDropdown isLoggedIn />
+          ) : (
+            <LocalizedClientLink
+              href="/user/account"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              aria-label={tHeader('account')}
+              data-testid="account-link"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0 1 16 0" />
+              </svg>
+            </LocalizedClientLink>
+          )}
+
           <LocalizedClientLink
             href="/user/wishlist"
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -123,17 +136,6 @@ export const SiteHeader = async ({
             )}
           </LocalizedClientLink>
           <CartDropdown />
-          {isLoggedIn ? (
-            <UserDropdown isLoggedIn />
-          ) : (
-            <LocalizedClientLink
-              href="/user/account"
-              className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              data-testid="account-link"
-            >
-              {tHeader('account')}
-            </LocalizedClientLink>
-          )}
         </div>
       </div>
     </header>

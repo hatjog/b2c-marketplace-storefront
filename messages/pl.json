@@ -36,7 +36,15 @@
     "login": "Zaloguj się",
     "logout": "Wyloguj się",
     "account": "Moje konto",
-    "home_fallback": "Strona główna"
+    "home_fallback": "Strona główna",
+    "nav": {
+      "categories": "Kategorie",
+      "salons": "Salony",
+      "featured": "Polecane",
+      "blog": "Blog",
+      "help": "Pomoc",
+      "search": "Szukaj"
+    }
   },
   "homepage": {
     "meta_title": "BonBeauty | Vouchery do najlepszych salonów beauty",
