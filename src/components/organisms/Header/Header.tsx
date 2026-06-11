@@ -14,21 +14,21 @@ import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { getMarketLogoUrl, type MarketConfig } from '@/lib/portal';
+import type { MarketConfig } from '@/lib/portal';
 import { getTranslations } from 'next-intl/server';
 import type { Wishlist } from '@/types/wishlist';
 
 export const Header = async ({
-  locale,
-  marketConfig
+  locale
 }: {
   locale: string;
+  // Accepted for caller backward-compat but unused: the header now renders the
+  // brand lockup (not the market-configured logo). See LogoLockup below.
   marketConfig?: MarketConfig | null;
 }) => {
   const tHeader = await getTranslations('header');
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
-  const marketLogoUrl = getMarketLogoUrl(marketConfig);
 
   const countryCode = await getCountryCode(locale);
   let wishlist: Wishlist = { products: [] };
@@ -63,7 +63,7 @@ export const Header = async ({
         <div className="flex items-center pl-4 lg:w-1/3 lg:justify-center lg:pl-0">
           <LogoLockup
             locale={locale}
-            logoSrc={marketLogoUrl}
+            variant="light"
             className="flex items-center gap-2"
             data-testid="header-logo-link"
           />
