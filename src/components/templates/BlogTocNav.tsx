@@ -85,14 +85,14 @@ export function BlogTocNav({ label, entries, mobileLabel }: BlogTocNavProps) {
 
   return (
     <>
-      <aside className="sticky top-24 hidden w-full max-w-[240px] self-start rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] p-4 md:block">
+      <aside className="sticky top-24 hidden w-full max-w-[240px] self-start rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] p-4 md:block">
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-secondary">
           {label}
         </p>
         {nav}
       </aside>
 
-      <div className="space-y-3 rounded-[20px] border border-[var(--bb-border-soft)] bg-white/80 p-4 md:hidden">
+      <div className="space-y-3 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white/80 p-4 md:hidden">
         <button
           type="button"
           className="flex w-full items-center justify-between text-left"

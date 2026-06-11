@@ -35,11 +35,11 @@ export const WishlistItem = async ({
   return (
     <div
       className={clsx(
-        'group relative flex w-full max-w-[370px] flex-col justify-between overflow-hidden rounded-[28px] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)]'
+        'group relative flex w-full max-w-[370px] flex-col justify-between overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)]'
       )}
       data-testid={testIdPrefix}
     >
-      <div className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[22px] bg-primary">
+      <div className="relative aspect-[4/5] h-full w-full overflow-hidden rounded-[var(--bb-radius-panel)] bg-primary">
         <div className="absolute right-3 top-3 z-10 cursor-pointer">
           <WishlistButton
             productId={product.id}
@@ -48,7 +48,7 @@ export const WishlistItem = async ({
           />
         </div>
         <LocalizedClientLink href={`/products/${product.handle}`}>
-          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[22px]">
+          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[var(--bb-radius-panel)]">
             {product.thumbnail ? (
               <Image
                 src={safeDecodeURIComponent(product.thumbnail)}

@@ -167,7 +167,7 @@ export function RichTextRenderer({
             return (
               <aside
                 key={`${node.type}-${index}`}
-                className="rounded-[24px] bg-[var(--bb-tint-gold-08)] px-6 py-8 text-center"
+                className="rounded-[var(--bb-radius-panel)] bg-[var(--bb-tint-gold-08)] px-6 py-8 text-center"
               >
                 <p className="heading-sm text-primary">{node.quote}</p>
                 {node.attribution ? (
@@ -182,7 +182,7 @@ export function RichTextRenderer({
               <LocalizedClientLink
                 key={`${node.type}-${index}`}
                 href={node.href}
-                className="block rounded-[24px] border border-[var(--bb-border-soft)] bg-white p-5 transition-opacity hover:opacity-90"
+                className="block rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5 transition-opacity hover:opacity-90"
               >
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-secondary">
                   {inlineEmbedLabel}
@@ -198,7 +198,7 @@ export function RichTextRenderer({
                 key={`${node.type}-${index}`}
                 className="space-y-3"
               >
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] bg-[var(--bb-tint-gold-08)]">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--bb-radius-panel)] bg-[var(--bb-tint-gold-08)]">
                   <Image
                     src={node.src}
                     alt={node.alt}
@@ -224,7 +224,7 @@ export function RichTextRenderer({
                   controls
                   preload="metadata"
                   poster={node.poster}
-                  className="w-full rounded-[24px] bg-black"
+                  className="w-full rounded-[var(--bb-radius-panel)] bg-black"
                   aria-label={node.title}
                 >
                   <source src={node.src} />
@@ -249,7 +249,7 @@ export function RichTextRenderer({
                 key={`${node.type}-${index}`}
                 className="space-y-3 overflow-x-auto"
               >
-                <table className="min-w-[640px] border-collapse rounded-[20px] border border-[var(--bb-border-soft)] text-left">
+                <table className="min-w-[640px] border-collapse rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] text-left">
                   <thead className="bg-[var(--bb-tint-gold-08)]">
                     <tr>
                       {node.headers.map(header => (
@@ -291,7 +291,7 @@ export function RichTextRenderer({
             return isAllowedIframeUrl(node.src) ? (
               <div
                 key={`${node.type}-${index}`}
-                className="overflow-hidden rounded-[24px] border border-[var(--bb-border-soft)]"
+                className="overflow-hidden rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)]"
               >
                 <iframe
                   src={node.src}
@@ -306,7 +306,7 @@ export function RichTextRenderer({
             ) : (
               <p
                 key={`${node.type}-${index}`}
-                className="rounded-[20px] bg-[var(--bb-tint-gold-08)] p-4 text-sm text-secondary"
+                className="rounded-[var(--bb-radius-panel)] bg-[var(--bb-tint-gold-08)] p-4 text-sm text-secondary"
               >
                 {disallowedEmbedLabel}
               </p>
@@ -316,7 +316,7 @@ export function RichTextRenderer({
               <div
                 key={`${node.type}-${index}`}
                 id={`footnote-${node.id}`}
-                className="rounded-[20px] border border-[var(--bb-border-soft)] bg-white px-4 py-3 text-sm leading-6 text-secondary"
+                className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white px-4 py-3 text-sm leading-6 text-secondary"
               >
                 <span className="font-semibold text-primary">{node.label}. </span>
                 {node.content}

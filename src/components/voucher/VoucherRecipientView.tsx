@@ -196,7 +196,7 @@ export async function VoucherRecipientView({
           </p>
         </section>
 
-        <section className="mx-auto grid w-full max-w-3xl gap-4 rounded-[24px] border border-[var(--bb-border-soft)] bg-white/80 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)] md:grid-cols-2">
+        <section className="mx-auto grid w-full max-w-3xl gap-4 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white/80 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)] md:grid-cols-2">
           <div className="space-y-3">
             <h2 className="heading-sm text-[var(--text-primary)]">{t('expired.contact_heading')}</h2>
             <p className="text-sm leading-6 text-[var(--text-secondary)]">{t('expired.contact_body')}</p>
@@ -209,7 +209,7 @@ export async function VoucherRecipientView({
               {t('expired.support_cta')}
             </Link>
           </div>
-          <div className="space-y-3 rounded-[20px] border border-dashed border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5">
+          <div className="space-y-3 rounded-[var(--bb-radius-panel)] border border-dashed border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5">
             <h2 className="heading-sm text-[var(--text-primary)]">{t('expired.privacy_heading')}</h2>
             <p className="text-sm leading-6 text-[var(--text-secondary)]">
               {visibleCode
@@ -241,7 +241,7 @@ export async function VoucherRecipientView({
           </p>
         </section>
 
-        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-[24px] border border-[var(--color-success-500)] bg-white/85 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
+        <section className="mx-auto flex w-full max-w-2xl flex-col gap-4 rounded-[var(--bb-radius-panel)] border border-[var(--color-success-500)] bg-white/85 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
           <div className="space-y-2">
             <h2 className="heading-sm text-[var(--text-primary)]">{t('redeemed.contact_heading')}</h2>
             <p className="text-sm text-[var(--text-secondary)]">{voucher.seller_name}</p>
@@ -283,7 +283,7 @@ export async function VoucherRecipientView({
         </p>
       </section>
 
-      <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 rounded-[28px] border border-[var(--bb-border-soft)] bg-white/90 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
+      <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white/90 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">
             {voucher.seller_city
@@ -297,7 +297,7 @@ export async function VoucherRecipientView({
           {formatVoucherPrice(voucher.value_minor, voucher.currency_code, locale)}
         </div>
 
-        <div className="space-y-2 rounded-[22px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4">
+        <div className="space-y-2 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('active.code_label')}</p>
             <p className="mt-2 break-all font-mono text-lg text-[var(--text-primary)]">{voucher.code}</p>
@@ -325,14 +325,14 @@ export async function VoucherRecipientView({
         />
       </section>
 
-      <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-[var(--bb-border-soft)] bg-white/70 p-6 md:p-8">
+      <section className="mx-auto w-full max-w-5xl rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white/70 p-6 md:p-8">
         <div className="mb-6 text-center">
           <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('steps.eyebrow')}</p>
           <h2 className="heading-md mt-2 text-[var(--text-primary)]">{t('steps.heading')}</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {['show_code', 'book_visit', 'enjoy_service'].map((stepKey, index) => (
-            <article key={stepKey} className="rounded-[22px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5">
+            <article key={stepKey} className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-5">
               <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--bb-surface-strong)] text-sm font-semibold text-[var(--cta-hover)]">
                 {index + 1}
               </div>
@@ -344,7 +344,7 @@ export async function VoucherRecipientView({
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <article className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
+        <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
           <div className="mb-4">
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('salon.eyebrow')}</p>
             {sellerHref ? (
@@ -393,7 +393,7 @@ export async function VoucherRecipientView({
           </div>
         </article>
 
-        <aside className="rounded-[28px] border border-dashed border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-6">
+        <aside className="rounded-[var(--bb-radius-card)] border border-dashed border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-6">
           <div className="flex h-full min-h-56 flex-col justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('map_placeholder.eyebrow')}</p>
@@ -414,12 +414,12 @@ export async function VoucherRecipientView({
         </aside>
       </section>
 
-      <section className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
+      <section className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
         <h2 className="heading-sm text-[var(--text-primary)]">{t('handoff.heading')}</h2>
         <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{t('handoff.body')}</p>
       </section>
 
-      <details className="rounded-[28px] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
+      <details className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white/80 p-6 md:p-8">
         <summary className="cursor-pointer list-none text-left">
           <span className="heading-sm text-[var(--text-primary)]">{t('rules.summary')}</span>
         </summary>

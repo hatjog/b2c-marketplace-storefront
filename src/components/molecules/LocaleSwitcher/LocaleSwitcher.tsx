@@ -84,7 +84,7 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
           aria-hidden="true"
           width={18}
           height={13}
-          className="h-3.5 w-[18px] rounded-[2px] object-cover ring-1 ring-black/10"
+          className="h-3.5 w-[18px] rounded-[var(--radius-xs)] object-cover ring-1 ring-black/10"
         />
         <span>{current.countryCode}</span>
       </button>
@@ -125,7 +125,7 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
                   aria-hidden="true"
                   width={20}
                   height={14}
-                  className="h-3.5 w-5 rounded-[2px] object-cover ring-1 ring-black/10"
+                  className="h-3.5 w-5 rounded-[var(--radius-xs)] object-cover ring-1 ring-black/10"
                 />
                 <span>{option.nativeName}</span>
                 {selected && <span className="ml-auto text-[var(--cta)]">✓</span>}

@@ -88,7 +88,7 @@ function AuthorCard({
   return (
     <aside
       aria-label={typeof heading === 'string' ? heading : undefined}
-      className="mt-10 rounded-[24px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-6 md:p-7"
+      className="mt-10 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-6 md:p-7"
       data-testid="blog-author-card"
     >
       {heading ? <h2 className="bb-eyebrow mb-3">{heading}</h2> : null}
@@ -135,14 +135,14 @@ function RelatedPostsGrid({
         {posts.map(post => (
           <li
             key={post.slug}
-            className="rounded-[20px] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4"
+            className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4"
           >
             {post.heroImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={post.heroImage}
                 alt=""
-                className="mb-3 aspect-[4/3] w-full rounded-[16px] object-cover"
+                className="mb-3 aspect-[4/3] w-full rounded-[var(--bb-radius-card)] object-cover"
               />
             ) : null}
             {post.category ? (
@@ -204,7 +204,7 @@ function HeroBand({
         <img
           src={heroImage}
           alt={heroImageAlt ?? ''}
-          className="aspect-[16/9] w-full rounded-[28px] object-cover"
+          className="aspect-[16/9] w-full rounded-[var(--bb-radius-card)] object-cover"
         />
       ) : null}
       {eyebrow ? <p className="bb-eyebrow text-[var(--text-secondary)]">{eyebrow}</p> : null}
