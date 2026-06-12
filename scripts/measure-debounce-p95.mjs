@@ -20,8 +20,17 @@
  *     --samples-200 <plik> --samples-300 <plik> \
  *     --env "<opis>" --date "<YYYY-MM-DD>" --source "<źródło>" \
  *     --console-errors 0 --route /pl/sellers --tile-source maptiler \
- *     --evidence-url "<url>" --chosen 200 \
+ *     --evidence-url "<url>" --chosen 200 --release v1.12.0 \
  *     --out <ścieżka evidence.json>
+ *
+ * SEMANTICS NOTE — co mierzy ta metryka:
+ *   Próbki = `performance.now() - lastResizeAt` (czas od resize do odpalenia
+ *   debounce'owanego invalidateSize). Mierzy **okno debounce + praca invalidateSize**.
+ *   Praca invalidateSize jest sub-milisekundowa (~0.2–0.6 ms), więc próbki są
+ *   zdominowane przez celowy timer (debounceMs). Metryka potwierdza, że wybrany
+ *   wariant debounce (200 ms) < próg 300 ms, ale NIE mierzy wydajności samej
+ *   operacji reassess. Pole `metric_semantics` w output JSON dokumentuje to
+ *   explicite. Szczegóły: `MapResizeInvalidator.tsx` + finding #2 review 7-8.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -101,7 +110,7 @@ function main() {
 
   const evidence = {
     schema: 'gp.maptiler-live.v1',
-    release: 'v1.11.0',
+    release: args.release ?? 'v1.11.0',
     captured: true,
     needs_live_run: false,
     stack: args.stack || 'storefront-live',
@@ -121,6 +130,18 @@ function main() {
       env: args.env ?? null,
       date: args.date ?? null,
       source: args.source ?? null
+    },
+    metric_semantics: {
+      measures: 'debounce_timer_plus_invalidateSize_work',
+      note:
+        'Próbki = performance.now() - lastResizeAt (czas od resize do odpalenia ' +
+        'debounce\'owanego invalidateSize). Praca invalidateSize jest sub-milisekundowa ' +
+        '(~0.2–0.6 ms), więc próbki są zdominowane przez celowy timer debounce. ' +
+        'Metryka potwierdza chosen_variant_ms < próg, ale nie mierzy wydajności ' +
+        'samej operacji reassess w izolacji.',
+      work_isolation_note:
+        'Jeśli wymagane jest zmierzenie samego kosztu invalidateSize, należy dodać ' +
+        'osobną instrumentację wokół wywołania invalidateSize() w MapResizeInvalidator.'
     }
   };
 
