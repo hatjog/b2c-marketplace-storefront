@@ -5,7 +5,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal, VerifiedMark } from '@/components/atoms';
+import {
+  StorefrontI18nLongContentProbe,
+  StorefrontRouteStateSignal,
+  VerifiedMark
+} from '@/components/atoms';
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
@@ -16,15 +20,13 @@ import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
 import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode/CheckoutPurchaseMode';
 import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
-import {
-  getShippingCoverage,
-  missingShippingSellerNames
-} from '@/lib/checkout/shippingCoverage';
+import { getShippingCoverage, missingShippingSellerNames } from '@/lib/checkout/shippingCoverage';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
 import { isMultiVendorEnabled, isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
+import { readGiftRecipientIssueMetadata } from '@/lib/voucher/gift-recipient';
 
 /**
  * Story 2.4: force-dynamic — cart/checkout payment state is volatile.
@@ -34,7 +36,7 @@ export const dynamic = 'force-dynamic';
 
 type CheckoutPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<{ step?: string | string[] }>;
+  searchParams?: Promise<{ step?: string | string[]; mode?: string | string[] }>;
 };
 
 export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
@@ -51,6 +53,8 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const rawStep = resolvedSearchParams.step;
   const checkoutStep = Array.isArray(rawStep) ? rawStep[0] : rawStep;
+  const rawMode = resolvedSearchParams.mode;
+  const checkoutMode = Array.isArray(rawMode) ? rawMode[0] : rawMode;
   const t = await getTranslations({ locale, namespace: 'page' });
   return (
     <Suspense
@@ -66,6 +70,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
       <CheckoutPageContent
         locale={locale}
         searchParamsStep={checkoutStep}
+        searchParamsMode={checkoutMode}
       />
     </Suspense>
   );
@@ -73,10 +78,12 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
 
 async function CheckoutPageContent({
   locale,
-  searchParamsStep
+  searchParamsStep,
+  searchParamsMode
 }: {
   locale: string;
   searchParamsStep?: string;
+  searchParamsMode?: string;
 }) {
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
@@ -114,6 +121,29 @@ async function CheckoutPageContent({
   })
     ? 'gift'
     : 'self';
+  const checkoutGiftMode = searchParamsMode?.trim().toLowerCase() === 'gift';
+  const giftRecipientRequired = cartPurchaseMode === 'gift' || checkoutGiftMode;
+  const giftLineItems = (cart.items ?? []).filter(item => {
+    const meta = item.metadata as Record<string, unknown> | null | undefined;
+    return meta?.is_gift === true || meta?.is_gift === 'true' || meta?.purchase_mode === 'gift';
+  });
+  const giftBindingTargets = giftLineItems.length > 0 ? giftLineItems : (cart.items ?? []);
+  const initialGiftRecipient =
+    giftBindingTargets
+      .map(item =>
+        readGiftRecipientIssueMetadata(item.metadata as Record<string, unknown> | null | undefined)
+      )
+      .find(Boolean) ?? null;
+  const giftRecipientComplete =
+    !giftRecipientRequired ||
+    (giftBindingTargets.length > 0 &&
+      giftBindingTargets.every(item =>
+        Boolean(
+          readGiftRecipientIssueMetadata(
+            item.metadata as Record<string, unknown> | null | undefined
+          )
+        )
+      ));
 
   return (
     <PaymentWrapper cart={cart}>
@@ -163,6 +193,8 @@ async function CheckoutPageContent({
             />
             <CheckoutPurchaseMode
               cartPurchaseMode={cartPurchaseMode}
+              giftLineItemIds={giftBindingTargets.map(item => item.id)}
+              initialGiftRecipient={initialGiftRecipient}
               isDone={searchParamsStep === 'payment' || searchParamsStep === 'review'}
             />
             <CartPaymentSection
@@ -170,6 +202,8 @@ async function CheckoutPageContent({
               availablePaymentMethods={paymentMethods}
               shippingComplete={shippingIsComplete}
               missingShippingSellers={missingShippingSellerNames(shippingCoverage)}
+              giftRecipientRequired={giftRecipientRequired}
+              giftRecipientComplete={giftRecipientComplete}
             />
           </div>
 
@@ -227,7 +261,7 @@ async function CheckoutPageContent({
             </div>
             <CartReview
               cart={cart}
-              shippingComplete={shippingIsComplete}
+              shippingComplete={shippingIsComplete && giftRecipientComplete}
             />
           </div>
         </div>

@@ -11,6 +11,11 @@ import medusaError from '@/lib/helpers/medusa-error';
 import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
 import { localeAwareFetch, localePath } from '@/lib/sdk/locale-interceptor';
 import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
+import {
+  buildGiftRecipientIssueMetadata,
+  type GiftRecipientFormData,
+  type GiftRecipientIssueMetadata
+} from '@/lib/voucher/gift-recipient';
 
 import { fetchQuery, sdk } from '../config';
 import { resolveMedusaBackendUrl } from '../env';
@@ -543,6 +548,60 @@ export async function updateLineItem({ lineId, quantity }: { lineId: string; qua
   await revalidateTag(cartCacheTag);
 
   return res;
+}
+
+export async function updateGiftRecipientCartItems({
+  lineItemIds,
+  payload
+}: {
+  lineItemIds: string[];
+  payload: GiftRecipientFormData | GiftRecipientIssueMetadata;
+}) {
+  const cartId = await getCartId();
+
+  if (!cartId) {
+    throw new Error('Missing cart ID when updating gift recipient data');
+  }
+
+  const cart = await retrieveCart();
+  const targetIds = new Set(lineItemIds.filter(Boolean));
+  const targetItems = (cart?.items ?? []).filter(item => targetIds.has(item.id));
+
+  if (targetItems.length === 0) {
+    throw new Error('Missing gift line item when updating gift recipient data');
+  }
+
+  const headers = {
+    ...(await getAuthHeaders())
+  };
+  const giftRecipientMetadata =
+    'gift_recipient_bound_to_voucher_issue' in payload
+      ? payload
+      : buildGiftRecipientIssueMetadata(payload);
+
+  await Promise.all(
+    targetItems.map(item =>
+      sdk.store.cart.updateLineItem(
+        cartId,
+        item.id,
+        {
+          quantity: item.quantity,
+          metadata: {
+            ...(item.metadata ?? {}),
+            purchase_mode: 'gift',
+            is_gift: true,
+            ...giftRecipientMetadata
+          }
+        },
+        {},
+        headers
+      )
+    )
+  ).catch(medusaError);
+
+  const cartCacheTag = await getCacheTag('carts');
+  revalidateTag(cartCacheTag);
+  revalidatePath('/checkout');
 }
 
 export async function deleteLineItem(lineId: string) {

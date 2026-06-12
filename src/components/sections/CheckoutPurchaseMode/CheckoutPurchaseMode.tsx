@@ -1,14 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 
-import {
-  PurchaseModeToggle,
-  type PurchaseMode
-} from '@/components/molecules/PurchaseModeToggle';
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+import { PurchaseModeToggle, type PurchaseMode } from '@/components/molecules/PurchaseModeToggle';
 import { parsePurchaseMode, SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
+import type { GiftRecipientIssueMetadata } from '@/lib/voucher/gift-recipient';
+
+import { GiftRecipientForm } from './GiftRecipientForm';
 
 /**
  * Story 5.8 — CheckoutPurchaseMode wire-up section.
@@ -34,15 +35,15 @@ import { parsePurchaseMode, SelfPurchaseMode } from '@/lib/helpers/parse-purchas
  *     `?mode` namespace is verified clean (no collision).
  */
 
-export function normalizePurchaseMode(
-  rawMode: string | null | undefined
-): PurchaseMode {
+export function normalizePurchaseMode(rawMode: string | null | undefined): PurchaseMode {
   const normalizedMode = rawMode?.trim().toLowerCase();
   return normalizedMode === 'gift' ? 'gift' : 'self';
 }
 
 export function CheckoutPurchaseMode({
   cartPurchaseMode,
+  giftLineItemIds = [],
+  initialGiftRecipient,
   isDone = false
 }: {
   /** Mode persisted on the cart line items at the PDP (metadata.is_gift /
@@ -50,6 +51,8 @@ export function CheckoutPurchaseMode({
    *  explicit `?mode`, so a "buy as gift" choice survives navigation from the
    *  product page into checkout. Defaults to 'self' when absent. */
   cartPurchaseMode?: PurchaseMode;
+  giftLineItemIds?: string[];
+  initialGiftRecipient?: GiftRecipientIssueMetadata | null;
   isDone?: boolean;
 } = {}): ReactElement {
   const t = useTranslations('seller.checkout');
@@ -66,7 +69,7 @@ export function CheckoutPurchaseMode({
   // Initial display precedence: an EXPLICIT `?mode` wins (shareable link /
   // prior toggle), otherwise fall back to the cart-persisted mode so the PDP
   // gift selection is reflected here. Plain default stays 'self'.
-  const initialMode: PurchaseMode = hasExplicitUrlMode ? urlMode : cartPurchaseMode ?? 'self';
+  const initialMode: PurchaseMode = hasExplicitUrlMode ? urlMode : (cartPurchaseMode ?? 'self');
 
   // Local state is the RESPONSIVE source of truth for display so a click flips the
   // toggle/placeholder synchronously — independent of router.replace, which raced with
@@ -121,13 +124,10 @@ export function CheckoutPurchaseMode({
         onChange={handleChange}
       />
       {mode === 'gift' && (
-        <div
-          data-testid="checkout-recipient-placeholder"
-          className="rounded-md border border-dashed border-component-secondary p-4 text-sm text-tertiary"
-          role="note"
-        >
-          {t('recipient_placeholder')}
-        </div>
+        <GiftRecipientForm
+          lineItemIds={giftLineItemIds}
+          initialValue={initialGiftRecipient}
+        />
       )}
     </section>
   );

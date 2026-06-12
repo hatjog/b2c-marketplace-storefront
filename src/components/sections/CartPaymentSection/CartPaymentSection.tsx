@@ -69,7 +69,9 @@ const CartPaymentSection = ({
   cart,
   availablePaymentMethods,
   shippingComplete = true,
-  missingShippingSellers = []
+  missingShippingSellers = [],
+  giftRecipientRequired = false,
+  giftRecipientComplete = true
 }: {
   cart: HttpTypes.StoreCart;
   availablePaymentMethods: HttpTypes.StorePaymentProvider[] | null;
@@ -82,6 +84,8 @@ const CartPaymentSection = ({
   shippingComplete?: boolean;
   /** Names of salons still missing a delivery method (for the block message). */
   missingShippingSellers?: string[];
+  giftRecipientRequired?: boolean;
+  giftRecipientComplete?: boolean;
 }) => {
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
@@ -146,7 +150,9 @@ const CartPaymentSection = ({
   const paidByGiftcard = (cart?.gift_card_total ?? 0) > 0 && cart?.total === 0;
 
   const paymentReady =
-    (activeSession && (cart?.shipping_methods?.length ?? 0) > 0) || paidByGiftcard;
+    ((activeSession && (cart?.shipping_methods?.length ?? 0) > 0) || paidByGiftcard) &&
+    (!giftRecipientRequired || giftRecipientComplete);
+  const checkoutReady = shippingComplete && (!giftRecipientRequired || giftRecipientComplete);
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -172,6 +178,16 @@ const CartPaymentSection = ({
       const checkActiveSession = activeSession?.provider_id === selectedPaymentMethod;
 
       if (!checkActiveSession) {
+        if (!checkoutReady) {
+          setError(
+            !shippingComplete
+              ? t('shipping_incomplete_block', {
+                  sellers: missingShippingSellers.join(', ')
+                })
+              : t('gift_recipient.payment_block')
+          );
+          return;
+        }
         const cartHash = await computeCheckoutCartHash(cart);
         await initiatePaymentSession(
           cart,
@@ -206,9 +222,9 @@ const CartPaymentSection = ({
   // indicators.  "Active" = the Stripe provider session is selected (not per-chip
   // provider ID, since all five share pp_stripe_*).  Each chip is enabled iff its
   // Stripe payment_method_type is available for the active market.
-  const stripeProviderId =
-    availablePaymentMethods?.map(p => p.id).find(isStripeFunc) ?? null;
-  const isStripeSessionSelected = stripeProviderId !== null && selectedPaymentMethod === stripeProviderId;
+  const stripeProviderId = availablePaymentMethods?.map(p => p.id).find(isStripeFunc) ?? null;
+  const isStripeSessionSelected =
+    stripeProviderId !== null && selectedPaymentMethod === stripeProviderId;
   const paymentChips = PAYMENT_CHIP_KEYS.map(key => {
     const enabled = isChipEnabled(availablePaymentMethods, key);
     return {
@@ -227,7 +243,9 @@ const CartPaymentSection = ({
       className="bb-section-shell"
       data-testid="checkout-step-payment"
     >
-      <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && paymentReady ? 'is-done' : ''}`}>
+      <div
+        className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && paymentReady ? 'is-done' : ''}`}
+      >
         <Heading
           level="h2"
           className="flex flex-row items-center gap-x-3"
@@ -294,13 +312,15 @@ const CartPaymentSection = ({
                           cartId={cart.id}
                           clientSecret={stripeClientSecret}
                           returnUrl={paymentStatusReturnUrl}
-                          blocked={!shippingComplete}
+                          blocked={!checkoutReady}
                           blockedReason={
                             !shippingComplete
                               ? t('shipping_incomplete_block', {
                                   sellers: missingShippingSellers.join(', ')
                                 })
-                              : undefined
+                              : giftRecipientRequired && !giftRecipientComplete
+                                ? t('gift_recipient.payment_block')
+                                : undefined
                           }
                         />
                       )}
