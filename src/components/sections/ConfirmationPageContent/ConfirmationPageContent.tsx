@@ -115,17 +115,44 @@ function formatTime(iso: string | null | undefined, locale: string): string | nu
   }).format(parsed);
 }
 
-function toCssImageUrl(url: string): string {
+/**
+ * L2 fix: validate URL scheme before embedding in CSS background-image.
+ * Only http: and https: URLs are allowed (defense-in-depth — CSS background-image
+ * does not execute javascript: but we reject non-http schemes to prevent
+ * data: URL leakage and future attack vectors).
+ */
+function toCssImageUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
   return `url("${url.replace(/["\\]/g, '\\$&')}")`;
 }
 
+/**
+ * L3 fix: also check metadata.gp sub-object so gift detection is consistent
+ * with readMetadataString in order-confirmed-surface.ts (which already checks .gp).
+ */
 function readString(metadata: Record<string, unknown> | null, keys: string[]): string | null {
   if (!metadata) return null;
 
   for (const key of keys) {
-    const value = metadata[key];
-    if (typeof value === 'string' && value.trim().length > 0) {
-      return value.trim();
+    const directValue = metadata[key];
+    if (typeof directValue === 'string' && directValue.trim().length > 0) {
+      return directValue.trim();
+    }
+
+    const gp = metadata.gp;
+    if (typeof gp === 'object' && gp !== null && !Array.isArray(gp)) {
+      const gpValue = (gp as Record<string, unknown>)[key];
+      if (typeof gpValue === 'string' && gpValue.trim().length > 0) {
+        return gpValue.trim();
+      }
     }
   }
 
@@ -639,7 +666,8 @@ export function ConfirmationPageContent({ orderId }: Props) {
             <p className="text-sm text-secondary">{t('summary_empty')}</p>
           )}
           {order.items.map(item => {
-            const thumbnail = resolveVoucherThumbnail(item);
+            const thumbnailRaw = resolveVoucherThumbnail(item);
+            const thumbnailCss = thumbnailRaw ? toCssImageUrl(thumbnailRaw) : null;
             const badges = resolveVoucherRuleBadges(item, t('badge_refund_30_days'));
 
             return (
@@ -651,9 +679,9 @@ export function ConfirmationPageContent({ orderId }: Props) {
                   <div
                     className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] bg-cover bg-center"
                     data-testid="voucher-thumbnail"
-                    style={thumbnail ? { backgroundImage: toCssImageUrl(thumbnail) } : undefined}
+                    style={thumbnailCss ? { backgroundImage: thumbnailCss } : undefined}
                   >
-                    {thumbnail ? (
+                    {thumbnailCss ? (
                       <span className="sr-only">{item.title ?? t('summary_item_fallback')}</span>
                     ) : (
                       <span
