@@ -1,5 +1,6 @@
 import type { SupportedLocale } from '@/i18n/routing';
 import { SELLER_DIRECTORY_FIXTURES } from '@/lib/data/seller-directory-fixtures';
+import { toHreflangBare } from '@/lib/helpers/hreflang';
 import type { BlogRichTextNode } from '@/types/blog';
 
 type LocalizedLabel = Record<SupportedLocale, string>;
@@ -233,7 +234,8 @@ function matchesOffer(
 }
 
 function formatPrice(locale: SupportedLocale, priceMinor: number) {
-  return new Intl.NumberFormat(locale === 'ua' ? 'uk' : locale, {
+  // toHreflangBare resolves ua→uk (canonical R9 source); bare ISO code for Intl.NumberFormat.
+  return new Intl.NumberFormat(toHreflangBare(locale), {
     style: 'currency',
     currency: 'PLN',
     minimumFractionDigits: 2

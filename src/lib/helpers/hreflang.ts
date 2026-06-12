@@ -55,11 +55,17 @@ export const toHreflangBare = (code: string): string => {
 };
 
 export const toLegalMasterFileName = (code: StorefrontLocaleCode): string => {
-  return STOREFRONT_LOCALE_MAP[code].legalMasterFileName;
+  // Runtime guard: defensively handle values cast to StorefrontLocaleCode from
+  // unvalidated input (route params, market.yaml). Unknown codes fall back to
+  // the PL-default master file, consistent with fetchLegalDocument's locale_fallback.
+  return STOREFRONT_LOCALE_MAP[code]?.legalMasterFileName ?? 'master.md';
 };
 
 export const toLegalTemplateLocale = (code: StorefrontLocaleCode): string => {
-  return STOREFRONT_LOCALE_MAP[code].bcp47;
+  // Runtime guard: unknown codes fall back to 'pl-PL' (PL default), consistent
+  // with the behaviour of toHreflang (which passes unknown codes through unchanged
+  // but this function is expected to return a valid BCP-47 tag).
+  return STOREFRONT_LOCALE_MAP[code]?.bcp47 ?? 'pl-PL';
 };
 
 /**
