@@ -42,13 +42,15 @@ export function normalizePurchaseMode(
 }
 
 export function CheckoutPurchaseMode({
-  cartPurchaseMode
+  cartPurchaseMode,
+  isDone = false
 }: {
   /** Mode persisted on the cart line items at the PDP (metadata.is_gift /
    *  purchase_mode). Used as the initial display when the URL carries no
    *  explicit `?mode`, so a "buy as gift" choice survives navigation from the
    *  product page into checkout. Defaults to 'self' when absent. */
   cartPurchaseMode?: PurchaseMode;
+  isDone?: boolean;
 } = {}): ReactElement {
   const t = useTranslations('seller.checkout');
   const router = useRouter();
@@ -101,8 +103,19 @@ export function CheckoutPurchaseMode({
   return (
     <section
       data-testid="checkout-purchase-mode-section"
-      className="flex flex-col gap-4 rounded-md border border-component-secondary p-4"
+      className="bb-section-shell flex flex-col gap-4"
     >
+      <div className={`step-head ${isDone ? 'is-done' : ''}`}>
+        <span className="step-num">{isDone ? '✓' : '3'}</span>
+        <h2>{t('checkout_step_invoice')}</h2>
+      </div>
+      <div className="consent-row">
+        <span
+          className="cb"
+          aria-hidden="true"
+        />
+        <span className="label">{t('invoice_vat_hint')}</span>
+      </div>
       <PurchaseModeToggle
         mode={mode}
         onChange={handleChange}

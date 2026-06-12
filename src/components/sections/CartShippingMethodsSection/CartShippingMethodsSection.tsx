@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState, useTransition, type FC } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
-import { CheckCircleSolid, ChevronUpDown, Loader } from '@medusajs/icons';
+import { ChevronUpDown, Loader } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { clx, Heading, Text } from '@medusajs/ui';
 import clsx from 'clsx';
@@ -371,13 +371,15 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
 
   return (
     <div className="bb-section-shell">
-      <div className="mb-6 flex flex-row items-center justify-between">
+      <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && (cart.shipping_methods?.length ?? 0) > 0 ? 'is-done' : ''}`}>
         <Heading
           level="h2"
-          className="text-3xl-regular flex flex-row items-baseline gap-x-2"
+          className="flex flex-row items-center gap-x-3"
         >
-          {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && <CheckCircleSolid />}
-          {t('delivery_heading')}
+          <span className="step-num">
+            {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 ? '✓' : '2'}
+          </span>
+          <span>{t('checkout_step_delivery')}</span>
         </Heading>
         {isEditEnabled && (
           <Text>

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { RadioGroup } from '@headlessui/react';
-import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
+import { CreditCard } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { Container, Heading, Text } from '@medusajs/ui';
 import { useLocale, useTranslations } from 'next-intl';
@@ -35,6 +35,30 @@ function isPendingPaymentSession(
   paymentSession: PendingPaymentSession
 ): paymentSession is PendingPaymentSession & { status: 'pending' } {
   return paymentSession.status === 'pending';
+}
+
+const PAYMENT_CHIP_KEYS = ['card', 'blik', 'p24', 'apple_pay', 'google_pay'] as const;
+type PaymentChipKey = (typeof PAYMENT_CHIP_KEYS)[number];
+
+function matchPaymentProviderId(
+  providers: HttpTypes.StorePaymentProvider[] | null,
+  chip: PaymentChipKey
+): string | null {
+  const ids = providers?.map(provider => provider.id) ?? [];
+  const stripeId = ids.find(isStripeFunc) ?? null;
+  if (chip === 'card') {
+    return stripeId ?? ids.find(id => id.toLowerCase().includes('card')) ?? null;
+  }
+  if (chip === 'blik') {
+    return ids.find(id => id.toLowerCase().includes('blik')) ?? null;
+  }
+  if (chip === 'p24') {
+    return ids.find(id => /p24|przelewy/.test(id.toLowerCase())) ?? null;
+  }
+  if (chip === 'apple_pay' || chip === 'google_pay') {
+    return ids.find(id => id.toLowerCase().includes(chip)) ?? stripeId;
+  }
+  return null;
 }
 
 const CartPaymentSection = ({
@@ -174,19 +198,24 @@ const CartPaymentSection = ({
   }, [isOpen]);
 
   const isEditEnabled = !isOpen && !!cart?.payment_collection?.payment_sessions?.length;
+  const paymentChips = PAYMENT_CHIP_KEYS.map(key => ({
+    key,
+    label: t(`payment_method_chip_${key}`),
+    providerId: matchPaymentProviderId(availablePaymentMethods, key)
+  }));
 
   return (
     <div
       className="bb-section-shell"
       data-testid="checkout-step-payment"
     >
-      <div className="mb-6 flex flex-row items-center justify-between">
+      <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && paymentReady ? 'is-done' : ''}`}>
         <Heading
           level="h2"
-          className="text-3xl-regular flex flex-row items-center items-baseline gap-x-2"
+          className="flex flex-row items-center gap-x-3"
         >
-          {!isOpen && paymentReady && <CheckCircleSolid />}
-          {t('payment_heading')}
+          <span className="step-num">{!isOpen && paymentReady ? '✓' : '4'}</span>
+          <span>{t('checkout_step_payment')}</span>
         </Heading>
         {isEditEnabled && (
           <Text>
@@ -208,6 +237,28 @@ const CartPaymentSection = ({
                 value={selectedPaymentMethod}
                 onChange={(value: string) => setPaymentMethod(value)}
               >
+                <div className="pm-grid mb-4">
+                  {paymentChips.map(chip => {
+                    const isActive =
+                      chip.providerId !== null && selectedPaymentMethod === chip.providerId;
+                    return (
+                      <button
+                        key={chip.key}
+                        type="button"
+                        className={`pmchip ${isActive ? 'is-active' : ''}`}
+                        disabled={!chip.providerId}
+                        aria-pressed={isActive}
+                        onClick={() => {
+                          if (chip.providerId) {
+                            setPaymentMethod(chip.providerId);
+                          }
+                        }}
+                      >
+                        {chip.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 {availablePaymentMethods.map(paymentMethod => (
                   <div key={paymentMethod.id}>
                     <PaymentContainer
@@ -267,13 +318,33 @@ const CartPaymentSection = ({
               variant="tonal"
               loading={isLoading}
               disabled={!selectedPaymentMethod && !paidByGiftcard}
-              className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
+              className={`checkout-spinner-gold rounded-full bg-[var(--cta)] hover:bg-[var(--cta-hover)] ${isLoading ? 'bg-white text-[var(--bb-gold,#C5A059)]' : 'text-white'}`}
             >
               {!activeSession && isStripeFunc(selectedPaymentMethod)
                 ? t('enter_card_details')
                 : t('continue_to_review')}
             </Button>
           )}
+          <div className="consent-block mt-4">
+            <div className="consent-row is-checked">
+              <span
+                className="cb"
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+              <span className="label">
+                {t('payment_consent_required')} <span className="req-mark">*</span>
+              </span>
+            </div>
+            <div className="consent-row">
+              <span
+                className="cb"
+                aria-hidden="true"
+              />
+              <span className="label">{t('payment_consent_marketing')}</span>
+            </div>
+          </div>
         </div>
 
         <div className={isOpen ? 'hidden' : 'block'}>

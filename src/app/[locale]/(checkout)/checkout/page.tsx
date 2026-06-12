@@ -34,6 +34,7 @@ export const dynamic = 'force-dynamic';
 
 type CheckoutPageProps = {
   params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ step?: string | string[] }>;
 };
 
 export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
@@ -45,8 +46,11 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
   };
 }
 
-export default async function CheckoutPage({ params }: CheckoutPageProps) {
+export default async function CheckoutPage({ params, searchParams }: CheckoutPageProps) {
   const { locale } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const rawStep = resolvedSearchParams.step;
+  const checkoutStep = Array.isArray(rawStep) ? rawStep[0] : rawStep;
   const t = await getTranslations({ locale, namespace: 'page' });
   return (
     <Suspense
@@ -59,12 +63,21 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         </div>
       }
     >
-      <CheckoutPageContent locale={locale} />
+      <CheckoutPageContent
+        locale={locale}
+        searchParamsStep={checkoutStep}
+      />
     </Suspense>
   );
 }
 
-async function CheckoutPageContent({ locale }: { locale: string }) {
+async function CheckoutPageContent({
+  locale,
+  searchParamsStep
+}: {
+  locale: string;
+  searchParamsStep?: string;
+}) {
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
   const tCheckout = await getTranslations({ locale, namespace: 'checkout' });
@@ -116,6 +129,25 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
           locale={locale}
           surface="checkout"
         />
+        <div className="checkout-header flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[rgba(249,244,236,0.96)] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+          <a
+            href={`/${locale}/cart`}
+            className="text-sm text-[var(--text-secondary)] underline-offset-4 hover:underline"
+          >
+            {tCheckout('back_to_cart')}
+          </a>
+          <div className="support flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <span className="secure-pill inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+              {tCheckout('checkout_header_secure')}
+            </span>
+            <span>
+              {tCheckout('checkout_header_support')}{' '}
+              <strong className="text-[var(--text-primary,#1A1A1A)]">
+                {tCheckout('checkout_header_phone')}
+              </strong>
+            </span>
+          </div>
+        </div>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
           <div
             className="flex flex-col gap-4"
@@ -129,7 +161,10 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
               cart={cart}
               availableShippingMethods={shippingMethods}
             />
-            <CheckoutPurchaseMode cartPurchaseMode={cartPurchaseMode} />
+            <CheckoutPurchaseMode
+              cartPurchaseMode={cartPurchaseMode}
+              isDone={searchParamsStep === 'payment' || searchParamsStep === 'review'}
+            />
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}
@@ -171,6 +206,25 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
             <CheckoutVoucherSummary cart={cart} />
+            <div className="flex flex-col gap-3 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] p-4">
+              <div className="os-method-badge inline-flex w-fit items-center rounded-full px-3 py-2 text-xs">
+                {tCheckout('order_summary_method_badge')}
+              </div>
+              <div className="os-trust-row flex flex-wrap gap-2 border-t border-[var(--bb-border-soft)] pt-3">
+                {[
+                  tCheckout('order_summary_trust_stripe'),
+                  tCheckout('order_summary_trust_ssl'),
+                  tCheckout('order_summary_trust_return')
+                ].map(token => (
+                  <span
+                    key={token}
+                    className="tt inline-flex items-center rounded-full px-3 py-1 text-[11px]"
+                  >
+                    {token}
+                  </span>
+                ))}
+              </div>
+            </div>
             <CartReview
               cart={cart}
               shippingComplete={shippingIsComplete}

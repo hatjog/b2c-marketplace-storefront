@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useTransition, type FormEvent } from 'react';
 
-import { CheckCircleSolid } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { Heading, Text, useToggleState } from '@medusajs/ui';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -97,12 +96,13 @@ export const CartAddressSection = ({
       className="bb-section-shell"
       data-testid="checkout-step-address"
     >
-      <div className="mb-6 flex flex-row items-center justify-between">
+      <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && isAddress ? 'is-done' : ''}`}>
         <Heading
           level="h2"
-          className="text-3xl-regular flex flex-row items-center items-baseline gap-x-2"
+          className="flex flex-row items-center gap-x-3"
         >
-          {!isOpen && <CheckCircleSolid />} {t('address_heading')}
+          <span className="step-num">{!isOpen && isAddress ? '✓' : '1'}</span>
+          <span>{t('checkout_step_contact')}</span>
         </Heading>
         {!isOpen && isAddress && (
           <Text>
