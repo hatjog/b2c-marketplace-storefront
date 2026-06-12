@@ -41,6 +41,8 @@ import { cache } from 'react';
 
 import yaml from 'js-yaml';
 
+import { toLegalMasterFileName, toLegalTemplateLocale } from '@/lib/helpers/hreflang';
+
 export type LegalDocumentLocale = 'pl' | 'en' | 'ua' | 'de';
 export type LegalReviewStatus =
   | 'draft'
@@ -111,38 +113,12 @@ export class LegalDocumentNotFoundError extends Error {
   }
 }
 
-/**
- * Map storefront-runtime locale code to legal-file suffix per F-NEW-S3.
- *
- *   pl → master.md (no suffix)
- *   en → master.en.md
- *   ua → master.uk.md   (storefront locale "ua" maps to ISO "uk" in legal source)
- *   de → master.de.md
- */
 function legalFileForLocale(locale: LegalDocumentLocale): string {
-  switch (locale) {
-    case 'pl':
-      return 'master.md';
-    case 'en':
-      return 'master.en.md';
-    case 'ua':
-      return 'master.uk.md';
-    case 'de':
-      return 'master.de.md';
-  }
+  return toLegalMasterFileName(locale);
 }
 
 function templateLocaleFor(locale: LegalDocumentLocale): string {
-  switch (locale) {
-    case 'pl':
-      return 'pl-PL';
-    case 'en':
-      return 'en-US';
-    case 'ua':
-      return 'uk-UA';
-    case 'de':
-      return 'de-DE';
-  }
+  return toLegalTemplateLocale(locale);
 }
 
 function templateDocTypeForDocId(docId: string): string | null {

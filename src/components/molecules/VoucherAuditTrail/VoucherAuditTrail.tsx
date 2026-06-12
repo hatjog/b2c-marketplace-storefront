@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { toIntlLocale } from '@/lib/helpers/hreflang';
 import type { VoucherAuditEvent } from '@/types/voucher';
 
 /**
@@ -37,7 +38,7 @@ const EVENT_KEY_BY_TYPE = {
 function formatTimestamp(iso: string, locale: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleString(locale === 'en' ? 'en-US' : 'pl-PL', {
+    return d.toLocaleString(toIntlLocale(locale), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

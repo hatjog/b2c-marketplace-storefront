@@ -183,7 +183,7 @@
       },
       "map": {
         "title": "Kartenplatzhalter für Standorte",
-        "badge": "map placeholder"
+        "badge": "Kartenplatzhalter"
       }
     },
     "detail_v180": {
@@ -223,7 +223,7 @@
       },
       "location": {
         "heading": "Standort",
-        "phone": "Telefon",
+        "phone": "Telefonnummer",
         "hours": "Öffnungszeiten",
         "map_title": "Standort-Kartenplatzhalter",
         "map_badge": "Adressvorschau"
@@ -403,7 +403,7 @@
     "rights_reserved": "Alle Rechte vorbehalten",
     "privacy_policy": "Datenschutzrichtlinie",
     "terms_of_service": "Nutzungsbedingungen",
-    "contact": "Kontakt"
+    "contact": "Kontakt aufnehmen"
   },
   "filters": {
     "filter_by": "Filtern nach",
@@ -413,8 +413,8 @@
     "view_results": "Ergebnisse anzeigen",
     "price": "Preis",
     "price_range": "Preisbereich",
-    "min": "Min",
-    "max": "Max",
+    "min": "Min.",
+    "max": "Max.",
     "category": "Kategorie",
     "treatment_type": "Behandlungstyp",
     "location": "Ort",
@@ -455,16 +455,16 @@
     "quantity": "Menge",
     "in_stock": "Auf Lager",
     "sold_by": "Verkauft von",
-    "fallback_name": "Produkt",
+    "fallback_name": "Produktname",
     "image_alt": "{name} Produktbild",
     "image_placeholder_alt": "{name} Produkt-Platzhalterbild",
     "see_more": "Mehr anzeigen",
     "seller_aria": "Zu Verkäufer {name}",
     "seller_reviews": "Verkäuferbewertungen",
     "seller_address": "Adresse",
-    "seller_contact": "Kontakt",
+    "seller_contact": "Salon kontaktieren",
     "seller_email": "E-Mail",
-    "seller_phone": "Telefon",
+    "seller_phone": "Telefonnummer",
     "shipping_heading": "Einlösung & Rückgaben",
     "shipping_info": "Lösen Sie Ihren Gutschein direkt im Salon ein. Detaillierte Bedingungen finden Sie in unseren Nutzungsbedingungen.",
     "shipping_policy_link": "Nutzungsbedingungen lesen",
@@ -517,7 +517,7 @@
     "first_name_placeholder": "Ihr Vorname",
     "last_name_label": "Nachname",
     "last_name_placeholder": "Ihr Nachname",
-    "phone_label": "Telefon",
+    "phone_label": "Telefonnummer",
     "phone_placeholder": "Ihre Telefonnummer",
     "already_have_account": "Bereits ein Konto?",
     "login_link": "Anmelden",
@@ -683,7 +683,7 @@
     "postal_code_placeholder": "Postleitzahl",
     "state_province_label": "Bundesland / Provinz",
     "state_province_placeholder": "Bundesland / Provinz",
-    "phone_label": "Telefon",
+    "phone_label": "Telefonnummer",
     "phone_placeholder": "Telefonnummer",
     "save_address_button": "Adresse speichern",
     "first_name": "Vorname",
@@ -693,7 +693,7 @@
     "postal_code": "Postleitzahl",
     "city": "Stadt",
     "state_province": "Bundesland / Provinz",
-    "phone": "Telefon",
+    "phone": "Telefonnummer",
     "email": "E-Mail",
     "email_validation": "Geben Sie eine gültige E-Mail-Adresse ein, zum Beispiel jana@example.com."
   },
@@ -919,7 +919,7 @@
       "collections": "Kollektionen"
     },
     "hero": {
-      "eyebrow": "Editorial discovery",
+      "eyebrow": "Redaktionelle Entdeckung",
       "title": "Kollektionen von Hand kuratiert, nicht gerankt.",
       "body": "Entdecken Sie thematische Shortlists des BonBeauty-Teams. Jede Kollektion hat eine klare Perspektive und gibt sich nicht als algorithmische Personalisierung aus.",
       "cta": "Hervorgehobene Kollektion öffnen",
@@ -969,7 +969,7 @@
         "home": "Startseite",
         "collections": "Kollektionen"
       },
-      "eyebrow": "Collection mode",
+      "eyebrow": "Kollektionsmodus",
       "calloutLabel": "Editorial-Notiz",
       "quoteLabel": "Warum diese Kollektion",
       "toolbar": {
@@ -989,7 +989,7 @@
       },
       "grid": {
         "cardAria": "Element {title} öffnen",
-        "curatedLabel": "Curated order",
+        "curatedLabel": "Kuratierte Reihenfolge",
         "cta": "Details ansehen"
       },
       "related": {
@@ -1090,7 +1090,7 @@
     },
     "voucher_summary": {
       "group_title": "{seller} ({count, plural, one {# Artikel} other {# Artikel}})",
-      "seller_fallback": "Salon"
+      "seller_fallback": "Salonpartner"
     }
   },
   "confirmation": {
@@ -1176,7 +1176,7 @@
       "download_cta": "Gutschein PDF herunterladen",
       "download_cta_for_vendor": "Gutschein für {seller_name} herunterladen",
       "email_pending": "Gutschein trifft innerhalb von 5 Min per E-Mail ein",
-      "salon_section_title": "Salon",
+      "salon_section_title": "Salonpartner",
       "redemption_code_label": "Einlösecode",
       "validity_period_label": "Gültig bis",
       "voucher_value_label": "Gutscheinwert",
@@ -1192,7 +1192,7 @@
     "claim": {
       "title": "Ihr Gutschein",
       "subtitle": "Lösen Sie Ihren Gutschein im gewählten Salon ein",
-      "seller_label": "Salon",
+      "seller_label": "Salonpartner",
       "service_label": "Dienstleistung",
       "value_label": "Wert",
       "claim_cta": "Gutschein einlösen",
@@ -1256,7 +1256,7 @@
         }
       },
       "salon": {
-        "eyebrow": "Salon",
+        "eyebrow": "Salonpartner",
         "phone_label": "Telefon:",
         "hours_label": "Öffnungszeiten:",
         "seller_cta": "Salonprofil ansehen",
@@ -1293,7 +1293,7 @@
           "store_credit": "Die Rückerstattung erfolgt als Guthaben.",
           "vendor_wallet": "Die Rückerstattung erfolgt über das Wallet des Salons."
         },
-        "no_show_label": "No-show:",
+        "no_show_label": "Nichterscheinen:",
         "no_show_fallback": "Die No-show-Regel ist vorübergehend nicht verfügbar.",
         "no_show_values": {
           "charge_full": "Ein Nichterscheinen kann zu einer vollständigen Belastung führen.",
@@ -1357,7 +1357,7 @@
     },
     "pdf_directions": {
       "title": "So kommen Sie hin",
-      "seller_label": "Salon",
+      "seller_label": "Salonpartner",
       "address_label": "Adresse",
       "google_maps_label": "Google Maps",
       "apple_maps_label": "Apple Maps",
@@ -1433,7 +1433,7 @@
       "realization_rules_label": "So lösen Sie ein",
       "refund_policy_label": "Rückerstattungen und Stornierungen:",
       "refund_policy_link": "Richtlinie ansehen",
-      "merchant_label": "Salon",
+      "merchant_label": "Salonpartner",
       "merchant_link_aria": "Salonprofil ansehen: {name}",
       "next_action_choose_variant": "Andere Option wählen",
       "next_action_back_to_list": "Zurück zur Liste",
@@ -1492,7 +1492,7 @@
       },
       "hero": {
         "aria_label": "Konto-Header",
-        "eyebrow": "Konto",
+        "eyebrow": "Kundenkonto",
         "greeting": "Willkommen!",
         "greeting_with_name": "Hallo, {name}",
         "subtitle": "Verwalte Bestellungen, Gutscheine und Einstellungen."
@@ -1806,7 +1806,7 @@
     "verified_seller": "Verifizierter Salon",
     "breadcrumbs": {
       "aria_label": "Breadcrumb der Produktseite",
-      "home": "Home",
+      "home": "Startseite",
       "categories": "Kategorien"
     },
     "variants": {
@@ -1840,7 +1840,7 @@
     },
     "trust_bar": {
       "aria_label": "Kaufgarantien",
-      "marketplace_verified": "Marketplace verified",
+      "marketplace_verified": "Marktplatz verifiziert",
       "return_30_days": "30 Tage Rückgabe",
       "polish_support": "Support auf Polnisch",
       "instant_pdf": "PDF-Gutschein sofort"
@@ -1871,7 +1871,7 @@
         "label": "Gutscheinregeln"
       },
       "salon": {
-        "label": "Salon",
+        "label": "Salonprofil",
         "fallback_name": "BonBeauty-Salon",
         "fallback_description": "Der Salon hat noch keine vollständige Beschreibung hinzugefügt.",
         "gallery_alt": "Foto von {name}",
@@ -1983,7 +1983,7 @@
         "vouchers": "Voucher",
         "orders": "Bestellungen",
         "returns": "Rückgaben",
-        "wishlist": "Wishlist",
+        "wishlist": "Wunschliste",
         "messages": "Nachrichten"
       }
     },
@@ -1996,7 +1996,7 @@
       "ordersDetail": "Kaufhistorie und aktuelle Entscheidungen.",
       "returns": "Rückgaben",
       "returnsDetail": "Anfragen, die auf Entscheidung oder Abrechnung warten.",
-      "wishlist": "Wishlist",
+      "wishlist": "Wunschliste",
       "wishlistDetail": "Gespeicherte Rituale und Geschenke für später.",
       "messages": "Nachrichten",
       "messagesDetail": "Ruhige Kommunikation mit dem Salon."
@@ -2011,7 +2011,7 @@
         "description": "Kaufhistorie und Erfüllungsdetails ansehen."
       },
       "wishlist": {
-        "label": "Wishlist",
+        "label": "Wunschliste",
         "description": "Zu später gespeicherten Behandlungen zurückkehren."
       },
       "messages": {
@@ -2095,10 +2095,10 @@
       }
     },
     "vouchers": {
-      "eyebrow": "W2-02 voucher history",
+      "eyebrow": "W2-02 Gutscheinverlauf",
       "title": "Voucher-Historie",
       "intro": "Filtere aktive, eingelöste und abgelaufene Voucher und behalte Codes, Gültigkeit und Salonkontakt in einem ruhigen Überblick.",
-      "heroAsideEyebrow": "Journal card",
+      "heroAsideEyebrow": "Journal-Karte",
       "heroAsideTitle": "Jeder Voucher behält seinen Kontext",
       "heroAsideBody": "Code, Salon, Produkt und Status bleiben an einem Ort sichtbar, ohne den vollen Code in der Liste zu zeigen.",
       "tabs": {
@@ -2375,7 +2375,7 @@
       "edit": "Bearbeiten"
     },
     "breadcrumbs": {
-      "account": "Konto",
+      "account": "Kundenkonto",
       "orders": "Bestellungen",
       "return_request": "Rückgabeanfrage",
       "return_success": "Rückgabestatus",
@@ -2505,7 +2505,7 @@
         "address_name": "Adressbezeichnung",
         "first_name": "Vorname",
         "last_name": "Nachname",
-        "company": "Firma",
+        "company": "Unternehmen",
         "address_line": "Straße und Hausnummer",
         "city": "Ort",
         "postal_code": "Postleitzahl",
@@ -2570,7 +2570,7 @@
       "list": {
         "title": "Meine geschriebenen Bewertungen",
         "description": "Änderungen zeigen nie rohe Backend-Fehler. Jede Mutation meldet ein lokalisiertes Ergebnis.",
-        "unknown_seller": "Salon",
+        "unknown_seller": "Unbekannter Salon",
         "rating": "{rating}/5",
         "no_note": "Keine zusätzliche Notiz.",
         "updated_at": "Aktualisiert: {date}"
@@ -2610,18 +2610,18 @@
         "description": "Zwischen Profil, Sicherheit, Benachrichtigungen, Zahlungen und DSGVO-Datenschutz wechseln."
       },
       "sections": {
-        "profile": "Profil",
+        "profile": "Profilbereich",
         "security": "Sicherheit",
         "notifications": "Benachrichtigungen",
         "payments": "Zahlungen",
         "privacy": "DSGVO-Datenschutz"
       },
       "profile": {
-        "title": "Profil",
+        "title": "Profildaten",
         "description": "Persönliche Kontaktdaten mit Blur-basiertem Erfolgsfeedback aktualisieren.",
         "first_name": "Vorname",
         "last_name": "Nachname",
-        "phone": "Telefon",
+        "phone": "Telefonnummer",
         "email": "E-Mail",
         "locale": "Bevorzugte Sprache",
         "errors": {
@@ -2747,24 +2747,24 @@
   "loading_states_catalogue": {
     "page_title": "Ladezustands-Katalog",
     "page_description": "Referenz-Showcase LP1-LP6 für das BonBeauty-Designsystem.",
-    "lp1_name": "Skeleton Shimmer",
+    "lp1_name": "Skeleton-Schimmer",
     "lp1_description": "Für Datenladen (200ms-3s). Warme Crème-Variante, reduced-motion-sicher.",
     "lp1_aria_label": "Lädt",
-    "lp2_name": "Pulse Animation Hero",
+    "lp2_name": "Pulsanimation im Hero",
     "lp2_description": "Für Verarbeitungs-/Wartezustände, nicht für normales Datenabrufen.",
     "lp2_aria_label": "Verarbeitung",
-    "lp3_name": "Skeleton Dot Trio",
+    "lp3_name": "Skeleton-Punkttrio",
     "lp3_description": "Für CTA-Laden nach dem Absenden.",
     "lp3_aria_label": "Senden",
-    "lp4_name": "Auto-Poll Progress Indicator",
+    "lp4_name": "Auto-Polling-Fortschrittsanzeige",
     "lp4_description": "Sichtbarer Abfrage-Rhythmus, maximale Zeit und Ausstiegspfad.",
     "lp4_aria_label": "Warten auf Bestätigung",
     "lp4_polling_label": "Status prüfen...",
     "lp4_timeout_label": "Max. 30s",
-    "lp5_name": "Progress Bar",
+    "lp5_name": "Fortschrittsleiste",
     "lp5_description": "Für deterministische mehrstufige Aktionen.",
     "lp5_aria_label": "Fortschritt",
-    "lp6_name": "Inline Spinner",
+    "lp6_name": "Inline-Ladeindikator",
     "lp6_description": "Letztes Mittel. Darf nicht unbegrenzt über 3s drehen.",
     "lp6_aria_label": "Laden",
     "lp6_label": "Laden...",

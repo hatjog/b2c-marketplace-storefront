@@ -3,7 +3,6 @@
  *
  * Factory for a typed reducer-based state machine with optional sessionStorage
  * persistence. First consumer: voucher-PII consent moment (Story 2-1).
- * Future consumer: VendorMoRWizard (Story 3-1).
  *
  * Persistence rules (Risk #5, security audit):
  *   - sessionStorage MUST contain only state names + transition timestamps.

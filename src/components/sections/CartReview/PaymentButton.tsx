@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { FlagDriftErrorModal } from '@/components/molecules/FlagDriftErrorModal';
+import { isCheckoutPaymentReady } from '@/lib/checkout/paymentReadiness';
 import { placeOrder } from '@/lib/data/cart';
 import { classifyConfirmCardPaymentResult } from '@/lib/payments/confirm-card-payment';
 
@@ -36,6 +37,7 @@ function isFlagDriftError(error: unknown): boolean {
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart;
   'data-testid': string;
+  shippingComplete: boolean;
   /**
    * Story 2.4: When true, the button is disabled due to missing consent
    * affirmations (FR60/FR64). Visually distinct from loading/processing state.
@@ -50,14 +52,14 @@ type PaymentButtonProps = {
   consentBlocked?: boolean;
 };
 
-const PaymentButton: React.FC<PaymentButtonProps> = ({ cart, 'data-testid': dataTestId, consentBlocked = false }) => {
+const PaymentButton: React.FC<PaymentButtonProps> = ({
+  cart,
+  'data-testid': dataTestId,
+  shippingComplete,
+  consentBlocked = false
+}) => {
   const t = useTranslations('checkout');
-  const notReady =
-    !cart ||
-    !cart.shipping_address ||
-    !cart.billing_address ||
-    !cart.email ||
-    (cart.shipping_methods?.length ?? 0) < 1;
+  const notReady = !isCheckoutPaymentReady({ cart, shippingComplete });
 
   const paymentSession = cart.payment_collection?.payment_sessions?.[0];
 
@@ -116,10 +118,27 @@ const StripePaymentButton = ({
   const t = useTranslations('checkout');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [disabled, setDisabled] = useState(true);
   // Story v160-5-9 — AC4 modal state.
   const [driftModalOpen, setDriftModalOpen] = useState(false);
+  // LOW-1 fix: track card field completeness via the Stripe 'change' event so the
+  // button is disabled until the card number/expiry/CVC are all filled in. The old
+  // useEffect+_complete approach was broken (stable card ref ≠ retrigger on input).
+  const [cardComplete, setCardComplete] = useState(false);
   const router = useRouter();
+
+  const stripe = useStripe();
+  const elements = useElements();
+
+  useEffect(() => {
+    if (!elements) return;
+    const card = elements.getElement('card');
+    if (!card) return;
+    const handler = (e: { complete: boolean }) => setCardComplete(e.complete);
+    card.on('change', handler);
+    return () => {
+      card.off('change', handler);
+    };
+  }, [elements]);
 
   const onPaymentCompleted = async () => {
     try {
@@ -140,16 +159,7 @@ const StripePaymentButton = ({
     }
   };
 
-  const stripe = useStripe();
-  const elements = useElements();
-  const card = elements?.getElement('card');
-
   const session = cart.payment_collection?.payment_sessions?.find(s => s.status === 'pending');
-
-  useEffect(() => {
-    //@ts-ignore
-    setDisabled(!card?._complete);
-  }, [card, stripe, elements, cart]);
 
   const handlePayment = async () => {
     // R5 review fix (second pass): refuse to submit when consent is missing.
@@ -161,7 +171,13 @@ const StripePaymentButton = ({
     }
     setSubmitting(true);
 
-    if (!stripe || !elements || !card || !cart) {
+    if (notReady || !stripe || !elements || !cart) {
+      setSubmitting(false);
+      return;
+    }
+
+    const card = elements.getElement('card');
+    if (!card) {
       setSubmitting(false);
       return;
     }
@@ -225,7 +241,8 @@ const StripePaymentButton = ({
   // the button focusable + clickable but mark `aria-disabled` so the
   // capture-phase handler in CartReview can surface the inline consent
   // error. Only `notReady` / Stripe-level `disabled` use HTML `disabled`.
-  const htmlDisabled = disabled || notReady;
+  // cardComplete comes from the 'change' event listener above (LOW-1 fix).
+  const htmlDisabled = notReady || !stripe || !elements || !cardComplete;
   const ariaDisabled = htmlDisabled || consentBlocked;
   return (
     <>

@@ -85,6 +85,13 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
   // for EVERY seller; the pay button must stay blocked until that holds, or the
   // card is charged for an order that cannot be created.
   const shippingCoverage = getShippingCoverage(cart, shippingMethods);
+  // Fail-closed: shippingMethods===null means listCartShippingMethods either
+  // errored (network / 5xx) or returned an unrecognised response shape.
+  // Treat as "shipping NOT complete" — never let a fetch failure silently open
+  // the payment gate (would produce orphan-charges if /complete then rejects).
+  // An empty array [] means "no shipping required" and is handled correctly by
+  // getShippingCoverage (no requiredSellers → isComplete:true).
+  const shippingIsComplete = shippingMethods !== null ? shippingCoverage.isComplete : false;
 
   // Reflect the PDP "buy as gift" choice (persisted as line-item
   // metadata.is_gift / purchase_mode) in the checkout purchase-mode toggle.
@@ -126,7 +133,7 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}
-              shippingComplete={shippingCoverage.isComplete}
+              shippingComplete={shippingIsComplete}
               missingShippingSellers={missingShippingSellerNames(shippingCoverage)}
             />
           </div>
@@ -164,7 +171,10 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
             <CheckoutVoucherSummary cart={cart} />
-            <CartReview cart={cart} />
+            <CartReview
+              cart={cart}
+              shippingComplete={shippingIsComplete}
+            />
           </div>
         </div>
       </main>

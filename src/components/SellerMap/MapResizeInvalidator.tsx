@@ -53,6 +53,15 @@ export function MapResizeInvalidator({ debounceMs = MAP_RESIZE_DEBOUNCE_MS }: Ma
       }
       // Record the re-measure latency (time from the last settling resize to the
       // debounced invalidateSize firing) only when the harness opted in.
+      //
+      // METRIC SEMANTICS (ra-6, review finding #2): the recorded sample is
+      // `performance.now() - lastResizeAt` = debounceMs + invalidateSize work.
+      // Because invalidateSize() is sub-millisecond (~0.2–0.6 ms), samples are
+      // dominated by the debounce timer, not the work itself. The metric confirms
+      // that the chosen debounce variant (200 ms) < the 300 ms architecture
+      // threshold, but does NOT isolate the performance cost of invalidateSize().
+      // If isolation of invalidateSize work is needed, instrument separately around
+      // the invalidateSize() call above and store in __GP_MAP_INVALIDATE_SAMPLES.
       if (Array.isArray(harness.__GP_MAP_REMEASURE_SAMPLES) && lastResizeAt > 0) {
         harness.__GP_MAP_REMEASURE_SAMPLES.push(performance.now() - lastResizeAt);
       }

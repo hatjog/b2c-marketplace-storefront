@@ -2,7 +2,7 @@
 
 // GiftModeToggle — client-side toggle for gift/self purchase mode on PDP.
 // DS v2.1.0: cta, bg-action, text-on-action tokens.
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -24,6 +24,7 @@ export function GiftModeToggle({
 }: GiftModeToggleProps) {
   const { purchaseMode, setPurchaseMode } = useCartContext();
   const t = useTranslations('pdp.gift_mode');
+  const groupId = useId();
   const [mode, setMode] = useState<CartPurchaseMode>(purchaseMode ?? defaultMode);
 
   function handleSelect(next: CartPurchaseMode) {
@@ -39,7 +40,7 @@ export function GiftModeToggle({
         className
       )}
       role="radiogroup"
-      aria-label={t('aria_label')}
+      aria-labelledby={`${groupId}-label`}
       data-testid={dataTestId}
     >
       <div className="mb-3 flex items-start gap-3">
@@ -66,7 +67,7 @@ export function GiftModeToggle({
           </svg>
         </span>
         <div>
-          <p className="text-sm font-medium text-[var(--text-primary)]">{t('title')}</p>
+          <p id={`${groupId}-label`} className="text-sm font-medium text-[var(--text-primary)]">{t('title')}</p>
           <p className="text-xs leading-5 text-[var(--text-secondary)]">{t('description')}</p>
         </div>
       </div>

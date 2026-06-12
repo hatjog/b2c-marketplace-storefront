@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { RadioGroup } from '@headlessui/react';
 import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
+import type { HttpTypes } from '@medusajs/types';
 import { Container, Heading, Text } from '@medusajs/ui';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -22,13 +23,19 @@ import PaymentContainer from '../../organisms/PaymentContainer/PaymentContainer'
 // 1.4) zamiast legacy CardElement (StripeCardContainer) — JEDNA ścieżka.
 import StripePaymentElement from './StripePaymentElement';
 
-type StoreCardPaymentMethod = any & {
-  service_zone?: {
-    fulfillment_set: {
-      type: string;
-    };
-  };
+type PendingPaymentSession = NonNullable<
+  NonNullable<HttpTypes.StoreCart['payment_collection']>['payment_sessions']
+>[number] & {
+  data?: {
+    client_secret?: unknown;
+  } | null;
 };
+
+function isPendingPaymentSession(
+  paymentSession: PendingPaymentSession
+): paymentSession is PendingPaymentSession & { status: 'pending' } {
+  return paymentSession.status === 'pending';
+}
 
 const CartPaymentSection = ({
   cart,
@@ -36,8 +43,8 @@ const CartPaymentSection = ({
   shippingComplete = true,
   missingShippingSellers = []
 }: {
-  cart: any;
-  availablePaymentMethods: StoreCardPaymentMethod[] | null;
+  cart: HttpTypes.StoreCart;
+  availablePaymentMethods: HttpTypes.StorePaymentProvider[] | null;
   /**
    * Orphaned-charge guard (per-seller shipping). When false, at least one
    * seller in the cart still lacks a shipping method, so
@@ -52,9 +59,7 @@ const CartPaymentSection = ({
   const tCart = useTranslations('cart');
   const tCommon = useTranslations('common');
 
-  const activeSession = cart.payment_collection?.payment_sessions?.find(
-    (paymentSession: any) => paymentSession.status === 'pending'
-  );
+  const activeSession = cart.payment_collection?.payment_sessions?.find(isPendingPaymentSession);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +78,9 @@ const CartPaymentSection = ({
   // return_url routujący surface Story 1.5 (`/order/:id/payment-status`).
   // `:id` = cart.id (stabilny identyfikator dostępny przy confirm; order id
   // powstaje post-payment, Story 1.5 resolve'uje order z payment_intent).
-  const stripeClientSecret = activeSession?.data?.client_secret as string | undefined;
+  const rawStripeClientSecret = activeSession?.data?.client_secret;
+  const stripeClientSecret =
+    typeof rawStripeClientSecret === 'string' ? rawStripeClientSecret : undefined;
   const paymentStatusReturnUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/${locale}/order/${cart?.id}/payment-status`
@@ -105,9 +112,13 @@ const CartPaymentSection = ({
     }
   };
 
-  const paidByGiftcard = cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0;
+  // Gift cards are no longer a cart relation in Medusa v2 — the applied gift
+  // card balance is exposed via the `gift_card_total` aggregate. "Paid by gift
+  // card" therefore means a positive gift-card total that zeroes the cart total.
+  const paidByGiftcard = (cart?.gift_card_total ?? 0) > 0 && cart?.total === 0;
 
-  const paymentReady = (activeSession && cart?.shipping_methods.length !== 0) || paidByGiftcard;
+  const paymentReady =
+    (activeSession && (cart?.shipping_methods?.length ?? 0) > 0) || paidByGiftcard;
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -151,8 +162,8 @@ const CartPaymentSection = ({
         router.refresh();
         return;
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('error_generic'));
     } finally {
       setIsLoading(false);
     }

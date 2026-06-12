@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import type { VoucherRecipientPolicyView, VoucherRecipientView as VoucherRecipientModel } from '@/lib/data/voucher';
+import { toIntlLocale } from '@/lib/helpers/hreflang';
 import { buildGoogleMapsDeeplink, buildSearchFallbackDeeplink } from '@/lib/helpers/maps-deeplink';
 import { formatVoucherPrice } from '@/lib/voucher/voucher-copy';
 
@@ -20,14 +21,7 @@ function formatDate(iso: string | null | undefined, locale: string): string | nu
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return null;
 
-  const bcp47: Record<string, string> = {
-    pl: 'pl-PL',
-    en: 'en-GB',
-    ua: 'uk-UA',
-    de: 'de-DE',
-  };
-
-  return date.toLocaleDateString(bcp47[locale] ?? 'pl-PL', {
+  return date.toLocaleDateString(toIntlLocale(locale), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

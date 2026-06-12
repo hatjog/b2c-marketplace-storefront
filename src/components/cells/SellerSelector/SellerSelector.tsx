@@ -33,7 +33,7 @@
  *  - NIE adds tooltip/popover library (Radix-skip per UX-DR19 MVP)
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
@@ -190,6 +190,7 @@ export const SellerSelector = ({
   geolocationStatus,
 }: SellerSelectorProps) => {
   const t = useTranslations('seller.selector');
+  const groupId = useId();
 
   const sellersWithDistance = useMemo(
     () => deriveSellersWithDistance(sellers, userLat, userLng),
@@ -245,11 +246,11 @@ export const SellerSelector = ({
       className={cn('space-y-3 rounded-md border border-tertiary bg-component-secondary p-4', className)}
       data-testid="seller-selector"
     >
-      <legend className="label-md px-1 text-primary">{t('title')}</legend>
+      <legend id={`${groupId}-legend`} className="label-md px-1 text-primary">{t('title')}</legend>
       <div
         className="space-y-2"
         role="radiogroup"
-        aria-label={t('title')}
+        aria-labelledby={`${groupId}-legend`}
       >
         {sellersWithDistance.map((seller) => {
           const isSelected = selectedSellerId === seller.seller_id;

@@ -25,24 +25,51 @@ describe('PriceDisplay', () => {
     expect(children[0]).toBe('Gratis');
   });
 
-  // AC#6 — default variant → "200 zł"
-  it('renders "200 zł" for default variant with 20000 cents', () => {
+  // AC#6 — default variant → "200\u00a0zł"
+  it('renders "200\u00a0zł" for default variant with 20000 cents', () => {
     const result = PriceDisplay({ amountInCents: 20000 }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('200 zł');
+    expect(children[0]).toBe('200\u00a0zł');
   });
 
-  // AC#6 — from variant → "od 200 zł"
-  it('renders "od 200 zł" for from variant', () => {
+  // AC#6 — from variant → "od 200\u00a0zł"
+  it('renders "od 200\u00a0zł" for from variant', () => {
     const result = PriceDisplay({
       amountInCents: 20000,
       variant: 'from',
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('od 200 zł');
+    expect(children[0]).toBe('od 200\u00a0zł');
   });
 
-  // AC#6 — range variant (min≠max) → "200–280 zł" (en-dash)
+  it('formats prices with canonical BCP47 locale tags for every storefront locale', () => {
+    const expectedByLocale = {
+      pl: '200\u00a0zł',
+      en: 'PLN\u00a0200',
+      ua: '200\u00a0PLN',
+      de: '200\u00a0PLN',
+    };
+
+    for (const [locale, expected] of Object.entries(expectedByLocale)) {
+      const result = PriceDisplay({ amountInCents: 20000, locale }) as ReactEl;
+      const children = React.Children.toArray(result.props.children as React.ReactNode);
+      expect(children[0]).toBe(expected);
+    }
+  });
+
+  it('localizes non-PL price prefixes and aria labels', () => {
+    const result = PriceDisplay({
+      amountInCents: 20000,
+      variant: 'from',
+      locale: 'de',
+    }) as ReactEl;
+    const children = React.Children.toArray(result.props.children as React.ReactNode);
+    expect(children[0]).toBe('ab 200\u00a0PLN');
+    // aria-label uses formatPLN() \u2014 consistent with visible text
+    expect(result.props['aria-label']).toBe('Preis: ab 200\u00a0PLN');
+  });
+
+  // AC#6 — range variant (min != max) -> "200-280 zl" (en-dash)
   it('renders "200–280 zł" for range variant with different min/max', () => {
     const result = PriceDisplay({
       amountInCents: 20000,
@@ -50,7 +77,7 @@ describe('PriceDisplay', () => {
       variant: 'range',
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('200\u2013280 z\u0142');
+    expect(children[0]).toBe('200\u2013280\u00a0z\u0142');
   });
 
   // AC#4 — range with equal min/max → fallback to default
@@ -61,23 +88,23 @@ describe('PriceDisplay', () => {
       variant: 'range',
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('200 zł');
+    expect(children[0]).toBe('200\u00a0zł');
   });
 
   // AC#7 — duration with default variant
-  it('renders "200 zł · 60 min" for default variant with showDuration', () => {
+  it('renders "200\u00a0zł · 60 min" for default variant with showDuration', () => {
     const result = PriceDisplay({
       amountInCents: 20000,
       showDuration: true,
       duration: 60,
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('200 zł');
+    expect(children[0]).toBe('200\u00a0zł');
     expect(children[1]).toBe(' \u00B7 60 min');
   });
 
   // AC#7 — duration with from variant
-  it('renders "od 200 zł · od 60 min" for from variant with showDuration', () => {
+  it('renders "od 200\u00a0zł · od 60 min" for from variant with showDuration', () => {
     const result = PriceDisplay({
       amountInCents: 20000,
       variant: 'from',
@@ -85,7 +112,7 @@ describe('PriceDisplay', () => {
       duration: 60,
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('od 200 zł');
+    expect(children[0]).toBe('od 200\u00a0zł');
     expect(children[1]).toBe(' \u00B7 od 60 min');
   });
 
@@ -101,10 +128,10 @@ describe('PriceDisplay', () => {
     expect(children[1]).toBe('');
   });
 
-  // AC#1 — aria-label
-  it('has correct aria-label for standard price', () => {
+  // AC#1 — aria-label uses formatPLN() so visible and AT output share same currency token
+  it('has correct aria-label for standard price (PL: "200 zł")', () => {
     const result = PriceDisplay({ amountInCents: 20000 }) as ReactEl;
-    expect(result.props['aria-label']).toBe('Cena: 200 złotych');
+    expect(result.props['aria-label']).toBe('Cena: 200 zł');
   });
 
   it('has aria-label "Cena: Gratis" when amountInCents is 0', () => {

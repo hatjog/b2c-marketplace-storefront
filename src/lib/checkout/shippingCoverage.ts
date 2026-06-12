@@ -42,28 +42,30 @@ type AvailableMethodLike = {
   rules?: Array<{ attribute?: string | null; value?: unknown } | null> | null;
 };
 
-// Each type carries a real shared field (`id` / `shipping_option_id`) so the
-// wider Medusa `StoreCart` / `StoreCartLineItem` / `StoreProduct` types are
-// assignable — without a shared property TS rejects the all-optional shape as
-// a "weak type".
-type ProductLike = {
-  id?: string;
-  seller?: { id?: string | null; name?: string | null } | null;
+// Structural input describing ONLY the fields this helper reads. Keeping it
+// minimal (instead of `Omit<HttpTypes.StoreCart, ...>`) lets the real Medusa
+// `StoreCart` (every field present ⇒ assignable) AND lightweight unit-test
+// fixtures both satisfy it, without forcing ~23 unrelated `StoreCart` fields.
+// Each member keeps a concrete property (`product` / `shipping_option_id`) so
+// it is not an all-optional "weak type" that TS would reject on assignment.
+type CartItemWithSeller = {
+  product?: {
+    // `id` is a real shared field with `HttpTypes.StoreProduct` so the full
+    // Medusa product is assignable here — without an overlapping property TS
+    // rejects the otherwise all-optional shape as a "weak type".
+    id?: string;
+    seller?: { id?: string | null; name?: string | null } | null;
+  } | null;
 };
-
-type CartItemLike = {
-  id?: string;
-  product?: ProductLike | null;
-} | null;
 
 type CartShippingMethodLike = {
   shipping_option_id?: string | null;
 } | null;
 
-type CartLike = {
-  items?: CartItemLike[] | null;
+export type CheckoutCartForShippingCoverage = {
+  items?: CartItemWithSeller[] | null;
   shipping_methods?: CartShippingMethodLike[] | null;
-} | null;
+};
 
 function isReturnOption(m: AvailableMethodLike): boolean {
   return (m?.rules ?? []).some(
@@ -89,7 +91,7 @@ function resolveSeller(
 }
 
 export function getShippingCoverage(
-  cart: CartLike,
+  cart: CheckoutCartForShippingCoverage,
   availableShippingMethods: AvailableMethodLike[] | null | undefined
 ): ShippingCoverage {
   // Distinct sellers present in the cart's line items.

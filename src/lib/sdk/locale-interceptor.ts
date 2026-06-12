@@ -8,6 +8,13 @@ const DEFAULT_CANONICAL_LOCALE: CanonicalLocale = 'pl-PL';
 // `ua`/`ua-ua`/`ua_ua` to legacy route slug storefront (D-55); canonical
 // Ukrainian BCP 47 to `uk-UA` per ADR-124. Aliasy normalizują wejście do
 // canonical; nie kopiuj `ua-*` jako BCP 47 w nowym kodzie.
+//
+// R9 cross-reference (Story 8.5): mapowanie `ua → uk-UA` jest kanonicznie
+// zdefiniowane w `lib/helpers/hreflang.ts` (STOREFRONT_LOCALE_MAP). Ta mapa
+// normalizuje WSZYSTKIE formy aliasów (w tym `uk`, `uk-ua`, `ua-ua`, …) do
+// canonical BCP-47 — cel różny od kanonicznego helpera (4 storefront-kody → BCP-47),
+// więc importowanie helpera nie jest tu właściwe. Każda zmiana mapowania
+// `ua ↔ uk-UA` MUSI być odzwierciedlona w obu miejscach równocześnie.
 const LOCALE_ALIASES: Record<string, CanonicalLocale> = {
   pl: 'pl-PL',
   'pl-pl': 'pl-PL',

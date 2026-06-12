@@ -27,7 +27,13 @@ import { useFormErrors } from '@/hooks/useFormErrors';
 import { CartItems } from './CartItems';
 import PaymentButton from './PaymentButton';
 
-const Review = ({ cart }: { cart: any }) => {
+const Review = ({
+  cart,
+  shippingComplete
+}: {
+  cart: any;
+  shippingComplete: boolean;
+}) => {
   const t = useTranslations('checkout');
   const locale = useLocale();
 
@@ -48,7 +54,7 @@ const Review = ({ cart }: { cart: any }) => {
 
   const previousStepsCompleted =
     cart.shipping_address &&
-    cart.shipping_methods.length > 0 &&
+    shippingComplete &&
     (cart.payment_collection || paidByGiftcard);
 
   const consentReady = transactionalConsentChecked && withdrawalAckChecked;
@@ -185,6 +191,7 @@ const Review = ({ cart }: { cart: any }) => {
             <PaymentButton
               cart={cart}
               data-testid="submit-order-button"
+              shippingComplete={shippingComplete}
               consentBlocked={!consentReady}
             />
           </div>

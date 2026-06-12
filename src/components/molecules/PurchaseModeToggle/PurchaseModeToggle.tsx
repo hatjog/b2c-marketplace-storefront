@@ -57,7 +57,7 @@ export function PurchaseModeToggle({
       data-testid="purchase-mode-toggle"
       className={`flex flex-col gap-3 ${className ?? ''}`.trim()}
     >
-      <legend className="heading-sm mb-2 font-medium">
+      <legend id={`${groupId}-legend`} className="heading-sm mb-2 font-medium">
         {t('purchase_mode_label')}
       </legend>
       <div
