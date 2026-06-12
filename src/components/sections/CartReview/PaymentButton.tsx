@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
@@ -120,7 +120,25 @@ const StripePaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Story v160-5-9 — AC4 modal state.
   const [driftModalOpen, setDriftModalOpen] = useState(false);
+  // LOW-1 fix: track card field completeness via the Stripe 'change' event so the
+  // button is disabled until the card number/expiry/CVC are all filled in. The old
+  // useEffect+_complete approach was broken (stable card ref ≠ retrigger on input).
+  const [cardComplete, setCardComplete] = useState(false);
   const router = useRouter();
+
+  const stripe = useStripe();
+  const elements = useElements();
+
+  useEffect(() => {
+    if (!elements) return;
+    const card = elements.getElement('card');
+    if (!card) return;
+    const handler = (e: { complete: boolean }) => setCardComplete(e.complete);
+    card.on('change', handler);
+    return () => {
+      card.off('change', handler);
+    };
+  }, [elements]);
 
   const onPaymentCompleted = async () => {
     try {
@@ -140,9 +158,6 @@ const StripePaymentButton = ({
       setSubmitting(false);
     }
   };
-
-  const stripe = useStripe();
-  const elements = useElements();
 
   const session = cart.payment_collection?.payment_sessions?.find(s => s.status === 'pending');
 
@@ -226,7 +241,8 @@ const StripePaymentButton = ({
   // the button focusable + clickable but mark `aria-disabled` so the
   // capture-phase handler in CartReview can surface the inline consent
   // error. Only `notReady` / Stripe-level `disabled` use HTML `disabled`.
-  const htmlDisabled = notReady || !stripe || !elements;
+  // cardComplete comes from the 'change' event listener above (LOW-1 fix).
+  const htmlDisabled = notReady || !stripe || !elements || !cardComplete;
   const ariaDisabled = htmlDisabled || consentBlocked;
   return (
     <>

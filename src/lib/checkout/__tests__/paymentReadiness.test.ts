@@ -38,4 +38,28 @@ describe('isCheckoutPaymentReady', () => {
       })
     ).toBe(false);
   });
+
+  it('blocks payment when shipping_address is missing', () => {
+    expect(
+      isCheckoutPaymentReady({
+        cart: { ...addressedCart, shipping_address: undefined },
+        shippingComplete: true
+      })
+    ).toBe(false);
+  });
+
+  it('blocks payment when billing_address is missing', () => {
+    expect(
+      isCheckoutPaymentReady({
+        cart: { ...addressedCart, billing_address: undefined },
+        shippingComplete: true
+      })
+    ).toBe(false);
+  });
+
+  it('blocks payment when cart is null (fetch not yet resolved)', () => {
+    expect(
+      isCheckoutPaymentReady({ cart: null, shippingComplete: true })
+    ).toBe(false);
+  });
 });
