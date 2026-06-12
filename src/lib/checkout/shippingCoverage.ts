@@ -21,6 +21,8 @@
  * seller via the available options.
  */
 
+import type { HttpTypes } from '@medusajs/types';
+
 export type ShippingSeller = { id: string; name?: string };
 
 export type ShippingCoverage = {
@@ -46,24 +48,25 @@ type AvailableMethodLike = {
 // wider Medusa `StoreCart` / `StoreCartLineItem` / `StoreProduct` types are
 // assignable — without a shared property TS rejects the all-optional shape as
 // a "weak type".
-type ProductLike = {
-  id?: string;
+type ProductWithSeller = HttpTypes.StoreProduct & {
   seller?: { id?: string | null; name?: string | null } | null;
 };
 
-type CartItemLike = {
-  id?: string;
-  product?: ProductLike | null;
-} | null;
+type CartItemWithSeller = HttpTypes.StoreCartLineItem & {
+  product?: ProductWithSeller | null;
+};
 
 type CartShippingMethodLike = {
   shipping_option_id?: string | null;
 } | null;
 
-type CartLike = {
-  items?: CartItemLike[] | null;
+export type CheckoutCartForShippingCoverage = Omit<
+  HttpTypes.StoreCart,
+  'items' | 'shipping_methods'
+> & {
+  items?: CartItemWithSeller[] | null;
   shipping_methods?: CartShippingMethodLike[] | null;
-} | null;
+};
 
 function isReturnOption(m: AvailableMethodLike): boolean {
   return (m?.rules ?? []).some(
@@ -89,7 +92,7 @@ function resolveSeller(
 }
 
 export function getShippingCoverage(
-  cart: CartLike,
+  cart: CheckoutCartForShippingCoverage,
   availableShippingMethods: AvailableMethodLike[] | null | undefined
 ): ShippingCoverage {
   // Distinct sellers present in the cart's line items.

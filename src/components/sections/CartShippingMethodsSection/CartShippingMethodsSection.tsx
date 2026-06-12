@@ -12,6 +12,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
+import {
+  getShippingCoverage,
+  type CheckoutCartForShippingCoverage
+} from '@/lib/checkout/shippingCoverage';
 import { removeShippingMethod, setShippingMethod } from '@/lib/data/cart';
 import { calculatePriceForShippingOption } from '@/lib/data/fulfillment';
 import { convertToLocale } from '@/lib/helpers/money';
@@ -58,12 +62,20 @@ export type AvailableShippingMethod = StoreCardShippingMethod & {
   amount?: number;
 };
 
+type ShippingCart = CheckoutCartForShippingCoverage & {
+  items?: CartItem[];
+};
+
 type ShippingProps = {
-  cart: Omit<HttpTypes.StoreCart, 'items'> & {
-    items?: CartItem[];
-  };
+  cart: ShippingCart;
   availableShippingMethods: AvailableShippingMethod[] | null;
 };
+
+type ShippingMethodBySeller = AvailableShippingMethod & {
+  seller_name: string;
+};
+
+type ShippingMethodsBySellerId = Record<string, ShippingMethodBySeller[]>;
 
 function normalizeAvailableShippingMethods(value: unknown): AvailableShippingMethod[] {
   if (Array.isArray(value)) {
@@ -157,28 +169,6 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true'
   );
 
-  // Per-seller shipping coverage (orphaned-charge guard). Mercur completes one
-  // order per seller and `/store/carts/:id/complete` requires a shipping method
-  // for EVERY seller; gate "continue to payment" on full per-seller coverage,
-  // not just `length >= 1` (a multi-seller cart with one method otherwise
-  // advanced, got charged, then failed completion → orphaned charge).
-  const optionToSeller = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const m of _shippingMethods) {
-      const sellerId = m.seller?.id ?? m.seller_id ?? fallbackSeller?.id;
-      if (m.id && sellerId) {
-        map.set(m.id, sellerId);
-      }
-    }
-    return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalizedShippingMethods, fallbackSeller?.id]);
-
-  const requiredSellerIds = useMemo(
-    () => Array.from(new Set(optionToSeller.values())),
-    [optionToSeller]
-  );
-
   // Optimistically track selected option ids (seeded from cart). Mirrors the
   // `hasShippingMethod` optimism: router.refresh() does not reliably re-render
   // this section with the updated `cart` prop, so we add on select / drop on
@@ -192,19 +182,28 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
       )
   );
 
-  const coveredSellerIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const optionId of selectedOptionIds) {
-      const sellerId = optionToSeller.get(optionId);
-      if (sellerId) set.add(sellerId);
-    }
-    return set;
-  }, [selectedOptionIds, optionToSeller]);
+  const coverageCart = useMemo<CheckoutCartForShippingCoverage>(
+    () => ({
+      ...cart,
+      shipping_methods: Array.from(selectedOptionIds).map(shipping_option_id => ({
+        shipping_option_id
+      }))
+    }),
+    [cart, selectedOptionIds]
+  );
+
+  // Per-seller shipping coverage (orphaned-charge guard). Mercur completes one
+  // order per seller and `/store/carts/:id/complete` requires a shipping method
+  // for EVERY seller; gate "continue to payment" on the shared typed helper.
+  const shippingCoverage = useMemo(
+    () => getShippingCoverage(coverageCart, _shippingMethods),
+    [coverageCart, _shippingMethods]
+  );
 
   const isShippingComplete =
-    requiredSellerIds.length === 0
+    shippingCoverage.requiredSellers.length === 0
       ? hasShippingMethod
-      : requiredSellerIds.every(id => coveredSellerIds.has(id));
+      : shippingCoverage.isComplete;
 
   useEffect(() => {
     if (_shippingMethods?.length) {
@@ -258,8 +257,9 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
       }
       setHasShippingMethod(true);
       setSelectedOptionIds(prev => new Set(prev).add(id));
-    } catch (error: any) {
-      setError(error?.message?.replace('Error setting up the request: ', '') || t('error_generic'));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : null;
+      setError(message?.replace('Error setting up the request: ', '') || t('error_generic'));
     } finally {
       setIsLoadingPrices(false);
       router.refresh();
@@ -333,7 +333,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, cart.shipping_methods?.length, _shippingMethods.length]);
 
-  const groupedBySellerId = _shippingMethods?.reduce((acc: any, method) => {
+  const groupedBySellerId = _shippingMethods.reduce<ShippingMethodsBySellerId>((acc, method) => {
     const sellerId = method.seller?.id ?? method.seller_id ?? fallbackSeller?.id ?? 'market';
     const sellerName =
       method.seller?.name ?? method.seller_name ?? fallbackSeller?.name ?? t('delivery_heading');
@@ -439,7 +439,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
                                 className="text-small-regular border-top-0 absolute z-20 max-h-60 w-full overflow-auto rounded-lg border bg-white focus:outline-none sm:text-sm"
                                 data-testid="shipping-address-options"
                               >
-                                {groupedBySellerId[key].map((option: any) => (
+                                {groupedBySellerId[key].map(option => (
                                   <Listbox.Option
                                     className="relative cursor-pointer select-none border-b py-4 pl-6 pr-10 hover:bg-gray-50"
                                     value={option.id}
