@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test, { describe } from 'node:test';
 
-const { toHreflang } = await import('../src/lib/helpers/hreflang.ts');
+const { toHreflang, toHreflangBare, toLegalMasterFileName, toLegalTemplateLocale } =
+  await import('../src/lib/helpers/hreflang.ts');
 
 describe('toHreflang', () => {
   test('language code pl maps to canonical BCP 47 pl-PL', () => {
@@ -18,6 +19,13 @@ describe('toHreflang', () => {
 
   test('storefront locale ua maps to Ukrainian BCP-47 uk', () => {
     assert.equal(toHreflang('ua'), 'uk-UA');
+  });
+
+  test('storefront locale ua maps to one canonical Ukrainian locale source', () => {
+    assert.equal(toHreflang('ua'), 'uk-UA');
+    assert.equal(toHreflangBare('ua'), 'uk');
+    assert.equal(toLegalTemplateLocale('ua'), 'uk-UA');
+    assert.equal(toLegalMasterFileName('ua'), 'master.uk.md');
   });
 
   test('unknown code passes through as-is', () => {
