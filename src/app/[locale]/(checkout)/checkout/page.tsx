@@ -164,7 +164,10 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
             <CheckoutVoucherSummary cart={cart} />
-            <CartReview cart={cart} />
+            <CartReview
+              cart={cart}
+              shippingComplete={shippingCoverage.isComplete}
+            />
           </div>
         </div>
       </main>
