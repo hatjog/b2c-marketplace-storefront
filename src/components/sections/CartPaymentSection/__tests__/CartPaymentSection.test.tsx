@@ -15,6 +15,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import type { HttpTypes } from '@medusajs/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // React 19 wymaga IS_REACT_ACT_ENVIRONMENT = true żeby act() działał z jsdom.
@@ -101,12 +102,14 @@ vi.mock('@/components/sections/CartPaymentSection/StripePaymentElement', () => (
 
 import CartPaymentSection from '../CartPaymentSection';
 
+// Minimal fixtures: the component only reads id / total / currency_code /
+// shipping_methods / payment_collection. Cast through `unknown` to the full
+// `StoreCart` prop contract instead of materialising ~20 unrelated fields.
 const cartWithSession = {
   id: 'cart_1',
   total: 100,
   currency_code: 'pln',
   shipping_methods: [{}],
-  gift_cards: [],
   payment_collection: {
     payment_sessions: [
       {
@@ -116,18 +119,17 @@ const cartWithSession = {
       }
     ]
   }
-};
+} as unknown as HttpTypes.StoreCart;
 
 const cartWithoutSession = {
   id: 'cart_1',
   total: 100,
   currency_code: 'pln',
   shipping_methods: [{}],
-  gift_cards: [],
   payment_collection: { payment_sessions: [] }
-};
+} as unknown as HttpTypes.StoreCart;
 
-const paymentMethods = [{ id: 'pp_stripe_stripe' }];
+const paymentMethods: HttpTypes.StorePaymentProvider[] = [{ id: 'pp_stripe_stripe' }];
 
 describe('CartPaymentSection — integration (H-2 / L-1)', () => {
   let container: HTMLElement;

@@ -21,8 +21,6 @@
  * seller via the available options.
  */
 
-import type { HttpTypes } from '@medusajs/types';
-
 export type ShippingSeller = { id: string; name?: string };
 
 export type ShippingCoverage = {
@@ -44,26 +42,27 @@ type AvailableMethodLike = {
   rules?: Array<{ attribute?: string | null; value?: unknown } | null> | null;
 };
 
-// Each type carries a real shared field (`id` / `shipping_option_id`) so the
-// wider Medusa `StoreCart` / `StoreCartLineItem` / `StoreProduct` types are
-// assignable — without a shared property TS rejects the all-optional shape as
-// a "weak type".
-type ProductWithSeller = HttpTypes.StoreProduct & {
-  seller?: { id?: string | null; name?: string | null } | null;
-};
-
-type CartItemWithSeller = HttpTypes.StoreCartLineItem & {
-  product?: ProductWithSeller | null;
+// Structural input describing ONLY the fields this helper reads. Keeping it
+// minimal (instead of `Omit<HttpTypes.StoreCart, ...>`) lets the real Medusa
+// `StoreCart` (every field present ⇒ assignable) AND lightweight unit-test
+// fixtures both satisfy it, without forcing ~23 unrelated `StoreCart` fields.
+// Each member keeps a concrete property (`product` / `shipping_option_id`) so
+// it is not an all-optional "weak type" that TS would reject on assignment.
+type CartItemWithSeller = {
+  product?: {
+    // `id` is a real shared field with `HttpTypes.StoreProduct` so the full
+    // Medusa product is assignable here — without an overlapping property TS
+    // rejects the otherwise all-optional shape as a "weak type".
+    id?: string;
+    seller?: { id?: string | null; name?: string | null } | null;
+  } | null;
 };
 
 type CartShippingMethodLike = {
   shipping_option_id?: string | null;
 } | null;
 
-export type CheckoutCartForShippingCoverage = Omit<
-  HttpTypes.StoreCart,
-  'items' | 'shipping_methods'
-> & {
+export type CheckoutCartForShippingCoverage = {
   items?: CartItemWithSeller[] | null;
   shipping_methods?: CartShippingMethodLike[] | null;
 };

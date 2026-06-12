@@ -23,16 +23,6 @@ import PaymentContainer from '../../organisms/PaymentContainer/PaymentContainer'
 // 1.4) zamiast legacy CardElement (StripeCardContainer) — JEDNA ścieżka.
 import StripePaymentElement from './StripePaymentElement';
 
-type StoreCardPaymentMethod = {
-  id: string;
-  provider_id?: string;
-  service_zone?: {
-    fulfillment_set: {
-      type: string;
-    };
-  };
-} & Record<string, unknown>;
-
 type PendingPaymentSession = NonNullable<
   NonNullable<HttpTypes.StoreCart['payment_collection']>['payment_sessions']
 >[number] & {
@@ -54,7 +44,7 @@ const CartPaymentSection = ({
   missingShippingSellers = []
 }: {
   cart: HttpTypes.StoreCart;
-  availablePaymentMethods: StoreCardPaymentMethod[] | null;
+  availablePaymentMethods: HttpTypes.StorePaymentProvider[] | null;
   /**
    * Orphaned-charge guard (per-seller shipping). When false, at least one
    * seller in the cart still lacks a shipping method, so
@@ -122,9 +112,13 @@ const CartPaymentSection = ({
     }
   };
 
-  const paidByGiftcard = cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0;
+  // Gift cards are no longer a cart relation in Medusa v2 — the applied gift
+  // card balance is exposed via the `gift_card_total` aggregate. "Paid by gift
+  // card" therefore means a positive gift-card total that zeroes the cart total.
+  const paidByGiftcard = (cart?.gift_card_total ?? 0) > 0 && cart?.total === 0;
 
-  const paymentReady = (activeSession && cart?.shipping_methods.length !== 0) || paidByGiftcard;
+  const paymentReady =
+    (activeSession && (cart?.shipping_methods?.length ?? 0) > 0) || paidByGiftcard;
 
   const createQueryString = useCallback(
     (name: string, value: string) => {

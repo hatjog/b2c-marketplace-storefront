@@ -62,7 +62,11 @@ export type AvailableShippingMethod = StoreCardShippingMethod & {
   amount?: number;
 };
 
-type ShippingCart = CheckoutCartForShippingCoverage & {
+// Prop carries the full `HttpTypes.StoreCart` contract (id / currency_code /
+// the complete `StoreCartShippingMethod[]` the section renders), only narrowing
+// `items` to expose the per-seller info the coverage guard needs. The cart is
+// structurally assignable to the helper's `CheckoutCartForShippingCoverage`.
+type ShippingCart = Omit<HttpTypes.StoreCart, 'items'> & {
   items?: CartItem[];
 };
 
@@ -490,7 +494,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
               error={error}
               data-testid="delivery-option-error-message"
             />
-            {!isShippingComplete && requiredSellerIds.length > 1 && (
+            {!isShippingComplete && shippingCoverage.requiredSellers.length > 1 && (
               <Text
                 className="label-sm mb-2 text-[var(--text-secondary)]"
                 data-testid="delivery-incomplete-hint"
