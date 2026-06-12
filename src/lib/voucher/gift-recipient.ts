@@ -24,6 +24,37 @@ export type GiftRecipientValidationErrors = Partial<
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Returns today's date as YYYY-MM-DD string (local time). */
+export function todayISODate(): string {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Validates a YYYY-MM-DD date string. Returns 'invalid' when:
+ *  - the string does not match the expected format,
+ *  - the date is not a real calendar date (e.g. 2026-02-30), or
+ *  - the date is in the past relative to today (local time).
+ */
+function validateSendDate(value: string | null): 'invalid' | undefined {
+  if (!value || !DATE_RE.test(value)) return 'invalid';
+  const parsed = new Date(value + 'T00:00:00');
+  if (Number.isNaN(parsed.getTime())) return 'invalid';
+  // Canonicalise back to YYYY-MM-DD to catch calendar-invalid dates (e.g.
+  // 2026-02-30 → JS wraps to 2026-03-02, which does not equal the original).
+  const canon =
+    `${parsed.getFullYear()}-` +
+    `${String(parsed.getMonth() + 1).padStart(2, '0')}-` +
+    `${String(parsed.getDate()).padStart(2, '0')}`;
+  if (canon !== value) return 'invalid';
+  // Reject past dates.
+  if (value < todayISODate()) return 'invalid';
+  return undefined;
+}
+
 export function validateGiftRecipientForm(
   data: GiftRecipientFormData
 ): GiftRecipientValidationErrors {
@@ -40,9 +71,8 @@ export function validateGiftRecipientForm(
   }
 
   if (data.sendTiming === 'scheduled') {
-    if (!data.sendDate || !DATE_RE.test(data.sendDate)) {
-      errors.sendDate = 'invalid';
-    }
+    const dateError = validateSendDate(data.sendDate);
+    if (dateError) errors.sendDate = dateError;
   }
 
   return errors;

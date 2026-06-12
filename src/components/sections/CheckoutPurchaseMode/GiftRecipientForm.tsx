@@ -10,6 +10,7 @@ import { updateGiftRecipientCartItems } from '@/lib/data/cart';
 import {
   buildGiftRecipientIssueMetadata,
   GIFT_RECIPIENT_MESSAGE_MAX,
+  todayISODate,
   validateGiftRecipientForm,
   type GiftRecipientFormData,
   type GiftRecipientIssueMetadata,
@@ -175,6 +176,7 @@ export function GiftRecipientForm({
                 type="date"
                 name="gift_recipient_send_date"
                 value={formData.sendDate ?? ''}
+                min={todayISODate()}
                 onChange={event => setField('sendDate', event.target.value)}
                 aria-invalid={errors.sendDate ? 'true' : undefined}
                 className="w-fit rounded-[var(--bb-radius-input)] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-sm"
@@ -187,6 +189,14 @@ export function GiftRecipientForm({
           )}
         </fieldset>
 
+        {/*
+         * Test-only signal: this hidden input is NOT part of a native form
+         * submit (binding is done via the updateGiftRecipientCartItems server
+         * action). It exists solely as a queryable test hook so that unit /
+         * integration tests can assert the form's binding-ready state without
+         * mocking the server action.  The input carries no functional effect
+         * in production.
+         */}
         <input
           type="hidden"
           name="gift_recipient_bound_to_voucher_issue"

@@ -1138,6 +1138,9 @@
     "voucher_summary": {
       "group_title": "{seller} ({count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}})",
       "seller_fallback": "Salon"
+    },
+    "gift_recipient": {
+      "payment_block": "Najpierw zapisz dane odbiorcy prezentu, zanim przejdziesz do płatności."
     }
   },
   "confirmation": {

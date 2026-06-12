@@ -23,9 +23,9 @@ import { GiftRecipientForm } from './GiftRecipientForm';
  *   AC5 — Wire-up in checkout page pre-payment step (rendered between
  *         CartShippingMethodsSection and CartPaymentSection by
  *         (checkout)/checkout/page.tsx).
- *   AC3 — Gift mode renders dashed-border placeholder card with copy
- *         from `seller.checkout.recipient_placeholder` i18n key
- *         (Epic 6 territory; static "coming soon" hint, NOT a form).
+ *   AC3 — Gift mode renders the functional GiftRecipientForm component
+ *         (Story 5.3 — replaces placeholder; form collects recipient email,
+ *         message ≤200 chars with live counter, and send-date Teraz/Zaplanuj).
  *
  * Implementation notes:
  *   - Component is client-only (URL state hook).
