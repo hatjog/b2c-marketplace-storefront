@@ -74,6 +74,12 @@ const DE_ACCEPTED_IDENTICAL_TO_PL = new Set([
   'accountRead.orderDetail.payment.providers.p24',
   'error_surface.offline_label',
   'categories_index.hero.eyebrow',
+  // Cognates — same word in German and Polish; not silent fallbacks.
+  // LOW-2 fix (review 6.5): reverted inconsistent *filter/*suchen compounds to
+  // cognate-identical forms matching German and sibling label conventions.
+  'category_plp.filter_salon',          // "Salon" — no German alternative; filter-chip siblings are single nouns
+  'categories_index.filters.premium',   // "Premium" — international loanword
+  'home_v3.search.tabs.product',        // "Produkt" — search-tab siblings are single nouns; "Produkt suchen" was wrong form
 ]);
 
 describe('Story 6.3 storefront i18n hardening', () => {

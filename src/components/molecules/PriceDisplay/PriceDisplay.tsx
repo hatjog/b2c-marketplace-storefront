@@ -16,10 +16,10 @@ export type PriceDisplayProps = PriceDisplayBase &
   );
 
 const COPY_BY_LOCALE = {
-  pl: { free: 'Gratis', from: 'od', to: 'do', price: 'Cena', currencyName: 'złotych', minute: 'min' },
-  en: { free: 'Free', from: 'from', to: 'to', price: 'Price', currencyName: 'zlotys', minute: 'min' },
-  ua: { free: 'Безкоштовно', from: 'від', to: 'до', price: 'Ціна', currencyName: 'злотих', minute: 'хв' },
-  de: { free: 'Gratis', from: 'ab', to: 'bis', price: 'Preis', currencyName: 'Zloty', minute: 'Min.' },
+  pl: { free: 'Gratis', from: 'od', to: 'do', price: 'Cena', minute: 'min' },
+  en: { free: 'Free', from: 'from', to: 'to', price: 'Price', minute: 'min' },
+  ua: { free: 'Безкоштовно', from: 'від', to: 'до', price: 'Ціна', minute: 'хв' },
+  de: { free: 'Gratis', from: 'ab', to: 'bis', price: 'Preis', minute: 'Min.' },
 } as const;
 
 function resolveCopy(locale: string) {
@@ -90,16 +90,18 @@ export function PriceDisplay({
     durationText = ' \u00B7 ' + durationLabel;
   }
 
-  // aria-label — include range for screen readers
+  // aria-label — include range for screen readers.
+  // Uses formatPLN() so the currency token is consistent with the visible text
+  // (e.g. "200 zł" for pl, "PLN 200" for en, "200 PLN" for de/ua).
   let ariaLabel: string;
   if (amountInCents === 0) {
     ariaLabel = `${copy.price}: ${copy.free}`;
   } else if (effectiveVariant === 'range' && maxAmountInCents !== undefined) {
-    ariaLabel = `${copy.price}: ${copy.from} ${Math.round(amountInCents / 100)} ${copy.to} ${Math.round(maxAmountInCents / 100)} ${copy.currencyName}`;
+    ariaLabel = `${copy.price}: ${copy.from} ${formatPLN(amountInCents, locale)} ${copy.to} ${formatPLN(maxAmountInCents, locale)}`;
   } else if (effectiveVariant === 'from') {
-    ariaLabel = `${copy.price}: ${copy.from} ${Math.round(amountInCents / 100)} ${copy.currencyName}`;
+    ariaLabel = `${copy.price}: ${copy.from} ${formatPLN(amountInCents, locale)}`;
   } else {
-    ariaLabel = `${copy.price}: ${Math.round(amountInCents / 100)} ${copy.currencyName}`;
+    ariaLabel = `${copy.price}: ${formatPLN(amountInCents, locale)}`;
   }
 
   return (

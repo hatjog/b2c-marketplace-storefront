@@ -2812,7 +2812,7 @@
     "search": {
       "submit": "Suchen",
       "tabs": {
-        "product": "Produkt suchen",
+        "product": "Produkt",
         "salons": "Salons",
         "voucher": "Gutschein"
       },
@@ -2912,7 +2912,7 @@
     "filter_price": "Preis",
     "price_from": "Von",
     "price_to": "Bis",
-    "filter_salon": "Salonfilter",
+    "filter_salon": "Salon",
     "all_salons": "Alle Salons",
     "filter_location": "Standort",
     "filter_rating": "Bewertung",
@@ -2950,7 +2950,7 @@
       "popular": "Am häufigsten gebucht",
       "new": "Neu",
       "offers": "Angebote",
-      "premium": "Premiumfilter"
+      "premium": "Premium"
     },
     "filters_aria_label": "Kategoriefilter",
     "grid": {

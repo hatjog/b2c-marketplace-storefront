@@ -65,7 +65,8 @@ describe('PriceDisplay', () => {
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
     expect(children[0]).toBe('ab 200\u00a0PLN');
-    expect(result.props['aria-label']).toBe('Preis: ab 200 Zloty');
+    // aria-label uses formatPLN() \u2014 consistent with visible text
+    expect(result.props['aria-label']).toBe('Preis: ab 200\u00a0PLN');
   });
 
   // AC#6 — range variant (min != max) -> "200-280 zl" (en-dash)
@@ -127,10 +128,10 @@ describe('PriceDisplay', () => {
     expect(children[1]).toBe('');
   });
 
-  // AC#1 — aria-label
-  it('has correct aria-label for standard price', () => {
+  // AC#1 — aria-label uses formatPLN() so visible and AT output share same currency token
+  it('has correct aria-label for standard price (PL: "200 zł")', () => {
     const result = PriceDisplay({ amountInCents: 20000 }) as ReactEl;
-    expect(result.props['aria-label']).toBe('Cena: 200 złotych');
+    expect(result.props['aria-label']).toBe('Cena: 200 zł');
   });
 
   it('has aria-label "Cena: Gratis" when amountInCents is 0', () => {
