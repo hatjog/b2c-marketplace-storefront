@@ -4,7 +4,6 @@ export { CartEmpty } from './CartEmpty/CartEmpty';
 export { CartGroupedBySeller } from './CartGroupedBySeller/CartGroupedBySeller';
 export { CartItems } from './CartItems/CartItems';
 export { CategoryCard } from './CategoryCard/CategoryCard';
-export { Footer } from './Footer/Footer';
 export { GalleryCarousel } from './GalleryCarousel/GalleryCarousel';
 export { HomeProductsCarousel } from './HomeProductsCarousel/HomeProductsCarousel';
 export { ProductGallery } from './ProductGallery/ProductGallery';

@@ -71,13 +71,16 @@ describe('layout.tsx: theme loading', () => {
   });
 });
 
-// ---------- Header: config-driven branding ----------
+// ---------- SiteHeader: config-driven branding ----------
 
-describe('Header: config-driven branding', () => {
-  const header = read('src/components/organisms/Header/Header.tsx');
+describe('SiteHeader: brand lockup chrome', () => {
+  const header = read('src/components/organisms/SiteHeader/SiteHeader.tsx');
 
-  test('logo sourced from marketConfig (getMarketLogoUrl)', () => {
-    assert.match(header, /getMarketLogoUrl\(marketConfig\)/);
+  test('renders the BonBeauty lockup instead of legacy market logo payload', () => {
+    assert.match(header, /LogoLockup/);
+    assert.match(header, /data-testid="site-header-logo"/);
+    assert.doesNotMatch(header, /getMarketLogoUrl\(marketConfig\)/);
+    assert.doesNotMatch(header, /logoSrc=\{marketLogoUrl\}/);
   });
 
   test('market name is not rendered as brand wordmark', () => {
@@ -85,21 +88,15 @@ describe('Header: config-driven branding', () => {
     assert.doesNotMatch(header, /\{marketName\}/);
   });
 
-  test('logo lockup receives configured logo with monogram fallback', () => {
-    assert.match(header, /LogoLockup/);
-    assert.match(header, /logoSrc=\{marketLogoUrl\}/);
-    assert.doesNotMatch(header, /['"]\/Logo\.svg['"]/);
-  });
-
   test('has data-testid for logo link', () => {
-    assert.match(header, /data-testid="header-logo-link"/);
+    assert.match(header, /data-testid="site-header-logo"/);
   });
 });
 
-// ---------- Footer: config-driven branding ----------
+// ---------- SiteFooter: config-driven branding ----------
 
-describe('Footer: config-driven branding', () => {
-  const footer = read('src/components/organisms/Footer/Footer.tsx');
+describe('SiteFooter: config-driven branding', () => {
+  const footer = read('src/components/organisms/SiteFooter/SiteFooter.tsx');
 
   test('uses resolveFooterConnectLinks for social links', () => {
     assert.match(footer, /resolveFooterConnectLinks/);
@@ -113,8 +110,8 @@ describe('Footer: config-driven branding', () => {
     assert.match(footer, /resolveFooterCopyright/);
   });
 
-  test('has data-testid for footer', () => {
-    assert.match(footer, /data-testid="footer"/);
+  test('has data-testid for site footer', () => {
+    assert.match(footer, /data-testid="site-footer"/);
   });
 });
 
