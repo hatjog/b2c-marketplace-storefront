@@ -1035,9 +1035,7 @@
     "checkout_header_secure": "Безпечна оплата",
     "checkout_header_support": "Допомога:",
     "checkout_header_phone": "+48 22 555 41 22",
-    "checkout_step_contact": "Контакт",
     "checkout_step_delivery": "Доставка ваучера",
-    "checkout_step_invoice": "VAT-фактура",
     "checkout_step_payment": "Оплата",
     "consent": {
       "required_heading": "Необхідні підтвердження",
@@ -1082,13 +1080,6 @@
     "payment_heading": "Оплата",
     "payment_method": "Метод оплати",
     "payment_obligation_notice": "Замовлення з обов'язком оплати",
-    "payment_method_chips": [
-      "Картка",
-      "BLIK",
-      "Przelewy24",
-      "Apple Pay",
-      "Google Pay"
-    ],
     "payment_method_chip_card": "Картка",
     "payment_method_chip_blik": "BLIK",
     "payment_method_chip_p24": "Przelewy24",
@@ -1097,11 +1088,6 @@
     "payment_consent_required": "Я приймаю правила BonBeauty та політику ваучера.",
     "payment_consent_marketing": "Я хочу отримувати newsletter та періодичні пропозиції BonBeauty.",
     "order_summary_method_badge": "Voucher PDF · email",
-    "order_summary_trust_tokens": [
-      "Stripe",
-      "SSL",
-      "30 днів повернення"
-    ],
     "order_summary_trust_stripe": "Stripe",
     "order_summary_trust_ssl": "SSL",
     "order_summary_trust_return": "30 днів повернення",

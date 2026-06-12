@@ -1035,9 +1035,7 @@
     "checkout_header_secure": "Bezpieczna płatność",
     "checkout_header_support": "Pomoc:",
     "checkout_header_phone": "+48 22 555 41 22",
-    "checkout_step_contact": "Kontakt",
     "checkout_step_delivery": "Dostawa vouchera",
-    "checkout_step_invoice": "Faktura VAT",
     "checkout_step_payment": "Płatność",
     "consent": {
       "required_heading": "Wymagane potwierdzenia",
@@ -1082,13 +1080,6 @@
     "payment_heading": "Płatność",
     "payment_method": "Metoda płatności",
     "payment_obligation_notice": "Zamówienie z obowiązkiem zapłaty",
-    "payment_method_chips": [
-      "Karta",
-      "BLIK",
-      "Przelewy24",
-      "Apple Pay",
-      "Google Pay"
-    ],
     "payment_method_chip_card": "Karta",
     "payment_method_chip_blik": "BLIK",
     "payment_method_chip_p24": "Przelewy24",
@@ -1097,11 +1088,6 @@
     "payment_consent_required": "Akceptuję regulamin BonBeauty i politykę vouchera.",
     "payment_consent_marketing": "Chcę otrzymywać newsletter i okazjonalne propozycje od BonBeauty.",
     "order_summary_method_badge": "Voucher PDF · email",
-    "order_summary_trust_tokens": [
-      "Stripe",
-      "SSL",
-      "30 dni zwrot"
-    ],
     "order_summary_trust_stripe": "Stripe",
     "order_summary_trust_ssl": "SSL",
     "order_summary_trust_return": "30 dni zwrot",

@@ -1035,9 +1035,7 @@
     "checkout_header_secure": "Sichere Zahlung",
     "checkout_header_support": "Hilfe:",
     "checkout_header_phone": "+48 22 555 41 22 (PL)",
-    "checkout_step_contact": "Kontaktdaten",
     "checkout_step_delivery": "Voucher-Zustellung",
-    "checkout_step_invoice": "USt.-Rechnung",
     "checkout_step_payment": "Zahlung",
     "consent": {
       "required_heading": "Erforderliche Bestätigungen",
@@ -1082,13 +1080,6 @@
     "payment_heading": "Zahlung",
     "payment_method": "Zahlungsmethode",
     "payment_obligation_notice": "Bestellung mit Zahlungspflicht",
-    "payment_method_chips": [
-      "Karte",
-      "BLIK-Zahlung",
-      "Przelewy24-Überweisung",
-      "Apple Pay Wallet",
-      "Google Pay Wallet"
-    ],
     "payment_method_chip_card": "Karte",
     "payment_method_chip_blik": "BLIK-Zahlung",
     "payment_method_chip_p24": "Przelewy24-Überweisung",
@@ -1097,11 +1088,6 @@
     "payment_consent_required": "Ich akzeptiere die BonBeauty-AGB und die Voucher-Richtlinie.",
     "payment_consent_marketing": "Ich möchte den Newsletter und gelegentliche Angebote von BonBeauty erhalten.",
     "order_summary_method_badge": "Voucher PDF · E-Mail",
-    "order_summary_trust_tokens": [
-      "Stripe-Zahlung",
-      "SSL-verschlüsselt",
-      "30 Tage Rückgabe"
-    ],
     "order_summary_trust_stripe": "Stripe-Zahlung",
     "order_summary_trust_ssl": "SSL-verschlüsselt",
     "order_summary_trust_return": "30 Tage Rückgabe",

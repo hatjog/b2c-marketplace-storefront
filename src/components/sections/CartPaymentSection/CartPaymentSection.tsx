@@ -16,6 +16,7 @@ import {
   getCheckoutPaymentIdempotencyKey
 } from '@/lib/checkout/payment-idempotency';
 import { initiatePaymentSession } from '@/lib/data/cart';
+import { getEnabledPaymentMethodTypes } from '@/lib/stripe/client';
 
 import { isStripe as isStripeFunc, paymentInfoMap } from '../../../lib/constants';
 import PaymentContainer from '../../organisms/PaymentContainer/PaymentContainer';
@@ -40,25 +41,28 @@ function isPendingPaymentSession(
 const PAYMENT_CHIP_KEYS = ['card', 'blik', 'p24', 'apple_pay', 'google_pay'] as const;
 type PaymentChipKey = (typeof PAYMENT_CHIP_KEYS)[number];
 
-function matchPaymentProviderId(
+/**
+ * Checks whether the given Stripe payment_method_type chip is enabled for the
+ * active market.  Each chip is a purely visual indicator of Stripe-level
+ * payment methods (card/blik/p24/apple_pay/google_pay) — NOT a separate Medusa
+ * provider.  BonBeauty routes all of them through a single pp_stripe_* provider.
+ *
+ * AC3 fix (MEDIUM-1): chips reflect Stripe payment_method_types (via
+ * getEnabledPaymentMethodTypes()) rather than Medusa provider IDs, preventing
+ * BLIK/P24 from appearing permanently disabled and avoiding the multi-is-active
+ * collapse that occurred when several chips resolved to the same stripeId.
+ */
+function isChipEnabled(
   providers: HttpTypes.StorePaymentProvider[] | null,
   chip: PaymentChipKey
-): string | null {
+): boolean {
   const ids = providers?.map(provider => provider.id) ?? [];
-  const stripeId = ids.find(isStripeFunc) ?? null;
-  if (chip === 'card') {
-    return stripeId ?? ids.find(id => id.toLowerCase().includes('card')) ?? null;
-  }
-  if (chip === 'blik') {
-    return ids.find(id => id.toLowerCase().includes('blik')) ?? null;
-  }
-  if (chip === 'p24') {
-    return ids.find(id => /p24|przelewy/.test(id.toLowerCase())) ?? null;
-  }
-  if (chip === 'apple_pay' || chip === 'google_pay') {
-    return ids.find(id => id.toLowerCase().includes(chip)) ?? stripeId;
-  }
-  return null;
+  const hasStripe = ids.some(isStripeFunc);
+  if (!hasStripe) return false;
+  // All five chips are Stripe payment_method_types; check market enablement.
+  const enabledMethods = getEnabledPaymentMethodTypes();
+  if (!enabledMethods) return false;
+  return enabledMethods.includes(chip);
 }
 
 const CartPaymentSection = ({
@@ -198,11 +202,25 @@ const CartPaymentSection = ({
   }, [isOpen]);
 
   const isEditEnabled = !isOpen && !!cart?.payment_collection?.payment_sessions?.length;
-  const paymentChips = PAYMENT_CHIP_KEYS.map(key => ({
-    key,
-    label: t(`payment_method_chip_${key}`),
-    providerId: matchPaymentProviderId(availablePaymentMethods, key)
-  }));
+  // AC3 fix (MEDIUM-1): chips are purely visual Stripe payment_method_type
+  // indicators.  "Active" = the Stripe provider session is selected (not per-chip
+  // provider ID, since all five share pp_stripe_*).  Each chip is enabled iff its
+  // Stripe payment_method_type is available for the active market.
+  const stripeProviderId =
+    availablePaymentMethods?.map(p => p.id).find(isStripeFunc) ?? null;
+  const isStripeSessionSelected = stripeProviderId !== null && selectedPaymentMethod === stripeProviderId;
+  const paymentChips = PAYMENT_CHIP_KEYS.map(key => {
+    const enabled = isChipEnabled(availablePaymentMethods, key);
+    return {
+      key,
+      label: t(`payment_method_chip_${key}`),
+      // card chip is the "active" visual representative when Stripe is selected;
+      // other chips are enabled but not individually selectable (PaymentElement
+      // surfaces method choice natively within the Stripe session).
+      isActive: key === 'card' && isStripeSessionSelected,
+      enabled
+    };
+  });
 
   return (
     <div
@@ -238,26 +256,26 @@ const CartPaymentSection = ({
                 onChange={(value: string) => setPaymentMethod(value)}
               >
                 <div className="pm-grid mb-4">
-                  {paymentChips.map(chip => {
-                    const isActive =
-                      chip.providerId !== null && selectedPaymentMethod === chip.providerId;
-                    return (
-                      <button
-                        key={chip.key}
-                        type="button"
-                        className={`pmchip ${isActive ? 'is-active' : ''}`}
-                        disabled={!chip.providerId}
-                        aria-pressed={isActive}
-                        onClick={() => {
-                          if (chip.providerId) {
-                            setPaymentMethod(chip.providerId);
-                          }
-                        }}
-                      >
-                        {chip.label}
-                      </button>
-                    );
-                  })}
+                  {paymentChips.map(chip => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      className={`pmchip ${chip.isActive ? 'is-active' : ''}`}
+                      disabled={!chip.enabled}
+                      aria-pressed={chip.isActive}
+                      // Chips are visual indicators; payment method selection
+                      // is handled natively by StripePaymentElement (PaymentElement
+                      // renders tabs/wallets).  Clicking a chip activates the Stripe
+                      // provider session; PaymentElement surfaces the actual type.
+                      onClick={() => {
+                        if (chip.enabled && stripeProviderId) {
+                          void setPaymentMethod(stripeProviderId);
+                        }
+                      }}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
                 </div>
                 {availablePaymentMethods.map(paymentMethod => (
                   <div key={paymentMethod.id}>
@@ -325,14 +343,18 @@ const CartPaymentSection = ({
                 : t('continue_to_review')}
             </Button>
           )}
+          {/* MEDIUM-2 fix: consent-block is a visual summary only — NOT pre-ticked.
+              The real RODO active-opt-in gate (GDPR Art. 7) lives in CartReview /
+              CheckoutConsentSurface.  Rendering a pre-ticked "required" consent here
+              would contradict the active opt-in principle and duplicate the gate.
+              Both rows are shown un-checked; their labels inform the user that consent
+              will be required at the review step before payment is submitted. */}
           <div className="consent-block mt-4">
-            <div className="consent-row is-checked">
+            <div className="consent-row">
               <span
                 className="cb"
                 aria-hidden="true"
-              >
-                ✓
-              </span>
+              />
               <span className="label">
                 {t('payment_consent_required')} <span className="req-mark">*</span>
               </span>
