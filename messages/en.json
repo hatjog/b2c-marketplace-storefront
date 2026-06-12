@@ -721,7 +721,7 @@
     "promo_applied": "Promotion code applied",
     "promo_removed": "Promotion code removed",
     "promo_remove_failed": "Failed to remove promotion code",
-    "promo_code_heading": "Have promo code?",
+    "promo_code_heading": "I have a discount code",
     "promo_code_placeholder": "Enter code",
     "promo_code_button": "Activate",
     "gift_card": "Gift card",
@@ -751,7 +751,7 @@
     "trust_line_stripe": "Stripe",
     "trust_line_returns": "30-day returns",
     "trust_line_pdf": "PDF voucher in 2 min",
-    "out_of_stock_badge": "OOS"
+    "out_of_stock_badge": "Out of stock"
   },
   "navigation": {
     "menu": "Menu",

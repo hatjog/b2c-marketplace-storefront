@@ -721,7 +721,7 @@
     "promo_applied": "Промо-код активовано",
     "promo_removed": "Промо-код видалено",
     "promo_remove_failed": "Не вдалося видалити промо-код",
-    "promo_code_heading": "Маєте промо-код?",
+    "promo_code_heading": "Маю код знижки",
     "promo_code_placeholder": "Введіть код",
     "promo_code_button": "Активувати",
     "gift_card": "Подарункова картка",
@@ -751,7 +751,7 @@
     "trust_line_stripe": "Stripe",
     "trust_line_returns": "30 днів повернення",
     "trust_line_pdf": "PDF-ваучер за 2 хв",
-    "out_of_stock_badge": "OOS"
+    "out_of_stock_badge": "Недоступно"
   },
   "navigation": {
     "menu": "Меню",

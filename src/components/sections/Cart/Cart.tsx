@@ -21,6 +21,49 @@ type CuratedCategory = {
   handle: string;
 };
 
+/** Returns true when a cart line item is out-of-stock (mirrors CartItemsProducts logic). */
+function isLineItemOutOfStock(item: HttpTypes.StoreCartLineItem): boolean {
+  const metadata = item.metadata as Record<string, unknown> | null | undefined;
+  const variant = item.variant as
+    | (HttpTypes.StoreProductVariant & {
+        inventory_quantity?: number | null;
+        manage_inventory?: boolean | null;
+        allow_backorder?: boolean | null;
+      })
+    | null
+    | undefined;
+  const availability = String(
+    metadata?.availability ?? metadata?.stock_status ?? metadata?.['gp.availability'] ?? ''
+  ).toLowerCase();
+
+  if (
+    metadata?.out_of_stock === true ||
+    availability === 'out_of_stock' ||
+    availability === 'unavailable'
+  ) {
+    return true;
+  }
+
+  if (metadata?.in_stock === false) {
+    return true;
+  }
+
+  if (variant?.manage_inventory === false || variant?.allow_backorder === true) {
+    return false;
+  }
+
+  return typeof variant?.inventory_quantity === 'number' && variant.inventory_quantity <= 0;
+}
+
+/** Compute cart total excluding OOS items (AC3: recalculate). */
+function computeAvailableTotal(cart: HttpTypes.StoreCart): number {
+  const items = cart.items ?? [];
+  const oosSubtotal = items
+    .filter(item => isLineItemOutOfStock(item))
+    .reduce((sum, item) => sum + (item.subtotal ?? 0), 0);
+  return Math.max(0, (cart.total ?? 0) - oosSubtotal);
+}
+
 export const Cart = ({
   recommendedProducts,
   curatedCategories
@@ -35,8 +78,10 @@ export const Cart = ({
   >('pdf_email');
 
   const itemCount = cart?.items?.length ?? 0;
+  // AC3: total shown excludes OOS items (recalculate presentation).
+  const availableTotal = cart ? computeAvailableTotal(cart) : 0;
   const totalFormatted = convertToLocale({
-    amount: cart?.total ?? 0,
+    amount: availableTotal,
     currency_code: cart?.currency_code ?? 'pln'
   });
   const countSummary = t('count_summary', {
@@ -59,11 +104,13 @@ export const Cart = ({
     );
   }
 
-  const renderSummary = (deliveryName: string) => (
+  // M2: renderSummary accepts a testIdSuffix to disambiguate duplicate testids
+  // between the desktop aside and the mobile drawer (both share the same DOM tree).
+  const renderSummary = (deliveryName: string, testIdSuffix: 'desktop' | 'mobile') => (
     <>
       <div
         className="discount-block mb-5 space-y-3"
-        data-testid="cart-discount-block"
+        data-testid={`cart-discount-block-${testIdSuffix}`}
       >
         <PromoCode
           cart={cart}
@@ -72,7 +119,7 @@ export const Cart = ({
         <button
           type="button"
           className="flex min-h-[52px] w-full items-center justify-between rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-4 py-3 text-left text-sm font-medium text-primary"
-          data-testid="cart-gift-card-option"
+          data-testid={`cart-gift-card-option-${testIdSuffix}`}
         >
           <span>{t('gift_card_option')}</span>
           <span className="text-secondary">{t('another_step_appears')}</span>
@@ -81,13 +128,14 @@ export const Cart = ({
       <CartSummary
         item_total={cart?.item_subtotal || 0}
         shipping_total={cart?.shipping_subtotal || 0}
-        total={cart?.total || 0}
+        total={availableTotal}
         currency_code={cart?.currency_code || ''}
         tax={cart?.tax_total || 0}
         discount_total={cart?.discount_subtotal || 0}
         deliveryMethod={deliveryMethod}
         onDeliveryMethodChange={setDeliveryMethod}
         deliveryName={deliveryName}
+        testIdSuffix={testIdSuffix}
         showEnhancedCartSummary
       />
       <LocalizedClientLink href="/checkout?step=address">
@@ -126,7 +174,7 @@ export const Cart = ({
             className="summary-card bb-section-shell bb-section-shell-strong h-fit lg:sticky lg:top-24"
             data-testid="cart-summary-card"
           >
-            {renderSummary('cart-delivery-method-desktop')}
+            {renderSummary('cart-delivery-method-desktop', 'desktop')}
           </aside>
         </div>
       </div>
@@ -144,7 +192,7 @@ export const Cart = ({
           </span>
         </summary>
         <div className="mt-4 max-h-[70vh] overflow-y-auto">
-          {renderSummary('cart-delivery-method-mobile')}
+          {renderSummary('cart-delivery-method-mobile', 'mobile')}
         </div>
       </details>
     </div>
