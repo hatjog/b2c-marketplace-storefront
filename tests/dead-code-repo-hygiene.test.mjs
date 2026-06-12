@@ -29,4 +29,16 @@ describe('dead-code repo hygiene', () => {
     const stateMachine = read('src/lib/state-machine/create-persisted-state-machine.ts');
     assert.doesNotMatch(stateMachine, /VendorMoRWizard/);
   });
+
+  // AUD-12-12 follow-up: legacy Header/Header.tsx confirmed dead (no barrel export, no live importers).
+  // branding-per-market.test.mjs correctly tests SiteHeader (live component) rather than this legacy file.
+  // Cleanup of Header/Header.tsx itself is deferred to a dedicated hygiene pass (out of 6.6 scope).
+  test('legacy Header/Header.tsx is not re-exported from organisms barrel', () => {
+    const serverBarrel = read('src/components/organisms/index.server.ts');
+    const clientBarrel = read('src/components/organisms/index.client.ts');
+    const mainBarrel = read('src/components/organisms/index.ts');
+    assert.doesNotMatch(serverBarrel, /organisms\/Header\b|Header\/Header/);
+    assert.doesNotMatch(clientBarrel, /organisms\/Header\b|Header\/Header/);
+    assert.doesNotMatch(mainBarrel, /from ['"]\.\/Header\/Header['"]/);
+  });
 });
