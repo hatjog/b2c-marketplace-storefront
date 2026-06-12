@@ -72,9 +72,8 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
   return (
     <main
       id="main-content"
-      className="container grid grid-cols-12"
+      className="container"
     >
-      <h1 className="sr-only">{t('cart_title')}</h1>
       <StorefrontRouteStateSignal
         route="cart"
         surface="cart"

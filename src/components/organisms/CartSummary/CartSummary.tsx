@@ -13,6 +13,7 @@ export const CartSummary = ({
   discount_total,
   deliveryMethod,
   onDeliveryMethodChange,
+  deliveryName = 'delivery-method',
   showEnhancedCartSummary = false
 }: {
   item_total: number;
@@ -21,11 +22,17 @@ export const CartSummary = ({
   currency_code: string;
   tax: number;
   discount_total: number;
-  deliveryMethod?: 'pdf_email' | 'scheduled';
-  onDeliveryMethodChange?: (value: 'pdf_email' | 'scheduled') => void;
+  deliveryMethod?: 'pdf_email' | 'magic_link' | 'physical_card';
+  onDeliveryMethodChange?: (value: 'pdf_email' | 'magic_link' | 'physical_card') => void;
+  deliveryName?: string;
   showEnhancedCartSummary?: boolean;
 }) => {
   const t = useTranslations('cart');
+  const deliveryOptions = [
+    { value: 'pdf_email' as const, label: t('delivery_method_pdf_email') },
+    { value: 'magic_link' as const, label: t('delivery_method_magic_link') },
+    { value: 'physical_card' as const, label: t('delivery_method_physical_card') }
+  ];
 
   return (
     <div data-testid="cart-summary">
@@ -84,41 +91,47 @@ export const CartSummary = ({
             data-testid="cart-summary-delivery-method"
           >
             <p className="text-primary">{t('delivery_method_label')}</p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2">
-                <input
-                  type="radio"
-                  name="delivery-method"
-                  value="pdf_email"
-                  checked={deliveryMethod === 'pdf_email'}
-                  onChange={() => onDeliveryMethodChange?.('pdf_email')}
-                />
-                <span>{t('delivery_method_pdf_email')}</span>
-              </label>
-              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2">
-                <input
-                  type="radio"
-                  name="delivery-method"
-                  value="scheduled"
-                  checked={deliveryMethod === 'scheduled'}
-                  onChange={() => onDeliveryMethodChange?.('scheduled')}
-                />
-                <span>{t('delivery_method_scheduled')}</span>
-              </label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {deliveryOptions.map(option => (
+                <label
+                  key={option.value}
+                  className="dchip rchip flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2 text-sm has-[:checked]:border-[var(--bb-gold,#C5A059)] has-[:checked]:bg-[var(--bb-tint-gold-12)]"
+                >
+                  <input
+                    type="radio"
+                    name={deliveryName}
+                    value={option.value}
+                    checked={deliveryMethod === option.value}
+                    onChange={() => onDeliveryMethodChange?.(option.value)}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
             </div>
           </div>
         )}
         <div
-          className="flex items-center justify-between border-t pt-4"
+          className="sum-total flex items-center justify-between border-t pt-4"
           data-testid="cart-summary-total"
         >
-          <span>{t('total')}</span>
+          <div>
+            <span>{t('total')}</span>
+            <p className="text-xs text-secondary">{t('vat_included')}</p>
+          </div>
           <span className="label-xl text-primary">
             {convertToLocale({
               amount: total,
               currency_code
             })}
           </span>
+        </div>
+        <div
+          className="sum-trust space-y-1 text-xs text-secondary"
+          data-testid="cart-summary-trust"
+        >
+          <p>{t('trust_line_stripe')}</p>
+          <p>{t('trust_line_returns')}</p>
+          <p>{t('trust_line_pdf')}</p>
         </div>
       </div>
     </div>

@@ -5,7 +5,6 @@ import { hasMultipleSellers } from '@/lib/helpers/cart-vendor-context';
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 
 import { CartGroupedBySeller } from '../CartGroupedBySeller/CartGroupedBySeller';
-
 import { EmptyCart } from './EmptyCart';
 
 /**
@@ -21,7 +20,13 @@ import { EmptyCart } from './EmptyCart';
  * Turbopack TDZ-safe pattern.
  */
 
-export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
+export const CartItems = ({
+  cart,
+  deliveryLabel = 'Delivery'
+}: {
+  cart: HttpTypes.StoreCart | null;
+  deliveryLabel?: string;
+}) => {
   if (!cart) return null;
 
   const items = cart.items ?? [];
@@ -38,6 +43,7 @@ export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
         <CartItemsFooter
           currency_code={cart.currency_code}
           price={cart.shipping_subtotal}
+          label={deliveryLabel}
         />
       </>
     );
@@ -62,6 +68,7 @@ export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
       <CartItemsFooter
         currency_code={cart.currency_code}
         price={cart.shipping_subtotal}
+        label={deliveryLabel}
       />
     </div>
   ));
@@ -105,7 +112,7 @@ function resolveCartItemSeller(sellerValue: any) {
     // Mercur 2 (`status === 'open'`) OR legacy Mercur 1.x (`store_status === 'ACTIVE'`) — see
     // normalize-listed-products.ts. Remove store_status branch once all API responses use seller.status.
     const activeSeller = sellerValue.find(
-      (seller) => seller?.status === 'open' || seller?.store_status === 'ACTIVE', // noqa: mercur15-drift
+      seller => seller?.status === 'open' || seller?.store_status === 'ACTIVE' // noqa: mercur15-drift
     );
     return activeSeller ?? sellerValue[0] ?? null;
   }

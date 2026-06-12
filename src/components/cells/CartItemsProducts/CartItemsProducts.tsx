@@ -1,13 +1,13 @@
 import type { HttpTypes } from '@medusajs/types';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 import { DeleteCartItemButton } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
 import {
   resolveStorefrontImageSrc,
-  STOREFRONT_PLACEHOLDER_IMAGE_SRC,
+  STOREFRONT_PLACEHOLDER_IMAGE_SRC
 } from '@/lib/helpers/asset-reference';
 import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
@@ -58,17 +58,17 @@ export const CartItemsProducts = ({
           amount: product.subtotal ?? 0,
           currency_code
         });
+        const isOutOfStock = isCartLineItemOutOfStock(product);
 
         // Story 5.5 — multi-vendor seller label (flag-gated; null when
         // legacy single-vendor flow → label not rendered → zero regression).
-        const selectedSeller = mvEnabled
-          ? readSelectedSeller(product)
-          : null;
+        const selectedSeller = mvEnabled ? readSelectedSeller(product) : null;
 
         return (
           <div
             key={product.id}
             data-testid={`cart-item-${product.id}`}
+            data-oos={isOutOfStock ? 'true' : undefined}
             className="flex gap-2 rounded-[var(--bb-radius-card)] border p-1"
           >
             <LocalizedClientLink href={`/products/${product.product_handle}`}>
@@ -101,12 +101,20 @@ export const CartItemsProducts = ({
                 <LocalizedClientLink href={`/products/${product.product_handle}`}>
                   <div className="mb-4 w-[100px] md:w-[200px] lg:mb-0 lg:w-[280px]">
                     <h3
-                      className="heading-xs truncate uppercase"
+                      className={`heading-xs truncate uppercase ${isOutOfStock ? 'line-through decoration-2 opacity-70' : ''}`}
                       data-testid="cart-item-title"
                     >
                       {product.product_title}
                       {product.subtitle && ` - ${product.subtitle}`}
                     </h3>
+                    {isOutOfStock && (
+                      <span
+                        className="mt-2 inline-flex rounded-full border border-warning bg-warning-secondary px-2 py-1 text-xs font-semibold text-warning"
+                        data-testid="cart-item-oos-badge"
+                      >
+                        {tCart('out_of_stock_badge')}
+                      </span>
+                    )}
                     {selectedSeller && (
                       <p
                         className="text-xs text-secondary"
@@ -141,13 +149,14 @@ export const CartItemsProducts = ({
                     />
                   ) : (
                     <p>
-                      {tCart('quantity_label')}: <span className="text-primary">{product.quantity}</span>
+                      {tCart('quantity_label')}:{' '}
+                      <span className="text-primary">{product.quantity}</span>
                     </p>
                   )}
                 </div>
                 <div className="mt-4 flex items-center gap-2 lg:mt-0 lg:block lg:text-right">
                   <p
-                    className="label-lg"
+                    className={`label-lg ${isOutOfStock ? 'line-through decoration-2 opacity-70' : ''}`}
                     data-testid="cart-item-price"
                   >
                     {total}
@@ -161,3 +170,36 @@ export const CartItemsProducts = ({
     </div>
   );
 };
+
+function isCartLineItemOutOfStock(product: HttpTypes.StoreCartLineItem): boolean {
+  const metadata = product.metadata as Record<string, unknown> | null | undefined;
+  const variant = product.variant as
+    | (HttpTypes.StoreProductVariant & {
+        inventory_quantity?: number | null;
+        manage_inventory?: boolean | null;
+        allow_backorder?: boolean | null;
+      })
+    | null
+    | undefined;
+  const availability = String(
+    metadata?.availability ?? metadata?.stock_status ?? metadata?.['gp.availability'] ?? ''
+  ).toLowerCase();
+
+  if (
+    metadata?.out_of_stock === true ||
+    availability === 'out_of_stock' ||
+    availability === 'unavailable'
+  ) {
+    return true;
+  }
+
+  if (metadata?.in_stock === false) {
+    return true;
+  }
+
+  if (variant?.manage_inventory === false || variant?.allow_backorder === true) {
+    return false;
+  }
+
+  return typeof variant?.inventory_quantity === 'number' && variant.inventory_quantity <= 0;
+}
