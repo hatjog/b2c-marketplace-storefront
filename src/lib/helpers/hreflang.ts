@@ -50,6 +50,10 @@ export const toHreflang = (code: string): string => {
   return getLocaleMapping(code)?.bcp47 || code;
 };
 
+export const toIntlLocale = (code: string): string => {
+  return getLocaleMapping(code)?.bcp47 ?? STOREFRONT_LOCALE_MAP.pl.bcp47;
+};
+
 export const toHreflangBare = (code: string): string => {
   return getLocaleMapping(code)?.bare || code;
 };

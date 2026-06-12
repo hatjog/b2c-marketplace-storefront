@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test, { describe } from 'node:test';
 
-const { toHreflang, toHreflangBare, toLegalMasterFileName, toLegalTemplateLocale, STOREFRONT_LOCALE_MAP } =
+const { toHreflang, toHreflangBare, toIntlLocale, toLegalMasterFileName, toLegalTemplateLocale, STOREFRONT_LOCALE_MAP } =
   await import('../src/lib/helpers/hreflang.ts');
 
 // R7 invariant: 4-locale platform-wide list per ADR-150 / Story 8.3.
@@ -36,6 +36,17 @@ describe('toHreflang', () => {
 
   test('unknown code passes through as-is', () => {
     assert.equal(toHreflang('xyz'), 'xyz');
+  });
+
+  test('toIntlLocale returns formatter-safe BCP 47 tags for all storefront locales', () => {
+    assert.equal(toIntlLocale('pl'), 'pl-PL');
+    assert.equal(toIntlLocale('en'), 'en-US');
+    assert.equal(toIntlLocale('ua'), 'uk-UA');
+    assert.equal(toIntlLocale('de'), 'de-DE');
+  });
+
+  test('toIntlLocale falls back to PL for unsupported runtime locale input', () => {
+    assert.equal(toIntlLocale('xyz'), 'pl-PL');
   });
 
   test('STOREFRONT_LOCALE_MAP keys match 4-locale platform invariant (R7 parity)', () => {

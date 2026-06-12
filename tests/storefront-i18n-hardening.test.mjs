@@ -9,13 +9,72 @@ const locales = ['pl', 'en', 'ua', 'de'];
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 const readJson = relativePath => JSON.parse(read(relativePath));
 
-function flatten(value, prefix = '') {
+function flatten(value, prefix = '', mode = 'keys') {
   return Object.entries(value).flatMap(([key, item]) => {
     if (key === '_review' && prefix === '') return [];
     const next = prefix ? `${prefix}.${key}` : key;
-    return item && typeof item === 'object' && !Array.isArray(item) ? flatten(item, next) : [next];
+    return item && typeof item === 'object' && !Array.isArray(item)
+      ? flatten(item, next, mode)
+      : [mode === 'entries' ? [next, item] : next];
   });
 }
+
+const DE_ACCEPTED_IDENTICAL_TO_PL = new Set([
+  'header.logo_alt',
+  'header.nav.blog',
+  'seller.list.radius_5km',
+  'seller.list.radius_10km',
+  'seller.list.radius_25km',
+  'seller.list.radius_50km',
+  'seller.detail_v180.legal.nip',
+  'seller.detail_v180.legal.regon',
+  'seller.detail_v180.legal.krs',
+  'seller.reviews_v180.summary.ratingLine',
+  'seller.reviews_v180.list.ratingVisible',
+  'products.seller_regon',
+  'products.seller_krs',
+  'blog.title',
+  'legal.contact_email',
+  'voucher.pdf.directions_google_label',
+  'voucher.pdf.directions_apple_label',
+  'voucher.recipient.active.card_eyebrow_with_city',
+  'voucher.recipient.salon.phone_label',
+  'voucher.pdf_directions.google_maps_label',
+  'voucher.pdf_directions.apple_maps_label',
+  'voucher.recipient_audit_trail.empty.cta_href',
+  'voucher.recipient_audit_trail.error.support_href',
+  'voucher_withdrawal.state_withdrawal_eligible_before_service_execution.status_token',
+  'voucher_withdrawal.state_consent_to_execute_captured.status_token',
+  'voucher_withdrawal.state_withdrawal_blocked_after_execution.status_token',
+  'voucher_withdrawal.state_refunded.status_token',
+  'voucher_withdrawal.state_support_review.status_token',
+  'voucher_withdrawal.legal.contact_support_href',
+  'payment_status.mailto_ticket_label',
+  'storefront_state.empty.initial.action_href',
+  'storefront_state.empty.no_results.action_href',
+  'storefront_state.empty.permission_denied.action_href',
+  'storefront_state.empty.load_error.action_href',
+  'storefront_state.validation.action_href',
+  'storefront_state.unavailable.action_href',
+  'storefront_state.access_denied.action_href',
+  'storefront_state.stale.action_href',
+  'storefront_state.pending.action_href',
+  'storefront_state.failed.action_href',
+  'storefront_state.retry.action_href',
+  'storefront_state.recovered.action_href',
+  'pdp.seller_proof.treatments_value',
+  'pdp.tabs.faq.label',
+  'accountRead.empty.collectionCode',
+  'accountRead.empty.wishlistCode',
+  'accountRead.empty.messagesCode',
+  'accountRead.orderDetail.payment.providers.stripe',
+  'accountRead.orderDetail.payment.providers.pp_stripe_stripe',
+  'accountRead.orderDetail.payment.providers.paypal',
+  'accountRead.orderDetail.payment.providers.blik',
+  'accountRead.orderDetail.payment.providers.p24',
+  'error_surface.offline_label',
+  'categories_index.hero.eyebrow',
+]);
 
 describe('Story 6.3 storefront i18n hardening', () => {
   test('all release locales contain the PL baseline keys', () => {
@@ -50,6 +109,34 @@ describe('Story 6.3 storefront i18n hardening', () => {
       assert.equal(typeof messages.voucher.qr_code_label, 'string');
       assert.notEqual(messages.voucher.qr_code_aria_label.trim(), '');
       assert.notEqual(messages.voucher.qr_code_label.trim(), '');
+    }
+  });
+
+  test('de catalog has no silent PL fallback copies outside the accepted technical allowlist', () => {
+    const pl = Object.fromEntries(flatten(readJson('messages/pl.json'), '', 'entries'));
+    const de = Object.fromEntries(flatten(readJson('messages/de.json'), '', 'entries'));
+
+    const identical = Object.entries(pl)
+      .filter(([key, value]) => de[key] === value)
+      .map(([key]) => key)
+      .sort();
+
+    assert.deepEqual(
+      identical,
+      [...DE_ACCEPTED_IDENTICAL_TO_PL].sort(),
+      'de.json contains a PL-identical value that is not an explicit accept-fallback'
+    );
+  });
+
+  test('price, checkout and voucher-adjacent radiogroups are named by visible labels', () => {
+    const giftMode = read('src/components/atoms/GiftModeToggle/GiftModeToggle.tsx');
+    const purchaseMode = read('src/components/molecules/PurchaseModeToggle/PurchaseModeToggle.tsx');
+    const sellerSelector = read('src/components/cells/SellerSelector/SellerSelector.tsx');
+    const categorySidebar = read('src/components/sections/CategoryPlp/CategoryPlpSidebar.tsx');
+
+    for (const source of [giftMode, purchaseMode, sellerSelector, categorySidebar]) {
+      assert.doesNotMatch(source, /role="radiogroup"[\s\S]{0,160}aria-label=/);
+      assert.match(source, /role="radiogroup"[\s\S]{0,180}aria-labelledby=/);
     }
   });
 

@@ -1,3 +1,5 @@
+import { toIntlLocale } from '@/lib/helpers/hreflang';
+
 /**
  * voucher-copy.ts — Shared voucher copy and formatting helpers.
  *
@@ -65,7 +67,7 @@ export function refundHelpAnchor(locale: string): string {
  *
  * @param amountInMinorUnits — integer amount in minor currency units (e.g. 5000 = 50 PLN)
  * @param currencyCode — ISO 4217 currency code (e.g. "PLN", "EUR")
- * @param locale — BCP 47 locale (e.g. "pl", "en")
+ * @param locale — storefront locale or BCP 47 locale (e.g. "pl", "en", "ua", "de")
  * @returns formatted string (e.g. "50,00 zł" for pl/PLN)
  */
 export function formatVoucherPrice(
@@ -74,7 +76,7 @@ export function formatVoucherPrice(
   locale: string,
 ): string {
   try {
-    return new Intl.NumberFormat(locale, {
+    return new Intl.NumberFormat(toIntlLocale(locale), {
       style: 'currency',
       currency: currencyCode,
       minimumFractionDigits: 2,
