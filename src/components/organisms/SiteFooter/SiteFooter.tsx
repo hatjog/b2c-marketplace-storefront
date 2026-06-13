@@ -75,9 +75,9 @@ export async function SiteFooter({
               key={section}
               className="space-y-3"
             >
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--bb-cream-60)]">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--bb-cream-60)]">
                 {sectionLabel(section)}
-              </h3>
+              </h2>
               <ul className="space-y-2">
                 {links.map(link => (
                   <li key={link.path}>
@@ -106,9 +106,9 @@ export async function SiteFooter({
 
           {/* Connect column */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--bb-cream-60)]">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--bb-cream-60)]">
               {t('section_connect')}
-            </h3>
+            </h2>
             <div className="flex flex-wrap gap-2">
               {connectLinks.map(link => (
                 <a

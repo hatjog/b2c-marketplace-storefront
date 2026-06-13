@@ -550,7 +550,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
                 >
                   {isDone ? '✓' : index + 1}
                 </div>
-                <p className={`label-sm ${isDone || isActive ? 'text-[var(--gold)]' : 'text-secondary'}`}>
+                <p className={`label-sm ${isDone || isActive ? 'font-medium text-primary' : 'text-secondary'}`}>
                   {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}
