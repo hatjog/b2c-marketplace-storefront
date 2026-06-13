@@ -129,8 +129,8 @@ export default async function CollectionDetailPage({
               data.overlay === 'dark'
                 ? 'bg-[var(--bb-gradient-dark-warm)]'
                 : data.overlay === 'warm'
-                  ? 'bg-[var(--bb-dark-gradient)]'
-                  : 'bg-[var(--bb-gradient-dark-warm)]'
+                  ? 'bg-[var(--bb-gradient-dark-warm)]'
+                  : 'bg-[var(--bb-dark-gradient)]'
             }`}
           />
           {data.imageUrl ? (
