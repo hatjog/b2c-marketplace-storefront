@@ -110,7 +110,6 @@ export const ProductCard = ({
         className
       )}
       data-testid="product-card"
-      data-testid-link="product-card-link"
       data-product-handle={product.handle}
     >
       <div

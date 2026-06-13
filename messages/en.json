@@ -502,6 +502,7 @@
     "description_heading": "Treatment description",
     "attributes_heading": "Details",
     "not_available_in_region": "Not available in your region",
+    "discount": "Discount",
     "temporarily_unavailable": "Product temporarily unavailable",
     "no_results": "No results",
     "no_results_description": "Sorry, we can't find any results for your criteria",

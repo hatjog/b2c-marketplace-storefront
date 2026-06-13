@@ -141,6 +141,12 @@ body {
     box-shadow: var(--bb-shadow-lift, 0 30px 80px rgba(37, 28, 12, 0.14));
   }
 
+  .bb-section-shell-soft {
+    background: var(--bb-surface-warm, rgba(249, 244, 236, 0.72));
+    border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
+    box-shadow: var(--bb-shadow-soft, 0 20px 60px rgba(90, 67, 28, 0.08));
+  }
+
   .bb-section-shell-dark {
     @apply text-white;
     background: var(--bb-dark-gradient, rgba(20, 20, 20, 0.94));
