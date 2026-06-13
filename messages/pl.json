@@ -1,4 +1,8 @@
 {
+  "carousel": {
+    "previous_slide": "Poprzedni slajd",
+    "next_slide": "Następny slajd"
+  },
   "common": {
     "loading": "Ładowanie...",
     "error": "Wystąpił błąd",

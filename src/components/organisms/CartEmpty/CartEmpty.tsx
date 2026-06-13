@@ -53,12 +53,12 @@ export function CartEmpty() {
             />
           </svg>
         </span>
-        <h3
+        <h2
           id="cart-empty-heading"
           className="heading-lg text-primary"
         >
           {t('empty_es3_heading')}
-        </h3>
+        </h2>
         <p className="mt-3 text-lg text-secondary">
           {t('empty_es3_body')}
         </p>

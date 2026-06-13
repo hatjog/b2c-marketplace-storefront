@@ -370,7 +370,7 @@ export default async function SellerReviewsPage({
                     aria-current={active ? 'page' : undefined}
                     className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm ${
                       active
-                        ? 'bg-[var(--cta)] text-[var(--text-on-action)]'
+                        ? 'bg-[var(--cta)] text-white'
                         : 'bg-[var(--bb-tint-gold-08)] text-primary'
                     }`}
                   >
@@ -501,7 +501,7 @@ export default async function SellerReviewsPage({
                   aria-disabled={!data.hasNextPage}
                   className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm ${
                     data.hasNextPage
-                      ? 'bg-[var(--cta)] text-[var(--text-on-action)]'
+                      ? 'bg-[var(--cta)] text-white'
                       : 'pointer-events-none bg-[var(--bb-tint-gold-05)] text-secondary/60'
                   }`}
                 >
@@ -521,7 +521,7 @@ export default async function SellerReviewsPage({
             </div>
             <LocalizedClientLink
               href={backHref}
-              className="ml-auto inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--cta)] px-5 py-2 text-sm font-medium text-[var(--text-on-action)]"
+              className="ml-auto inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--cta)] px-5 py-2 text-sm font-medium text-white"
             >
               {t('backToSeller')}
             </LocalizedClientLink>

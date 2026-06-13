@@ -279,7 +279,7 @@ export default async function SellerPage({
         >
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
-              <p className="bb-eyebrow text-[var(--gold)]">{tDetail('others_eyebrow')}</p>
+              <p className="bb-eyebrow">{tDetail('others_eyebrow')}</p>
               <h2 className="heading-md text-primary">{tDetail('others_title')}</h2>
             </div>
           </div>

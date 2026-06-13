@@ -476,7 +476,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
             <span className="text-5xl leading-none">✓</span>
           </div>
           <div>
-            <p className="bb-eyebrow text-[var(--gold)]">{t('hero_eyebrow')}</p>
+            <p className="bb-eyebrow">{t('hero_eyebrow')}</p>
             <h1 className="heading-xl text-primary">{t('hero_title')}</h1>
             <p className="mt-3 text-secondary">{heroSubcopy}</p>
           </div>
@@ -605,7 +605,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
           data-testid="gift-cue"
           aria-labelledby="gift-cue-heading"
         >
-          <p className="bb-eyebrow text-[var(--gold)]">{t('gift_cue_eyebrow')}</p>
+          <p className="bb-eyebrow">{t('gift_cue_eyebrow')}</p>
           <h2
             id="gift-cue-heading"
             className="heading-sm text-primary"

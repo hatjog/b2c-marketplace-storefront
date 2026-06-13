@@ -162,6 +162,7 @@ export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: Cat
           className="w-full rounded-md border border-[var(--bb-tint-gold-26)] bg-white px-3 py-2 text-sm"
           value={selectedSalon}
           onChange={event => setQueryValue('salon', event.target.value || null)}
+          aria-label={t('filter_salon')}
           data-testid="category-plp-salon-select"
         >
           <option value="">{t('all_salons')}</option>
@@ -252,6 +253,7 @@ export function CategoryPlpSidebar({ salons, cities, locale, currencyCode }: Cat
           className="w-full rounded-md border border-[var(--bb-tint-gold-26)] bg-white px-3 py-2 text-sm"
           value={SORT_OPTIONS.includes(selectedSort as (typeof SORT_OPTIONS)[number]) ? selectedSort : 'recommended'}
           onChange={event => setQueryValue('sort', event.target.value)}
+          aria-label={t('filter_sort')}
           data-testid="category-plp-sort-select"
         >
           <option value="recommended">{tSort('recommended')}</option>

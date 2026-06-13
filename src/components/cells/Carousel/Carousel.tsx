@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { EmblaCarouselType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
+import { useTranslations } from 'next-intl';
 
 import { Indicator } from '@/components/atoms';
 import { ArrowLeftIcon, ArrowRightIcon } from '@/icons';
@@ -17,6 +18,7 @@ export const CustomCarousel = ({
   items: React.ReactNode[];
   align?: 'center' | 'start' | 'end';
 }) => {
+  const t = useTranslations('carousel');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -83,10 +85,18 @@ export const CustomCarousel = ({
             />
           </div>
           <div>
-            <button onClick={() => changeSlideHandler(selectedIndex - 1)}>
+            <button
+              type="button"
+              aria-label={t('previous_slide')}
+              onClick={() => changeSlideHandler(selectedIndex - 1)}
+            >
               <ArrowLeftIcon color={arrowColor[variant]} />
             </button>
-            <button onClick={() => changeSlideHandler(selectedIndex + 1)}>
+            <button
+              type="button"
+              aria-label={t('next_slide')}
+              onClick={() => changeSlideHandler(selectedIndex + 1)}
+            >
               <ArrowRightIcon color={arrowColor[variant]} />
             </button>
           </div>

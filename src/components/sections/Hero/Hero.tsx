@@ -100,9 +100,9 @@ export const Hero = ({
             variant="default"
             className="text-[10px] sm:text-[11px]"
           />
-          <h2 className="display-sm max-w-[12ch] text-white md:text-[64px] md:leading-[72px]">
+          <h1 className="display-sm max-w-[12ch] text-white md:text-[64px] md:leading-[72px]">
             {heading}
-          </h2>
+          </h1>
           <p className="max-w-[58ch] text-base leading-7 text-white/88 md:text-lg md:leading-8">
             {paragraph}
           </p>

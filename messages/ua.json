@@ -1,4 +1,8 @@
 {
+  "carousel": {
+    "previous_slide": "Попередній слайд",
+    "next_slide": "Наступний слайд"
+  },
   "common": {
     "loading": "Завантаження...",
     "error": "Виникла помилка",

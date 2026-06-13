@@ -200,7 +200,7 @@ export default async function CollectionDetailPage({
                     aria-current={active ? 'page' : undefined}
                     className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm ${
                       active
-                        ? 'bg-[var(--cta)] text-[var(--text-on-action)]'
+                        ? 'bg-[var(--cta)] text-white'
                         : 'bg-[var(--bb-tint-gold-08)] text-primary'
                     }`}
                   >

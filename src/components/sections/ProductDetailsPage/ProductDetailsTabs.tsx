@@ -214,6 +214,9 @@ function DescriptionPanel({
         <SanitizedHTML
           html={description}
           className="product-details"
+          // Partner descriptions author sections as <h4>; promote one level so they
+          // sit under the surrounding <h2> without a skipped heading level (axe heading-order).
+          headingShift={-1}
         />
       ) : (
         <p className="text-sm leading-6 text-[var(--text-secondary)]">{fallback}</p>

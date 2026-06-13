@@ -240,7 +240,7 @@ export function CookieBanner(): ReactElement | null {
               type="button"
               onClick={handleAcceptAll}
               data-testid="cookie-banner-accept-all"
-              className="min-h-10 rounded-[var(--radius-sm)] bg-[var(--cta)] px-4 py-2 text-sm font-medium text-[var(--text-on-action)] hover:bg-[var(--cta-hover)]"
+              className="min-h-10 rounded-[var(--radius-sm)] bg-[var(--cta)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--cta-hover)]"
             >
               {copy.acceptAll}
             </button>
