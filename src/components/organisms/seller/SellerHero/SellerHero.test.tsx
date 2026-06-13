@@ -45,14 +45,17 @@ describe('SellerHero', () => {
       expect(img!.props.alt).toBe('Salon Złoty');
     });
 
-    it('applies priority prop to image for LCP', () => {
+    it('does not apply priority to the small round avatar (not LCP element)', () => {
+      // The 112px round avatar is not the LCP element on seller-detail; the H1
+      // text is. Preloading a small avatar wastes a preload hint — priority was
+      // removed as part of Story 5.5 review fix (finding F).
       const el = SellerHero({
         name: 'Salon',
         photo: 'https://example.com/x.jpg'
       }) as ReactEl;
 
       const img = findFirst(el, e => e.type === 'mock-image');
-      expect(img!.props.priority).toBe(true);
+      expect(img!.props.priority).toBeFalsy();
     });
 
     it('renders gold scrim overlay', () => {

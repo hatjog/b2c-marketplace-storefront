@@ -27,6 +27,8 @@ export type SellerProofInput = {
   treatments?: number | null;
   rating?: number | null;
   ratingCount?: number | null;
+  /** Set to `true` when a response-time proof point (e.g. "~4h") is provided. */
+  hasResponseTime?: boolean;
 };
 
 export type ProductCatalogDisplayFields = {
@@ -83,7 +85,8 @@ export function countSellerProofPoints(input: SellerProofInput): number {
     input.rating !== null &&
       input.rating !== undefined &&
       input.ratingCount !== null &&
-      input.ratingCount !== undefined
+      input.ratingCount !== undefined,
+    input.hasResponseTime === true
   ].filter(Boolean).length;
 }
 

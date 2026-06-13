@@ -35,6 +35,13 @@ interface SellerProofProps {
   locale: string;
   labels: SellerProofLabels;
   className?: string;
+  /**
+   * Override for the proof-points grid layout. Defaults to `sm:grid-cols-3`
+   * (suitable for 3 proof points on PDP). Seller-detail (4 proof points) passes
+   * `sm:grid-cols-2 lg:grid-cols-4` so the 4-up layout stays scoped to that
+   * surface and doesn't leak to PDP/checkout/cart.
+   */
+  gridClassName?: string;
   'data-testid'?: string;
 }
 
@@ -59,6 +66,7 @@ export function SellerProof({
   locale,
   labels,
   className,
+  gridClassName = 'sm:grid-cols-3',
   'data-testid': dataTestId = 'seller-proof'
 }: SellerProofProps) {
   const resolvedRatingCount = ratingCount ?? reviewsCount ?? null;
@@ -66,7 +74,8 @@ export function SellerProof({
     years,
     treatments,
     rating,
-    ratingCount: resolvedRatingCount
+    ratingCount: resolvedRatingCount,
+    hasResponseTime: !!(labels.responseTimeValue && labels.responseTimeLabel)
   });
   const ratingCopy =
     rating !== null &&
@@ -110,7 +119,7 @@ export function SellerProof({
         ) : null}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={cn('grid gap-3', gridClassName)}>
         {years !== null && years !== undefined ? (
           <ProofPoint
             value={labels.yearsValue(years)}

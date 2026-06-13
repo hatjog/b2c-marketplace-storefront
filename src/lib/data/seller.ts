@@ -277,11 +277,15 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
   // documented for /store/products in lib/data/products.ts.
   const SELLER_FIELDS =
     '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery,+verified';
-  // Retained as the resilient fallback field set for any other transient 5xx
-  // on the primary fetch (already reviews-free given the literal above).
-  const SAFE_SELLER_FIELDS = SELLER_FIELDS.split(',')
-    .filter(field => !field.includes('reviews'))
-    .join(',');
+  // SAFE_SELLER_FIELDS is the resilient fallback for any transient 5xx on the
+  // primary fetch. It intentionally excludes `+verified` — if the backend does
+  // not expose `verified` as a query-able field on /store/sellers/:id it will
+  // return HTTP 400/500 on the primary fetch. The fallback must not propagate
+  // the same risky field; it should succeed on the narrower, proven field set so
+  // that the seller page degrades gracefully (no verified-tick) rather than
+  // silently falling through to the slower fetchSellerProfileByHandle path.
+  const SAFE_SELLER_FIELDS =
+    '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery';
 
   const normalizeSeller = (seller: SellerProps): SellerProps => ({
     ...seller,

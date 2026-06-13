@@ -232,6 +232,7 @@ export default async function SellerPage({
             warningTitle: tSellerProof('warning_title'),
             warningBody: tSellerProof('warning_body')
           }}
+          gridClassName="sm:grid-cols-2 lg:grid-cols-4"
           data-testid="seller-detail-seller-proof"
         />
       </div>

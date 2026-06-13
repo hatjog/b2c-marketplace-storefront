@@ -62,7 +62,6 @@ export function SellerHero({
               fill
               sizes="112px"
               className="object-cover"
-              priority
             />
           ) : (
             <span
