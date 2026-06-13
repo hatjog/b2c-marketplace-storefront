@@ -875,6 +875,11 @@ function resolveCompletedOrderId(res: any): string | null {
   return (
     res?.data?.order_group?.orders?.[0]?.id ??
     res?.order_group?.orders?.[0]?.id ??
+    // Mercur multi-seller completion returns an order_set (one order per seller). Read the
+    // first concrete CHILD order id (not order_set.id, which isn't an order id) so the
+    // post-payment redirect to /order/:id/payment-status resolves.
+    res?.data?.order_set?.orders?.[0]?.id ??
+    res?.data?.order_set?.order_group?.orders?.[0]?.id ??
     res?.data?.order?.id ??
     res?.order?.id ??
     null
@@ -882,16 +887,28 @@ function resolveCompletedOrderId(res: any): string | null {
 }
 
 async function resolveCompletedOrderIdForCart(cartId: string): Promise<string | null> {
-  const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
-    method: 'GET'
-  });
+  // The order_set / order↔cart join can lag a few hundred ms behind a freshly completed
+  // cart, so this bridge 404s transiently right after payment. Retry briefly before giving
+  // up — otherwise a SUCCESSFUL (card charged + order_set created) multi-seller payment is
+  // reported as 'no_order_id' and the buyer is wrongly told to contact support.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
+      method: 'GET'
+    });
 
-  if (!res.ok) {
-    return null;
+    if (res.ok) {
+      const orderId = res.data?.order_id;
+      if (typeof orderId === 'string') {
+        return orderId;
+      }
+    }
+
+    if (attempt < 3) {
+      await new Promise(resolve => setTimeout(resolve, 350));
+    }
   }
 
-  const orderId = res.data?.order_id;
-  return typeof orderId === 'string' ? orderId : null;
+  return null;
 }
 
 export async function completeOrderAfterStripePayment(cartId?: string) {

@@ -178,8 +178,15 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({
 
   const normalizedShippingMethods = normalizeAvailableShippingMethods(availableShippingMethods);
 
-  const _shippingMethods = normalizedShippingMethods.filter(
-    sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true'
+  // Dedupe by option id: the seller-map flatten (here + in listCartShippingMethods) can
+  // list the same shared shipping option under more than one seller bucket, which then
+  // collapses back into one group and renders the identical "0 zł" row twice.
+  const _shippingMethods = Array.from(
+    new Map(
+      normalizedShippingMethods
+        .filter(sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true')
+        .map(sm => [sm.id, sm])
+    ).values()
   );
 
   // Optimistically track selected option ids (seeded from cart). Mirrors the
