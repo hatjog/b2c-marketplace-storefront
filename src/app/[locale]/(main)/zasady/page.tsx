@@ -40,7 +40,7 @@ export default async function ZasadyPage({ params }: { params: Promise<{ locale:
   return (
     <main
       id="main-content"
-      className="container mx-auto max-w-[720px] px-4 py-8"
+      className="bb-page-shell"
     >
       <StorefrontRouteStateSignal
         route="legal-zasady"
@@ -50,47 +50,49 @@ export default async function ZasadyPage({ params }: { params: Promise<{ locale:
         locale={locale}
         surface="legal-zasady"
       />
-      <div className="mb-2 hidden md:block">
-        <Breadcrumbs items={[{ path: 'zasady', label: tLegal('title_zasady') }]} />
-      </div>
+      <div className="bb-legal-cms-shell">
+        <div className="mb-2 hidden md:block">
+          <Breadcrumbs items={[{ path: 'zasady', label: tLegal('title_zasady') }]} />
+        </div>
 
-      <h1 className="heading-xl mb-8">{tLegal('title_zasady')}</h1>
+        <h1 className="heading-xl mb-8 text-[var(--text-primary)]">{tLegal('title_zasady')}</h1>
 
-      {sections.map((section, i) => (
+        {sections.map((section, i) => (
+          <section
+            key={i}
+            className="border-b border-[var(--bb-border-soft)] py-8 last:border-b-0"
+          >
+            <h2 className="heading-md mb-4 text-[var(--text-primary)]">{section.title}</h2>
+            <SanitizedHTML
+              html={section.body}
+              className="bb-prose"
+            />
+          </section>
+        ))}
+
+        {/* Consumer withdrawal note — FR64 (Story v170-2-9) */}
         <section
-          key={i}
-          className="border-b border-secondary py-8 last:border-b-0"
+          aria-labelledby="zasady-withdrawal-heading"
+          data-testid="zasady-withdrawal-section"
+          className="border-b border-[var(--bb-border-soft)] py-8 last:border-b-0"
         >
-          <h2 className="mb-4 text-xl font-semibold">{section.title}</h2>
-          <SanitizedHTML
-            html={section.body}
-            className="prose text-sm text-secondary"
-          />
+          <h2
+            id="zasady-withdrawal-heading"
+            className="heading-md mb-4 text-[var(--text-primary)]"
+          >
+            {tW('legal.section_title')}
+          </h2>
+          <p className="bb-prose mb-4">{tW('legal.window_body')}</p>
+          <p className="bb-prose mb-4">{tW('legal.consent_body')}</p>
+          <Link
+            href={`/${locale}/pomoc`}
+            className="text-sm font-medium text-[var(--text-primary)] underline decoration-[var(--bb-tint-gold-24)] underline-offset-4"
+            data-testid="zasady-pomoc-link"
+          >
+            {tW('legal.contact_support')} →
+          </Link>
         </section>
-      ))}
-
-      {/* Consumer withdrawal note — FR64 (Story v170-2-9) */}
-      <section
-        aria-labelledby="zasady-withdrawal-heading"
-        data-testid="zasady-withdrawal-section"
-        className="border-b border-secondary py-8 last:border-b-0"
-      >
-        <h2
-          id="zasady-withdrawal-heading"
-          className="mb-4 text-xl font-semibold"
-        >
-          {tW('legal.section_title')}
-        </h2>
-        <p className="prose mb-4 text-sm text-secondary">{tW('legal.window_body')}</p>
-        <p className="prose mb-4 text-sm text-secondary">{tW('legal.consent_body')}</p>
-        <Link
-          href={`/${locale}/pomoc`}
-          className="text-sm underline"
-          data-testid="zasady-pomoc-link"
-        >
-          {tW('legal.contact_support')} →
-        </Link>
-      </section>
+      </div>
     </main>
   );
 }

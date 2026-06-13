@@ -1,8 +1,8 @@
 /* Defined colors variables */
-@import "colors.css";
+@import 'colors.css';
 
 /* v1.5.0 Design Tokens (Story 6.1.a — Sprint Week 0 stub) */
-@import "../styles/tokens/index.css";
+@import '../styles/tokens/index.css';
 
 @tailwind base;
 @tailwind components;
@@ -16,39 +16,39 @@
   @apply text-base font-light tracking-normal;
 }
 .text-md {
-  @apply text-[14px] leading-[22px] font-light tracking-normal;
+  @apply text-[14px] font-light leading-[22px] tracking-normal;
 }
 .text-sm {
   @apply text-[12px] font-light tracking-normal;
 }
 
 .label-sm {
-  @apply text-[12px] leading-[20px] font-normal tracking-normal;
+  @apply text-[12px] font-normal leading-[20px] tracking-normal;
 }
 .label-md {
-  @apply text-[14px] leading-[22px] font-normal tracking-normal;
+  @apply text-[14px] font-normal leading-[22px] tracking-normal;
 }
 .label-lg {
-  @apply text-[16px] leading-[24px] font-semibold tracking-normal;
+  @apply text-[16px] font-semibold leading-[24px] tracking-normal;
 }
 .label-xl {
-  @apply text-[20px] leading-[28px] font-semibold tracking-normal;
+  @apply text-[20px] font-semibold leading-[28px] tracking-normal;
 }
 
 .heading-xs {
-  @apply text-[14px] leading-[22px] font-medium tracking-normal;
+  @apply text-[14px] font-medium leading-[22px] tracking-normal;
 }
 .heading-sm {
-  @apply text-[16px] leading-[24px] font-medium tracking-normal;
+  @apply text-[16px] font-medium leading-[24px] tracking-normal;
 }
 .heading-md {
-  @apply text-[24px] leading-[32px] font-medium tracking-normal max-md:text-[20px] max-md:leading-[28px];
+  @apply text-[24px] font-medium leading-[32px] tracking-normal max-md:text-[20px] max-md:leading-[28px];
 }
 .heading-lg {
-  @apply text-[32px] leading-[40px] font-medium tracking-normal max-md:text-[24px] max-md:leading-[32px];
+  @apply text-[32px] font-medium leading-[40px] tracking-normal max-md:text-[24px] max-md:leading-[32px];
 }
 .heading-xl {
-  @apply text-[40px] leading-[48px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
+  @apply text-[40px] font-medium leading-[48px] tracking-normal max-md:text-[32px] max-md:leading-[40px];
 }
 
 /* BonBeauty type scale mapping:
@@ -61,13 +61,13 @@
  * Price card  → .text-md font-medium
  * CTA button  → (w .btn-cta, 14px 500) */
 .display-sm {
-  @apply text-[56px] leading-[64px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
+  @apply text-[56px] font-medium leading-[64px] tracking-normal max-md:text-[32px] max-md:leading-[40px];
 }
 .display-md {
-  @apply text-[64px] leading-[72px] font-medium tracking-normal max-md:text-[40px] max-md:leading-[48px];
+  @apply text-[64px] font-medium leading-[72px] tracking-normal max-md:text-[40px] max-md:leading-[48px];
 }
 .container {
-  @apply px-4 md:px-5 max-w-full w-full lg:py-8 py-4 lg:px-8;
+  @apply w-full max-w-full px-4 py-4 md:px-5 lg:px-8 lg:py-8;
 }
 
 body {
@@ -82,23 +82,20 @@ body {
 @layer components {
   /* BonBeauty Primary CTA — używa --cta (brand-600 #907032, 4.62:1 AA vs white) */
   .btn-cta {
-    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
-           text-white text-[14px] font-medium leading-none
-           transition-colors duration-150;
+    @apply min-h-[44px] rounded-[var(--radius-sm)] px-6 py-3 text-[14px] font-medium uppercase leading-none tracking-[0.3px] text-white transition-colors duration-150;
     background-color: var(--cta);
   }
   .btn-cta:hover {
     background-color: var(--cta-hover);
   }
   .btn-cta:disabled,
-  .btn-cta[data-disabled="true"] {
-    @apply opacity-50 cursor-not-allowed pointer-events-none;
+  .btn-cta[data-disabled='true'] {
+    @apply pointer-events-none cursor-not-allowed opacity-50;
   }
 
   /* BonBeauty Secondary — rgba bg na --neutral-1000 */
   .btn-secondary {
-    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
-           text-[14px] font-medium leading-none transition-colors duration-150;
+    @apply min-h-[44px] rounded-[var(--radius-sm)] px-6 py-3 text-[14px] font-medium uppercase leading-none tracking-[0.3px] transition-colors duration-150;
     background-color: rgba(var(--neutral-1000), 0.05);
     color: var(--text-primary);
   }
@@ -108,8 +105,7 @@ body {
 
   /* BonBeauty Ghost — transparent bg */
   .btn-ghost {
-    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
-           text-[14px] font-medium leading-none bg-transparent transition-colors duration-150;
+    @apply min-h-[44px] rounded-[var(--radius-sm)] bg-transparent px-6 py-3 text-[14px] font-medium uppercase leading-none tracking-[0.3px] transition-colors duration-150;
     color: var(--text-primary);
   }
   .btn-ghost:hover {
@@ -118,8 +114,7 @@ body {
 
   /* Disabled state (standalone variant) */
   .btn-disabled {
-    @apply min-h-[44px] px-6 py-3 rounded-[var(--radius-sm)] uppercase tracking-[0.3px]
-           text-[14px] font-medium leading-none cursor-not-allowed opacity-50;
+    @apply min-h-[44px] cursor-not-allowed rounded-[var(--radius-sm)] px-6 py-3 text-[14px] font-medium uppercase leading-none tracking-[0.3px] opacity-50;
     background-color: rgba(var(--neutral-200), 1);
     color: rgba(var(--neutral-400), 1);
   }
@@ -288,6 +283,117 @@ body {
   .bb-secondary-cta {
     @apply btn-secondary inline-flex items-center justify-center gap-2;
   }
+
+  .bb-prose,
+  .legal-content {
+    @apply text-[15px] leading-7 md:text-base md:leading-8;
+    color: var(--text-secondary);
+  }
+
+  .bb-prose h1,
+  .bb-prose h2,
+  .bb-prose h3,
+  .legal-content h1,
+  .legal-content h2,
+  .legal-content h3 {
+    @apply tracking-normal;
+    color: var(--text-primary);
+  }
+
+  .bb-prose h2,
+  .legal-content h2 {
+    @apply mt-8 border-t pt-6 text-[22px] font-medium leading-8 md:text-[26px] md:leading-9;
+    border-color: var(--bb-border-soft);
+  }
+
+  .bb-prose h3,
+  .legal-content h3 {
+    @apply mt-6 text-[18px] font-medium leading-7;
+  }
+
+  .bb-prose p,
+  .bb-prose ul,
+  .bb-prose ol,
+  .legal-content p,
+  .legal-content ul,
+  .legal-content ol {
+    @apply my-4;
+  }
+
+  .bb-prose a,
+  .legal-content a {
+    @apply underline underline-offset-4;
+    color: var(--text-primary);
+    text-decoration-color: var(--bb-tint-gold-24);
+  }
+
+  .bb-prose code,
+  .legal-content code {
+    @apply rounded-[var(--radius-xs)] px-1.5 py-0.5 font-mono text-[0.9em];
+    background: var(--bb-tint-gold-12);
+    color: var(--text-primary);
+  }
+
+  .bb-legal-cms-shell {
+    @apply mx-auto w-full max-w-[920px] rounded-[var(--bb-radius-panel)] border p-5 md:p-8;
+    background: var(--bb-surface-96, rgba(255, 252, 247, 0.96));
+    border-color: var(--bb-border-soft);
+    box-shadow: var(--bb-shadow-soft);
+  }
+
+  .bb-skin-panel {
+    @apply rounded-[var(--bb-radius-card)] border;
+    background: var(--bb-surface-96, rgba(255, 252, 247, 0.96));
+    border-color: var(--bb-border-soft);
+    box-shadow: var(--bb-shadow-card);
+  }
+
+  .bb-skin-panel-muted {
+    @apply rounded-[var(--bb-radius-card)] border;
+    background: var(--bb-surface-muted, rgba(239, 229, 210, 0.52));
+    border-color: var(--bb-border-soft);
+  }
+
+  .bb-skin-hero {
+    @apply overflow-hidden rounded-[var(--bb-radius-panel)] border;
+    background: var(--bb-gradient-dark-warm, linear-gradient(135deg, #1f1b17, #4b3a21));
+    border-color: var(--bb-tint-gold-16);
+    box-shadow: var(--bb-shadow-lift);
+  }
+
+  .bb-skin-card {
+    @apply rounded-[var(--bb-radius-card)] border;
+    background: var(--bb-surface, rgba(255, 252, 247, 0.92));
+    border-color: var(--bb-border-soft);
+    box-shadow: var(--bb-shadow-card);
+  }
+
+  .bb-chrome-banner {
+    @apply fixed bottom-0 left-0 right-0 z-50 border-t px-4 py-4 shadow-[0_-18px_50px_rgba(37,28,12,0.12)] backdrop-blur sm:px-6;
+    background: var(--bb-surface-96, rgba(255, 252, 247, 0.96));
+    border-color: var(--bb-border-strong);
+    color: var(--text-primary);
+  }
+
+  .bb-chrome-reopen {
+    @apply fixed bottom-4 left-4 z-40 rounded-full border px-3 py-2 text-xs font-medium shadow-[0_12px_32px_rgba(90,67,28,0.12)] backdrop-blur;
+    background: var(--bb-surface-96, rgba(255, 252, 247, 0.96));
+    border-color: var(--bb-border-strong);
+    color: var(--text-primary);
+  }
+
+  .bb-chrome-drawer {
+    @apply fixed left-0 top-0 z-20 h-full w-full;
+    background: var(--bb-gradient-page-warm, var(--bb-page-bg));
+    color: var(--text-primary);
+  }
+
+  .bb-toast-skin {
+    background: var(--bb-surface-96, rgba(255, 252, 247, 0.96)) !important;
+    border: 1px solid var(--bb-border-soft) !important;
+    color: var(--text-primary) !important;
+    box-shadow: var(--bb-shadow-card) !important;
+  }
 }
 
 /* Atoms components */
@@ -322,7 +428,7 @@ button:disabled svg path {
 }
 
 .checkbox-wrapper {
-  @apply rounded-xs bg-component-secondary w-[20px] h-[20px] border border-secondary bg-component-secondary cursor-pointer;
+  @apply h-[20px] w-[20px] cursor-pointer rounded-xs border border-secondary bg-component-secondary;
 }
 .checkbox-wrapper svg {
   @apply pointer-events-none;
@@ -332,12 +438,12 @@ button:disabled svg path {
 }
 
 .chip-wrapper {
-  @apply bg-component inline-flex items-center px-3 py-1 rounded-sm label-sm border hover:bg-component-hover relative;
+  @apply label-sm relative inline-flex items-center rounded-sm border bg-component px-3 py-1 hover:bg-component-hover;
 }
 .chip-wrapper svg path {
   @apply fill-secondary;
 }
-.chip-wrapper[data-disabled="true"] svg path {
+.chip-wrapper[data-disabled='true'] svg path {
   @apply fill-primary;
 }
 
@@ -364,7 +470,7 @@ button:disabled svg path {
   @apply text-md;
 }
 .product-details ul {
-  @apply list-disc text-md pl-5;
+  @apply text-md list-disc pl-5;
 }
 .embla__container {
   touch-action: pan-y pinch-zoom;
@@ -424,7 +530,7 @@ button:disabled svg path {
    * to add `cursor-not-allowed` per-component. We intentionally do NOT add
    * pointer-events: none here because that would defeat focusability and the
    * SR contract that requires aria-disabled elements remain in the tab order. */
-  [aria-disabled="true"] {
+  [aria-disabled='true'] {
     cursor: not-allowed;
   }
 
@@ -441,8 +547,8 @@ button:disabled svg path {
   .bg-action :focus-visible,
   .bb-section-shell-dark:focus-visible,
   .bb-section-shell-dark :focus-visible,
-  [data-bb-surface="dark"]:focus-visible,
-  [data-bb-surface="dark"] :focus-visible {
+  [data-bb-surface='dark']:focus-visible,
+  [data-bb-surface='dark'] :focus-visible {
     outline-color: var(--text-on-action, rgb(250, 248, 245));
   }
 

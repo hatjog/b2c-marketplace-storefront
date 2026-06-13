@@ -79,24 +79,24 @@ function SellerMapPlaceholder({
 }) {
   return (
     <div
-      className="mb-6 rounded-sm border border-dashed border-gray-300 bg-gray-50 p-6 font-mono text-sm text-gray-700"
+      className="bb-skin-panel-muted mb-6 p-6 text-sm text-[var(--text-secondary)]"
       data-testid="sellers-list-map-view"
       aria-label={title}
     >
-      <div className="mb-4 flex items-center justify-between gap-4 border-b border-gray-200 pb-3">
-        <p className="font-semibold uppercase tracking-[0.08em]">{title}</p>
-        <p className="text-xs text-gray-500">{body}</p>
+      <div className="mb-4 flex items-center justify-between gap-4 border-b border-[var(--bb-border-soft)] pb-3">
+        <p className="bb-eyebrow">{title}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{body}</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {sellers.slice(0, 8).map((seller, index) => (
           <div
             key={`${seller.name}-${index}`}
-            className="rounded-sm border border-gray-200 bg-white px-3 py-2"
+            className="rounded-[var(--radius-sm)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 py-2"
           >
-            <span className="mr-2 text-gray-400">{String(index + 1).padStart(2, '0')}</span>
-            <span>{seller.name}</span>
+            <span className="mr-2 text-[var(--cta)]">{String(index + 1).padStart(2, '0')}</span>
+            <span className="text-[var(--text-primary)]">{seller.name}</span>
             {(seller.city || seller.district) && (
-              <span className="ml-2 text-gray-500">
+              <span className="ml-2 text-[var(--text-secondary)]">
                 {/* Story 6.2 AC3 — consistent district-first format with SellerCard. */}
                 {[seller.district, seller.city].filter(Boolean).join(' · ')}
               </span>
@@ -213,7 +213,7 @@ export default async function SellersListPage({
   return (
     <main
       id="main-content"
-      className="container py-8"
+      className="bb-page-shell"
     >
       <StorefrontRouteStateSignal
         route="sellers"
@@ -230,8 +230,10 @@ export default async function SellersListPage({
         ]}
       />
 
-      <h1 className="mb-2 mt-6 text-2xl font-bold">{t('title')}</h1>
-      <p className="mb-4 text-sm text-gray-500">{t('description')}</p>
+      <section className="bb-skin-panel p-5 md:p-7">
+        <h1 className="heading-lg text-[var(--text-primary)]">{t('title')}</h1>
+        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{t('description')}</p>
+      </section>
 
       <SellersViewToggle
         locale={locale}
@@ -251,7 +253,7 @@ export default async function SellersListPage({
       />
 
       <p
-        className="mb-4 text-sm text-gray-500"
+        className="mb-4 text-sm text-[var(--text-secondary)]"
         data-testid="sellers-list-results-count"
       >
         {tSearch('results_count', { count: total })}
@@ -266,10 +268,10 @@ export default async function SellersListPage({
       ) : pageItems.length === 0 ? (
         <div
           data-testid="sellers-list-empty"
-          className="py-12 text-center"
+          className="bb-skin-panel p-8 text-center"
         >
           <h2
-            className="mb-2 text-lg font-semibold"
+            className="heading-sm mb-2 text-[var(--text-primary)]"
             data-testid="sellers-list-empty-heading"
           >
             {nearMe
@@ -278,11 +280,11 @@ export default async function SellersListPage({
                 ? tSearch('empty_heading_filtered', { query: q || city })
                 : tSearch('empty_heading')}
           </h2>
-          <p className="mb-6 text-sm text-gray-500">{tSearch('empty_body')}</p>
+          <p className="mb-6 text-sm text-[var(--text-secondary)]">{tSearch('empty_body')}</p>
           {hasActiveFilters && (
             <Link
               href={`/${locale}/sellers`}
-              className="inline-block rounded-sm border border-primary px-6 py-3 text-primary hover:bg-primary/10"
+              className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-[var(--bb-border-strong)] px-6 py-3 text-primary hover:bg-[var(--bb-tint-gold-08)]"
               aria-label={tSearch('clear_filters_aria')}
               data-testid="sellers-list-clear-filters"
             >

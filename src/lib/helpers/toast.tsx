@@ -5,7 +5,7 @@ import { CloseIcon, DoneIcon, ErrorIcon } from '@/icons';
 export const toast = {
   info: ({ description, title }: { description?: string; title: string }) => {
     sonnerToast.info(title, {
-      className: 'bg-blue-100 text-blue-900',
+      className: 'bb-toast-skin',
       description
     });
   },
@@ -30,7 +30,7 @@ export const toast = {
       },
       classNames: {
         icon: 'self-start pt-2',
-        toast: 'items-start gap-3',
+        toast: 'bb-toast-skin items-start gap-3',
         title: 'text-md text-primary'
       }
     });
@@ -55,7 +55,7 @@ export const toast = {
       },
       classNames: {
         icon: 'self-start pt-2',
-        toast: 'items-start gap-3',
+        toast: 'bb-toast-skin items-start gap-3',
         title: 'text-md text-primary'
       }
     });
