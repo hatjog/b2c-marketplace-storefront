@@ -77,6 +77,11 @@ export async function AuthLayout({
       </a>
 
       <div className="mx-auto flex min-h-[var(--auth-page-min-height)] w-full max-w-[1440px] flex-col px-4 py-5 md:px-5 md:py-6 lg:px-8 lg:py-8">
+        {/* Accessible banner landmark — satisfies a11y landmark completeness for standalone auth pages.
+            Auth pages use this shell without a SiteHeader, so no banner exists otherwise. */}
+        <header role="banner" className="sr-only">
+          BonBeauty
+        </header>
         <main
           id="auth-form-main"
           tabIndex={-1}

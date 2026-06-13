@@ -52,6 +52,35 @@ test('STORE-ACCOUNT-SKIN maps account hub surfaces to cream/gold token-bound nav
   assert.doesNotMatch(files.accountLayout, /terracotta|stitch/i);
 });
 
+test('STORE-ACCOUNT-SKIN nav items are interactive <Link> elements with routable hrefs', () => {
+  // Confirms nav changed from display-only <span> to interactive <Link> with href
+  // (mockup-aligned wave-2 account hub; existing /user/* routes, no net-new flow)
+  assert.match(files.accountLayout, /<Link\s/);
+  assert.match(files.accountLayout, /href=\{localizedHref\(locale, href\)\}/);
+
+  // Each SURFACE_NAV entry must have a non-empty href pointing to /user/* or /user
+  const expectedRoutes = [
+    '/user',
+    '/user/vouchers',
+    '/user/orders',
+    '/user/returns',
+    '/user/addresses',
+    '/user/wishlist',
+    '/user/reviews',
+    '/user/reviews/written',
+    '/user/messages',
+    '/user/settings',
+  ];
+  for (const route of expectedRoutes) {
+    assert.match(files.accountLayout, new RegExp(`href:\\s*'${route.replace('/', '/')}'`));
+  }
+});
+
+test('AuthLayout exposes banner landmark for standalone auth pages (a11y landmark completeness)', () => {
+  // Auth pages use AuthLayout without SiteHeader; banner landmark must be present
+  assert.match(files.authLayout, /role="banner"/);
+});
+
 test('voucher recipient and consent views consume the same contract-A page/card tokens', () => {
   assert.match(files.voucherRecipientPage, /bb-gradient-page-warm/);
   assert.match(files.voucherConsentPage, /bb-gradient-page-warm/);

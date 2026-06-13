@@ -135,7 +135,6 @@ export function AccountLayout({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-start xl:grid-cols-[var(--account-nav-width)_minmax(0,var(--account-content-max-width))_var(--account-sidebar-width)] xl:gap-8">
           <aside
             role="complementary"
-            aria-label={t('nav.aria_label')}
             className="order-2 min-w-0 xl:order-1 xl:sticky xl:top-[var(--space-12,48px)]"
             data-testid="account-layout-nav-column"
           >
@@ -258,7 +257,7 @@ export function AccountLayout({
             aria-label={t('sidebar.aria_label')}
             className={cn(
               'order-3 min-w-0',
-              'md:order-2 xl:order-3 xl:sticky xl:top-[var(--space-12,48px)]'
+              'md:order-3 xl:order-3 xl:sticky xl:top-[var(--space-12,48px)]'
             )}
             data-testid="account-layout-sidebar"
           >
