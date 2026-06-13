@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { RadioGroup } from '@headlessui/react';
-import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
+import { CreditCard } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { Container, Heading, Text } from '@medusajs/ui';
 import { useLocale, useTranslations } from 'next-intl';
@@ -16,6 +16,7 @@ import {
   getCheckoutPaymentIdempotencyKey
 } from '@/lib/checkout/payment-idempotency';
 import { initiatePaymentSession } from '@/lib/data/cart';
+import { getEnabledPaymentMethodTypes } from '@/lib/stripe/client';
 
 import { isStripe as isStripeFunc, paymentInfoMap } from '../../../lib/constants';
 import PaymentContainer from '../../organisms/PaymentContainer/PaymentContainer';
@@ -37,11 +38,40 @@ function isPendingPaymentSession(
   return paymentSession.status === 'pending';
 }
 
+const PAYMENT_CHIP_KEYS = ['card', 'blik', 'p24', 'apple_pay', 'google_pay'] as const;
+type PaymentChipKey = (typeof PAYMENT_CHIP_KEYS)[number];
+
+/**
+ * Checks whether the given Stripe payment_method_type chip is enabled for the
+ * active market.  Each chip is a purely visual indicator of Stripe-level
+ * payment methods (card/blik/p24/apple_pay/google_pay) — NOT a separate Medusa
+ * provider.  BonBeauty routes all of them through a single pp_stripe_* provider.
+ *
+ * AC3 fix (MEDIUM-1): chips reflect Stripe payment_method_types (via
+ * getEnabledPaymentMethodTypes()) rather than Medusa provider IDs, preventing
+ * BLIK/P24 from appearing permanently disabled and avoiding the multi-is-active
+ * collapse that occurred when several chips resolved to the same stripeId.
+ */
+function isChipEnabled(
+  providers: HttpTypes.StorePaymentProvider[] | null,
+  chip: PaymentChipKey
+): boolean {
+  const ids = providers?.map(provider => provider.id) ?? [];
+  const hasStripe = ids.some(isStripeFunc);
+  if (!hasStripe) return false;
+  // All five chips are Stripe payment_method_types; check market enablement.
+  const enabledMethods = getEnabledPaymentMethodTypes();
+  if (!enabledMethods) return false;
+  return enabledMethods.includes(chip);
+}
+
 const CartPaymentSection = ({
   cart,
   availablePaymentMethods,
   shippingComplete = true,
-  missingShippingSellers = []
+  missingShippingSellers = [],
+  giftRecipientRequired = false,
+  giftRecipientComplete = true
 }: {
   cart: HttpTypes.StoreCart;
   availablePaymentMethods: HttpTypes.StorePaymentProvider[] | null;
@@ -54,6 +84,8 @@ const CartPaymentSection = ({
   shippingComplete?: boolean;
   /** Names of salons still missing a delivery method (for the block message). */
   missingShippingSellers?: string[];
+  giftRecipientRequired?: boolean;
+  giftRecipientComplete?: boolean;
 }) => {
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
@@ -118,7 +150,9 @@ const CartPaymentSection = ({
   const paidByGiftcard = (cart?.gift_card_total ?? 0) > 0 && cart?.total === 0;
 
   const paymentReady =
-    (activeSession && (cart?.shipping_methods?.length ?? 0) > 0) || paidByGiftcard;
+    ((activeSession && (cart?.shipping_methods?.length ?? 0) > 0) || paidByGiftcard) &&
+    (!giftRecipientRequired || giftRecipientComplete);
+  const checkoutReady = shippingComplete && (!giftRecipientRequired || giftRecipientComplete);
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -144,6 +178,16 @@ const CartPaymentSection = ({
       const checkActiveSession = activeSession?.provider_id === selectedPaymentMethod;
 
       if (!checkActiveSession) {
+        if (!checkoutReady) {
+          setError(
+            !shippingComplete
+              ? t('shipping_incomplete_block', {
+                  sellers: missingShippingSellers.join(', ')
+                })
+              : t('gift_recipient.payment_block')
+          );
+          return;
+        }
         const cartHash = await computeCheckoutCartHash(cart);
         await initiatePaymentSession(
           cart,
@@ -174,19 +218,40 @@ const CartPaymentSection = ({
   }, [isOpen]);
 
   const isEditEnabled = !isOpen && !!cart?.payment_collection?.payment_sessions?.length;
+  // AC3 fix (MEDIUM-1): chips are purely visual Stripe payment_method_type
+  // indicators.  "Active" = the Stripe provider session is selected (not per-chip
+  // provider ID, since all five share pp_stripe_*).  Each chip is enabled iff its
+  // Stripe payment_method_type is available for the active market.
+  const stripeProviderId = availablePaymentMethods?.map(p => p.id).find(isStripeFunc) ?? null;
+  const isStripeSessionSelected =
+    stripeProviderId !== null && selectedPaymentMethod === stripeProviderId;
+  const paymentChips = PAYMENT_CHIP_KEYS.map(key => {
+    const enabled = isChipEnabled(availablePaymentMethods, key);
+    return {
+      key,
+      label: t(`payment_method_chip_${key}`),
+      // card chip is the "active" visual representative when Stripe is selected;
+      // other chips are enabled but not individually selectable (PaymentElement
+      // surfaces method choice natively within the Stripe session).
+      isActive: key === 'card' && isStripeSessionSelected,
+      enabled
+    };
+  });
 
   return (
     <div
       className="bb-section-shell"
       data-testid="checkout-step-payment"
     >
-      <div className="mb-6 flex flex-row items-center justify-between">
+      <div
+        className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && paymentReady ? 'is-done' : ''}`}
+      >
         <Heading
           level="h2"
-          className="text-3xl-regular flex flex-row items-center items-baseline gap-x-2"
+          className="flex flex-row items-center gap-x-3"
         >
-          {!isOpen && paymentReady && <CheckCircleSolid />}
-          {t('payment_heading')}
+          <span className="step-num">{!isOpen && paymentReady ? '✓' : '4'}</span>
+          <span>{t('checkout_step_payment')}</span>
         </Heading>
         {isEditEnabled && (
           <Text>
@@ -208,6 +273,28 @@ const CartPaymentSection = ({
                 value={selectedPaymentMethod}
                 onChange={(value: string) => setPaymentMethod(value)}
               >
+                <div className="pm-grid mb-4">
+                  {paymentChips.map(chip => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      className={`pmchip ${chip.isActive ? 'is-active' : ''}`}
+                      disabled={!chip.enabled}
+                      aria-pressed={chip.isActive}
+                      // Chips are visual indicators; payment method selection
+                      // is handled natively by StripePaymentElement (PaymentElement
+                      // renders tabs/wallets).  Clicking a chip activates the Stripe
+                      // provider session; PaymentElement surfaces the actual type.
+                      onClick={() => {
+                        if (chip.enabled && stripeProviderId) {
+                          void setPaymentMethod(stripeProviderId);
+                        }
+                      }}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
                 {availablePaymentMethods.map(paymentMethod => (
                   <div key={paymentMethod.id}>
                     <PaymentContainer
@@ -225,13 +312,15 @@ const CartPaymentSection = ({
                           cartId={cart.id}
                           clientSecret={stripeClientSecret}
                           returnUrl={paymentStatusReturnUrl}
-                          blocked={!shippingComplete}
+                          blocked={!checkoutReady}
                           blockedReason={
                             !shippingComplete
                               ? t('shipping_incomplete_block', {
                                   sellers: missingShippingSellers.join(', ')
                                 })
-                              : undefined
+                              : giftRecipientRequired && !giftRecipientComplete
+                                ? t('gift_recipient.payment_block')
+                                : undefined
                           }
                         />
                       )}
@@ -267,13 +356,37 @@ const CartPaymentSection = ({
               variant="tonal"
               loading={isLoading}
               disabled={!selectedPaymentMethod && !paidByGiftcard}
-              className="rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
+              className={`checkout-spinner-gold rounded-full bg-[var(--cta)] hover:bg-[var(--cta-hover)] ${isLoading ? 'bg-white text-[var(--bb-gold,#C5A059)]' : 'text-white'}`}
             >
               {!activeSession && isStripeFunc(selectedPaymentMethod)
                 ? t('enter_card_details')
                 : t('continue_to_review')}
             </Button>
           )}
+          {/* MEDIUM-2 fix: consent-block is a visual summary only — NOT pre-ticked.
+              The real RODO active-opt-in gate (GDPR Art. 7) lives in CartReview /
+              CheckoutConsentSurface.  Rendering a pre-ticked "required" consent here
+              would contradict the active opt-in principle and duplicate the gate.
+              Both rows are shown un-checked; their labels inform the user that consent
+              will be required at the review step before payment is submitted. */}
+          <div className="consent-block mt-4">
+            <div className="consent-row">
+              <span
+                className="cb"
+                aria-hidden="true"
+              />
+              <span className="label">
+                {t('payment_consent_required')} <span className="req-mark">*</span>
+              </span>
+            </div>
+            <div className="consent-row">
+              <span
+                className="cb"
+                aria-hidden="true"
+              />
+              <span className="label">{t('payment_consent_marketing')}</span>
+            </div>
+          </div>
         </div>
 
         <div className={isOpen ? 'hidden' : 'block'}>

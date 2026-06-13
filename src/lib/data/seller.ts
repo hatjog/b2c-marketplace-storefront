@@ -276,12 +276,16 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
   // an explicit seller_id filter. Mirrors the `*seller.reviews` constraint
   // documented for /store/products in lib/data/products.ts.
   const SELLER_FIELDS =
+    '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery,+verified';
+  // SAFE_SELLER_FIELDS is the resilient fallback for any transient 5xx on the
+  // primary fetch. It intentionally excludes `+verified` — if the backend does
+  // not expose `verified` as a query-able field on /store/sellers/:id it will
+  // return HTTP 400/500 on the primary fetch. The fallback must not propagate
+  // the same risky field; it should succeed on the narrower, proven field set so
+  // that the seller page degrades gracefully (no verified-tick) rather than
+  // silently falling through to the slower fetchSellerProfileByHandle path.
+  const SAFE_SELLER_FIELDS =
     '+created_at,+email,+phone,+logo,+metadata,+social_links,+gallery';
-  // Retained as the resilient fallback field set for any other transient 5xx
-  // on the primary fetch (already reviews-free given the literal above).
-  const SAFE_SELLER_FIELDS = SELLER_FIELDS.split(',')
-    .filter(field => !field.includes('reviews'))
-    .join(',');
 
   const normalizeSeller = (seller: SellerProps): SellerProps => ({
     ...seller,
@@ -299,6 +303,7 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
       photo: base.photo || profile.photo,
       email: base.email ?? profile.email,
       phone: base.phone ?? profile.phone,
+      verified: base.verified ?? profile.verified,
       social_links: base.social_links ?? profile.social_links,
       gallery: base.gallery ?? profile.gallery,
       opening_hours: base.opening_hours ?? profile.opening_hours,
@@ -313,7 +318,8 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
       lng: base.lng ?? profile.lng,
       tax_id: base.tax_id || profile.tax_id,
       regon: base.regon ?? profile.regon,
-      krs: base.krs ?? profile.krs
+      krs: base.krs ?? profile.krs,
+      policy: base.policy ?? profile.policy
     });
   };
 

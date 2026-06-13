@@ -34,10 +34,12 @@ export function ShopByStyleSection({ heading, items }: ShopByStyleSectionProps) 
             >
               {item.imageUrl && (
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--bb-radius-panel)] bg-white/8">
+                  {/* Decorative: the adjacent label <span> names the tile, so a label-
+                      repeating alt triggers axe image-redundant-alt. Empty alt = decorative. */}
                   <Image
                     loading="lazy"
                     src={safeDecodeURIComponent(item.imageUrl)}
-                    alt={item.label}
+                    alt=""
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"

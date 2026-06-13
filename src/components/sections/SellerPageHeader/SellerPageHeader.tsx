@@ -1,25 +1,33 @@
 import type { HttpTypes } from '@medusajs/types';
 import { getTranslations } from 'next-intl/server';
 
+import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { SellerFooter, SellerHeading } from '@/components/organisms';
 import { SellerContact, SellerHero, SellerSocialLinks } from '@/components/organisms/seller';
 
 export const SellerPageHeader = async ({
   header: _header = false,
   seller,
-  user
+  user,
+  locale
 }: {
   header?: boolean;
   seller: any;
   user: HttpTypes.StoreCustomer | null;
+  locale: string;
 }) => {
   const t = await getTranslations('products');
+  const sellerT = await getTranslations('seller.detail');
+  const sharedT = await getTranslations('seller.shared');
   const reviews = Array.isArray(seller.reviews)
     ? (seller.reviews.filter(Boolean) as Array<{ rating?: number | null }>)
     : [];
   const reviewCount = reviews.length;
   const rating = reviewCount
-    ? reviews.reduce((sum: number, review: { rating?: number | null }) => sum + Number(review?.rating ?? 0), 0) / reviewCount
+    ? reviews.reduce(
+        (sum: number, review: { rating?: number | null }) => sum + Number(review?.rating ?? 0),
+        0
+      ) / reviewCount
     : null;
   // Story 6.2 AC5 — hero band must surface dzielnica when backend exposes it.
   // `seller.district` propagates from SellerProps (types/seller.ts) — backend
@@ -36,8 +44,27 @@ export const SellerPageHeader = async ({
   return (
     <div className="bb-section-shell bb-section-shell-strong overflow-hidden">
       <div className="space-y-6">
-        <SellerHero name={seller.name} photo={seller.photo || null} />
-        <SellerHeading header seller={seller} user={user} />
+        <SellerHero
+          name={seller.name}
+          photo={seller.photo || null}
+          verified={seller.verified === true}
+          verifiedLabel={t('verified_seller')}
+          tagline={sellerT('hero_tagline')}
+          breadcrumbs={
+            <Breadcrumbs
+              items={[
+                { label: sharedT('breadcrumb_home'), href: `/${locale}/` },
+                { label: sharedT('breadcrumb_sellers'), href: `/${locale}/sellers` },
+                { label: seller.name, href: `/${locale}/sellers/${seller.handle}` }
+              ]}
+            />
+          }
+        />
+        <SellerHeading
+          header
+          seller={seller}
+          user={user}
+        />
         <div className="grid gap-3 md:grid-cols-3">
           {rating != null && (
             <div className="bb-card-muted space-y-1">
@@ -62,7 +89,10 @@ export const SellerPageHeader = async ({
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <SellerSocialLinks socialLinks={seller.social_links} />
-          <SellerContact phone={seller.phone} email={seller.email} />
+          <SellerContact
+            phone={seller.phone}
+            email={seller.email}
+          />
         </div>
         <SellerFooter seller={seller} />
       </div>

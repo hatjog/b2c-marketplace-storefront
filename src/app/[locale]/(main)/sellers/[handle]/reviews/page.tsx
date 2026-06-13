@@ -192,7 +192,7 @@ export default async function SellerReviewsPage({
             surface="listing"
           />
           <section
-            className="overflow-hidden rounded-[32px] border border-[var(--bb-tint-gold-16)] bg-white shadow-[0_18px_40px_rgba(26,26,26,0.06)]"
+            className="bb-skin-card overflow-hidden"
             data-testid="seller-reviews-hero"
           >
             <div className="grid gap-4 p-5 md:grid-cols-[120px_minmax(0,1fr)] md:p-6">
@@ -227,7 +227,9 @@ export default async function SellerReviewsPage({
                   </span>
                 </div>
                 <div className="space-y-2">
-                  <h1 className="heading-lg text-primary">{t('title', { name: data.seller.name })}</h1>
+                  <h1 className="heading-lg text-primary">
+                    {t('title', { name: data.seller.name })}
+                  </h1>
                   <p className="label-md text-secondary">
                     {[data.seller.district, data.seller.city].filter(Boolean).join(' · ')}
                   </p>
@@ -241,7 +243,7 @@ export default async function SellerReviewsPage({
       summary={
         <>
           <section
-            className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
+            className="bb-skin-panel p-5"
             aria-labelledby="seller-reviews-summary-heading"
             data-testid="seller-reviews-summary"
           >
@@ -261,7 +263,9 @@ export default async function SellerReviewsPage({
                   key={row.rating}
                   className="grid grid-cols-[52px_minmax(0,1fr)_40px] items-center gap-3 text-sm"
                 >
-                  <span className="text-primary">{t('summary.ratingLine', { rating: row.rating })}</span>
+                  <span className="text-primary">
+                    {t('summary.ratingLine', { rating: row.rating })}
+                  </span>
                   <div
                     className="h-2 rounded-full bg-[var(--bb-tint-gold-12)]"
                     aria-hidden="true"
@@ -278,7 +282,7 @@ export default async function SellerReviewsPage({
           </section>
 
           <section
-            className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
+            className="bb-skin-panel p-5"
             aria-labelledby="seller-reviews-filters-heading"
           >
             <div className="flex items-center justify-between gap-3">
@@ -337,7 +341,7 @@ export default async function SellerReviewsPage({
           className="space-y-4"
           data-testid="seller-reviews-page"
         >
-          <div className="flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5 md:flex-row md:items-center md:justify-between">
+          <div className="bb-skin-panel flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="heading-sm text-primary">{t('list.heading')}</h2>
               <p className="mt-1 text-sm text-secondary">
@@ -366,7 +370,7 @@ export default async function SellerReviewsPage({
                     aria-current={active ? 'page' : undefined}
                     className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm ${
                       active
-                        ? 'bg-[var(--cta)] text-[var(--text-on-action)]'
+                        ? 'bg-[var(--cta)] text-white'
                         : 'bg-[var(--bb-tint-gold-08)] text-primary'
                     }`}
                   >
@@ -407,7 +411,7 @@ export default async function SellerReviewsPage({
                 return (
                   <article
                     key={review.id}
-                    className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
+                    className="bb-skin-card p-5"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div className="space-y-2">
@@ -452,7 +456,9 @@ export default async function SellerReviewsPage({
                       {review.sellerReply ? (
                         <section className="rounded-[var(--bb-radius-panel)] bg-[var(--bb-tint-gold-08)] p-4">
                           <p className="label-sm text-secondary">{t('list.replyLabel')}</p>
-                          <p className="mt-2 text-sm leading-7 text-primary">{review.sellerReply}</p>
+                          <p className="mt-2 text-sm leading-7 text-primary">
+                            {review.sellerReply}
+                          </p>
                         </section>
                       ) : null}
                     </div>
@@ -464,7 +470,7 @@ export default async function SellerReviewsPage({
 
           {data.totalReviews > 0 ? (
             <nav
-              className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5"
+              className="bb-skin-panel flex flex-wrap items-center justify-between gap-3 p-5"
               aria-label={t('pagination.aria')}
             >
               <p className="text-sm text-secondary">
@@ -495,7 +501,7 @@ export default async function SellerReviewsPage({
                   aria-disabled={!data.hasNextPage}
                   className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm ${
                     data.hasNextPage
-                      ? 'bg-[var(--cta)] text-[var(--text-on-action)]'
+                      ? 'bg-[var(--cta)] text-white'
                       : 'pointer-events-none bg-[var(--bb-tint-gold-05)] text-secondary/60'
                   }`}
                 >
@@ -515,7 +521,7 @@ export default async function SellerReviewsPage({
             </div>
             <LocalizedClientLink
               href={backHref}
-              className="ml-auto inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--cta)] px-5 py-2 text-sm font-medium text-[var(--text-on-action)]"
+              className="ml-auto inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--cta)] px-5 py-2 text-sm font-medium text-white"
             >
               {t('backToSeller')}
             </LocalizedClientLink>

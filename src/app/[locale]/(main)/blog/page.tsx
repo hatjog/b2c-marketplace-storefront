@@ -105,7 +105,10 @@ export default async function BlogIndexPage({
           </LocalizedClientLink>
         </span>
         {availableTags.map(tag => (
-          <span role="listitem" key={tag.slug}>
+          <span
+            role="listitem"
+            key={tag.slug}
+          >
             <LocalizedClientLink
               href={`/blog?tag=${encodeURIComponent(tag.slug)}`}
               aria-current={activeTag === tag.slug ? 'page' : undefined}
@@ -129,7 +132,7 @@ export default async function BlogIndexPage({
         <LocalizedClientLink
           key={post.slug}
           href={post.href}
-          className="group flex h-full flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white transition-transform duration-300 hover:-translate-y-0.5"
+          className="bb-skin-card group flex h-full flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-0.5"
         >
           <div className="relative aspect-[4/3] overflow-hidden">
             <Image

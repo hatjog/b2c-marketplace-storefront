@@ -38,11 +38,7 @@ function buildAlternates(baseUrl: string, locale: string, handle: string) {
   // SSOT hreflang builder → canonical BCP47 keys (pl-PL/en-US/uk-UA/de-DE) + x-default.
   // Pre-v1.10.0 this emitted bare locale codes (pl/en/ua/de), which are non-canonical
   // for <link rel="alternate" hreflang> and broke parity with PDP/category/seller routes.
-  return buildLocaleAlternates(
-    locale,
-    (loc) => `/${loc}/collections/${handle}`,
-    baseUrl
-  );
+  return buildLocaleAlternates(locale, loc => `/${loc}/collections/${handle}`, baseUrl);
 }
 
 function buildQueryString(sort: EditorialCollectionSortKey) {
@@ -125,16 +121,16 @@ export default async function CollectionDetailPage({
       }
       hero={
         <section
-          className="relative overflow-hidden rounded-[36px] px-6 py-8 text-white md:px-8 md:py-10"
+          className="bb-skin-hero relative px-6 py-8 text-white md:px-8 md:py-10"
           data-testid="collection-detail-hero"
         >
           <div
             className={`absolute inset-0 ${
               data.overlay === 'dark'
-                ? 'bg-[linear-gradient(135deg,#1f1b17,#4b3a21)]'
+                ? 'bg-[var(--bb-gradient-dark-warm)]'
                 : data.overlay === 'warm'
-                  ? 'bg-[linear-gradient(135deg,#5b4428,#8b6a3c)]'
-                  : 'bg-[linear-gradient(135deg,#3a3936,#6b6a64)]'
+                  ? 'bg-[var(--bb-gradient-dark-warm)]'
+                  : 'bg-[var(--bb-dark-gradient)]'
             }`}
           />
           {data.imageUrl ? (
@@ -156,7 +152,7 @@ export default async function CollectionDetailPage({
               </p>
               <div className="space-y-3">
                 <h1 className="heading-xl max-w-[14ch]">{data.title}</h1>
-                <p className="max-w-2xl text-sm leading-7 text-white/82">{data.intro}</p>
+                <p className="text-white/82 max-w-2xl text-sm leading-7">{data.intro}</p>
               </div>
               <div className="border-white/14 rounded-[var(--bb-radius-panel)] border bg-white/10 p-4 backdrop-blur-sm">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-white/65">
@@ -180,7 +176,7 @@ export default async function CollectionDetailPage({
           data-testid="collection-detail-page"
         >
           <div
-            className="flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white p-5 md:flex-row md:items-center md:justify-between"
+            className="bb-skin-panel flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between"
             data-testid="collection-detail-toolbar"
           >
             <div>
@@ -204,7 +200,7 @@ export default async function CollectionDetailPage({
                     aria-current={active ? 'page' : undefined}
                     className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm ${
                       active
-                        ? 'bg-[var(--cta)] text-[var(--text-on-action)]'
+                        ? 'bg-[var(--cta)] text-white'
                         : 'bg-[var(--bb-tint-gold-08)] text-primary'
                     }`}
                   >
@@ -238,7 +234,7 @@ export default async function CollectionDetailPage({
                 <LocalizedClientLink
                   key={item.id}
                   href={`/products/${item.handle}`}
-                  className="group flex min-h-[280px] flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
+                  className="bb-skin-card group flex min-h-[280px] flex-col overflow-hidden motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
                   aria-label={t('grid.cardAria', { title: item.title })}
                 >
                   <div className="relative min-h-[200px] bg-[var(--bb-gradient-cream-card)]">

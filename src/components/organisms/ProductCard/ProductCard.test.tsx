@@ -110,7 +110,14 @@ describe('ProductCard — vendor name (AC #1)', () => {
     expect(vendorDiv).not.toBeNull()
   })
 
-  it('vendor link href points to /sellers/[handle] (AC #3)', () => {
+  it('renders a single whole-card link to the product page', () => {
+    const result = ProductCard({ product: baseProduct }) as ReactEl
+    expect(result.type).toBe('mock-link')
+    expect((result.props as Record<string, unknown>).href).toBe(`/products/${baseProduct.handle}`)
+    expect(String((result.props as Record<string, unknown>).className)).toContain('pcard')
+  })
+
+  it('does not render a nested vendor link inside the whole-card target', () => {
     const product = { ...baseProduct, seller: sellerData }
     const result = ProductCard({ product }) as ReactEl
     const vendorLink = findElement(
@@ -120,8 +127,7 @@ describe('ProductCard — vendor name (AC #1)', () => {
         typeof (el as React.ReactElement<Record<string, unknown>>).props?.href === 'string' &&
         ((el as React.ReactElement<Record<string, unknown>>).props.href as string).includes('/sellers/'),
     )
-    expect(vendorLink).not.toBeNull()
-    expect((vendorLink!.props as Record<string, unknown>).href).toBe(`/sellers/${sellerData.handle}`)
+    expect(vendorLink).toBeNull()
   })
 
   it('does NOT render vendor section when seller is absent (AC #4)', () => {
@@ -177,5 +183,14 @@ describe('ProductCard — core rendering', () => {
     const product = { ...baseProduct, seller: sellerData }
     const result = ProductCard({ product, showVendor: false }) as ReactEl
     expect(findText(result, sellerData.name)).toBe(false)
+  })
+
+  it('does not render the legacy see-more CTA', () => {
+    const result = ProductCard({ product: baseProduct }) as ReactEl
+    const legacyCta = findElement(
+      result,
+      el => (el.props as Record<string, unknown>)?.['data-testid'] === 'product-card-see-more-button',
+    )
+    expect(legacyCta).toBeNull()
   })
 })

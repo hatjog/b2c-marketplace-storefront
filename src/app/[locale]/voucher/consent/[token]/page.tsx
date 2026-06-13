@@ -47,44 +47,45 @@ export default async function VoucherConsentPage({
     <main
       data-testid="voucher-consent-page"
       data-token={token}
-      className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col justify-center gap-6 px-4 py-10"
+      className="min-h-screen bg-[var(--bb-gradient-page-warm)] px-4 py-10"
     >
-      <StorefrontRouteStateSignal
-        route="voucher-consent"
-        surface="voucher-consent"
-      />
-      <header className="text-center">
-        <h1 className="heading-lg text-primary">{t('title')}</h1>
-        <p className="mt-3 text-secondary">{t('subtitle')}</p>
-      </header>
+      <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-lg flex-col justify-center gap-6">
+        <StorefrontRouteStateSignal
+          route="voucher-consent"
+          surface="voucher-consent"
+        />
+        <header className="text-center">
+          <h1 className="heading-lg text-primary">{t('title')}</h1>
+          <p className="mt-3 text-secondary">{t('subtitle')}</p>
+        </header>
 
-      {!context.ok && (
-        <section
-          role="alert"
-          className="rounded-sm border border-negative bg-negative-secondary px-4 py-3 text-sm text-negative"
-          data-testid="voucher-consent-error-state"
-        >
-          {t(`error_${context.error}`)}
-        </section>
-      )}
+        {!context.ok && (
+          <section
+            role="alert"
+            className="rounded-[var(--bb-radius-card)] border border-negative bg-negative-secondary px-4 py-3 text-sm text-negative"
+            data-testid="voucher-consent-error-state"
+          >
+            {t(`error_${context.error}`)}
+          </section>
+        )}
 
-      {context.ok && context.state === 'blocked' && (
-        <section
-          role="status"
-          className="rounded-sm border border-warning bg-warning-secondary px-4 py-3 text-sm text-primary"
-          data-testid="voucher-consent-blocked-state"
-        >
-          {t('blocked_minor_message')}
-        </section>
-      )}
+        {context.ok && context.state === 'blocked' && (
+          <section
+            role="status"
+            className="rounded-[var(--bb-radius-card)] border border-warning bg-warning-secondary px-4 py-3 text-sm text-primary"
+            data-testid="voucher-consent-blocked-state"
+          >
+            {t('blocked_minor_message')}
+          </section>
+        )}
 
-      {context.ok && (
-        <>
-          <noscript>
-            <form
-              action={submitVoucherConsentNoScript}
-              className="flex w-full flex-col gap-4 rounded-sm border border-tertiary p-4"
-            >
+        {context.ok && (
+          <section className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-5 shadow-[var(--bb-shadow-lift)] md:p-6">
+            <noscript>
+              <form
+                action={submitVoucherConsentNoScript}
+                className="flex w-full flex-col gap-4 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4"
+              >
               <input
                 type="hidden"
                 name="token"
@@ -108,7 +109,7 @@ export default async function VoucherConsentPage({
                       type="email"
                       name="guardian_email"
                       required
-                      className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3"
+                      className="min-h-12 rounded-[var(--radius-sm)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] px-4 py-3"
                     />
                   </label>
                   <label className="flex items-start gap-3">
@@ -125,7 +126,7 @@ export default async function VoucherConsentPage({
                       type="text"
                       name="captcha_token"
                       required
-                      className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3"
+                      className="min-h-12 rounded-[var(--radius-sm)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] px-4 py-3"
                     />
                   </label>
                   <p className="text-sm text-secondary">{t('privacy_guardian_email_notice')}</p>
@@ -156,20 +157,21 @@ export default async function VoucherConsentPage({
               </label>
               <button
                 type="submit"
-                className="min-h-12 rounded-sm bg-action px-6 py-3 text-action-on-primary"
+                className="min-h-12 rounded-full bg-action px-6 py-3 text-action-on-primary"
               >
                 {t('cta_submit')}
               </button>
-            </form>
-          </noscript>
-          <ConsentForm
-            token={token}
-            locale={locale}
-            ageCheckRequired={context.age_check_required}
-            captchaSiteKey={captchaSiteKey}
-          />
-        </>
-      )}
+              </form>
+            </noscript>
+            <ConsentForm
+              token={token}
+              locale={locale}
+              ageCheckRequired={context.age_check_required}
+              captchaSiteKey={captchaSiteKey}
+            />
+          </section>
+        )}
+      </div>
     </main>
   );
 }

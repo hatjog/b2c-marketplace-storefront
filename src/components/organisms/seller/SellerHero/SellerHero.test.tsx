@@ -1,9 +1,10 @@
 import React from 'react';
+
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('next/image', () => ({ default: 'mock-image' }));
-
 import { SellerHero } from './SellerHero';
+
+vi.mock('next/image', () => ({ default: 'mock-image' }));
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 
@@ -18,10 +19,7 @@ function findAll(element: React.ReactNode, predicate: (el: ReactEl) => boolean):
   return results;
 }
 
-function findFirst(
-  element: React.ReactNode,
-  predicate: (el: ReactEl) => boolean
-): ReactEl | null {
+function findFirst(element: React.ReactNode, predicate: (el: ReactEl) => boolean): ReactEl | null {
   const all = findAll(element, predicate);
   return all.length > 0 ? all[0] : null;
 }
@@ -38,7 +36,7 @@ describe('SellerHero', () => {
     it('renders next/image with correct src and alt', () => {
       const el = SellerHero({
         name: 'Salon Złoty',
-        photo: 'https://example.com/hero.jpg',
+        photo: 'https://example.com/hero.jpg'
       }) as ReactEl;
 
       const img = findFirst(el, e => e.type === 'mock-image');
@@ -47,44 +45,44 @@ describe('SellerHero', () => {
       expect(img!.props.alt).toBe('Salon Złoty');
     });
 
-    it('applies priority prop to image for LCP', () => {
+    it('does not apply priority to the small round avatar (not LCP element)', () => {
+      // The 112px round avatar is not the LCP element on seller-detail; the H1
+      // text is. Preloading a small avatar wastes a preload hint — priority was
+      // removed as part of Story 5.5 review fix (finding F).
       const el = SellerHero({
         name: 'Salon',
-        photo: 'https://example.com/x.jpg',
+        photo: 'https://example.com/x.jpg'
       }) as ReactEl;
 
       const img = findFirst(el, e => e.type === 'mock-image');
-      expect(img!.props.priority).toBe(true);
+      expect(img!.props.priority).toBeFalsy();
     });
 
-    it('renders gradient overlay', () => {
+    it('renders gold scrim overlay', () => {
       const el = SellerHero({
         name: 'Salon',
-        photo: 'https://example.com/x.jpg',
+        photo: 'https://example.com/x.jpg'
       }) as ReactEl;
 
-      const overlay = findFirst(el, e =>
-        typeof e.props.className === 'string' &&
-        (e.props.className as string).includes('from-black/60')
-      );
+      const overlay = findFirst(el, e => e.props['data-testid'] === 'seller-hero-gold-scrim');
       expect(overlay).not.toBeNull();
     });
 
-    it('renders default badge text', () => {
+    it('renders default italic tagline text', () => {
       const el = SellerHero({
         name: 'Salon',
-        photo: 'https://example.com/x.jpg',
+        photo: 'https://example.com/x.jpg'
       }) as ReactEl;
 
       const text = collectText(el);
       expect(text).toContain('Salon partnerski BonBeauty');
     });
 
-    it('renders custom badge text', () => {
+    it('renders custom tagline text', () => {
       const el = SellerHero({
         name: 'Salon',
         photo: 'https://example.com/x.jpg',
-        badge: 'Partner platynowy',
+        tagline: 'Partner platynowy'
       }) as ReactEl;
 
       const text = collectText(el);
@@ -114,19 +112,32 @@ describe('SellerHero', () => {
       expect(fallback).not.toBeNull();
     });
 
-    it('renders badge text in fallback', () => {
+    it('renders monogram and tagline text in fallback', () => {
       const el = SellerHero({ name: 'Salon', photo: null }) as ReactEl;
 
+      const monogram = findFirst(el, e => e.props['data-testid'] === 'seller-hero-monogram');
+      expect(monogram).not.toBeNull();
       const text = collectText(el);
       expect(text).toContain('Salon partnerski BonBeauty');
     });
 
-    it('applies gradient background style in fallback', () => {
+    it('does not render verified mark unless seller is verified', () => {
       const el = SellerHero({ name: 'Salon', photo: null }) as ReactEl;
 
-      const fallback = findFirst(el, e => e.props['data-testid'] === 'seller-hero') as ReactEl;
-      expect(fallback.props.style).toBeDefined();
-      expect((fallback.props.style as Record<string, string>).background).toContain('gradient');
+      const mark = findFirst(el, e => e.props['data-testid'] === 'seller-hero-verified-mark');
+      expect(mark).toBeNull();
+    });
+
+    it('renders verified mark only when seller is verified', () => {
+      const el = SellerHero({
+        name: 'Salon',
+        photo: null,
+        verified: true,
+        verifiedLabel: 'Zweryfikowany salon'
+      }) as ReactEl;
+
+      const mark = findFirst(el, e => e.props['data-testid'] === 'seller-hero-verified-mark');
+      expect(mark).not.toBeNull();
     });
   });
 });

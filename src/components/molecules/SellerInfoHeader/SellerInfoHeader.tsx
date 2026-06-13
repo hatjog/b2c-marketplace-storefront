@@ -28,7 +28,7 @@ export const SellerInfoHeader = ({
       />
     </div>
     <div className="flex flex-col gap-1">
-      <h3 className="heading-sm text-primary">{name}</h3>
+      <h2 className="heading-sm text-primary">{name}</h2>
       <div className="flex items-center gap-2">
         <StarRating
           starSize={14}

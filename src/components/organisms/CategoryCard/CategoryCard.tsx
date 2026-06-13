@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { categoryImageSrc } from '@/lib/category-images';
@@ -11,7 +10,6 @@ export function CategoryCard({
 }: {
   category: { name: string; handle: string; metadata?: { photo_url?: string } | null };
 }) {
-  const t = useTranslations('home_v3.categories');
   const imageSrc = categoryImageSrc(category.handle, category.metadata?.photo_url);
 
   return (
@@ -21,10 +19,12 @@ export function CategoryCard({
       data-testid="category-item"
     >
       <div className="absolute inset-0">
+        {/* Decorative background: the adjacent <h3> already names the category, so a
+            name-repeating alt triggers axe image-redundant-alt. Empty alt = decorative. */}
         <Image
           loading="lazy"
           src={imageSrc}
-          alt={t('image_alt', { name: category.name })}
+          alt=""
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"

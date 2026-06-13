@@ -59,9 +59,9 @@ export async function HeroBlock({ section }: { section: HeroSectionBlock }) {
     <section className="container mt-5 flex w-full flex-col text-primary lg:flex-row">
       <div className="w-full">
         <div className="w-full rounded-sm border px-6 py-8">
-          <h2 className="display-md mb-6 max-w-[652px] text-4xl font-bold uppercase leading-tight md:text-5xl">
+          <h1 className="display-md mb-6 max-w-[652px] text-4xl font-bold uppercase leading-tight md:text-5xl">
             {heading}
-          </h2>
+          </h1>
           <p className="mb-8 text-lg">{paragraph}</p>
         </div>
       </div>

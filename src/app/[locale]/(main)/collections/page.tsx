@@ -84,7 +84,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
 
         {featured ? (
           <section
-            className="relative overflow-hidden rounded-[36px] bg-[var(--bb-gradient-dark-warm)] px-6 py-8 text-white md:px-8 md:py-10"
+            className="bb-skin-hero relative px-6 py-8 text-white md:px-8 md:py-10"
             data-testid="collections-index-hero"
           >
             {featured.imageUrl ? (
@@ -137,7 +137,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
           {(['editorial', 'seasonal', 'recommended'] as const).map(bucket => (
             <article
               key={bucket}
-              className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-white p-5"
+              className="bb-skin-panel p-5"
             >
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-secondary">
                 {t(`buckets.${bucket}.eyebrow`)}
@@ -162,7 +162,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
               <LocalizedClientLink
                 key={card.handle}
                 href={`/collections/${card.handle}`}
-                className="group flex min-h-[320px] flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white shadow-[0_16px_40px_rgba(90,67,28,0.08)] motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
+                className="bb-skin-card group flex min-h-[320px] flex-col overflow-hidden motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-reduce:transform-none"
                 aria-label={t('grid.cardAria', { title: card.title })}
                 data-testid="collection-item"
               >

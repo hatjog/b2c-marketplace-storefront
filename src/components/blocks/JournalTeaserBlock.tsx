@@ -2,6 +2,7 @@
 // BonBeauty DS v2.1.0: bb-surface, bb-radius-card, bb-shadow-card, card-journal tokens.
 // Story 3.0 Sprint 1 thin slice gate.
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
@@ -30,6 +31,7 @@ function buildDefaultPosts(t: Awaited<ReturnType<typeof getTranslations>>): Jour
       title: t('journal.posts.1.title'),
       excerpt: t('journal.posts.1.excerpt'),
       href: '/blog',
+      imageUrl: '/images/blog/post-1.jpg',
       category: t('journal.posts.1.category'),
       readTime: 4,
     },
@@ -38,6 +40,7 @@ function buildDefaultPosts(t: Awaited<ReturnType<typeof getTranslations>>): Jour
       title: t('journal.posts.2.title'),
       excerpt: t('journal.posts.2.excerpt'),
       href: '/blog',
+      imageUrl: '/images/blog/post-2.jpg',
       category: t('journal.posts.2.category'),
       readTime: 5,
     },
@@ -46,6 +49,7 @@ function buildDefaultPosts(t: Awaited<ReturnType<typeof getTranslations>>): Jour
       title: t('journal.posts.3.title'),
       excerpt: t('journal.posts.3.excerpt'),
       href: '/blog',
+      imageUrl: '/images/blog/post-3.jpg',
       category: t('journal.posts.3.category'),
       readTime: 6,
     },
@@ -67,7 +71,7 @@ export async function JournalTeaserBlock({
 
   return (
     <section
-      className="mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-12 lg:px-8"
+      className="bb-section-shell bb-section-shell-soft mx-auto max-w-7xl px-4 py-10 md:px-6 md:py-12 lg:px-8"
       data-testid="journal-teaser"
       aria-labelledby="journal-teaser-heading"
     >
@@ -96,8 +100,19 @@ export async function JournalTeaserBlock({
             style={{ background: 'var(--bb-surface)' }}
             data-testid={`journal-card-${post.id}`}
           >
-            {/* Image placeholder */}
-            <div className="h-36 bg-[var(--bb-surface-muted)]" aria-hidden="true" />
+            {post.imageUrl ? (
+              <Image
+                src={post.imageUrl}
+                alt={post.title}
+                width={520}
+                height={320}
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                data-testid={`journal-card-image-${post.id}`}
+              />
+            ) : (
+              <div className="h-36 bg-[var(--bb-surface-muted)]" aria-hidden="true" />
+            )}
 
             <div className="flex flex-1 flex-col gap-2 p-4">
               {post.category && (

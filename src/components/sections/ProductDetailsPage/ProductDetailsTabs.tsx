@@ -108,7 +108,8 @@ export function ProductDetailsTabs({
       <div
         role="tablist"
         aria-label={t('aria_label')}
-        className="sticky top-[var(--site-header-height,72px)] z-20 flex gap-4 overflow-x-auto border-b border-[var(--bb-border-soft)] bg-[var(--bb-page-bg)]"
+        className="sticky top-[var(--site-header-height,72px)] z-20 flex gap-4 overflow-x-auto border-b border-[var(--bb-border-soft)] bg-[var(--bb-page-bg)] backdrop-blur"
+        data-testid="pdp-tabs-sticky"
       >
         {TAB_IDS.map((tabId, index) => {
           const selected = activeTab === tabId;
@@ -213,6 +214,9 @@ function DescriptionPanel({
         <SanitizedHTML
           html={description}
           className="product-details"
+          // Partner descriptions author sections as <h4>; promote one level so they
+          // sit under the surrounding <h2> without a skipped heading level (axe heading-order).
+          headingShift={-1}
         />
       ) : (
         <p className="text-sm leading-6 text-[var(--text-secondary)]">{fallback}</p>

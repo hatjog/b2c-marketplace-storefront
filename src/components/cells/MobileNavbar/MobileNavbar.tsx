@@ -53,11 +53,11 @@ export const MobileNavbar = ({
       </div>
       {isOpen && (
         <div
-          className="fixed left-0 top-0 z-20 h-full w-full bg-primary"
+          className="bb-chrome-drawer"
           data-testid="mobile-menu-drawer"
         >
           <div
-            className="flex items-center justify-between border-b p-4"
+            className="flex items-center justify-between border-b border-[var(--bb-border-soft)] bg-[var(--bb-surface-96)] p-4"
             data-testid="mobile-menu-header"
           >
             <h2 className="heading-md uppercase text-primary">{t('menu')}</h2>
@@ -73,7 +73,7 @@ export const MobileNavbar = ({
             {/* Primary site nav (W6-01 contract-A parity) — same items as the
                 desktop SiteNav, surfaced at the top of the mobile drawer. */}
             <nav
-              className="flex flex-col border-b"
+              className="flex flex-col border-b border-[var(--bb-border-soft)] bg-[var(--bb-surface)]"
               aria-label="BonBeauty"
               data-testid="mobile-site-nav"
             >
@@ -83,7 +83,7 @@ export const MobileNavbar = ({
                   href={href}
                   onClick={closeMenuHandler}
                   data-testid={`mobile-site-nav-${key}`}
-                  className="px-4 py-3 text-base text-[var(--text-primary)] hover:bg-[var(--bb-surface-muted)]"
+                  className="border-b border-[var(--bb-border-hairline)] px-4 py-3 text-base text-[var(--text-primary)] last:border-b-0 hover:bg-[var(--bb-surface-muted)]"
                 >
                   {tNav(key)}
                 </LocalizedClientLink>

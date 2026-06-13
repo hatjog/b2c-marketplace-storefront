@@ -22,9 +22,9 @@ import type { SellerProps } from '@/types/seller';
 
 import { mercurClient, sdk } from '../config';
 import {
-  type CanonicalLocale,
   resolveStorefrontLocale,
-  withMercurLocaleOptions
+  withMercurLocaleOptions,
+  type CanonicalLocale
 } from '../sdk/locale-interceptor';
 
 /**
@@ -54,6 +54,7 @@ type SellerListApiItem = {
   email?: string | null;
   phone?: string | null;
   status?: string | null;
+  verified?: boolean | null;
   store_status?: string | null;
   social_links?: Record<string, string | null> | null;
   gallery?: Array<{ url: string; alt?: string | null; is_primary?: boolean | null }> | null;
@@ -97,12 +98,15 @@ type SellerListApiItem = {
         regon?: string | null;
         krs?: string | null;
       } | null;
+      policy?: string | null;
       tax_id?: string | null;
       regon?: string | null;
       krs?: string | null;
       phone?: string | null;
       photo_url?: string | null;
-      gallery?: Array<string | { url?: string | null; alt?: string | null; is_primary?: boolean | null }> | null;
+      gallery?: Array<
+        string | { url?: string | null; alt?: string | null; is_primary?: boolean | null }
+      > | null;
       opening_hours?: Record<string, { open: string; close: string } | null> | null;
       seo?: {
         meta_title?: string | null;
@@ -330,10 +334,14 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
     email: s.email ?? undefined,
     phone: s.phone ?? gpMetadata?.phone ?? undefined,
     status: s.status as SellerProps['status'],
+    verified: typeof s.verified === 'boolean' ? s.verified : null,
     store_status: s.store_status as SellerProps['store_status'],
     social_links: (s.social_links as SellerProps['social_links']) ?? null,
     gallery: s.gallery ?? metadataGallery,
-    opening_hours: (s.opening_hours as SellerProps['opening_hours']) ?? (gpMetadata?.opening_hours as SellerProps['opening_hours']) ?? null,
+    opening_hours:
+      (s.opening_hours as SellerProps['opening_hours']) ??
+      (gpMetadata?.opening_hours as SellerProps['opening_hours']) ??
+      null,
     seo: (s.seo as SellerProps['seo']) ?? gpMetadata?.seo ?? null,
     locations:
       s.locations ??
@@ -371,18 +379,19 @@ function mapSellerApiToProps(s: SellerListApiItem): SellerProps {
         ? s.lat
         : typeof primaryLocation?.lat === 'number'
           ? primaryLocation.lat
-        : typeof primaryMetadataLocation?.lat === 'number'
-          ? primaryMetadataLocation.lat
-          : null,
+          : typeof primaryMetadataLocation?.lat === 'number'
+            ? primaryMetadataLocation.lat
+            : null,
     lng:
       typeof s.lng === 'number'
         ? s.lng
         : typeof primaryLocation?.lng === 'number'
           ? primaryLocation.lng
-        : typeof primaryMetadataLocation?.lng === 'number'
-          ? primaryMetadataLocation.lng
-          : null,
+          : typeof primaryMetadataLocation?.lng === 'number'
+            ? primaryMetadataLocation.lng
+            : null,
     regon: s.regon ?? metadataLegal?.regon ?? gpMetadata?.regon ?? null,
-    krs: s.krs ?? metadataLegal?.krs ?? gpMetadata?.krs ?? null
+    krs: s.krs ?? metadataLegal?.krs ?? gpMetadata?.krs ?? null,
+    policy: gpMetadata?.policy ?? null
   };
 }

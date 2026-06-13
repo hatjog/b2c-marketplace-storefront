@@ -39,7 +39,7 @@ export default async function VoucherRecipientPage({
       id="main-content"
       data-testid="voucher-recipient-page"
       data-state={voucher?.state ?? 'expired'}
-      className="min-h-screen bg-[var(--bb-voucher-page-gradient)] bg-[var(--bb-page-bg)]"
+      className="min-h-screen bg-[var(--bb-gradient-page-warm)]"
     >
       <StorefrontRouteStateSignal
         route="voucher-recipient"

@@ -117,7 +117,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       // the browser.
       // R4 fix: also request order-level `status` so the `expired` lifecycle
       // id is reachable (payment_status alone never produces `expired`).
-      `${backendUrl}/store/orders/${encodeURIComponent(id)}?fields=id,display_id,payment_status,status,updated_at,email,customer_id,currency_code,item_total,shipping_total,tax_total,total,*items,+items.metadata,*shipping_methods`,
+      `${backendUrl}/store/orders/${encodeURIComponent(id)}?fields=id,display_id,payment_status,status,updated_at,email,customer_id,currency_code,item_total,shipping_total,tax_total,total,*items,*items.thumbnail,+items.metadata,*shipping_methods`,
       {
         headers,
         cache: 'no-store'
@@ -152,6 +152,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
           subtotal?: number | null;
           total?: number | null;
           unit_price?: number | null;
+          thumbnail?: string | null;
           metadata?: Record<string, unknown> | null;
         }>;
         shipping_methods?: Array<{
@@ -202,6 +203,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
               subtotal: coerceNumber(item.subtotal),
               total: coerceNumber(item.total),
               unit_price: coerceNumber(item.unit_price),
+              thumbnail: item.thumbnail ?? null,
               metadata: item.metadata ?? null
             }))
           : [],

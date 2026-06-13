@@ -332,7 +332,21 @@ export const ProductListing = async ({
   return (
     <div className="space-y-6 py-2" data-testid="product-listing-container">
       <div className="bb-section-shell bb-section-shell-strong space-y-4">
-        <ProductListingHeader total={effectiveTotal} showSort={!categoryPlp} />
+        {categoryPlp && (
+          <div
+            className="h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent"
+            data-testid="category-plp-gold-orna-line"
+          />
+        )}
+        {categoryPlp && (
+          <div
+            className="rounded-full border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] px-4 py-2 text-sm text-secondary"
+            data-testid="category-plp-context-band"
+          >
+            {tCategoryPlp?.('context_band') ?? ''}
+          </div>
+        )}
+        <ProductListingHeader total={effectiveTotal} showSort />
         <div className="hidden md:block">
           <ProductListingActiveFilters />
         </div>
@@ -375,7 +389,7 @@ export const ProductListing = async ({
             </div>
           ) : (
             <div
-              className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${showSidebar ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
               data-testid="product-list"
             >
               <ProductsList products={visibleProducts} fromContext={fromContext} />

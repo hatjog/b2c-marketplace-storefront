@@ -19,9 +19,9 @@
  *
  * Story: v160-5-7-multi-vendor-cart-grouping (epic-5)
  */
+import { useEffect, useState } from 'react';
 
 import type { HttpTypes } from '@medusajs/types';
-import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { CartItemsProducts } from '@/components/cells';
@@ -45,7 +45,7 @@ export const CartGroupedBySeller = ({
   cart,
   delete_item = true,
   change_quantity = true,
-  show_subtotal = true,
+  show_subtotal = true
 }: CartGroupedBySellerProps) => {
   const t = useTranslations('seller.cart');
   const [splitSubtotals, setSplitSubtotals] = useState<Map<string, number>>(new Map());
@@ -63,9 +63,9 @@ export const CartGroupedBySeller = ({
       };
     }
 
-    void listOrderSetSplits(cart.id).then((splits) => {
+    void listOrderSetSplits(cart.id).then(splits => {
       if (!cancelled) {
-        setSplitSubtotals(new Map(splits.map((split) => [split.seller_id, split.subtotal])));
+        setSplitSubtotals(new Map(splits.map(split => [split.seller_id, split.subtotal])));
       }
     });
 
@@ -82,19 +82,19 @@ export const CartGroupedBySeller = ({
 
   return (
     <>
-      {groups.map((group) => {
+      {groups.map(group => {
         const groupKey = group.seller_id ?? 'default';
         const headerLabel = group.seller
           ? t('group_header_label', { seller_name: group.seller.name })
           : t('default_seller_group_label');
         const subtotalMinor =
           group.seller_id && splitSubtotals.has(group.seller_id)
-            ? splitSubtotals.get(group.seller_id) ?? group.subtotal
+            ? (splitSubtotals.get(group.seller_id) ?? group.subtotal)
             : group.subtotal;
         const subtotalFormatted = show_subtotal
           ? convertToLocale({
               amount: subtotalMinor,
-              currency_code: cart.currency_code,
+              currency_code: cart.currency_code
             })
           : null;
 
@@ -103,13 +103,13 @@ export const CartGroupedBySeller = ({
             key={groupKey}
             data-testid="vendor-cart-group"
             data-seller-id={groupKey}
-            className="mb-4 rounded-[var(--bb-radius-card)] border"
+            className="mb-4 overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)]"
           >
             <header
               data-testid="vendor-group-header"
-              className="flex items-center justify-between gap-4 border-b p-4"
+              className="flex items-center justify-between gap-4 border-b border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] p-4"
             >
-              <h3 className="heading-xs uppercase">{headerLabel}</h3>
+              <h2 className="heading-xs uppercase">{headerLabel}</h2>
               {group.seller?.handle && (
                 <LocalizedClientLink
                   href={`/sellers/${group.seller.handle}`}
@@ -130,7 +130,7 @@ export const CartGroupedBySeller = ({
             </div>
             {subtotalFormatted && (
               <footer
-                className="border-t p-4 text-right"
+                className="border-t border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] p-4 text-right"
                 data-testid="vendor-group-total"
               >
                 <p className="label-md text-secondary">

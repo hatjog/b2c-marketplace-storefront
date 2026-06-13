@@ -5,7 +5,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal, VerifiedMark } from '@/components/atoms';
+import {
+  StorefrontI18nLongContentProbe,
+  StorefrontRouteStateSignal,
+  VerifiedMark
+} from '@/components/atoms';
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import { VoucherRulesCard } from '@/components/molecules/VoucherRulesCard/VoucherRulesCard';
 import { MultiVendorOrderSummary } from '@/components/organisms/MultiVendorOrderSummary';
@@ -16,15 +20,13 @@ import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
 import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode/CheckoutPurchaseMode';
 import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
-import {
-  getShippingCoverage,
-  missingShippingSellerNames
-} from '@/lib/checkout/shippingCoverage';
+import { getShippingCoverage, missingShippingSellerNames } from '@/lib/checkout/shippingCoverage';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
 import { isMultiVendorEnabled, isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
+import { readGiftRecipientIssueMetadata } from '@/lib/voucher/gift-recipient';
 
 /**
  * Story 2.4: force-dynamic — cart/checkout payment state is volatile.
@@ -34,6 +36,7 @@ export const dynamic = 'force-dynamic';
 
 type CheckoutPageProps = {
   params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ step?: string | string[]; mode?: string | string[] }>;
 };
 
 export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
@@ -45,8 +48,13 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
   };
 }
 
-export default async function CheckoutPage({ params }: CheckoutPageProps) {
+export default async function CheckoutPage({ params, searchParams }: CheckoutPageProps) {
   const { locale } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const rawStep = resolvedSearchParams.step;
+  const checkoutStep = Array.isArray(rawStep) ? rawStep[0] : rawStep;
+  const rawMode = resolvedSearchParams.mode;
+  const checkoutMode = Array.isArray(rawMode) ? rawMode[0] : rawMode;
   const t = await getTranslations({ locale, namespace: 'page' });
   return (
     <Suspense
@@ -59,12 +67,24 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         </div>
       }
     >
-      <CheckoutPageContent locale={locale} />
+      <CheckoutPageContent
+        locale={locale}
+        searchParamsStep={checkoutStep}
+        searchParamsMode={checkoutMode}
+      />
     </Suspense>
   );
 }
 
-async function CheckoutPageContent({ locale }: { locale: string }) {
+async function CheckoutPageContent({
+  locale,
+  searchParamsStep,
+  searchParamsMode
+}: {
+  locale: string;
+  searchParamsStep?: string;
+  searchParamsMode?: string;
+}) {
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
   const tCheckout = await getTranslations({ locale, namespace: 'checkout' });
@@ -101,6 +121,29 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
   })
     ? 'gift'
     : 'self';
+  const checkoutGiftMode = searchParamsMode?.trim().toLowerCase() === 'gift';
+  const giftRecipientRequired = cartPurchaseMode === 'gift' || checkoutGiftMode;
+  const giftLineItems = (cart.items ?? []).filter(item => {
+    const meta = item.metadata as Record<string, unknown> | null | undefined;
+    return meta?.is_gift === true || meta?.is_gift === 'true' || meta?.purchase_mode === 'gift';
+  });
+  const giftBindingTargets = giftLineItems.length > 0 ? giftLineItems : (cart.items ?? []);
+  const initialGiftRecipient =
+    giftBindingTargets
+      .map(item =>
+        readGiftRecipientIssueMetadata(item.metadata as Record<string, unknown> | null | undefined)
+      )
+      .find(Boolean) ?? null;
+  const giftRecipientComplete =
+    !giftRecipientRequired ||
+    (giftBindingTargets.length > 0 &&
+      giftBindingTargets.every(item =>
+        Boolean(
+          readGiftRecipientIssueMetadata(
+            item.metadata as Record<string, unknown> | null | undefined
+          )
+        )
+      ));
 
   return (
     <PaymentWrapper cart={cart}>
@@ -116,6 +159,25 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
           locale={locale}
           surface="checkout"
         />
+        <div className="checkout-header flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[rgba(249,244,236,0.96)] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+          <a
+            href={`/${locale}/cart`}
+            className="text-sm text-[var(--text-secondary)] underline-offset-4 hover:underline"
+          >
+            {tCheckout('back_to_cart')}
+          </a>
+          <div className="support flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <span className="secure-pill inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+              {tCheckout('checkout_header_secure')}
+            </span>
+            <span>
+              {tCheckout('checkout_header_support')}{' '}
+              <strong className="text-[var(--text-primary,#1A1A1A)]">
+                {tCheckout('checkout_header_phone')}
+              </strong>
+            </span>
+          </div>
+        </div>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
           <div
             className="flex flex-col gap-4"
@@ -129,12 +191,19 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
               cart={cart}
               availableShippingMethods={shippingMethods}
             />
-            <CheckoutPurchaseMode cartPurchaseMode={cartPurchaseMode} />
+            <CheckoutPurchaseMode
+              cartPurchaseMode={cartPurchaseMode}
+              giftLineItemIds={giftBindingTargets.map(item => item.id)}
+              initialGiftRecipient={initialGiftRecipient}
+              isDone={searchParamsStep === 'payment' || searchParamsStep === 'review'}
+            />
             <CartPaymentSection
               cart={cart}
               availablePaymentMethods={paymentMethods}
               shippingComplete={shippingIsComplete}
               missingShippingSellers={missingShippingSellerNames(shippingCoverage)}
+              giftRecipientRequired={giftRecipientRequired}
+              giftRecipientComplete={giftRecipientComplete}
             />
           </div>
 
@@ -171,9 +240,28 @@ async function CheckoutPageContent({ locale }: { locale: string }) {
                 per seller group above CartReview — voucher rules and seller identity
                 visible before Pay (ARCH-007: server component, cannot cross 'use client' boundary). */}
             <CheckoutVoucherSummary cart={cart} />
+            <div className="flex flex-col gap-3 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] p-4">
+              <div className="os-method-badge inline-flex w-fit items-center rounded-full px-3 py-2 text-xs">
+                {tCheckout('order_summary_method_badge')}
+              </div>
+              <div className="os-trust-row flex flex-wrap gap-2 border-t border-[var(--bb-border-soft)] pt-3">
+                {[
+                  tCheckout('order_summary_trust_stripe'),
+                  tCheckout('order_summary_trust_ssl'),
+                  tCheckout('order_summary_trust_return')
+                ].map(token => (
+                  <span
+                    key={token}
+                    className="tt inline-flex items-center rounded-full px-3 py-1 text-[11px]"
+                  >
+                    {token}
+                  </span>
+                ))}
+              </div>
+            </div>
             <CartReview
               cart={cart}
-              shippingComplete={shippingIsComplete}
+              shippingComplete={shippingIsComplete && giftRecipientComplete}
             />
           </div>
         </div>

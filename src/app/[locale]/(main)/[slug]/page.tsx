@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import { BlogRichText } from '@/components/templates';
 import { fetchPayloadPage } from '@/data/payload-pages/fetchPayloadPage';
@@ -43,7 +43,7 @@ export default async function ContentPage({ params }: { params: PageParams }) {
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const [page, t] = await Promise.all([
     fetchPayloadPage({ locale, slug, marketId }),
-    getTranslations('blog'),
+    getTranslations('blog')
   ]);
 
   if (!page) {
@@ -51,13 +51,18 @@ export default async function ContentPage({ params }: { params: PageParams }) {
   }
 
   return (
-    <main id="main-content" className="bb-page-shell mx-auto w-full max-w-3xl px-4 py-10 md:px-6 md:py-14">
-      <article data-testid="content-page" data-slug={page.slug}>
-        <h1 className="mb-6 text-3xl font-semibold tracking-tight text-[var(--text-primary)] md:text-4xl">
-          {page.title}
-        </h1>
+    <main
+      id="main-content"
+      className="bb-page-shell"
+    >
+      <article
+        className="bb-legal-cms-shell"
+        data-testid="content-page"
+        data-slug={page.slug}
+      >
+        <h1 className="heading-xl mb-6 text-[var(--text-primary)]">{page.title}</h1>
         {page.excerpt ? (
-          <p className="mb-8 text-lg text-[var(--text-secondary)]">{page.excerpt}</p>
+          <p className="mb-8 text-lg leading-8 text-[var(--text-secondary)]">{page.excerpt}</p>
         ) : null}
         <div className="bb-prose">
           <BlogRichText

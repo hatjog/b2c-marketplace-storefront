@@ -63,20 +63,20 @@ export type AccountUser = AccountLayoutProps['user'];
 // otherwise sidebar nav `aria-current="page"` highlights an item whose label
 // describes a different page (Epic-4-Review F-01 — half-fix from Wave A L4
 // covered write-heavy only; v1.9.0 Wave F7 completes the read-heavy half).
-const SURFACE_NAV: Array<{ surface: AccountSurface; key: string }> = [
-  { surface: 'W2-01', key: 'dashboard' },
-  { surface: 'W2-02', key: 'voucher_history' },
-  { surface: 'W2-03', key: 'order_history' },
-  { surface: 'W2-04', key: 'order_detail' },
-  { surface: 'W2-05', key: 'return_request' },
-  { surface: 'W2-06', key: 'return_success' },
-  { surface: 'W2-07', key: 'returns_history' },
-  { surface: 'W2-08', key: 'saved_addresses' },
-  { surface: 'W2-09', key: 'wishlist' },
-  { surface: 'W2-10', key: 'reviews_to_write' },
-  { surface: 'W2-11', key: 'written_reviews' },
-  { surface: 'W2-12', key: 'messages' },
-  { surface: 'W2-13', key: 'account_settings' },
+const SURFACE_NAV: Array<{ surface: AccountSurface; key: string; href: string }> = [
+  { surface: 'W2-01', key: 'dashboard', href: '/user' },
+  { surface: 'W2-02', key: 'voucher_history', href: '/user/vouchers' },
+  { surface: 'W2-03', key: 'order_history', href: '/user/orders' },
+  { surface: 'W2-04', key: 'order_detail', href: '/user/orders' },
+  { surface: 'W2-05', key: 'return_request', href: '/user/orders' },
+  { surface: 'W2-06', key: 'return_success', href: '/user/orders' },
+  { surface: 'W2-07', key: 'returns_history', href: '/user/returns' },
+  { surface: 'W2-08', key: 'saved_addresses', href: '/user/addresses' },
+  { surface: 'W2-09', key: 'wishlist', href: '/user/wishlist' },
+  { surface: 'W2-10', key: 'reviews_to_write', href: '/user/reviews' },
+  { surface: 'W2-11', key: 'written_reviews', href: '/user/reviews/written' },
+  { surface: 'W2-12', key: 'messages', href: '/user/messages' },
+  { surface: 'W2-13', key: 'account_settings', href: '/user/settings' },
 ];
 
 function localizedHref(locale: string, href: string) {
@@ -99,16 +99,23 @@ export function AccountLayout({
   mainContent,
   footerSlot,
 }: AccountLayoutProps) {
+  const initials = user?.displayName
+    ?.split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join('') || 'BB';
+
   return (
     <div
       className="min-h-screen"
       style={
         {
-          background: 'var(--bb-page-bg, #F3F1ED)',
+          background: 'var(--bb-page-bg, #F9F4EC)',
           color: 'var(--text-primary)',
+          '--account-nav-width': '260px',
           '--account-sidebar-width': '280px',
-          '--account-content-max-width': '860px',
-          '--account-hero-min-height': '140px',
+          '--account-content-max-width': '1fr',
         } as React.CSSProperties
       }
       data-testid="account-layout"
@@ -125,14 +132,64 @@ export function AccountLayout({
       {headerSlot}
 
       <div className="bb-page-shell">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-start xl:grid-cols-[minmax(0,1fr)_var(--account-sidebar-width)] xl:gap-8">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:items-start xl:grid-cols-[var(--account-nav-width)_minmax(0,var(--account-content-max-width))_var(--account-sidebar-width)] xl:gap-8">
+          <aside
+            role="complementary"
+            className="order-2 min-w-0 xl:order-1 xl:sticky xl:top-[var(--space-12,48px)]"
+            data-testid="account-layout-nav-column"
+          >
+            <div className="rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] p-4 shadow-[var(--bb-shadow-card)]">
+              <div className="mb-4 flex items-center gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-3">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--gold)] text-sm font-medium text-[var(--text-primary)]">
+                  {initials}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                    {user?.displayName ?? t('snapshot.empty')}
+                  </p>
+                  {user?.email ? (
+                    <p className="truncate text-xs text-[var(--text-secondary)]">{user.email}</p>
+                  ) : null}
+                </div>
+              </div>
+
+              <nav aria-label={t('nav.aria_label')} data-testid="account-layout-nav">
+                <ul className="flex flex-col gap-1">
+                  {SURFACE_NAV.map(({ surface, key, href }) => {
+                    const active = surface === activeSurface;
+                    const label = t(`nav.items.${key}`);
+                    return (
+                      <li key={surface}>
+                        <Link
+                          href={localizedHref(locale, href)}
+                          className={cn(
+                            'flex min-h-11 items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm transition-colors',
+                            active
+                              ? 'bg-[var(--color-selected-bg)] text-[var(--text-primary)]'
+                              : 'text-[var(--text-secondary)] hover:bg-[var(--bb-surface-muted)] hover:text-[var(--text-primary)]',
+                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring,var(--accent,#A89279))]'
+                          )}
+                          aria-current={active ? 'page' : undefined}
+                        >
+                          <span>{label}</span>
+                          <span className="text-xs text-[var(--text-muted)]" aria-hidden="true">
+                            {surface}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </div>
+          </aside>
+
           <main
             id="main-content"
             role="main"
             className={cn(
               'order-1 min-w-0',
-              // Tablet: keep main first; Desktop: allow wider content
-              'xl:max-w-[var(--account-content-max-width)]'
+              'xl:order-2'
             )}
           >
             {breadcrumbs.length > 0 && (
@@ -142,20 +199,16 @@ export function AccountLayout({
             )}
 
             <section
-              className="bb-section-shell mb-6"
-              style={{
-                background: 'var(--bb-hero-overlay, var(--bb-surface))',
-              }}
+              className="mb-6 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-5 shadow-[var(--bb-shadow-soft)] md:p-7"
               aria-label={t('hero.aria_label')}
               data-testid="account-layout-hero"
             >
               <div className="flex flex-col gap-2">
-                <p className="bb-eyebrow" style={{ color: 'var(--text-secondary)' }}>
+                <p className="bb-eyebrow">
                   {t('hero.eyebrow')}
                 </p>
                 <h1
-                  className="text-2xl font-semibold leading-tight md:text-3xl"
-                  style={{ minHeight: 'var(--account-hero-min-height)' }}
+                  className="text-2xl font-semibold leading-tight text-[var(--text-primary)] md:text-3xl"
                 >
                   {user ? t('hero.greeting_with_name').replace('{name}', user.displayName) : t('hero.greeting')}
                 </h1>
@@ -166,13 +219,13 @@ export function AccountLayout({
 
               {quickActions.length > 0 && (
                 <nav className="mt-6" aria-label={t('quick_actions.aria_label')} data-testid="account-layout-quick-actions">
-                  <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                  <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {quickActions.map((action) => (
                       <li key={action.id}>
                         <Link
                           href={localizedHref(locale, action.href)}
                           className={cn(
-                            'bb-card block h-full transition-transform',
+                            'block h-full rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4 shadow-[var(--bb-shadow-card)] transition-transform',
                             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring,var(--accent,#A89279))]',
                             'hover:-translate-y-0.5'
                           )}
@@ -203,9 +256,8 @@ export function AccountLayout({
             role="complementary"
             aria-label={t('sidebar.aria_label')}
             className={cn(
-              'order-2 min-w-0',
-              // Desktop: sticky snapshot/nav column (contract calls for sticky behavior)
-              'xl:sticky xl:top-[var(--space-12,48px)]'
+              'order-3 min-w-0',
+              'md:order-3 xl:order-3 xl:sticky xl:top-[var(--space-12,48px)]'
             )}
             data-testid="account-layout-sidebar"
           >
@@ -218,35 +270,6 @@ export function AccountLayout({
                 borderRadius: 'var(--bb-radius-panel)',
               }}
             >
-              <nav aria-label={t('nav.aria_label')} data-testid="account-layout-nav">
-                <ul className="flex flex-col gap-1">
-                  {SURFACE_NAV.map(({ surface, key }) => {
-                    const active = surface === activeSurface;
-                    const label = t(`nav.items.${key}`);
-                    return (
-                      <li key={surface}>
-                        <span
-                          className={cn(
-                            'flex items-center justify-between rounded-xl px-3 py-2 text-sm',
-                            active
-                              ? 'bg-[var(--color-selected-bg,rgba(168,146,121,0.18))] text-[var(--text-primary)]'
-                              : 'text-[var(--text-secondary)]'
-                          )}
-                          aria-current={active ? 'page' : undefined}
-                        >
-                          {label}
-                          <span className="text-xs" style={{ color: 'var(--text-muted)' }} aria-hidden="true">
-                            {surface}
-                          </span>
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </nav>
-
-              <div className="my-6 border-t" style={{ borderColor: 'var(--bb-border-hairline)' }} />
-
               <div>
                 <h2 className="text-sm font-semibold">{t('snapshot.heading')}</h2>
 

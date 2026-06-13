@@ -270,7 +270,7 @@ function PaymentElementForm({
         disabled={!stripe || !elements || isLoading || blocked}
         aria-disabled={blocked || undefined}
         data-testid="stripe-payment-element-submit"
-        className="mt-4 rounded-full bg-[var(--cta)] text-white hover:bg-[var(--cta-hover)]"
+        className={`checkout-spinner-gold mt-4 rounded-full bg-[var(--cta)] hover:bg-[var(--cta-hover)] ${isLoading ? 'bg-white text-[var(--bb-gold,#C5A059)]' : 'text-white'}`}
       >
         {t('pay_now')}
       </Button>

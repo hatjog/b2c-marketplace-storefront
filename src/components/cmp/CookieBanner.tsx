@@ -17,10 +17,10 @@
  * Locales: pl / en / ua / de (OQ-3 auto-resolution: all 4 supported locales).
  * Uses next-intl `useLocale()` to select copy. Falls back to `en`.
  */
+import { useEffect, useState, type ReactElement } from 'react';
 
-import { type ReactElement, useEffect, useState } from 'react';
+import { acceptAll, clearPreferencesStorage, getConsent, rejectAll } from '@/lib/consent';
 
-import { acceptAll, getConsent, rejectAll, clearPreferencesStorage } from '@/lib/consent';
 import { ConsentModal } from './ConsentModal';
 
 // Read locale defensively without next-intl context — CookieBanner is mounted in
@@ -32,8 +32,8 @@ function readLocaleClient(): string {
   try {
     const cookieMatch = document.cookie
       .split(';')
-      .map((c) => c.trim())
-      .find((c) => c.startsWith('_gp_lang='));
+      .map(c => c.trim())
+      .find(c => c.startsWith('_gp_lang='));
     if (cookieMatch) {
       const value = decodeURIComponent(cookieMatch.slice('_gp_lang='.length));
       if (value) return value;
@@ -180,7 +180,7 @@ export function CookieBanner(): ReactElement | null {
           onClick={() => setModalOpen(true)}
           data-testid="cookie-settings-reopen"
           aria-label={copy.customize}
-          className="fixed bottom-4 left-4 z-40 rounded-full border border-tertiary/30 bg-primary px-3 py-2 text-xs font-medium text-tertiary shadow-md hover:bg-tertiary/10"
+          className="bb-chrome-reopen hover:bg-[var(--bb-tint-gold-08)]"
         >
           {copy.customize}
         </button>
@@ -201,16 +201,16 @@ export function CookieBanner(): ReactElement | null {
         aria-live="polite"
         aria-label={copy.heading}
         data-testid="cookie-banner"
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-tertiary/20 bg-primary px-4 py-4 shadow-lg sm:px-6"
+        className="bb-chrome-banner"
       >
         <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
-            <p className="text-sm font-semibold text-secondary">{copy.heading}</p>
-            <p className="mt-1 text-sm text-tertiary">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{copy.heading}</p>
+            <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
               {copy.body}{' '}
               <a
                 href={copy.privacyLinkHref}
-                className="underline hover:text-secondary"
+                className="underline decoration-[var(--bb-tint-gold-24)] underline-offset-4 hover:text-[var(--text-primary)]"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -223,7 +223,7 @@ export function CookieBanner(): ReactElement | null {
               type="button"
               onClick={handleCustomize}
               data-testid="cookie-banner-customize"
-              className="min-h-10 rounded-sm border border-tertiary px-4 py-2 text-sm font-medium hover:bg-tertiary/10"
+              className="min-h-10 rounded-[var(--radius-sm)] border border-[var(--bb-border-strong)] px-4 py-2 text-sm font-medium hover:bg-[var(--bb-tint-gold-08)]"
             >
               {copy.customize}
             </button>
@@ -232,7 +232,7 @@ export function CookieBanner(): ReactElement | null {
               type="button"
               onClick={handleRejectAll}
               data-testid="cookie-banner-reject-all"
-              className="min-h-10 rounded-sm border border-tertiary px-4 py-2 text-sm font-medium hover:bg-tertiary/10"
+              className="min-h-10 rounded-[var(--radius-sm)] border border-[var(--bb-border-strong)] px-4 py-2 text-sm font-medium hover:bg-[var(--bb-tint-gold-08)]"
             >
               {copy.rejectAll}
             </button>
@@ -240,7 +240,7 @@ export function CookieBanner(): ReactElement | null {
               type="button"
               onClick={handleAcceptAll}
               data-testid="cookie-banner-accept-all"
-              className="min-h-10 rounded-sm bg-action px-4 py-2 text-sm font-medium text-action-on-primary"
+              className="min-h-10 rounded-[var(--radius-sm)] bg-[var(--cta)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--cta-hover)]"
             >
               {copy.acceptAll}
             </button>

@@ -14,6 +14,12 @@ import {
   maskEmail,
   shouldStopConfirmationPolling
 } from '@/lib/confirmation/order-confirmed-stepper';
+import {
+  resolveGiftCue,
+  resolveVoucherRuleBadges,
+  resolveVoucherThumbnail
+} from '@/lib/confirmation/order-confirmed-surface';
+import { cn } from '@/lib/utils';
 
 type OrderItem = {
   id: string | null;
@@ -22,6 +28,7 @@ type OrderItem = {
   subtotal: number;
   total: number;
   unit_price: number;
+  thumbnail: string | null;
   metadata: Record<string, unknown> | null;
 };
 
@@ -108,13 +115,44 @@ function formatTime(iso: string | null | undefined, locale: string): string | nu
   }).format(parsed);
 }
 
+/**
+ * L2 fix: validate URL scheme before embedding in CSS background-image.
+ * Only http: and https: URLs are allowed (defense-in-depth — CSS background-image
+ * does not execute javascript: but we reject non-http schemes to prevent
+ * data: URL leakage and future attack vectors).
+ */
+function toCssImageUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  return `url("${url.replace(/["\\]/g, '\\$&')}")`;
+}
+
+/**
+ * L3 fix: also check metadata.gp sub-object so gift detection is consistent
+ * with readMetadataString in order-confirmed-surface.ts (which already checks .gp).
+ */
 function readString(metadata: Record<string, unknown> | null, keys: string[]): string | null {
   if (!metadata) return null;
 
   for (const key of keys) {
-    const value = metadata[key];
-    if (typeof value === 'string' && value.trim().length > 0) {
-      return value.trim();
+    const directValue = metadata[key];
+    if (typeof directValue === 'string' && directValue.trim().length > 0) {
+      return directValue.trim();
+    }
+
+    const gp = metadata.gp;
+    if (typeof gp === 'object' && gp !== null && !Array.isArray(gp)) {
+      const gpValue = (gp as Record<string, unknown>)[key];
+      if (typeof gpValue === 'string' && gpValue.trim().length > 0) {
+        return gpValue.trim();
+      }
     }
   }
 
@@ -390,6 +428,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
   const fallbackMaskedEmail = order.masked_email ?? maskEmail(null);
   const paidTimestamp = formatTime(order.updated_at, locale);
   const recipientDisplay = recipient.name ?? (recipient.email ? maskEmail(recipient.email) : fallbackMaskedEmail);
+  const giftCue = resolveGiftCue(isGift, recipientDisplay, order.items);
 
   const heroSubcopy = isGift
     ? t('hero_sub_gift', {
@@ -420,11 +459,28 @@ export function ConfirmationPageContent({ orderId }: Props) {
       data-testid="order-confirmed-w1-07"
     >
       <header
-        className="bb-section-shell bb-section-shell-strong"
+        className="bb-section-shell bb-section-shell-strong relative overflow-hidden"
         data-testid="order-confirmed-hero"
       >
-        <h1 className="heading-xl text-primary">{t('hero_title')}</h1>
-        <p className="mt-3 text-secondary">{heroSubcopy}</p>
+        <div
+          className="confirm-orna pointer-events-none absolute right-6 top-6 h-24 w-24 rounded-full border border-[var(--bb-border-strong)] opacity-40"
+          aria-hidden="true"
+          data-testid="confirm-orna"
+        />
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center">
+          <div
+            className="success-mark flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)] shadow-[var(--bb-shadow-card)]"
+            aria-hidden="true"
+            data-testid="order-confirmed-success-mark"
+          >
+            <span className="text-5xl leading-none">✓</span>
+          </div>
+          <div>
+            <p className="bb-eyebrow">{t('hero_eyebrow')}</p>
+            <h1 className="heading-xl text-primary">{t('hero_title')}</h1>
+            <p className="mt-3 text-secondary">{heroSubcopy}</p>
+          </div>
+        </div>
       </header>
 
       <section
@@ -464,24 +520,37 @@ export function ConfirmationPageContent({ orderId }: Props) {
           role="list"
           tabIndex={0}
         >
-          {stepperState.steps.map(step => {
+          {stepperState.steps.map((step, index) => {
             const isActive = step.state === 'active';
             const isDone = step.state === 'done';
 
             return (
               <li
                 key={step.id}
-                className={[
-                  'rounded-[var(--bb-radius-card)] border p-4 outline-none',
-                  isDone ? 'border-[var(--gold)] bg-[var(--gold-light)]' : '',
-                  isActive ? 'border-[var(--cta)] bg-[var(--bb-surface-muted)]' : '',
-                  step.state === 'future' ? 'border-[var(--bb-border-soft)] bg-[var(--bb-surface)]' : ''
-                ].join(' ')}
+                className={cn(
+                  'relative rounded-[var(--bb-radius-card)] border p-4 outline-none',
+                  index > 0 &&
+                    'md:before:absolute md:before:-left-4 md:before:top-8 md:before:h-px md:before:w-4 md:before:bg-[var(--gold)]',
+                  isDone && 'border-[var(--gold)] bg-[var(--gold-light)]',
+                  isActive && 'border-[var(--gold)] bg-[var(--bb-surface-muted)] shadow-[var(--bb-shadow-card)]',
+                  step.state === 'future' && 'border-[var(--bb-border-soft)] bg-[var(--bb-surface)]'
+                )}
                 data-step-id={step.id}
                 data-step-state={step.state}
                 aria-current={isActive ? 'step' : undefined}
               >
-                <p className={`label-sm ${isDone ? 'text-[color:var(--cta-hover)]' : 'text-secondary'}`}>
+                <div
+                  className={cn(
+                    'mb-3 flex h-9 w-9 items-center justify-center rounded-full border text-sm font-medium',
+                    isDone && 'border-[var(--gold)] bg-[var(--gold)] text-white',
+                    isActive && 'border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)]',
+                    step.state === 'future' && 'border-[var(--bb-border-soft)] bg-[var(--bb-surface)] text-secondary'
+                  )}
+                  aria-hidden="true"
+                >
+                  {isDone ? '✓' : index + 1}
+                </div>
+                <p className={`label-sm ${isDone || isActive ? 'text-[var(--gold)]' : 'text-secondary'}`}>
                   {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}
@@ -530,6 +599,37 @@ export function ConfirmationPageContent({ orderId }: Props) {
         )}
       </section>
 
+      {giftCue && (
+        <section
+          className="bb-section-shell border border-[var(--bb-border-strong)] bg-[var(--bb-surface-strong)]"
+          data-testid="gift-cue"
+          aria-labelledby="gift-cue-heading"
+        >
+          <p className="bb-eyebrow">{t('gift_cue_eyebrow')}</p>
+          <h2
+            id="gift-cue-heading"
+            className="heading-sm text-primary"
+          >
+            {t('gift_cue_title', { recipient: giftCue.recipient })}
+          </h2>
+          {giftCue.message ? (
+            <blockquote
+              className="mt-4 border-l-2 border-[var(--gold)] pl-4 text-base text-primary"
+              data-testid="gift-cue-message"
+            >
+              {giftCue.message}
+            </blockquote>
+          ) : (
+            <p
+              className="mt-3 text-sm text-secondary"
+              data-testid="gift-cue-message-missing"
+            >
+              {t('gift_cue_missing_message')}
+            </p>
+          )}
+        </section>
+      )}
+
       <section
         className="bb-section-shell"
         data-testid="order-summary-section"
@@ -565,24 +665,66 @@ export function ConfirmationPageContent({ orderId }: Props) {
           {order.items.length === 0 && (
             <p className="text-sm text-secondary">{t('summary_empty')}</p>
           )}
-          {order.items.map(item => (
-            <article
-              key={item.id ?? `${item.title}-${item.quantity}`}
-              className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-3"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-sm font-medium text-primary">
-                  {item.title ?? t('summary_item_fallback')}
-                </p>
-                <p className="text-sm text-primary">
-                  {formatMoney(item.total, order.currency_code, locale)}
-                </p>
-              </div>
-              <p className="mt-1 text-xs text-secondary">
-                {t('summary_item_quantity', { quantity: String(item.quantity) })}
-              </p>
-            </article>
-          ))}
+          {order.items.map(item => {
+            const thumbnailRaw = resolveVoucherThumbnail(item);
+            const thumbnailCss = thumbnailRaw ? toCssImageUrl(thumbnailRaw) : null;
+            const badges = resolveVoucherRuleBadges(item, t('badge_refund_30_days'));
+
+            return (
+              <article
+                key={item.id ?? `${item.title}-${item.quantity}`}
+                className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-3"
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-muted)] bg-cover bg-center"
+                    data-testid="voucher-thumbnail"
+                    style={thumbnailCss ? { backgroundImage: thumbnailCss } : undefined}
+                  >
+                    {thumbnailCss ? (
+                      <span className="sr-only">{item.title ?? t('summary_item_fallback')}</span>
+                    ) : (
+                      <span
+                        className="text-xl text-[var(--gold)]"
+                        aria-hidden="true"
+                      >
+                        ✦
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-medium text-primary">
+                        {item.title ?? t('summary_item_fallback')}
+                      </p>
+                      <p className="text-sm text-primary">
+                        {formatMoney(item.total, order.currency_code, locale)}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-xs text-secondary">
+                      {t('summary_item_quantity', { quantity: String(item.quantity) })}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {badges.validity && (
+                        <span
+                          className="badge-pill rounded-full border border-[var(--bb-border-strong)] bg-[var(--gold-light)] px-3 py-1 text-xs text-primary"
+                          data-testid="voucher-validity-badge"
+                        >
+                          {t('badge_valid_until', { value: badges.validity })}
+                        </span>
+                      )}
+                      <span
+                        className="badge-pill rounded-full border border-[var(--bb-border-strong)] bg-[var(--bb-surface-muted)] px-3 py-1 text-xs text-primary"
+                        data-testid="voucher-refund-badge"
+                      >
+                        {badges.refund}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <div
@@ -637,6 +779,12 @@ export function ConfirmationPageContent({ orderId }: Props) {
 
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
           <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-4">
+            <span
+              className="nc-ico mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)]"
+              aria-hidden="true"
+            >
+              1
+            </span>
             <h3 className="text-sm font-medium text-primary">{t('next_for_you_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_you_body')}</p>
             <LocalizedClientLink
@@ -648,6 +796,12 @@ export function ConfirmationPageContent({ orderId }: Props) {
           </article>
 
           <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-4">
+            <span
+              className="nc-ico mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)]"
+              aria-hidden="true"
+            >
+              2
+            </span>
             <h3 className="text-sm font-medium text-primary">{t('next_for_recipient_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_recipient_body')}</p>
             <LocalizedClientLink
@@ -659,6 +813,12 @@ export function ConfirmationPageContent({ orderId }: Props) {
           </article>
 
           <article className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] p-4">
+            <span
+              className="nc-ico mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)]"
+              aria-hidden="true"
+            >
+              3
+            </span>
             <h3 className="text-sm font-medium text-primary">{t('next_for_salon_title')}</h3>
             <p className="mt-2 text-sm text-secondary">{t('next_for_salon_body')}</p>
             <LocalizedClientLink
@@ -698,6 +858,13 @@ export function ConfirmationPageContent({ orderId }: Props) {
           </LocalizedClientLink>
         </section>
       )}
+
+      <footer
+        className="slim-footer border-t border-[var(--bb-border-soft)] py-4 text-sm text-secondary"
+        data-testid="order-confirmed-slim-footer"
+      >
+        {t('slim_footer')}
+      </footer>
     </div>
   );
 }
