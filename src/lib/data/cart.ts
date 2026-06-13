@@ -120,10 +120,11 @@ const CART_RETRIEVE_FIELDS = [
   '*shipping_methods',
   'email',
   '+shipping_methods.name',
-  '*items.product.seller',
-  // Hydrate the salon avatar on cart/checkout — the `*seller` wildcard does not
-  // serialize `photo` by default, so SellerAvatar fell back to the grey placeholder.
-  '+items.product.seller.photo'
+  // The `*seller` wildcard already serializes the real Seller columns (incl. `logo`),
+  // which the cart avatar maps to `photo`. Do NOT add `+...seller.photo`: `photo` is not
+  // a Seller column and the cart `fields` validator rejects the unknown nested field with
+  // a 400 → retrieveCart catches it → null cart → checkout/payment breaks.
+  '*items.product.seller'
 ].join(',');
 
 type MedusaNumericLike =

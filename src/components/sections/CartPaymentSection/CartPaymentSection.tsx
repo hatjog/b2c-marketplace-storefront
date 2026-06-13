@@ -181,21 +181,27 @@ const CartPaymentSection = ({
     setError(null);
     setSelectedPaymentMethod(method);
     if (isStripeFunc(method)) {
-      const cartHash = await computeCheckoutCartHash(cart);
-      await initiatePaymentSession(
-        cart,
-        {
-          provider_id: method,
-          data: { gp_checkout_cart_hash: cartHash }
-        },
-        getCheckoutPaymentIdempotencyKey()
-      );
-      // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
-      // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
-      // router.refresh() wymusza ponowny render RSC → cart.payment_collection
-      // .payment_sessions[].data.client_secret staje się dostępny → guard
-      // stripeClientSecret spełniony → <StripePaymentElement> może się zamontować.
-      router.refresh();
+      try {
+        const cartHash = await computeCheckoutCartHash(cart);
+        await initiatePaymentSession(
+          cart,
+          {
+            provider_id: method,
+            data: { gp_checkout_cart_hash: cartHash }
+          },
+          getCheckoutPaymentIdempotencyKey()
+        );
+        // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
+        // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
+        // router.refresh() wymusza ponowny render RSC → cart.payment_collection
+        // .payment_sessions[].data.client_secret staje się dostępny → guard
+        // stripeClientSecret spełniony → <StripePaymentElement> może się zamontować.
+        router.refresh();
+      } catch (err: unknown) {
+        // initiatePaymentSession re-throws via medusaError — surface it instead of an
+        // unhandled rejection in the chip click handler.
+        setError(err instanceof Error ? err.message : t('error_generic'));
+      }
     }
   };
 
