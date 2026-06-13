@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { convertToLocale } from '@/lib/helpers/money';
 import {
   buildConfirmationStepperState,
   deriveVoucherPipelineStatus,
@@ -94,10 +95,12 @@ function formatMoney(value: number, currencyCode: string | null, locale: string)
   }
 
   try {
-    return new Intl.NumberFormat(localeTag(locale), {
-      style: 'currency',
-      currency
-    }).format(value / 100);
+    return convertToLocale({
+      amount: value,
+      currency_code: currency,
+      locale: localeTag(locale),
+      isMinorUnit: true,
+    });
   } catch {
     return '—';
   }

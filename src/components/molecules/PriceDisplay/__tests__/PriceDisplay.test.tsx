@@ -45,9 +45,9 @@ describe('PriceDisplay', () => {
   it('formats prices with canonical BCP47 locale tags for every storefront locale', () => {
     const expectedByLocale = {
       pl: '200\u00a0zł',
-      en: 'PLN\u00a0200',
-      ua: '200\u00a0PLN',
-      de: '200\u00a0PLN',
+      en: '200\u00a0z\u0142',
+      ua: '200\u00a0z\u0142',
+      de: '200\u00a0z\u0142',
     };
 
     for (const [locale, expected] of Object.entries(expectedByLocale)) {
@@ -64,9 +64,9 @@ describe('PriceDisplay', () => {
       locale: 'de',
     }) as ReactEl;
     const children = React.Children.toArray(result.props.children as React.ReactNode);
-    expect(children[0]).toBe('ab 200\u00a0PLN');
-    // aria-label uses formatPLN() \u2014 consistent with visible text
-    expect(result.props['aria-label']).toBe('Preis: ab 200\u00a0PLN');
+    expect(children[0]).toBe('ab 200\u00a0z\u0142');
+    // aria-label uses formatPLN() \u2014 consistent with visible text (PLN renders "z\u0142")
+    expect(result.props['aria-label']).toBe('Preis: ab 200\u00a0z\u0142');
   });
 
   // AC#6 — range variant (min != max) -> "200-280 zl" (en-dash)

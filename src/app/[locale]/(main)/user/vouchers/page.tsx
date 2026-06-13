@@ -38,6 +38,7 @@ import { redirect } from 'next/navigation';
 import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
 import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
+import { convertToLocale } from '@/lib/helpers/money';
 import { toDisplayName } from '@/lib/account/read-heavy';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCustomerVouchers, type VoucherListItem, type VoucherStatus } from '@/lib/data/voucher';
@@ -103,10 +104,12 @@ function formatVoucherValue(value: number | null, currencyCode: string, locale: 
     de: 'de-DE'
   };
 
-  return new Intl.NumberFormat(bcp47[locale] ?? 'pl-PL', {
-    style: 'currency',
-    currency: (currencyCode || 'PLN').toUpperCase()
-  }).format(value / 100);
+  return convertToLocale({
+    amount: value,
+    currency_code: (currencyCode || 'PLN').toUpperCase(),
+    locale: bcp47[locale] ?? 'pl-PL',
+    isMinorUnit: true,
+  });
 }
 
 function maskVoucherCode(code: string): string {

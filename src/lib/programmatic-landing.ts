@@ -1,6 +1,7 @@
 import type { SupportedLocale } from '@/i18n/routing';
 import { SELLER_DIRECTORY_FIXTURES } from '@/lib/data/seller-directory-fixtures';
 import { toHreflangBare } from '@/lib/helpers/hreflang';
+import { convertToLocale } from '@/lib/helpers/money';
 import type { BlogRichTextNode } from '@/types/blog';
 
 type LocalizedLabel = Record<SupportedLocale, string>;
@@ -234,12 +235,14 @@ function matchesOffer(
 }
 
 function formatPrice(locale: SupportedLocale, priceMinor: number) {
-  // toHreflangBare resolves ua→uk (canonical R9 source); bare ISO code for Intl.NumberFormat.
-  return new Intl.NumberFormat(toHreflangBare(locale), {
-    style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 2
-  }).format(priceMinor / 100);
+  // toHreflangBare resolves ua→uk (canonical R9 source). convertToLocale applies the PLN
+  // "kwota zł" convention (whole amounts drop the .00) consistently across the storefront.
+  return convertToLocale({
+    amount: priceMinor,
+    currency_code: 'PLN',
+    locale: toHreflangBare(locale),
+    isMinorUnit: true,
+  });
 }
 
 function buildSeoContent(

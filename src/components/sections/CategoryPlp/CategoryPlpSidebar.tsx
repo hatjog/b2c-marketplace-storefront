@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import useFilters from '@/hooks/useFilters';
+import { convertToLocale } from '@/lib/helpers/money';
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 2000;
@@ -33,12 +34,9 @@ function parsePrice(value: string | null, fallback: number) {
 
 function formatPrice(value: number, locale: string, currencyCode: string) {
   try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currencyCode,
-      currencyDisplay: 'code',
-      maximumFractionDigits: 0,
-    }).format(value);
+    // value is already in major units (filter bounds) → isMinorUnit:false. Drops the old
+    // currencyDisplay:'code' "PLN 260" in favour of the PLN "260 zł" convention.
+    return convertToLocale({ amount: value, currency_code: currencyCode, locale, isMinorUnit: false });
   } catch {
     return `${value} ${currencyCode}`;
   }
