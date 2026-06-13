@@ -95,7 +95,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
       {serverState.status === 'success' && (
         <p
           role="status"
-          className="rounded-sm border border-positive bg-positive-secondary px-4 py-3 text-sm text-positive"
+          className="rounded-[var(--bb-radius-card)] border border-positive bg-positive-secondary px-4 py-3 text-sm text-positive"
           data-testid="voucher-consent-success"
         >
           {t('success_message')}
@@ -105,7 +105,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
       {serverErrorKey && (
         <p
           role="alert"
-          className="rounded-sm border border-negative bg-negative-secondary px-4 py-3 text-sm text-negative"
+          className="rounded-[var(--bb-radius-card)] border border-negative bg-negative-secondary px-4 py-3 text-sm text-negative"
           data-testid="voucher-consent-server-error"
         >
           {t(serverErrorKey, {
@@ -116,7 +116,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
 
       {ageCheckRequired && (
         <fieldset
-          className="flex flex-col gap-3 rounded-sm border border-tertiary p-4"
+          className="flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4"
           data-testid="voucher-consent-guardian-section"
         >
           <legend className="label-md px-1 text-primary">{t('guardian_section_title')}</legend>
@@ -126,7 +126,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
               type="email"
               autoComplete="email"
               placeholder={t('placeholder_guardian_email')}
-              className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-action"
+              className="min-h-12 rounded-[var(--radius-sm)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-action"
               data-testid="guardian-email-input"
               {...register('guardian_email')}
             />
@@ -164,7 +164,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
         <label className="flex items-start gap-3 text-sm text-primary">
           <input
             type="checkbox"
-            className="mt-1 size-5 rounded-sm border border-primary"
+            className="mt-1 size-5 rounded-[var(--radius-xs)] border border-[var(--bb-border-soft)]"
             data-testid="consent-rodo-checkbox"
             {...register('consent_rodo')}
           />
@@ -178,7 +178,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
         <label className="flex items-start gap-3 text-sm text-primary">
           <input
             type="checkbox"
-            className="mt-1 size-5 rounded-sm border border-primary"
+            className="mt-1 size-5 rounded-[var(--radius-xs)] border border-[var(--bb-border-soft)]"
             data-testid="consent-service-execution-checkbox"
             {...register('consent_service_execution')}
           />
@@ -192,7 +192,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
         <label className="flex items-start gap-3 text-sm text-primary">
           <input
             type="checkbox"
-            className="mt-1 size-5 rounded-sm border border-primary"
+            className="mt-1 size-5 rounded-[var(--radius-xs)] border border-[var(--bb-border-soft)]"
             data-testid="consent-marketing-checkbox"
             {...register('consent_marketing')}
           />
@@ -229,7 +229,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
               <input
                 type="text"
                 placeholder={t('captcha_placeholder')}
-                className="min-h-12 rounded-sm border border-primary bg-primary px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-action"
+                className="min-h-12 rounded-[var(--radius-sm)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-75)] px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-action"
                 data-testid="captcha-token-input"
                 {...register('captcha_token')}
               />
@@ -247,7 +247,7 @@ export function ConsentForm({ token, locale, ageCheckRequired, captchaSiteKey }:
         type="submit"
         disabled={!submitEnabled}
         aria-disabled={!submitEnabled}
-        className="min-h-12 rounded-sm bg-action px-6 py-3 font-medium text-action-on-primary disabled:cursor-not-allowed disabled:opacity-50"
+        className="min-h-12 rounded-full bg-action px-6 py-3 font-medium text-action-on-primary disabled:cursor-not-allowed disabled:opacity-50"
         data-testid="voucher-consent-submit"
       >
         {pending ? t('cta_pending') : t('cta_submit')}

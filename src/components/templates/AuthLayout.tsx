@@ -77,51 +77,47 @@ export async function AuthLayout({
       </a>
 
       <div className="mx-auto flex min-h-[var(--auth-page-min-height)] w-full max-w-[1440px] flex-col px-4 py-5 md:px-5 md:py-6 lg:px-8 lg:py-8">
-        <header
-          role="banner"
-          className="flex flex-col items-center gap-3 pb-8 md:pb-10"
-        >
-          {showHomeLink ? (
-            <Link
-              href={`/${locale}`}
-              aria-label={t('home_aria')}
-              className="inline-flex items-center gap-3 rounded-full px-3 py-2 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
-            >
-              <Image
-                src="/bonbeauty/logo/bonbeauty-logo-monogram-dark.svg"
-                alt=""
-                width={32}
-                height={32}
-                className="h-8 w-8"
-              />
-              <span className="text-base font-medium tracking-[0.12em] text-[var(--text-primary)]">
-                BonBeauty
-              </span>
-            </Link>
-          ) : (
-            <div className="inline-flex items-center gap-3">
-              <Image
-                src="/bonbeauty/logo/bonbeauty-logo-monogram-dark.svg"
-                alt=""
-                width={32}
-                height={32}
-                className="h-8 w-8"
-              />
-              <span className="text-base font-medium tracking-[0.12em] text-[var(--text-primary)]">
-                BonBeauty
-              </span>
-            </div>
-          )}
-        </header>
-
         <main
           id="auth-form-main"
           tabIndex={-1}
-          className="flex flex-1 items-center justify-center"
+          className="flex flex-1 items-center justify-center py-4 md:py-8"
         >
           <section className="w-full max-w-[var(--auth-form-max-width)]">
-            <div className="bb-card rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-6 md:p-8">
-              <div className="mb-6 space-y-3">
+            <div className="rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-strong)] p-6 shadow-[var(--bb-shadow-lift)] md:p-8">
+              <div className="mb-6 flex justify-center">
+                {showHomeLink ? (
+                  <Link
+                    href={`/${locale}`}
+                    aria-label={t('home_aria')}
+                    className="inline-flex items-center gap-3 rounded-full px-2 py-2 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]"
+                  >
+                    <Image
+                      src="/bonbeauty/logo/bonbeauty-logo-monogram-dark.svg"
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="h-8 w-8"
+                    />
+                    <span className="text-base font-medium tracking-[0.12em] text-[var(--text-primary)]">
+                      BonBeauty
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="inline-flex items-center gap-3">
+                    <Image
+                      src="/bonbeauty/logo/bonbeauty-logo-monogram-dark.svg"
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="h-8 w-8"
+                    />
+                    <span className="text-base font-medium tracking-[0.12em] text-[var(--text-primary)]">
+                      BonBeauty
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="mb-6 space-y-3 text-center">
                 {eyebrow ? <p className="bb-eyebrow">{eyebrow}</p> : null}
                 <h1 className="heading-md text-[var(--text-primary)]">{pageTitle}</h1>
                 {subtitle ? (
@@ -133,7 +129,7 @@ export async function AuthLayout({
 
             <section
               aria-label={t('trust_aria')}
-              className="mt-4 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-4 py-3"
+              className="mt-4 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface-82)] px-4 py-3 shadow-[var(--bb-shadow-card)]"
             >
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 {items.map(item => (
