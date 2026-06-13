@@ -120,7 +120,10 @@ const CART_RETRIEVE_FIELDS = [
   '*shipping_methods',
   'email',
   '+shipping_methods.name',
-  '*items.product.seller'
+  '*items.product.seller',
+  // Hydrate the salon avatar on cart/checkout — the `*seller` wildcard does not
+  // serialize `photo` by default, so SellerAvatar fell back to the grey placeholder.
+  '+items.product.seller.photo'
 ].join(',');
 
 type MedusaNumericLike =

@@ -96,7 +96,9 @@ export function PurchaseModeToggle({
                 />
                 <span className="text-base font-medium">{t(opt.titleKey)}</span>
               </span>
-              <span className="text-sm text-tertiary">{t(opt.descKey)}</span>
+              {/* text-tertiary maps to a near-bg muted tone that was almost invisible on
+                  the toggle surface (Robert eye-check) — use the legible secondary token. */}
+              <span className="text-sm text-[var(--text-secondary)]">{t(opt.descKey)}</span>
             </label>
           );
         })}

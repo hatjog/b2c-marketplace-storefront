@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { RadioGroup } from '@headlessui/react';
 import { CreditCard } from '@medusajs/icons';
@@ -40,6 +40,51 @@ function isPendingPaymentSession(
 
 const PAYMENT_CHIP_KEYS = ['card', 'blik', 'p24', 'apple_pay', 'google_pay'] as const;
 type PaymentChipKey = (typeof PAYMENT_CHIP_KEYS)[number];
+
+// Monochrome (currentColor) glyphs so each method chip reads at a glance — the chips
+// previously rendered a bare label. Brand-evocative, not exact trademark logos.
+const CHIP_ICONS: Record<PaymentChipKey, ReactNode> = {
+  card: (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4 shrink-0">
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M2.5 9.5h19" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6 15.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  ),
+  blik: (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4 shrink-0">
+      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="9.5" r="1.8" fill="currentColor" />
+      <path
+        d="M8 15.5c0-2.2 1.8-4 4-4s4 1.8 4 4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
+  p24: (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4 shrink-0">
+      <rect x="2.5" y="4.5" width="19" height="15" rx="3" stroke="currentColor" strokeWidth="1.6" />
+      <text x="12" y="15" fontSize="8" fontWeight="700" textAnchor="middle" fill="currentColor">
+        24
+      </text>
+    </svg>
+  ),
+  apple_pay: (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4 shrink-0">
+      <path d="M16.4 12.8c0-2 1.6-2.9 1.7-3-.9-1.4-2.4-1.5-2.9-1.6-1.2-.1-2.4.7-3 .7s-1.6-.7-2.6-.7c-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 6 1 8 .7 1 1.4 2 2.5 2s1.3-.6 2.5-.6 1.5.6 2.5.6 1.8-1 2.5-2c.5-.7.7-1.1 1-1.9-2.6-1-2.4-3.8-1.4-4.5zM14.6 6.9c.6-.7 1-1.6.9-2.6-.8 0-1.8.6-2.4 1.3-.5.6-1 1.5-.9 2.5.9.1 1.8-.5 2.4-1.2z" />
+    </svg>
+  ),
+  google_pay: (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4 shrink-0">
+      <path d="M21 12.2c0-.6-.1-1.2-.2-1.8H12v3.4h5.1c-.2 1.2-.9 2.2-1.9 2.9v2.4h3.1c1.8-1.7 2.7-4.1 2.7-6.9z" fill="currentColor" />
+      <path d="M12 21c2.4 0 4.5-.8 6-2.2l-3.1-2.4c-.8.6-1.9.9-2.9.9-2.3 0-4.2-1.5-4.9-3.6H3.9v2.4C5.4 19 8.5 21 12 21z" fill="currentColor" opacity="0.7" />
+      <path d="M7.1 13.7c-.2-.6-.3-1.1-.3-1.7s.1-1.2.3-1.7V7.9H3.9C3.3 9.1 3 10.5 3 12s.3 2.9.9 4.1l3.2-2.4z" fill="currentColor" opacity="0.5" />
+      <path d="M12 6.7c1.3 0 2.5.5 3.4 1.3l2.6-2.6C16.5 3.9 14.4 3 12 3 8.5 3 5.4 5 3.9 7.9l3.2 2.4C7.8 8.2 9.7 6.7 12 6.7z" fill="currentColor" opacity="0.85" />
+    </svg>
+  )
+};
 
 /**
  * Checks whether the given Stripe payment_method_type chip is enabled for the
@@ -98,6 +143,10 @@ const CartPaymentSection = ({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
     activeSession?.provider_id ?? ''
   );
+  // Which method chip the buyer picked (card/blik/p24/…). All chips route through the
+  // single Stripe provider, but this drives per-chip visual feedback + the PaymentElement
+  // method order so clicking "BLIK" visibly selects BLIK (was: only "card" ever lit up).
+  const [selectedChip, setSelectedChip] = useState<PaymentChipKey>('card');
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -230,10 +279,10 @@ const CartPaymentSection = ({
     return {
       key,
       label: t(`payment_method_chip_${key}`),
-      // card chip is the "active" visual representative when Stripe is selected;
-      // other chips are enabled but not individually selectable (PaymentElement
-      // surfaces method choice natively within the Stripe session).
-      isActive: key === 'card' && isStripeSessionSelected,
+      // The picked chip lights up (was: only "card" ever did) — selection still routes
+      // through the single Stripe session, but the PaymentElement is re-ordered so the
+      // chosen method surfaces first (see preferredMethod below).
+      isActive: key === selectedChip && isStripeSessionSelected,
       enabled
     };
   });
@@ -278,20 +327,23 @@ const CartPaymentSection = ({
                     <button
                       key={chip.key}
                       type="button"
-                      className={`pmchip ${chip.isActive ? 'is-active' : ''}`}
+                      className={`pmchip inline-flex items-center justify-center gap-2 ${chip.isActive ? 'is-active' : ''}`}
                       disabled={!chip.enabled}
                       aria-pressed={chip.isActive}
-                      // Chips are visual indicators; payment method selection
-                      // is handled natively by StripePaymentElement (PaymentElement
-                      // renders tabs/wallets).  Clicking a chip activates the Stripe
-                      // provider session; PaymentElement surfaces the actual type.
+                      // Clicking a chip records the buyer's choice (visual feedback +
+                      // preferredMethod ordering for the PaymentElement) and activates the
+                      // single Stripe provider session; the embedded PaymentElement then
+                      // surfaces the chosen method first for native confirmation.
                       onClick={() => {
-                        if (chip.enabled && stripeProviderId) {
+                        if (!chip.enabled) return;
+                        setSelectedChip(chip.key);
+                        if (stripeProviderId) {
                           void setPaymentMethod(stripeProviderId);
                         }
                       }}
                     >
-                      {chip.label}
+                      {CHIP_ICONS[chip.key]}
+                      <span>{chip.label}</span>
                     </button>
                   ))}
                 </div>
@@ -312,6 +364,7 @@ const CartPaymentSection = ({
                           cartId={cart.id}
                           clientSecret={stripeClientSecret}
                           returnUrl={paymentStatusReturnUrl}
+                          preferredMethod={selectedChip}
                           blocked={!checkoutReady}
                           blockedReason={
                             !shippingComplete
