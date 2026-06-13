@@ -44,7 +44,8 @@ export function CheckoutPurchaseMode({
   cartPurchaseMode,
   giftLineItemIds = [],
   initialGiftRecipient,
-  isDone = false
+  isDone = false,
+  locked = false
 }: {
   /** Mode persisted on the cart line items at the PDP (metadata.is_gift /
    *  purchase_mode). Used as the initial display when the URL carries no
@@ -54,6 +55,8 @@ export function CheckoutPurchaseMode({
   giftLineItemIds?: string[];
   initialGiftRecipient?: GiftRecipientIssueMetadata | null;
   isDone?: boolean;
+  /** Prerequisite not met yet → shown but greyed-out + non-interactive (checkout flow). */
+  locked?: boolean;
 } = {}): ReactElement {
   const t = useTranslations('seller.checkout');
   const router = useRouter();
@@ -107,6 +110,8 @@ export function CheckoutPurchaseMode({
     <section
       data-testid="checkout-purchase-mode-section"
       className="bb-section-shell flex flex-col gap-4"
+      data-locked={locked || undefined}
+      aria-disabled={locked || undefined}
     >
       <div className={`step-head ${isDone ? 'is-done' : ''}`}>
         <span className="step-num">{isDone ? '✓' : '3'}</span>

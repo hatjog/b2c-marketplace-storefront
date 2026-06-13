@@ -73,6 +73,10 @@ type ShippingCart = Omit<HttpTypes.StoreCart, 'items'> & {
 type ShippingProps = {
   cart: ShippingCart;
   availableShippingMethods: AvailableShippingMethod[] | null;
+  /** Checkout flow (Robert): render expanded at once instead of the `?step=` accordion. */
+  forceExpanded?: boolean;
+  /** Prerequisite (address) not met yet → shown but greyed-out + non-interactive. */
+  locked?: boolean;
 };
 
 type ShippingMethodBySeller = AvailableShippingMethod & {
@@ -126,7 +130,12 @@ function normalizeAvailableShippingMethods(value: unknown): AvailableShippingMet
   return Array.isArray(inner) ? (inner as AvailableShippingMethod[]) : [];
 }
 
-const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShippingMethods }) => {
+const CartShippingMethodsSection: FC<ShippingProps> = ({
+  cart,
+  availableShippingMethods,
+  forceExpanded = false,
+  locked = false
+}) => {
   const t = useTranslations('checkout');
   const tCommon = useTranslations('common');
   const [isLoadingPrices, setIsLoadingPrices] = useState(false);
@@ -148,7 +157,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   const router = useRouter();
   const pathname = usePathname();
 
-  const isOpen = searchParams.get('step') === 'delivery';
+  const isOpen = forceExpanded || searchParams.get('step') === 'delivery';
 
   const fallbackSeller = (() => {
     const sellers = Array.from(
@@ -370,7 +379,11 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   );
 
   return (
-    <div className="bb-section-shell">
+    <div
+      className="bb-section-shell"
+      data-locked={locked || undefined}
+      aria-disabled={locked || undefined}
+    >
       <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && (cart.shipping_methods?.length ?? 0) > 0 ? 'is-done' : ''}`}>
         <Heading
           level="h2"

@@ -116,10 +116,16 @@ const CartPaymentSection = ({
   shippingComplete = true,
   missingShippingSellers = [],
   giftRecipientRequired = false,
-  giftRecipientComplete = true
+  giftRecipientComplete = true,
+  forceExpanded = false,
+  locked = false
 }: {
   cart: HttpTypes.StoreCart;
   availablePaymentMethods: HttpTypes.StorePaymentProvider[] | null;
+  /** Checkout flow (Robert): render expanded at once instead of the `?step=` accordion. */
+  forceExpanded?: boolean;
+  /** Prerequisite not met (shipping/gift) → shown but greyed-out + non-interactive. */
+  locked?: boolean;
   /**
    * Orphaned-charge guard (per-seller shipping). When false, at least one
    * seller in the cart still lacks a shipping method, so
@@ -167,7 +173,7 @@ const CartPaymentSection = ({
       ? `${window.location.origin}/${locale}/order/${cart?.id}/payment-status`
       : `/${locale}/order/${cart?.id}/payment-status`;
 
-  const isOpen = searchParams.get('step') === 'payment';
+  const isOpen = forceExpanded || searchParams.get('step') === 'payment';
 
   const isStripe = isStripeFunc(selectedPaymentMethod);
 
@@ -291,6 +297,8 @@ const CartPaymentSection = ({
     <div
       className="bb-section-shell"
       data-testid="checkout-step-payment"
+      data-locked={locked || undefined}
+      aria-disabled={locked || undefined}
     >
       <div
         className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && paymentReady ? 'is-done' : ''}`}

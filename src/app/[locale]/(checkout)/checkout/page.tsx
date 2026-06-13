@@ -113,6 +113,20 @@ async function CheckoutPageContent({
   // getShippingCoverage (no requiredSellers → isComplete:true).
   const shippingIsComplete = shippingMethods !== null ? shippingCoverage.isComplete : false;
 
+  // Checkout flow (Robert eye-check): render every section expanded at once instead of
+  // the one-at-a-time `?step=` accordion; sections whose prerequisite isn't met yet are
+  // shown but greyed-out + non-interactive (top-down: completing one unlocks the next).
+  // The correctness gates (orphaned-charge shipping, RODO consent, gift recipient) are
+  // unchanged — `locked` is purely the visual/interaction state, not a new payment gate.
+  const addressDone = Boolean(
+    cart.shipping_address?.first_name &&
+      cart.shipping_address?.last_name &&
+      cart.shipping_address?.address_1 &&
+      cart.shipping_address?.city &&
+      cart.shipping_address?.postal_code &&
+      cart.shipping_address?.country_code
+  );
+
   // Reflect the PDP "buy as gift" choice (persisted as line-item
   // metadata.is_gift / purchase_mode) in the checkout purchase-mode toggle.
   const cartPurchaseMode = cart.items?.some(item => {
@@ -186,16 +200,20 @@ async function CheckoutPageContent({
             <CartAddressSection
               cart={cart}
               customer={customer}
+              forceExpanded
             />
             <CartShippingMethodsSection
               cart={cart}
               availableShippingMethods={shippingMethods}
+              forceExpanded
+              locked={!addressDone}
             />
             <CheckoutPurchaseMode
               cartPurchaseMode={cartPurchaseMode}
               giftLineItemIds={giftBindingTargets.map(item => item.id)}
               initialGiftRecipient={initialGiftRecipient}
               isDone={searchParamsStep === 'payment' || searchParamsStep === 'review'}
+              locked={!shippingIsComplete}
             />
             <CartPaymentSection
               cart={cart}
@@ -204,6 +222,8 @@ async function CheckoutPageContent({
               missingShippingSellers={missingShippingSellerNames(shippingCoverage)}
               giftRecipientRequired={giftRecipientRequired}
               giftRecipientComplete={giftRecipientComplete}
+              forceExpanded
+              locked={!shippingIsComplete || (giftRecipientRequired && !giftRecipientComplete)}
             />
           </div>
 
