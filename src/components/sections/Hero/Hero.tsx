@@ -66,7 +66,7 @@ export const Hero = ({
 
   return (
     <section
-      className="relative w-full overflow-hidden rounded-[36px] border border-white/12 shadow-[0_30px_80px_rgba(37,28,12,0.18)]"
+      className="relative w-full overflow-hidden rounded-[28px] border border-white/12 shadow-[0_30px_80px_rgba(37,28,12,0.18)]"
       data-testid="homepage-hero"
       style={sectionStyle}
     >
@@ -112,7 +112,7 @@ export const Hero = ({
             <HomeSearchWidget />
             <LocalizedClientLink
               href="/categories?mode=gift"
-              className="inline-flex min-h-[46px] items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur transition-colors hover:bg-white hover:text-primary"
+              className="inline-flex min-h-[46px] items-center justify-center rounded-full border border-white/25 bg-white/14 px-5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_16px_36px_rgba(0,0,0,0.16)] backdrop-blur-md transition-colors hover:bg-white hover:text-primary"
             >
               {secondaryVoucherCtaLabel}
             </LocalizedClientLink>

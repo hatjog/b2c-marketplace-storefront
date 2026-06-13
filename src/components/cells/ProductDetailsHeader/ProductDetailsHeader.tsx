@@ -135,6 +135,15 @@ export const ProductDetailsHeader = ({
   });
   const variantPrice =
     computedVariantPrice ?? (variantId === initialPrice?.variantId ? fallbackPrice : null);
+  const discountPercent =
+    variantPrice &&
+    variantPrice.original_price_number > variantPrice.calculated_price_number
+      ? Math.round(
+          ((variantPrice.original_price_number - variantPrice.calculated_price_number) /
+            variantPrice.original_price_number) *
+            100
+        )
+      : null;
 
   const selectedVariantData =
     product.variants?.find(({ id }) => id === variantId) ?? fallbackVariant;
@@ -270,6 +279,14 @@ export const ProductDetailsHeader = ({
                     {variantPrice.original_price}
                   </span>
                 )}
+                {discountPercent ? (
+                  <span
+                    className="rounded-full border border-[var(--bb-border-soft)] bg-[var(--gold-light)] px-3 py-1 text-xs font-semibold uppercase tracking-normal text-primary"
+                    data-testid="product-discount-pill"
+                  >
+                    {t('discount')} -{discountPercent}%
+                  </span>
+                ) : null}
               </>
             ) : (
               <span
@@ -298,6 +315,14 @@ export const ProductDetailsHeader = ({
             product={product}
             selectedVariant={selectedVariant}
           />
+          {variantPrice ? (
+            <p
+              className="text-sm text-secondary"
+              data-testid="product-variant-sub-price"
+            >
+              {variantPrice.calculated_price}
+            </p>
+          ) : null}
         </div>
       )}
       <div className="flex flex-col gap-3 md:flex-row">

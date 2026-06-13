@@ -162,25 +162,23 @@ export async function EditorialDarkBandBlock({
   return (
     <section
       id="editorial-selection"
-      className="bb-section-shell overflow-hidden bg-[var(--bb-dark-gradient)]"
+      className="bb-section-shell bb-section-shell-soft overflow-hidden bg-[var(--bb-dark-gradient)]"
       data-testid="editorial-dark-band"
       aria-label={t('editorial.aria_label')}
     >
-      <div className="mx-auto max-w-7xl px-2 py-6 md:px-3 md:py-8 lg:px-4 lg:py-10">
-        {/* Band heading */}
-        <div className="mb-10 text-center md:mb-12">
+      <div className="mx-auto grid max-w-7xl gap-8 px-2 py-6 md:px-3 md:py-8 lg:grid-cols-[0.9fr_1.4fr] lg:px-4 lg:py-10">
+        <div className="flex flex-col justify-center">
           <p className="bb-eyebrow text-[var(--gold)]">{t('editorial.eyebrow')}</p>
-          <h2 className="heading-xl mt-3 text-white">
+          <h2 className="heading-xl mt-3 max-w-[11ch] text-white">
             {resolvedHeading}
           </h2>
-          <p className="mt-3 text-base text-white/78 md:text-lg">
+          <p className="mt-3 max-w-[52ch] text-base text-white/78 md:text-lg">
             {resolvedSubheading}
           </p>
         </div>
 
-        {/* Editorial Grid — 5-vibe mood */}
         <div
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-5"
           data-testid="editorial-grid-5-vibe"
         >
           {resolvedVibes.map((vibe) => (

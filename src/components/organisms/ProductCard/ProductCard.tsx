@@ -101,12 +101,16 @@ export const ProductCard = ({
     null;
 
   return (
-    <div
+    <LocalizedClientLink
+      href={productHref}
+      aria-label={t('view_aria', { name: productName })}
+      title={t('view_aria', { name: productName })}
       className={cn(
-        'group relative flex h-full w-full flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1',
+        'pcard group relative flex h-full w-full flex-col overflow-hidden rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-white-84)] p-2 text-current no-underline shadow-[0_16px_40px_rgba(90,67,28,0.08)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]',
         className
       )}
       data-testid="product-card"
+      data-testid-link="product-card-link"
       data-product-handle={product.handle}
     >
       <div
@@ -114,54 +118,40 @@ export const ProductCard = ({
         data-testid="product-card-image-container"
       >
         {showVendor && seller?.name && (
-          <div className="absolute left-3 top-3 z-10 max-w-[calc(100%-24px)]">
+          <div className="absolute left-3 top-3 z-10 max-w-[90%]">
             <span className="bb-pill max-w-full truncate">{seller.name}</span>
           </div>
         )}
-        <LocalizedClientLink
-          href={productHref}
-          aria-label={t('view_aria', { name: productName })}
-          title={t('view_aria', { name: productName })}
-          data-testid="product-card-link"
-          data-product-handle={product.handle}
-          className="block h-full"
-        >
-          <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[var(--bb-radius-panel)]">
-            {!usesPlaceholderImage ? (
-              <Image
-                priority
-                fetchPriority="high"
-                src={thumbnailSrc}
-                alt={t('image_alt', { name: productName })}
-                width={100}
-                height={100}
-                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                className="aspect-[4/5] h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                data-testid="product-card-image"
-              />
-            ) : (
-              <Image
-                priority
-                fetchPriority="high"
-                src={PLACEHOLDER_IMAGE_SRC}
-                alt={t('image_placeholder_alt', { name: productName })}
-                width={100}
-                height={100}
-                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                className="h-full w-full object-contain p-10"
-                data-testid="product-card-placeholder-image"
-              />
-            )}
-          </div>
-        </LocalizedClientLink>
+        <div className="align-center flex h-full w-full justify-center overflow-hidden rounded-[var(--bb-radius-panel)]">
+          {!usesPlaceholderImage ? (
+            <Image
+              priority
+              fetchPriority="high"
+              src={thumbnailSrc}
+              alt={t('image_alt', { name: productName })}
+              width={100}
+              height={100}
+              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+              className="aspect-[4/5] h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+              data-testid="product-card-image"
+            />
+          ) : (
+            <Image
+              priority
+              fetchPriority="high"
+              src={PLACEHOLDER_IMAGE_SRC}
+              alt={t('image_placeholder_alt', { name: productName })}
+              width={100}
+              height={100}
+              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+              className="h-full w-full object-contain p-10"
+              data-testid="product-card-placeholder-image"
+            />
+          )}
+        </div>
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4" data-testid="product-card-info">
-        <LocalizedClientLink
-          href={productHref}
-          aria-label={t('go_to_product_aria', { name: productName })}
-          title={t('go_to_product_aria', { name: productName })}
-          className="space-y-3"
-        >
+        <div className="space-y-3">
           <div className="space-y-2">
             <h3 className="heading-sm line-clamp-2" data-testid="product-card-title">
               {product.title}
@@ -213,29 +203,18 @@ export const ProductCard = ({
               </div>
             </div>
           )}
-        </LocalizedClientLink>
+        </div>
         <div className="mt-auto flex items-center justify-between gap-3">
           {showVendor && seller && (
-            <LocalizedClientLink
-              href={`/sellers/${seller.handle}`}
-              aria-label={t('seller_aria', { name: seller.name })}
-              className="label-sm text-secondary transition-opacity hover:opacity-70"
+            <span
+              className="label-sm text-secondary"
               data-testid="product-card-vendor"
             >
               {seller.name}
-            </LocalizedClientLink>
+            </span>
           )}
-          <LocalizedClientLink
-            href={productHref}
-            aria-label={t('view_aria', { name: productName })}
-            title={t('view_aria', { name: productName })}
-            className="bb-primary-cta ml-auto min-h-[44px] rounded-full px-4 py-2 text-[12px]"
-            data-testid="product-card-see-more-button"
-          >
-            {t('see_more')}
-          </LocalizedClientLink>
         </div>
       </div>
-    </div>
+    </LocalizedClientLink>
   );
 };

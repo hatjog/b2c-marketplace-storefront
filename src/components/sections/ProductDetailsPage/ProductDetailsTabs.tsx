@@ -108,7 +108,8 @@ export function ProductDetailsTabs({
       <div
         role="tablist"
         aria-label={t('aria_label')}
-        className="sticky top-[var(--site-header-height,72px)] z-20 flex gap-4 overflow-x-auto border-b border-[var(--bb-border-soft)] bg-[var(--bb-page-bg)]"
+        className="sticky top-[var(--site-header-height,72px)] z-20 flex gap-4 overflow-x-auto border-b border-[var(--bb-border-soft)] bg-[var(--bb-page-bg)] backdrop-blur"
+        data-testid="pdp-tabs-sticky"
       >
         {TAB_IDS.map((tabId, index) => {
           const selected = activeTab === tabId;

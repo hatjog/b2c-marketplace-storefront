@@ -53,7 +53,7 @@ export const ProductCarouselIndicator = ({
   }, [parentEmbla, onSelect]);
 
   return (
-    <div className="embla__dots pointer-events-none absolute bottom-3 left-3 h-[2px] w-[calc(100%-24px)] lg:bottom-auto lg:top-3">
+    <div className="embla__dots pointer-events-none absolute bottom-3 left-3 w-[calc(100%-24px)]">
       <div className="pointer-events-auto lg:hidden">
         <Indicator
           step={selectedIndex + 1}
@@ -67,11 +67,14 @@ export const ProductCarouselIndicator = ({
           className="embla__viewport overflow-hidden rounded-xs"
           ref={emblaRef}
         >
-          <div className="embla__container flex h-[350px] lg:block lg:h-[680px]">
+          <div
+            className="embla__container grid grid-cols-5 gap-2"
+            data-testid="product-carousel-thumbs-5-col"
+          >
             {(slides || []).map((slide, index) => (
               <div
                 key={slide.id}
-                className="mb-3 hidden h-16 w-16 cursor-pointer rounded-sm bg-primary lg:block"
+                className="hidden aspect-square cursor-pointer rounded-sm bg-primary lg:block"
                 onClick={() => changeSlideHandler(index)}
               >
                 <Image

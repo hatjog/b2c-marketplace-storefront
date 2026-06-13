@@ -224,7 +224,7 @@ export function HomeSearchWidget() {
 
         <button
           type="submit"
-          className="inline-flex min-h-[48px] items-center justify-center rounded-[var(--bb-radius-card)] bg-[var(--bg-action)] px-6 text-sm font-semibold text-[var(--text-on-action)] transition-colors hover:bg-[var(--bg-action-hover)]"
+          className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-[var(--cta)] px-6 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(144,112,50,0.24)] transition-colors hover:bg-[var(--cta-hover)]"
         >
           {t('submit')}
         </button>
