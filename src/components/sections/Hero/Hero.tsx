@@ -56,33 +56,64 @@ export const Hero = ({
     // should not call <Image src=""> if the consumer ever passes empty.
     return null;
   }
-  const sectionStyle = maxHeight ? ({ maxHeight } as CSSProperties) : undefined;
-  const contentStyle = maxHeight
-    ? ({
-        ['--hero-min-height-mobile' as const]: `min(${maxHeight}, 560px)`,
-        ['--hero-min-height-desktop' as const]: `min(${maxHeight}, 620px)`,
-      } as CSSProperties)
-    : undefined;
+  // v1.12.0 (5.9 close-out, Robert eye check): only honour a config max_height that is
+  // tall enough to frame the hero content. The shipped config passed 540px, which (a)
+  // clipped the ~687px content so the search card was jammed against the bottom edge and
+  // (b) squeezed the portrait hero image into a wide-short eye-band crop. Below that
+  // threshold we drop the hard cap and let the hero grow to fit its content.
+  const capPx = maxHeight && /^\d+px$/.test(maxHeight) ? Number.parseInt(maxHeight, 10) : null;
+  const honourCap = capPx !== null && capPx >= 640;
+  const sectionStyle = honourCap ? ({ maxHeight } as CSSProperties) : undefined;
+  const contentStyle = {
+    ['--hero-min-height-mobile' as const]: honourCap ? `min(${maxHeight}, 600px)` : '600px',
+    ['--hero-min-height-desktop' as const]: honourCap ? `min(${maxHeight}, 700px)` : '700px',
+  } as CSSProperties;
 
   return (
     <section
-      className="relative w-full overflow-hidden rounded-[28px] border border-white/12 shadow-[0_30px_80px_rgba(37,28,12,0.18)]"
+      className="relative w-full overflow-hidden rounded-[28px] border border-white/12 bg-[rgb(31,23,15)] shadow-[0_30px_80px_rgba(37,28,12,0.18)]"
       data-testid="homepage-hero"
       style={sectionStyle}
     >
       <div className="absolute inset-0">
+        {/* v1.12.0 (5.9 close-out, Robert eye check): the configured hero art is a PORTRAIT
+            (≈810×1215). Full-bleed object-cover cropped it into a tight eye-band close-up
+            sitting behind the copy. Instead show the WHOLE portrait anchored to the RIGHT
+            (md+: height-fit → its own aspect, no crop) and fade the LEFT into a warm
+            image-tone shadow the copy sits on. On mobile the hero is narrow, so the portrait
+            fills it (object-cover, upper-face anchored). */}
+        {/* Feather the portrait's LEFT edge with a mask gradient so it dissolves into the
+            warm section background instead of showing a hard image seam (Robert eye check):
+            transparent at the very edge → fully opaque by ~34% (past the face's left side),
+            so the whole face stays crisp while the edge melts into the shadow. */}
         <Image
           src={safeDecodeURIComponent(image)}
-          width={1600}
-          height={960}
+          width={810}
+          height={1215}
           alt={imageAlt}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover object-top md:absolute md:inset-y-0 md:right-0 md:w-auto md:max-w-[62%] md:object-center"
+          style={{
+            WebkitMaskImage:
+              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.45) 14%, #000 34%)',
+            maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.45) 14%, #000 34%)',
+          }}
           priority
           fetchPriority="high"
-          quality={60}
-          sizes="100vw"
+          quality={70}
+          sizes="(max-width: 768px) 100vw, 62vw"
         />
-        <div className="absolute inset-0" style={{ background: 'var(--bb-hero-overlay)' }} />
+        {/* Gentle, long-fade text shadow over the warm background (no hard band — the photo
+            edge is already feathered by the image mask) + a soft gold top-left glow + a
+            bottom legibility scrim for the search card. No generated token is edited. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(120% 90% at 8% 0%, rgba(197,160,89,0.13) 0%, rgba(197,160,89,0) 55%), ' +
+              'linear-gradient(90deg, rgba(20,15,10,0.55) 0%, rgba(20,15,10,0.30) 30%, rgba(20,15,10,0.08) 55%, rgba(20,15,10,0) 72%), ' +
+              'linear-gradient(180deg, rgba(20,15,10,0) 50%, rgba(20,15,10,0.38) 100%)',
+          }}
+        />
       </div>
       <div
         className="relative z-10 flex min-h-[var(--hero-min-height-mobile,560px)] flex-col justify-center gap-8 p-6 md:min-h-[var(--hero-min-height-desktop,620px)] md:p-10 lg:max-w-[760px] lg:p-14"
@@ -103,7 +134,10 @@ export const Hero = ({
           <h1 className="display-sm max-w-[12ch] text-white md:text-[64px] md:leading-[72px]">
             {heading}
           </h1>
-          <p className="max-w-[58ch] text-base leading-7 text-white/88 md:text-lg md:leading-8">
+          <p
+            className="max-w-[58ch] text-base leading-7 text-white md:text-lg md:leading-8"
+            style={{ textShadow: '0 1px 14px rgba(20,16,12,0.55)' }}
+          >
             {paragraph}
           </p>
         </div>
