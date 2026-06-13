@@ -1,49 +1,96 @@
+import type { ReactNode } from 'react';
+
 import Image from 'next/image';
+
+import { VerifiedMark } from '@/components/atoms/VerifiedMark/VerifiedMark';
 
 export interface SellerHeroProps {
   name: string;
   photo?: string | null;
-  badge?: string;
+  tagline?: string;
+  verified?: boolean | null;
+  verifiedLabel?: string;
+  breadcrumbs?: ReactNode;
 }
 
-export function SellerHero({ name, photo, badge = 'Salon partnerski BonBeauty' }: SellerHeroProps) {
-  if (photo) {
-    return (
-      <div className="relative aspect-[4/3] md:aspect-[16/9] md:max-h-[400px] w-full overflow-hidden rounded-xl" data-testid="seller-hero">
-        <Image
-          src={photo}
-          alt={name}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-4 left-4">
-          <h1 data-testid="seller-name" className="text-2xl font-bold text-white mb-1 drop-shadow">{name}</h1>
-          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-800">
-            {badge}
-          </span>
-        </div>
-      </div>
-    );
-  }
+function getMonogram(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part[0])
+    .join('')
+    .toUpperCase();
+}
 
+export function SellerHero({
+  name,
+  photo,
+  tagline = 'Salon partnerski BonBeauty',
+  verified = false,
+  verifiedLabel = 'Zweryfikowany salon',
+  breadcrumbs
+}: SellerHeroProps) {
   return (
-    <div
-      className="relative aspect-[4/3] md:aspect-[16/9] md:max-h-[400px] w-full overflow-hidden rounded-xl flex items-end p-4"
-      style={{
-        background:
-          'linear-gradient(to bottom right, var(--gold-light, #fef3c7), var(--brand-50, #f5f5f5))',
-      }}
+    <section
+      className="relative overflow-hidden rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-5 py-10 shadow-[var(--bb-shadow-soft)] md:px-8 md:py-12"
       data-testid="seller-hero"
     >
-      <div>
-        <h1 data-testid="seller-name" className="text-2xl font-bold text-gray-900 mb-1">{name}</h1>
-        <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-800">
-          {badge}
-        </span>
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        data-testid="seller-hero-gold-scrim"
+        style={{
+          background:
+            'radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.24), rgba(249, 244, 236, 0) 58%), linear-gradient(180deg, rgba(239, 229, 210, 0.72), rgba(249, 244, 236, 0.3))'
+        }}
+      />
+      <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
+        {breadcrumbs ? (
+          <div
+            className="mb-6 w-full"
+            data-testid="seller-hero-breadcrumbs"
+          >
+            {breadcrumbs}
+          </div>
+        ) : null}
+        <div className="relative mb-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-[var(--gold)] bg-[var(--gold-light)] shadow-[var(--bb-shadow-card)]">
+          {photo ? (
+            <Image
+              src={photo}
+              alt={name}
+              fill
+              sizes="112px"
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <span
+              className="font-display text-[34px] font-medium leading-none text-[var(--text-primary)]"
+              data-testid="seller-hero-monogram"
+            >
+              {getMonogram(name)}
+            </span>
+          )}
+        </div>
+        {verified ? (
+          <VerifiedMark
+            label={verifiedLabel}
+            surface="page"
+            data-testid="seller-hero-verified-mark"
+            className="mb-4"
+          />
+        ) : null}
+        <p className="mb-3 font-serif text-base italic leading-6 text-[var(--text-secondary)]">
+          {tagline}
+        </p>
+        <h1
+          data-testid="seller-name"
+          className="font-display text-[40px] font-medium leading-[46px] text-[var(--text-primary)]"
+        >
+          {name}
+        </h1>
       </div>
-    </div>
+    </section>
   );
 }

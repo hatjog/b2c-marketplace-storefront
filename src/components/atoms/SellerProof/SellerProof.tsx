@@ -16,6 +16,8 @@ interface SellerProofLabels {
   treatmentsLabel: string;
   ratingValue: (rating: number, count: number) => string;
   ratingLabel: string;
+  responseTimeValue?: string;
+  responseTimeLabel?: string;
   noRatings: string;
   warningTitle: string;
   warningBody: string;
@@ -108,7 +110,7 @@ export function SellerProof({
         ) : null}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {years !== null && years !== undefined ? (
           <ProofPoint
             value={labels.yearsValue(years)}
@@ -125,6 +127,12 @@ export function SellerProof({
           value={ratingCopy}
           label={labels.ratingLabel}
         />
+        {labels.responseTimeValue && labels.responseTimeLabel ? (
+          <ProofPoint
+            value={labels.responseTimeValue}
+            label={labels.responseTimeLabel}
+          />
+        ) : null}
       </div>
 
       {proofPointsCount < 3 ? (

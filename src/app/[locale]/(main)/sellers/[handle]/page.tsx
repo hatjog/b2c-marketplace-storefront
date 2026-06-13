@@ -5,13 +5,13 @@ import { notFound } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { SellerProof } from '@/components/atoms/SellerProof/SellerProof';
-import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import { DirectionsBlock } from '@/components/organisms/DirectionsBlock';
+import { SellerCard } from '@/components/organisms/seller/SellerCard/SellerCard';
 import { SellerTabs } from '@/components/organisms/SellerTabs/SellerTabs';
 import { SellerPageHeader } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
-import { getSellerByHandle } from '@/lib/data/seller';
+import { getSellerByHandle, getSellers } from '@/lib/data/seller';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
@@ -99,7 +99,9 @@ export async function generateMetadata({
   const rawDescription = (seller.description ?? '').trim();
   const description =
     sellerSeo?.meta_description ??
-    (rawDescription ? rawDescription.slice(0, 160) : tDetail('meta_description', { name: seller.name }));
+    (rawDescription
+      ? rawDescription.slice(0, 160)
+      : tDetail('meta_description', { name: seller.name }));
   const structuredData = assessSellerStructuredData(seller);
 
   const ogImage = sellerSeo?.og_image_url || seller.photo || null;
@@ -144,7 +146,6 @@ export default async function SellerPage({
   }
 
   const tDetail = await getTranslations('seller.detail');
-  const tShared = await getTranslations('seller.shared');
   const tSellerProof = await getTranslations('pdp.seller_proof');
 
   const user = await retrieveCustomer();
@@ -183,6 +184,9 @@ export default async function SellerPage({
     Array.isArray(seller.products) && seller.products.length > 0
       ? seller.products.length
       : sellerRatingCount;
+  const otherSellers = (await getSellers())
+    .filter(item => item.handle !== seller.handle)
+    .slice(0, 4);
 
   return (
     <main
@@ -197,19 +201,11 @@ export default async function SellerPage({
         locale={locale}
         surface="seller-detail"
       />
-      <div className="container pt-4">
-        <Breadcrumbs
-          items={[
-            { label: tShared('breadcrumb_home'), href: `/${locale}/` },
-            { label: tShared('breadcrumb_sellers'), href: `/${locale}/sellers` },
-            { label: seller.name, href: `/${locale}/sellers/${seller.handle}` }
-          ]}
-        />
-      </div>
       <SellerPageHeader
         header
         seller={seller}
         user={user}
+        locale={locale}
       />
       <div className="container py-4">
         {/* Trust Invariant #2: <SellerProof with >=3 proof points on seller detail. */}
@@ -230,6 +226,8 @@ export default async function SellerPage({
             ratingValue: (rating, count) =>
               tSellerProof('rating_value', { rating: rating.toFixed(1), count }),
             ratingLabel: tSellerProof('rating_label'),
+            responseTimeValue: '~4h',
+            responseTimeLabel: tDetail('response_time_label'),
             noRatings: tSellerProof('no_ratings'),
             warningTitle: tSellerProof('warning_title'),
             warningBody: tSellerProof('warning_body')
@@ -273,6 +271,61 @@ export default async function SellerPage({
         countryCode={countryCode}
         currency_code={currency_code}
       />
+      {otherSellers.length > 0 ? (
+        <section
+          className="container py-8"
+          data-testid="seller-detail-others-strip"
+        >
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="bb-eyebrow text-[var(--gold)]">{tDetail('others_eyebrow')}</p>
+              <h2 className="heading-md text-primary">{tDetail('others_title')}</h2>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {otherSellers.map(other => (
+              <SellerCard
+                key={other.handle}
+                name={other.name}
+                handle={other.handle}
+                photo_url={other.photo_url}
+                city={other.city}
+                district={other.district}
+                product_count={other.product_count}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <div
+        className="sticky bottom-0 z-20 border-t border-[var(--bb-border-soft)] bg-[var(--bb-surface-96)] px-4 py-3 backdrop-blur supports-[padding:max(0px)]:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        data-testid="seller-sticky-bar"
+      >
+        <div className="container flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="label-sm text-secondary">{tDetail('sticky_eyebrow')}</p>
+            <p className="label-md text-primary">{seller.name}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {seller.phone ? (
+              <a
+                href={`tel:${seller.phone}`}
+                className="rounded-full bg-[var(--cta)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--cta-hover)]"
+              >
+                {tDetail('sticky_call')}
+              </a>
+            ) : null}
+            {seller.email ? (
+              <a
+                href={`mailto:${seller.email}`}
+                className="rounded-full border border-[var(--bb-border-strong)] px-4 py-2 text-sm font-medium text-primary"
+              >
+                {tDetail('sticky_email')}
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

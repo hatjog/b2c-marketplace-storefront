@@ -52,6 +52,7 @@ export type SellerProps = SellerAddress & {
   lat?: number | null;
   lng?: number | null;
   status?: 'pending_approval' | 'open' | 'suspended' | 'terminated';
+  verified?: boolean | null;
   // store_status: Mercur 1.5 legacy field; Mercur 2 uses seller.status (above).
   // Transitional union: accepts BOTH legacy Mercur 1.5 uppercase values
   // ('ACTIVE'/'SUSPENDED'/'INACTIVE') AND Mercur 2 lowercase ('open'/'suspended'/'closed').
@@ -69,4 +70,5 @@ export type SellerProps = SellerAddress & {
   locations?: SellerLocation[] | null;
   regon?: string | null;
   krs?: string | null;
+  policy?: string | null;
 };
