@@ -197,15 +197,19 @@ async function CheckoutPageContent({
             className="flex flex-col gap-4"
             data-testid="checkout-steps-container"
           >
+            {/* Flow clarity (Robert): a COMPLETED section collapses to its summary (✓ + Edit)
+                so only the ACTIVE section shows an open form with one obvious primary button —
+                the previous "every section expanded at once" made it unclear which button
+                advanced. Locked (prerequisite-not-met) sections stay greyed previews. */}
             <CartAddressSection
               cart={cart}
               customer={customer}
-              forceExpanded
+              forceExpanded={!addressDone}
             />
             <CartShippingMethodsSection
               cart={cart}
               availableShippingMethods={shippingMethods}
-              forceExpanded
+              forceExpanded={!shippingIsComplete}
               locked={!addressDone}
             />
             <CheckoutPurchaseMode

@@ -758,6 +758,7 @@
     "another_step_appears": "Ein weiterer Schritt erscheint",
     "continue_to_review": "Weiter zur Übersicht",
     "delivery_method_label": "Liefermethode",
+    "voucher_delivery_label": "Gutschein (per E-Mail)",
     "delivery_method_pdf_email": "PDF per E-Mail",
     "delivery_method_magic_link": "Magic Link",
     "delivery_method_physical_card": "Physische Karte +15 zł",

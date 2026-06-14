@@ -138,6 +138,12 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({
 }) => {
   const t = useTranslations('checkout');
   const tCommon = useTranslations('common');
+  // BonBeauty delivery is a digital voucher by email; the backend ships a generic option
+  // name ("bonbeauty checkout"), so present the buyer-facing label instead (Robert).
+  const displayDeliveryName = (name?: string | null): string => {
+    const trimmed = (name ?? '').trim();
+    return !trimmed || /bonbeauty|checkout/i.test(trimmed) ? t('voucher_delivery_label') : trimmed;
+  };
   const [isLoadingPrices, setIsLoadingPrices] = useState(false);
   const [calculatedPricesMap, setCalculatedPricesMap] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
@@ -471,7 +477,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({
                                     value={option.id}
                                     key={option.id}
                                   >
-                                    {option.name}
+                                    {displayDeliveryName(option.name)}
                                     {' - '}
                                     {option.price_type === 'flat' ? (
                                       convertToLocale({
@@ -548,7 +554,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('method_label')}</Text>
                     <Text className="txt-medium text-ui-fg-subtle">
-                      {method.name}{' '}
+                      {displayDeliveryName(method.name)}{' '}
                       {convertToLocale({
                         amount: method.amount ?? 0,
                         currency_code: cart?.currency_code
