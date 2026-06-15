@@ -12,7 +12,7 @@ export const CartItemsHeader = ({ seller }: { seller: SingleProductSeller }) => 
   const content = (
     <div className="flex items-center gap-4 rounded-[var(--bb-radius-card)] border p-4">
       <SellerAvatar
-        photo={seller.photo}
+        photo={seller.photo || seller.logo || undefined}
         size={32}
         alt={seller.name}
       />

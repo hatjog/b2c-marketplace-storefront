@@ -767,6 +767,7 @@
     "another_step_appears": "Another step appears",
     "continue_to_review": "Continue to review",
     "delivery_method_label": "Delivery method",
+    "voucher_delivery_label": "Voucher (by email)",
     "delivery_method_pdf_email": "PDF email",
     "delivery_method_magic_link": "Magic link",
     "delivery_method_physical_card": "Physical card +15 zł",

@@ -75,7 +75,9 @@ export function MarketplaceVerificationMark({
   // aria-hidden icon — single AT announcement, no double-read.
   // F6/F5 fix: surface-driven token-bound styles, no `!important` overrides.
   const isPage = surface === 'page';
-  const iconColorClass = isPage ? 'text-trust' : 'text-white/88';
+  // Hero: gold shield icon (brand cue) on a legible dark-glass pill — the prior
+  // white/88-on-white/10 glass washed out over the bright hero photo (Robert eye check).
+  const iconColorClass = isPage ? 'text-trust' : 'text-[var(--gold)]';
   return (
     <span
       className={cn(
@@ -85,10 +87,10 @@ export function MarketplaceVerificationMark({
           // R3 fix: replaced hardcoded rgba() literals with --bb-trust-card-*
           // tokens from bb-surfaces.css.
           ? 'border border-[color:var(--bb-trust-card-border)] bg-[color:var(--bb-trust-card-bg)] text-trust'
-          // Hero overlay surface: glass over hero image (original Story 2.2 use).
-          // Tailwind opacity helpers on a neutral colour (white) are acceptable —
-          // they compose against the hero image not the page palette.
-          : 'border border-white/20 bg-white/10 text-white/88 backdrop-blur',
+          // Hero overlay surface: legible dark-glass chip over the hero image. The
+          // previous bg-white/10 + text-white/88 vanished on bright photo areas; a
+          // dark scrim pill with full-white text + gold border reads on any hero frame.
+          : 'border border-[color:rgba(197,160,89,0.5)] bg-[rgba(20,16,12,0.55)] text-white backdrop-blur',
         variant === 'compact' ? 'text-[10px]' : 'text-[11px]',
         'font-medium uppercase tracking-[0.2em]',
         className

@@ -1,4 +1,5 @@
 import { toIntlLocale } from '@/lib/helpers/hreflang';
+import { convertToLocale } from '@/lib/helpers/money';
 
 /**
  * voucher-copy.ts — Shared voucher copy and formatting helpers.
@@ -76,12 +77,12 @@ export function formatVoucherPrice(
   locale: string,
 ): string {
   try {
-    return new Intl.NumberFormat(toIntlLocale(locale), {
-      style: 'currency',
-      currency: currencyCode,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amountInMinorUnits / 100);
+    return convertToLocale({
+      amount: amountInMinorUnits,
+      currency_code: currencyCode,
+      locale: toIntlLocale(locale),
+      isMinorUnit: true,
+    });
   } catch {
     // Fallback for unsupported locale/currency combos
     return `${(amountInMinorUnits / 100).toFixed(2)} ${currencyCode}`;

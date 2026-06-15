@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { getTranslations } from 'next-intl/server';
 
 import { listOrderSetSplits } from '@/lib/data/order-sets';
+import { convertToLocale } from '@/lib/helpers/money';
 
 interface MultiVendorOrderSummaryProps {
   cart: HttpTypes.StoreCart | null;
@@ -47,11 +48,12 @@ export async function MultiVendorOrderSummary({ cart }: MultiVendorOrderSummaryP
       <ul className="divide-y divide-ui-border-base">
         {splits.map((split) => {
           const sellerName = split.seller_name ?? t('unknown_seller');
-          const subtotalFormatted = new Intl.NumberFormat('pl-PL', {
-            style: 'currency',
-            currency: cart.currency_code?.toUpperCase() ?? 'PLN',
-            minimumFractionDigits: 2,
-          }).format(split.subtotal / 100);
+          const subtotalFormatted = convertToLocale({
+            amount: split.subtotal,
+            currency_code: cart.currency_code?.toUpperCase() ?? 'PLN',
+            locale: 'pl-PL',
+            isMinorUnit: true,
+          });
 
           return (
             <li

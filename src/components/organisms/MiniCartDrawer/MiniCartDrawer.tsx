@@ -18,6 +18,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/atoms';
+import { convertToLocale } from '@/lib/helpers/money';
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 import { cn } from '@/lib/utils';
 import { CartIcon } from '@/icons';
@@ -51,10 +52,9 @@ export interface MiniCartDrawerProps {
 
 function formatPrice(value: number, currency: string, locale: string): string {
   try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-    }).format(value);
+    // value is already in major units here → isMinorUnit:false. convertToLocale applies
+    // the PLN "kwota zł" convention (whole amounts drop the .00) for all price surfaces.
+    return convertToLocale({ amount: value, currency_code: currency, locale, isMinorUnit: false });
   } catch {
     return `${value.toFixed(2)} ${currency}`;
   }

@@ -21,10 +21,17 @@ import compareAddresses from '@/lib/helpers/compare-addresses';
 
 export const CartAddressSection = ({
   cart,
-  customer
+  customer,
+  forceExpanded = false,
+  locked = false
 }: {
   cart: HttpTypes.StoreCart | null;
   customer: HttpTypes.StoreCustomer | null;
+  /** Story checkout-flow (Robert): render every section expanded at once instead of the
+   *  one-at-a-time `?step=` accordion. Additive — defaults to the legacy behaviour. */
+  forceExpanded?: boolean;
+  /** Section's prerequisite not met yet → shown but greyed-out + non-interactive. */
+  locked?: boolean;
 }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -40,7 +47,7 @@ export const CartAddressSection = ({
     cart?.shipping_address.postal_code &&
     cart?.shipping_address.country_code
   );
-  const isOpen = searchParams.get('step') === 'address' || !isAddress;
+  const isOpen = forceExpanded || searchParams.get('step') === 'address' || !isAddress;
 
   const { state: sameAsBilling, toggle: toggleSameAsBilling } = useToggleState(
     cart?.shipping_address && cart?.billing_address
@@ -95,6 +102,8 @@ export const CartAddressSection = ({
     <div
       className="bb-section-shell"
       data-testid="checkout-step-address"
+      data-locked={locked || undefined}
+      aria-disabled={locked || undefined}
     >
       <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && isAddress ? 'is-done' : ''}`}>
         <Heading

@@ -758,6 +758,7 @@
     "another_step_appears": "З'явиться наступний крок",
     "continue_to_review": "Перейти до огляду",
     "delivery_method_label": "Спосіб доставки",
+    "voucher_delivery_label": "Ваучер (на e-mail)",
     "delivery_method_pdf_email": "PDF email",
     "delivery_method_magic_link": "Magic link",
     "delivery_method_physical_card": "Фізична картка +15 zł",

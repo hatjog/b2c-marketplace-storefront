@@ -125,6 +125,9 @@ export interface SingleProductSeller {
   id: string;
   name: string;
   photo: string;
+  /** Real Mercur Seller column (the cart `*seller` wildcard serializes it); used as the
+   *  avatar source when the synthesized `photo` is absent. */
+  logo?: string | null;
   rating: number;
   reviewCount: number;
   verified: boolean;

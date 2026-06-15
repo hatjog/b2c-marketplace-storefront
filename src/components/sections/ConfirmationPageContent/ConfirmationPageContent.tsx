@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/CrossActorHandoff';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { convertToLocale } from '@/lib/helpers/money';
 import {
   buildConfirmationStepperState,
   deriveVoucherPipelineStatus,
@@ -94,10 +95,12 @@ function formatMoney(value: number, currencyCode: string | null, locale: string)
   }
 
   try {
-    return new Intl.NumberFormat(localeTag(locale), {
-      style: 'currency',
-      currency
-    }).format(value / 100);
+    return convertToLocale({
+      amount: value,
+      currency_code: currency,
+      locale: localeTag(locale),
+      isMinorUnit: true,
+    });
   } catch {
     return '—';
   }
@@ -550,7 +553,7 @@ export function ConfirmationPageContent({ orderId }: Props) {
                 >
                   {isDone ? '✓' : index + 1}
                 </div>
-                <p className={`label-sm ${isDone || isActive ? 'text-[var(--gold)]' : 'text-secondary'}`}>
+                <p className={`label-sm ${isDone || isActive ? 'font-medium text-primary' : 'text-secondary'}`}>
                   {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}

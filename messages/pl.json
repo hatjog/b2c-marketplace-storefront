@@ -767,6 +767,7 @@
     "another_step_appears": "Pojawi się kolejny krok",
     "continue_to_review": "Przejdź do podsumowania",
     "delivery_method_label": "Metoda dostawy",
+    "voucher_delivery_label": "Voucher (przez email)",
     "delivery_method_pdf_email": "PDF email",
     "delivery_method_magic_link": "Link magic",
     "delivery_method_physical_card": "Karta fizyczna +15 zł",

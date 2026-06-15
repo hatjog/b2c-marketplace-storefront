@@ -269,7 +269,7 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
   }))
 
   return (
-    <main className="container" data-testid="categories-index-page">
+    <main id="main-content" tabIndex={-1} className="container" data-testid="categories-index-page">
       <StorefrontI18nLongContentProbe
         locale={locale}
         surface="category-listing"

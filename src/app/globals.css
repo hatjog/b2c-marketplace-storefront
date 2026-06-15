@@ -128,6 +128,18 @@ body {
     background: var(--bb-surface, rgba(255, 252, 247, 0.92));
     border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
     box-shadow: var(--bb-shadow-soft, 0 20px 60px rgba(90, 67, 28, 0.08));
+    transition: opacity 0.25s ease, filter 0.25s ease;
+  }
+
+  /* Checkout flow (Robert): a section whose prerequisite isn't met yet is shown but
+     greyed-out + non-interactive, so the buyer sees the whole checkout at once and the
+     active section is the one that isn't dimmed. Inert blocks tab/click without removing
+     it from the layout. */
+  .bb-section-shell[data-locked='true'] {
+    opacity: 0.5;
+    filter: grayscale(0.4);
+    pointer-events: none;
+    user-select: none;
   }
 
   .bb-section-shell-strong {

@@ -1,4 +1,5 @@
 import { toIntlLocale } from '@/lib/helpers/hreflang';
+import { convertToLocale } from '@/lib/helpers/money';
 
 type PriceDisplayBase = {
   amountInCents: number | null | undefined;
@@ -27,12 +28,15 @@ function resolveCopy(locale: string) {
 }
 
 function formatPLN(amountInCents: number, locale: string): string {
-  return new Intl.NumberFormat(toIntlLocale(locale), {
-    style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amountInCents / 100);
+  // Single source of truth for the PLN convention ("260 zł", whole amounts drop the
+  // .00) — see convertToLocale. Always renders the "zł" suffix regardless of the UI
+  // language (previously en/ua/de rendered "PLN 200").
+  return convertToLocale({
+    amount: amountInCents,
+    currency_code: 'PLN',
+    locale: toIntlLocale(locale),
+    isMinorUnit: true,
+  });
 }
 
 function formatRaw(amountInCents: number, locale: string): string {

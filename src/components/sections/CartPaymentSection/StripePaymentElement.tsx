@@ -59,6 +59,9 @@ type StripePaymentElementProps = {
    */
   blocked?: boolean;
   blockedReason?: string;
+  /** Buyer's chip choice (card/blik/p24/apple_pay/google_pay) — surfaced first in the
+   *  PaymentElement so the chip click visibly drives the embedded Stripe method picker. */
+  preferredMethod?: string;
 };
 
 /**
@@ -76,9 +79,17 @@ type StripePaymentElementProps = {
  * restrykcja twarda = backend PaymentIntent.
  */
 export function buildPaymentElementOptions(
-  enabledMethods: readonly string[]
+  enabledMethods: readonly string[],
+  preferredMethod?: string
 ): StripePaymentElementOptions {
-  return { paymentMethodOrder: [...enabledMethods] };
+  // When the buyer picks a method chip above (card/blik/p24/…), surface it FIRST in
+  // the PaymentElement so the click has a visible effect — the embedded Stripe UI then
+  // defaults to / pre-selects that method. Falls back to the D6 enabled order.
+  const order =
+    preferredMethod && enabledMethods.includes(preferredMethod)
+      ? [preferredMethod, ...enabledMethods.filter(method => method !== preferredMethod)]
+      : [...enabledMethods];
+  return { paymentMethodOrder: order };
 }
 
 /**
@@ -172,12 +183,14 @@ export async function submitStripePayment(args: {
 function PaymentElementForm({
   cartId,
   enabledMethods,
+  preferredMethod,
   returnUrl,
   blocked = false,
   blockedReason
 }: {
   cartId?: string;
   enabledMethods: readonly string[];
+  preferredMethod?: string;
   returnUrl: string;
   blocked?: boolean;
   blockedReason?: string;
@@ -187,7 +200,10 @@ function PaymentElementForm({
   const t = useTranslations('checkout');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const options = useMemo(() => buildPaymentElementOptions(enabledMethods), [enabledMethods]);
+  const options = useMemo(
+    () => buildPaymentElementOptions(enabledMethods, preferredMethod),
+    [enabledMethods, preferredMethod]
+  );
 
   const redirectToOrderStatus = useCallback(
     (orderId: string) => {
@@ -289,7 +305,8 @@ export default function StripePaymentElement({
   clientSecret,
   returnUrl,
   blocked = false,
-  blockedReason
+  blockedReason,
+  preferredMethod
 }: StripePaymentElementProps) {
   const t = useTranslations('checkout');
   const stripePromise = getStripePromise();
@@ -328,6 +345,7 @@ export default function StripePaymentElement({
       <PaymentElementForm
         cartId={cartId}
         enabledMethods={enabledMethods}
+        preferredMethod={preferredMethod}
         returnUrl={returnUrl}
         blocked={blocked}
         blockedReason={blockedReason}

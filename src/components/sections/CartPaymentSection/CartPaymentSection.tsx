@@ -16,7 +16,6 @@ import {
   getCheckoutPaymentIdempotencyKey
 } from '@/lib/checkout/payment-idempotency';
 import { initiatePaymentSession } from '@/lib/data/cart';
-import { getEnabledPaymentMethodTypes } from '@/lib/stripe/client';
 
 import { isStripe as isStripeFunc, paymentInfoMap } from '../../../lib/constants';
 import PaymentContainer from '../../organisms/PaymentContainer/PaymentContainer';
@@ -38,32 +37,10 @@ function isPendingPaymentSession(
   return paymentSession.status === 'pending';
 }
 
-const PAYMENT_CHIP_KEYS = ['card', 'blik', 'p24', 'apple_pay', 'google_pay'] as const;
-type PaymentChipKey = (typeof PAYMENT_CHIP_KEYS)[number];
-
-/**
- * Checks whether the given Stripe payment_method_type chip is enabled for the
- * active market.  Each chip is a purely visual indicator of Stripe-level
- * payment methods (card/blik/p24/apple_pay/google_pay) — NOT a separate Medusa
- * provider.  BonBeauty routes all of them through a single pp_stripe_* provider.
- *
- * AC3 fix (MEDIUM-1): chips reflect Stripe payment_method_types (via
- * getEnabledPaymentMethodTypes()) rather than Medusa provider IDs, preventing
- * BLIK/P24 from appearing permanently disabled and avoiding the multi-is-active
- * collapse that occurred when several chips resolved to the same stripeId.
- */
-function isChipEnabled(
-  providers: HttpTypes.StorePaymentProvider[] | null,
-  chip: PaymentChipKey
-): boolean {
-  const ids = providers?.map(provider => provider.id) ?? [];
-  const hasStripe = ids.some(isStripeFunc);
-  if (!hasStripe) return false;
-  // All five chips are Stripe payment_method_types; check market enablement.
-  const enabledMethods = getEnabledPaymentMethodTypes();
-  if (!enabledMethods) return false;
-  return enabledMethods.includes(chip);
-}
+// NOTE: the standalone payment-method "chips" were removed — the embedded Stripe
+// PaymentElement (mounted below once a session exists) is the single, native method
+// picker (real card/BLIK/Przelewy24/Apple/Google icons + selection), so the chips just
+// duplicated it. The provider radio + PaymentElement remain the one payment surface.
 
 const CartPaymentSection = ({
   cart,
@@ -71,10 +48,16 @@ const CartPaymentSection = ({
   shippingComplete = true,
   missingShippingSellers = [],
   giftRecipientRequired = false,
-  giftRecipientComplete = true
+  giftRecipientComplete = true,
+  forceExpanded = false,
+  locked = false
 }: {
   cart: HttpTypes.StoreCart;
   availablePaymentMethods: HttpTypes.StorePaymentProvider[] | null;
+  /** Checkout flow (Robert): render expanded at once instead of the `?step=` accordion. */
+  forceExpanded?: boolean;
+  /** Prerequisite not met (shipping/gift) → shown but greyed-out + non-interactive. */
+  locked?: boolean;
   /**
    * Orphaned-charge guard (per-seller shipping). When false, at least one
    * seller in the cart still lacks a shipping method, so
@@ -118,7 +101,7 @@ const CartPaymentSection = ({
       ? `${window.location.origin}/${locale}/order/${cart?.id}/payment-status`
       : `/${locale}/order/${cart?.id}/payment-status`;
 
-  const isOpen = searchParams.get('step') === 'payment';
+  const isOpen = forceExpanded || searchParams.get('step') === 'payment';
 
   const isStripe = isStripeFunc(selectedPaymentMethod);
 
@@ -126,21 +109,27 @@ const CartPaymentSection = ({
     setError(null);
     setSelectedPaymentMethod(method);
     if (isStripeFunc(method)) {
-      const cartHash = await computeCheckoutCartHash(cart);
-      await initiatePaymentSession(
-        cart,
-        {
-          provider_id: method,
-          data: { gp_checkout_cart_hash: cartHash }
-        },
-        getCheckoutPaymentIdempotencyKey()
-      );
-      // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
-      // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
-      // router.refresh() wymusza ponowny render RSC → cart.payment_collection
-      // .payment_sessions[].data.client_secret staje się dostępny → guard
-      // stripeClientSecret spełniony → <StripePaymentElement> może się zamontować.
-      router.refresh();
+      try {
+        const cartHash = await computeCheckoutCartHash(cart);
+        await initiatePaymentSession(
+          cart,
+          {
+            provider_id: method,
+            data: { gp_checkout_cart_hash: cartHash }
+          },
+          getCheckoutPaymentIdempotencyKey()
+        );
+        // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
+        // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
+        // router.refresh() wymusza ponowny render RSC → cart.payment_collection
+        // .payment_sessions[].data.client_secret staje się dostępny → guard
+        // stripeClientSecret spełniony → <StripePaymentElement> może się zamontować.
+        router.refresh();
+      } catch (err: unknown) {
+        // initiatePaymentSession re-throws via medusaError — surface it instead of an
+        // unhandled rejection in the chip click handler.
+        setError(err instanceof Error ? err.message : t('error_generic'));
+      }
     }
   };
 
@@ -218,30 +207,12 @@ const CartPaymentSection = ({
   }, [isOpen]);
 
   const isEditEnabled = !isOpen && !!cart?.payment_collection?.payment_sessions?.length;
-  // AC3 fix (MEDIUM-1): chips are purely visual Stripe payment_method_type
-  // indicators.  "Active" = the Stripe provider session is selected (not per-chip
-  // provider ID, since all five share pp_stripe_*).  Each chip is enabled iff its
-  // Stripe payment_method_type is available for the active market.
-  const stripeProviderId = availablePaymentMethods?.map(p => p.id).find(isStripeFunc) ?? null;
-  const isStripeSessionSelected =
-    stripeProviderId !== null && selectedPaymentMethod === stripeProviderId;
-  const paymentChips = PAYMENT_CHIP_KEYS.map(key => {
-    const enabled = isChipEnabled(availablePaymentMethods, key);
-    return {
-      key,
-      label: t(`payment_method_chip_${key}`),
-      // card chip is the "active" visual representative when Stripe is selected;
-      // other chips are enabled but not individually selectable (PaymentElement
-      // surfaces method choice natively within the Stripe session).
-      isActive: key === 'card' && isStripeSessionSelected,
-      enabled
-    };
-  });
-
   return (
     <div
       className="bb-section-shell"
       data-testid="checkout-step-payment"
+      data-locked={locked || undefined}
+      aria-disabled={locked || undefined}
     >
       <div
         className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && paymentReady ? 'is-done' : ''}`}
@@ -273,28 +244,6 @@ const CartPaymentSection = ({
                 value={selectedPaymentMethod}
                 onChange={(value: string) => setPaymentMethod(value)}
               >
-                <div className="pm-grid mb-4">
-                  {paymentChips.map(chip => (
-                    <button
-                      key={chip.key}
-                      type="button"
-                      className={`pmchip ${chip.isActive ? 'is-active' : ''}`}
-                      disabled={!chip.enabled}
-                      aria-pressed={chip.isActive}
-                      // Chips are visual indicators; payment method selection
-                      // is handled natively by StripePaymentElement (PaymentElement
-                      // renders tabs/wallets).  Clicking a chip activates the Stripe
-                      // provider session; PaymentElement surfaces the actual type.
-                      onClick={() => {
-                        if (chip.enabled && stripeProviderId) {
-                          void setPaymentMethod(stripeProviderId);
-                        }
-                      }}
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
                 {availablePaymentMethods.map(paymentMethod => (
                   <div key={paymentMethod.id}>
                     <PaymentContainer

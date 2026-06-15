@@ -73,6 +73,10 @@ type ShippingCart = Omit<HttpTypes.StoreCart, 'items'> & {
 type ShippingProps = {
   cart: ShippingCart;
   availableShippingMethods: AvailableShippingMethod[] | null;
+  /** Checkout flow (Robert): render expanded at once instead of the `?step=` accordion. */
+  forceExpanded?: boolean;
+  /** Prerequisite (address) not met yet → shown but greyed-out + non-interactive. */
+  locked?: boolean;
 };
 
 type ShippingMethodBySeller = AvailableShippingMethod & {
@@ -126,9 +130,20 @@ function normalizeAvailableShippingMethods(value: unknown): AvailableShippingMet
   return Array.isArray(inner) ? (inner as AvailableShippingMethod[]) : [];
 }
 
-const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShippingMethods }) => {
+const CartShippingMethodsSection: FC<ShippingProps> = ({
+  cart,
+  availableShippingMethods,
+  forceExpanded = false,
+  locked = false
+}) => {
   const t = useTranslations('checkout');
   const tCommon = useTranslations('common');
+  // BonBeauty delivery is a digital voucher by email; the backend ships a generic option
+  // name ("bonbeauty checkout"), so present the buyer-facing label instead (Robert).
+  const displayDeliveryName = (name?: string | null): string => {
+    const trimmed = (name ?? '').trim();
+    return !trimmed || /bonbeauty|checkout/i.test(trimmed) ? t('voucher_delivery_label') : trimmed;
+  };
   const [isLoadingPrices, setIsLoadingPrices] = useState(false);
   const [calculatedPricesMap, setCalculatedPricesMap] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +163,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   const router = useRouter();
   const pathname = usePathname();
 
-  const isOpen = searchParams.get('step') === 'delivery';
+  const isOpen = forceExpanded || searchParams.get('step') === 'delivery';
 
   const fallbackSeller = (() => {
     const sellers = Array.from(
@@ -169,8 +184,15 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
 
   const normalizedShippingMethods = normalizeAvailableShippingMethods(availableShippingMethods);
 
-  const _shippingMethods = normalizedShippingMethods.filter(
-    sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true'
+  // Dedupe by option id: the seller-map flatten (here + in listCartShippingMethods) can
+  // list the same shared shipping option under more than one seller bucket, which then
+  // collapses back into one group and renders the identical "0 zł" row twice.
+  const _shippingMethods = Array.from(
+    new Map(
+      normalizedShippingMethods
+        .filter(sm => sm.rules?.find(rule => rule.attribute === 'is_return')?.value !== 'true')
+        .map(sm => [sm.id, sm])
+    ).values()
   );
 
   // Optimistically track selected option ids (seeded from cart). Mirrors the
@@ -370,7 +392,11 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
   );
 
   return (
-    <div className="bb-section-shell">
+    <div
+      className="bb-section-shell"
+      data-locked={locked || undefined}
+      aria-disabled={locked || undefined}
+    >
       <div className={`step-head mb-6 flex flex-row items-center justify-between ${!isOpen && (cart.shipping_methods?.length ?? 0) > 0 ? 'is-done' : ''}`}>
         <Heading
           level="h2"
@@ -451,7 +477,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
                                     value={option.id}
                                     key={option.id}
                                   >
-                                    {option.name}
+                                    {displayDeliveryName(option.name)}
                                     {' - '}
                                     {option.price_type === 'flat' ? (
                                       convertToLocale({
@@ -528,7 +554,7 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({ cart, availableShipping
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">{t('method_label')}</Text>
                     <Text className="txt-medium text-ui-fg-subtle">
-                      {method.name}{' '}
+                      {displayDeliveryName(method.name)}{' '}
                       {convertToLocale({
                         amount: method.amount ?? 0,
                         currency_code: cart?.currency_code

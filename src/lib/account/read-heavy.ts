@@ -6,6 +6,7 @@ import type { Wishlist } from '@/types/wishlist';
 import { retrieveCustomer } from '../data/customer';
 import { getReturns, listOrders, retrieveOrderGroup } from '../data/orders';
 import { getRegion } from '../data/regions';
+import { convertToLocale } from '../helpers/money';
 import { getUserWishlists } from '../data/wishlist';
 
 export type CollectionState = 'ok' | 'access_denied' | 'unavailable' | 'failed';
@@ -92,10 +93,12 @@ export function formatAccountCurrency(amount: number, currencyCode: string, loca
     de: 'de-DE'
   };
 
-  return new Intl.NumberFormat(bcp47[locale] ?? 'pl-PL', {
-    style: 'currency',
-    currency: (currencyCode || 'PLN').toUpperCase()
-  }).format((amount || 0) / 100);
+  return convertToLocale({
+    amount: amount || 0,
+    currency_code: (currencyCode || 'PLN').toUpperCase(),
+    locale: bcp47[locale] ?? 'pl-PL',
+    isMinorUnit: true,
+  });
 }
 
 export function toneToBadgeClass(tone: SemanticTone) {

@@ -34,7 +34,12 @@ const StripeWrapper: React.FC<StripeWrapperProps> = ({
   }
 
   if (!paymentSession?.data?.client_secret) {
-    throw new Error('Stripe client secret is missing. Cannot initialize Stripe.');
+    // Defensive: a transiently-missing client_secret (e.g. mid-session-creation re-render)
+    // must NOT crash the whole checkout RSC tree. Render children without the Stripe
+    // context — the active StripePaymentElement supplies its own <Elements> once the
+    // secret is available. (PaymentWrapper already gates on client_secret; this is belt
+    // and suspenders.)
+    return <StripeContext.Provider value={false}>{children}</StripeContext.Provider>;
   }
 
   return (
