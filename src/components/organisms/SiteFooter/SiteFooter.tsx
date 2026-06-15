@@ -23,6 +23,13 @@ const SECTION_I18N_KEYS: Record<string, string> = {
   connect: 'section_connect'
 };
 
+type FooterNavMessageKey =
+  | 'nav.about'
+  | 'nav.faq'
+  | 'nav.kontakt'
+  | 'nav.regulamin'
+  | 'nav.polityka-prywatnosci';
+
 export async function SiteFooter({
   marketConfig,
   locale
@@ -35,7 +42,15 @@ export async function SiteFooter({
   const copyright = resolveFooterCopyright(marketConfig);
   const marketId = typeof marketConfig?.market_id === 'string' ? marketConfig.market_id : null;
   const legalSignoffStatus = marketId ? await loadLegalSignoffStatusMap(marketId, locale) : null;
-  const navSections = resolveFooterNavLinks(marketConfig, legalSignoffStatus).filter(
+  const translateFooterNavLabel = (key: string) => {
+    const footerKey = key as FooterNavMessageKey;
+    return t.has(footerKey) ? t(footerKey) : null;
+  };
+  const navSections = resolveFooterNavLinks(
+    marketConfig,
+    legalSignoffStatus,
+    translateFooterNavLabel
+  ).filter(
     s => s.section !== 'connect'
   );
   const legalEntity = resolveFooterLegalEntity(marketConfig);
@@ -65,7 +80,7 @@ export async function SiteFooter({
               data-testid="site-footer-logo"
             />
             <p className="text-sm leading-relaxed text-[var(--bb-cream-60)]">
-              Marketplace premium salonów beauty
+              {t('tagline')}
             </p>
           </div>
 

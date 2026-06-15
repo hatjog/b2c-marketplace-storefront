@@ -25,6 +25,11 @@ function isValidRegion(code: string): boolean {
   return VALID_REGION_RE.test(code);
 }
 
+function setPathnameResponseHeader(response: NextResponse, pathname: string) {
+  response.headers.set('x-pathname', pathname);
+  return response;
+}
+
 const makeAuthRedirect = (
   req: NextRequest,
   lang: string,
@@ -33,6 +38,7 @@ const makeAuthRedirect = (
   const redirectUrl = new URL(`/${lang}/login`, req.url);
   redirectUrl.searchParams.set(reason, 'true');
   const response = NextResponse.redirect(redirectUrl);
+  setPathnameResponseHeader(response, req.nextUrl.pathname);
   if (reason === 'sessionExpired') {
     response.cookies.delete('_medusa_jwt');
   }
@@ -72,7 +78,7 @@ const SALONY_REDIRECT_RE = /^\/([a-z]{2})\/salony(\/.*)?$/;
 export async function middleware(request: NextRequest) {
   // Short-circuit static assets (match common file extensions at end of path)
   if (/\.\w{2,5}$/.test(request.nextUrl.pathname)) {
-    return NextResponse.next();
+    return setPathnameResponseHeader(NextResponse.next(), request.nextUrl.pathname);
   }
 
   const { pathname } = request.nextUrl;
@@ -88,7 +94,7 @@ export async function middleware(request: NextRequest) {
     const [, locale, suffix = ''] = salonyMatch;
     const target = new URL(`/${locale}/sellers${suffix}`, request.url);
     target.search = request.nextUrl.search;
-    return NextResponse.redirect(target, 308);
+    return setPathnameResponseHeader(NextResponse.redirect(target, 308), pathname);
   }
 
   const urlSegment = pathname.split('/')[1] ?? '';
@@ -105,6 +111,7 @@ export async function middleware(request: NextRequest) {
     const queryString = request.nextUrl.search ?? '';
     const redirectUrl = `${request.nextUrl.origin}/${lang}${redirectPath}${queryString}`;
     const response = NextResponse.redirect(redirectUrl, 307);
+    setPathnameResponseHeader(response, pathname);
     response.cookies.set(GP_LANG_COOKIE, lang, {
       maxAge: 60 * 60 * 24 * 365,
       path: '/',
@@ -133,6 +140,7 @@ export async function middleware(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-gp-locale', lang);
+  requestHeaders.set('x-pathname', pathname);
   // Next reads the nonce from the request CSP header and stamps it onto its
   // inline hydration scripts; x-nonce lets RSC/app code reuse the same nonce.
   requestHeaders.set('x-nonce', nonce);
@@ -144,6 +152,7 @@ export async function middleware(request: NextRequest) {
   });
   // Browser-enforced header (name flips enforce ↔ report-only via STOREFRONT_CSP_MODE).
   response.headers.set(cspHeaderName, cspValue);
+  setPathnameResponseHeader(response, pathname);
 
   // Set _gp_lang cookie from URL lang
   if (langCookieValue !== lang) {

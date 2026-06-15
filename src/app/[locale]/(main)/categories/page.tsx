@@ -32,6 +32,7 @@ interface DisplayCategory {
   name: string
   rank: number
   metadata: Record<string, unknown>
+  photoUrl: string | null
   subcategoryCount: number
 }
 
@@ -47,6 +48,29 @@ function normalizeFilter(filterParam: string | undefined): CategoryFilterId {
     : "all"
 }
 
+function metadataString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function resolveCategoryPhotoUrl(metadata: Record<string, unknown>): string | null {
+  const rootPhotoUrl = metadataString(metadata.photo_url)
+  if (rootPhotoUrl) {
+    return rootPhotoUrl
+  }
+
+  const gpMetadata = metadata.gp
+  if (!gpMetadata || typeof gpMetadata !== "object" || Array.isArray(gpMetadata)) {
+    return null
+  }
+
+  return metadataString((gpMetadata as Record<string, unknown>).photo_url)
+}
+
 function toDisplayCategories(categories: HttpTypes.StoreProductCategory[]): DisplayCategory[] {
   return categories
     .filter((category) => Boolean(category?.id && category?.handle && category?.name))
@@ -60,16 +84,18 @@ function toDisplayCategories(categories: HttpTypes.StoreProductCategory[]): Disp
       const childCount = Array.isArray(category.category_children)
         ? category.category_children.length
         : 0
+      const metadata =
+        category.metadata && typeof category.metadata === "object"
+          ? (category.metadata as Record<string, unknown>)
+          : {}
 
       return {
         id: String(category.id),
         handle: String(category.handle),
         name: String(category.name),
         rank: safeRank,
-        metadata:
-          category.metadata && typeof category.metadata === "object"
-            ? (category.metadata as Record<string, unknown>)
-            : {},
+        metadata,
+        photoUrl: resolveCategoryPhotoUrl(metadata),
         subcategoryCount: childCount,
       }
     })
@@ -245,6 +271,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function CategoriesPage({ params, searchParams }: CategoriesPageProps) {
   const { locale } = await params
+  const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || ""
   const { filter: filterParam, mode: modeParam, query: queryParam } = await searchParams
   const requestedMode = parsePurchaseMode(modeParam)
   const activeFilter = normalizeFilter(filterParam)
@@ -303,6 +330,7 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
         imageAltPrefix={copy.categoryImageAlt}
         imageMissingLabel={copy.categoryImageMissing}
         countLabel={copy.gridCountLabel}
+        marketId={marketId}
         categories={filteredCategories}
       />
     </main>

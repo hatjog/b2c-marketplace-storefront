@@ -122,6 +122,8 @@ type FooterNavSection = {
   links: FooterNavLink[];
 };
 
+type FooterNavLabelResolver = (key: string) => string | null | undefined;
+
 type LegalDocType = 'regulamin' | 'polityka_prywatnosci' | 'zasady_voucher' | 'pomoc';
 
 type FooterLegalSignoffBadge = {
@@ -141,6 +143,41 @@ const LEGAL_DOC_PATHS: Record<string, LegalDocType> = {
   '/zasady': 'zasady_voucher',
   '/pomoc': 'pomoc'
 };
+
+const FOOTER_NAV_I18N_KEYS_BY_PATH: Record<string, string> = {
+  '/about': 'nav.about',
+  '/faq': 'nav.faq',
+  '/kontakt': 'nav.kontakt',
+  '/regulamin': 'nav.regulamin',
+  '/polityka-prywatnosci': 'nav.polityka-prywatnosci'
+};
+
+const FOOTER_NAV_LOCALE_SEGMENTS = new Set(['pl', 'en', 'ua', 'de']);
+
+function normalizeFooterNavI18nPath(path: string) {
+  const [pathWithoutQuery] = path.split(/[?#]/);
+  const withoutTrailingSlash = pathWithoutQuery.replace(/\/+$/, '') || '/';
+  const segments = withoutTrailingSlash.split('/').filter(Boolean);
+
+  if (segments.length > 1 && FOOTER_NAV_LOCALE_SEGMENTS.has(segments[0])) {
+    return `/${segments.slice(1).join('/')}`;
+  }
+
+  return withoutTrailingSlash;
+}
+
+function resolveFooterNavLabel(
+  path: string,
+  fallbackLabel: string,
+  translateNavLabel?: FooterNavLabelResolver
+) {
+  const key = FOOTER_NAV_I18N_KEYS_BY_PATH[normalizeFooterNavI18nPath(path)];
+  if (!key || !translateNavLabel) {
+    return fallbackLabel;
+  }
+
+  return normalizeString(translateNavLabel(key)) ?? fallbackLabel;
+}
 
 export function resolveFooterLegalSignoffBadge(
   marketConfig: MarketConfig | null | undefined,
@@ -171,7 +208,8 @@ export function resolveFooterLegalSignoffBadge(
 
 export function resolveFooterNavLinks(
   marketConfig?: MarketConfig | null,
-  legalSignoffStatusByDocType?: LegalSignoffStatusByDocType | null
+  legalSignoffStatusByDocType?: LegalSignoffStatusByDocType | null,
+  translateNavLabel?: FooterNavLabelResolver
 ): FooterNavSection[] {
   const navLinks = marketConfig?.footer?.nav_links;
 
@@ -189,13 +227,14 @@ export function resolveFooterNavLinks(
       return [];
     }
 
-    const label = normalizeString(item.label);
+    const fallbackLabel = normalizeString(item.label);
     const path = normalizeRelativePath(item.href);
 
-    if (!label || !path) {
+    if (!fallbackLabel || !path) {
       return [];
     }
 
+    const label = resolveFooterNavLabel(path, fallbackLabel, translateNavLabel);
     const legalSignoffBadge = resolveFooterLegalSignoffBadge(
       marketConfig,
       path,
