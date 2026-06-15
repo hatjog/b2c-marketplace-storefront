@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 interface LoadingStatePattern {
   code: string;
   title: string;
@@ -5,6 +7,8 @@ interface LoadingStatePattern {
 }
 
 function Demo({ code }: { code: string }) {
+  const t = useTranslations('loading_states_catalogue');
+
   switch (code) {
     case 'LP1':
       return (
@@ -55,7 +59,7 @@ function Demo({ code }: { code: string }) {
           aria-live="polite"
           style={{ display: 'grid', gap: '0.5rem' }}
         >
-          <strong style={{ color: 'var(--text-primary)' }}>Odswieżamy status co 15 sekund</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{t('lp4_demo_label')}</strong>
           <div style={{ height: '10px', borderRadius: '999px', backgroundColor: 'var(--bb-muted-80)' }}>
             <div
               className="h-full rounded-full bg-[var(--bg-primary)] motion-reduce:animate-none animate-pulse"
@@ -72,7 +76,7 @@ function Demo({ code }: { code: string }) {
           aria-live="polite"
           style={{ display: 'grid', gap: '0.5rem' }}
         >
-          <strong style={{ color: 'var(--text-primary)' }}>Krok 2 z 3</strong>
+          <strong style={{ color: 'var(--text-primary)' }}>{t('lp5_demo_label')}</strong>
           <div style={{ height: '12px', borderRadius: '999px', backgroundColor: 'var(--bb-muted-80)' }}>
             <div style={{ width: '66%', height: '100%', borderRadius: '999px', backgroundColor: 'var(--bg-primary)' }} />
           </div>
@@ -90,7 +94,7 @@ function Demo({ code }: { code: string }) {
             className="inline-block h-5 w-5 rounded-full border-2 border-[var(--bb-tint-gold-24)] border-t-[var(--bg-primary)] motion-reduce:animate-none animate-spin"
             aria-hidden="true"
           />
-          <span style={{ color: 'var(--text-secondary)' }}>Przechodzimy do kolejnego kroku…</span>
+          <span style={{ color: 'var(--text-secondary)' }}>{t('lp6_demo_label')}</span>
         </div>
       );
   }

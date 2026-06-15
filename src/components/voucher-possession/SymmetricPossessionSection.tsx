@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createTranslator, useTranslations } from 'next-intl';
 
 import { WalletButton, type WalletButtonLocale } from '../WalletButton';
+import deMessages from '../../../messages/de.json';
+import enMessages from '../../../messages/en.json';
+import plMessages from '../../../messages/pl.json';
+import uaMessages from '../../../messages/ua.json';
 
 type SymmetricPossessionCopy = {
   eyebrow: string;
@@ -15,48 +20,25 @@ type SymmetricPossessionCopy = {
   emailErrorToast: string;
 };
 
-const COPY: Record<WalletButtonLocale, SymmetricPossessionCopy> = {
-  pl: {
-    eyebrow: 'Zachowaj voucher jak chcesz — w telefonie, w PDF, lub w mailu',
-    pdfLabel: 'Pobierz PDF',
-    pdfAriaLabel: 'Pobierz voucher jako PDF',
-    emailLabel: 'Wyślij ponownie na e-mail',
-    emailAriaLabel: 'Wyślij voucher ponownie na e-mail',
-    emailLoadingLabel: 'Wysyłam...',
-    emailSuccessToast: 'Voucher wysłany ponownie na e-mail.',
-    emailErrorToast: 'Nie udało się wysłać e-maila. Spróbuj ponownie.',
-  },
-  en: {
-    eyebrow: 'Keep your voucher your way — on your phone, in PDF, or in email',
-    pdfLabel: 'Download PDF',
-    pdfAriaLabel: 'Download voucher as PDF',
-    emailLabel: 'Send again by email',
-    emailAriaLabel: 'Send voucher again by email',
-    emailLoadingLabel: 'Sending...',
-    emailSuccessToast: 'Voucher sent again by email.',
-    emailErrorToast: 'We could not send the email. Try again.',
-  },
-  de: {
-    eyebrow: 'Bewahre deinen Voucher so auf, wie du möchtest — im Telefon, als PDF oder per E-Mail',
-    pdfLabel: 'PDF herunterladen',
-    pdfAriaLabel: 'Voucher als PDF herunterladen',
-    emailLabel: 'Erneut per E-Mail senden',
-    emailAriaLabel: 'Voucher erneut per E-Mail senden',
-    emailLoadingLabel: 'Wird gesendet...',
-    emailSuccessToast: 'Voucher wurde erneut per E-Mail gesendet.',
-    emailErrorToast: 'Die E-Mail konnte nicht gesendet werden. Versuche es erneut.',
-  },
-  ua: {
-    eyebrow: 'Збережіть ваучер як зручно — у телефоні, PDF або листі',
-    pdfLabel: 'Завантажити PDF',
-    pdfAriaLabel: 'Завантажити ваучер як PDF',
-    emailLabel: 'Надіслати ще раз на e-mail',
-    emailAriaLabel: 'Надіслати ваучер ще раз на e-mail',
-    emailLoadingLabel: 'Надсилаємо...',
-    emailSuccessToast: 'Ваучер повторно надіслано на e-mail.',
-    emailErrorToast: 'Не вдалося надіслати e-mail. Спробуйте ще раз.',
-  },
-};
+const MESSAGES_BY_LOCALE = {
+  pl: plMessages,
+  en: enMessages,
+  de: deMessages,
+  ua: uaMessages,
+} as const;
+
+function buildPossessionCopy(t: (key: string) => string): SymmetricPossessionCopy {
+  return {
+    eyebrow: t('eyebrow'),
+    pdfLabel: t('pdf_label'),
+    pdfAriaLabel: t('pdf_aria_label'),
+    emailLabel: t('email_label'),
+    emailAriaLabel: t('email_aria_label'),
+    emailLoadingLabel: t('email_loading_label'),
+    emailSuccessToast: t('email_success_toast'),
+    emailErrorToast: t('email_error_toast'),
+  };
+}
 
 export function isIphoneSafari(userAgent: string): boolean {
   return /iphone/i.test(userAgent) && /safari/i.test(userAgent) && !/crios|fxios|edgios/i.test(userAgent);
@@ -77,7 +59,12 @@ export function shouldRenderAppleWallet(input: {
 }
 
 export function getPossessionCopy(locale: WalletButtonLocale): SymmetricPossessionCopy {
-  return COPY[locale] ?? COPY.pl;
+  const t = createTranslator({
+    locale,
+    messages: MESSAGES_BY_LOCALE[locale] ?? MESSAGES_BY_LOCALE.pl,
+    namespace: 'wallet.possession',
+  });
+  return buildPossessionCopy(t);
 }
 
 export function getEmailResendEndpoint(voucherCode: string): string {
@@ -103,7 +90,8 @@ export function SymmetricPossessionSection({
   userAgent,
   walletDisabled = false,
 }: SymmetricPossessionSectionProps) {
-  const copy = useMemo(() => getPossessionCopy(locale), [locale]);
+  const t = useTranslations('wallet.possession');
+  const copy = useMemo(() => buildPossessionCopy(t), [t]);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailToast, setEmailToast] = useState<string | null>(null);
   const emailDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);

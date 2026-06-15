@@ -440,23 +440,23 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
   const renderCrossActor = () => {
     const forYou = (() => {
       switch (status) {
-        case 'paid': return 'Możesz przejść do szczegółów zamówienia.';
-        case 'pending_psp': return 'Nie musisz nic robić — sprawdzamy automatycznie.';
-        case 'failed_retryable': return 'Wróć do kasy i spróbuj ponownie.';
-        case 'failed_nonretryable': return 'Skontaktuj się z bankiem lub wybierz inną metodę płatności.';
-        case 'expired': return 'Wróć do koszyka i dokończ zamówienie.';
-        case 'support_required': return 'Poczekaj na kontakt z naszej strony lub napisz do nas.';
+        case 'paid': return t('payment_status.paid.for_you');
+        case 'pending_psp': return t('payment_status.pending_psp.for_you');
+        case 'failed_retryable': return t('payment_status.failed_retryable.for_you');
+        case 'failed_nonretryable': return t('payment_status.failed_nonretryable.for_you');
+        case 'expired': return t('payment_status.expired.for_you');
+        case 'support_required': return t('payment_status.support_required.for_you');
       }
     })();
 
     const forUs = (() => {
       switch (status) {
-        case 'paid': return 'Zamówienie potwierdzone — przekazujemy do realizacji.';
-        case 'pending_psp': return 'Monitorujemy automatycznie — webhook race resolution w toku.';
-        case 'failed_retryable': return 'Transakcja anulowana po stronie PSP — brak obciążenia konta.';
-        case 'failed_nonretryable': return 'Płatność odrzucona przez bank — wymagane działanie z Twojej strony.';
-        case 'expired': return 'Sesja płatności wygasła — zamówienie zarezerwowane przez 7 dni.';
-        case 'support_required': return 'Ticket utworzony — weryfikacja manualna w toku.';
+        case 'paid': return t('payment_status.paid.for_us');
+        case 'pending_psp': return t('payment_status.pending_psp.for_us');
+        case 'failed_retryable': return t('payment_status.failed_retryable.for_us');
+        case 'failed_nonretryable': return t('payment_status.failed_nonretryable.for_us');
+        case 'expired': return t('payment_status.expired.for_us');
+        case 'support_required': return t('payment_status.support_required.for_us');
       }
     })();
 

@@ -5,16 +5,16 @@
 // NIE współdzielą cache'owanej odpowiedzi. Pusta/pominięta asercja = FAIL
 // (skip != green). Ta część jest w pełni code/testowalna (nie wymaga żywego stacku).
 //
-// MECHANIZM FAKTYCZNEJ IZOLACJI (M1 fix):
-// Bleed jest zapobiegany przez dwa komplementarne mechanizmy:
-//   (1) Nagłówek `x-medusa-locale` — wstrzykiwany przez `applyLocaleInterceptor`
-//       opakowujący singleton `sdk` w lib/config.ts. Różne locale ⇒ różny nagłówek
-//       ⇒ różny klucz cache Next.js Data Cache (URL + nagłówki). To GŁÓWNA bariera.
-//   (2) Locale-aware `next.tags` — granularność rewalidacji per-locale
-//       (`revalidateTag` niszczy cache tylko dla danego locale).
-// Ten plik asercjonuje mechanizm (2) + statyczny guard użycia (1) przez singleton
-// (czy config.ts zawiera `applyLocaleInterceptor` + `sdk`). Testy `locale-interceptor.test.ts`
-// pokrywają faktyczne działanie `applyLocaleInterceptor` (header injection).
+// MECHANIZM IZOLACJI (v1.12.0 UA-loc — KOREKTA wcześniejszego błędnego założenia):
+//   `x-medusa-locale` (wstrzykiwany przez `applyLocaleInterceptor` na singletonie `sdk`)
+//   zapewnia, że backend ZWRACA właściwy locale, ale Next.js Data Cache NIE wlicza
+//   nagłówków żądania do klucza — więc wspólny `force-cache` na tym samym URL kolidował
+//   między locale (bug znaleziony live: PL→UA). Faktyczna izolacja katalogowych odczytów =
+//   `no-store` (brak wspólnego wpisu). localeCacheTag pozostaje eksportowanym util do
+//   granularnej rewalidacji, ale NIE jest barierą anty-bleed dla products/categories.
+// Ten plik asercjonuje: (a) localeCacheTag daje rozłączne tagi (util), (b) katalogowe
+// odczyty są no-store (anty-bleed), (c) singleton sdk przechodzi przez interceptor.
+// Testy `locale-interceptor.test.ts` pokrywają faktyczne działanie header injection.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -87,41 +87,23 @@ describe('cross-locale cache bleed — locale-aware tags (AC2, FR8, ra-3)', () =
     }
   });
 
-  // Static guard: cache'owane ścieżki MUSZĄ używać locale-aware next.tags —
-  // inaczej locale-aware util nie chroni przed bleed (fix = uzupełnienie tagu tam gdzie brak).
-  it('products.ts cache force-cache używa localeCacheTag(products) w next.tags', () => {
-    expect(PRODUCTS_SRC).toContain("localeCacheTag('products')");
-    expect(PRODUCTS_SRC).toContain("force-cache");
+  // (v1.12.0 UA-loc CORRECTION) Pierwotne założenie tego pliku (że nagłówek
+  // x-medusa-locale partycjonuje Next.js Data Cache per-locale) jest BŁĘDNE: Next NIE
+  // wlicza nagłówków żądania do klucza Data Cache. Wspólny `force-cache` na tym samym
+  // URL kolidował między locale (pierwszy pobrany locale leakował do reszty — PL→UA).
+  // FIX: katalogowe odczyty (products/categories) używają `no-store` — brak wspólnego
+  // wpisu cache = brak bleed. localeCacheTag pozostaje util (rewalidacja), ale NIE jest
+  // już barierą anty-bleed dla tych ścieżek. Guard: te ścieżki NIE mogą wrócić do
+  // współdzielonego force-cache (regresja bleed). Locale-keyed cache = follow-up perf.
+  it('categories.ts katalogowe odczyty są no-store (NIE współdzielony force-cache → brak cross-locale bleed)', () => {
+    expect(CATEGORIES_SRC).toContain("cache: 'no-store'");
+    expect(CATEGORIES_SRC).not.toContain("cache: 'force-cache'");
   });
 
-  it('categories.ts force-cache używa localeCacheTag(product-categories) w next.tags', () => {
-    expect(CATEGORIES_SRC).toContain("localeCacheTag('product-categories')");
-    expect(CATEGORIES_SRC).toContain('force-cache');
-    // Obie cache'owane ścieżki (listCategories + getCategoryByHandle) otagowane.
-    const occurrences = CATEGORIES_SRC.split("localeCacheTag('product-categories')").length - 1;
-    expect(occurrences).toBeGreaterThanOrEqual(2);
-  });
-
-  // (L3 fix) Wzmocniony guard cache-path: każde wystąpienie 'force-cache' MUSI mieć
-  // sąsiadujący locale-tag — guard wykryje przyszłą nieotagowaną ścieżkę force-cache.
-  it('products.ts: liczba force-cache == liczba localeCacheTag(products) (każda ścieżka otagowana)', () => {
-    const forceCacheCount = PRODUCTS_SRC.split("'force-cache'").length - 1;
-    const tagCount = PRODUCTS_SRC.split("localeCacheTag('products')").length - 1;
-    // Musi być co najmniej 1 ścieżka; liczba tagów >= liczba force-cache (może być więcej tagów
-    // jeśli force-cache jest na poziomie opcji obiektu, a tag per-call).
-    expect(forceCacheCount).toBeGreaterThanOrEqual(1);
-    expect(tagCount, 'każda ścieżka force-cache w products.ts MUSI mieć locale-tag').toBeGreaterThanOrEqual(
-      forceCacheCount
-    );
-  });
-
-  it('categories.ts: liczba force-cache == liczba localeCacheTag(product-categories) (każda ścieżka otagowana)', () => {
-    const forceCacheCount = CATEGORIES_SRC.split("'force-cache'").length - 1;
-    const tagCount = CATEGORIES_SRC.split("localeCacheTag('product-categories')").length - 1;
-    expect(forceCacheCount).toBeGreaterThanOrEqual(1);
-    expect(tagCount, 'każda ścieżka force-cache w categories.ts MUSI mieć locale-tag').toBeGreaterThanOrEqual(
-      forceCacheCount
-    );
+  it('products.ts katalogowy odczyt jest no-store (NIE współdzielony force-cache → brak cross-locale bleed)', () => {
+    expect(PRODUCTS_SRC).toContain("cache: 'no-store'");
+    expect(PRODUCTS_SRC).not.toContain("cache: 'force-cache'");
+    expect(PRODUCTS_SRC).not.toContain("? 'force-cache' :");
   });
 
   // (M1 fix) Guard faktycznego mechanizmu cache izolacji: singleton `sdk` w lib/config.ts

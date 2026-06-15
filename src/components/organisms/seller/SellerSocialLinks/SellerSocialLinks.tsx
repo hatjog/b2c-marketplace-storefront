@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 import { EarthIcon, FacebookIcon, InstagramIcon } from '@/icons';
 import type { SellerSocialLinks as SocialLinksType } from '@/types/seller';
 
@@ -31,6 +35,8 @@ export interface SellerSocialLinksProps {
 }
 
 export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
+  const t = useTranslations('seller.social_links');
+
   if (!socialLinks) return null;
 
   const { instagram, facebook, tiktok, website } = socialLinks;
@@ -43,13 +49,13 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
   if (!safeInstagram && !safeFacebook && !safeTiktok && !safeWebsite) return null;
 
   return (
-    <nav aria-label="Media społecznościowe salonu" className="flex items-center gap-3" data-testid="seller-social-links">
+    <nav aria-label={t('aria_label')} className="flex items-center gap-3" data-testid="seller-social-links">
       {safeInstagram && (
         <a
           href={safeInstagram}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Profil Instagram salonu"
+          aria-label={t('instagram_aria')}
           className="text-gray-500 hover:text-gray-900 transition-colors"
         >
           <InstagramIcon size={20} />
@@ -60,7 +66,7 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
           href={safeFacebook}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Profil Facebook salonu"
+          aria-label={t('facebook_aria')}
           className="text-gray-500 hover:text-gray-900 transition-colors"
         >
           <FacebookIcon size={20} />
@@ -71,7 +77,7 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
           href={safeTiktok}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Profil TikTok salonu"
+          aria-label={t('tiktok_aria')}
           className="text-gray-500 hover:text-gray-900 transition-colors"
         >
           <TikTokIcon size={20} />
@@ -82,7 +88,7 @@ export function SellerSocialLinks({ socialLinks }: SellerSocialLinksProps) {
           href={safeWebsite}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Strona internetowa salonu"
+          aria-label={t('website_aria')}
           className="text-gray-500 hover:text-gray-900 transition-colors"
         >
           <EarthIcon size={20} />

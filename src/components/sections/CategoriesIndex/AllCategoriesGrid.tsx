@@ -4,11 +4,13 @@ import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedL
 import { useMemo, useState } from "react"
 import Image from "next/image"
 import { categoryImageSrc } from "@/lib/category-images"
+import { resolveMarketAssetUrl } from "@/lib/helpers/asset-reference"
 
 interface GridCategory {
   id: string
   handle: string
   name: string
+  photoUrl: string | null
   subcategoryCount: number
 }
 
@@ -18,6 +20,7 @@ interface AllCategoriesGridProps {
   imageAltPrefix: string
   imageMissingLabel: string
   countLabel: string
+  marketId: string
   categories: GridCategory[]
 }
 
@@ -26,13 +29,19 @@ function CategoryTile({
   imageAltPrefix,
   imageMissingLabel,
   countLabel,
+  marketId,
 }: {
   category: GridCategory
   imageAltPrefix: string
   imageMissingLabel: string
   countLabel: string
+  marketId: string
 }) {
   const [imageBroken, setImageBroken] = useState(false)
+  const imageSrc = categoryImageSrc(
+    category.handle,
+    resolveMarketAssetUrl(category.photoUrl, marketId)
+  )
 
   const imageAlt = useMemo(
     () => `${imageAltPrefix}: ${category.name}`,
@@ -52,7 +61,7 @@ function CategoryTile({
           </div>
         ) : (
           <Image
-            src={categoryImageSrc(category.handle)}
+            src={imageSrc}
             alt={imageAlt}
             fill
             className="object-cover transition duration-300 group-hover:scale-105"
@@ -80,6 +89,7 @@ export function AllCategoriesGrid({
   imageAltPrefix,
   imageMissingLabel,
   countLabel,
+  marketId,
   categories,
 }: AllCategoriesGridProps) {
   return (
@@ -97,6 +107,7 @@ export function AllCategoriesGrid({
             imageAltPrefix={imageAltPrefix}
             imageMissingLabel={imageMissingLabel}
             countLabel={countLabel}
+            marketId={marketId}
           />
         ))}
       </div>

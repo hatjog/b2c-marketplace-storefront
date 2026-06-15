@@ -8,8 +8,11 @@
  * UX-DR20 EP-P1: no blame, empathic, one primary CTA.
  */
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-export default function ProductNotFound() {
+export default async function ProductNotFound() {
+  const t = await getTranslations('not_found');
+
   return (
     <main
       id="main-content"
@@ -62,7 +65,7 @@ export default function ProductNotFound() {
             margin: 0
           }}
         >
-          Tej strony tu nie ma
+          {t('headline')}
         </h1>
 
         <p
@@ -73,7 +76,7 @@ export default function ProductNotFound() {
             lineHeight: 1.6
           }}
         >
-          Oferta, której szukasz, mogła zostać wycofana lub jej adres się zmienił.
+          {t('product_body')}
         </p>
 
         <div
@@ -104,7 +107,7 @@ export default function ProductNotFound() {
               minWidth: '44px'
             }}
           >
-            Wróć do strony głównej
+            {t('cta_home')}
           </Link>
 
           <Link
@@ -127,7 +130,7 @@ export default function ProductNotFound() {
               minWidth: '44px'
             }}
           >
-            Skorzystaj z wyszukiwarki
+            {t('cta_search')}
           </Link>
         </div>
       </div>

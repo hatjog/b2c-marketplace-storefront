@@ -79,9 +79,11 @@ interface MapBehaviorProps {
   sellers: SellerMapSeller[];
   center?: { lat: number; lng: number };
   maxZoom: number;
+  zoomInLabel: string;
+  zoomOutLabel: string;
 }
 
-function MapBehavior({ sellers, center, maxZoom }: MapBehaviorProps) {
+function MapBehavior({ sellers, center, maxZoom, zoomInLabel, zoomOutLabel }: MapBehaviorProps) {
   const map = useMap();
   // F-08: stabilna identyfikacja zestawu pinów — fitBounds NIE retriggeruje przy każdym re-render parenta
   // (typowy case: <SellerMap sellers={data.map(...)} /> tworzy nowy array reference per render).
@@ -92,9 +94,9 @@ function MapBehavior({ sellers, center, maxZoom }: MapBehaviorProps) {
 
   useEffect(() => {
     const zoomButtons = map.getContainer().querySelectorAll<HTMLAnchorElement>('.leaflet-control-zoom a');
-    zoomButtons[0]?.setAttribute('aria-label', 'Powiększ mapę');
-    zoomButtons[1]?.setAttribute('aria-label', 'Pomniejsz mapę');
-  }, [map]);
+    zoomButtons[0]?.setAttribute('aria-label', zoomInLabel);
+    zoomButtons[1]?.setAttribute('aria-label', zoomOutLabel);
+  }, [map, zoomInLabel, zoomOutLabel]);
 
   useEffect(() => {
     if (center) {
@@ -283,7 +285,13 @@ export function SellerMap({
             }}
           />
           <MapResizeInvalidator />
-          <MapBehavior sellers={validSellers} center={center} maxZoom={config.maxAutoZoom} />
+          <MapBehavior
+            sellers={validSellers}
+            center={center}
+            maxZoom={config.maxAutoZoom}
+            zoomInLabel={t('zoom_in')}
+            zoomOutLabel={t('zoom_out')}
+          />
           {validSellers.map(seller => {
             const link = buildMapDeepLink({
               lat: seller.lat,

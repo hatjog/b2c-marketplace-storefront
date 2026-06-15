@@ -15,7 +15,9 @@
  */
 
 import React from "react"
-import type { FC, ReactNode } from "react"
+import type { ReactNode } from "react"
+import { getTranslations } from "next-intl/server"
+
 import { TimelineItem } from "./TimelineItem"
 
 export interface AuditTrailEmptyStateProps {
@@ -38,20 +40,18 @@ export interface AuditTrailEmptyStateProps {
   "data-testid"?: string
 }
 
-const DEFAULT_EMPTY_HEADING = "Brak wpisów w historii"
-const DEFAULT_EMPTY_BODY =
-  "Tutaj zobaczysz każdą zmianę dotyczącą tego voucheru — kto, kiedy i jaką operację wykonał. Audit trail pojawi się przy pierwszej akcji."
-
-export const AuditTrailEmptyState: FC<AuditTrailEmptyStateProps> = ({
+export async function AuditTrailEmptyState({
   firstRow,
   emptyHeading,
   emptyBody,
   "data-testid": dataTestId,
-}) => {
+}: AuditTrailEmptyStateProps) {
+  const t = await getTranslations("audit_trail.empty_state")
+
   if (firstRow) {
     return (
       <ol
-        aria-label="Historia audytu"
+        aria-label={t("populated_aria_label")}
         data-testid={dataTestId ?? "audit-trail-empty-state-populated"}
         data-state="populated"
         className="m-0 list-none p-0"
@@ -72,15 +72,15 @@ export const AuditTrailEmptyState: FC<AuditTrailEmptyStateProps> = ({
   return (
     <div
       role="status"
-      aria-label="Historia audytu jest pusta"
+      aria-label={t("empty_aria_label")}
       data-testid={dataTestId ?? "audit-trail-empty-state-empty"}
       data-state="empty"
       className="flex flex-col gap-gp-2 rounded-gp-md border border-dashed border-gp-neutral-200 bg-gp-neutral-50 p-gp-6 text-gp-neutral-600"
     >
       <h3 className="text-gp-h4 font-semibold text-gp-neutral-900">
-        {emptyHeading ?? DEFAULT_EMPTY_HEADING}
+        {emptyHeading ?? t("heading")}
       </h3>
-      <p className="text-gp-body">{emptyBody ?? DEFAULT_EMPTY_BODY}</p>
+      <p className="text-gp-body">{emptyBody ?? t("body")}</p>
     </div>
   )
 }

@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import type { SellerGalleryItem } from '@/types/seller';
 
@@ -8,11 +11,13 @@ interface Props {
 }
 
 export function SellerGallery({ gallery, sellerName }: Props) {
+  const t = useTranslations('seller.gallery');
+
   if (!gallery || gallery.length === 0) return null;
 
   return (
-    <section aria-label="Galeria salonu" data-testid="seller-gallery">
-      <h2 className="text-xl font-semibold mb-4">Galeria</h2>
+    <section aria-label={t('aria_label')} data-testid="seller-gallery">
+      <h2 className="text-xl font-semibold mb-4">{t('heading')}</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
         {gallery.map((item) => (
           <div key={item.url} className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-zoom-in">

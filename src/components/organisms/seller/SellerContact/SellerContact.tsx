@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 const BONBEAUTY_CONTACT_HREF = '/contact';
 
 function isSafePhone(phone: string): boolean {
@@ -14,6 +18,7 @@ export interface SellerContactProps {
 }
 
 export function SellerContact({ phone, email }: SellerContactProps) {
+  const t = useTranslations('seller.contact');
   const safePhone = phone && isSafePhone(phone) ? phone : null;
   const safeEmail = email && isSafeEmail(email) ? email : null;
 
@@ -23,7 +28,7 @@ export function SellerContact({ phone, email }: SellerContactProps) {
         <a
           href={`tel:${safePhone}`}
           className="hover:text-gray-900 transition-colors"
-          aria-label={`Zadzwoń: ${safePhone}`}
+          aria-label={t('call_aria', { phone: safePhone })}
         >
           {safePhone}
         </a>
@@ -32,19 +37,19 @@ export function SellerContact({ phone, email }: SellerContactProps) {
         <a
           href={`mailto:${safeEmail}`}
           className="hover:text-gray-900 transition-colors"
-          aria-label={`Napisz email: ${safeEmail}`}
+          aria-label={t('email_aria', { email: safeEmail })}
         >
           {safeEmail}
         </a>
       )}
       {!safePhone && !safeEmail && (
         <span>
-          Problemy?{' '}
+          {t('fallback_prefix')}{' '}
           <a
             href={BONBEAUTY_CONTACT_HREF}
             className="underline hover:no-underline"
           >
-            Napisz do BonBeauty
+            {t('fallback_cta')}
           </a>
         </span>
       )}

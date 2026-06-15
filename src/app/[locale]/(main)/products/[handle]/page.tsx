@@ -96,7 +96,11 @@ export default async function ProductPage({
   const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
   const resolvedDescription =
     seo.meta_description ??
-    `${product?.title} — voucher na zabieg w ${gpVendor}. Kup na ${siteName}.`;
+    t('meta.description_fallback', {
+      title: String(product?.title),
+      vendor: gpVendor,
+      siteName,
+    });
 
   const cheapestVariant = product?.variants
     ?.filter(v => v.calculated_price?.calculated_amount != null)

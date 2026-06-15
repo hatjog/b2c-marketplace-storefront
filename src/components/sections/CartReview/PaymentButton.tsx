@@ -252,7 +252,7 @@ const StripePaymentButton = ({
         onClick={handlePayment}
         loading={submitting}
         aria-busy={submitting || undefined}
-        aria-label={submitting ? 'Przesyłanie zamówienia' : undefined}
+        aria-label={submitting ? t('submitting_order_aria') : undefined}
         className="w-full min-h-11"
         data-testid="stripe-pay-button"
         data-consent-blocked={consentBlocked ? 'true' : undefined}
@@ -323,7 +323,7 @@ const ManualTestPaymentButton = ({
         className="w-full min-h-11"
         loading={submitting}
         aria-busy={submitting || undefined}
-        aria-label={submitting ? 'Przesyłanie zamówienia' : undefined}
+        aria-label={submitting ? t('submitting_order_aria') : undefined}
         data-testid="manual-pay-button"
         data-consent-blocked={consentBlocked ? 'true' : undefined}
       >

@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 import type { SellerLocation } from '@/types/seller';
 
 function buildMapsUrl(loc: SellerLocation): string | null {
@@ -11,11 +15,13 @@ interface Props {
 }
 
 export function SellerLocations({ locations }: Props) {
+  const t = useTranslations('seller.locations');
+
   if (!locations || locations.length === 0) return null;
 
   return (
-    <section aria-label="Lokalizacje salonu" data-testid="seller-locations">
-      <h2 className="text-xl font-semibold mb-4">Lokalizacje</h2>
+    <section aria-label={t('aria_label')} data-testid="seller-locations">
+      <h2 className="text-xl font-semibold mb-4">{t('heading')}</h2>
       <ul className="space-y-3">
         {locations.map((loc, i) => {
           const addressParts = [
@@ -39,9 +45,9 @@ export function SellerLocations({ locations }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:underline"
-                  aria-label={`Otwórz ${addressText} w Google Maps`}
+                  aria-label={t('open_maps_aria', { address: addressText })}
                 >
-                  Zobacz na mapie ↗
+                  {t('open_maps')}
                 </a>
               )}
             </li>

@@ -42,53 +42,12 @@ function pickQuery(value: string | string[] | undefined): string {
   return value ?? '';
 }
 
-const COPY: Record<string, {
-  heading: string;
-  body: string;
-  resendCta: string;
-  kycNotice: string;
-  brandTagline: string;
-}> = {
-  pl: {
-    heading: 'Twój voucher BonBeauty',
-    body: 'Otwórz link z e-maila lub SMS, aby przejść do swojego vouchera. Jeśli link wygasł, możemy wysłać nowy.',
-    resendCta: 'Wyślij nowy link',
-    kycNotice: 'Voucher dla osoby niepełnoletniej wymaga zgody opiekuna prawnego (KYC).',
-    brandTagline: 'BonBeauty — vouchery do najlepszych salonów beauty',
-  },
-  en: {
-    heading: 'Your BonBeauty voucher',
-    body: 'Open the link from your email or SMS to access your voucher. If the link expired, we can resend a fresh one.',
-    resendCta: 'Send a new link',
-    kycNotice: 'Vouchers for minors require guardian consent (KYC).',
-    brandTagline: 'BonBeauty — vouchers for the best beauty salons',
-  },
-  ua: {
-    heading: 'Ваш ваучер BonBeauty',
-    body: 'Відкрийте посилання з e-mail або SMS, щоб переглянути ваш ваучер. Якщо посилання прострочене, ми можемо надіслати нове.',
-    resendCta: 'Надіслати нове посилання',
-    kycNotice: "Ваучери для неповнолітніх потребують згоди опікуна (KYC).",
-    brandTagline: 'BonBeauty — ваучери до найкращих салонів краси',
-  },
-  de: {
-    heading: 'Dein BonBeauty-Gutschein',
-    body: 'Öffne den Link aus deiner E-Mail oder SMS, um deinen Gutschein einzulösen. Wenn der Link abgelaufen ist, können wir einen neuen schicken.',
-    resendCta: 'Neuen Link senden',
-    kycNotice: 'Gutscheine für Minderjährige erfordern die Zustimmung des Erziehungsberechtigten (KYC).',
-    brandTagline: 'BonBeauty — Gutscheine für die besten Beauty-Salons',
-  },
-};
-
-function getCopy(locale: string) {
-  return COPY[locale] ?? COPY.en;
-}
-
 export default async function GenericClaimLandingPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'voucher.recipient.landing' });
   const sp = await searchParams;
   const status = pickQuery(sp.status);
   const kyc = pickQuery(sp.kyc);
-  const copy = getCopy(locale);
 
   const isExpired = status === 'expired';
   const isMinorKyc = kyc === 'minor' || kyc === 'guardian';
@@ -101,12 +60,12 @@ export default async function GenericClaimLandingPage({ params, searchParams }: 
     >
       <header data-testid="brand-intro" className="mb-8">
         <h1 className="heading-lg mb-2 text-primary" data-testid="claim-landing-heading">
-          {copy.heading}
+          {t('heading')}
         </h1>
-        <p className="text-sm text-tertiary">{copy.brandTagline}</p>
+        <p className="text-sm text-tertiary">{t('brand_tagline')}</p>
       </header>
 
-      <p className="mb-6 max-w-prose text-base text-secondary">{copy.body}</p>
+      <p className="mb-6 max-w-prose text-base text-secondary">{t('body')}</p>
 
       {isExpired && (
         <form action="/api/voucher/resend" method="POST" className="mb-6">
@@ -115,7 +74,7 @@ export default async function GenericClaimLandingPage({ params, searchParams }: 
             data-testid="magic-link-refresh"
             className="rounded-full bg-action px-6 py-3 text-sm font-semibold text-on-action hover:opacity-90"
           >
-            {copy.resendCta}
+            {t('resend_cta')}
           </button>
         </form>
       )}
@@ -126,7 +85,7 @@ export default async function GenericClaimLandingPage({ params, searchParams }: 
           data-testid="minor-consent-kyc-notice"
           className="rounded-md border border-tertiary/20 bg-tertiary/5 px-4 py-3 text-sm text-secondary"
         >
-          {copy.kycNotice}
+          {t('kyc_notice')}
         </aside>
       )}
     </main>

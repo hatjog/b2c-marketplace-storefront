@@ -18,7 +18,18 @@
     "yes": "Ja",
     "no": "Nein",
     "refresh": "Aktualisieren",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "loading_text": "Text wird geladen...",
+    "loading_product_card": "Produktkarte wird geladen...",
+    "loading_product_list": "Produktliste wird geladen...",
+    "market_config_fallback": "Sie verwenden die Fallback-MarketConfig. Die Payload API ist nicht verfügbar.",
+    "price_display": {
+      "free": "Gratis",
+      "from": "ab",
+      "to": "bis",
+      "price": "Preis",
+      "minute": "Min."
+    }
   },
   "banner": {
     "workingOnIt": {
@@ -68,7 +79,10 @@
       "fallbackBody": "Der Salonstandort bleibt als Text verfügbar.",
       "openMaps": "In Google/Apple Maps öffnen",
       "openGoogleMaps": "In Google Maps öffnen",
-      "openAppleMaps": "In Apple Maps öffnen"
+      "openAppleMaps": "In Apple Maps öffnen",
+      "skeleton_aria_label": "Salonkarte wird geladen",
+      "zoom_in": "Karte vergrößern",
+      "zoom_out": "Karte verkleinern"
     },
     "list": {
       "title": "Partnersalons",
@@ -134,6 +148,15 @@
       "address_label": "Adresse",
       "policy_label": "Regeln",
       "opening_hours_label": "Öffnungszeiten",
+      "hero_tagline": "Beauty-Rituale, die sich leicht verschenken und bequem einlösen lassen.",
+      "response_time_label": "Durchschnittliche Antwortzeit",
+      "gallery_alt": "Salonfoto von {name}",
+      "no_policy": "Dieser Salon hat noch keine eigenen Bedingungen veröffentlicht. Kontaktieren Sie den Salon, bevor Sie Ihren Gutschein einlösen.",
+      "others_eyebrow": "Andere Salons",
+      "others_title": "Ähnliche BonBeauty-Orte",
+      "sticky_eyebrow": "Kontakt zum Salon",
+      "sticky_call": "Anrufen",
+      "sticky_email": "Schreiben",
       "products_label": "Salon-Produkte",
       "not_found_message": "Kein Salon für diese Adresse gefunden.",
       "no_products": "Dieser Salon hat noch keine Produkte gelistet.",
@@ -416,12 +439,59 @@
       "partial_cta": "Vorläufiges Salon-Profil ansehen",
       "partial_cta_aria": "Vorläufiges Salon-Profil von {name} ansehen",
       "no_handle_fallback_cta": "Partner-Salons durchsuchen"
+    },
+    "service_list": {
+      "heading": "Behandlungen und Leistungen",
+      "buy_voucher": "Voucher kaufen",
+      "show_more": "Mehr anzeigen ({count})"
+    },
+    "card": {
+      "product_count": "{count, plural, one {# Produkt} other {# Produkte}}"
+    },
+    "contact": {
+      "call_aria": "Anrufen: {phone}",
+      "email_aria": "E-Mail schreiben: {email}",
+      "fallback_prefix": "Probleme?",
+      "fallback_cta": "An BonBeauty schreiben"
+    },
+    "social_links": {
+      "aria_label": "Social Media des Salons",
+      "instagram_aria": "Instagram-Profil des Salons",
+      "facebook_aria": "Facebook-Profil des Salons",
+      "tiktok_aria": "TikTok-Profil des Salons",
+      "website_aria": "Website des Salons"
+    },
+    "gallery": {
+      "aria_label": "Salon-Galerie",
+      "heading": "Galerie"
+    },
+    "hero": {
+      "tagline": "BonBeauty Partnersalon",
+      "verified_label": "Verifizierter Salon"
+    },
+    "locations": {
+      "aria_label": "Salonstandorte",
+      "heading": "Standorte",
+      "open_maps_aria": "{address} in Google Maps öffnen",
+      "open_maps": "Auf Karte ansehen ↗"
+    },
+    "vendor_badge": {
+      "profile_aria": "Profil des Salons {name}",
+      "product_count": "{count, plural, one {# Produkt} other {# Produkte}}"
     }
   },
   "footer": {
     "section_customer_services": "Kundenservice",
     "section_about": "Über uns",
     "section_connect": "Verbinden",
+    "tagline": "Premium-Marktplatz für Beauty-Salons",
+    "nav": {
+      "about": "Über uns",
+      "faq": "FAQ",
+      "kontakt": "Kontakt",
+      "regulamin": "Nutzungsbedingungen",
+      "polityka-prywatnosci": "Datenschutzrichtlinie"
+    },
     "go_to_social": "Zur {name}-Seite",
     "section_legal": "Rechtliche Verkäuferinformationen",
     "legal_signoff_badge": "Intern freigegeben ✓ (Review vor Prod v1.15.0)",
@@ -741,6 +811,9 @@
     "empty_heading": "Ihr Warenkorb ist leer",
     "empty_inspiration": "Suchen Sie nach Inspiration?",
     "empty_message": "Fügen Sie Produkte zu Ihrem Warenkorb hinzu, um sie hier zu sehen.",
+    "empty_es3_heading": "Ihr Warenkorb wartet auf ausgewählte Beauty-Erlebnisse",
+    "empty_es3_body": "Entdecken Sie Premium-Behandlungen und Gutscheine von BonBeauty-Salons; ausgewählte Angebote erscheinen dann hier.",
+    "empty_es3_cta": "Angebote ansehen",
     "explore_home": "Startseite erkunden",
     "remove_item_failed": "Artikel konnte nicht entfernt werden",
     "remove_item_aria": "Artikel aus dem Warenkorb entfernen",
@@ -940,7 +1013,20 @@
     "coming_soon_description": "Die Nutzungsbedingungen werden noch ausgearbeitet. Bitte kontaktieren Sie uns bei Fragen.",
     "contact_email": "kontakt@bonbeauty.pl",
     "last_updated": "Zuletzt aktualisiert",
-    "agent_disclaimer": "BonBeauty ist ein Vermittler. Dienstleistungen werden vom Salon erbracht."
+    "agent_disclaimer": "BonBeauty ist ein Vermittler. Dienstleistungen werden vom Salon erbracht.",
+    "doc_layout": {
+      "last_updated_label": "Zuletzt aktualisiert",
+      "version_label": "Version",
+      "draft_badge": "ENTWURF / published_draft_status",
+      "draft_badge_description": "Operativer Entwurf — Version v1.0 folgt nach Prüfung durch externe Rechtsberatung.",
+      "locale_fallback_badge": "Übersetzung in Vorbereitung",
+      "locale_fallback_description": "Wir zeigen die polnische kanonische Version — die Übersetzung für die ausgewählte Sprache ist noch nicht verfügbar.",
+      "provenance_in_house": "Intern erstellt",
+      "provenance_external_counsel": "Von externer Rechtsberatung geprüft",
+      "provenance_translation_label": "Interne Übersetzung",
+      "agent_disclaimer": "BonBeauty ist ein Vermittler. Die Dienstleistung wird vom Vendor erbracht.",
+      "table_of_contents_label": "Inhalt"
+    }
   },
   "routes": {
     "terms_of_service": "/nutzungsbedingungen",
@@ -1147,7 +1233,8 @@
     },
     "gift_recipient": {
       "payment_block": "Speichere zuerst die Empfängerdaten, bevor du zur Zahlung gehst."
-    }
+    },
+    "submitting_order_aria": "Bestellung wird übermittelt"
   },
   "confirmation": {
     "meta_title": "Bestellung bestätigt",
@@ -1256,7 +1343,25 @@
     "error_toast": "Der Voucher konnte nicht in Google Wallet gespeichert werden. Versuche es erneut oder speichere ihn als PDF.",
     "retry_label": "Erneut versuchen",
     "email_success_toast": "Voucher wurde erneut per E-Mail gesendet.",
-    "email_error_toast": "Die E-Mail konnte nicht gesendet werden. Versuche es erneut."
+    "email_error_toast": "Die E-Mail konnte nicht gesendet werden. Versuche es erneut.",
+    "save": {
+      "label": "Zu {provider} hinzufügen",
+      "loading_label": "Wird gespeichert...",
+      "aria_label": "Voucher zu {provider} hinzufügen",
+      "success_toast": "Voucher in {provider} gespeichert",
+      "error_toast": "Der Voucher konnte nicht in {provider} gespeichert werden. Versuche es erneut oder speichere ihn als PDF.",
+      "retry_label": "Erneut versuchen"
+    },
+    "possession": {
+      "eyebrow": "Bewahre deinen Voucher so auf, wie du möchtest — im Telefon, als PDF oder per E-Mail",
+      "pdf_label": "PDF herunterladen",
+      "pdf_aria_label": "Voucher als PDF herunterladen",
+      "email_label": "Erneut per E-Mail senden",
+      "email_aria_label": "Voucher erneut per E-Mail senden",
+      "email_loading_label": "Wird gesendet...",
+      "email_success_toast": "Voucher wurde erneut per E-Mail gesendet.",
+      "email_error_toast": "Die E-Mail konnte nicht gesendet werden. Versuche es erneut."
+    }
   },
   "voucher": {
     "qr_code_aria_label": "QR-Code des Gutscheins",
@@ -1447,6 +1552,13 @@
         "rules": "Regeln",
         "privacy": "Datenschutz",
         "support": "Support"
+      },
+      "landing": {
+        "heading": "Dein BonBeauty-Gutschein",
+        "body": "Öffne den Link aus deiner E-Mail oder SMS, um deinen Gutschein einzulösen. Wenn der Link abgelaufen ist, können wir einen neuen schicken.",
+        "resend_cta": "Neuen Link senden",
+        "kyc_notice": "Gutscheine für Minderjährige erfordern die Zustimmung des Erziehungsberechtigten (KYC).",
+        "brand_tagline": "BonBeauty — Gutscheine für die besten Beauty-Salons"
       }
     },
     "audit_trail": {
@@ -1498,7 +1610,8 @@
         "body": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, kontaktieren Sie uns.",
         "retry_label": "Erneut versuchen",
         "support_label": "Support kontaktieren",
-        "support_href": "/help/contact"
+        "support_href": "/help/contact",
+        "safe_message": "Beim Laden des Verlaufs ist ein Fehler aufgetreten."
       },
       "pagination": {
         "show_older": "Ältere Einträge anzeigen ({remaining} verbleibend)"
@@ -1769,7 +1882,9 @@
       "cta": "Zur Bestellung",
       "label_v180": "Zahlung akzeptiert ✓",
       "body_v180": "Ihre Zahlung wurde bestätigt. Sie werden in Kürze zu den Bestelldetails weitergeleitet.",
-      "technical_detail": "Zahlung vom PSP genehmigt — Webhook empfangen und verarbeitet."
+      "technical_detail": "Zahlung vom PSP genehmigt — Webhook empfangen und verarbeitet.",
+      "for_you": "Sie können zu den Bestelldetails gehen.",
+      "for_us": "Bestellung bestätigt — wir geben sie zur Ausführung weiter."
     },
     "pending_psp_confirmation": {
       "label": "Zahlungsverifizierung",
@@ -1793,7 +1908,9 @@
       "body_v180": "Dieser Fall erfordert eine manuelle Prüfung — Ticket {ticket_id} wurde erstellt. Wir melden uns in Kürze bei Ihnen.",
       "cta_v180": "E-Mail an Support öffnen",
       "ticket_missing": "Keine Ticketnummer — bitte kontaktieren Sie support@bonbeauty.pl",
-      "technical_detail": "Fall zur manuellen Prüfung eskaliert — Ticket im Supportsystem erstellt."
+      "technical_detail": "Fall zur manuellen Prüfung eskaliert — Ticket im Supportsystem erstellt.",
+      "for_you": "Warten Sie auf unsere Kontaktaufnahme oder schreiben Sie uns.",
+      "for_us": "Ticket erstellt — manuelle Prüfung läuft."
     },
     "expired": {
       "label": "Zahlungssitzung abgelaufen",
@@ -1803,26 +1920,34 @@
       "label_v180": "Ihr Warenkorb wartet noch — kehren Sie zurück und schließen Sie ab",
       "body_v180": "Ihre Zahlungssitzung ist abgelaufen, aber Ihr Warenkorb ist noch bereit. Ihr Warenkorb wird mindestens 7 Tage gespeichert.",
       "cta_v180": "Zum Warenkorb zurück",
-      "technical_detail": "Zahlungssitzung nach 10 Minuten ohne PSP-Bestätigung abgelaufen."
+      "technical_detail": "Zahlungssitzung nach 10 Minuten ohne PSP-Bestätigung abgelaufen.",
+      "for_you": "Kehren Sie zum Warenkorb zurück und schließen Sie die Bestellung ab.",
+      "for_us": "Zahlungssitzung abgelaufen — Bestellung für 7 Tage reserviert."
     },
     "pending_psp": {
       "label": "Wir prüfen Ihre Zahlung",
       "body": "Das dauert normalerweise bis zu einer Minute. Sie müssen nichts tun — wir prüfen automatisch.",
       "countdown": "Erneute Prüfung in {n}s...",
       "second_tier": "Das dauert etwas länger als gewöhnlich (bereits {elapsed} Sekunden). Das kann bei hoher Auslastung vorkommen — wir prüfen automatisch, Sie müssen nichts tun. Eine E-Mail mit PDF kommt innerhalb von 10 Minuten.",
-      "technical_detail": "Warten auf PSP-Webhook — Backend-Status pending_psp."
+      "technical_detail": "Warten auf PSP-Webhook — Backend-Status pending_psp.",
+      "for_you": "Sie müssen nichts tun — wir prüfen automatisch.",
+      "for_us": "Wir überwachen automatisch — die Webhook-Race-Auflösung läuft."
     },
     "failed_retryable": {
       "label": "Etwas ist schiefgelaufen — versuchen wir es erneut",
       "body": "Ihre Zahlung war nicht erfolgreich, aber Sie können es erneut versuchen. Ihr Warenkorb ist noch bereit.",
       "cta": "Zur Zahlung zurück",
-      "technical_detail": "Zahlung abgelehnt — keine Belastung erfolgt. Erneuter Versuch empfohlen."
+      "technical_detail": "Zahlung abgelehnt — keine Belastung erfolgt. Erneuter Versuch empfohlen.",
+      "for_you": "Kehren Sie zur Kasse zurück und versuchen Sie es erneut.",
+      "for_us": "Die Transaktion wurde auf PSP-Seite storniert — Ihr Konto wurde nicht belastet."
     },
     "failed_nonretryable": {
       "label": "Zahlung fehlgeschlagen",
       "body": "Ihre Zahlung ist fehlgeschlagen — kontaktieren Sie Ihre Bank oder wählen Sie in einer neuen Bestellung eine andere Zahlungsmethode.",
       "cta": "Support kontaktieren",
-      "technical_detail": "Zahlung dauerhaft von der Bank abgelehnt — Handlung Ihrerseits erforderlich."
+      "technical_detail": "Zahlung dauerhaft von der Bank abgelehnt — Handlung Ihrerseits erforderlich.",
+      "for_you": "Kontaktieren Sie Ihre Bank oder wählen Sie eine andere Zahlungsmethode.",
+      "for_us": "Die Zahlung wurde von der Bank abgelehnt — Sie müssen aktiv werden."
     },
     "cross_actor": {
       "for_you": "Was als Nächstes für Sie passiert",
@@ -1830,7 +1955,15 @@
     },
     "technical_expand_summary": "Was genau ist passiert?",
     "mailto_order_label": "Bestellung",
-    "mailto_ticket_label": "Ticket"
+    "mailto_ticket_label": "Ticket",
+    "generic": {
+      "failed_heading": "Zahlung fehlgeschlagen",
+      "heading": "Zahlungsstatus",
+      "failed_body": "Kehren Sie zum Warenkorb zurück und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, kontaktieren Sie unseren Support.",
+      "body": "Um den Status einer bestimmten Bestellung zu prüfen, öffnen Sie den Link aus der Bestätigungs-E-Mail oder gehen Sie zu Ihrem Bestellbereich.",
+      "retry_cta": "Erneut versuchen",
+      "orders_cta": "Meine Bestellungen"
+    }
   },
   "storefront_state": {
     "loading": {
@@ -2023,6 +2156,9 @@
           "answer": "Ja. Der Geschenkmodus speichert die Kaufabsicht und führt im Checkout zu den Empfängerdaten."
         }
       }
+    },
+    "meta": {
+      "description_fallback": "{title} — Gutschein für eine Behandlung bei {vendor}. Kaufen auf {siteName}."
     }
   },
   "newsletter": {
@@ -2815,6 +2951,8 @@
   "not_found": {
     "headline": "Diese Seite existiert nicht",
     "body": "Die gesuchte Seite wurde möglicherweise verschoben oder ihre Adresse hat sich geändert.",
+    "product_body": "Das gesuchte Angebot wurde möglicherweise zurückgezogen oder seine Adresse hat sich geändert.",
+    "seller_body": "Der gesuchte Salon hat möglicherweise den Betrieb eingestellt oder seine Adresse geändert.",
     "cta_home": "Zurück zur Startseite",
     "cta_search": "Suche verwenden"
   },
@@ -2879,13 +3017,16 @@
     "lp4_aria_label": "Warten auf Bestätigung",
     "lp4_polling_label": "Status prüfen...",
     "lp4_timeout_label": "Max. 30s",
+    "lp4_demo_label": "Status wird alle 15 Sekunden aktualisiert",
     "lp5_name": "Fortschrittsleiste",
     "lp5_description": "Für deterministische mehrstufige Aktionen.",
     "lp5_aria_label": "Fortschritt",
+    "lp5_demo_label": "Schritt 2 von 3",
     "lp6_name": "Inline-Ladeindikator",
     "lp6_description": "Letztes Mittel. Darf nicht unbegrenzt über 3s drehen.",
     "lp6_aria_label": "Laden",
     "lp6_label": "Laden...",
+    "lp6_demo_label": "Weiter zum nächsten Schritt…",
     "lp6_rare_last_resort_note": "Letztes Mittel — nach 3s in einen Fehlerzustand oder Fortschrittsmeldung übergehen."
   },
   "voucher-consent": {
@@ -3142,5 +3283,70 @@
         "suggested_action": "Stellen Sie die Netzwerkverbindung wieder her und versuchen Sie es erst dann erneut."
       }
     }
+  },
+  "consent": {
+    "banner": {
+      "heading": "Diese Website verwendet Cookies",
+      "body": "Wir verwenden Cookies, damit die Website korrekt funktioniert (notwendig) und, mit Ihrer Einwilligung, um Präferenzen, Analysen und Marketing zu speichern. Sie können alle akzeptieren, optionale ablehnen oder Ihre Auswahl anpassen.",
+      "accept_all": "Alle akzeptieren",
+      "reject_all": "Optionale ablehnen",
+      "customize": "Anpassen",
+      "privacy_link": "Datenschutzerklärung"
+    },
+    "modal": {
+      "heading": "Cookie-Einstellungen anpassen",
+      "save_button": "Auswahl speichern",
+      "always_active": "Immer aktiv",
+      "categories": {
+        "necessary": {
+          "label": "Notwendig",
+          "desc": "Für den korrekten Betrieb der Website erforderlich: Sitzung, Sprache, Sicherheitstoken (CSRF). Rechtsgrundlage: berechtigtes Interesse."
+        },
+        "preferences": {
+          "label": "Einstellungen",
+          "desc": "Speichern Ihrer UX-Auswahl: Voucher-Pausenstatus, MoR-Assistentenstatus, Geolokalisierung. Rechtsgrundlage: Einwilligung."
+        },
+        "analytics": {
+          "label": "Analyse",
+          "desc": "Nutzungsdaten der Website (PostHog). Hilft uns, das Produkt zu verbessern. Rechtsgrundlage: Einwilligung."
+        },
+        "marketing": {
+          "label": "Marketing",
+          "desc": "Personalisierung von Werbung und Conversion-Tracking. Für künftige Werbepartner reserviert. Rechtsgrundlage: Einwilligung."
+        }
+      }
+    }
+  },
+  "audit_trail": {
+    "empty_state": {
+      "populated_aria_label": "Auditverlauf",
+      "empty_aria_label": "Auditverlauf ist leer",
+      "heading": "Keine Verlaufseinträge",
+      "body": "Hier sehen Sie jede Änderung zu diesem Gutschein — wer wann welche Aktion ausgeführt hat. Der Audit Trail erscheint nach der ersten Aktion."
+    }
+  },
+  "locale_switcher": {
+    "current_language": "Sprache: {language}",
+    "select_language": "Sprache auswählen"
+  },
+  "trust_signals": {
+    "aria_label": "BonBeauty-Garantien",
+    "details_cta": "Details →"
+  },
+  "flag_state": {
+    "aria_label": "Flag-Status: {state}",
+    "state": {
+      "active": "Aktiv",
+      "paused": "Pausiert",
+      "disabled": "Deaktiviert"
+    }
+  },
+  "mobile_bottom_nav": {
+    "home": "Start",
+    "search": "Suche",
+    "cart": "Warenkorb",
+    "wishlist": "Favoriten",
+    "account": "Konto",
+    "aria_label": "Mobile Navigation"
   }
 }

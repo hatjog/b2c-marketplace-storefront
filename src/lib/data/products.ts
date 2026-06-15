@@ -12,8 +12,6 @@ import { sortProducts } from '@/lib/helpers/sort-products';
 import { sortByRecommended } from '@/lib/helpers/sort-utils';
 import type { SortOptions } from '@/types/product';
 
-import { localeCacheTag } from '@/lib/sdk/locale-interceptor';
-
 import { sdk } from '../config';
 import { getAuthHeaders } from './cookies';
 import { retrieveCustomer } from './customer';
@@ -120,9 +118,6 @@ export const listProducts = async ({
     '+metadata',
   ].join(',');
 
-  const useCached = forceCache || (limit <= 8 && !category_id && !collection_id);
-  const productsTag = useCached ? await localeCacheTag('products') : undefined;
-
   return sdk.client
     .fetch<{
       products: ListedProduct[];
@@ -140,8 +135,11 @@ export const listProducts = async ({
         region_id: region.id,
       },
       headers,
-      next: useCached ? { revalidate: 60, tags: productsTag ? [productsTag] : undefined } : undefined,
-      cache: useCached ? 'force-cache' : 'no-cache'
+      // v1.12.0 UA-loc: avoid cross-locale Next Data Cache leak — the x-medusa-locale
+      // header (added by the SDK locale interceptor) is not part of the Data Cache key,
+      // so a shared force-cache entry leaked the first-fetched locale (pl→ua). no-store
+      // keeps catalog titles locale-correct; locale-keyed caching is a follow-up perf task.
+      cache: 'no-store'
     })
     .then(({ products: productsRaw, count: backendCount }) => {
       // Apply quality-gate filter BEFORE exposing pagination signals to UI.
