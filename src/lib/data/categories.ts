@@ -2,7 +2,6 @@ import type { HttpTypes } from '@medusajs/types';
 
 import { sdk } from '@/lib/config';
 import { filterByMarket, getMarketId } from '@/lib/helpers/market-filter';
-import { localeCacheTag } from '@/lib/sdk/locale-interceptor';
 
 interface CategoriesProps {
   query?: Record<string, unknown>;
@@ -23,8 +22,12 @@ export const listCategories = async ({ query }: Partial<CategoriesProps> = {}) =
         limit,
         ...query
       },
-      cache: 'force-cache',
-      next: { revalidate: 3600, tags: [await localeCacheTag('product-categories')] }
+      // v1.12.0 UA-loc: catalog names are locale-translated server-side via the
+      // x-medusa-locale header (added by the SDK locale interceptor). Next's Data
+      // Cache key does NOT vary by request header, so a shared `force-cache` entry
+      // leaks the first-fetched locale to all others (pl→ua). Use no-store for
+      // correctness (matches seller.ts); locale-keyed caching is a follow-up perf task.
+      cache: 'no-store'
     })
     .then(({ product_categories }) => product_categories);
 
@@ -64,8 +67,8 @@ export const getCategoryByHandle = async (categoryHandle: string) => {
         fields: 'id,handle,name,rank,metadata,parent_category_id,description,*category_children',
         handle: categoryHandle
       },
-      cache: 'force-cache',
-      next: { revalidate: 300, tags: [await localeCacheTag('product-categories')] }
+      // v1.12.0 UA-loc: see listCategories — avoid cross-locale Data Cache leak.
+      cache: 'no-store'
     })
     .then(({ product_categories }) => product_categories[0]);
 };
