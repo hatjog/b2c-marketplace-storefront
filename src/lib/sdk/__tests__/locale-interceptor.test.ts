@@ -82,6 +82,18 @@ describe('locale interceptor', () => {
     });
   });
 
+  it('withLocaleHeader: explicit caller-provided x-medusa-locale wins over auto-resolve', async () => {
+    // Deterministic localization on dynamic detail routes (PDP, seller) where
+    // getLocale() may resolve to the default inside the fetch continuation.
+    await expect(
+      withLocaleHeader({ 'x-medusa-locale': 'uk-UA' }, 'pl-PL')
+    ).resolves.toMatchObject({ 'x-medusa-locale': 'uk-UA' });
+
+    await expect(
+      withLocaleHeader({ 'x-medusa-locale': 'de-DE' })
+    ).resolves.toMatchObject({ 'x-medusa-locale': 'de-DE' });
+  });
+
   it('localePath generuje locale-prefixed path z canonical locale', async () => {
     await expect(localePath('/user/orders', 'en-US')).resolves.toBe('/en/user/orders');
   });

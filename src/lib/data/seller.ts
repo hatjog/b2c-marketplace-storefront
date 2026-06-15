@@ -8,7 +8,11 @@ import {
   fetchSellerSummaryByHandle,
   resolveSellerHandleToId
 } from '../sdk-adapters/sellers';
-import { withMercurLocaleOptions } from '../sdk/locale-interceptor';
+import {
+  normalizeToCanonicalLocale,
+  resolveStorefrontLocale,
+  withMercurLocaleOptions
+} from '../sdk/locale-interceptor';
 
 export interface SellerListItem {
   handle: string;
@@ -259,7 +263,10 @@ export const searchSellers = async ({
  * @see TF-51 (getSellerByHandle shape-break, Option B chosen)
  * @see sdk-adapters/sellers.ts (resolveSellerHandleToId, fetchSellerById)
  */
-export const getSellerByHandle = async (handle: string): Promise<SellerProps | null> => {
+export const getSellerByHandle = async (
+  handle: string,
+  locale?: string
+): Promise<SellerProps | null> => {
   // `reviews.*` is intentionally NOT expanded here: `reviews` is not a
   // populatable relation on the Mercur 2 `/store/sellers/:id` endpoint (no
   // seller↔review module link), so requesting it makes mikro-orm throw
@@ -299,7 +306,11 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
     if (!profile) return base;
     return normalizeSeller({
       ...base,
-      description: base.description || profile.description,
+      // v1.12.0 UA-loc: the native /store/sellers/:id (base) only carries the
+      // source-locale description (column empty → gpMetadata PL fallback). The
+      // GP /store/seller/:handle (profile) applies the translation overlay, so
+      // prefer it for localized content; it falls back to the PL source itself.
+      description: profile.description || base.description,
       photo: base.photo || profile.photo,
       email: base.email ?? profile.email,
       phone: base.phone ?? profile.phone,
@@ -335,29 +346,44 @@ export const getSellerByHandle = async (handle: string): Promise<SellerProps | n
   const id = await resolveSellerHandleToId(handle);
   if (!id) return null;
 
+  // v1.12.0 UA-loc: for non-source locales the native /store/sellers/:id base
+  // carries only the PL description, so the GP profile route (which applies the
+  // seller translation overlay) must be merged in for a localized description —
+  // even when the base is otherwise complete. The PL (source) fast-path keeps
+  // skipping the extra fetch when no other enrichment is needed. The route
+  // locale is passed explicitly (falling back to getLocale()) so it resolves
+  // deterministically on this dynamic detail route.
+  const canonicalLocale = locale
+    ? normalizeToCanonicalLocale(locale)
+    : await resolveStorefrontLocale();
+  const localizedDescriptionNeeded = canonicalLocale !== 'pl-PL';
+  const fetchProfile = () => fetchSellerProfileByHandle(handle, canonicalLocale);
+  const shouldMergeProfile = (seller: SellerProps): boolean =>
+    needsProfileEnrichment(seller) || localizedDescriptionNeeded;
+
   const seller = await fetchSellerById(id, SELLER_FIELDS);
   if (seller) {
     const normalized = normalizeSeller(seller);
-    return needsProfileEnrichment(normalized)
-      ? mergeSellerProfile(normalized, await fetchSellerProfileByHandle(handle))
+    return shouldMergeProfile(normalized)
+      ? mergeSellerProfile(normalized, await fetchProfile())
       : normalized;
   }
 
   const sellerWithoutReviews = await fetchSellerById(id, SAFE_SELLER_FIELDS);
   if (sellerWithoutReviews) {
     const normalized = normalizeSeller(sellerWithoutReviews);
-    return needsProfileEnrichment(normalized)
-      ? mergeSellerProfile(normalized, await fetchSellerProfileByHandle(handle))
+    return shouldMergeProfile(normalized)
+      ? mergeSellerProfile(normalized, await fetchProfile())
       : normalized;
   }
 
   const sellerSummary = await fetchSellerSummaryByHandle(handle, SAFE_SELLER_FIELDS);
   if (sellerSummary) {
     const normalized = normalizeSeller(sellerSummary);
-    return needsProfileEnrichment(normalized)
-      ? mergeSellerProfile(normalized, await fetchSellerProfileByHandle(handle))
+    return shouldMergeProfile(normalized)
+      ? mergeSellerProfile(normalized, await fetchProfile())
       : normalized;
   }
 
-  return (await fetchSellerProfileByHandle(handle)) ?? null;
+  return (await fetchProfile()) ?? null;
 };

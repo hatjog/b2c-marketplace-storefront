@@ -119,8 +119,17 @@ export async function withLocaleHeader(
   headers?: HeaderInput,
   locale?: CanonicalLocale
 ): Promise<Record<string, string>> {
+  const base = headersToRecord(headers);
+  // v1.12.0 UA-loc: an explicit caller-provided `x-medusa-locale` wins over the
+  // auto-resolved one. On dynamic detail routes (PDP, seller) `getLocale()` can
+  // resolve to the default locale inside the data-fetch async continuation
+  // (notably when warmed from generateMetadata), so callers that already know
+  // the route locale set the header explicitly for deterministic localization.
+  if (typeof base['x-medusa-locale'] === 'string' && base['x-medusa-locale']) {
+    return base;
+  }
   return {
-    ...headersToRecord(headers),
+    ...base,
     'x-medusa-locale': locale ?? (await resolveStorefrontLocale())
   };
 }
