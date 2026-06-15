@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * SkeletonProductCard — BonBeauty DS aligned loading skeleton.
  *
@@ -12,18 +14,22 @@
  * Source token: src/styles/tokens/bb-surfaces.css --bb-skeleton-base
  */
 import { Skeleton } from '@/components/atoms/Skeleton/Skeleton';
+import { useTranslations } from 'next-intl';
 
 export const SkeletonProductCard = () => {
+  const t = useTranslations('common');
+  const loadingLabel = t('loading_product_card');
+
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Ładowanie karty produktu..."
+      aria-label={loadingLabel}
       className="group relative flex h-[338px] w-full flex-col justify-between rounded-[var(--bb-radius-card)] border p-1"
       style={{ backgroundColor: 'var(--bb-skeleton-base, rgba(239,229,210,0.52))' }}
       data-testid="skeleton-product-card"
     >
-      <span className="sr-only">Ładowanie karty produktu...</span>
+      <span className="sr-only">{loadingLabel}</span>
       {/* Decorative inner skeletons — parent already announces loading state. */}
       <Skeleton height="h-[200px]" rounded="sm" decorative />
       <div className="flex flex-col gap-2 p-2">

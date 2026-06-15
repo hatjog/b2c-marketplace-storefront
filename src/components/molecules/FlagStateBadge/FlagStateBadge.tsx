@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * FlagStateBadge — ternary visual state widget
  *
@@ -21,6 +23,7 @@
  */
 
 import type { FC } from "react"
+import { useTranslations } from "next-intl"
 
 export type FlagState = "active" | "paused" | "disabled"
 
@@ -33,12 +36,6 @@ export interface FlagStateBadgeProps {
   className?: string
   /** data-testid hook for tests */
   "data-testid"?: string
-}
-
-const STATE_COPY: Record<FlagState, string> = {
-  active: "Aktywny",
-  paused: "Wstrzymany",
-  disabled: "Wyłączony",
 }
 
 const STATE_ICON: Record<FlagState, string> = {
@@ -68,14 +65,15 @@ export const FlagStateBadge: FC<FlagStateBadgeProps> = ({
   className,
   "data-testid": dataTestId,
 }) => {
-  const copy = label ?? STATE_COPY[state]
+  const t = useTranslations("flag_state")
+  const copy = label ?? t(`state.${state}`)
   const icon = STATE_ICON[state]
   const tone = STATE_TONE[state]
 
   return (
     <span
       role="status"
-      aria-label={`Stan flagi: ${copy}`}
+      aria-label={t("aria_label", { state: copy })}
       data-testid={dataTestId ?? `flag-state-badge-${state}`}
       data-state={state}
       className={cn(

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { HttpTypes } from '@medusajs/types';
+import { useTranslations } from 'next-intl';
 
 import { PriceDisplay } from '@/components/molecules/PriceDisplay/PriceDisplay';
 import { SELLER_SERVICE_LIST_PAGE_SIZE } from '@/lib/constants';
@@ -22,6 +23,7 @@ function getCheapestPrice(product: HttpTypes.StoreProduct): number | null {
 
 export function SellerServiceList({ products, locale = 'pl' }: SellerServiceListProps) {
   const [showAll, setShowAll] = useState(false);
+  const t = useTranslations('seller.service_list');
 
   if (products.length === 0) {
     return null;
@@ -33,7 +35,7 @@ export function SellerServiceList({ products, locale = 'pl' }: SellerServiceList
   return (
     <section aria-labelledby="seller-services-heading" data-testid="seller-service-list">
       <h2 id="seller-services-heading" className="mb-4 text-xl font-bold">
-        Zabiegi i usługi
+        {t('heading')}
       </h2>
 
       <ul className="divide-y divide-gray-100">
@@ -60,7 +62,7 @@ export function SellerServiceList({ products, locale = 'pl' }: SellerServiceList
                 href={`/products/${product.handle}`}
                 className="shrink-0 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
-                Kup voucher
+                {t('buy_voucher')}
               </Link>
             </li>
           );
@@ -73,7 +75,7 @@ export function SellerServiceList({ products, locale = 'pl' }: SellerServiceList
           onClick={() => setShowAll(true)}
           className="mt-4 text-sm font-medium underline hover:no-underline"
         >
-          Pokaż więcej ({products.length - SELLER_SERVICE_LIST_PAGE_SIZE})
+          {t('show_more', { count: products.length - SELLER_SERVICE_LIST_PAGE_SIZE })}
         </button>
       )}
     </section>

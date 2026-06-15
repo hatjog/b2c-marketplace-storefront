@@ -13,6 +13,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { HomeIcon, SearchIcon, CartIcon, HeartIcon, ProfileIcon } from '@/icons';
 
@@ -36,17 +37,18 @@ export function MobileBottomNav({
   className,
 }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const t = useTranslations('mobile_bottom_nav');
 
   // Hide during checkout (W6-07 spec: hidden during checkout)
   const isCheckout = hideOnCheckout && pathname.includes('/checkout');
   if (isCheckout) return null;
 
   const tabs = [
-    { id: 'home', label: 'Home', href: localizedHref(locale, '/'), Icon: HomeIcon, badge: 0 },
-    { id: 'search', label: 'Szukaj', href: localizedHref(locale, '/categories'), Icon: SearchIcon, badge: 0 },
-    { id: 'cart', label: 'Koszyk', href: localizedHref(locale, '/cart'), Icon: CartIcon, badge: cartCount },
-    { id: 'wishlist', label: 'Ulubione', href: localizedHref(locale, '/user/wishlist'), Icon: HeartIcon, badge: wishlistCount },
-    { id: 'account', label: 'Konto', href: localizedHref(locale, '/user/account'), Icon: ProfileIcon, badge: 0 },
+    { id: 'home', label: t('home'), href: localizedHref(locale, '/'), Icon: HomeIcon, badge: 0 },
+    { id: 'search', label: t('search'), href: localizedHref(locale, '/categories'), Icon: SearchIcon, badge: 0 },
+    { id: 'cart', label: t('cart'), href: localizedHref(locale, '/cart'), Icon: CartIcon, badge: cartCount },
+    { id: 'wishlist', label: t('wishlist'), href: localizedHref(locale, '/user/wishlist'), Icon: HeartIcon, badge: wishlistCount },
+    { id: 'account', label: t('account'), href: localizedHref(locale, '/user/account'), Icon: ProfileIcon, badge: 0 },
   ] as const;
 
   function isActive(tabId: string) {
@@ -73,7 +75,7 @@ export function MobileBottomNav({
         '--mobile-nav-z': '90',
         '--mobile-nav-safe-area': 'env(safe-area-inset-bottom, 0px)',
       } as React.CSSProperties}
-      aria-label="Nawigacja mobilna"
+      aria-label={t('aria_label')}
       data-testid="mobile-bottom-nav"
     >
       <div className="flex h-16 items-center justify-around px-1">

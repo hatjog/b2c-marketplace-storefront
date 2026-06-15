@@ -1,5 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export function getInitials(name: string): string {
   return name
@@ -27,15 +30,6 @@ export function hashColor(handle: string): string {
   return HASH_COLORS[sum % HASH_COLORS.length];
 }
 
-function pluralizeProducts(count: number): string {
-  if (count === 1) return '1 produkt';
-  const lastTwo = count % 100;
-  if (lastTwo >= 12 && lastTwo <= 14) return `${count} produktów`;
-  const lastDigit = count % 10;
-  if (lastDigit >= 2 && lastDigit <= 4) return `${count} produkty`;
-  return `${count} produktów`;
-}
-
 export interface SellerCardProps {
   name: string;
   handle: string;
@@ -46,6 +40,7 @@ export interface SellerCardProps {
 }
 
 export function SellerCard({ name, handle, photo_url, city, district, product_count }: SellerCardProps) {
+  const t = useTranslations('seller.card');
   // Story 6.2 AC3 — district format per epic example: `Salon · Praga-Południe`.
   // U+00B7 middot separator matches mockup `wave-4-rest/01-sellers-index.html`.
   // Display dzielnica first when present so the seller name + neighborhood pair
@@ -88,7 +83,7 @@ export function SellerCard({ name, handle, photo_url, city, district, product_co
       <div className="p-4">
         <p className="truncate font-semibold text-gray-900">{name}</p>
         {location && <p className="mt-0.5 truncate text-sm text-gray-500">{location}</p>}
-        <p className="mt-1 text-sm text-gray-600">{pluralizeProducts(product_count)}</p>
+        <p className="mt-1 text-sm text-gray-600">{t('product_count', { count: product_count })}</p>
       </div>
     </Link>
   );

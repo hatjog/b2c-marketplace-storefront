@@ -2,9 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 import { ArrowRightIcon } from '@/icons'
-import { getInitialsFromName, getAvatarTextColor, getColorFromHandle, produktPlural } from '@/lib/helpers/vendor-badge'
+import { getInitialsFromName, getAvatarTextColor, getColorFromHandle } from '@/lib/helpers/vendor-badge'
 
 export interface VendorBadgeProps {
   vendor: {
@@ -21,6 +22,7 @@ export interface VendorBadgeProps {
  * Always links to /sellers/[handle] (canonical EN route slug; PL display copy "salon" preserved in UI text).
  */
 export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
+  const t = useTranslations('seller.vendor_badge')
   const avatarSize = variant === 'header' ? 72 : 48
   const initials = getInitialsFromName(vendor.name)
   const avatarColor = getColorFromHandle(vendor.handle)
@@ -29,7 +31,7 @@ export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
   return (
     <Link
       href={`/sellers/${vendor.handle}`}
-      aria-label={`Profil salonu ${vendor.name}`}
+      aria-label={t('profile_aria', { name: vendor.name })}
       className="inline-flex items-center gap-3"
     >
       {/* Avatar container — initials rendered behind image as CSS fallback */}
@@ -74,7 +76,7 @@ export function VendorBadge({ vendor, variant }: VendorBadgeProps) {
         <>
           <div className="flex flex-col flex-1">
             <span className="font-medium">{vendor.name}</span>
-            <span className="text-sm">{produktPlural(vendor.productCount)}</span>
+            <span className="text-sm">{t('product_count', { count: vendor.productCount })}</span>
           </div>
           <ArrowRightIcon size={20} />
         </>

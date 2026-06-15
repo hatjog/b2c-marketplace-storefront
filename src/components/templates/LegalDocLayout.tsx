@@ -22,6 +22,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
 
 import type { LegalDocument } from '@/lib/legal/fetchLegalDocument';
 import { AlertIcon, TimeIcon, TagIcon, DocumentIcon } from '@/icons';
@@ -81,22 +82,6 @@ interface LegalDocLayoutStrings {
   tableOfContentsLabel: string; // "Spis treści" / "Contents"
 }
 
-const DEFAULT_STRINGS: LegalDocLayoutStrings = {
-  lastUpdatedLabel: 'Ostatnia aktualizacja / Last updated',
-  versionLabel: 'Wersja / Version',
-  draftBadge: 'DRAFT / published_draft_status',
-  draftBadgeDescription:
-    'Tekst ma charakter operacyjnego draftu (pre-prod posture). Wersja v1.0 zostanie wprowadzona po review external counsel. / Operational draft — v1.0 follows external counsel review.',
-  localeFallbackBadge: 'Tłumaczenie w przygotowaniu / Translation pending',
-  localeFallbackDescription:
-    'Wyświetlamy wersję polską (kanoniczną) — tłumaczenie dla wybranego języka nie jest jeszcze dostępne. / Showing Polish canonical text — translation for the selected language is not yet available.',
-  provenanceInHouse: 'Opracowanie wewnętrzne / Drafted in-house',
-  provenanceExternalCounsel: 'External counsel reviewed',
-  provenanceTranslationLabel: 'Tłumaczenie wewnętrzne / In-house translation',
-  agentDisclaimer: 'BonBeauty jest pośrednikiem. Usługę świadczy Vendor.',
-  tableOfContentsLabel: 'Spis treści / Contents'
-};
-
 function deriveTitle(body: string, fallback: string): string {
   const m = body.match(/^#\s+(.+)$/m);
   return m ? m[1].trim() : fallback;
@@ -117,7 +102,7 @@ function provenanceLabel(
   return strings.provenanceInHouse;
 }
 
-export function LegalDocLayout({
+export async function LegalDocLayout({
   document,
   title,
   locale: _locale,
@@ -132,7 +117,21 @@ export function LegalDocLayout({
   // layout itself reads `document.locale` (which may differ when the
   // requested locale fell back to PL). Marked with `_` to silence the
   // unused-args lint while preserving the API contract.
-  const strings: LegalDocLayoutStrings = { ...DEFAULT_STRINGS, ...(stringsOverride ?? {}) };
+  const t = await getTranslations({ locale: _locale, namespace: 'legal.doc_layout' });
+  const defaultStrings: LegalDocLayoutStrings = {
+    lastUpdatedLabel: t('last_updated_label'),
+    versionLabel: t('version_label'),
+    draftBadge: t('draft_badge'),
+    draftBadgeDescription: t('draft_badge_description'),
+    localeFallbackBadge: t('locale_fallback_badge'),
+    localeFallbackDescription: t('locale_fallback_description'),
+    provenanceInHouse: t('provenance_in_house'),
+    provenanceExternalCounsel: t('provenance_external_counsel'),
+    provenanceTranslationLabel: t('provenance_translation_label'),
+    agentDisclaimer: t('agent_disclaimer'),
+    tableOfContentsLabel: t('table_of_contents_label')
+  };
+  const strings: LegalDocLayoutStrings = { ...defaultStrings, ...(stringsOverride ?? {}) };
   const resolvedTitle = title ?? deriveTitle(document.body, document.docId);
   const isDraft = document.reviewStatus === 'published_draft_status';
   const showFallback = document.localeFallback;

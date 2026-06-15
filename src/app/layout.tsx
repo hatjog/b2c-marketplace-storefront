@@ -2,7 +2,9 @@
 import type { CSSProperties } from 'react';
 
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { getMessages } from 'next-intl/server';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 
@@ -102,6 +104,8 @@ export default async function RootLayout({
   }
   const resolvedLocale = gpLocaleHeader ?? (await getLocale());
   const htmlLang = toHreflang(resolvedLocale);
+  const rootMessages = await getMessages({ locale: resolvedLocale });
+  const tCommon = await getTranslations({ locale: resolvedLocale, namespace: 'common' });
 
   return (
     <html
@@ -210,13 +214,18 @@ export default async function RootLayout({
       >
         {showFallbackBanner && (
           <div className="bg-yellow-100 px-4 py-2 text-sm text-yellow-900">
-            Korzystasz z fallback MarketConfig. Payload API jest niedostepne.
+            {tCommon('market_config_fallback')}
           </div>
         )}
         <Providers cart={cart}>{children}</Providers>
         <Toaster position="top-right" />
         {/* ePrivacy CMP banner — Story v160-cleanup-34 (AC2, TF-80) */}
-        <CookieBanner />
+        <NextIntlClientProvider
+          locale={resolvedLocale}
+          messages={rootMessages}
+        >
+          <CookieBanner />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

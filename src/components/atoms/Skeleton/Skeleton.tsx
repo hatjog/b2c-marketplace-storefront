@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Skeleton — BonBeauty DS foundational loading state atom.
  *
@@ -17,6 +19,7 @@
  * ARCH-007: BonBeauty DS customer-facing storefront only.
  */
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface SkeletonProps {
   /** Width — Tailwind class or style (e.g. 'w-full', 'w-[200px]') */
@@ -49,10 +52,13 @@ export function Skeleton({
   height = 'h-4',
   rounded = 'sm',
   className,
-  'aria-label': ariaLabel = 'Ładowanie...',
+  'aria-label': ariaLabelProp,
   decorative = false,
   'data-testid': dataTestId,
 }: SkeletonProps) {
+  const t = useTranslations('common');
+  const ariaLabel = ariaLabelProp ?? t('loading');
+
   // v1.7.0 Story 2.1 review fix (LOW): when nested under a parent loading region
   // (SkeletonText / SkeletonCard already announce status), render as decorative
   // (aria-hidden) so SR users hear "Ładowanie..." once, not 3-5 times.
@@ -110,12 +116,14 @@ export function SkeletonText({
   decorative?: boolean;
   'data-testid'?: string;
 }) {
+  const t = useTranslations('common');
+  const loadingTextLabel = t('loading_text');
   const containerProps = decorative
     ? ({ 'aria-hidden': 'true' } as const)
     : ({
         role: 'status',
         'aria-busy': 'true',
-        'aria-label': 'Ładowanie tekstu...',
+        'aria-label': loadingTextLabel,
       } as const);
   return (
     <div
@@ -123,7 +131,7 @@ export function SkeletonText({
       className={cn('flex flex-col gap-2', className)}
       data-testid={dataTestId ?? 'skeleton-text'}
     >
-      {!decorative && <span className="sr-only">Ładowanie tekstu...</span>}
+      {!decorative && <span className="sr-only">{loadingTextLabel}</span>}
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
@@ -148,11 +156,14 @@ export function SkeletonCard({
   className?: string;
   'data-testid'?: string;
 }) {
+  const t = useTranslations('common');
+  const loadingCardLabel = t('loading_product_card');
+
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Ładowanie karty produktu..."
+      aria-label={loadingCardLabel}
       className={cn(
         'flex flex-col gap-3 rounded-md p-4',
         className
@@ -160,7 +171,7 @@ export function SkeletonCard({
       style={{ backgroundColor: 'var(--bb-skeleton-base, rgba(239,229,210,0.52))' }}
       data-testid={dataTestId ?? 'skeleton-card'}
     >
-      <span className="sr-only">Ładowanie karty produktu...</span>
+      <span className="sr-only">{loadingCardLabel}</span>
       {/* Image area — decorative: parent SkeletonCard already announces loading */}
       <Skeleton height="h-[200px]" rounded="sm" decorative />
       {/* Title — decorative SkeletonText (suppress nested status announcement) */}

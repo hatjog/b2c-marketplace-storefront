@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Button — BonBeauty DS foundational atom.
  *
@@ -13,6 +15,7 @@
  */
 import Spinner from '@/icons/spinner';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 type ButtonVariant = 'filled' | 'tonal' | 'text' | 'destructive' | 'unavailable';
 
@@ -38,6 +41,7 @@ export function Button({
   'data-testid': dataTestId,
   ...props
 }: ButtonProps) {
+  const t = useTranslations('common');
   // Unavailable overrides variant — item is not accessible, not just disabled
   const effectiveVariant: ButtonVariant = unavailable ? 'unavailable' : variant;
 
@@ -123,7 +127,7 @@ export function Button({
       onClick={onClickGuarded}
       {...restProps}
     >
-      {loading ? <Spinner aria-label="Ładowanie..." role="status" /> : children}
+      {loading ? <Spinner aria-label={t('loading')} role="status" /> : children}
     </button>
   );
 }

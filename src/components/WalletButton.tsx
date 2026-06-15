@@ -1,6 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createTranslator, useTranslations } from 'next-intl';
+
+import deMessages from '../../messages/de.json';
+import enMessages from '../../messages/en.json';
+import plMessages from '../../messages/pl.json';
+import uaMessages from '../../messages/ua.json';
 
 // Provider-neutral kind aligned with `@gp/wallet` (Story 3.1). Workspace package
 // `@gp/wallet` is not wired into storefront (see Story 3.5 KNOWN_GAP F-19/F-01);
@@ -18,80 +24,33 @@ type WalletButtonCopy = {
   retryLabel: string;
 };
 
-const COPY: Record<WalletButtonLocale, Record<WalletProviderKind, WalletButtonCopy>> = {
-  pl: {
-    google: {
-      label: 'Dodaj do Google Wallet',
-      loadingLabel: 'Zapisuję...',
-      ariaLabel: 'Dodaj voucher do Google Wallet',
-      successToast: 'Voucher zapisany w Google Wallet',
-      errorToast: 'Nie udało się zapisać w Google Wallet. Spróbuj ponownie lub zapisz w PDF.',
-      retryLabel: 'Spróbuj ponownie',
-    },
-    apple: {
-      label: 'Dodaj do Apple Wallet',
-      loadingLabel: 'Zapisuję...',
-      ariaLabel: 'Dodaj voucher do Apple Wallet',
-      successToast: 'Voucher zapisany w Apple Wallet',
-      errorToast: 'Nie udało się zapisać w Apple Wallet. Spróbuj ponownie lub zapisz w PDF.',
-      retryLabel: 'Spróbuj ponownie',
-    },
-  },
-  en: {
-    google: {
-      label: 'Add to Google Wallet',
-      loadingLabel: 'Saving...',
-      ariaLabel: 'Add voucher to Google Wallet',
-      successToast: 'Voucher saved in Google Wallet',
-      errorToast: 'We could not save it in Google Wallet. Try again or save it as a PDF.',
-      retryLabel: 'Try again',
-    },
-    apple: {
-      label: 'Add to Apple Wallet',
-      loadingLabel: 'Saving...',
-      ariaLabel: 'Add voucher to Apple Wallet',
-      successToast: 'Voucher saved in Apple Wallet',
-      errorToast: 'We could not save it in Apple Wallet. Try again or save it as a PDF.',
-      retryLabel: 'Try again',
-    },
-  },
-  de: {
-    google: {
-      label: 'Zu Google Wallet hinzufügen',
-      loadingLabel: 'Wird gespeichert...',
-      ariaLabel: 'Voucher zu Google Wallet hinzufügen',
-      successToast: 'Voucher in Google Wallet gespeichert',
-      errorToast: 'Der Voucher konnte nicht in Google Wallet gespeichert werden. Versuche es erneut oder speichere ihn als PDF.',
-      retryLabel: 'Erneut versuchen',
-    },
-    apple: {
-      label: 'Zu Apple Wallet hinzufügen',
-      loadingLabel: 'Wird gespeichert...',
-      ariaLabel: 'Voucher zu Apple Wallet hinzufügen',
-      successToast: 'Voucher in Apple Wallet gespeichert',
-      errorToast: 'Der Voucher konnte nicht in Apple Wallet gespeichert werden. Versuche es erneut oder speichere ihn als PDF.',
-      retryLabel: 'Erneut versuchen',
-    },
-  },
-  ua: {
-    google: {
-      label: 'Додати до Google Wallet',
-      loadingLabel: 'Зберігаємо...',
-      ariaLabel: 'Додати ваучер до Google Wallet',
-      successToast: 'Ваучер збережено в Google Wallet',
-      errorToast: 'Не вдалося зберегти ваучер у Google Wallet. Спробуйте ще раз або збережіть PDF.',
-      retryLabel: 'Спробувати ще раз',
-    },
-    apple: {
-      label: 'Додати до Apple Wallet',
-      loadingLabel: 'Зберігаємо...',
-      ariaLabel: 'Додати ваучер до Apple Wallet',
-      successToast: 'Ваучер збережено в Apple Wallet',
-      errorToast: 'Не вдалося зберегти ваучер в Apple Wallet. Спробуйте ще раз або збережіть PDF.',
-      retryLabel: 'Спробувати ще раз',
-    },
-  },
+const MESSAGES_BY_LOCALE = {
+  pl: plMessages,
+  en: enMessages,
+  de: deMessages,
+  ua: uaMessages,
+} as const;
+
+const PROVIDER_NAME: Record<WalletProviderKind, string> = {
+  google: 'Google Wallet',
+  apple: 'Apple Wallet',
 };
+
+function buildWalletButtonCopy(
+  t: (key: string, values?: Record<string, string>) => string,
+  provider: WalletProviderKind,
+): WalletButtonCopy {
+  const providerName = PROVIDER_NAME[provider];
+
+  return {
+    label: t('save.label', { provider: providerName }),
+    loadingLabel: t('save.loading_label'),
+    ariaLabel: t('save.aria_label', { provider: providerName }),
+    successToast: t('save.success_toast', { provider: providerName }),
+    errorToast: t('save.error_toast', { provider: providerName }),
+    retryLabel: t('save.retry_label'),
+  };
+}
 
 export type WalletSaveResult = {
   saveUrl: string;
@@ -101,7 +60,12 @@ export function getWalletButtonCopy(
   locale: WalletButtonLocale,
   provider: WalletProviderKind,
 ): WalletButtonCopy {
-  return COPY[locale]?.[provider] ?? COPY.pl[provider];
+  const t = createTranslator({
+    locale,
+    messages: MESSAGES_BY_LOCALE[locale] ?? MESSAGES_BY_LOCALE.pl,
+    namespace: 'wallet',
+  });
+  return buildWalletButtonCopy(t, provider);
 }
 
 export function getWalletEndpoint(voucherCode: string): string {
@@ -159,7 +123,8 @@ export function WalletButton({
   disabled = false,
   className,
 }: WalletButtonProps) {
-  const copy = useMemo(() => getWalletButtonCopy(locale, provider), [locale, provider]);
+  const t = useTranslations('wallet');
+  const copy = useMemo(() => buildWalletButtonCopy(t, provider), [provider, t]);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);

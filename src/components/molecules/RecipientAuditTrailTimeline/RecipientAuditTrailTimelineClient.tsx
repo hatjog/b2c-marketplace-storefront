@@ -12,6 +12,7 @@
  */
 
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 
 import { TimelineItem } from "../AuditTrailEmptyState/TimelineItem"
 import type { RecipientAuditTrailEvent } from "./types"
@@ -86,11 +87,12 @@ export function RecipientAuditTrailErrorState({
   supportHref,
   onRetry,
 }: RecipientAuditTrailErrorStateProps) {
+  const t = useTranslations("voucher.recipient_audit_trail")
   // Sanitize error message — do NOT surface stack traces or PII
   const safeMessage =
     errorMessage && errorMessage.length <= 200
       ? errorMessage
-      : "Wystąpił błąd podczas ładowania historii."
+      : t("error.safe_message")
 
   return (
     <div
@@ -159,7 +161,7 @@ export interface RecipientAuditTrailTimelineViewProps {
   listAriaLabel?: string
   /**
    * Translated live region template. Supports `{visible}` and `{total}`
-   * placeholders. Defaults to a Polish string for backward-compat.
+   * placeholders.
    */
   liveRegionTemplate?: string
   /**
@@ -168,9 +170,6 @@ export interface RecipientAuditTrailTimelineViewProps {
    */
   idPrefix?: string
 }
-
-const DEFAULT_LIST_ARIA_LABEL = "Wpisy historii voucheru"
-const DEFAULT_LIVE_TEMPLATE = "Wyświetlono {visible} z {total} wpisów"
 
 export function RecipientAuditTrailTimelineView({
   visibleEvents,
@@ -182,8 +181,9 @@ export function RecipientAuditTrailTimelineView({
   liveRegionTemplate,
   idPrefix = "rat",
 }: RecipientAuditTrailTimelineViewProps) {
+  const t = useTranslations("voucher.recipient_audit_trail")
   const listId = `${idPrefix}-events-list`
-  const template = liveRegionTemplate ?? DEFAULT_LIVE_TEMPLATE
+  const template = liveRegionTemplate ?? t("live_region_template")
   const liveRegionText = template
     .replace("{visible}", String(visibleEvents.length))
     .replace("{total}", String(total))
@@ -203,7 +203,7 @@ export function RecipientAuditTrailTimelineView({
 
       <ol
         id={listId}
-        aria-label={listAriaLabel ?? DEFAULT_LIST_ARIA_LABEL}
+        aria-label={listAriaLabel ?? t("list_aria_label")}
         data-testid="recipient-audit-trail-list"
         className="m-0 list-none p-0"
       >

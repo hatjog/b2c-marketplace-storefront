@@ -10,6 +10,7 @@
 //   --space-2, --space-4, --anim-duration-fast, --anim-ease-standard
 
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ interface LocaleSwitcherProps {
 }
 
 export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps) {
+  const t = useTranslations('locale_switcher');
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -66,7 +68,7 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        aria-label={`Język: ${current.nativeName}`}
+        aria-label={t('current_language', { language: current.nativeName })}
         style={{ height: 'var(--locale-pill-height, 28px)' }}
         className={cn(
           'inline-flex items-center gap-1.5 rounded-[var(--bb-radius-pill)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-3 text-xs font-medium text-[var(--text-primary)]',
@@ -93,7 +95,7 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
       {open && (
         <div
           role="listbox"
-          aria-label="Wybierz język"
+          aria-label={t('select_language')}
           style={{ width: 'var(--locale-dropdown-width, 160px)' }}
           className={cn(
             'absolute right-0 top-full mt-1 z-[var(--site-header-z,100)]',

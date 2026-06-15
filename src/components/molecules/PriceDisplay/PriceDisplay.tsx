@@ -1,3 +1,9 @@
+import { createTranslator } from 'next-intl';
+
+import deMessages from '@/../messages/de.json';
+import enMessages from '@/../messages/en.json';
+import plMessages from '@/../messages/pl.json';
+import uaMessages from '@/../messages/ua.json';
 import { toIntlLocale } from '@/lib/helpers/hreflang';
 import { convertToLocale } from '@/lib/helpers/money';
 
@@ -16,15 +22,23 @@ export type PriceDisplayProps = PriceDisplayBase &
     | { variant: 'range'; maxAmountInCents: number }
   );
 
-const COPY_BY_LOCALE = {
-  pl: { free: 'Gratis', from: 'od', to: 'do', price: 'Cena', minute: 'min' },
-  en: { free: 'Free', from: 'from', to: 'to', price: 'Price', minute: 'min' },
-  ua: { free: 'Безкоштовно', from: 'від', to: 'до', price: 'Ціна', minute: 'хв' },
-  de: { free: 'Gratis', from: 'ab', to: 'bis', price: 'Preis', minute: 'Min.' },
+const PRICE_DISPLAY_MESSAGES_BY_LOCALE = {
+  pl: plMessages,
+  en: enMessages,
+  ua: uaMessages,
+  de: deMessages,
 } as const;
 
-function resolveCopy(locale: string) {
-  return COPY_BY_LOCALE[locale as keyof typeof COPY_BY_LOCALE] ?? COPY_BY_LOCALE.pl;
+function resolveTranslator(locale: string) {
+  const messages =
+    PRICE_DISPLAY_MESSAGES_BY_LOCALE[locale as keyof typeof PRICE_DISPLAY_MESSAGES_BY_LOCALE] ??
+    PRICE_DISPLAY_MESSAGES_BY_LOCALE.pl;
+
+  return createTranslator({
+    locale,
+    messages,
+    namespace: 'common.price_display',
+  });
 }
 
 function formatPLN(amountInCents: number, locale: string): string {
@@ -70,14 +84,14 @@ export function PriceDisplay({
   // Resolve effective variant (range with equal min/max → default)
   const effectiveVariant =
     variant === 'range' && amountInCents === maxAmountInCents ? 'default' : variant;
-  const copy = resolveCopy(locale);
+  const t = resolveTranslator(locale);
 
   // Build price string
   let priceText: string;
   if (amountInCents === 0) {
-    priceText = copy.free;
+    priceText = t('free');
   } else if (effectiveVariant === 'from') {
-    priceText = copy.from + ' ' + formatPLN(amountInCents, locale);
+    priceText = t('from') + ' ' + formatPLN(amountInCents, locale);
   } else if (effectiveVariant === 'range' && maxAmountInCents !== undefined) {
     priceText = formatRaw(amountInCents, locale) + '\u2013' + formatPLN(maxAmountInCents, locale);
   } else {
@@ -89,8 +103,8 @@ export function PriceDisplay({
   if (showDuration && duration !== null && duration !== undefined) {
     const durationLabel =
       effectiveVariant === 'from'
-        ? copy.from + ' ' + duration + ' ' + copy.minute
-        : duration + ' ' + copy.minute;
+        ? t('from') + ' ' + duration + ' ' + t('minute')
+        : duration + ' ' + t('minute');
     durationText = ' \u00B7 ' + durationLabel;
   }
 
@@ -99,13 +113,13 @@ export function PriceDisplay({
   // (e.g. "200 zł" for pl, "PLN 200" for en, "200 PLN" for de/ua).
   let ariaLabel: string;
   if (amountInCents === 0) {
-    ariaLabel = `${copy.price}: ${copy.free}`;
+    ariaLabel = `${t('price')}: ${t('free')}`;
   } else if (effectiveVariant === 'range' && maxAmountInCents !== undefined) {
-    ariaLabel = `${copy.price}: ${copy.from} ${formatPLN(amountInCents, locale)} ${copy.to} ${formatPLN(maxAmountInCents, locale)}`;
+    ariaLabel = `${t('price')}: ${t('from')} ${formatPLN(amountInCents, locale)} ${t('to')} ${formatPLN(maxAmountInCents, locale)}`;
   } else if (effectiveVariant === 'from') {
-    ariaLabel = `${copy.price}: ${copy.from} ${formatPLN(amountInCents, locale)}`;
+    ariaLabel = `${t('price')}: ${t('from')} ${formatPLN(amountInCents, locale)}`;
   } else {
-    ariaLabel = `${copy.price}: ${formatPLN(amountInCents, locale)}`;
+    ariaLabel = `${t('price')}: ${formatPLN(amountInCents, locale)}`;
   }
 
   return (

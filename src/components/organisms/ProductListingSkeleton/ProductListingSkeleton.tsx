@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ProductListingSkeleton — BonBeauty DS aligned loading skeleton.
  *
@@ -16,19 +18,23 @@
  *                src/app/colors.css (--bg-secondary via Tailwind bg-secondary)
  */
 import { Skeleton } from '@/components/atoms/Skeleton/Skeleton';
+import { useTranslations } from 'next-intl';
 
 const BORDER_STYLE = { borderColor: 'var(--bb-border-soft, rgba(144,112,50,0.14))' };
 
 export const ProductListingSkeleton = () => {
+  const t = useTranslations('common');
+  const loadingLabel = t('loading_product_list');
+
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Ładowanie listy produktów..."
+      aria-label={loadingLabel}
       className="py-4"
       data-testid="product-listing-skeleton"
     >
-      <span className="sr-only">Ładowanie listy produktów...</span>
+      <span className="sr-only">{loadingLabel}</span>
       <div className="items-center justify-between lg:flex lg:h-10">
         <Skeleton width="w-20" height="h-6" rounded="sm" decorative />
         <div className="hidden lg:block">

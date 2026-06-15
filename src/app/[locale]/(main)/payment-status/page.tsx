@@ -42,7 +42,9 @@ function normalizeStatus(value: string | string[] | undefined): string {
   return value ?? 'unknown';
 }
 
-export default async function GenericPaymentStatusPage({ searchParams }: Props) {
+export default async function GenericPaymentStatusPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'payment_status.generic' });
   const sp = await searchParams;
   const status = normalizeStatus(sp.status);
   const isFailed = status === 'failed' || status === 'error' || status === 'declined';
@@ -54,12 +56,12 @@ export default async function GenericPaymentStatusPage({ searchParams }: Props) 
       data-status={status}
     >
       <h1 className="heading-lg mb-4 text-primary">
-        {isFailed ? 'Płatność nie powiodła się' : 'Status płatności'}
+        {isFailed ? t('failed_heading') : t('heading')}
       </h1>
       <p className="mb-6 text-base text-secondary" data-testid="generic-payment-status-body">
         {isFailed
-          ? 'Wróć do koszyka i spróbuj ponownie. Jeśli problem się powtarza, skontaktuj się z naszym support.'
-          : 'Aby sprawdzić status konkretnego zamówienia, otwórz link z e-maila potwierdzającego lub przejdź do panelu zamówień.'}
+          ? t('failed_body')
+          : t('body')}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <LocalizedClientLink
@@ -67,13 +69,13 @@ export default async function GenericPaymentStatusPage({ searchParams }: Props) 
           data-testid="payment-retry"
           className="rounded-full bg-action px-6 py-3 text-sm font-semibold text-on-action hover:opacity-90"
         >
-          Spróbuj ponownie
+          {t('retry_cta')}
         </LocalizedClientLink>
         <LocalizedClientLink
           href="/user"
           className="rounded-full border border-tertiary/30 px-6 py-3 text-sm font-semibold text-secondary hover:bg-tertiary/10"
         >
-          Moje zamówienia
+          {t('orders_cta')}
         </LocalizedClientLink>
       </div>
     </main>

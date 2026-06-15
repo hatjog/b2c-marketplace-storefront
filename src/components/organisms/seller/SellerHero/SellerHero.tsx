@@ -1,6 +1,9 @@
+'use client';
+
 import type { ReactNode } from 'react';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import { VerifiedMark } from '@/components/atoms/VerifiedMark/VerifiedMark';
 
@@ -26,11 +29,15 @@ function getMonogram(name: string): string {
 export function SellerHero({
   name,
   photo,
-  tagline = 'Salon partnerski BonBeauty',
+  tagline,
   verified = false,
-  verifiedLabel = 'Zweryfikowany salon',
+  verifiedLabel,
   breadcrumbs
 }: SellerHeroProps) {
+  const t = useTranslations('seller.hero');
+  const resolvedTagline = tagline ?? t('tagline');
+  const resolvedVerifiedLabel = verifiedLabel ?? t('verified_label');
+
   return (
     <section
       className="relative overflow-hidden rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] px-5 py-10 shadow-[var(--bb-shadow-soft)] md:px-8 md:py-12"
@@ -74,14 +81,14 @@ export function SellerHero({
         </div>
         {verified ? (
           <VerifiedMark
-            label={verifiedLabel}
+            label={resolvedVerifiedLabel}
             surface="page"
             data-testid="seller-hero-verified-mark"
             className="mb-4"
           />
         ) : null}
         <p className="mb-3 font-serif text-base italic leading-6 text-[var(--text-secondary)]">
-          {tagline}
+          {resolvedTagline}
         </p>
         <h1
           data-testid="seller-name"
