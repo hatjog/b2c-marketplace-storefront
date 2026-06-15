@@ -62,7 +62,7 @@ export async function generateMetadata({
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
   try {
-    seller = await getSellerByHandle(handle);
+    seller = await getSellerByHandle(handle, locale);
   } catch {
     seller = null;
   }
@@ -136,7 +136,7 @@ export default async function SellerPage({
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
   try {
-    seller = await getSellerByHandle(handle);
+    seller = await getSellerByHandle(handle, locale);
   } catch {
     seller = null;
   }

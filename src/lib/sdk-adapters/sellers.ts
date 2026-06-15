@@ -22,6 +22,7 @@ import type { SellerProps } from '@/types/seller';
 
 import { mercurClient, sdk } from '../config';
 import {
+  normalizeToCanonicalLocale,
   resolveStorefrontLocale,
   withMercurLocaleOptions,
   type CanonicalLocale
@@ -287,11 +288,20 @@ export async function fetchSellerSummaryByHandle(
  * native `/store/sellers/:id` may omit even when they exist in seeded GP
  * metadata, such as `metadata.gp.photo_url` and `metadata.gp.gallery`.
  */
-export async function fetchSellerProfileByHandle(handle: string): Promise<SellerProps | null> {
+export async function fetchSellerProfileByHandle(
+  handle: string,
+  locale?: string
+): Promise<SellerProps | null> {
   try {
     const result = (await sdk.client.fetch(`/store/seller/${handle}`, {
       method: 'GET',
-      cache: 'no-cache'
+      cache: 'no-cache',
+      // v1.12.0 UA-loc: set the canonical locale header explicitly so the GP
+      // seller route's translation overlay applies regardless of getLocale()
+      // resolution timing on this dynamic detail route.
+      ...(locale
+        ? { headers: { 'x-medusa-locale': normalizeToCanonicalLocale(locale) } }
+        : {})
     })) as { seller?: SellerListApiItem };
 
     return result?.seller ? mapSellerApiToProps(result.seller) : null;

@@ -26,6 +26,19 @@ vi.mock('../sdk-adapters/sellers', () => ({
   fetchSellerSummaryByHandle: (...args: unknown[]) => mockFetchSellerSummaryByHandle(...args)
 }));
 
+// Mock locale interceptor — control the active storefront locale per test.
+// Default to the source locale (pl-PL) so existing cases keep PL behavior.
+const mockResolveStorefrontLocale = vi.fn<() => Promise<string>>(() =>
+  Promise.resolve('pl-PL')
+);
+vi.mock('../sdk/locale-interceptor', () => ({
+  resolveStorefrontLocale: () => mockResolveStorefrontLocale(),
+  withMercurLocaleOptions: (args: unknown) =>
+    Promise.resolve(args ?? { fetchOptions: {} }),
+  normalizeToCanonicalLocale: (loc: string) =>
+    ({ pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' })[loc] ?? loc
+}));
+
 // Mock mercurClient — seller.ts imports it for getSellers (not used by getSellerByHandle now)
 vi.mock('../config', () => ({
   mercurClient: {
@@ -59,6 +72,50 @@ describe('getSellerByHandle', () => {
     mockFetchSellerById.mockReset();
     mockFetchSellerSummaryByHandle.mockReset();
     mockFetchSellerProfileByHandle.mockReset();
+    mockResolveStorefrontLocale.mockReset();
+    mockResolveStorefrontLocale.mockResolvedValue('pl-PL');
+  });
+
+  // A base seller that needs no media/contact enrichment, so the profile fetch
+  // is only triggered by the localized-description path (not needsProfileEnrichment).
+  const makeCompleteBase = (overrides: Record<string, unknown> = {}) =>
+    makeSeller({
+      gallery: [{ url: 'https://img.example.com/base-gallery.jpg' }],
+      address_line: 'ul. Bazowa 1',
+      city: 'Warszawa',
+      phone: '+48600000000',
+      social_links: { instagram: '@bonbeauty' },
+      opening_hours: { monday: { open: '10:00', close: '19:00' }, sunday: null },
+      ...overrides
+    });
+
+  it('skips the profile fetch on the source locale when the base is complete', async () => {
+    mockResolveStorefrontLocale.mockResolvedValue('pl-PL');
+    mockResolveHandleToId.mockResolvedValue('seller-abc');
+    mockFetchSellerById.mockResolvedValue(makeCompleteBase());
+
+    const result = await getSellerByHandle('bonbeauty');
+
+    expect(result?.id).toBe('seller-abc');
+    expect(mockFetchSellerProfileByHandle).not.toHaveBeenCalled();
+  });
+
+  it('fetches the profile for a localized description on a non-source locale even when the base is complete', async () => {
+    mockResolveStorefrontLocale.mockResolvedValue('uk-UA');
+    mockResolveHandleToId.mockResolvedValue('seller-abc');
+    // Base carries only the source-locale (PL) description.
+    mockFetchSellerById.mockResolvedValue(
+      makeCompleteBase({ description: 'Salon premium w centrum Warszawy.' })
+    );
+    // GP profile route applies the seller translation overlay.
+    mockFetchSellerProfileByHandle.mockResolvedValue(
+      makeCompleteBase({ description: 'Преміальний салон у центрі Варшави.' })
+    );
+
+    const result = await getSellerByHandle('bonbeauty');
+
+    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty', 'uk-UA');
+    expect(result?.description).toBe('Преміальний салон у центрі Варшави.');
   });
 
   it('returns seller when handle resolves to id and seller is fetched', async () => {
@@ -101,7 +158,7 @@ describe('getSellerByHandle', () => {
 
     expect(result?.photo).toBe('https://img.example.com/profile.jpg');
     expect(result?.gallery).toEqual([{ url: 'https://img.example.com/gallery.jpg' }]);
-    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty');
+    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty', 'pl-PL');
   });
 
   it('enriches opening hours and SEO from the handle profile when native seller omits them', async () => {
@@ -142,7 +199,7 @@ describe('getSellerByHandle', () => {
       meta_description: 'Realny profil salonu',
       og_image_url: 'https://img.example.com/og.jpg'
     });
-    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty');
+    expect(mockFetchSellerProfileByHandle).toHaveBeenCalledWith('bonbeauty', 'pl-PL');
   });
 
   it('returns null when handle is not found (resolveSellerHandleToId returns null)', async () => {
