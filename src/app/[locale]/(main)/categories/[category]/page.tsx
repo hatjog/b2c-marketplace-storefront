@@ -29,6 +29,7 @@ export async function generateMetadata({
   params: Promise<{ category: string; locale: string }>;
 }): Promise<Metadata> {
   const { category: categoryHandle, locale } = await params;
+  setRequestLocale(locale);
   const headersList = await headers();
   const host = headersList.get('host');
   const protocol = headersList.get('x-forwarded-proto') || 'https';

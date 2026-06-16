@@ -44,6 +44,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; location: string; offer: string }>;
 }): Promise<Metadata> {
   const { locale, location, offer } = await params;
+  setRequestLocale(locale);
   const data = getProgrammaticLandingData({
     locale: locale as SupportedLocale,
     locationSlug: location,

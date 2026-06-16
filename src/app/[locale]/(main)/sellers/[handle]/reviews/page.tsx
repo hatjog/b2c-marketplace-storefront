@@ -109,6 +109,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; handle: string }>;
 }): Promise<Metadata> {
   const { locale, handle } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('seller.reviews_v180.meta');
   const data = await loadPageData({
     locale,

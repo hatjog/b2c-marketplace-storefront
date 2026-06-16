@@ -116,6 +116,7 @@ export async function generateMetadata({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const sp = await searchParams;
   const q = parseString(sp.q).trim();
   const city = parseString(sp.city).trim();

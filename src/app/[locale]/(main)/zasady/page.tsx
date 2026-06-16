@@ -17,7 +17,13 @@ import { SanitizedHTML } from '@/components/molecules';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveZasadySections } from '@/lib/runtime-market-config';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('legal');
   return {
     title: t('title_zasady'),

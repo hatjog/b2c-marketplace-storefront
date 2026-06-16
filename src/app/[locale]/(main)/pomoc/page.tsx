@@ -47,7 +47,13 @@ import type { WithdrawalStateResult } from '@/types/voucher';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const tWL = await getTranslations('voucher_withdrawal.legal');
   return {
     title: tWL('page_title'),

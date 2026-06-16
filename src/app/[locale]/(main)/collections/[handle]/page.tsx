@@ -55,6 +55,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; handle: string }>;
 }): Promise<Metadata> {
   const { locale, handle } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('collections_editorial_v180.detail.meta');
   const data = await getEditorialCollectionDetail({ handle, locale });
 

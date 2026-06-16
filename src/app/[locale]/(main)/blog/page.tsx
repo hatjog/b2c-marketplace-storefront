@@ -40,6 +40,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const baseUrl = await getBaseUrl();
   const alternates = buildBlogIndexAlternates(baseUrl, locale);
   const t = await getTranslations('blog');

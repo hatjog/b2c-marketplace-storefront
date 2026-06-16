@@ -58,6 +58,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; handle: string }>;
 }): Promise<Metadata> {
   const { locale, handle } = await params;
+  setRequestLocale(locale);
   const tDetail = await getTranslations('seller.detail');
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;

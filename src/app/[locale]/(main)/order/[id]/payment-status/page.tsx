@@ -43,7 +43,9 @@ type Props = {
   searchParams: Promise<Record<string, string | string[]>>;
 };
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('payment_status');
   return {
     title: t('page_title'),

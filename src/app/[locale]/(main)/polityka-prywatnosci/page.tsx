@@ -31,7 +31,13 @@ function asLocale(value: string): LegalDocumentLocale {
   return 'pl';
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('legal');
   return {
     title: t('title_privacy'),
