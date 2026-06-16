@@ -12,6 +12,15 @@ describe('raw-key i18n runtime guard', () => {
     expect(guard.getMessageFallback({ namespace: 'cart', key: 'empty_title' })).toBe('Your cart is empty');
   });
 
+  it('does not duplicate namespace when next-intl passes a full dotted key', () => {
+    const guard = createRawKeyGuard({
+      environment: 'production',
+      fallbacks: [{ cart: { empty_title: 'Your cart is empty' } }],
+    });
+
+    expect(guard.getMessageFallback({ namespace: 'cart', key: 'cart.empty_title' })).toBe('Your cart is empty');
+  });
+
   it('fails loud in test/dev when no catalog can resolve the missing key', () => {
     const guard = createRawKeyGuard({
       environment: 'test',
@@ -46,4 +55,3 @@ describe('raw-key i18n runtime guard', () => {
     ).toThrow('cart.empty_title');
   });
 });
-

@@ -17,6 +17,8 @@ export interface RawKeyGuardOptions {
 }
 
 function fullMessageKey(namespace: string | undefined, key: string): string {
+  if (namespace && key === namespace) return key;
+  if (namespace && key.startsWith(`${namespace}.`)) return key;
   return namespace ? `${namespace}.${key}` : key;
 }
 
@@ -80,4 +82,3 @@ export function createRawKeyGuard(options: RawKeyGuardOptions) {
     onError
   };
 }
-
