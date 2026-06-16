@@ -199,10 +199,10 @@ export default async function ErrorPreviewPage({
             }}
           >
             <p style={{ margin: '0 0 4px' }}>
-              <strong>variant:</strong> {variant}
+              <strong>{t('variant_label')}</strong> {variant}
             </p>
             <p style={{ margin: '0 0 4px' }}>
-              <strong>timestamp:</strong> <span data-testid="error-timestamp">{new Date().toISOString()}</span>
+              <strong>{t('timestamp_label')}</strong> <span data-testid="error-timestamp">{new Date().toISOString()}</span>
             </p>
             <p style={{ margin: 0 }}>
               <strong>{t('suggested_action')}:</strong> {t('suggested_action_value')}

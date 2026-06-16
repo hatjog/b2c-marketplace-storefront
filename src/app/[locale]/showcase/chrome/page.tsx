@@ -11,7 +11,6 @@
  * no timers, no auto-dismiss.
  */
 
-import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';

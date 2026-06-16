@@ -1012,6 +1012,9 @@
     "coming_soon": "Сторінка в розробці",
     "coming_soon_description": "Умови використання знаходяться в процесі розробки. З питань зв'яжіться з нами.",
     "contact_email": "kontakt@bonbeauty.pl",
+    "debug_market_label": "ринок=",
+    "debug_slug_label": " · slug=",
+    "debug_locale_label": " · мова=",
     "last_updated": "Останнє оновлення",
     "agent_disclaimer": "BonBeauty є посередником. Послугу надає салон.",
     "doc_layout": {
@@ -2223,6 +2226,42 @@
     "loading": "Завантаження…",
     "no_results": "Немає результатів"
   },
+  "showcase": {
+    "chrome": {
+      "sections": {
+        "searchOverlay": "Showcase: SearchOverlay (w6-09)",
+        "toastAlert": "Showcase: ToastAlert усі варіанти (w6-06)",
+        "modalPatterns": "Showcase: ModalShell (w6-05)"
+      },
+      "search": {
+        "query": "showcase",
+        "resultA": {
+          "name": "Showcase товар A",
+          "price": "99 zł"
+        },
+        "resultB": {
+          "name": "Showcase товар B",
+          "price": "149 zł"
+        },
+        "recentA": "showcase",
+        "recentB": "приклад",
+        "suggestionA": "showcase підказка 1",
+        "suggestionB": "showcase підказка 2"
+      },
+      "toasts": {
+        "info": "Showcase: інформація (info)",
+        "success": "Showcase: операцію завершено (success)",
+        "warning": "Showcase: попередження (warning)",
+        "error": "Showcase: критична помилка (error)"
+      },
+      "modal": {
+        "title": "Showcase: ModalShell — detailed-info (w6-05)",
+        "body": "Showcase-вміст для golden baseline. ModalShell відкритий, без інтерактивних тригерів, для детермінованого snapshot.",
+        "primary": "Підтвердити",
+        "secondary": "Скасувати"
+      }
+    }
+  },
   "accountRead": {
     "common": {
       "defaultName": "Кароліно",
@@ -2969,6 +3008,8 @@
     "offline_label": "Офлайн",
     "status_page_link": "Перевірити статус сервісів",
     "show_technical_details": "Показати технічні деталі",
+    "variant_label": "варіант:",
+    "timestamp_label": "часова мітка:",
     "suggested_action": "Рекомендована дія",
     "suggested_action_value": "Оновіть сторінку або поверніться через кілька хвилин"
   },
@@ -3003,25 +3044,31 @@
   "loading_states_catalogue": {
     "page_title": "Каталог станів завантаження",
     "page_description": "Референсна вітрина LP1-LP6 для дизайн-системи BonBeauty.",
+    "lp1_prefix": "LP1 —",
     "lp1_name": "Skeleton Shimmer",
     "lp1_description": "Для завантаження даних (200мс-3с). Теплий кремовий варіант, безпечний для reduced-motion.",
     "lp1_aria_label": "Завантаження",
+    "lp2_prefix": "LP2 —",
     "lp2_name": "Pulse Animation Hero",
     "lp2_description": "Для станів обробки/очікування, не для звичайного отримання даних.",
     "lp2_aria_label": "Обробка",
+    "lp3_prefix": "LP3 —",
     "lp3_name": "Skeleton Dot Trio",
     "lp3_description": "Для завантаження CTA після натискання.",
     "lp3_aria_label": "Відправлення",
+    "lp4_prefix": "LP4 —",
     "lp4_name": "Auto-Poll Progress Indicator",
     "lp4_description": "Видимий ритм опитування, максимальний час і шлях виходу.",
     "lp4_aria_label": "Очікування підтвердження",
     "lp4_polling_label": "Перевіряю статус...",
     "lp4_timeout_label": "Макс. 30с",
     "lp4_demo_label": "Оновлюємо статус кожні 15 секунд",
+    "lp5_prefix": "LP5 —",
     "lp5_name": "Progress Bar",
     "lp5_description": "Для детермінованих багатоетапних дій.",
     "lp5_aria_label": "Прогрес",
     "lp5_demo_label": "Крок 2 з 3",
+    "lp6_prefix": "LP6 —",
     "lp6_name": "Inline Spinner",
     "lp6_description": "Крайній варіант. Не може крутитися невизначено більше 3с.",
     "lp6_aria_label": "Завантаження",

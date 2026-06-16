@@ -13,44 +13,44 @@
  * - Components controlled via React.useState initialized to open=true.
  */
 
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ModalShell } from '@/components/organisms/ModalShell/ModalShell';
 import { SearchOverlay } from '@/components/organisms/SearchOverlay/SearchOverlay';
 import { ToastViewport, type Toast } from '@/components/organisms/ToastAlert/ToastAlert';
 
-// Static toast list covering all 4 variants — no IDs from Date.now() to ensure
-// deterministic render between SSR and hydration.
-const SHOWCASE_TOASTS: Toast[] = [
-  {
-    id: 'showcase-toast-info',
-    variant: 'info',
-    message: 'Showcase: informacja (info)',
-  },
-  {
-    id: 'showcase-toast-success',
-    variant: 'success',
-    message: 'Showcase: operacja zakonczona (success)',
-  },
-  {
-    id: 'showcase-toast-warning',
-    variant: 'warning',
-    message: 'Showcase: ostrzezenie (warning)',
-  },
-  {
-    id: 'showcase-toast-error',
-    variant: 'error',
-    message: 'Showcase: blad krytyczny (error)',
-  },
-];
-
 export function ShowcaseChrome() {
+  const t = useTranslations('showcase.chrome');
+  const locale = useLocale();
   // All surfaces mounted in open/visible state — never auto-close in showcase.
   const [searchOpen] = useState(true);
   const [modalOpen] = useState(true);
 
   // No-op handlers: components stay open for deterministic capture.
   const noop = () => {};
+  const showcaseToasts: Toast[] = [
+    {
+      id: 'showcase-toast-info',
+      variant: 'info',
+      message: t('toasts.info'),
+    },
+    {
+      id: 'showcase-toast-success',
+      variant: 'success',
+      message: t('toasts.success'),
+    },
+    {
+      id: 'showcase-toast-warning',
+      variant: 'warning',
+      message: t('toasts.warning'),
+    },
+    {
+      id: 'showcase-toast-error',
+      variant: 'error',
+      message: t('toasts.error'),
+    },
+  ];
 
   return (
     <div
@@ -78,30 +78,30 @@ export function ShowcaseChrome() {
       <section
         id="section-search-overlay"
         data-testid="showcase-section-search-overlay"
-        aria-label="Showcase: SearchOverlay (w6-09)"
+        aria-label={t('sections.searchOverlay')}
       >
         <SearchOverlay
           open={searchOpen}
-          query="showcase"
+          query={t('search.query')}
           results={[
             {
               id: 'showcase-result-1',
-              name: 'Produkt showcase A',
-              price: '99 zł',
+              name: t('search.resultA.name'),
+              price: t('search.resultA.price'),
               href: '#showcase',
             },
             {
               id: 'showcase-result-2',
-              name: 'Produkt showcase B',
-              price: '149 zł',
+              name: t('search.resultB.name'),
+              price: t('search.resultB.price'),
               href: '#showcase',
             },
           ]}
           isLoading={false}
-          locale="pl"
-          recentSearches={['showcase', 'przykład']}
+          locale={locale}
+          recentSearches={[t('search.recentA'), t('search.recentB')]}
           popularProducts={[]}
-          suggestions={['showcase suggestion 1', 'showcase suggestion 2']}
+          suggestions={[t('search.suggestionA'), t('search.suggestionB')]}
           onClose={noop}
           onQueryChange={noop}
           onResultSelect={noop}
@@ -117,11 +117,11 @@ export function ShowcaseChrome() {
       <section
         id="section-toast-alert"
         data-testid="showcase-section-toast-alert"
-        aria-label="Showcase: ToastAlert all variants (w6-06)"
+        aria-label={t('sections.toastAlert')}
         style={{ position: 'relative', zIndex: 1, minHeight: '300px' }}
       >
         <ToastViewport
-          toasts={SHOWCASE_TOASTS}
+          toasts={showcaseToasts}
           placement="top-right"
           onDismiss={noop}
         />
@@ -131,29 +131,24 @@ export function ShowcaseChrome() {
       <section
         id="section-modal-patterns"
         data-testid="showcase-section-modal-patterns"
-        aria-label="Showcase: ModalShell (w6-05)"
+        aria-label={t('sections.modalPatterns')}
         style={{ position: 'relative', minHeight: '400px' }}
       >
         <ModalShell
           open={modalOpen}
           variant="detailed-info"
-          title="Showcase: ModalShell — detailed-info (w6-05)"
-          body={
-            <p>
-              Treść showcase dla golden baseline. Komponent ModalShell w stanie open,
-              bez triggerów interaktywnych, deterministyczny snapshot.
-            </p>
-          }
+          title={t('modal.title')}
+          body={<p>{t('modal.body')}</p>}
           actions={[
             {
               id: 'showcase-action-primary',
-              label: 'Potwierdź',
+              label: t('modal.primary'),
               onClick: noop,
               variant: 'filled',
             },
             {
               id: 'showcase-action-secondary',
-              label: 'Anuluj',
+              label: t('modal.secondary'),
               onClick: noop,
               variant: 'tonal',
             },

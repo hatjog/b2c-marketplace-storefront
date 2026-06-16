@@ -1012,6 +1012,9 @@
     "coming_soon": "Page in preparation",
     "coming_soon_description": "The terms of service are being finalized. Please contact us if you have any questions.",
     "contact_email": "kontakt@bonbeauty.pl",
+    "debug_market_label": "market=",
+    "debug_slug_label": " · slug=",
+    "debug_locale_label": " · locale=",
     "last_updated": "Last updated",
     "agent_disclaimer": "BonBeauty acts as an intermediary. Services are provided by the salon.",
     "doc_layout": {
@@ -2223,6 +2226,42 @@
     "loading": "Loading…",
     "no_results": "No results"
   },
+  "showcase": {
+    "chrome": {
+      "sections": {
+        "searchOverlay": "Showcase: SearchOverlay (w6-09)",
+        "toastAlert": "Showcase: ToastAlert all variants (w6-06)",
+        "modalPatterns": "Showcase: ModalShell (w6-05)"
+      },
+      "search": {
+        "query": "showcase",
+        "resultA": {
+          "name": "Showcase product A",
+          "price": "PLN 99"
+        },
+        "resultB": {
+          "name": "Showcase product B",
+          "price": "PLN 149"
+        },
+        "recentA": "showcase",
+        "recentB": "example",
+        "suggestionA": "showcase suggestion 1",
+        "suggestionB": "showcase suggestion 2"
+      },
+      "toasts": {
+        "info": "Showcase: information (info)",
+        "success": "Showcase: operation completed (success)",
+        "warning": "Showcase: warning (warning)",
+        "error": "Showcase: critical error (error)"
+      },
+      "modal": {
+        "title": "Showcase: ModalShell — detailed-info (w6-05)",
+        "body": "Showcase content for the golden baseline. ModalShell is open, without interactive triggers, for a deterministic snapshot.",
+        "primary": "Confirm",
+        "secondary": "Cancel"
+      }
+    }
+  },
   "accountRead": {
     "common": {
       "defaultName": "Karolina",
@@ -2969,6 +3008,8 @@
     "offline_label": "Offline",
     "status_page_link": "Check service status",
     "show_technical_details": "Show technical details",
+    "variant_label": "variant:",
+    "timestamp_label": "timestamp:",
     "suggested_action": "Suggested action",
     "suggested_action_value": "Refresh the page or come back in a few minutes"
   },
@@ -3003,25 +3044,31 @@
   "loading_states_catalogue": {
     "page_title": "Loading States Catalogue",
     "page_description": "Reference showcase LP1-LP6 for BonBeauty design system.",
+    "lp1_prefix": "LP1 —",
     "lp1_name": "Skeleton Shimmer",
     "lp1_description": "For data loading (200ms-3s). Warm cream variant, reduced-motion safe.",
     "lp1_aria_label": "Loading",
+    "lp2_prefix": "LP2 —",
     "lp2_name": "Pulse Animation Hero",
     "lp2_description": "For processing/pending states, not generic data fetching.",
     "lp2_aria_label": "Processing",
+    "lp3_prefix": "LP3 —",
     "lp3_name": "Skeleton Dot Trio",
     "lp3_description": "For CTA loading after submit.",
     "lp3_aria_label": "Sending",
+    "lp4_prefix": "LP4 —",
     "lp4_name": "Auto-Poll Progress Indicator",
     "lp4_description": "Visible polling cadence, maximum time, and exit path.",
     "lp4_aria_label": "Waiting for confirmation",
     "lp4_polling_label": "Checking status...",
     "lp4_timeout_label": "Max 30s",
     "lp4_demo_label": "Refreshing status every 15 seconds",
+    "lp5_prefix": "LP5 —",
     "lp5_name": "Progress Bar",
     "lp5_description": "For determinate multi-step actions.",
     "lp5_aria_label": "Progress",
     "lp5_demo_label": "Step 2 of 3",
+    "lp6_prefix": "LP6 —",
     "lp6_name": "Inline Spinner",
     "lp6_description": "Rare last resort. Must not spin indefinitely beyond 3s.",
     "lp6_aria_label": "Loading",

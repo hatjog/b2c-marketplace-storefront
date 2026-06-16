@@ -79,7 +79,7 @@ export default async function PolitykaPrywatnosciPage({
               {t('coming_soon_description')}
             </p>
             <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', fontSize: '0.875rem' }}>
-              market=<code>{marketId}</code> · slug=<code>{CANONICAL_SLUG}</code> · locale=
+              {t('debug_market_label')}<code>{marketId}</code>{t('debug_slug_label')}<code>{CANONICAL_SLUG}</code>{t('debug_locale_label')}
               <code>{locale}</code>
             </p>
           </div>
