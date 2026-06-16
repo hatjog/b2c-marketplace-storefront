@@ -2,7 +2,7 @@
 // W1-01 Home v3 — Story 3.0 Sprint 1 thin slice gate.
 // Trust Invariant #1: <VerifiedMark present via TrustStripBlock.
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Script from 'next/script';
 
@@ -135,6 +135,7 @@ export async function generateMetadata({
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const tHome = await getTranslations({ locale, namespace: 'home_v3.hero' });
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const { marketConfig } = await resolveMarketConfig(marketId);

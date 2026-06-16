@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -162,6 +162,7 @@ export default async function SellersListPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const sp = await searchParams;
 
   const limit = parsePositiveInt(sp.limit, DEFAULT_LIMIT, { min: 1, max: 100 });

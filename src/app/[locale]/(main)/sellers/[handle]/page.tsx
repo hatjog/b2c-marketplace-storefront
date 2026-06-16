@@ -1,6 +1,6 @@
 // @trust-invariant-scope: v180
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -132,6 +132,7 @@ export default async function SellerPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { handle, locale } = await params;
+  setRequestLocale(locale);
   const sp = await searchParams;
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;

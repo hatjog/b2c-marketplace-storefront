@@ -16,7 +16,7 @@
  *     fallback / sentinel landing that funnels users back to cart.
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
@@ -44,6 +44,7 @@ function normalizeStatus(value: string | string[] | undefined): string {
 
 export default async function GenericPaymentStatusPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'payment_status.generic' });
   const sp = await searchParams;
   const status = normalizeStatus(sp.status);

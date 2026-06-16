@@ -10,7 +10,7 @@
  * AC 6, AC 7, AC 8, AC 9, AC 10, AC 12.
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -20,10 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LoadingStatesCataloguePage({
-  params: _params
+  params
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('loading_states_catalogue');
 
   return (

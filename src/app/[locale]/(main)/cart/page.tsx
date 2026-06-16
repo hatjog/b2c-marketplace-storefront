@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { Cart } from '@/components/sections';
@@ -31,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CartPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   // Story v160-cleanup-13c — warm runtime feature-flag cache.
   await isMultiVendorEnabledRuntime();
   let recommendedProducts: Awaited<ReturnType<typeof listProducts>>['response']['products'] = [];

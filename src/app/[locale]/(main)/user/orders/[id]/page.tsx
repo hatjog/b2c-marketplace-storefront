@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
@@ -101,6 +101,7 @@ export default async function OrderDetailPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  setRequestLocale(locale);
   const [t, customer] = await Promise.all([
     getTranslations({ locale, namespace: 'accountRead.orderDetail' }),
     retrieveCustomer()

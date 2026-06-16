@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 
@@ -58,6 +58,7 @@ export async function generateMetadata({
 
 export default async function CollectionsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const [t, listing] = await Promise.all([
     getTranslations('collections_editorial_v180'),
     listEditorialCollections(locale)

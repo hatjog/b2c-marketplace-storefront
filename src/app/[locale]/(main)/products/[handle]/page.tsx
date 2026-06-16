@@ -1,7 +1,7 @@
 // @trust-invariant-scope: v180
 // W1-04 PDP route — Story 3.0 Sprint 1 thin slice gate.
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -77,6 +77,7 @@ export default async function ProductPage({
   searchParams?: Promise<{ from?: string }>;
 }) {
   const { handle, locale } = await params;
+  setRequestLocale(locale);
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const t = await getTranslations('pdp');
   // Story v160-cleanup-13c — warm runtime feature-flag cache before sync gates.

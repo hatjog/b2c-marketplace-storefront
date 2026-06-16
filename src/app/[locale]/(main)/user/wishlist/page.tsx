@@ -1,6 +1,6 @@
 import type { HttpTypes } from '@medusajs/types';
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
@@ -12,6 +12,7 @@ import { getCountryCode } from '@/lib/helpers/country-code';
 
 export default async function WishlistPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const [t, customer] = await Promise.all([
     getTranslations({ locale, namespace: 'accountRead.wishlist' }),
     retrieveCustomer()

@@ -13,7 +13,7 @@
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -128,6 +128,7 @@ export default async function EmptyStatesCataloguePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('empty_states_catalogue');
 
   const patterns: EmptyStatePatternProps[] = [

@@ -13,7 +13,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -50,6 +50,7 @@ export default async function RegulaminPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: localeRaw } = await params;
+  setRequestLocale(localeRaw);
   const locale = asLocale(localeRaw);
   const marketId = getMarketId();
   const t = await getTranslations('legal');

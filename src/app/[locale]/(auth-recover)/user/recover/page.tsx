@@ -10,7 +10,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { AuthLayout } from '@/components/templates/AuthLayout';
 import { MagicLinkRecoverForm } from '@/components/molecules/MagicLinkRecoverForm/MagicLinkRecoverForm';
@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function RecoverRequestPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { attempted, email } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'auth.magic_link_recover' });
 

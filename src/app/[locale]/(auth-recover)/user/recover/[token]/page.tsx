@@ -14,7 +14,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe } from '@/components/atoms';
 import { AuthLayout } from '@/components/templates/AuthLayout';
@@ -40,6 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function RecoverTokenPage({ params }: PageProps) {
   const { locale, token } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'auth.magic_link_recover' });
   const hasToken = typeof token === 'string' && token.length > 0;
 

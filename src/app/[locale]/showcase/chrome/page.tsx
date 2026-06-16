@@ -11,7 +11,9 @@
  * no timers, no auto-dismiss.
  */
 
+import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { ShowcaseChrome } from './_client';
@@ -22,7 +24,14 @@ export const metadata: Metadata = {
 
 // No dynamic functions used — opt-in to static where possible,
 // but notFound() makes it effectively dynamic per request.
-export default function ShowcaseChromePage() {
+export default async function ShowcaseChromePage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   // Prod-safety gate: when the flag is absent or not "1", return 404.
   if (process.env.NEXT_PUBLIC_GP_SHOWCASE !== '1') {
     notFound();

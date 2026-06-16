@@ -30,7 +30,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { PaymentStatusV180 } from '@/components/sections/PaymentStatusV180/PaymentStatusV180';
@@ -55,6 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PaymentStatusPage(props: Props) {
   const params = await props.params;
+  setRequestLocale(params.locale);
 
   return (
     <main

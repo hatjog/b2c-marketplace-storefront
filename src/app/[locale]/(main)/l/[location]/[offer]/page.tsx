@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
@@ -88,10 +88,9 @@ export default async function ProgrammaticLandingPage({
 }: {
   params: Promise<{ locale: string; location: string; offer: string }>;
 }) {
-  const [{ locale, location, offer }, t] = await Promise.all([
-    params,
-    getTranslations('programmaticLanding')
-  ]);
+  const { locale, location, offer } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('programmaticLanding');
   const data = getProgrammaticLandingData({
     locale: locale as SupportedLocale,
     locationSlug: location,

@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Button, LogoLockup } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -8,10 +8,14 @@ import { CollapseIcon } from '@/icons';
 // that reduces cognitive load during payment flow. AC1 "header i footer" applies to
 // (main) layout surfaces; checkout is intentionally footer-free.
 export default async function RootLayout({
-  children
+  children,
+  params
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('checkout');
 
   return (

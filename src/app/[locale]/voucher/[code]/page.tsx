@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { VoucherRecipientView } from '@/components/voucher/VoucherRecipientView';
@@ -32,6 +32,7 @@ export default async function VoucherRecipientPage({
   params,
 }: VoucherRecipientPageProps) {
   const { locale, code } = await params;
+  setRequestLocale(locale);
   const voucher = await getVoucherRecipientByCode(code);
 
   return (

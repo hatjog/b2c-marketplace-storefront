@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 
@@ -64,11 +64,9 @@ export default async function BlogIndexPage({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ tag?: string }>;
 }) {
-  const [{ locale }, resolvedSearchParams, t] = await Promise.all([
-    params,
-    searchParams,
-    getTranslations('blog')
-  ]);
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const [resolvedSearchParams, t] = await Promise.all([searchParams, getTranslations('blog')]);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const selectedTag = resolvedSearchParams.tag || null;
   const {

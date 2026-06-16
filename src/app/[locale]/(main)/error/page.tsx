@@ -15,7 +15,7 @@
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ErrorReloadButton } from '@/components/atoms/ErrorReloadButton/ErrorReloadButton';
 
@@ -50,6 +50,7 @@ export default async function ErrorPreviewPage({
   searchParams?: Promise<{ variant?: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const variant = getVariant(resolvedSearchParams.variant);
 

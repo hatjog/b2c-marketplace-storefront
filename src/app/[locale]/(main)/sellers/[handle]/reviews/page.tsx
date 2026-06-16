@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -155,6 +155,7 @@ export default async function SellerReviewsPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { handle, locale } = await params;
+  setRequestLocale(locale);
   const resolvedSearchParams = (await searchParams) ?? {};
   const sort = resolveSort(resolvedSearchParams.sort);
   const rating = resolveRating(resolvedSearchParams.rating);

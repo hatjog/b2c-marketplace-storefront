@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { submitVoucherConsent } from '@/actions/voucher-kyc-consent';
 import { initialVoucherConsentActionState } from '@/actions/voucher-kyc-consent-state';
@@ -39,6 +39,7 @@ export default async function VoucherConsentPage({
   params
 }: ConsentPageProps): Promise<React.ReactElement> {
   const { locale, token } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'voucher-consent' });
   const context = await getVoucherConsentContext(token);
   const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY?.trim() || null;

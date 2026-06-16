@@ -4,7 +4,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -28,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ZasadyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
   const tW = await getTranslations('voucher_withdrawal');

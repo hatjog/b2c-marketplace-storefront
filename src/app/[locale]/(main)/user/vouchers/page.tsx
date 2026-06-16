@@ -31,7 +31,7 @@
 import React from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -301,6 +301,7 @@ export default async function VouchersPage({
   params
 }: VouchersPageProps): Promise<React.ReactElement> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'account.vouchers' });
   const customer = await retrieveCustomer();
 

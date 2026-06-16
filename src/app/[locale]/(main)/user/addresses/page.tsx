@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { LoginForm } from '@/components/molecules';
 import { SavedAddressesSurface } from '@/components/sections/AccountWriteSurfaces';
@@ -9,6 +9,7 @@ import { listRegions } from '@/lib/data/regions';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const [t, user, regions] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),

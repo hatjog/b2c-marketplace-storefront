@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -90,6 +90,7 @@ export default async function CollectionDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, handle } = await params;
+  setRequestLocale(locale);
   const resolvedSearchParams = (await searchParams) ?? {};
   const sort = resolveSort(resolvedSearchParams.sort);
   const [t, data] = await Promise.all([

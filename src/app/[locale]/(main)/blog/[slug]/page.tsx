@@ -1,6 +1,6 @@
 // @chrome-manifest: W6-03 (renders <NewsletterSlot> chrome organism inline)
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
@@ -84,7 +84,9 @@ export default async function BlogArticlePage({
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }) {
-  const [{ slug, locale }, t] = await Promise.all([params, getTranslations('blog')]);
+  const { slug, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('blog');
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const page = await fetchPayloadBlogPage({
     locale: locale as SupportedLocale,
