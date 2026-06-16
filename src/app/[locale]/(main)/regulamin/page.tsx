@@ -13,7 +13,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -35,7 +35,13 @@ function asLocale(value: string): LegalDocumentLocale {
   return 'pl';
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('legal');
   return {
     title: t('title_regulamin'),
@@ -50,6 +56,7 @@ export default async function RegulaminPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: localeRaw } = await params;
+  setRequestLocale(localeRaw);
   const locale = asLocale(localeRaw);
   const marketId = getMarketId();
   const t = await getTranslations('legal');
@@ -83,7 +90,7 @@ export default async function RegulaminPage({
               {t('coming_soon_description')}
             </p>
             <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', fontSize: '0.875rem' }}>
-              market=<code>{marketId}</code> · slug=<code>{CANONICAL_SLUG}</code> · locale=
+              {t('debug_market_label')}<code>{marketId}</code>{t('debug_slug_label')}<code>{CANONICAL_SLUG}</code>{t('debug_locale_label')}
               <code>{locale}</code> ·{' '}
               <a
                 href={`mailto:${t('contact_email')}`}

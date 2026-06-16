@@ -30,7 +30,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { PaymentStatusV180 } from '@/components/sections/PaymentStatusV180/PaymentStatusV180';
@@ -43,7 +43,9 @@ type Props = {
   searchParams: Promise<Record<string, string | string[]>>;
 };
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('payment_status');
   return {
     title: t('page_title'),
@@ -55,6 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PaymentStatusPage(props: Props) {
   const params = await props.params;
+  setRequestLocale(params.locale);
 
   return (
     <main

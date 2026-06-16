@@ -1,6 +1,6 @@
 // @trust-invariant-scope: v180
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -58,6 +58,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; handle: string }>;
 }): Promise<Metadata> {
   const { locale, handle } = await params;
+  setRequestLocale(locale);
   const tDetail = await getTranslations('seller.detail');
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
@@ -132,6 +133,7 @@ export default async function SellerPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { handle, locale } = await params;
+  setRequestLocale(locale);
   const sp = await searchParams;
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;

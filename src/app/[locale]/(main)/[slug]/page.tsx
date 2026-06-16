@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { BlogRichText } from '@/components/templates';
@@ -40,6 +40,7 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
 
 export default async function ContentPage({ params }: { params: PageParams }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const [page, t] = await Promise.all([
     fetchPayloadPage({ locale, slug, marketId }),

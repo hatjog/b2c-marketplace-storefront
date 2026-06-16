@@ -1,3 +1,4 @@
+import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import type { HttpTypes } from "@medusajs/types"
@@ -271,6 +272,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function CategoriesPage({ params, searchParams }: CategoriesPageProps) {
   const { locale } = await params
+  setRequestLocale(locale);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || ""
   const { filter: filterParam, mode: modeParam, query: queryParam } = await searchParams
   const requestedMode = parsePurchaseMode(modeParam)

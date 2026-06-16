@@ -1,3 +1,5 @@
+const i18nHardcodedAllowlist = require("./eslint-plugin-gp/i18n-hardcoded-allowlist.json")
+
 module.exports = {
   extends: ["next/core-web-vitals"],
   parser: "@typescript-eslint/parser",
@@ -28,6 +30,9 @@ module.exports = {
     // var(--token-name) from src/styles/tokens/*.css. Companion Python
     // validator: _grow/tools/validate_storefront_ds_literals.py.
     "gp/no-storefront-color-literals": "error",
+    // v1.13.0 Story 2.2 — AST static guard for hardcoded user-visible
+    // strings in TSX JSX text and localization-sensitive attrs.
+    "gp/no-hardcoded-i18n-strings": ["error", { allowlist: i18nHardcodedAllowlist }],
     "no-restricted-syntax": [
       "error",
       {

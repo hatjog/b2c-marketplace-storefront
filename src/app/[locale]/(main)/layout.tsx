@@ -4,7 +4,7 @@
 // @chrome-manifest: W6-02
 // @chrome-manifest: W6-07
 import { Session } from '@talkjs/react';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { SkipLink } from '@/components/atoms';
@@ -41,6 +41,7 @@ export default async function RootLayout({
 }>) {
   const APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID;
   const { locale } = await params;
+  setRequestLocale(locale);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const { marketConfig } = await resolveMarketConfig(marketId);
 

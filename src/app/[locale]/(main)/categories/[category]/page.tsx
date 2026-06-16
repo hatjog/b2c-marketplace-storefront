@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
@@ -29,6 +29,7 @@ export async function generateMetadata({
   params: Promise<{ category: string; locale: string }>;
 }): Promise<Metadata> {
   const { category: categoryHandle, locale } = await params;
+  setRequestLocale(locale);
   const headersList = await headers();
   const host = headersList.get('host');
   const protocol = headersList.get('x-forwarded-proto') || 'https';
@@ -87,6 +88,7 @@ async function Category({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { category: categoryHandle, locale } = await params;
+  setRequestLocale(locale);
   const resolvedSearchParams = (await searchParams) ?? {};
   // v1.7.0 Story 2.2 review fix (HIGH H1): Suspense fallback aria-label must
   // come from i18n — not a hardcoded PL string — so EN/UA/DE SR announcements

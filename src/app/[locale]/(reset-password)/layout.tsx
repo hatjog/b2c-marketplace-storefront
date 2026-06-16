@@ -1,3 +1,14 @@
-export default async function ResetPasswordLayout({ children }: { children: React.ReactNode }) {
+import { setRequestLocale } from 'next-intl/server';
+
+export default async function ResetPasswordLayout({
+  children,
+  params
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   return children;
 }

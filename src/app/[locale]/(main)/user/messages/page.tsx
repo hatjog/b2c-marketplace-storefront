@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StateCard } from '@/components/molecules/StateCard/StateCard';
@@ -24,6 +24,7 @@ import { retrieveCustomer } from '@/lib/data/customer';
 
 export default async function MessagesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const [t, customer] = await Promise.all([
     getTranslations({ locale, namespace: 'accountRead.messages' }),
     retrieveCustomer()

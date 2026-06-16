@@ -10,7 +10,7 @@
  * AC 6, AC 7, AC 8, AC 9, AC 10, AC 12.
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -20,10 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LoadingStatesCataloguePage({
-  params: _params
+  params
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('loading_states_catalogue');
 
   return (
@@ -85,7 +87,7 @@ export default async function LoadingStatesCataloguePage({
               id="lp1-heading"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary, #1A1A1A)', marginBottom: '16px' }}
             >
-              LP1 — {t('lp1_name')}
+              {t('lp1_prefix')} {t('lp1_name')}
             </h2>
             <p style={{ color: 'var(--text-secondary, #6B6252)', fontSize: '0.875rem', marginBottom: '16px' }}>{t('lp1_description')}</p>
             <div
@@ -120,7 +122,7 @@ export default async function LoadingStatesCataloguePage({
               id="lp2-heading"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary, #1A1A1A)', marginBottom: '16px' }}
             >
-              LP2 — {t('lp2_name')}
+              {t('lp2_prefix')} {t('lp2_name')}
             </h2>
             <p style={{ color: 'var(--text-secondary, #6B6252)', fontSize: '0.875rem', marginBottom: '16px' }}>{t('lp2_description')}</p>
             <div
@@ -148,7 +150,7 @@ export default async function LoadingStatesCataloguePage({
               id="lp3-heading"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary, #1A1A1A)', marginBottom: '16px' }}
             >
-              LP3 — {t('lp3_name')}
+              {t('lp3_prefix')} {t('lp3_name')}
             </h2>
             <p style={{ color: 'var(--text-secondary, #6B6252)', fontSize: '0.875rem', marginBottom: '16px' }}>{t('lp3_description')}</p>
             <button
@@ -195,7 +197,7 @@ export default async function LoadingStatesCataloguePage({
               id="lp4-heading"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary, #1A1A1A)', marginBottom: '16px' }}
             >
-              LP4 — {t('lp4_name')}
+              {t('lp4_prefix')} {t('lp4_name')}
             </h2>
             <p style={{ color: 'var(--text-secondary, #6B6252)', fontSize: '0.875rem', marginBottom: '16px' }}>{t('lp4_description')}</p>
             <div
@@ -232,7 +234,7 @@ export default async function LoadingStatesCataloguePage({
               id="lp5-heading"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary, #1A1A1A)', marginBottom: '16px' }}
             >
-              LP5 — {t('lp5_name')}
+              {t('lp5_prefix')} {t('lp5_name')}
             </h2>
             <p style={{ color: 'var(--text-secondary, #6B6252)', fontSize: '0.875rem', marginBottom: '16px' }}>{t('lp5_description')}</p>
             <div
@@ -261,7 +263,7 @@ export default async function LoadingStatesCataloguePage({
               id="lp6-heading"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', fontWeight: 400, color: 'var(--text-primary, #1A1A1A)', marginBottom: '16px' }}
             >
-              LP6 — {t('lp6_name')}
+              {t('lp6_prefix')} {t('lp6_name')}
             </h2>
             <p style={{ color: 'var(--text-secondary, #6B6252)', fontSize: '0.875rem', marginBottom: '16px' }}>{t('lp6_description')}</p>
             <div

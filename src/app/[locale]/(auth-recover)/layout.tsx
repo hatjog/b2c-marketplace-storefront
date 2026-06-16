@@ -9,6 +9,7 @@
  *   - Story 5.4 AC10 chrome-separation guardrail (UX-DR12).
  */
 
+import { setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { checkRegion } from '@/lib/helpers/check-region';
@@ -21,6 +22,7 @@ export default async function AuthRecoverLayout({
   params: Promise<{ locale: string }>;
 }>) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const regionCheck = await checkRegion(locale);
 
   if (!regionCheck) {

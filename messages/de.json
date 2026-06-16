@@ -1012,6 +1012,9 @@
     "coming_soon": "Seite in Vorbereitung",
     "coming_soon_description": "Die Nutzungsbedingungen werden noch ausgearbeitet. Bitte kontaktieren Sie uns bei Fragen.",
     "contact_email": "kontakt@bonbeauty.pl",
+    "debug_market_label": "Markt=",
+    "debug_slug_label": " · Slug=",
+    "debug_locale_label": " · Sprache=",
     "last_updated": "Zuletzt aktualisiert",
     "agent_disclaimer": "BonBeauty ist ein Vermittler. Dienstleistungen werden vom Salon erbracht.",
     "doc_layout": {
@@ -2223,6 +2226,42 @@
     "loading": "Laden…",
     "no_results": "Keine Ergebnisse"
   },
+  "showcase": {
+    "chrome": {
+      "sections": {
+        "searchOverlay": "Showcase: SearchOverlay (w6-09)",
+        "toastAlert": "Showcase: ToastAlert alle Varianten (w6-06)",
+        "modalPatterns": "Showcase: ModalShell (w6-05)"
+      },
+      "search": {
+        "query": "showcase",
+        "resultA": {
+          "name": "Showcase-Produkt A",
+          "price": "99 zł"
+        },
+        "resultB": {
+          "name": "Showcase-Produkt B",
+          "price": "149 zł"
+        },
+        "recentA": "showcase",
+        "recentB": "Beispiel",
+        "suggestionA": "Showcase-Vorschlag 1",
+        "suggestionB": "Showcase-Vorschlag 2"
+      },
+      "toasts": {
+        "info": "Showcase: Information (info)",
+        "success": "Showcase: Vorgang abgeschlossen (success)",
+        "warning": "Showcase: Warnung (warning)",
+        "error": "Showcase: kritischer Fehler (error)"
+      },
+      "modal": {
+        "title": "Showcase: ModalShell — detailed-info (w6-05)",
+        "body": "Showcase-Inhalt für die Golden Baseline. ModalShell ist geöffnet, ohne interaktive Trigger, für einen deterministischen Snapshot.",
+        "primary": "Bestätigen",
+        "secondary": "Abbrechen"
+      }
+    }
+  },
   "accountRead": {
     "common": {
       "defaultName": "Karolina",
@@ -2969,6 +3008,8 @@
     "offline_label": "Offline",
     "status_page_link": "Servicestatus prüfen",
     "show_technical_details": "Technische Details anzeigen",
+    "variant_label": "Variante:",
+    "timestamp_label": "Zeitstempel:",
     "suggested_action": "Empfohlene Aktion",
     "suggested_action_value": "Seite neu laden oder in einigen Minuten zurückkommen"
   },
@@ -3003,25 +3044,31 @@
   "loading_states_catalogue": {
     "page_title": "Ladezustands-Katalog",
     "page_description": "Referenz-Showcase LP1-LP6 für das BonBeauty-Designsystem.",
+    "lp1_prefix": "LP1 —",
     "lp1_name": "Skeleton-Schimmer",
     "lp1_description": "Für Datenladen (200ms-3s). Warme Crème-Variante, reduced-motion-sicher.",
     "lp1_aria_label": "Lädt",
+    "lp2_prefix": "LP2 —",
     "lp2_name": "Pulsanimation im Hero",
     "lp2_description": "Für Verarbeitungs-/Wartezustände, nicht für normales Datenabrufen.",
     "lp2_aria_label": "Verarbeitung",
+    "lp3_prefix": "LP3 —",
     "lp3_name": "Skeleton-Punkttrio",
     "lp3_description": "Für CTA-Laden nach dem Absenden.",
     "lp3_aria_label": "Senden",
+    "lp4_prefix": "LP4 —",
     "lp4_name": "Auto-Polling-Fortschrittsanzeige",
     "lp4_description": "Sichtbarer Abfrage-Rhythmus, maximale Zeit und Ausstiegspfad.",
     "lp4_aria_label": "Warten auf Bestätigung",
     "lp4_polling_label": "Status prüfen...",
     "lp4_timeout_label": "Max. 30s",
     "lp4_demo_label": "Status wird alle 15 Sekunden aktualisiert",
+    "lp5_prefix": "LP5 —",
     "lp5_name": "Fortschrittsleiste",
     "lp5_description": "Für deterministische mehrstufige Aktionen.",
     "lp5_aria_label": "Fortschritt",
     "lp5_demo_label": "Schritt 2 von 3",
+    "lp6_prefix": "LP6 —",
     "lp6_name": "Inline-Ladeindikator",
     "lp6_description": "Letztes Mittel. Darf nicht unbegrenzt über 3s drehen.",
     "lp6_aria_label": "Laden",

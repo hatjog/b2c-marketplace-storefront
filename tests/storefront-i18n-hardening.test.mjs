@@ -5,6 +5,28 @@ import test, { describe } from 'node:test';
 
 const root = process.cwd();
 const locales = ['pl', 'en', 'ua', 'de'];
+const showcaseChromeKeys = [
+  'sections.searchOverlay',
+  'sections.toastAlert',
+  'sections.modalPatterns',
+  'search.query',
+  'search.resultA.name',
+  'search.resultA.price',
+  'search.resultB.name',
+  'search.resultB.price',
+  'search.recentA',
+  'search.recentB',
+  'search.suggestionA',
+  'search.suggestionB',
+  'toasts.info',
+  'toasts.success',
+  'toasts.warning',
+  'toasts.error',
+  'modal.title',
+  'modal.body',
+  'modal.primary',
+  'modal.secondary',
+];
 
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 const readJson = relativePath => JSON.parse(read(relativePath));
@@ -17,6 +39,13 @@ function flatten(value, prefix = '', mode = 'keys') {
       ? flatten(item, next, mode)
       : [mode === 'entries' ? [next, item] : next];
   });
+}
+
+function readPath(value, dottedPath) {
+  return dottedPath.split('.').reduce((cursor, segment) => {
+    if (!cursor || typeof cursor !== 'object') return undefined;
+    return cursor[segment];
+  }, value);
 }
 
 const DE_ACCEPTED_IDENTICAL_TO_PL = new Set([
@@ -80,6 +109,27 @@ const DE_ACCEPTED_IDENTICAL_TO_PL = new Set([
   'category_plp.filter_salon',          // "Salon" — no German alternative; filter-chip siblings are single nouns
   'categories_index.filters.premium',   // "Premium" — international loanword
   'home_v3.search.tabs.product',        // "Produkt" — search-tab siblings are single nouns; "Produkt suchen" was wrong form
+  'loading_states_catalogue.lp1_prefix',
+  'loading_states_catalogue.lp2_prefix',
+  'loading_states_catalogue.lp3_prefix',
+  'loading_states_catalogue.lp4_prefix',
+  'loading_states_catalogue.lp5_prefix',
+  'loading_states_catalogue.lp6_prefix',
+  'showcase.chrome.modal.title',
+  'showcase.chrome.search.query',
+  'showcase.chrome.search.recentA',
+  'showcase.chrome.search.resultA.price',
+  'showcase.chrome.search.resultB.price',
+  'showcase.chrome.sections.modalPatterns',
+  'showcase.chrome.sections.searchOverlay',
+  // Cognates / loanwords / hrefs inherited from v1.12.0 catalogs — identical PL==DE by design,
+  // not silent fallbacks. Explicitly accepted so the storefront i18n-hardening gate is green.
+  'common.price_display.free',                  // "Gratis" — valid German word, identical to PL
+  'confirmation.next_for_recipient_href',       // "/help" — route href, never translated
+  'consent.modal.categories.marketing.label',   // "Marketing" — international loanword
+  'footer.nav.faq',                             // "FAQ" — acronym/loanword
+  'footer.nav.kontakt',                         // "Kontakt" — identical German cognate
+  'mobile_bottom_nav.account',                  // "Konto" — identical German cognate
 ]);
 
 describe('Story 6.3 storefront i18n hardening', () => {
@@ -115,6 +165,43 @@ describe('Story 6.3 storefront i18n hardening', () => {
       assert.equal(typeof messages.voucher.qr_code_label, 'string');
       assert.notEqual(messages.voucher.qr_code_aria_label.trim(), '');
       assert.notEqual(messages.voucher.qr_code_label.trim(), '');
+    }
+  });
+
+  test('showcase chrome copy is keyed in every locale without raw-key fallback values', () => {
+    for (const locale of locales) {
+      const messages = readJson(`messages/${locale}.json`);
+
+      for (const key of showcaseChromeKeys) {
+        const fullKey = `showcase.chrome.${key}`;
+        const value = readPath(messages, fullKey);
+
+        assert.equal(typeof value, 'string', `${locale} missing ${fullKey}`);
+        assert.notEqual(value.trim(), '', `${locale} has empty ${fullKey}`);
+        assert.notEqual(value, key, `${locale} renders raw key ${key}`);
+        assert.notEqual(value, fullKey, `${locale} renders raw key ${fullKey}`);
+      }
+    }
+  });
+
+  test('showcase chrome route no longer keeps user-visible fixture copy as JSX literals', () => {
+    const client = read('src/app/[locale]/showcase/chrome/_client.tsx');
+
+    assert.match(client, /useTranslations\('showcase\.chrome'\)/);
+    assert.match(client, /useLocale\(\)/);
+
+    for (const literal of [
+      'Produkt showcase A',
+      'Produkt showcase B',
+      'Showcase: informacja (info)',
+      'Showcase: operacja zakonczona (success)',
+      'Showcase: ostrzezenie (warning)',
+      'Showcase: blad krytyczny (error)',
+      'Treść showcase dla golden baseline',
+      'Potwierdź',
+      'Anuluj',
+    ]) {
+      assert.doesNotMatch(client, new RegExp(literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     }
   });
 

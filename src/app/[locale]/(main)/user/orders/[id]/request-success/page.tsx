@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { LoginForm } from '@/components/molecules';
 import { ReturnRequestSuccessSurface } from '@/components/sections/AccountWriteSurfaces';
@@ -12,6 +12,7 @@ export default async function RequestSuccessPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  setRequestLocale(locale);
   const [t, customer] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),

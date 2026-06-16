@@ -102,7 +102,7 @@ const STOREFRONT_ROOT = path.resolve(
 );
 const SHOWCASE_DIR = path.join(
   STOREFRONT_ROOT,
-  'src/app/[locale]/_showcase/chrome'
+  'src/app/[locale]/showcase/chrome'
 );
 
 describe('ShowcaseChrome — file existence checks', () => {

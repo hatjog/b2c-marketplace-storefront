@@ -38,7 +38,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { VoucherWithdrawalStateCard } from '@/components/molecules/VoucherWithdrawalStateCard';
@@ -47,7 +47,13 @@ import type { WithdrawalStateResult } from '@/types/voucher';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const tWL = await getTranslations('voucher_withdrawal.legal');
   return {
     title: tWL('page_title'),
@@ -58,6 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PomocPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('voucher_withdrawal');
   const tWL = await getTranslations('voucher_withdrawal.legal');
   const tLegal = await getTranslations('legal');

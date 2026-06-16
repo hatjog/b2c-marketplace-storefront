@@ -9,7 +9,7 @@
  *     after a successful checkout with order context.
  */
 
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
@@ -25,6 +25,7 @@ type PageProps = {
 
 export default async function Page({ params, searchParams }: PageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'auth' });
   const user = await retrieveCustomer();
   const cart = await retrieveCart();

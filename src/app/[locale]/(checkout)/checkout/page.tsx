@@ -2,7 +2,7 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import {
@@ -50,6 +50,7 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
 
 export default async function CheckoutPage({ params, searchParams }: CheckoutPageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const rawStep = resolvedSearchParams.step;
   const checkoutStep = Array.isArray(rawStep) ? rawStep[0] : rawStep;

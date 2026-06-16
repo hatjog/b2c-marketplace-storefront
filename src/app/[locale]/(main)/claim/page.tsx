@@ -17,7 +17,7 @@
  * Does NOT redeem the voucher (that lives on /voucher/[code]).
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +44,7 @@ function pickQuery(value: string | string[] | undefined): string {
 
 export default async function GenericClaimLandingPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'voucher.recipient.landing' });
   const sp = await searchParams;
   const status = pickQuery(sp.status);

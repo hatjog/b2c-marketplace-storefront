@@ -4,7 +4,7 @@
  */
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -17,7 +17,13 @@ import { SanitizedHTML } from '@/components/molecules';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { resolveZasadySections } from '@/lib/runtime-market-config';
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations('legal');
   return {
     title: t('title_zasady'),
@@ -28,6 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ZasadyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
   const tW = await getTranslations('voucher_withdrawal');

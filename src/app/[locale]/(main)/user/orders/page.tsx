@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StorefrontRouteStateSignal } from '@/components/atoms';
@@ -64,6 +64,7 @@ export default async function OrdersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const sp = await searchParams;
   const filter = parseFilter(sp.status);
   const offset = parseOffset(sp.offset);
