@@ -48,6 +48,30 @@ function filenameLooksTsx(filename) {
   return typeof filename === "string" && filename.endsWith(".tsx");
 }
 
+function getJSXElementName(nameNode) {
+  if (!nameNode) return null;
+  if (nameNode.type === "JSXIdentifier") return nameNode.name;
+  if (nameNode.type === "JSXMemberExpression") {
+    return getJSXElementName(nameNode.property);
+  }
+  if (nameNode.type === "JSXNamespacedName") return nameNode.name.name;
+  return null;
+}
+
+function isInsideNonVisibleElement(node) {
+  let current = node && node.parent;
+  while (current) {
+    if (current.type === "JSXElement") {
+      const elementName = getJSXElementName(current.openingElement.name);
+      if (elementName === "style" || elementName === "script") {
+        return true;
+      }
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
 function pathMatches(filename, filePattern) {
   if (!filePattern) return true;
   const normalizedFilename = filename.split(path.sep).join("/");
@@ -61,9 +85,6 @@ function pathMatches(filename, filePattern) {
 function centralAllowlistMatches(entries, filename, value, line) {
   const normalizedValue = normalizeValue(value);
   return entries.some((entry) => {
-    if (typeof entry === "string") {
-      return normalizeValue(entry) === normalizedValue;
-    }
     if (!entry || typeof entry !== "object") return false;
     if (!entry.reason || !String(entry.reason).trim()) return false;
     if (!pathMatches(filename, entry.file)) return false;
@@ -129,20 +150,15 @@ module.exports = {
           allowlist: {
             type: "array",
             items: {
-              anyOf: [
-                { type: "string" },
-                {
-                  type: "object",
-                  additionalProperties: false,
-                  required: ["value", "reason"],
-                  properties: {
-                    file: { type: "string" },
-                    line: { type: "number" },
-                    value: { type: "string" },
-                    reason: { type: "string" },
-                  },
-                },
-              ],
+              type: "object",
+              additionalProperties: false,
+              required: ["value", "reason"],
+              properties: {
+                file: { type: "string" },
+                line: { type: "number" },
+                value: { type: "string" },
+                reason: { type: "string" },
+              },
             },
           },
         },
@@ -197,7 +213,18 @@ module.exports = {
 
     return {
       JSXText(node) {
+        if (isInsideNonVisibleElement(node)) return;
         reportText(node, node.value);
+      },
+      JSXExpressionContainer(node) {
+        if (node.parent && node.parent.type === "JSXAttribute") return;
+        if (isInsideNonVisibleElement(node)) return;
+        if (!node.expression || node.expression.type === "JSXEmptyExpression") {
+          return;
+        }
+        walkStringExpressions(node.expression, (value, valueNode) => {
+          reportText(valueNode, value);
+        });
       },
       JSXAttribute(node) {
         if (!node.name || !USER_VISIBLE_ATTRS.has(node.name.name)) return;

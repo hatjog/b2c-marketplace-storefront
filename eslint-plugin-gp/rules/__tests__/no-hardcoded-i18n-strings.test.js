@@ -140,6 +140,16 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
       filename: tsx,
       code: "const C = ({ t }) => <input placeholder={t('search.placeholder')} />;",
     },
+    {
+      name: "style tag CSS text is not user visible copy",
+      filename: tsx,
+      code: "const C = () => <style>{`.button { content: 'Buy now'; animation: none; }`}</style>;",
+    },
+    {
+      name: "script tag text is not user visible copy",
+      filename: tsx,
+      code: "const C = () => <script>{`window.__label = 'Buy now';`}</script>;",
+    },
   ],
 
   invalid: [
@@ -285,6 +295,18 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
       name: "single word visible text",
       filename: tsx,
       code: "const C = () => <span>Checkout</span>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
+    {
+      name: "JSX expression string child",
+      filename: tsx,
+      code: "const C = () => <button>{'Buy now'}</button>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
+    {
+      name: "JSX expression template child",
+      filename: tsx,
+      code: "const C = ({ name }) => <span>{`Witaj ${name}`}</span>;",
       errors: [{ messageId: "hardcodedText" }],
     },
   ],

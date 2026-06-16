@@ -1008,6 +1008,90 @@
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
+    "file": "src/components/cells/AddressSelect/AddressSelect.tsx",
+    "line": 44,
+    "value": "Choose an address",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/cells/OrderProductListItem/OrderProductListItem.tsx",
+    "line": 54,
+    "value": "Variant:",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/cells/OrderProductListItem/OrderProductListItem.tsx",
+    "line": 60,
+    "value": "Quantity:",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
+    "line": 71,
+    "value": "${...} Items",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
+    "line": 71,
+    "value": "${...} Item",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/organisms/Reviews/ReviewCard.tsx",
+    "line": 40,
+    "value": "${...} day${...} ago",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/organisms/Reviews/ReviewCard.tsx",
+    "line": 43,
+    "value": "${...} week${...} ago",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
+    "line": 110,
+    "value": "items",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
+    "line": 110,
+    "value": "item",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
+    "line": 85,
+    "value": "Continue",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
+    "line": 86,
+    "value": "Select Items",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
+    "line": 88,
+    "value": "Select return method",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
+    "line": 89,
+    "value": "Request return",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/templates/LegalDocLayout.tsx",
+    "line": 368,
+    "value": "(fallback → pl)",
+    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
     "file": "src/components/templates/LoadingStatesCatalogue.tsx",
     "line": 34,
     "value": "Processing…",
