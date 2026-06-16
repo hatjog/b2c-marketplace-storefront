@@ -122,6 +122,14 @@ const DE_ACCEPTED_IDENTICAL_TO_PL = new Set([
   'showcase.chrome.search.resultB.price',
   'showcase.chrome.sections.modalPatterns',
   'showcase.chrome.sections.searchOverlay',
+  // Cognates / loanwords / hrefs inherited from v1.12.0 catalogs — identical PL==DE by design,
+  // not silent fallbacks. Explicitly accepted so the storefront i18n-hardening gate is green.
+  'common.price_display.free',                  // "Gratis" — valid German word, identical to PL
+  'confirmation.next_for_recipient_href',       // "/help" — route href, never translated
+  'consent.modal.categories.marketing.label',   // "Marketing" — international loanword
+  'footer.nav.faq',                             // "FAQ" — acronym/loanword
+  'footer.nav.kontakt',                         // "Kontakt" — identical German cognate
+  'mobile_bottom_nav.account',                  // "Konto" — identical German cognate
 ]);
 
 describe('Story 6.3 storefront i18n hardening', () => {
