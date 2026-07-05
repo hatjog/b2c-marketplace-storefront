@@ -62,6 +62,20 @@ export function getMarketLogoUrl(marketConfig: MarketConfig | null | undefined) 
   return logo.url ?? null;
 }
 
+export function getMarketFaviconUrl(marketConfig: MarketConfig | null | undefined) {
+  const favicon = marketConfig?.favicon;
+
+  if (!favicon) {
+    return null;
+  }
+
+  if (typeof favicon === 'string') {
+    return favicon;
+  }
+
+  return favicon.url ?? null;
+}
+
 export function getFallbackMarketConfig(marketId: string): MarketConfig {
   const fallbackMarketName = marketId || 'market';
 

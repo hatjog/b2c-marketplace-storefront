@@ -16,6 +16,7 @@ import { CookieBanner } from '@/components/cmp';
 import { retrieveCart } from '@/lib/data/cart';
 import { resolveStorefrontBaseUrl, validateStorefrontEnv } from '@/lib/env';
 import { toHreflang } from '@/lib/helpers/hreflang';
+import { getMarketFaviconUrl } from '@/lib/portal';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 import { Providers } from './providers';
@@ -55,6 +56,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = resolveStorefrontBaseUrl();
   const metadataBase = new URL(baseUrl);
 
+  // Per-market favicon: resolved from market config (storefront.favicon),
+  // served via the runtime-market-assets route. When absent, omit `icons`
+  // so Next falls back to the app/favicon.ico file convention.
+  const faviconUrl = getMarketFaviconUrl(marketConfig);
+
   return {
     title: {
       template: titleTemplate,
@@ -63,6 +69,14 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Mercur B2C Demo - Marketplace Storefront',
     metadataBase,
+    ...(faviconUrl
+      ? {
+          icons: {
+            icon: faviconUrl,
+            shortcut: faviconUrl
+          }
+        }
+      : {}),
     alternates: {
       languages: {
         'x-default': baseUrl
