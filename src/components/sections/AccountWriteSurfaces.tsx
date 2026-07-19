@@ -148,6 +148,10 @@ interface SettingsProps {
     email: string;
     locale: string;
   };
+  // Market-aware locale list from `resolveMarketLocales()` (Story 1.1 v1.14.0,
+  // AD-2): the server page resolves it and passes it down — this client
+  // surface must not keep its own locale list.
+  supportedLocales: readonly string[];
 }
 
 function SectionCard({ title, description, children, className }: SectionCardProps) {
@@ -1324,7 +1328,7 @@ export function ReturnRequestSuccessSurface({ orderId }: { orderId: string }) {
   );
 }
 
-export function AccountSettingsSurface({ customer }: SettingsProps) {
+export function AccountSettingsSurface({ customer, supportedLocales }: SettingsProps) {
   const t = useTranslations('account_write');
 
   const profileForm = useForm<ProfileSettingsFormValues>({
@@ -1439,7 +1443,7 @@ export function AccountSettingsSurface({ customer }: SettingsProps) {
                       className="min-h-[44px] w-full rounded-sm border border-[var(--bb-border-soft)] px-3 py-2"
                       {...profileForm.register('locale')}
                     >
-                      {['pl', 'en', 'ua', 'de'].map((locale) => (
+                      {supportedLocales.map((locale) => (
                         <option key={locale} value={locale}>
                           {locale.toUpperCase()}
                         </option>

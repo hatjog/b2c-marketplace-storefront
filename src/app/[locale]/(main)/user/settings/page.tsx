@@ -5,13 +5,15 @@ import { AccountSettingsSurface } from '@/components/sections/AccountWriteSurfac
 import { AccountLayoutWithChrome } from '@/components/templates/AccountLayoutWithChrome';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listOrders } from '@/lib/data/orders';
+import { resolveMarketLocales } from '@/lib/market-locales';
 
 export default async function ReviewsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, user] = await Promise.all([
+  const [t, user, marketLocales] = await Promise.all([
     getTranslations('account_write'),
     retrieveCustomer(),
+    resolveMarketLocales(),
   ]);
   const orders = user ? await listOrders() : [];
 
@@ -61,6 +63,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ locale
               email: user.email,
               locale,
             }}
+            supportedLocales={marketLocales.supported}
           />
         ) : (
           <LoginForm />

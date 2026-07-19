@@ -1,3 +1,4 @@
+import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import type { LegalEntity, MarketConfig } from '@/lib/portal';
 
 type FooterConnectLink = {
@@ -152,7 +153,12 @@ const FOOTER_NAV_I18N_KEYS_BY_PATH: Record<string, string> = {
   '/polityka-prywatnosci': 'nav.polityka-prywatnosci'
 };
 
-const FOOTER_NAV_LOCALE_SEGMENTS = new Set(['pl', 'en', 'ua', 'de']);
+// Path PARSING (not language exposure): nav paths configured in market.yaml may
+// carry any platform locale prefix, so recognition uses the compile-time
+// superset from routing.ts (ADR-150-4) instead of a hand-maintained copy.
+// Which languages the market actually exposes is decided by the market-aware
+// resolver (`@/lib/market-locales`) consumed by the middleware.
+const FOOTER_NAV_LOCALE_SEGMENTS = new Set<string>(SUPPORTED_LOCALES);
 
 function normalizeFooterNavI18nPath(path: string) {
   const [pathWithoutQuery] = path.split(/[?#]/);

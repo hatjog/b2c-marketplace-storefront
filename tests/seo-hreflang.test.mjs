@@ -1,12 +1,24 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test, { describe } from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+// Story 1.1 v1.14.0: builders consume the market-aware locale resolver —
+// point GP_CONFIG_ROOT at the bonbeauty fixture (all 4 platform locales)
+// BEFORE the module graph loads.
+process.env.GP_CONFIG_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  'fixtures/market-config'
+);
+process.env.GP_INSTANCE_ID = 'gp-dev';
+process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID = 'bonbeauty';
 
 const { buildLocaleSeoAlternates, buildLocaleSocialMetadata } =
   await import('../src/lib/seo/hreflang.ts');
 
 describe('SEO hreflang matrix', () => {
-  test('builds category alternates with four BCP 47 locales and x-default', () => {
-    const alternates = buildLocaleSeoAlternates(
+  test('builds category alternates with four BCP 47 locales and x-default', async () => {
+    const alternates = await buildLocaleSeoAlternates(
       'https://bonbeauty.test',
       'de',
       'categories',
@@ -23,8 +35,8 @@ describe('SEO hreflang matrix', () => {
     });
   });
 
-  test('preserves PDP handle while swapping locale prefix', () => {
-    const alternates = buildLocaleSeoAlternates(
+  test('preserves PDP handle while swapping locale prefix', async () => {
+    const alternates = await buildLocaleSeoAlternates(
       'https://bonbeauty.test',
       'en',
       'products',
@@ -39,8 +51,8 @@ describe('SEO hreflang matrix', () => {
     );
   });
 
-  test('preserves seller handle while swapping locale prefix', () => {
-    const alternates = buildLocaleSeoAlternates(
+  test('preserves seller handle while swapping locale prefix', async () => {
+    const alternates = await buildLocaleSeoAlternates(
       'https://bonbeauty.test',
       'ua',
       'sellers',
@@ -52,8 +64,8 @@ describe('SEO hreflang matrix', () => {
     assert.equal(alternates.languages['pl-PL'], 'https://bonbeauty.test/pl/sellers/salon-anna');
   });
 
-  test('builds Open Graph locale alternates and Twitter language', () => {
-    const social = buildLocaleSocialMetadata('de');
+  test('builds Open Graph locale alternates and Twitter language', async () => {
+    const social = await buildLocaleSocialMetadata('de');
 
     // Open Graph requires the underscore `language_TERRITORY` form (pl_PL);
     // crawlers ignore the hyphenated BCP-47 form. hreflang/twitter keep hyphens.

@@ -1,0 +1,16 @@
+# Test fixture — market-aware locale resolver (Story 1.1 v1.14.0).
+# Mirrors the `locales` block shape of gp-ops bonbeauty market.yaml.
+market_id: bonbeauty
+name: BonBeauty
+locales:
+  default: pl
+  supported:
+    - pl
+    - en
+    - ua
+    - de
+  fallback_chain:
+    - pl
+    - en
+    - ua
+    - de

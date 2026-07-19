@@ -16,6 +16,9 @@ import { buildLocaleAlternates, type LocaleSeoAlternates } from './hreflang';
  */
 export type SellerAlternates = LocaleSeoAlternates;
 
-export function buildSellerAlternates(locale: string, suffix: string = ''): SellerAlternates {
+export async function buildSellerAlternates(
+  locale: string,
+  suffix: string = ''
+): Promise<SellerAlternates> {
   return buildLocaleAlternates(locale, (loc) => `/${loc}/sellers${suffix}`);
 }

@@ -16,7 +16,8 @@
 
 import type { MetadataRoute } from 'next';
 
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n/routing';
+import type { SupportedLocale } from '@/i18n/routing';
+import { resolveMarketLocales, type MarketLocales } from '@/lib/market-locales';
 import { toHreflangBare } from '@/lib/helpers/hreflang';
 import { listCategories } from '@/lib/data/categories';
 import { getSellers } from '@/lib/data/seller';
@@ -95,9 +96,10 @@ function localizedUrl(base: string, locale: string, path = ''): string {
 
 function buildAlternates(
   base: string,
+  marketLocales: MarketLocales,
   path = ''
 ): NonNullable<MetadataRoute.Sitemap[number]['alternates']> {
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, locale) => {
+  const languages = marketLocales.supported.reduce<Record<string, string>>((acc, locale) => {
     acc[toHreflangBare(locale)] = localizedUrl(base, locale, path);
     return acc;
   }, {});
@@ -105,7 +107,7 @@ function buildAlternates(
   return {
     languages: {
       ...languages,
-      'x-default': localizedUrl(base, DEFAULT_LOCALE, path)
+      'x-default': localizedUrl(base, marketLocales.defaultLocale, path)
     }
   };
 }
@@ -158,6 +160,10 @@ function buildProgrammaticLandings(): Array<{ location: string; offer: string }>
 
 export async function buildSitemap(): Promise<SitemapBuildResult> {
   const base = resolveSitemapBaseUrl();
+  // Story 1.1 v1.14.0 (AD-2): sitemap emits entries only for the market's
+  // locales (resolver) and x-default points at `locales.default`.
+  const marketLocales = await resolveMarketLocales();
+  const marketSupported = marketLocales.supported;
   const lastModified = new Date();
   const entries: MetadataRoute.Sitemap = [];
   const familyCounts: Record<SitemapRouteFamily, number> = {
@@ -171,13 +177,13 @@ export async function buildSitemap(): Promise<SitemapBuildResult> {
   // Family 1: static (excludes noindex slugs)
   for (const route of STATIC_LOCALIZED_ROUTES) {
     if (NOINDEX_STATIC_SLUGS.has(route)) continue;
-    for (const locale of SUPPORTED_LOCALES) {
+    for (const locale of marketSupported) {
       entries.push({
         url: localizedUrl(base, locale, route),
         lastModified,
         changeFrequency: route === '' ? 'daily' : 'weekly',
         priority: route === '' ? 1 : route === '/sellers' ? 0.8 : 0.6,
-        alternates: buildAlternates(base, route)
+        alternates: buildAlternates(base, marketLocales, route)
       });
       familyCounts.static += 1;
     }
@@ -186,13 +192,13 @@ export async function buildSitemap(): Promise<SitemapBuildResult> {
   // Family 2: categories
   const categories = await safeListCategories();
   for (const category of categories) {
-    for (const locale of SUPPORTED_LOCALES) {
+    for (const locale of marketSupported) {
       entries.push({
         url: localizedUrl(base, locale, `/categories/${category.handle}`),
         lastModified,
         changeFrequency: 'weekly',
         priority: 0.5,
-        alternates: buildAlternates(base, `/categories/${category.handle}`)
+        alternates: buildAlternates(base, marketLocales, `/categories/${category.handle}`)
       });
       familyCounts.category += 1;
     }
@@ -201,13 +207,13 @@ export async function buildSitemap(): Promise<SitemapBuildResult> {
   // Family 3: sellers
   const sellers = await safeListSellers();
   for (const seller of sellers) {
-    for (const locale of SUPPORTED_LOCALES) {
+    for (const locale of marketSupported) {
       entries.push({
         url: localizedUrl(base, locale, `/sellers/${seller.handle}`),
         lastModified,
         changeFrequency: 'monthly',
         priority: 0.6,
-        alternates: buildAlternates(base, `/sellers/${seller.handle}`)
+        alternates: buildAlternates(base, marketLocales, `/sellers/${seller.handle}`)
       });
       familyCounts.seller += 1;
     }
@@ -216,13 +222,13 @@ export async function buildSitemap(): Promise<SitemapBuildResult> {
   // Family 4: blog posts
   const blogPosts = await safeListBlogPosts();
   for (const post of blogPosts) {
-    for (const locale of SUPPORTED_LOCALES) {
+    for (const locale of marketSupported) {
       entries.push({
         url: localizedUrl(base, locale, `/blog/${post.slug}`),
         lastModified,
         changeFrequency: 'monthly',
         priority: 0.5,
-        alternates: buildAlternates(base, `/blog/${post.slug}`)
+        alternates: buildAlternates(base, marketLocales, `/blog/${post.slug}`)
       });
       familyCounts.blog_post += 1;
     }
@@ -231,13 +237,13 @@ export async function buildSitemap(): Promise<SitemapBuildResult> {
   // Family 5: programmatic geo landings `/l/[location]/[offer]`
   const landings = buildProgrammaticLandings();
   for (const { location, offer } of landings) {
-    for (const locale of SUPPORTED_LOCALES) {
+    for (const locale of marketSupported) {
       entries.push({
         url: localizedUrl(base, locale, `/l/${location}/${offer}`),
         lastModified,
         changeFrequency: 'monthly',
         priority: 0.4,
-        alternates: buildAlternates(base, `/l/${location}/${offer}`)
+        alternates: buildAlternates(base, marketLocales, `/l/${location}/${offer}`)
       });
       familyCounts.programmatic_geo_landing += 1;
     }

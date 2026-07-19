@@ -30,9 +30,18 @@ export type LegalEntity = {
   phone?: string | null;
 };
 
-type MarketRuntimeConfig = {
+// Mirrors `properties.locales` of market-runtime-config.v1.schema.json (D-61):
+// key set is drift-tested against the schema (Story 1.1 v1.14.0, AC4 parity).
+export type MarketLocalesRuntimeBlock = {
+  default?: unknown;
+  supported?: unknown;
+  fallback_chain?: unknown;
+};
+
+export type MarketRuntimeConfig = {
   market_id?: string | null;
   name?: string | null;
+  locales?: MarketLocalesRuntimeBlock | null;
   public_profile?: {
     social_links?: Record<string, unknown> | null;
   } | null;
@@ -160,7 +169,7 @@ async function discoverRuntimeMarketId(configRoot: string): Promise<string | nul
   return firstConfiguredMarket;
 }
 
-async function resolveRuntimeMarketId(marketId: string): Promise<string | null> {
+export async function resolveRuntimeMarketId(marketId: string): Promise<string | null> {
   const normalizedMarketId = normalizeNonEmptyString(marketId);
   if (normalizedMarketId) {
     return normalizedMarketId;
@@ -196,7 +205,7 @@ async function readYamlRecord(filePath: string, errorScope: string): Promise<Rec
 // fields (name, logo, legal_entity, SEO, social_links, theme) are resolved from the
 // discovered market's YAML. This is intentional: it ensures full coherence of all fields
 // from a single source rather than a partial per-field fallback (ADR-145, ADR-126/127).
-const readRuntimeMarketConfig = cache(async (marketId: string): Promise<MarketRuntimeConfig | null> => {
+export const readRuntimeMarketConfig = cache(async (marketId: string): Promise<MarketRuntimeConfig | null> => {
   const resolvedMarketId = await resolveRuntimeMarketId(marketId);
   if (!resolvedMarketId) {
     return null;

@@ -72,8 +72,8 @@ export async function generateMetadata({
   // not-found branch we keep the alternates pointing at the requested handle
   // so that crawlers reaching the URL via a stale link see the right
   // cross-locale signal (the page itself stays `noindex`).
-  const alternates = buildSellerAlternates(locale, `/${handle}`);
-  const social = buildLocaleSocialMetadata(locale);
+  const alternates = await buildSellerAlternates(locale, `/${handle}`);
+  const social = await buildLocaleSocialMetadata(locale);
 
   if (!seller) {
     // R-6: rozszerzony OG fallback — daje crawlerom title/description/type
