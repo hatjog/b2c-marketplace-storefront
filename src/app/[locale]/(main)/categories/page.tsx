@@ -18,6 +18,7 @@ import {
   getCategoriesIndexCopy,
   type CategoryFilterId,
 } from "@/lib/i18n/categories-index-copy"
+import { resolveCategoryImage, type CategoryImage } from "@/lib/category-images"
 import { StorefrontI18nLongContentProbe } from "@/components/atoms"
 
 export const revalidate = 300
@@ -33,7 +34,7 @@ interface DisplayCategory {
   name: string
   rank: number
   metadata: Record<string, unknown>
-  photoUrl: string | null
+  image: CategoryImage
   subcategoryCount: number
 }
 
@@ -49,30 +50,10 @@ function normalizeFilter(filterParam: string | undefined): CategoryFilterId {
     : "all"
 }
 
-function metadataString(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null
-  }
-
-  const trimmed = value.trim()
-  return trimmed.length > 0 ? trimmed : null
-}
-
-function resolveCategoryPhotoUrl(metadata: Record<string, unknown>): string | null {
-  const rootPhotoUrl = metadataString(metadata.photo_url)
-  if (rootPhotoUrl) {
-    return rootPhotoUrl
-  }
-
-  const gpMetadata = metadata.gp
-  if (!gpMetadata || typeof gpMetadata !== "object" || Array.isArray(gpMetadata)) {
-    return null
-  }
-
-  return metadataString((gpMetadata as Record<string, unknown>).photo_url)
-}
-
-function toDisplayCategories(categories: HttpTypes.StoreProductCategory[]): DisplayCategory[] {
+function toDisplayCategories(
+  categories: HttpTypes.StoreProductCategory[],
+  marketId: string
+): DisplayCategory[] {
   return categories
     .filter((category) => Boolean(category?.id && category?.handle && category?.name))
     .map((category) => {
@@ -96,7 +77,7 @@ function toDisplayCategories(categories: HttpTypes.StoreProductCategory[]): Disp
         name: String(category.name),
         rank: safeRank,
         metadata,
-        photoUrl: resolveCategoryPhotoUrl(metadata),
+        image: resolveCategoryImage(String(category.handle), metadata, marketId),
         subcategoryCount: childCount,
       }
     })
@@ -288,7 +269,7 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
     },
   })
 
-  const mappedCategories = toDisplayCategories(categories)
+  const mappedCategories = toDisplayCategories(categories, marketId)
   const featuredCategories = selectFeaturedCategories(mappedCategories)
   const filteredByPrimaryFilter = applyFilter(mappedCategories, effectiveFilter)
   const filteredCategories = applyDiscoveryFilters(filteredByPrimaryFilter, requestedMode, queryParam)
@@ -332,7 +313,6 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
         imageAltPrefix={copy.categoryImageAlt}
         imageMissingLabel={copy.categoryImageMissing}
         countLabel={copy.gridCountLabel}
-        marketId={marketId}
         categories={filteredCategories}
       />
     </main>

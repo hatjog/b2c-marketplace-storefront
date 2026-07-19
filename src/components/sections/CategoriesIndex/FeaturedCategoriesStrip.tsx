@@ -3,11 +3,13 @@
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import Image from "next/image"
 import { useState } from "react"
+import type { CategoryImage } from "@/lib/category-images"
 
 interface FeaturedCategory {
   id: string
   handle: string
   name: string
+  image: CategoryImage
   subcategoryCount: number
 }
 
@@ -40,8 +42,8 @@ function FeaturedCategoryTile({
           </div>
         ) : (
           <Image
-            src={`/images/categories/${category.handle}.png`}
-            alt={category.name}
+            src={category.image.src}
+            alt={category.image.alt || category.name}
             fill
             className="object-cover transition duration-300 group-hover:scale-105"
             sizes="(min-width: 1280px) 30vw, (min-width: 768px) 48vw, 100vw"

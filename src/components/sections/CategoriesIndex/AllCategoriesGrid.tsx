@@ -3,14 +3,13 @@
 import LocalizedClientLink from "@/components/molecules/LocalizedLink/LocalizedLink"
 import { useMemo, useState } from "react"
 import Image from "next/image"
-import { categoryImageSrc } from "@/lib/category-images"
-import { resolveMarketAssetUrl } from "@/lib/helpers/asset-reference"
+import type { CategoryImage } from "@/lib/category-images"
 
 interface GridCategory {
   id: string
   handle: string
   name: string
-  photoUrl: string | null
+  image: CategoryImage
   subcategoryCount: number
 }
 
@@ -20,7 +19,6 @@ interface AllCategoriesGridProps {
   imageAltPrefix: string
   imageMissingLabel: string
   countLabel: string
-  marketId: string
   categories: GridCategory[]
 }
 
@@ -29,23 +27,20 @@ function CategoryTile({
   imageAltPrefix,
   imageMissingLabel,
   countLabel,
-  marketId,
 }: {
   category: GridCategory
   imageAltPrefix: string
   imageMissingLabel: string
   countLabel: string
-  marketId: string
 }) {
   const [imageBroken, setImageBroken] = useState(false)
-  const imageSrc = categoryImageSrc(
-    category.handle,
-    resolveMarketAssetUrl(category.photoUrl, marketId)
-  )
+  const imageSrc = category.image.src
 
+  // Alt must stay consistent with the displayed image: the alt carried by the
+  // chosen gp.images element wins; generic label only when none was carried.
   const imageAlt = useMemo(
-    () => `${imageAltPrefix}: ${category.name}`,
-    [imageAltPrefix, category.name]
+    () => category.image.alt || `${imageAltPrefix}: ${category.name}`,
+    [category.image.alt, imageAltPrefix, category.name]
   )
 
   return (
@@ -89,7 +84,6 @@ export function AllCategoriesGrid({
   imageAltPrefix,
   imageMissingLabel,
   countLabel,
-  marketId,
   categories,
 }: AllCategoriesGridProps) {
   return (
@@ -107,7 +101,6 @@ export function AllCategoriesGrid({
             imageAltPrefix={imageAltPrefix}
             imageMissingLabel={imageMissingLabel}
             countLabel={countLabel}
-            marketId={marketId}
           />
         ))}
       </div>
