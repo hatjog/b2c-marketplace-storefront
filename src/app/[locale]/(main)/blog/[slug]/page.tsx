@@ -8,9 +8,9 @@ import { Breadcrumbs } from '@/components/atoms';
 import { NewsletterSlot } from '@/components/organisms';
 import { BlogLayout, BlogRichText, BlogTocNav } from '@/components/templates';
 import { fetchPayloadBlogPage } from '@/data/payload-pages';
-import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n/routing';
+import { type SupportedLocale } from '@/i18n/routing';
 import { buildTocEntries, formatBlogPublishedDate } from '@/lib/blog';
-import { toHreflang } from '@/lib/helpers/hreflang';
+import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 600;
 
@@ -22,19 +22,10 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
-function buildBlogPostAlternates(baseUrl: string, locale: string, slug: string) {
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
-    acc[toHreflang(code)] = new URL(`/${code}/blog/${slug}`, `${baseUrl}/`).toString();
-    return acc;
-  }, {});
-
-  return {
-    canonical: new URL(`/${locale}/blog/${slug}`, `${baseUrl}/`).toString(),
-    languages: {
-      ...languages,
-      'x-default': new URL(`/pl/blog/${slug}`, `${baseUrl}/`).toString()
-    }
-  };
+// Story 1.1 v1.14.0 AC1 — alternates built from the market-aware locale resolver,
+// not a hardcoded SUPPORTED_LOCALES iteration; x-default follows locales.default.
+async function buildBlogPostAlternates(baseUrl: string, locale: string, slug: string) {
+  return buildLocaleAlternates(locale, loc => `/${loc}/blog/${slug}`, baseUrl);
 }
 
 export async function generateMetadata({
@@ -55,7 +46,7 @@ export async function generateMetadata({
   }
 
   const baseUrl = await getBaseUrl();
-  const alternates = buildBlogPostAlternates(baseUrl, locale, page.slug);
+  const alternates = await buildBlogPostAlternates(baseUrl, locale, page.slug);
   const openGraphImage = page.heroImage.startsWith('http')
     ? page.heroImage
     : `${baseUrl}${page.heroImage}`;

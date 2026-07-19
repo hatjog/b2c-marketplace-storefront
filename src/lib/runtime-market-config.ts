@@ -179,7 +179,11 @@ export async function resolveRuntimeMarketId(marketId: string): Promise<string |
   return discoverRuntimeMarketId(configRoot);
 }
 
-async function readYamlRecord(filePath: string, errorScope: string): Promise<Record<string, unknown> | null> {
+async function readYamlRecord(
+  filePath: string,
+  errorScope: string,
+  options: { rethrowTransient?: boolean } = {}
+): Promise<Record<string, unknown> | null> {
   try {
     const raw = await fs.readFile(filePath, 'utf8');
     const parsed = yaml.load(raw);
@@ -197,6 +201,16 @@ async function readYamlRecord(filePath: string, errorScope: string): Promise<Rec
     }
 
     console.error(`[${errorScope}] failed to load ${filePath}`, error);
+
+    // Story 1.1 v1.14.0 F2 fix: non-ENOENT fs errors (EMFILE/EIO/transient mount
+    // races) are NOT config-validation failures — callers that need to tell
+    // "config genuinely absent" apart from "transient I/O hiccup" (e.g. the
+    // market-locales resolver's cached-rejection semantics) opt in via
+    // `rethrowTransient` instead of getting a silent `null`.
+    if (options.rethrowTransient) {
+      throw error;
+    }
+
     return null;
   }
 }
@@ -217,6 +231,29 @@ export const readRuntimeMarketConfig = cache(async (marketId: string): Promise<M
   const parsed = await readYamlRecord(marketConfigPath, 'runtime-market-config');
   return parsed as MarketRuntimeConfig | null;
 });
+
+/**
+ * Same read as `readRuntimeMarketConfig`, except a transient fs error (anything
+ * other than ENOENT — e.g. a config volume mounting a moment after container
+ * start, or an EMFILE/EIO burst) is re-thrown instead of swallowed to `null`.
+ * Used by the market-locales resolver (Story 1.1 v1.14.0, F2), which needs to
+ * tell "market.yaml genuinely absent" (deterministic, safe to cache) apart from
+ * "transient I/O hiccup" (must NOT be cached — the next request should retry).
+ * Deliberately NOT `react`-`cache()`-wrapped: it must run fresh every call so a
+ * retry after a transient failure actually re-reads the file.
+ */
+export async function readRuntimeMarketConfigOrThrow(marketId: string): Promise<MarketRuntimeConfig | null> {
+  const resolvedMarketId = await resolveRuntimeMarketId(marketId);
+  if (!resolvedMarketId) {
+    return null;
+  }
+
+  const configRoot = await resolveConfigRoot();
+  const marketConfigPath = getMarketConfigPath(configRoot, resolvedMarketId);
+
+  const parsed = await readYamlRecord(marketConfigPath, 'runtime-market-config', { rethrowTransient: true });
+  return parsed as MarketRuntimeConfig | null;
+}
 
 const readRuntimeHomepageConfig = cache(async (marketId: string): Promise<HomepageRuntimeConfig | null> => {
   if (!marketId) {

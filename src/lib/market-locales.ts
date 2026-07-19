@@ -14,7 +14,16 @@
  */
 
 import { SUPPORTED_LOCALES, isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
-import { readRuntimeMarketConfig, resolveRuntimeMarketId } from '@/lib/runtime-market-config';
+import { readRuntimeMarketConfigOrThrow, resolveRuntimeMarketId } from '@/lib/runtime-market-config';
+
+// Marker prefix for errors raised by `fail()` below — i.e. deterministic
+// config-validation failures (bad/missing `locales` block), as opposed to raw
+// fs errors surfaced by `readRuntimeMarketConfigOrThrow` (F2: transient I/O).
+const VALIDATION_ERROR_PREFIX = '[market-locales]';
+
+function isMarketLocalesValidationError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith(VALIDATION_ERROR_PREFIX);
+}
 
 // Key set of `properties.locales` in market-runtime-config.v1.schema.json.
 // Drift-tested against the schema (AC4 allowed-keys == schema-properties parity).
@@ -131,7 +140,10 @@ async function loadMarketLocales(): Promise<MarketLocales> {
     );
   }
 
-  const config = await readRuntimeMarketConfig(marketId);
+  // Transient fs errors (not ENOENT) propagate as raw errors here (F2) — they
+  // are deliberately NOT wrapped in `fail()` so `resolveMarketLocales` can tell
+  // them apart from a deterministically missing/invalid `locales` block below.
+  const config = await readRuntimeMarketConfigOrThrow(marketId);
   if (!config) {
     fail(marketId, 'market.yaml', 'is missing or unreadable under the resolved config root');
   }
@@ -144,11 +156,25 @@ let marketLocalesPromise: Promise<MarketLocales> | null = null;
 /**
  * Resolves the market locale contract with a module-level cache — exactly one
  * config read per process (AD-2; market.yaml change requires restart). A
- * rejected load stays cached: a market without a valid `locales` block must
- * fail fast on every request, not silently fall back to the platform superset.
+ * rejected load stays cached ONLY when it is a deterministic config-validation
+ * failure (missing/invalid `locales` block, unresolvable market id) — a market
+ * without a valid `locales` block must fail fast on every request, not
+ * silently fall back to the platform superset.
+ *
+ * A *transient* fs error (F2 — e.g. a config volume mounting a moment after
+ * container start, or an EMFILE/EIO burst) is NOT cached: the promise is
+ * cleared so the next call retries the read instead of permanently 500-ing
+ * every request until restart.
  */
 export function resolveMarketLocales(): Promise<MarketLocales> {
-  marketLocalesPromise ??= loadMarketLocales();
+  if (!marketLocalesPromise) {
+    marketLocalesPromise = loadMarketLocales().catch(error => {
+      if (!isMarketLocalesValidationError(error)) {
+        marketLocalesPromise = null;
+      }
+      throw error;
+    });
+  }
   return marketLocalesPromise;
 }
 

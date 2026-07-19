@@ -5,9 +5,8 @@ import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { BlogLayout } from '@/components/templates';
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { getBlogIndexData } from '@/lib/blog';
-import { toHreflang } from '@/lib/helpers/hreflang';
+import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 600;
 
@@ -19,19 +18,10 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
-function buildBlogIndexAlternates(baseUrl: string, locale: string) {
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
-    acc[toHreflang(code)] = new URL(`/${code}/blog`, `${baseUrl}/`).toString();
-    return acc;
-  }, {});
-
-  return {
-    canonical: new URL(`/${locale}/blog`, `${baseUrl}/`).toString(),
-    languages: {
-      ...languages,
-      'x-default': new URL('/pl/blog', `${baseUrl}/`).toString()
-    }
-  };
+// Story 1.1 v1.14.0 AC1 — alternates built from the market-aware locale resolver,
+// not a hardcoded SUPPORTED_LOCALES iteration; x-default follows locales.default.
+async function buildBlogIndexAlternates(baseUrl: string, locale: string) {
+  return buildLocaleAlternates(locale, loc => `/${loc}/blog`, baseUrl);
 }
 
 export async function generateMetadata({
@@ -42,7 +32,7 @@ export async function generateMetadata({
   const { locale } = await params;
   setRequestLocale(locale);
   const baseUrl = await getBaseUrl();
-  const alternates = buildBlogIndexAlternates(baseUrl, locale);
+  const alternates = await buildBlogIndexAlternates(baseUrl, locale);
   const t = await getTranslations('blog');
 
   return {

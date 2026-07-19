@@ -29,6 +29,7 @@ import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { resolveMarketLocales } from '@/lib/market-locales';
 import type { MarketConfig } from '@/lib/portal';
 import { getTranslations } from 'next-intl/server';
 import type { Wishlist } from '@/types/wishlist';
@@ -46,6 +47,9 @@ export const SiteHeader = async ({
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
   const countryCode = await getCountryCode(locale);
+  // Story 1.1 v1.14.0 F3 — filter the switcher to what THIS market exposes,
+  // not the compile-time platform superset (AC3 single-source).
+  const { supported: marketSupportedLocales } = await resolveMarketLocales();
   let wishlist: Wishlist = { products: [] };
   if (user) {
     wishlist = await getUserWishlists({ countryCode });
@@ -111,7 +115,7 @@ export const SiteHeader = async ({
           </div>
 
           {/* slot: locale-switcher — W6-10 */}
-          <LocaleSwitcher currentLocale={locale} />
+          <LocaleSwitcher currentLocale={locale} supportedLocales={marketSupportedLocales} />
 
           <div className="hidden items-center gap-2 lg:flex">
             {isLoggedIn ? (

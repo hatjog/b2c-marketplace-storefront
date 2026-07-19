@@ -9,10 +9,10 @@
 //   --bb-radius-pill, --bb-radius-card, --font-body, --font-weight-medium,
 //   --space-2, --space-4, --anim-duration-fast, --anim-ease-standard
 
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
-import { isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
+import { SUPPORTED_LOCALES, isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 
 interface LocaleOption {
@@ -22,6 +22,12 @@ interface LocaleOption {
   countryCode: string;
 }
 
+// Metadata-per-locale (flag/native name), not an authoritative locale list —
+// analogous to STOREFRONT_LOCALE_MAP (hreflang.ts). The *authoritative* set of
+// locales this market exposes is the `supportedLocales` prop, resolved
+// server-side from the market-aware resolver (Story 1.1 v1.14.0, F3): it
+// filters this compile-time metadata table down to what the market supports,
+// so the dropdown never offers a locale the middleware would just 307 away.
 const LOCALE_OPTIONS: LocaleOption[] = [
   { code: 'pl', nativeName: 'Polski', flag: '🇵🇱', countryCode: 'PL' },
   { code: 'en', nativeName: 'English', flag: '🇬🇧', countryCode: 'GB' },
@@ -32,16 +38,31 @@ const LOCALE_OPTIONS: LocaleOption[] = [
 interface LocaleSwitcherProps {
   currentLocale: string;
   className?: string;
+  /**
+   * Market-aware locale set (from `resolveMarketLocales()` in the server
+   * page/layout). Defaults to the full platform superset so existing
+   * call-sites/tests that don't pass it keep rendering all locales.
+   */
+  supportedLocales?: readonly SupportedLocale[];
 }
 
-export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps) {
+export function LocaleSwitcher({
+  currentLocale,
+  className,
+  supportedLocales = SUPPORTED_LOCALES
+}: LocaleSwitcherProps) {
   const t = useTranslations('locale_switcher');
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const current = LOCALE_OPTIONS.find((o) => o.code === currentLocale) ?? LOCALE_OPTIONS[0];
+  const options = useMemo(
+    () => LOCALE_OPTIONS.filter((option) => supportedLocales.includes(option.code)),
+    [supportedLocales]
+  );
+
+  const current = options.find((o) => o.code === currentLocale) ?? options[0] ?? LOCALE_OPTIONS[0];
 
   function switchLocale(option: LocaleOption) {
     if (!isSupportedLocale(option.code) || option.code === currentLocale) {
@@ -103,7 +124,7 @@ export function LocaleSwitcher({ currentLocale, className }: LocaleSwitcherProps
             'shadow-[var(--bb-shadow-soft)] py-1'
           )}
         >
-          {LOCALE_OPTIONS.map((option) => {
+          {options.map((option) => {
             const selected = option.code === currentLocale;
             return (
               <button

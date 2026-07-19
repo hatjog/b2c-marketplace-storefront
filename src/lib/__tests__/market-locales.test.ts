@@ -157,6 +157,53 @@ describe('resolveMarketLocales (MarketRuntimeConfig read + module cache, AC1)', 
     await expect(resolveMarketLocales()).rejects.toThrowError(/market-locales/);
   });
 
+  it('does NOT cache a transient fs error (F2) — a retry after the hiccup clears succeeds', async () => {
+    const configRoot = await createConfigRoot(null);
+    const marketYamlPath = path.join(configRoot, 'gp-dev', 'markets', 'bonbeauty', 'market.yaml');
+    // Simulate a transient I/O hiccup (not ENOENT): market.yaml is momentarily a
+    // directory (e.g. a config volume mid-mount), so fs.readFile throws EISDIR.
+    await fs.mkdir(marketYamlPath, { recursive: true });
+
+    const { resolveMarketLocales } = await importFreshResolver(configRoot);
+
+    await expect(resolveMarketLocales()).rejects.toThrow();
+
+    // Fix the transient condition: replace the directory with the real file.
+    await fs.rm(marketYamlPath, { recursive: true, force: true });
+    await fs.writeFile(
+      marketYamlPath,
+      ['market_id: bonbeauty', 'locales:', '  default: pl', '  supported: [pl, en]', ''].join('\n'),
+      'utf8'
+    );
+
+    // The rejection must NOT have been cached — the next call retries and reads
+    // the now-valid config, instead of permanently failing until restart.
+    const result = await resolveMarketLocales();
+    expect(result.supported).toEqual(['pl', 'en']);
+    expect(result.defaultLocale).toBe('pl');
+  });
+
+  it('DOES cache a deterministic validation error (missing locales block) — no retry', async () => {
+    const configRoot = await createConfigRoot('market_id: bonbeauty\nname: BonBeauty\n');
+    const { resolveMarketLocales } = await importFreshResolver(configRoot);
+
+    await expect(resolveMarketLocales()).rejects.toThrowError(
+      /market "bonbeauty": locales block is missing/
+    );
+
+    // Fix the config on disk — a cached validation-error rejection must still
+    // be returned (module-level cache, AD-2: restart required to pick up fixes).
+    await fs.writeFile(
+      path.join(configRoot, 'gp-dev', 'markets', 'bonbeauty', 'market.yaml'),
+      ['market_id: bonbeauty', 'locales:', '  default: pl', '  supported: [pl]', ''].join('\n'),
+      'utf8'
+    );
+
+    await expect(resolveMarketLocales()).rejects.toThrowError(
+      /market "bonbeauty": locales block is missing/
+    );
+  });
+
   it('isMarketSupportedLocale / getMarketDefaultLocale follow the resolver contract', async () => {
     const configRoot = await createConfigRoot(
       ['market_id: bonbeauty', 'locales:', '  default: pl', '  supported: [pl, ua]', ''].join('\n')
