@@ -108,9 +108,14 @@ function gpImageCandidates(handle: string, gp: Record<string, unknown> | null): 
     return valid.slice(0, 1);
   }
 
-  const ordered =
-    primaries.length === 1 ? [primaries[0], ...valid.filter(v => v !== primaries[0])] : valid;
-  return ordered.slice(0, 2);
+  // Strict AC2 order: exactly one candidate leaves this step — the
+  // `is_primary` element when unique, otherwise `gp.images[0]`. A second
+  // `gp.images` entry is deliberately NOT offered as a fallback here; if the
+  // chosen candidate's url is unresolvable, resolution falls through to the
+  // next normative step (`photo_url` → `gp.photo_url` → placeholder), not to
+  // another `gp.images` element (see 3-1-F2).
+  const chosen = primaries.length === 1 ? primaries[0] : valid[0];
+  return chosen ? [chosen] : [];
 }
 
 /**
@@ -120,7 +125,12 @@ function gpImageCandidates(handle: string, gp: Record<string, unknown> | null): 
  */
 function resolveCandidateSrc(url: string, marketId: string): string | null {
   const resolved = resolveMarketAssetUrl(url, marketId);
-  if (!resolved || resolved.includes('/images/categories/')) {
+  // Reject only the root-relative bundled convention path itself
+  // (`/images/categories/<handle>.png`), not any resolved URL that merely
+  // *contains* that segment (e.g. a legitimate
+  // `/api/runtime-market-assets/<market>/assets/images/categories/...` ref
+  // or an absolute CDN URL with that path component) — see 3-1-F3.
+  if (!resolved || resolved.startsWith('/images/categories/')) {
     return null;
   }
 

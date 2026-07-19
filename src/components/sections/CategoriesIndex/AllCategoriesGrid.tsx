@@ -37,9 +37,14 @@ function CategoryTile({
   const imageSrc = category.image.src
 
   // Alt must stay consistent with the displayed image: the alt carried by the
-  // chosen gp.images element wins; generic label only when none was carried.
+  // chosen gp.images element wins — including an intentionally EMPTY string
+  // (decorative-image convention, AC1). Generic label applies only when the
+  // reader carried no alt at all (`null`), not when it carried `''` (3-1-F5).
   const imageAlt = useMemo(
-    () => category.image.alt || `${imageAltPrefix}: ${category.name}`,
+    () =>
+      category.image.alt !== null
+        ? category.image.alt
+        : `${imageAltPrefix}: ${category.name}`,
     [category.image.alt, imageAltPrefix, category.name]
   )
 

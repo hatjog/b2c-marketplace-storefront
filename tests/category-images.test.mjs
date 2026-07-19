@@ -145,6 +145,30 @@ describe('resolveCategoryImage — url form resolution (T2, ADR-159)', () => {
     );
     assert.equal(known.src, '/images/categories/sport.png');
   });
+
+  test('a legitimate resolved url that merely CONTAINS the /images/categories/ segment is accepted, not rejected as bundled-convention (3-1-F3)', () => {
+    // Source asset ref lives under an "images/categories" subfolder of the
+    // market assets bucket — resolves through runtime-market-assets, which
+    // is NOT the bundled convention path and must not be gated out by a
+    // substring match on the resolved URL.
+    const image = resolveCategoryImage(
+      'twarz',
+      { gp: { images: [{ url: 'assets/images/categories/twarz.jpg', is_primary: true }] } },
+      MARKET
+    );
+    assert.equal(image.src, `${RUNTIME_PREFIX}assets/images/categories/twarz.jpg`);
+
+    const absolute = resolveCategoryImage(
+      'twarz',
+      {
+        gp: {
+          images: [{ url: 'https://cdn.example.com/images/categories/twarz.jpg', is_primary: true }]
+        }
+      },
+      MARKET
+    );
+    assert.equal(absolute.src, 'https://cdn.example.com/images/categories/twarz.jpg');
+  });
 });
 
 describe('resolveCategoryImage — graceful degradation, NEVER throws (AC2)', () => {
@@ -206,8 +230,8 @@ describe('resolveCategoryImage — graceful degradation, NEVER throws (AC2)', ()
       {
         gp: {
           images: [
-            { url: '../escape.jpg', alt: 'Broken alt', is_primary: true },
-            { url: 'assets/ok.jpg', alt: 'OK alt' }
+            { url: 'assets/ok.jpg', alt: 'OK alt', is_primary: true },
+            { url: '../escape.jpg', alt: 'Broken alt' }
           ]
         }
       },
@@ -216,5 +240,25 @@ describe('resolveCategoryImage — graceful degradation, NEVER throws (AC2)', ()
 
     assert.equal(image.src, `${RUNTIME_PREFIX}assets/ok.jpg`);
     assert.equal(image.alt, 'OK alt');
+  });
+
+  test('unresolvable gp.images candidate does NOT fall back to a second gp.images element — falls through the normative chain instead (3-1-F2)', () => {
+    const image = resolveCategoryImage(
+      'twarz',
+      {
+        gp: {
+          images: [
+            { url: '../escape.jpg', alt: 'Broken alt', is_primary: true },
+            { url: 'assets/ok.jpg', alt: 'OK alt' }
+          ]
+        }
+      },
+      MARKET
+    );
+
+    // Strict AC2 order: gp.images[is_primary] unresolvable -> photo_url (absent)
+    // -> gp.photo_url (absent) -> placeholder. gp.images[1] is never tried.
+    assert.equal(image.src, CATEGORY_IMAGE_PLACEHOLDER);
+    assert.equal(image.alt, null);
   });
 });

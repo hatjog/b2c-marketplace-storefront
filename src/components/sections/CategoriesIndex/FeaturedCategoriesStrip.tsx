@@ -43,7 +43,11 @@ function FeaturedCategoryTile({
         ) : (
           <Image
             src={category.image.src}
-            alt={category.image.alt || category.name}
+            // Alt carried by the reader wins — including intentionally empty
+            // string (decorative-image convention, AC1); fall back to the
+            // category name only when the reader carried no alt (`null`),
+            // not when it carried `''` (3-1-F5).
+            alt={category.image.alt !== null ? category.image.alt : category.name}
             fill
             className="object-cover transition duration-300 group-hover:scale-105"
             sizes="(min-width: 1280px) 30vw, (min-width: 768px) 48vw, 100vw"
