@@ -1,3 +1,9 @@
+// Guardrail: this module reads the filesystem (`node:fs`) and must never be
+// bundled into a client component. If a barrel or import chain ever pulls it
+// client-side again, this fails the build with a clear message instead of the
+// cryptic `UnhandledSchemeError: Reading from "node:fs/promises"` (v1.14.0).
+import 'server-only';
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
