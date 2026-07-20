@@ -3,14 +3,14 @@
 import Image from 'next/image';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { categoryImageSrc } from '@/lib/category-images';
+import { resolveCategoryImage } from '@/lib/category-images';
 
 export function CategoryCard({
   category,
 }: {
-  category: { name: string; handle: string; metadata?: { photo_url?: string } | null };
+  category: { name: string; handle: string; metadata?: Record<string, unknown> | null };
 }) {
-  const imageSrc = categoryImageSrc(category.handle, category.metadata?.photo_url);
+  const { src: imageSrc } = resolveCategoryImage(category.handle, category.metadata);
 
   return (
     <LocalizedClientLink

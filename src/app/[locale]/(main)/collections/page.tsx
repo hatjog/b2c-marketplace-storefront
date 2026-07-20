@@ -6,8 +6,8 @@ import Image from 'next/image';
 import { StorefrontRouteStateSignal } from '@/components/atoms';
 import { Breadcrumbs } from '@/components/molecules/Breadcrumbs/Breadcrumbs';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { listEditorialCollections } from '@/lib/data/editorial-collections';
+import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 60;
 
@@ -19,19 +19,12 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
-function buildAlternates(baseUrl: string, locale: string) {
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, current) => {
-    acc[current] = `${baseUrl}/${current}/collections`;
-    return acc;
-  }, {});
-
-  return {
-    canonical: `${baseUrl}/${locale}/collections`,
-    languages: {
-      ...languages,
-      'x-default': `${baseUrl}/pl/collections`
-    }
-  };
+// Story 1.1 v1.14.0 AC1 — alternates built from the market-aware locale resolver,
+// not a hardcoded SUPPORTED_LOCALES iteration; x-default follows locales.default.
+// Previously emitted bare locale keys (non-canonical hreflang) — now uses toHreflang
+// via buildLocaleAlternates.
+async function buildAlternates(baseUrl: string, locale: string) {
+  return buildLocaleAlternates(locale, loc => `/${loc}/collections`, baseUrl);
 }
 
 export async function generateMetadata({
@@ -48,7 +41,7 @@ export async function generateMetadata({
     title: t('title'),
     description: t('description'),
     metadataBase: new URL(baseUrl),
-    alternates: buildAlternates(baseUrl, locale),
+    alternates: await buildAlternates(baseUrl, locale),
     robots: { index: true, follow: true },
     openGraph: {
       title: t('title'),

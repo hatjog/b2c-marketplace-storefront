@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/routing';
 import { PROTECTED_ROUTES } from './lib/constants';
+import { resolveMarketLocales } from './lib/market-locales';
 import { isTokenExpired } from './lib/helpers/token';
 import { buildCspDirectiveListWithNonce, resolveCspHeaderName } from './lib/security/csp';
 
@@ -121,6 +122,29 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // Story 1.1 v1.14.0 (AD-2): platform locale NOT supported by this market →
+  // 307 to the market's `locales.default` with path + query preserved.
+  // 307 (not 301/308) so a market `locales` change is never baked into browser
+  // caches. The out-of-platform branch above (e.g. /fr → resolveLang) is
+  // ratified legacy behavior and stays untouched.
+  const marketLocales = await resolveMarketLocales();
+  if (!(marketLocales.supported as readonly string[]).includes(urlSegment)) {
+    const redirectUrl = new URL(
+      pathname.replace(/^\/[^/]+/, `/${marketLocales.defaultLocale}`),
+      request.url
+    );
+    redirectUrl.search = request.nextUrl.search;
+    const response = NextResponse.redirect(redirectUrl, 307);
+    setPathnameResponseHeader(response, pathname);
+    response.cookies.set(GP_LANG_COOKIE, marketLocales.defaultLocale, {
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
+    });
+    return response;
+  }
+
   // Auth guard
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathnameWithoutLang.startsWith(route));
   if (isProtectedRoute) {
@@ -184,6 +208,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // Story 1.1 v1.14.0: Node.js middleware runtime (stable since Next 15.5) —
+  // the market-aware locale resolver reads market.yaml through the fs-based
+  // MarketRuntimeConfig loader, which the Edge runtime cannot bundle.
+  runtime: 'nodejs',
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|images|assets|png|svg|jpg|jpeg|gif|webp).*)'
   ]

@@ -9,9 +9,9 @@ import Script from 'next/script';
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
 import { TrustStripBlock } from '@/components/blocks/TrustStripBlock';
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { resolveMarketConfig } from '@/lib/portal.server';
+import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 300;
 
@@ -77,17 +77,15 @@ export async function generateMetadata({
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
-  // Build alternates based on supported languages (ADR-046: URL = language, not country)
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, lang) => {
-    acc[toHreflang(lang)] = `${baseUrl}/${lang}`;
-    return acc;
-  }, {});
+  // Build alternates from the market-aware resolver (ADR-046: URL = language, not
+  // country; Story 1.1 v1.14.0 AC1 — market-aware locale resolver, not SUPPORTED_LOCALES).
+  const alternates = await buildLocaleAlternates(locale, loc => `/${loc}`, baseUrl);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
   const title = t('meta_title');
   const description = t('meta_description');
   const ogImage = '/B2C_Storefront_Open_Graph.png';
-  const canonical = `${baseUrl}/${locale}`;
+  const canonical = alternates.canonical;
 
   return {
     title,
@@ -105,10 +103,7 @@ export async function generateMetadata({
     },
     alternates: {
       canonical,
-      languages: {
-        ...languages,
-        'x-default': `${baseUrl}/${DEFAULT_LOCALE}`
-      }
+      languages: alternates.languages
     },
     openGraph: {
       title,

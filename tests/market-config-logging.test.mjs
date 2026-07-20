@@ -38,8 +38,8 @@ test('header uses LogoLockup for brand logo', () => {
 });
 
 test('category cards fall back to placeholder image for unknown category handles', () => {
-  // Fallback logic was extracted to the shared `category-images` helper so both
-  // CategoryCard and AllCategoriesGrid resolve a guaranteed-valid <Image> src.
+  // Fallback logic lives in the ONE `category-images` reader (AD-10) so every
+  // category tile resolves a guaranteed-valid <Image> src.
   const helper = read('src/lib/category-images.ts');
 
   assert.match(helper, /CATEGORY_IMAGE_HANDLES/);
@@ -47,5 +47,5 @@ test('category cards fall back to placeholder image for unknown category handles
   assert.match(helper, /CATEGORY_IMAGE_PLACEHOLDER = '\/images\/placeholder\.svg'/);
 
   const card = read('src/components/organisms/CategoryCard/CategoryCard.tsx');
-  assert.match(card, /categoryImageSrc\(category\.handle, category\.metadata\?\.photo_url\)/);
+  assert.match(card, /resolveCategoryImage\(category\.handle, category\.metadata\)/);
 });

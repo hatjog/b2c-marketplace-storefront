@@ -1,7 +1,20 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
 
 import { middleware } from '@/middleware';
+
+// Story 1.1 v1.14.0: middleware consults the market-aware locale resolver, so
+// tests point GP_CONFIG_ROOT at the bonbeauty fixture (all 4 platform locales
+// supported — pre-existing expectations in this file stay unchanged).
+process.env.GP_CONFIG_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../tests/fixtures/market-config'
+);
+process.env.GP_INSTANCE_ID = 'gp-dev';
+process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID = 'bonbeauty';
 
 /**
  * Story v160-3-2 + cleanup-19: 308 permanent redirect /[locale]/salony/* → /[locale]/sellers/*

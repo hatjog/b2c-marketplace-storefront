@@ -13,7 +13,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import ReactCountryFlag from 'react-country-flag';
 
-import { isSupportedLocale } from '@/i18n/routing';
+import { SUPPORTED_LOCALES, isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
 
 type LanguageOption = {
   code: string;
@@ -21,6 +21,9 @@ type LanguageOption = {
   flagCode: string;
 };
 
+// Metadata-per-locale (flag/label), not an authoritative locale list — see the
+// same note on LOCALE_OPTIONS in LocaleSwitcher.tsx. Market-aware filtering
+// via the `supportedLocales` prop (Story 1.1 v1.14.0, F3).
 const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'pl', label: 'Polski', flagCode: 'PL' },
   { code: 'en', label: 'English', flagCode: 'GB' }
@@ -31,15 +34,24 @@ const LANGUAGE_SWITCHER_OPTIONS_ID = 'language-switcher-options';
 
 type LanguageSwitcherProps = {
   currentLocale: string;
+  /** Market-aware locale set; defaults to the full platform superset. */
+  supportedLocales?: readonly SupportedLocale[];
 };
 
-export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
+export function LanguageSwitcher({
+  currentLocale,
+  supportedLocales = SUPPORTED_LOCALES
+}: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('header');
 
+  const languageOptions = LANGUAGE_OPTIONS.filter(option =>
+    (supportedLocales as readonly string[]).includes(option.code)
+  );
+
   const currentOption =
-    LANGUAGE_OPTIONS.find(o => o.code === currentLocale) ?? LANGUAGE_OPTIONS[0];
+    languageOptions.find(o => o.code === currentLocale) ?? languageOptions[0] ?? LANGUAGE_OPTIONS[0];
 
   const switchToLocale = (option: LanguageOption) => {
     if (!isSupportedLocale(option.code)) return;
@@ -93,7 +105,7 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
               id={LANGUAGE_SWITCHER_OPTIONS_ID}
               className="no-scrollbar text-small-regular border-top-0 absolute z-20 max-h-60 overflow-auto rounded-lg border bg-white focus:outline-none sm:text-sm"
             >
-              {LANGUAGE_OPTIONS.map(option => (
+              {languageOptions.map(option => (
                 <ListboxOption
                   id={`language-switcher-option-${option.code}`}
                   key={option.code}

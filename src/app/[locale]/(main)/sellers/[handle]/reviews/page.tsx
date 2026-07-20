@@ -123,7 +123,7 @@ export async function generateMetadata({
     return {
       title: t('fallbackTitle'),
       description: t('fallbackDescription'),
-      alternates: buildSellerAlternates(locale, `/${handle}/reviews`),
+      alternates: await buildSellerAlternates(locale, `/${handle}/reviews`),
       robots: { index: false, follow: false }
     };
   }
@@ -135,7 +135,7 @@ export async function generateMetadata({
       count: data.totalReviews
     }),
     metadataBase: new URL(await getBaseUrl()),
-    alternates: buildSellerAlternates(locale, `/${handle}/reviews`),
+    alternates: await buildSellerAlternates(locale, `/${handle}/reviews`),
     robots: { index: true, follow: true },
     openGraph: {
       title: t('title', { name: data.seller.name }),

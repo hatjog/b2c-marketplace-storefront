@@ -50,8 +50,8 @@ export async function generateMetadata({
   const description =
     seo.meta_description ?? tMeta('fallback_description', { categoryName: cat.name, siteName });
   const ogImage = seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
-  const alternates = buildLocaleSeoAlternates(baseUrl, locale, 'categories', categoryHandle);
-  const social = buildLocaleSocialMetadata(locale);
+  const alternates = await buildLocaleSeoAlternates(baseUrl, locale, 'categories', categoryHandle);
+  const social = await buildLocaleSocialMetadata(locale);
 
   return {
     title,

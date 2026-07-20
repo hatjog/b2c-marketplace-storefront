@@ -79,8 +79,8 @@ export const generateProductMetadata = async (
     `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
   );
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
-  const alternates = buildLocaleSeoAlternates(baseUrl, locale, 'products', product?.handle ?? '');
-  const social = buildLocaleSocialMetadata(locale);
+  const alternates = await buildLocaleSeoAlternates(baseUrl, locale, 'products', product?.handle ?? '');
+  const social = await buildLocaleSocialMetadata(locale);
 
   return {
     title,

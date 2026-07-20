@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
     }
   },
   images: {
+    // Category images (metadata.gp.images, ADR-159/AD-10): bonbeauty source
+    // refs are relative (`assets/…`) and resolve at render time to the
+    // SAME-ORIGIN route `/api/runtime-market-assets/<marketId>/assets/**`
+    // (src/lib/category-images.ts → resolveMarketAssetUrl). Same-origin paths
+    // bypass remotePatterns, so the real remote-origin set contributed by
+    // category images is EMPTY — no entry below originates from them. Story
+    // 3.2 builds its source↔allowlist drift-test (AD-12) on this invariant.
+    // NOTE (tighten-pass): the trailing `https://**` wildcard predates this
+    // story and is NOT relied upon by category images; ADR-159 flags it for
+    // narrowing before production promotion.
     remotePatterns: [
       {
         protocol: 'https',

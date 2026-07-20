@@ -14,6 +14,7 @@ import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { resolveMarketLocales } from '@/lib/market-locales';
 import type { MarketConfig } from '@/lib/portal';
 import { getTranslations } from 'next-intl/server';
 import type { Wishlist } from '@/types/wishlist';
@@ -31,6 +32,7 @@ export const Header = async ({
   const isLoggedIn = Boolean(user);
 
   const countryCode = await getCountryCode(locale);
+  const { supported: marketSupportedLocales } = await resolveMarketLocales();
   let wishlist: Wishlist = { products: [] };
   if (user) {
     wishlist = await getUserWishlists({ countryCode });
@@ -72,7 +74,7 @@ export const Header = async ({
           className="flex w-full items-center justify-end gap-2 py-2 lg:w-1/3 lg:gap-4"
           data-testid="header-actions"
         >
-          <LanguageSwitcher currentLocale={locale} />
+          <LanguageSwitcher currentLocale={locale} supportedLocales={marketSupportedLocales} />
           {isLoggedIn && <MessageButton />}
           <UserDropdown isLoggedIn={isLoggedIn} />
           {isLoggedIn && (

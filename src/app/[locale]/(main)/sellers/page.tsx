@@ -141,7 +141,7 @@ export async function generateMetadata({
   // inherit canonical from the bare list URL — prevents indexing duplicates
   // for `?q=` / `?city=` / `?sort=` permutations). Hreflang map covers all
   // active locales with `x-default` → DEFAULT_LOCALE per Google docs.
-  const alternates = buildSellerAlternates(locale, '');
+  const alternates = await buildSellerAlternates(locale, '');
 
   return {
     title,

@@ -1,7 +1,21 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
 
 import { middleware } from '@/middleware';
+
+// Story 1.1 v1.14.0: middleware consults the market-aware locale resolver, so
+// tests point GP_CONFIG_ROOT at the bonbeauty fixture (all 4 platform locales
+// supported — pre-existing expectations in this file stay unchanged).
+const FIXTURE_CONFIG_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../tests/fixtures/market-config'
+);
+process.env.GP_CONFIG_ROOT = FIXTURE_CONFIG_ROOT;
+process.env.GP_INSTANCE_ID = 'gp-dev';
+process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID = 'bonbeauty';
 
 /**
  * Story v160-cleanup-19 — Chain-detection test (AC5 + AC6)

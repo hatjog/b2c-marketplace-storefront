@@ -73,7 +73,7 @@ export async function generateMetadata({
     title: t('title', { title: data.title }),
     description: t('description', { title: data.title, count: data.itemCount }),
     metadataBase: new URL(baseUrl),
-    alternates: buildAlternates(baseUrl, locale, handle),
+    alternates: await buildAlternates(baseUrl, locale, handle),
     robots: { index: true, follow: true },
     openGraph: {
       title: t('title', { title: data.title }),

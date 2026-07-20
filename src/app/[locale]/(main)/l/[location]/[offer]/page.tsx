@@ -5,9 +5,9 @@ import { notFound } from 'next/navigation';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { RichTextRenderer } from '@/components/rich-text';
-import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n/routing';
-import { toHreflang } from '@/lib/helpers/hreflang';
+import { type SupportedLocale } from '@/i18n/routing';
 import { getProgrammaticLandingData } from '@/lib/programmatic-landing';
+import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 import {
   buildProgrammaticLandingJsonLd,
   serializeJsonLd
@@ -23,19 +23,15 @@ async function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 }
 
-function buildLandingAlternates(baseUrl: string, locale: string, location: string, offer: string) {
-  const languages = SUPPORTED_LOCALES.reduce<Record<string, string>>((acc, code) => {
-    acc[toHreflang(code)] = new URL(`/${code}/l/${location}/${offer}`, `${baseUrl}/`).toString();
-    return acc;
-  }, {});
-
-  return {
-    canonical: new URL(`/${locale}/l/${location}/${offer}`, `${baseUrl}/`).toString(),
-    languages: {
-      ...languages,
-      'x-default': new URL(`/pl/l/${location}/${offer}`, `${baseUrl}/`).toString()
-    }
-  };
+// Story 1.1 v1.14.0 AC1 — alternates built from the market-aware locale resolver,
+// not a hardcoded SUPPORTED_LOCALES iteration; x-default follows locales.default.
+async function buildLandingAlternates(
+  baseUrl: string,
+  locale: string,
+  location: string,
+  offer: string
+) {
+  return buildLocaleAlternates(locale, loc => `/${loc}/l/${location}/${offer}`, baseUrl);
 }
 
 export async function generateMetadata({
@@ -57,7 +53,7 @@ export async function generateMetadata({
 
   const t = await getTranslations('programmaticLanding');
   const baseUrl = await getBaseUrl();
-  const alternates = buildLandingAlternates(baseUrl, locale, data.location.slug, data.offer.slug);
+  const alternates = await buildLandingAlternates(baseUrl, locale, data.location.slug, data.offer.slug);
 
   return {
     title: t('metadata_title', {

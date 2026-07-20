@@ -233,12 +233,15 @@ describe('Story 6.3 storefront i18n hardening', () => {
     }
   });
 
-  test('sitemap emits native alternates for active locales with x-default pointing to PL', () => {
+  test('sitemap emits native alternates for market locales with x-default pointing to locales.default', () => {
     const source = read('src/lib/seo/sitemap.ts');
 
-    assert.match(source, /SUPPORTED_LOCALES\.reduce/);
+    // Story 1.1 v1.14.0 (AD-2): locale enumeration comes from the market-aware
+    // resolver, x-default from `locales.default` — not from compile-time constants.
+    assert.match(source, /resolveMarketLocales/);
+    assert.match(source, /marketLocales\.supported\.reduce/);
     assert.match(source, /toHreflangBare\(locale\)/);
-    assert.match(source, /'x-default': localizedUrl\(base, DEFAULT_LOCALE, path\)/);
+    assert.match(source, /'x-default': localizedUrl\(base, marketLocales\.defaultLocale, path\)/);
     assert.match(source, /\/regulamin/);
     assert.match(source, /\/polityka-prywatnosci/);
     assert.match(source, /\/zasady/);
