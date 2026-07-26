@@ -51,6 +51,7 @@ interface VouchersPageProps {
 
 export async function generateMetadata({ params }: VouchersPageProps): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'account.vouchers' });
   return {
     title: t('title')

@@ -41,6 +41,7 @@ type CheckoutPageProps = {
 
 export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'page' });
   return {
     title: t('checkout_title'),

@@ -178,6 +178,10 @@ export const listProducts = async ({
     'title',
     'handle',
     'description',
+    // Story 1.3 (AC1): subtitle wchodzi do fields, żeby overlay Translation
+    // Module mógł go lokalizować. resolveProductCatalogDisplayFields już
+    // preferuje natywny product.subtitle nad metadata.gp.subtitle (fallback).
+    'subtitle',
     'thumbnail',
     'status',
     'variants.calculated_price',

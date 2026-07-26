@@ -38,8 +38,14 @@ module.exports = {
     //     konwersję robi wyłącznie src/lib/sdk/locale-interceptor.ts;
     // (b) mercurClient nie przechodzi przez applyLocaleInterceptor, więc
     //     każde wywołanie musi iść przez withMercurLocaleOptions*.
-    // Story 1.3 rozszerzy ten gate o wymogi AD-3 (setRequestLocale).
     "gp/locale-cache-boundary": "error",
+    // v1.14.0 Story 1.3 — lint-gate AD-3 (reland lokalizowanego fetchu);
+    // rozszerzenie gate'u 1.2 NOWĄ regułą obok (części (a)-(c) nietknięte):
+    // (d) każdy [locale] layout/page ORAZ eksportowany generateMetadata woła
+    //     setRequestLocale(locale) PRZED kontekstozależnym getTranslations();
+    // (e) mercurClient ⇒ withMercurLocaleOptions* pokrywa już część (b) 1.2
+    //     na całym storefroncie (w tym route'y detalu) — patrz testy reguły.
+    "gp/require-set-request-locale": "error",
     "no-restricted-syntax": [
       "error",
       {

@@ -1,5 +1,6 @@
 import type { HttpTypes } from '@medusajs/types';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
@@ -70,9 +71,18 @@ export const generateProductMetadata = async (
     getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
   const title = seo.meta_title ?? product?.title ?? siteName;
+  // Story 1.3 (AC3): fallback description przez i18n z JAWNYM locale z route'u
+  // (R-7 — nigdy auto-resolve w kontynuacji metadanych), tym samym kluczem,
+  // którego używa ProductPage. Poprzedni hardcoded PL literał wyciekał do
+  // SERP/og:description/twitter:description na /ua /de /en.
+  const tPdp = await getTranslations({ locale, namespace: 'pdp' });
   const description =
     seo.meta_description ??
-    `${product?.title} — voucher na zabieg w ${gpVendor}. Kup na ${siteName}.`;
+    tPdp('meta.description_fallback', {
+      title: product?.title ?? siteName,
+      vendor: gpVendor,
+      siteName
+    });
   const ogImageRaw = seo.og_image_url ?? product?.thumbnail ?? null;
   const ogImage = toSafeOgImageUrl(
     ogImageRaw,

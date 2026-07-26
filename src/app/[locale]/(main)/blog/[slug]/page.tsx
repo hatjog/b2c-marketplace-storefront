@@ -34,6 +34,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
+  setRequestLocale(locale);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const page = await fetchPayloadBlogPage({
     locale: locale as SupportedLocale,

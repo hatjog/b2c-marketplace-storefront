@@ -69,6 +69,11 @@ export async function generateMetadata({
   params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
+  // Story 1.3 (AD-3): `generateMetadata` jest OSOBNĄ kontynuacją async poza
+  // drzewem page/layout — bez setRequestLocale każdy `getTranslations()`/
+  // `getLocale()` w tej kontynuacji spada na default (przyczyna wycofania
+  // relandu w v1.13.0). PRZED pierwszym fetchem/getTranslations.
+  setRequestLocale(locale);
   const prod = await fetchProductForPage(handle, locale);
 
   return generateProductMetadata(prod, locale);

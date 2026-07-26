@@ -222,6 +222,7 @@ async function buildAlternateLanguages(baseUrl: string, locale: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
+  setRequestLocale(locale);
   const copy = getCategoriesIndexCopy(locale)
 
   const headersList = await headers()

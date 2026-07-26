@@ -23,6 +23,7 @@ export const revalidate = 600;
 
 export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const page = await fetchPayloadPage({ locale, slug, marketId });
 

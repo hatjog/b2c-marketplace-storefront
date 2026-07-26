@@ -11,6 +11,7 @@ type ForgotPasswordPageProps = {
 
 export async function generateMetadata({ params }: ForgotPasswordPageProps): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'auth' });
   return {
     title: t('forgot_title'),
