@@ -69,11 +69,20 @@ function resolveMedusaBackendOriginsForCsp(): string[] {
  * (raster) workerów nie używa.
  */
 export function buildCspDirectiveList(
-  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
+  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp(),
+  isDev: boolean = process.env.NODE_ENV === 'development'
 ): readonly string[] {
   const backendConnectFragments = medusaBackendOrigins.length
     ? ' ' + medusaBackendOrigins.join(' ')
     : '';
+  // v1.14.0 dev-hydration fix: `next dev` bundles client code through
+  // eval/new Function (fast rebuilds + source maps), so under the enforce-mode
+  // policy the browser throws EvalError, React never hydrates and every button
+  // on the page is dead SSR markup. Next.js's own CSP guidance is to allow
+  // 'unsafe-eval' in development only. Gated on NODE_ENV (never NEXT_PUBLIC_*,
+  // which would bake the dev policy into production client bundles); prod and
+  // test directive lists stay byte-identical to the pre-fix policy.
+  const devScriptFragments = isDev ? " 'unsafe-eval'" : '';
   // v1.11.0 Gate A (ra-1 live-render finding 2026-05-31): the TalkJS chat widget
   // loads https://cdn.talkjs.com/talk.js, talks to https://api.talkjs.com over a
   // wss://*.talkjs.com websocket, and renders its UI in an https://*.talkjs.com
@@ -86,7 +95,7 @@ export function buildCspDirectiveList(
   // so it fell back to default-src 'self').
   return [
     "default-src 'self'",
-    "script-src 'self' https://js.stripe.com https://cdn.talkjs.com",
+    `script-src 'self'${devScriptFragments} https://js.stripe.com https://cdn.talkjs.com`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' fonts.gstatic.com https://cdn.talkjs.com",
     "img-src 'self' https: blob: data:",
@@ -119,11 +128,17 @@ export function buildCspDirectiveList(
  */
 export function buildCspDirectiveListWithNonce(
   nonce: string,
-  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
+  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp(),
+  isDev: boolean = process.env.NODE_ENV === 'development'
 ): readonly string[] {
-  return buildCspDirectiveList(medusaBackendOrigins).map((directive) =>
+  // v1.14.0 dev-hydration fix: this nonce variant is what src/middleware.ts
+  // actually emits, so the dev-only 'unsafe-eval' MUST appear here too — the
+  // nonce stays (App Router inline hydration scripts still need it) and
+  // 'unsafe-eval' is additive, dev-only. See buildCspDirectiveList.
+  const devScriptFragments = isDev ? " 'unsafe-eval'" : '';
+  return buildCspDirectiveList(medusaBackendOrigins, isDev).map((directive) =>
     directive.startsWith('script-src ')
-      ? `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://cdn.talkjs.com`
+      ? `script-src 'self' 'nonce-${nonce}'${devScriptFragments} https://js.stripe.com https://cdn.talkjs.com`
       : directive
   );
 }
