@@ -6,7 +6,31 @@ import { headers } from 'next/headers';
 import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
-import { getGpField } from './metadata-utils';
+import { getGpField, readContentBarFlag } from './metadata-utils';
+
+/**
+ * Story 1.4 v1.14.0 — ADR-153 pkt 3 (spójność sygnałów SEO), amend ADR-164.
+ *
+ * PDP poniżej progu jakości w danym locale dostaje `noindex` ORAZ wypada
+ * z hreflang-setu. Sygnałem jest `metadata.gp.content_bar[<locale>].bar`,
+ * liczony w sync-time (AD-4) — TEN SAM, którego używa `checkQualityGate`;
+ * storefront nadal nie liczy słów i nie ma drugiego miejsca oceny jakości.
+ *
+ * Trzeci sygnał ADR-153 — sitemap-exclude — jest spełniony konstrukcyjnie:
+ * `src/lib/seo/sitemap.ts` publikuje pięć rodzin route'ów (`static`,
+ * `category`, `seller`, `blog_post`, `programmatic_geo_landing`) i NIE emituje
+ * PDP w ogóle. Regresję pilnuje `src/lib/seo/sitemap-pdp-exclusion.test.ts`.
+ *
+ * EE-1: encja BEZ `content_bar` (okno deploy→re-sync) zachowuje zastane
+ * zachowanie — `index, follow` + pełny hreflang-set. Brak sygnału nie może
+ * po cichu wygasić SEO całego katalogu.
+ */
+function isLocaleAboveContentBar(
+  metadata: Record<string, unknown> | null | undefined,
+  locale: string
+): boolean {
+  return readContentBarFlag(metadata, locale) !== false;
+}
 
 /**
  * Returns `url` unless it points to an SVG file, in which case returns `fallback`.
@@ -100,18 +124,22 @@ export const generateProductMetadata = async (
     `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
   );
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+  const productMetadata = product?.metadata as Record<string, unknown> | null | undefined;
   const alternates = await buildLocaleSeoAlternates(
     baseUrl,
     localeSlug,
     'products',
-    product?.handle ?? ''
+    product?.handle ?? '',
+    { includeLocale: (loc) => isLocaleAboveContentBar(productMetadata, loc) }
   );
   const social = await buildLocaleSocialMetadata(localeSlug);
 
   return {
     title,
     description,
-    robots: 'index, follow',
+    robots: isLocaleAboveContentBar(productMetadata, localeSlug)
+      ? 'index, follow'
+      : 'noindex, follow',
     metadataBase: new URL(baseUrl),
     alternates,
 

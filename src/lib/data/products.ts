@@ -3,6 +3,7 @@
 import * as Sentry from '@sentry/nextjs';
 import type { HttpTypes } from '@medusajs/types';
 
+import { resolveContentBarGateSlug } from '@/lib/content-gate';
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
 import { normalizeListedProducts } from '@/lib/helpers/normalize-listed-products';
 import { hasCustomFilters } from '@/lib/helpers/has-custom-filters';
@@ -173,6 +174,11 @@ export const listProducts = async ({
   // AD-1: locale rozwiązane PRZED wejściem do cache, nigdy w callbacku.
   const resolvedLocale = locale ?? (await resolveStorefrontLocaleSlug());
 
+  // AD-4 (Story 1.4): slug baru dla `checkQualityGate` rozstrzygany TUTAJ —
+  // odczyt flagi FAZY 2 wymaga fs/runtime configu, więc nie może się zdarzyć
+  // w czystym helperze normalizatora ani w cache scope. FAZA 1 ⇒ 'pl'.
+  const gateSlug = await resolveContentBarGateSlug(resolvedLocale);
+
   const fields = [
     'id',
     'title',
@@ -236,7 +242,7 @@ export const listProducts = async ({
       // - `backendCount` = pre-filter total, exposed for fetch-all consumers
       //   like listProductsWithSort() which need to know how many pages exist
       //   server-side before client-side filtering trims the batch.
-      const products = normalizeListedProducts(productsRaw, preferredSellerId);
+      const products = normalizeListedProducts(productsRaw, preferredSellerId, { gateSlug });
       const filteredCount = products.length;
 
       // nextPage uses backendCount because the iterator advances over backend
@@ -654,6 +660,10 @@ export const searchProducts = async (params: {
     ...(await getAuthHeaders())
   };
 
+  // AD-4 (Story 1.4): search dziedziczy TEN SAM gate co listing — bez tego
+  // FAZA 2 dla locale obowiązywałaby na `/categories`, a nie na wyszukiwarce.
+  const searchGateSlug = await resolveContentBarGateSlug(await resolveStorefrontLocaleSlug());
+
   let customer_id = params.customer_id;
 
   if (!customer_id) {
@@ -726,7 +736,9 @@ export const searchProducts = async (params: {
         }
       }
 
-      const normalizedProducts = normalizeListedProducts(allProducts);
+      const normalizedProducts = normalizeListedProducts(allProducts, undefined, {
+        gateSlug: searchGateSlug
+      });
       const exactNbHits = normalizedProducts.length;
       const start = requestedPage * requestedHitsPerPage;
       const end = start + requestedHitsPerPage;

@@ -27,9 +27,15 @@
  *  - `pl_fallback`        — FAIL: tłumaczenie istnieje, a render jest
  *                           identyczny z /pl (klasa błędu v1.13.0),
  *  - `404_gate_description` — produkt jest w backendzie, opis w tym locale
- *                           < MIN_DESCRIPTION_WORDS ⇒ odfiltrowany przez
- *                           kryterium `description` checkQualityGate
- *                           (SPRZĘŻENIE 1.4 / E-3 — raportuj, NIE kompensuj),
+ *                           ma `content_bar[<gate_slug>].bar === false` ⇒
+ *                           odfiltrowany przez kryterium `description`
+ *                           checkQualityGate (Story 1.4 / AD-4 — materiał dla
+ *                           Epic 4, raportuj, NIE kompensuj),
+ *  - `404_gate_description_legacy` — produkt jest w backendzie, ale NIE ma
+ *                           używalnego `content_bar` (okno EE-1 deploy→re-sync)
+ *                           i wordcount < MIN_DESCRIPTION_WORDS ⇒ gate poszedł
+ *                           ścieżką legacy. JAWNIE inny werdykt niż wyżej:
+ *                           „brak backfillu" nie może udawać „brak treści",
  *  - `404_gate_image`     — produkt jest w backendzie, opis przechodzi próg,
  *                           brak `thumbnail` ⇒ kryterium `image` gate'a,
  *  - `404_gate_other`     — produkt jest w backendzie, opis i thumbnail OK ⇒
@@ -52,11 +58,15 @@
  * 3 = TOOL-ERROR (bug skryptu / błąd zapisu — NIE problem środowiska,
  * review 1-3-F10).
  *
- * Próg MIN_DESCRIPTION_WORDS jest lustrem checkQualityGate
- * (src/lib/helpers/normalize-listed-products.ts). Zgodność pilnuje test
- * parity `src/lib/helpers/__tests__/smoke-threshold-parity.test.ts`
- * (review 1-3-F6) — przy zmianie semantyki gate'a w 1.4 test failuje i
- * wymusza aktualizację smoke'a.
+ * Sygnał gate'u jest lustrem checkQualityGate
+ * (src/lib/helpers/normalize-listed-products.ts + src/lib/content-gate.ts):
+ * od Story 1.4 (AD-4) decyduje `metadata.gp.content_bar[<slug>].bar` liczony
+ * w SYNC-TIME, a slug w FAZIE 1 to zawsze `pl` — niezależnie od locale
+ * requestu. MIN_DESCRIPTION_WORDS pozostaje wyłącznie dla ścieżki legacy EE-1.
+ * Zgodność obu stałych pilnuje test parity
+ * `src/lib/helpers/__tests__/smoke-threshold-parity.test.ts` (review 1-3-F6,
+ * przepięty w 1.4) — rozjazd failuje test, zamiast po cichu kłamać o
+ * przyczynach 404 w release'ie, w którym smoke ma dowodzić HG-6.
  *
  * Umiejscowienie: GP/storefront/scripts/ (obok check-i18n-key-parity.ts), bo
  * smoke wymaga wiedzy o kontrakcie storefrontu (routing locale, meta tagi)
@@ -82,9 +92,28 @@ import path from 'node:path';
 
 const LOCALES = ['pl', 'ua', 'de', 'en'];
 const BCP47_BY_SLUG = { pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' };
-// Lustro checkQualityGate — parity z normalize-listed-products.ts egzekwuje
-// smoke-threshold-parity.test.ts (review 1-3-F6).
+// Lustro checkQualityGate — parity z normalize-listed-products.ts / content-gate.ts
+// egzekwuje smoke-threshold-parity.test.ts (review 1-3-F6, przepięte w 1.4).
+//
+// Story 1.4 (AD-4): kryterium `description` gate'u czyta
+// `metadata.gp.content_bar[<slug>].bar`, a NIE wordcount pobranego opisu.
+// W FAZIE 1 slug = 'pl' niezależnie od locale requestu.
+const CONTENT_BAR_GATE_SLUG_PHASE_1 = 'pl';
+// Zachowany zastany próg — używany WYŁĄCZNIE na ścieżce legacy EE-1 (encja bez
+// `content_bar`, okno deploy→re-sync). Nie jest już torem głównym.
 const MIN_DESCRIPTION_WORDS = 80;
+
+/**
+ * Lustro `readContentBarFlag` ze storefrontu: `undefined` dla każdego kształtu,
+ * który nie jest booleanem `bar` pod wybranym slugiem (brak mapy, null,
+ * nie-obiekt, brak wpisu, `bar` nie-boolean) ⇒ ścieżka legacy.
+ */
+function readContentBarFlag(contentBar, slug) {
+  if (!contentBar || typeof contentBar !== 'object' || Array.isArray(contentBar)) return undefined;
+  const measurement = contentBar[slug];
+  if (!measurement || typeof measurement !== 'object' || Array.isArray(measurement)) return undefined;
+  return typeof measurement.bar === 'boolean' ? measurement.bar : undefined;
+}
 const FETCH_CONCURRENCY = 8;
 const PAGE_SIZE = 100;
 
@@ -211,7 +240,10 @@ async function fetchCatalog(backendUrl, publishableKey, localeSlug) {
         // (generateProductMetadata) — dowód treści na /pl musi honorować oba.
         seo_meta_title: product.metadata?.gp?.seo?.meta_title ?? null,
         description: product.description ?? null,
-        thumbnail: product.thumbnail ?? null
+        thumbnail: product.thumbnail ?? null,
+        // Story 1.4 (AD-4): sygnał gate'u liczony w sync-time. Bez niego smoke
+        // nie umie odróżnić „gate odrzucił po barze" od „encja czeka na backfill".
+        content_bar: product.metadata?.gp?.content_bar ?? null
       });
     }
     offset += PAGE_SIZE;
@@ -340,6 +372,12 @@ async function main() {
         ? independentSource.has(handle)
         : backendDiffSuggestsTranslation;
       const descriptionWords = wordCount(backendEntry?.description);
+      // FAZA 1: gate ocenia `content_bar.pl` niezależnie od locale requestu,
+      // więc sygnał bierzemy z wpisu katalogu /pl (overlay locale zmienia opis,
+      // nie mapę barów — mapa jest wspólna dla encji).
+      const contentBar = (backendPl ?? backendEntry)?.content_bar ?? null;
+      const contentBarFlag = readContentBarFlag(contentBar, CONTENT_BAR_GATE_SLUG_PHASE_1);
+      const gateSignal = contentBarFlag === undefined ? 'legacy_wordcount' : 'content_bar';
 
       let verdict;
       if (render.status === 200) {
@@ -369,8 +407,14 @@ async function main() {
         // więc pozostaje jawne `404_gate_other`, nigdy fałszywe not_found.
         if (backendEntry == null) {
           verdict = '404_not_found';
-        } else if (descriptionWords < MIN_DESCRIPTION_WORDS) {
+        } else if (contentBarFlag === false) {
+          // Gate odrzucił po sygnale sync-time (AD-4) — to jest materiał dla
+          // Epic 4 (treść), nie regresja kodu.
           verdict = '404_gate_description';
+        } else if (contentBarFlag === undefined && descriptionWords < MIN_DESCRIPTION_WORDS) {
+          // EE-1: encja bez `content_bar` — gate poszedł ścieżką legacy.
+          // JAWNIE inny werdykt, żeby „brak backfillu" nie udawał „brak treści".
+          verdict = '404_gate_description_legacy';
         } else if (!backendEntry.thumbnail) {
           verdict = '404_gate_image';
         } else {
@@ -391,6 +435,12 @@ async function main() {
         backend_title: backendEntry?.title ?? null,
         backend_description_words: descriptionWords,
         backend_has_thumbnail: backendEntry ? backendEntry.thumbnail != null : null,
+        // Story 1.4 (AD-4/AC6): jawny ślad, KTÓRYM torem szedł gate i jaki był
+        // sygnał — bez tego „404_gate_description = 0" nie odróżnia „bar zielony"
+        // od „encja nigdy nie przeszła przez sync".
+        gate_slug: CONTENT_BAR_GATE_SLUG_PHASE_1,
+        gate_signal: gateSignal,
+        content_bar_pl: readContentBarFlag(contentBar, CONTENT_BAR_GATE_SLUG_PHASE_1) ?? null,
         translation_exists: locale === 'pl' ? null : translationExists,
         translation_ground_truth:
           locale === 'pl' ? null : independentSource ? 'independent' : 'backend_diff_dependent',
@@ -416,8 +466,11 @@ async function main() {
   );
 
   const evidence = {
-    story: '1-3-pdp-reland-lokalizowanego-fetchu',
-    acceptance_criterion: 'AC5 (ship-bar HG-6)',
+    story: args.story ?? '1-3-pdp-reland-lokalizowanego-fetchu',
+    acceptance_criterion: args['acceptance-criterion'] ?? 'AC5 (ship-bar HG-6)',
+    // Story 1.4 (AD-4): która faza gate'u obowiązuje w tym przebiegu.
+    gate_phase: 'FAZA 1 (content_bar.pl dla każdego locale)',
+    gate_slug: CONTENT_BAR_GATE_SLUG_PHASE_1,
     generated_at: new Date().toISOString(),
     base_url: baseUrl,
     backend_url: backendUrl,
@@ -440,7 +493,9 @@ async function main() {
       pl_fallback_semantics:
         'pl_fallback liczony WYŁĄCZNIE na renderach 200 dla /ua /de /en; przy 0 takich renderów wartość 0 znaczy „zero PL-fallbacku na ścieżce renderu, brak próbek 200 poza /pl" — NIE „zweryfikowano brak fallbacku end-to-end"',
       translation_exists:
-        'przy backend_diff_dependent dowodzi tylko overlay backendu (ten sam kanał) — stąd NEEDS-REVIEW zamiast PASS bez niezależnego źródła'
+        'przy backend_diff_dependent dowodzi tylko overlay backendu (ten sam kanał) — stąd NEEDS-REVIEW zamiast PASS bez niezależnego źródła',
+      gate_signal:
+        'werdykt 404_gate_description = `content_bar[pl].bar === false` (sygnał sync-time, AD-4); 404_gate_description_legacy = encja BEZ content_bar (okno EE-1) odrzucona zastanym wordcountem — dwie różne przyczyny, nie wolno ich sumować'
     },
     summary,
     results

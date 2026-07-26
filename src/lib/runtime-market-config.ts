@@ -44,10 +44,18 @@ export type MarketLocalesRuntimeBlock = {
   fallback_chain?: unknown;
 };
 
+// Mirrors `properties.content_gate` of market-runtime-config.v1.schema.json
+// (AD-4 / ADR-164): key set is drift-tested against the schema (Story 1.4
+// v1.14.0, AC3 parity). Brak bloku ⇒ FAZA 1 dla każdego locale.
+export type MarketContentGateRuntimeBlock = {
+  phase_2_locales?: unknown;
+};
+
 export type MarketRuntimeConfig = {
   market_id?: string | null;
   name?: string | null;
   locales?: MarketLocalesRuntimeBlock | null;
+  content_gate?: MarketContentGateRuntimeBlock | null;
   public_profile?: {
     social_links?: Record<string, unknown> | null;
   } | null;

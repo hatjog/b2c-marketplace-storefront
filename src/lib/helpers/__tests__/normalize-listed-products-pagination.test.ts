@@ -14,6 +14,11 @@ vi.mock('@/lib/helpers/market-filter', () => ({
 
 vi.mock('@/lib/helpers/metadata-utils', () => ({
   getGpField: () => undefined,
+  // Story 1.4 (AD-4): gate czyta `content_bar` przez ten accessor. `undefined`
+  // = brak sygnału ⇒ ścieżka legacy EE-1 (wordcount), czyli DOKŁADNIE ten tor,
+  // na którym stoją fixture'y tego pliku (opisy 100-słowne). Inwariant
+  // paginacji jest tu badany niezależnie od fazy gate'u.
+  readContentBarFlag: () => undefined,
 }));
 
 import { normalizeListedProducts, type ListedProduct } from '../normalize-listed-products';
