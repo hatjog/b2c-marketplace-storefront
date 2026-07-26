@@ -139,15 +139,20 @@ export function readGiftRecipientIssueMetadata(
     sendTiming: toEditableSendTiming(sendTiming)
   };
 
+  // LOW#5 (code-review 2.4): zastane `scheduled` normalizuje się do `handover`
+  // TU, nie tylko w `data.sendTiming` dla formularza. Bez tego koszyk sprzed
+  // v1.14.0 pokazywał w UI „przekażę osobiście", a `readGiftRecipientIssueMetadata`
+  // dalej zwracał `scheduled` — rozjazd między stanem WYŚWIETLANYM a stanem, na
+  // którym operuje reszta checkoutu (`giftRecipientComplete`, ewentualny re-zapis).
+  void sendDate;
   return isGiftRecipientFormValid(data)
     ? {
         gift_recipient_email: recipientEmail,
         gift_recipient_message: message,
-        gift_recipient_send_timing: sendTiming,
-        gift_recipient_send_date:
-          sendTiming === 'scheduled' && typeof sendDate === 'string'
-            ? sendDate
-            : null,
+        gift_recipient_send_timing: data.sendTiming,
+        // Normalizacja usuwa jedyną ścieżkę produkującą `scheduled` — data
+        // wysyłki (kontrakt v1.15.0) nie ma już tu zastosowania.
+        gift_recipient_send_date: null,
         gift_recipient_bound_to_voucher_issue: true
       }
     : null;

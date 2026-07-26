@@ -74,8 +74,16 @@ describe('gift recipient voucher issue binding', () => {
       gift_recipient_bound_to_voucher_issue: true
     };
 
-    it('is still readable — an old cart must not break checkout', () => {
-      expect(readGiftRecipientIssueMetadata(legacy)).toEqual(legacy);
+    it('is still readable — an old cart must not break checkout, AND is normalized to `handover`', () => {
+      // LOW#5 (code-review 2.4): normalizacja `scheduled → handover` musi
+      // pojawić się TU (metadanych), nie tylko w formularzu — inaczej UI
+      // pokazuje „przekażę osobiście", a stan uznany za "kompletny" gdzieś
+      // indziej wciąż niesie `scheduled`.
+      expect(readGiftRecipientIssueMetadata(legacy)).toEqual({
+        ...legacy,
+        gift_recipient_send_timing: 'handover',
+        gift_recipient_send_date: null
+      });
     });
 
     it('maps to "handover" in the editable form, never to "now"', () => {

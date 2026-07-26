@@ -142,7 +142,22 @@ async function CheckoutPageContent({
     const meta = item.metadata as Record<string, unknown> | null | undefined;
     return meta?.is_gift === true || meta?.is_gift === 'true' || meta?.purchase_mode === 'gift';
   });
-  const giftBindingTargets = giftLineItems.length > 0 ? giftLineItems : (cart.items ?? []);
+  // M4 (code-review 2.4, konserwatywny fail-safe — decyzja do async akceptacji PO,
+  // patrz review-2-4-gift-od-razu-handoff-mail-ui.md): brak jawnego markera gift
+  // na POZYCJI koszyka wielopozycyjnego NIE może stemplować metadanych prezentu
+  // na wszystkie pozycje — po 2.4 to nieodwracalny mail z kodem vouchera do
+  // niewłaściwej osoby, gdy koszyk niesie i "dla siebie", i "dla kogoś".
+  // Fallback na WSZYSTKIE pozycje jest bezpieczny WYŁĄCZNIE dla koszyka
+  // jednopozycyjnego (tam nie ma niejednoznaczności co do tego, który item to
+  // prezent). Dla ≥2 pozycji bez markera `giftBindingTargets` zostaje puste —
+  // `giftRecipientComplete` poniżej wymusza wtedy wybór markera na PDP zamiast
+  // cichego wysłania maila do niewłaściwego entitlementu.
+  const giftBindingTargets =
+    giftLineItems.length > 0
+      ? giftLineItems
+      : (cart.items ?? []).length === 1
+        ? (cart.items ?? [])
+        : [];
   const initialGiftRecipient =
     giftBindingTargets
       .map(item =>
