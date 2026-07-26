@@ -1,32 +1,57 @@
 // Story 7.5 / AC2 / FR8 / ra-3 — regression assert: cross-locale cache bleed fix.
+// PRZEPISANY w v1.14.0 Story 1.2 (AD-1, AC4) — patrz nota „ODWRÓCENIE TEZY".
 //
-// Locale-aware `tags` (localeCacheTag) MUSZĄ dawać rozłączne (disjoint) wartości
-// per locale na cache'owanych ścieżkach products/categories, tak że PL/EN/UA/DE
-// NIE współdzielą cache'owanej odpowiedzi. Pusta/pominięta asercja = FAIL
-// (skip != green). Ta część jest w pełni code/testowalna (nie wymaga żywego stacku).
+// ODWRÓCENIE TEZY (v1.14.0 vs v1.12.0):
+//   Poprzednia wersja tego pliku twierdziła, że faktyczną barierą anty-bleed
+//   jest `cache: 'no-store'` na katalogowych odczytach, a `localeCacheTag` to
+//   „tylko util do rewalidacji". To było poprawne dla v1.12.0, gdzie jedyną
+//   alternatywą był wspólny `force-cache` na tym samym URL (klucz Next Data
+//   Cache NIE wlicza nagłówków ⇒ pierwszy pobrany locale przeciekał na resztę,
+//   bug live PL→UA).
 //
-// MECHANIZM IZOLACJI (v1.12.0 UA-loc — KOREKTA wcześniejszego błędnego założenia):
-//   `x-medusa-locale` (wstrzykiwany przez `applyLocaleInterceptor` na singletonie `sdk`)
-//   zapewnia, że backend ZWRACA właściwy locale, ale Next.js Data Cache NIE wlicza
-//   nagłówków żądania do klucza — więc wspólny `force-cache` na tym samym URL kolidował
-//   między locale (bug znaleziony live: PL→UA). Faktyczna izolacja katalogowych odczytów =
-//   `no-store` (brak wspólnego wpisu). localeCacheTag pozostaje eksportowanym util do
-//   granularnej rewalidacji, ale NIE jest barierą anty-bleed dla products/categories.
-// Ten plik asercjonuje: (a) localeCacheTag daje rozłączne tagi (util), (b) katalogowe
-// odczyty są no-store (anty-bleed), (c) singleton sdk przechodzi przez interceptor.
-// Testy `locale-interceptor.test.ts` pokrywają faktyczne działanie header injection.
+//   Story 1.2 wymienia obejście na właściwy mechanizm: barierą jest teraz
+//   KLUCZ `unstable_cache`, w którym locale jest JAWNYM ARGUMENTEM. `no-store`
+//   znika, ale `force-cache` NIE wraca — i to jest tu asertowane wprost.
+//
+// Ten plik asercjonuje (statycznie, bez żywego stacku):
+//   (a) `localeCacheTag` / `localeCacheTagForSlug` dają rozłączne tagi per locale
+//       i obie drogi dają IDENTYCZNY tag (jedna konwencja nazewnictwa);
+//   (b) katalogowe odczyty przechodzą przez `unstable_cache` z locale w
+//       argumentach, a NIE przez `force-cache` + nagłówek;
+//   (c) singleton `sdk` przechodzi przez `applyLocaleInterceptor`.
+// Behawioralny dowód rozłączności wpisów (MISS/MISS dla pl→ua, HIT dla pl→pl)
+// jest w `src/lib/data/__tests__/locale-keyed-cache.test.ts`.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { CANONICAL_LOCALES, localeCacheTag } from '../locale-interceptor';
+import { SUPPORTED_LOCALES } from '@/i18n/routing';
+
+import { CANONICAL_LOCALES, localeCacheTag, localeCacheTagForSlug } from '../locale-interceptor';
 
 const CACHED_SCOPES = ['products', 'product-categories'] as const;
 
 const DATA_DIR = resolve(__dirname, '../../data');
 const PRODUCTS_SRC = readFileSync(resolve(DATA_DIR, 'products.ts'), 'utf-8');
 const CATEGORIES_SRC = readFileSync(resolve(DATA_DIR, 'categories.ts'), 'utf-8');
+const LOCALE_CACHE_SRC = readFileSync(resolve(DATA_DIR, 'locale-cache.ts'), 'utf-8');
+const PDP_FETCHER_SRC = readFileSync(resolve(DATA_DIR, 'product-detail-fetcher.ts'), 'utf-8');
 const CONFIG_SRC = readFileSync(resolve(__dirname, '../../config.ts'), 'utf-8');
+
+/**
+ * Zdejmuje komentarze, żeby guardy patrzyły na KOD, a nie na noty
+ * historyczne — te celowo cytują zakazane formy (`force-cache`, `no-store`,
+ * `forceCache: true`), żeby udokumentować, czego pilnujemy.
+ */
+function codeOnly(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+const PRODUCTS_CODE = codeOnly(PRODUCTS_SRC);
+const CATEGORIES_CODE = codeOnly(CATEGORIES_SRC);
+const PDP_FETCHER_CODE = codeOnly(PDP_FETCHER_SRC);
 
 describe('cross-locale cache bleed — locale-aware tags (AC2, FR8, ra-3)', () => {
   it('non-vacuous: są co najmniej 2 kanoniczne locale (PL/EN/UA/DE)', () => {
@@ -87,32 +112,73 @@ describe('cross-locale cache bleed — locale-aware tags (AC2, FR8, ra-3)', () =
     }
   });
 
-  // (v1.12.0 UA-loc CORRECTION) Pierwotne założenie tego pliku (że nagłówek
-  // x-medusa-locale partycjonuje Next.js Data Cache per-locale) jest BŁĘDNE: Next NIE
-  // wlicza nagłówków żądania do klucza Data Cache. Wspólny `force-cache` na tym samym
-  // URL kolidował między locale (pierwszy pobrany locale leakował do reszty — PL→UA).
-  // FIX: katalogowe odczyty (products/categories) używają `no-store` — brak wspólnego
-  // wpisu cache = brak bleed. localeCacheTag pozostaje util (rewalidacja), ale NIE jest
-  // już barierą anty-bleed dla tych ścieżek. Guard: te ścieżki NIE mogą wrócić do
-  // współdzielonego force-cache (regresja bleed). Locale-keyed cache = follow-up perf.
-  it('categories.ts katalogowe odczyty są no-store (NIE współdzielony force-cache → brak cross-locale bleed)', () => {
-    expect(CATEGORIES_SRC).toContain("cache: 'no-store'");
-    expect(CATEGORIES_SRC).not.toContain("cache: 'force-cache'");
+  // v1.14.0 Story 1.2 AC3: wejście slugowe MUSI dawać ten sam tag co zastane
+  // wejście BCP-47 — inaczej powstałaby trzecia konwencja nazewnictwa tagów
+  // i rewalidacja z jednej strony nie zdmuchnęłaby wpisów z drugiej.
+  it.each(CACHED_SCOPES)(
+    'localeCacheTagForSlug(%s, slug) == localeCacheTag(scope, BCP-47) — jedna konwencja tagów',
+    async scope => {
+      for (let i = 0; i < SUPPORTED_LOCALES.length; i++) {
+        const slug = SUPPORTED_LOCALES[i];
+        const canonical = CANONICAL_LOCALES[i];
+        expect(localeCacheTagForSlug(scope, slug)).toBe(await localeCacheTag(scope, canonical));
+      }
+    }
+  );
+
+  it('localeCacheTagForSlug daje rozłączne tagi per slug (bariera anty-bleed cache scope)', () => {
+    const tags = SUPPORTED_LOCALES.flatMap(slug =>
+      CACHED_SCOPES.map(scope => localeCacheTagForSlug(scope, slug))
+    );
+    expect(new Set(tags).size).toBe(SUPPORTED_LOCALES.length * CACHED_SCOPES.length);
   });
 
-  it('products.ts katalogowy odczyt jest no-store (NIE współdzielony force-cache → brak cross-locale bleed)', () => {
-    expect(PRODUCTS_SRC).toContain("cache: 'no-store'");
-    expect(PRODUCTS_SRC).not.toContain("cache: 'force-cache'");
-    expect(PRODUCTS_SRC).not.toContain("? 'force-cache' :");
+  // (v1.14.0 Story 1.2) NOWA BARIERA: klucz `unstable_cache` z locale w
+  // argumentach. Guard trzyma dwa zakazy AD-1 naraz:
+  //   - `no-store` już nie jest potrzebny (i nie jest barierą),
+  //   - `force-cache` + nagłówek NIE MOŻE wrócić (to był dokładnie ten bug).
+  it('categories.ts: locale-keyed unstable_cache zamiast force-cache/no-store', () => {
+    expect(CATEGORIES_SRC).toContain('createLocaleKeyedCache');
+    expect(CATEGORIES_SRC).toContain('StorefrontLocaleSlug');
+    // Locale jest JAWNIE wstrzykiwane w cache scope, nie auto-resolvowane.
+    expect(CATEGORIES_SRC).toContain('withLocaleHeaderForSlug');
+    // REGRESJA, której pilnujemy: powrót do współdzielonego force-cache.
+    expect(CATEGORIES_CODE).not.toContain("cache: 'force-cache'");
+    expect(CATEGORIES_CODE).not.toContain("cache: 'no-store'");
   });
 
-  // (M1 fix) Guard faktycznego mechanizmu cache izolacji: singleton `sdk` w lib/config.ts
-  // MUSI być opakowany w `applyLocaleInterceptor`. Bez tego interceptora nagłówek
-  // `x-medusa-locale` nie byłby wstrzykiwany i Next.js Data Cache nie partycjonowałby
-  // odpowiedzi per-locale (URL + nagłówki = klucz cache; sam tag = tylko granularność
-  // rewalidacji). Regression assert: usunięcie `applyLocaleInterceptor` z config.ts
-  // złamałoby ten guard zanim złamałby cokolwiek innego.
-  it('lib/config.ts: singleton sdk jest opakowany w applyLocaleInterceptor (faktyczny mechanizm anty-bleed)', () => {
+  it('products.ts: locale-keyed unstable_cache zamiast force-cache/no-store', () => {
+    expect(PRODUCTS_SRC).toContain('createLocaleKeyedCache');
+    expect(PRODUCTS_SRC).toContain('StorefrontLocaleSlug');
+    expect(PRODUCTS_SRC).toContain('withLocaleHeaderForSlug');
+    // Katalogowy odczyt `listProducts` nie może wrócić do współdzielonego
+    // force-cache. `no-cache` na innych endpointach (search/filtered) zostaje.
+    expect(PRODUCTS_CODE).not.toContain("cache: 'force-cache'");
+    expect(PRODUCTS_CODE).not.toContain("? 'force-cache' :");
+  });
+
+  it('locale-cache.ts: locale jest częścią keyParts ORAZ tagu unstable_cache', () => {
+    expect(LOCALE_CACHE_SRC).toContain('unstable_cache');
+    // keyParts zawierają locale ⇒ wpisy PL/EN/UA/DE są strukturalnie rozłączne.
+    expect(LOCALE_CACHE_SRC).toContain('[keyPrefix, locale]');
+    // tag waryjuje po locale ⇒ rewalidacja jednego locale nie zdmuchuje reszty.
+    expect(LOCALE_CACHE_SRC).toContain('localeCacheTagForSlug(tagScope, locale)');
+  });
+
+  it('product-detail-fetcher.ts: cache() Reacta ZOSTAJE nad unstable_cache, forceCache znika', () => {
+    // AD-1: dwie warstwy, nie alternatywy — request-dedupe nad Data Cache.
+    expect(PDP_FETCHER_SRC).toContain('cache(async');
+    // `forceCache` był mechanizmem force-cache + nagłówek — zakazanym w AD-1.
+    expect(PDP_FETCHER_CODE).not.toContain('forceCache');
+    // Locale z route'u wchodzi do krotki argumentów (klucz cache() i unstable_cache).
+    expect(PDP_FETCHER_SRC).toContain('StorefrontLocaleSlug');
+  });
+
+  // (M1 fix) Guard faktycznego mechanizmu lokalizacji POZA cache scope: singleton
+  // `sdk` w lib/config.ts MUSI być opakowany w `applyLocaleInterceptor`.
+  // Interceptor nie jest już barierą anty-bleed (jest nią klucz `unstable_cache`),
+  // ale pozostaje mechanizmem wstrzykiwania locale dla odczytów spoza cache.
+  it('lib/config.ts: singleton sdk jest opakowany w applyLocaleInterceptor', () => {
     expect(CONFIG_SRC).toContain('applyLocaleInterceptor');
     // sdk MUSI być eksportem opakowywanym przez interceptor (nie surowym `new Medusa`).
     expect(CONFIG_SRC).toMatch(/export\s+const\s+sdk\s*=\s*applyLocaleInterceptor\s*\(/);

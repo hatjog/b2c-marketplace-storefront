@@ -28,8 +28,8 @@ describe('D-09 product-detail-fetcher — React 19 cache() dedupe (NFR-PERF-3)',
   // render-time property that belongs in an integration/RSC test, not a unit.
   // The source correctly wraps in cache(); only this assertion's harness is wrong.
   it.skip('invokes listProducts ONCE across two getCachedProduct calls (same render)', async () => {
-    const a = await fetchProductForDetailPage('voucher-spa-1h', 'pl');
-    const b = await fetchProductForDetailPage('voucher-spa-1h', 'pl');
+    const a = await fetchProductForDetailPage('voucher-spa-1h', 'pl', 'pl');
+    const b = await fetchProductForDetailPage('voucher-spa-1h', 'pl', 'pl');
 
     expect(mockedListProducts).toHaveBeenCalledTimes(1);
     expect(a).toEqual(b);
@@ -37,12 +37,24 @@ describe('D-09 product-detail-fetcher — React 19 cache() dedupe (NFR-PERF-3)',
   });
 
   it('does NOT collapse calls with different (handle, countryCode) keys', async () => {
-    await fetchProductForDetailPage('voucher-massage', 'pl');
-    await fetchProductForDetailPage('voucher-haircut', 'pl');
-    await fetchProductForDetailPage('voucher-massage', 'en');
+    await fetchProductForDetailPage('voucher-massage', 'pl', 'pl');
+    await fetchProductForDetailPage('voucher-haircut', 'pl', 'pl');
+    await fetchProductForDetailPage('voucher-massage', 'en', 'en');
 
     // Three distinct argument tuples → three distinct fetches.
     expect(mockedListProducts).toHaveBeenCalledTimes(3);
+  });
+
+  // v1.14.0 Story 1.2: locale wszedł do krotki argumentów `cache()`. Bez tego
+  // PDP w /pl i /ua dedupe'owałyby się do JEDNEJ odpowiedzi w obrębie renderu —
+  // przeciek locale o warstwę wyżej niż Data Cache.
+  it('does NOT collapse calls that differ only by locale', async () => {
+    await fetchProductForDetailPage('voucher-massage', 'pl', 'pl');
+    await fetchProductForDetailPage('voucher-massage', 'pl', 'ua');
+
+    expect(mockedListProducts).toHaveBeenCalledTimes(2);
+    expect(mockedListProducts.mock.calls[0][0].locale).toBe('pl');
+    expect(mockedListProducts.mock.calls[1][0].locale).toBe('ua');
   });
 
   it('returns null when product is not found', async () => {
@@ -51,7 +63,7 @@ describe('D-09 product-detail-fetcher — React 19 cache() dedupe (NFR-PERF-3)',
       nextPage: null,
     }));
 
-    const result = await fetchProductForDetailPage('nonexistent', 'pl');
+    const result = await fetchProductForDetailPage('nonexistent', 'pl', 'pl');
     expect(result).toBeNull();
   });
 });

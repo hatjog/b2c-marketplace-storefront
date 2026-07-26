@@ -28,6 +28,7 @@ import {
   resolveProductCatalogDisplayFields,
   resolvePdpVoucherRules
 } from '@/lib/helpers/pdp';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import type { GpProductMetadata } from '@/types/product';
 
 import { CrossSellSection } from '../CrossSellSection';
@@ -55,9 +56,15 @@ export const ProductDetailsPage = async ({
   const t = await getTranslations('pdp');
 
   // D-09: cache()-wrapped fetcher. The outer route page.tsx already invoked
-  // this with the same (handle, countryCode); React 19 cache() returns the
-  // memoized payload here, so listProducts() runs once per render.
-  const prod = await fetchProductForDetailPage(handle, countryCode);
+  // this with the same (handle, countryCode, locale); React 19 cache() returns
+  // the memoized payload here, so listProducts() runs once per render.
+  // Story 1.2: locale MUSI być tym samym slugiem co w page.tsx — inaczej
+  // krotka argumentów się rozjeżdża i dedupe przestaje działać.
+  const prod = await fetchProductForDetailPage(
+    handle,
+    countryCode,
+    toStorefrontLocaleSlug(locale)
+  );
 
   // notFound() throws — if prod is null, execution stops here.
   // W5-05: Next.js notFound() triggers the nearest not-found.tsx boundary,

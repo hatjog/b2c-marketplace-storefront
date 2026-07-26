@@ -22,6 +22,7 @@ import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getGpField } from '@/lib/helpers/metadata-utils';
 import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 
 /**
  * Story v160-4-6: parse `?from=seller:{handle}` searchParam, resolve seller
@@ -53,9 +54,13 @@ async function resolveSalonContext(
 // D-09: shared cache() wrapper lives in product-detail-fetcher.ts so this
 // route AND the inner ProductDetailsPage server component dedupe their
 // listProducts() calls within a single render (zero duplicate fetches).
+// Story 1.2 (AD-1): locale z route'u wchodzi JAWNIE do fetchera — jest częścią
+// klucza `cache()` Reacta i klucza `unstable_cache` warstwy danych. Poleganie na
+// auto-resolve było tu szczególnie zawodne, bo `generateMetadata` rozgrzewa ten
+// fetch w kontynuacji async, gdzie `getLocale()` potrafi spaść na default.
 const fetchProductForPage = async (handle: string, locale: string) => {
   const countryCode = await getCountryCode(locale);
-  return fetchProductForDetailPage(handle, countryCode);
+  return fetchProductForDetailPage(handle, countryCode, toStorefrontLocaleSlug(locale));
 };
 
 export async function generateMetadata({

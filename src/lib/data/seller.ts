@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE } from '@/i18n/routing';
 import type { SellerProps } from '@/types/seller';
 
 import { mercurClient } from '../config';
@@ -11,6 +12,7 @@ import {
 import {
   normalizeToCanonicalLocale,
   resolveStorefrontLocale,
+  slugFromCanonical,
   withMercurLocaleOptions
 } from '../sdk/locale-interceptor';
 
@@ -356,7 +358,10 @@ export const getSellerByHandle = async (
   const canonicalLocale = locale
     ? normalizeToCanonicalLocale(locale)
     : await resolveStorefrontLocale();
-  const localizedDescriptionNeeded = canonicalLocale !== 'pl-PL';
+  // Story 1.2 (AD-1 / lint-gate gp/locale-cache-boundary): porównanie przeniesione
+  // do przestrzeni slugów — warstwa danych nie operuje na literałach BCP-47.
+  // Semantyka bez zmian: `slugFromCanonical` jest totalne na `CanonicalLocale`.
+  const localizedDescriptionNeeded = slugFromCanonical(canonicalLocale) !== DEFAULT_LOCALE;
   const fetchProfile = () => fetchSellerProfileByHandle(handle, canonicalLocale);
   const shouldMergeProfile = (seller: SellerProps): boolean =>
     needsProfileEnrichment(seller) || localizedDescriptionNeeded;

@@ -1,7 +1,18 @@
+import { DEFAULT_LOCALE, isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
+
 type HeaderTuple = [string, string];
 
 export const CANONICAL_LOCALES = ['pl-PL', 'en-US', 'uk-UA', 'de-DE'] as const;
 export type CanonicalLocale = (typeof CANONICAL_LOCALES)[number];
+
+/**
+ * v1.14.0 Story 1.2 (AD-1) — granica Data Cache to ZAWSZE slug routingu
+ * (`pl|en|ua|de`), nigdy BCP-47. Alias (NIE drugi SSOT) na `SupportedLocale`
+ * z `src/i18n/routing.ts`; nazwa `StorefrontLocaleSlug` czyni intencję jawną
+ * w sygnaturach warstwy danych i jest tym, czego pilnuje lint-gate
+ * `gp/locale-cache-boundary`.
+ */
+export type StorefrontLocaleSlug = SupportedLocale;
 
 const DEFAULT_CANONICAL_LOCALE: CanonicalLocale = 'pl-PL';
 
@@ -33,7 +44,11 @@ const LOCALE_ALIASES: Record<string, CanonicalLocale> = {
   de_de: 'de-DE'
 };
 
-const ROUTE_LOCALE_BY_CANONICAL: Record<CanonicalLocale, string> = {
+// v1.14.0 Story 1.2: typ zacieśniony z `string` do `StorefrontLocaleSlug` — to
+// jest miejsce, w którym `CanonicalLocale` (BCP-47) i slug routingu są ze sobą
+// pogodzone. TS wyłapie rozjazd, gdyby ktoś dodał canonical bez slugu (albo
+// odwrotnie: `SUPPORTED_LOCALES` bez odpowiednika w `CANONICAL_LOCALES`).
+const ROUTE_LOCALE_BY_CANONICAL: Record<CanonicalLocale, StorefrontLocaleSlug> = {
   'pl-PL': 'pl',
   'en-US': 'en',
   'uk-UA': 'ua',
@@ -77,6 +92,36 @@ export function normalizeToCanonicalLocale(locale: unknown): CanonicalLocale {
   }
 
   return LOCALE_ALIASES[locale.trim().toLowerCase()] ?? DEFAULT_CANONICAL_LOCALE;
+}
+
+/**
+ * v1.14.0 Story 1.2 (AD-1) — slug routingu → BCP-47. To JEDYNA droga konwersji
+ * dostępna warstwie danych; mapa aliasów pozostaje w tym pliku (żadnej trzeciej
+ * kopii `ua ↔ uk-UA`, patrz nota R9 przy `LOCALE_ALIASES`).
+ *
+ * Synchroniczna z premedytacją: wołana wewnątrz callbacku `unstable_cache`,
+ * gdzie NIE MA kontekstu requestu (`headers()`/`cookies()`/`getLocale()`).
+ */
+export function canonicalFromSlug(locale: StorefrontLocaleSlug): CanonicalLocale {
+  return LOCALE_ALIASES[locale];
+}
+
+/**
+ * BCP-47 → slug routingu. Dopełnienie `canonicalFromSlug`; używane przy
+ * przenoszeniu locale z auto-resolve (poza cache scope) na granicę cache.
+ */
+export function slugFromCanonical(locale: CanonicalLocale): StorefrontLocaleSlug {
+  return ROUTE_LOCALE_BY_CANONICAL[locale];
+}
+
+/**
+ * Zawęża `string` z parametru route'u (`params.locale`) do union type slugów.
+ * Legalne WYŁĄCZNIE poza cache scope (route → argument wrappera). Wewnątrz
+ * `unstable_cache` argument jest już typu `StorefrontLocaleSlug` i nie wolno
+ * go „odzyskiwać” z kontekstu.
+ */
+export function toStorefrontLocaleSlug(value: string | undefined | null): StorefrontLocaleSlug {
+  return typeof value === 'string' && isSupportedLocale(value) ? value : DEFAULT_LOCALE;
 }
 
 export async function resolveStorefrontLocale(): Promise<CanonicalLocale> {
@@ -134,6 +179,54 @@ export async function withLocaleHeader(
   };
 }
 
+/**
+ * v1.14.0 Story 1.2 (AD-1, AC2) — wariant `withLocaleHeader` dla CACHE SCOPE.
+ *
+ * Różnice wobec `withLocaleHeader` i powód ich istnienia:
+ *  1. **synchroniczny** — wewnątrz callbacku `unstable_cache` nie ma kontekstu
+ *     requestu, więc jakikolwiek `await resolveStorefrontLocale()` byłby albo
+ *     błędem runtime, albo (gorzej) cichym `pl-PL` dla wszystkich locale;
+ *  2. **locale jest WYMAGANE** i typowane slugiem — pominięcie to błąd typu,
+ *     a nie cichy default. To właśnie ta wymuszalność jest treścią AC2.
+ *
+ * Konwersja slug → BCP-47 zachodzi WYŁĄCZNIE tutaj (AC3).
+ */
+export function withLocaleHeaderForSlug(
+  headers: HeaderInput,
+  locale: StorefrontLocaleSlug
+): Record<string, string> {
+  const base = headersToRecord(headers);
+
+  // Spójnie z `withLocaleHeader`: jawny nagłówek od wołającego wygrywa.
+  if (typeof base['x-medusa-locale'] === 'string' && base['x-medusa-locale']) {
+    return base;
+  }
+
+  return {
+    ...base,
+    'x-medusa-locale': canonicalFromSlug(locale)
+  };
+}
+
+/**
+ * v1.14.0 Story 1.2 — `withMercurLocaleOptions` dla cache scope: synchroniczny,
+ * z wymaganym slugiem. Auto-resolve interceptora jest w cache scope ZAKAZANY.
+ */
+export function withMercurLocaleOptionsForSlug<T extends Record<string, any> | undefined>(
+  args: T,
+  locale: StorefrontLocaleSlug
+): T & { fetchOptions: Record<string, any> } {
+  const fetchOptions = (args?.fetchOptions ?? {}) as Record<string, any>;
+
+  return {
+    ...(args ?? ({} as T)),
+    fetchOptions: {
+      ...fetchOptions,
+      headers: withLocaleHeaderForSlug(fetchOptions.headers, locale)
+    }
+  } as T & { fetchOptions: Record<string, any> };
+}
+
 export async function withMercurLocaleOptions<T extends Record<string, any> | undefined>(
   args?: T
 ): Promise<T & { fetchOptions: Record<string, any> }> {
@@ -148,8 +241,28 @@ export async function withMercurLocaleOptions<T extends Record<string, any> | un
   } as T & { fetchOptions: Record<string, any> };
 }
 
+/**
+ * v1.14.0 Story 1.2 (AC3) — wariant `localeCacheTag` dla cache scope:
+ * synchroniczny, z WYMAGANYM slugiem. Wynik jest bajtowo identyczny z
+ * `localeCacheTag(tag, canonicalFromSlug(slug))`, więc NIE powstaje trzecia
+ * konwencja nazewnictwa tagów — zastane call-site'y rewalidacji
+ * (`localeCacheTag`, `getCacheTag`) dalej trafiają w te same tagi.
+ */
+export function localeCacheTagForSlug(tag: string, locale: StorefrontLocaleSlug): string {
+  return `${tag}-${canonicalFromSlug(locale)}`;
+}
+
 export async function localeCacheTag(tag: string, locale?: CanonicalLocale): Promise<string> {
   return `${tag}-${locale ?? (await resolveStorefrontLocale())}`;
+}
+
+/**
+ * v1.14.0 Story 1.2 — auto-resolve locale sprowadzony do slugu. Wolno wołać
+ * WYŁĄCZNIE PRZED wejściem do `unstable_cache` (AD-1: „locale rozwiązane przed
+ * wejściem do cache”), nigdy wewnątrz callbacku.
+ */
+export async function resolveStorefrontLocaleSlug(): Promise<StorefrontLocaleSlug> {
+  return slugFromCanonical(await resolveStorefrontLocale());
 }
 
 export async function localePath(path: string, locale?: CanonicalLocale): Promise<string> {
