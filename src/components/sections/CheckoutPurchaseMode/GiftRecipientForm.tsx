@@ -10,13 +10,20 @@ import { updateGiftRecipientCartItems } from '@/lib/data/cart';
 import {
   buildGiftRecipientIssueMetadata,
   GIFT_RECIPIENT_MESSAGE_MAX,
-  todayISODate,
+  toEditableSendTiming,
   validateGiftRecipientForm,
   type GiftRecipientFormData,
   type GiftRecipientIssueMetadata,
   type GiftRecipientSendTiming,
   type GiftRecipientValidationErrors
 } from '@/lib/voucher/gift-recipient';
+
+/**
+ * Wariant A-minimal (FR-15a): dwie JAWNE opcje. „Nie wysyłaj, przekażę
+ * osobiście" jest realnym wyborem z własnym copy — nie wyszarzoną kontrolką
+ * i nie milczącym usunięciem. Wysyłka z wybraną datą wchodzi w v1.15.0.
+ */
+const SEND_TIMING_OPTIONS = ['now', 'handover'] as const;
 
 type GiftRecipientFormProps = {
   lineItemIds: string[];
@@ -29,8 +36,11 @@ function toInitialFormData(
   return {
     recipientEmail: initialValue?.gift_recipient_email ?? '',
     message: initialValue?.gift_recipient_message ?? '',
-    sendTiming: initialValue?.gift_recipient_send_timing ?? 'now',
-    sendDate: initialValue?.gift_recipient_send_date ?? null
+    // Koszyk sprzed v1.14.0 mógł nieść `scheduled` — sprowadzamy go do
+    // „nie wysyłaj", nigdy do „od razu" (wysyłka jest nieodwracalna).
+    sendTiming: initialValue
+      ? toEditableSendTiming(initialValue.gift_recipient_send_timing)
+      : 'now'
   };
 }
 
@@ -66,13 +76,8 @@ export function GiftRecipientForm({
   };
 
   const handleTimingChange = (value: GiftRecipientSendTiming) => {
-    setFormData(prev => ({
-      ...prev,
-      sendTiming: value,
-      sendDate: value === 'now' ? null : prev.sendDate
-    }));
+    setFormData(prev => ({ ...prev, sendTiming: value }));
     setStatus('idle');
-    setErrors(prev => ({ ...prev, sendDate: undefined }));
   };
 
   const handleSave = async () => {
@@ -149,10 +154,10 @@ export function GiftRecipientForm({
 
         <fieldset className="grid gap-2">
           <legend className="text-sm font-medium text-[var(--text-primary)]">
-            {t('send_date_label')}
+            {t('send_timing_label')}
           </legend>
           <div className="flex flex-wrap gap-2">
-            {(['now', 'scheduled'] as const).map(option => (
+            {SEND_TIMING_OPTIONS.map(option => (
               <button
                 key={option}
                 type="button"
@@ -165,28 +170,17 @@ export function GiftRecipientForm({
                 aria-pressed={formData.sendTiming === option}
                 data-testid={`gift-recipient-send-${option}`}
               >
-                {t(option === 'now' ? 'send_now' : 'send_scheduled')}
+                {t(option === 'now' ? 'send_timing_now' : 'send_timing_handover')}
               </button>
             ))}
           </div>
-          {formData.sendTiming === 'scheduled' && (
-            <label className="grid gap-2 text-sm text-[var(--text-primary)]">
-              {t('scheduled_date_label')}
-              <input
-                type="date"
-                name="gift_recipient_send_date"
-                value={formData.sendDate ?? ''}
-                min={todayISODate()}
-                onChange={event => setField('sendDate', event.target.value)}
-                aria-invalid={errors.sendDate ? 'true' : undefined}
-                className="w-fit rounded-[var(--bb-radius-input)] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-sm"
-                data-testid="gift-recipient-send-date"
-              />
-              {errors.sendDate && (
-                <span className="text-xs text-[var(--color-error)]">{t('send_date_error')}</span>
-              )}
-            </label>
-          )}
+          <p className="text-xs text-[var(--text-secondary)]" data-testid="gift-recipient-send-hint">
+            {t(
+              formData.sendTiming === 'now'
+                ? 'send_timing_now_hint'
+                : 'send_timing_handover_hint'
+            )}
+          </p>
         </fieldset>
 
         {/*

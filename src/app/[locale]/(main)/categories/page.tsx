@@ -6,6 +6,7 @@ import type { HttpTypes } from "@medusajs/types"
 import { listRegions } from "@/lib/data/regions"
 import { listCategories } from "@/lib/data/categories"
 import { parsePurchaseMode } from "@/lib/helpers/parse-purchase-mode"
+import { toStorefrontLocaleSlug } from "@/lib/sdk/locale-interceptor"
 import { toHreflang } from "@/lib/helpers/hreflang"
 import {
   AllCategoriesGrid,
@@ -267,6 +268,9 @@ export default async function CategoriesPage({ params, searchParams }: Categorie
       include_descendants_tree: true,
       limit: 120,
     },
+    // Story 1.2 (review-fix 1-2-F5): locale z route'u jawnie na granicę
+    // locale-keyed Data Cache, zamiast auto-resolve w kontynuacji async.
+    locale: toStorefrontLocaleSlug(locale),
   })
 
   const mappedCategories = toDisplayCategories(categories, marketId)

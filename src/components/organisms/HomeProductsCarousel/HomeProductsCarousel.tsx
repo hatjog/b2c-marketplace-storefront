@@ -3,6 +3,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { Carousel } from '@/components/cells';
 import { listProducts } from '@/lib/data/products';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import type { Product } from '@/types/product';
 
 import { ProductCard } from '../ProductCard/ProductCard';
@@ -31,7 +32,9 @@ export const HomeProductsCarousel = async ({
             order: 'created_at',
             handle: home ? undefined : sellerProducts.map(product => product.handle)
           },
-          forceCache: !home
+          // Story 1.2 (AD-1): `force-cache` + nagłówek zastąpione locale-keyed
+          // `unstable_cache`; locale z route'u przekazane jawnie.
+          locale: toStorefrontLocaleSlug(locale)
         })
       ).response.products;
 

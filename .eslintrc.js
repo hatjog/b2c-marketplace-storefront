@@ -33,6 +33,13 @@ module.exports = {
     // v1.13.0 Story 2.2 — AST static guard for hardcoded user-visible
     // strings in TSX JSX text and localization-sensitive attrs.
     "gp/no-hardcoded-i18n-strings": ["error", { allowlist: i18nHardcodedAllowlist }],
+    // v1.14.0 Story 1.2 — lint-gate AD-1 (locale-keyed Data Cache).
+    // (a) w src/lib/data/** locale to slug routingu, nigdy BCP-47 —
+    //     konwersję robi wyłącznie src/lib/sdk/locale-interceptor.ts;
+    // (b) mercurClient nie przechodzi przez applyLocaleInterceptor, więc
+    //     każde wywołanie musi iść przez withMercurLocaleOptions*.
+    // Story 1.3 rozszerzy ten gate o wymogi AD-3 (setRequestLocale).
+    "gp/locale-cache-boundary": "error",
     "no-restricted-syntax": [
       "error",
       {

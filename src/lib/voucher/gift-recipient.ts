@@ -1,58 +1,73 @@
+/**
+ * gift-recipient.ts — kontrakt metadanych prezentu zapisywanych na
+ * `line_item.metadata` (Story 2.4, FR-15/FR-15a; ADR-163 gift-flow-v1).
+ *
+ * ── Send-timing w wariancie A-minimal (v1.14.0) ─────────────────────────────
+ * Kupująca ma DWIE realne opcje: `now` („wyślij od razu") i `handover`
+ * („nie wysyłaj, przekażę osobiście"). Wysyłka z wybraną datą (`scheduled`)
+ * jest deferowana do v1.15.0 — kontrakt ją ZNA (koszyki sprzed tej zmiany
+ * niosą tę wartość), ale UI jej nie oferuje, a backend traktuje ją jawnie jako
+ * „nie wysyłaj automatycznie". To zwężenie przez COPY, nie ukrycie kontrolki.
+ */
+
 export const GIFT_RECIPIENT_MESSAGE_MAX = 200;
 
-export type GiftRecipientSendTiming = 'now' | 'scheduled';
+/** Warianty osiągalne z UI w v1.14.0 (FR-15a). */
+export type GiftRecipientSendTiming = 'now' | 'handover';
+
+/**
+ * Wartości, które mogą LEŻEĆ w metadanych: warianty UI + zastane `scheduled`
+ * (koszyki utworzone przed v1.14.0). `scheduled` jest kontraktem v1.15.0 —
+ * nieosiągalnym z UI i nigdy nieprodukowanym przez ten moduł.
+ */
+export type GiftRecipientPersistedSendTiming =
+  | GiftRecipientSendTiming
+  | 'scheduled';
 
 export type GiftRecipientFormData = {
   recipientEmail: string;
   message: string;
   sendTiming: GiftRecipientSendTiming;
-  sendDate: string | null;
 };
 
 export type GiftRecipientIssueMetadata = {
   gift_recipient_email: string;
   gift_recipient_message: string;
-  gift_recipient_send_timing: GiftRecipientSendTiming;
+  gift_recipient_send_timing: GiftRecipientPersistedSendTiming;
+  /**
+   * Wstecznie zgodne pole kontraktu. W v1.14.0 zapisywane ZAWSZE jako `null`
+   * (nie ma ścieżki produkującej datę); odczytywane, żeby zastane koszyki nie
+   * traciły danych i nie wywracały checkoutu.
+   */
   gift_recipient_send_date: string | null;
   gift_recipient_bound_to_voucher_issue: true;
 };
 
 export type GiftRecipientValidationErrors = Partial<
-  Record<'recipientEmail' | 'message' | 'sendDate', string>
+  Record<'recipientEmail' | 'message', string>
 >;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Returns today's date as YYYY-MM-DD string (local time). */
-export function todayISODate(): string {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+function isPersistedSendTiming(
+  value: unknown
+): value is GiftRecipientPersistedSendTiming {
+  return value === 'now' || value === 'handover' || value === 'scheduled';
 }
 
 /**
- * Validates a YYYY-MM-DD date string. Returns 'invalid' when:
- *  - the string does not match the expected format,
- *  - the date is not a real calendar date (e.g. 2026-02-30), or
- *  - the date is in the past relative to today (local time).
+ * Sprowadza wartość z metadanych do wariantu wybieralnego w UI.
+ *
+ * Zastane `scheduled` mapuje się na `handover` („nie wysyłaj"), a NIE na `now`:
+ * kupująca świadomie nie chciała wysyłki natychmiastowej, a mail nie w terminie
+ * jest nieodwracalny. Ta sama semantyka po stronie backendu (`gift-handoff.ts`
+ * → `scheduled_deferred_v1150`).
  */
-function validateSendDate(value: string | null): 'invalid' | undefined {
-  if (!value || !DATE_RE.test(value)) return 'invalid';
-  const parsed = new Date(value + 'T00:00:00');
-  if (Number.isNaN(parsed.getTime())) return 'invalid';
-  // Canonicalise back to YYYY-MM-DD to catch calendar-invalid dates (e.g.
-  // 2026-02-30 → JS wraps to 2026-03-02, which does not equal the original).
-  const canon =
-    `${parsed.getFullYear()}-` +
-    `${String(parsed.getMonth() + 1).padStart(2, '0')}-` +
-    `${String(parsed.getDate()).padStart(2, '0')}`;
-  if (canon !== value) return 'invalid';
-  // Reject past dates.
-  if (value < todayISODate()) return 'invalid';
-  return undefined;
+export function toEditableSendTiming(
+  value: unknown
+): GiftRecipientSendTiming {
+  if (value === 'now') return 'now';
+  return 'handover';
 }
 
 export function validateGiftRecipientForm(
@@ -68,11 +83,6 @@ export function validateGiftRecipientForm(
 
   if (message.length === 0 || message.length > GIFT_RECIPIENT_MESSAGE_MAX) {
     errors.message = 'invalid';
-  }
-
-  if (data.sendTiming === 'scheduled') {
-    const dateError = validateSendDate(data.sendDate);
-    if (dateError) errors.sendDate = dateError;
   }
 
   return errors;
@@ -94,11 +104,16 @@ export function buildGiftRecipientIssueMetadata(
     gift_recipient_email: data.recipientEmail.trim().toLowerCase(),
     gift_recipient_message: data.message.trim().slice(0, GIFT_RECIPIENT_MESSAGE_MAX),
     gift_recipient_send_timing: data.sendTiming,
-    gift_recipient_send_date: data.sendTiming === 'scheduled' ? data.sendDate : null,
+    // v1.14.0 nie produkuje daty — scheduler wchodzi w v1.15.0 (ADR-163).
+    gift_recipient_send_date: null,
     gift_recipient_bound_to_voucher_issue: true
   };
 }
 
+/**
+ * Odczyt metadanych zastanych. Akceptuje RÓWNIEŻ `scheduled`, żeby koszyk
+ * utworzony przed v1.14.0 nie wywracał checkoutu i nie tracił danych odbiorcy.
+ */
 export function readGiftRecipientIssueMetadata(
   metadata: Record<string, unknown> | null | undefined
 ): GiftRecipientIssueMetadata | null {
@@ -112,7 +127,7 @@ export function readGiftRecipientIssueMetadata(
   if (
     typeof recipientEmail !== 'string' ||
     typeof message !== 'string' ||
-    (sendTiming !== 'now' && sendTiming !== 'scheduled') ||
+    !isPersistedSendTiming(sendTiming) ||
     metadata.gift_recipient_bound_to_voucher_issue !== true
   ) {
     return null;
@@ -121,16 +136,23 @@ export function readGiftRecipientIssueMetadata(
   const data: GiftRecipientFormData = {
     recipientEmail,
     message,
-    sendTiming,
-    sendDate: typeof sendDate === 'string' ? sendDate : null
+    sendTiming: toEditableSendTiming(sendTiming)
   };
 
+  // LOW#5 (code-review 2.4): zastane `scheduled` normalizuje się do `handover`
+  // TU, nie tylko w `data.sendTiming` dla formularza. Bez tego koszyk sprzed
+  // v1.14.0 pokazywał w UI „przekażę osobiście", a `readGiftRecipientIssueMetadata`
+  // dalej zwracał `scheduled` — rozjazd między stanem WYŚWIETLANYM a stanem, na
+  // którym operuje reszta checkoutu (`giftRecipientComplete`, ewentualny re-zapis).
+  void sendDate;
   return isGiftRecipientFormValid(data)
     ? {
         gift_recipient_email: recipientEmail,
         gift_recipient_message: message,
-        gift_recipient_send_timing: sendTiming,
-        gift_recipient_send_date: data.sendTiming === 'scheduled' ? data.sendDate : null,
+        gift_recipient_send_timing: data.sendTiming,
+        // Normalizacja usuwa jedyną ścieżkę produkującą `scheduled` — data
+        // wysyłki (kontrakt v1.15.0) nie ma już tu zastosowania.
+        gift_recipient_send_date: null,
         gift_recipient_bound_to_voucher_issue: true
       }
     : null;

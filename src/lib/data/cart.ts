@@ -9,7 +9,11 @@ import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import medusaError from '@/lib/helpers/medusa-error';
 import { parseVariantIdsFromError } from '@/lib/helpers/parse-variant-error';
-import { localeAwareFetch, localePath } from '@/lib/sdk/locale-interceptor';
+import {
+  localeAwareFetch,
+  localePath,
+  resolveStorefrontLocaleSlug
+} from '@/lib/sdk/locale-interceptor';
 import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import {
   buildGiftRecipientIssueMetadata,
@@ -43,6 +47,48 @@ import { getRegion } from './regions';
  */
 const MVP_FLAG_SNAPSHOT_KEY = 'mvp_flag_snapshot';
 const MVP_FLAG_SNAPSHOT_TS_KEY = 'mvp_flag_snapshot_ts';
+
+/**
+ * v1.14.0 Story 2.3 (AC3) — locale ZAKUPU utrwalone w `cart.metadata`
+ * (Option A, ten sam nośnik co snapshot flagi wyżej).
+ *
+ * Po co: mail potwierdzenia zakupu vouchera (FR-13) i gift-handoff (Story 2.4)
+ * muszą iść w języku, w którym kupująca faktycznie kupowała. Backend nie ma
+ * innego wiarygodnego nośnika tej informacji — koperta eventu
+ * `entitlement_state_changed` nie niesie locale, a `Accept-Language` subscribera
+ * nie istnieje. `cart.metadata` jest kopiowane do `order.metadata` przy
+ * `completeCart`, więc subscriber czyta je z danych domenowych zamówienia
+ * (projekcja `VoucherService.findBuyerClaimSource`).
+ *
+ * Kontrakt v1 (ADR-162): wartość = slug routingu storefrontu (`pl|en|ua|de`),
+ * NIE BCP-47 — to ten sam alfabet, którym operuje `locales.supported` marketu
+ * (D-55), więc backend waliduje ją bez tłumaczenia.
+ *
+ * Moment zapisu (R-2.3-H2): przy INICJACJI SESJI PŁATNOŚCI — czyli wtedy, gdy
+ * kupująca wchodzi w krok płatności, a więc PRZED autoryzacją karty. NIE przy
+ * tworzeniu koszyka (zamrażałoby język z momentu dodania pierwszego produktu)
+ * i — co ważniejsze — NIE między `confirmCardPayment` a `/complete`.
+ *
+ * Dlaczego nie tuż przed `/complete`: `POST /store/carts/:id` uruchamia
+ * `updateCartWorkflow` → `refreshCartItemsWorkflow` →
+ * `refreshPaymentCollectionForCartWorkflow`, który KASUJE sesje płatności, gdy
+ * przeliczona suma koszyka rozjedzie się z kwotą payment collection. W oknie
+ * post-charge (karta już obciążona, `/complete` jeszcze nie) dałoby to
+ * osierocone obciążenie — tę samą klasę incydentu co „błąd przetwarzania"
+ * z v1.11.0. `try/catch` fail-open przed tym NIE chroni: szkodliwy jest
+ * przypadek, w którym zapis SIĘ POWIEDZIE. Przy inicjacji sesji ten sam efekt
+ * uboczny jest nieszkodliwy — sesja i tak powstaje zaraz po zapisie, a żadna
+ * płatność nie została jeszcze autoryzowana.
+ *
+ * Semantyka ADR-162 „ostatni zapis wygrywa" zachowana: zapis biegnie przy
+ * każdej inicjacji sesji płatności (zmiana metody / powrót do kroku płatności
+ * po przełączeniu języka nadpisuje wartość).
+ *
+ * Zapis jest FAIL-OPEN: locale nie jest warunkiem sprzedaży, więc błąd
+ * persystencji loguje ostrzeżenie i NIE wywraca checkoutu (backend ma jawny,
+ * logowany fallback na `locales.default` rynku).
+ */
+const PURCHASE_LOCALE_KEY = 'purchase_locale';
 
 /**
  * TF-73: Module-level mutex for getOrSetCart to prevent TOCTOU race condition.
@@ -83,6 +129,62 @@ function readFlagSnapshotFromCart(
     return null;
   }
   return { flag: flagRaw === 'true', ts: tsRaw };
+}
+
+/**
+ * Story 2.3 (AC3) — utrwala locale zakupu w `cart.metadata.purchase_locale`.
+ *
+ * Wywoływane przy inicjacji sesji płatności (patrz komentarz przy
+ * `PURCHASE_LOCALE_KEY`), czyli PRZED autoryzacją karty. `cart.metadata` jest
+ * kopiowane do `order.metadata` przy `completeCart`, więc wartość dociera do
+ * subscribera bez dotykania koszyka w oknie post-charge.
+ *
+ * Fail-open: KAŻDY błąd (sieć, 4xx, brak koszyka) kończy się ostrzeżeniem
+ * w logu i kontynuacją checkoutu — mail w języku fallbacku jest nieskończenie
+ * lepszy niż nieudany zakup.
+ *
+ * Idempotentne w praktyce: powtórny zapis tej samej wartości jest pomijany
+ * (oszczędza jedno zapytanie i nie unieważnia cache koszyka bez potrzeby).
+ */
+async function persistPurchaseLocale(
+  cartId: string,
+  headers: Record<string, string>
+): Promise<void> {
+  try {
+    const locale = await resolveStorefrontLocaleSlug();
+    const cart = await retrieveCart(cartId);
+
+    if (!cart) {
+      console.warn('[purchase-locale] brak koszyka do zapisu locale; kontynuacja fail-open');
+      return;
+    }
+
+    const metadata = (cart.metadata ?? {}) as Record<string, unknown>;
+    if (metadata[PURCHASE_LOCALE_KEY] === locale) {
+      return;
+    }
+
+    await sdk.store.cart.update(
+      cartId,
+      {
+        metadata: {
+          ...metadata,
+          [PURCHASE_LOCALE_KEY]: locale
+        }
+      },
+      {},
+      headers
+    );
+
+    const cartCacheTag = await getCacheTag('carts');
+    revalidateTag(cartCacheTag);
+  } catch (e) {
+    // Fail-open per AC3 — locale to nie warunek sprzedaży.
+    console.warn(
+      '[purchase-locale] zapis purchase_locale nieudany; kontynuacja checkoutu fail-open',
+      e
+    );
+  }
 }
 
 const MEDUSA_BACKEND_URL = resolveMedusaBackendUrl();
@@ -669,6 +771,14 @@ export async function initiatePaymentSession(
     ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
   };
 
+  // Story 2.3 (AC3) — locale zakupu utrwalane TUTAJ: to ostatni moment przed
+  // autoryzacją płatności, w którym mutacja koszyka jest bezpieczna (sesja
+  // płatności powstaje dopiero poniżej, więc ewentualne przeliczenie koszyka
+  // nie może osierocić obciążenia). Fail-open w środku.
+  if (cart?.id) {
+    await persistPurchaseLocale(cart.id, headers);
+  }
+
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, headers)
     .then(async resp => {
@@ -859,6 +969,12 @@ async function completeCartOrder(cartId?: string) {
     // Snapshot read errors (network, etc.) → fail-open per AC2.
     console.warn('[atomic-flag-check] snapshot read failed, fail-open', e);
   }
+
+  // Story 2.3 (AC3): `purchase_locale` jest zapisywane przy inicjacji sesji
+  // płatności (`initiatePaymentSession`), a NIE tutaj — między
+  // `confirmCardPayment` a `/complete` nie wolno mutować koszyka (R-2.3-H2:
+  // `updateCartWorkflow` może skasować sesje płatności → osierocone
+  // obciążenie). Ten komentarz jest celowo zostawiony jako znacznik zakazu.
 
   const res = await fetchQuery(`/store/carts/${id}/complete`, {
     method: 'POST',

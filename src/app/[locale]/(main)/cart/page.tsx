@@ -9,6 +9,7 @@ import { listCategories } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 
 /**
  * Story 2.4: force-dynamic — cart state is volatile (voucher availability,
@@ -50,10 +51,18 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
         limit: 8,
         order: 'created_at'
       },
-      forceCache: true
+      // Story 1.2 (AD-1): cache jest w `unstable_cache` (locale w kluczu), nie
+      // w `force-cache` + nagłówek. Locale podane jawnie, bo ten fetch biegnie
+      // w kontynuacji `.then()`, gdzie auto-resolve potrafi spaść na default.
+      locale: toStorefrontLocaleSlug(locale)
     })
   );
-  const categoriesPromise = listCategories({ query: { limit: 8 } });
+  // review-fix 1-2-F5: siostrzany `listProducts` powyżej dostaje locale jawnie
+  // z dokładnie tego samego powodu — ten fetch nie może być wyjątkiem.
+  const categoriesPromise = listCategories({
+    query: { limit: 8 },
+    locale: toStorefrontLocaleSlug(locale)
+  });
 
   const [productsResult, categoriesResult] = await Promise.allSettled([
     productsPromise,

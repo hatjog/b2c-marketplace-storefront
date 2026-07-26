@@ -36,7 +36,11 @@ vi.mock('../sdk/locale-interceptor', () => ({
   withMercurLocaleOptions: (args: unknown) =>
     Promise.resolve(args ?? { fetchOptions: {} }),
   normalizeToCanonicalLocale: (loc: string) =>
-    ({ pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' })[loc] ?? loc
+    ({ pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' })[loc] ?? loc,
+  // v1.14.0 Story 1.2: seller.ts porównuje locale w przestrzeni slugów
+  // (lint-gate gp/locale-cache-boundary zakazuje literałów BCP-47 w lib/data/**).
+  slugFromCanonical: (loc: string) =>
+    ({ 'pl-PL': 'pl', 'uk-UA': 'ua', 'de-DE': 'de', 'en-US': 'en' })[loc] ?? loc
 }));
 
 // Mock mercurClient — seller.ts imports it for getSellers (not used by getSellerByHandle now)

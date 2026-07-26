@@ -23,9 +23,10 @@ import type { SellerProps } from '@/types/seller';
 import { mercurClient, sdk } from '../config';
 import {
   normalizeToCanonicalLocale,
-  resolveStorefrontLocale,
+  resolveStorefrontLocaleSlug,
   withMercurLocaleOptions,
-  type CanonicalLocale
+  withMercurLocaleOptionsForSlug,
+  type StorefrontLocaleSlug
 } from '../sdk/locale-interceptor';
 
 /**
@@ -181,24 +182,38 @@ async function querySellersByHandle(
 // oraz częścią tagu, dzięki czemu cache split per locale (per-handle slot per locale).
 // Backend seller ID jest aktualnie locale-agnostic, ale per-locale cache slot chroni
 // przed przyszłym driftem (np. soft-delete per market locale, lokalizowane attributes).
+//
+// v1.14.0 Story 1.2 (review-fix 1-2-F3) — MIGRACJA NA AD-1: granicą cache jest
+// teraz slug routingu, a locale wchodzi do nagłówka JAWNIE z argumentu
+// (`withMercurLocaleOptionsForSlug`). Poprzednio parametr `locale` był tylko
+// w kluczu i w logu, a wychodzące żądanie brało locale z auto-resolve
+// WEWNĄTRZ cache scope — czyli `(handle, 'uk-UA')` i `(handle, 'pl-PL')`
+// wysyłały identyczne żądanie. To jest wzorzec źródłowy AD-1, więc rozjazd
+// wzorca z regułą, którą ta story wprowadza, był sam w sobie ryzykiem.
 const resolveSellerHandleToIdCached = unstable_cache(
-  async (handle: string, locale: CanonicalLocale): Promise<string | null> => {
+  async (handle: string, locale: StorefrontLocaleSlug): Promise<string | null> => {
     try {
       // cleanup-28 review CACHE-2: outer unstable_cache memoizes per (handle, locale)
       // for 600s; inner HTTP cache harmless w tym oknie.
       const result = (await mercurClient.store.sellers.query(
-        await withMercurLocaleOptions({
-          handle,
-          limit: 1
-        })
+        withMercurLocaleOptionsForSlug(
+          {
+            handle,
+            limit: 1
+          },
+          locale
+        )
       )) as { sellers?: SellerListApiItem[] };
       const filteredId = pickSellerIdByHandle(result?.sellers, handle);
       if (filteredId) return filteredId;
 
       const fallback = (await mercurClient.store.sellers.query(
-        await withMercurLocaleOptions({
-          fetchOptions: { cache: 'no-cache' }
-        })
+        withMercurLocaleOptionsForSlug(
+          {
+            fetchOptions: { cache: 'no-cache' }
+          },
+          locale
+        )
       )) as { sellers?: SellerListApiItem[] };
       return pickSellerIdByHandle(fallback?.sellers, handle);
     } catch (err) {
@@ -216,7 +231,8 @@ const resolveSellerHandleToIdCached = unstable_cache(
 );
 
 export const resolveSellerHandleToId = async (handle: string): Promise<string | null> => {
-  const locale = await resolveStorefrontLocale();
+  // AD-1: auto-resolve WYŁĄCZNIE przed wejściem do cache; do środka idzie slug.
+  const locale = await resolveStorefrontLocaleSlug();
   return resolveSellerHandleToIdCached(handle, locale);
 };
 

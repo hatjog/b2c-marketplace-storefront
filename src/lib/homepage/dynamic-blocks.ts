@@ -1,6 +1,10 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { fetchHomepageBlogPageDocs, getPayloadApiUrl, mapPayloadPageToBlogPost } from '@/lib/blog';
+import {
+  CATEGORIES_CACHE_TAG_SCOPE,
+  PRODUCTS_CACHE_TAG_SCOPE
+} from '@/lib/data/cache-budgets';
 import { buildMedusaUrl } from '@/lib/env';
 import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
 import { getCountryCode } from '@/lib/helpers/country-code';
@@ -106,7 +110,7 @@ export async function fetchHomepageProducts({
       headers: await getPublishableHeaders(),
       next: {
         revalidate: 3600,
-        tags: [await localeCacheTag('products')]
+        tags: [await localeCacheTag(PRODUCTS_CACHE_TAG_SCOPE)]
       }
     });
 
@@ -127,7 +131,7 @@ export async function fetchHomepageProducts({
         headers: await getPublishableHeaders(),
         next: {
           revalidate: 3600,
-          tags: [await localeCacheTag('products')]
+          tags: [await localeCacheTag(PRODUCTS_CACHE_TAG_SCOPE)]
         }
       });
 
@@ -173,7 +177,7 @@ export async function fetchHomepageCategories({
       headers: await getPublishableHeaders(),
       next: {
         revalidate: 86400,
-        tags: [await localeCacheTag('categories')]
+        tags: [await localeCacheTag(CATEGORIES_CACHE_TAG_SCOPE)]
       }
     });
 

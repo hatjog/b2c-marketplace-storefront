@@ -1,22 +1,26 @@
 /**
- * GiftRecipientForm — unit tests covering AC1/AC2/AC3 (Story 5.3).
+ * GiftRecipientForm — unit tests covering AC1/AC2/AC3 (Story 5.3) plus the
+ * A-minimal send-timing narrowing from Story 2.4 (v1.14.0, FR-15a).
  *
  * Tests are kept in node environment (no jsdom required) because they exercise
  * the form logic layer: validation, char-counter bounds, RODO field scope, and
  * the binding-ready contract — all verifiable via the pure helper functions
  * imported by GiftRecipientForm without mounting a DOM.
  *
- * Render integration (gift-mode ON reveals form, consent copy present) is
- * covered at the checkout page level; the unit layer here focuses on the
- * contract correctness that would be invisible to a DOM snapshot.
+ * The i18n assertions read `messages/*.json` directly: the narrowing is a COPY
+ * change across four locales, so „does the string exist in every locale" is
+ * exactly the regression that would otherwise ship unnoticed.
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
   buildGiftRecipientIssueMetadata,
   GIFT_RECIPIENT_MESSAGE_MAX,
   isGiftRecipientFormValid,
-  todayISODate,
+  toEditableSendTiming,
   validateGiftRecipientForm,
   type GiftRecipientFormData
 } from '@/lib/voucher/gift-recipient';
@@ -28,8 +32,7 @@ describe('GiftRecipientForm — AC2: recipient email validation', () => {
   const baseForm: GiftRecipientFormData = {
     recipientEmail: 'recipient@example.com',
     message: 'Hello',
-    sendTiming: 'now',
-    sendDate: null
+    sendTiming: 'now'
   };
 
   it('accepts a valid email address', () => {
@@ -59,8 +62,7 @@ describe('GiftRecipientForm — AC2: message char-counter and hard limit', () =>
   const baseForm: GiftRecipientFormData = {
     recipientEmail: 'r@example.com',
     message: '',
-    sendTiming: 'now',
-    sendDate: null
+    sendTiming: 'now'
   };
 
   it('GIFT_RECIPIENT_MESSAGE_MAX is exactly 200 (live-counter upper bound)', () => {
@@ -82,7 +84,6 @@ describe('GiftRecipientForm — AC2: message char-counter and hard limit', () =>
   });
 
   it('buildGiftRecipientIssueMetadata trims message to max 200 chars', () => {
-    // The build step also slices defensively; should never exceed 200 in payload.
     const long = 'y'.repeat(200);
     const payload = buildGiftRecipientIssueMetadata({ ...baseForm, message: long });
     expect(payload.gift_recipient_message.length).toBeLessThanOrEqual(GIFT_RECIPIENT_MESSAGE_MAX);
@@ -90,76 +91,107 @@ describe('GiftRecipientForm — AC2: message char-counter and hard limit', () =>
 });
 
 // ---------------------------------------------------------------------------
-// AC2 — send-date: Teraz / Zaplanuj + calendar-invalid + past-date (L1 fix)
+// Story 2.4 / FR-15a — send-timing narrowed to two honest options
 // ---------------------------------------------------------------------------
-describe('GiftRecipientForm — AC2/L1: send-date validation', () => {
+describe('GiftRecipientForm — FR-15a: send-timing A-minimal', () => {
   const baseForm: GiftRecipientFormData = {
     recipientEmail: 'r@example.com',
     message: 'Hi',
-    sendTiming: 'now',
-    sendDate: null
+    sendTiming: 'now'
   };
 
-  it('send-now does not require a date', () => {
-    expect(validateGiftRecipientForm({ ...baseForm, sendTiming: 'now', sendDate: null }).sendDate)
-      .toBeUndefined();
+  it('both variants are valid — "hand over in person" is a real choice, not a blocked one', () => {
+    expect(isGiftRecipientFormValid({ ...baseForm, sendTiming: 'now' })).toBe(true);
+    expect(isGiftRecipientFormValid({ ...baseForm, sendTiming: 'handover' })).toBe(true);
   });
 
-  it('send-scheduled rejects null date', () => {
-    expect(
-      validateGiftRecipientForm({ ...baseForm, sendTiming: 'scheduled', sendDate: null }).sendDate
-    ).toBe('invalid');
+  it('no send-date validation remains on the buyer path', () => {
+    // Pole daty zniknęło ze ścieżki kupującej razem z walidacją; jedyne możliwe
+    // błędy to adres i wiadomość.
+    const errors = validateGiftRecipientForm({ ...baseForm, sendTiming: 'handover' });
+    expect(Object.keys(errors)).toEqual([]);
+    expect('sendDate' in errors).toBe(false);
   });
 
-  it('send-scheduled accepts a valid future date', () => {
-    // Use a hardcoded far-future date so the test is stable over time.
+  it('the persisted payload never carries a date in v1.14.0', () => {
     expect(
-      validateGiftRecipientForm({ ...baseForm, sendTiming: 'scheduled', sendDate: '2099-12-31' })
-        .sendDate
-    ).toBeUndefined();
+      buildGiftRecipientIssueMetadata({ ...baseForm, sendTiming: 'now' })
+        .gift_recipient_send_date
+    ).toBeNull();
   });
 
-  it('send-scheduled rejects a calendar-invalid date (L1 fix — 2026-02-30 does not exist)', () => {
-    expect(
-      validateGiftRecipientForm({ ...baseForm, sendTiming: 'scheduled', sendDate: '2026-02-30' })
-        .sendDate
-    ).toBe('invalid');
-  });
-
-  it('send-scheduled rejects a month > 12 (L1 fix)', () => {
-    expect(
-      validateGiftRecipientForm({ ...baseForm, sendTiming: 'scheduled', sendDate: '2026-13-01' })
-        .sendDate
-    ).toBe('invalid');
-  });
-
-  it('send-scheduled rejects a past date (L1 fix)', () => {
-    // 1970-01-01 is always in the past.
-    expect(
-      validateGiftRecipientForm({ ...baseForm, sendTiming: 'scheduled', sendDate: '1970-01-01' })
-        .sendDate
-    ).toBe('invalid');
-  });
-
-  it('todayISODate returns a valid YYYY-MM-DD string', () => {
-    const today = todayISODate();
-    expect(/^\d{4}-\d{2}-\d{2}$/.test(today)).toBe(true);
-    // Must not be rejected as a past date.
-    expect(
-      validateGiftRecipientForm({ ...baseForm, sendTiming: 'scheduled', sendDate: today }).sendDate
-    ).toBeUndefined();
+  it('a legacy cart (`scheduled`) opens as "hand over in person", not "send now"', () => {
+    expect(toEditableSendTiming('scheduled')).toBe('handover');
   });
 });
 
 // ---------------------------------------------------------------------------
-// AC3 — RODO/HG-7: payload contains exactly the three allowed fields
+// Story 2.4 — i18n parity: new copy exists in all four locales, old keys gone
 // ---------------------------------------------------------------------------
-describe('GiftRecipientForm — AC3: RODO minimisation (exactly 3 PII fields in payload)', () => {
+describe('GiftRecipientForm — FR-14/FR-15a: i18n parity across 4 locales', () => {
+  const LOCALES = ['pl', 'en', 'ua', 'de'] as const;
+  const NEW_KEYS = [
+    'send_timing_label',
+    'send_timing_now',
+    'send_timing_handover',
+    'send_timing_now_hint',
+    'send_timing_handover_hint'
+  ] as const;
+  const REMOVED_KEYS = [
+    'send_date_label',
+    'send_now',
+    'send_scheduled',
+    'scheduled_date_label',
+    'send_date_error'
+  ] as const;
+
+  const blockFor = (locale: string): Record<string, string> => {
+    const raw = readFileSync(
+      resolve(process.cwd(), `messages/${locale}.json`),
+      'utf8'
+    );
+    return JSON.parse(raw).seller.checkout.gift_recipient;
+  };
+
+  it.each(LOCALES)('%s has every new send-timing string, non-empty', locale => {
+    const block = blockFor(locale);
+    for (const key of NEW_KEYS) {
+      expect(typeof block[key]).toBe('string');
+      expect(block[key].trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it.each(LOCALES)('%s no longer carries the scheduling keys (no orphans)', locale => {
+    const block = blockFor(locale);
+    for (const key of REMOVED_KEYS) {
+      expect(block[key]).toBeUndefined();
+    }
+  });
+
+  it('all four locales expose exactly the same key set (parity)', () => {
+    const keySets = LOCALES.map(locale => Object.keys(blockFor(locale)).sort());
+    for (const keys of keySets) {
+      expect(keys).toEqual(keySets[0]);
+    }
+  });
+
+  it('no locale promises a scheduled send — copy must not oversell v1.14.0', () => {
+    // FR-15a: „copy nie obiecuje niczego, czego system nie robi".
+    const forbidden = /data wysyłki|zaplanuj|schedule|дата надсилання|запланувати|versanddatum|planen/i;
+    for (const locale of LOCALES) {
+      expect(JSON.stringify(blockFor(locale))).not.toMatch(forbidden);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC3 — RODO/HG-7: payload contains exactly the allowed fields
+// ---------------------------------------------------------------------------
+describe('GiftRecipientForm — AC3: RODO minimisation (only allowed fields in payload)', () => {
   const validForm: GiftRecipientFormData = {
     recipientEmail: 'User@Example.com',
     message: 'Prezent dla Ciebie',
-    sendTiming: 'scheduled',
-    sendDate: '2099-06-20'
+    sendTiming: 'now'
   };
 
   it('payload contains only the allowed keys — no extra PII', () => {

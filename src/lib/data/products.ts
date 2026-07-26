@@ -12,9 +12,17 @@ import { sortProducts } from '@/lib/helpers/sort-products';
 import { sortByRecommended } from '@/lib/helpers/sort-utils';
 import type { SortOptions } from '@/types/product';
 
+import type { StorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
+import {
+  resolveStorefrontLocaleSlug,
+  withLocaleHeaderForSlug
+} from '@/lib/sdk/locale-interceptor';
+
 import { sdk } from '../config';
+import { PRODUCTS_CACHE_REVALIDATE_SECONDS, PRODUCTS_CACHE_TAG_SCOPE } from './cache-budgets';
 import { getAuthHeaders } from './cookies';
 import { retrieveCustomer } from './customer';
+import { createLocaleKeyedCache } from './locale-cache';
 import { paginateSortedProducts } from './products-pagination';
 import { getRegion, retrieveRegion } from './regions';
 
@@ -25,6 +33,69 @@ export type ProductQueryParams = HttpTypes.FindParams &
     max_price?: string;
   };
 
+type CatalogPage = {
+  products: ListedProduct[];
+  count: number;
+};
+
+/**
+ * Wszystko, co wpływa na treść odpowiedzi backendu dla listingu katalogu.
+ * Ten obiekt jest argumentem funkcji cache'owanej ⇒ CZĘŚCIĄ KLUCZA. Pominięcie
+ * któregokolwiek pola dałoby przeciek MIĘDZY ZAPYTANIAMI (np. strona 2 podana
+ * jako strona 1), a nie tylko między locale.
+ */
+type CatalogQueryKey = {
+  countryCode?: string;
+  regionId: string;
+  category_id?: string | string[];
+  collection_id?: string;
+  limit: number;
+  offset: number;
+  fields: string;
+  queryParams?: ProductQueryParams;
+};
+
+async function fetchCatalogPage(
+  locale: StorefrontLocaleSlug,
+  key: CatalogQueryKey,
+  extraHeaders: Record<string, string>
+): Promise<CatalogPage> {
+  return sdk.client.fetch<CatalogPage>(`/store/products`, {
+    method: 'GET',
+    query: {
+      country_code: key.countryCode,
+      category_id: key.category_id,
+      collection_id: key.collection_id,
+      limit: key.limit,
+      offset: key.offset,
+      fields: key.fields,
+      ...key.queryParams,
+      region_id: key.regionId,
+    },
+    // AC2: locale JAWNIE z argumentu — również na torze nie-cache'owanym,
+    // żeby obie ścieżki miały identyczną semantykę lokalizacji.
+    headers: withLocaleHeaderForSlug(extraHeaders, locale)
+  });
+}
+
+/**
+ * v1.14.0 Story 1.2 (AD-1, AC1/AC2/AC5) — locale-keyed Data Cache listingu katalogu.
+ *
+ * Cache'owany jest WYŁĄCZNIE anonimowy, surowy odczyt: brak nagłówka
+ * `authorization`, brak normalizacji zależnej od `preferredSellerId`.
+ * Uzasadnienie w `listProducts` przy `authHeaders`.
+ *
+ * Błędy propagują się celowo — `unstable_cache` nie zapisuje odrzuconej
+ * obietnicy, więc awaria backendu nie zamraża pustego katalogu na 300 s.
+ */
+const fetchCatalogPageCached = createLocaleKeyedCache({
+  keyPrefix: 'storefront-list-products',
+  tagScope: PRODUCTS_CACHE_TAG_SCOPE,
+  revalidate: PRODUCTS_CACHE_REVALIDATE_SECONDS,
+  fetcher: (locale: StorefrontLocaleSlug, key: CatalogQueryKey): Promise<CatalogPage> =>
+    fetchCatalogPage(locale, key, {})
+});
+
 export const listProducts = async ({
   pageParam = 1,
   queryParams,
@@ -32,9 +103,9 @@ export const listProducts = async ({
   regionId,
   category_id,
   collection_id,
-  forceCache = false,
   includeSellerContext = false,
   preferredSellerId,
+  locale,
 }: {
   pageParam?: number;
   queryParams?: ProductQueryParams;
@@ -42,9 +113,13 @@ export const listProducts = async ({
   collection_id?: string;
   countryCode?: string;
   regionId?: string;
-  forceCache?: boolean;
   includeSellerContext?: boolean;
   preferredSellerId?: string;
+  /**
+   * Slug locale z route'u. Pominięcie jest legalne TYLKO tutaj (poza cache
+   * scope) — wtedy locale jest auto-resolvowane PRZED wejściem do cache.
+   */
+  locale?: StorefrontLocaleSlug;
 }): Promise<{
   response: {
     products: ListedProduct[];
@@ -85,9 +160,18 @@ export const listProducts = async ({
     };
   }
 
-  const headers = {
-    ...(await getAuthHeaders())
-  };
+  // PUŁAPKA (Story 1.2, AC2/AC5): `getAuthHeaders()` czyta cookie `_medusa_jwt`.
+  // Wywołanie go WEWNĄTRZ `unstable_cache` byłoby błędem runtime (brak
+  // `cookies()` w cache scope), a wrzucenie tokenu do współdzielonego wpisu
+  // dałoby przeciek danych sesji MIĘDZY KLIENTKAMI — groźniejszy niż przeciek
+  // locale. Dlatego token czytamy TUTAJ, przed wrapperem, i rozcinamy tory:
+  //   - anonimowy odczyt  → współdzielony, locale-keyed `unstable_cache`;
+  //   - wariant z `authorization` → bezpośredni fetch, BEZ wspólnego wpisu.
+  const authHeaders = (await getAuthHeaders()) as Record<string, string>;
+  const isAuthenticatedRead = typeof authHeaders.authorization === 'string';
+
+  // AD-1: locale rozwiązane PRZED wejściem do cache, nigdy w callbacku.
+  const resolvedLocale = locale ?? (await resolveStorefrontLocaleSlug());
 
   const fields = [
     'id',
@@ -118,29 +202,22 @@ export const listProducts = async ({
     '+metadata',
   ].join(',');
 
-  return sdk.client
-    .fetch<{
-      products: ListedProduct[];
-      count: number;
-    }>(`/store/products`, {
-      method: 'GET',
-      query: {
-        country_code: countryCode,
-        category_id,
-        collection_id,
-        limit,
-        offset,
-        fields,
-        ...queryParams,
-        region_id: region.id,
-      },
-      headers,
-      // v1.12.0 UA-loc: avoid cross-locale Next Data Cache leak — the x-medusa-locale
-      // header (added by the SDK locale interceptor) is not part of the Data Cache key,
-      // so a shared force-cache entry leaked the first-fetched locale (pl→ua). no-store
-      // keeps catalog titles locale-correct; locale-keyed caching is a follow-up perf task.
-      cache: 'no-store'
-    })
+  const queryKey: CatalogQueryKey = {
+    countryCode,
+    regionId: region.id,
+    category_id,
+    collection_id,
+    limit,
+    offset,
+    fields,
+    queryParams,
+  };
+
+  const catalogPage = isAuthenticatedRead
+    ? fetchCatalogPage(resolvedLocale, queryKey, authHeaders)
+    : fetchCatalogPageCached(resolvedLocale, queryKey);
+
+  return catalogPage
     .then(({ products: productsRaw, count: backendCount }) => {
       // Apply quality-gate filter BEFORE exposing pagination signals to UI.
       // Backend `count` is pre-filter; using it for the rendered listing causes
@@ -174,6 +251,16 @@ export const listProducts = async ({
     })
     .catch((error) => {
       console.error('[products] listProducts failed:', error?.message || error);
+      // v1.14.0 Story 1.2 (review-fix 1-2-F6): ten `catch` łapie teraz również
+      // awarie kontraktu cache scope (`cookies()`/`headers()` w callbacku
+      // `unstable_cache`, błąd serializacji argumentu, brak incremental cache),
+      // które objawiają się identycznie jak backend 503: WYZEROWANY KATALOG dla
+      // ruchu anonimowego, przy działającym torze auth. Bez raportu do Sentry
+      // jedynym śladem byłby log stdout — a ten plik raportuje przez Sentry
+      // zdarzenia o rząd wielkości mniej krytyczne (`product count exceeds 1000`).
+      Sentry.captureException(error, {
+        tags: { scope: 'listProducts', layer: 'data-cache' }
+      });
       return {
         response: {
           products: [],
