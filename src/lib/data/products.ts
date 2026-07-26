@@ -251,6 +251,16 @@ export const listProducts = async ({
     })
     .catch((error) => {
       console.error('[products] listProducts failed:', error?.message || error);
+      // v1.14.0 Story 1.2 (review-fix 1-2-F6): ten `catch` łapie teraz również
+      // awarie kontraktu cache scope (`cookies()`/`headers()` w callbacku
+      // `unstable_cache`, błąd serializacji argumentu, brak incremental cache),
+      // które objawiają się identycznie jak backend 503: WYZEROWANY KATALOG dla
+      // ruchu anonimowego, przy działającym torze auth. Bez raportu do Sentry
+      // jedynym śladem byłby log stdout — a ten plik raportuje przez Sentry
+      // zdarzenia o rząd wielkości mniej krytyczne (`product count exceeds 1000`).
+      Sentry.captureException(error, {
+        tags: { scope: 'listProducts', layer: 'data-cache' }
+      });
       return {
         response: {
           products: [],

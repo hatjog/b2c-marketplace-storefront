@@ -22,6 +22,10 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Aliasy typów (import type jest wymazywany, więc nie kolidują z hoistingiem
+// `vi.mock`) — pozwalają uniknąć zakazanych adnotacji `typeof import(...)`.
+import type * as LocaleInterceptorModule from '@/lib/sdk/locale-interceptor';
+
 // --- Model Next Data Cache -------------------------------------------------
 
 type CacheEntry = { value: unknown };
@@ -55,12 +59,33 @@ vi.mock('next/cache', () => ({
 
 // --- Mocki warstwy poniżej cache ------------------------------------------
 
-const fetchMock = vi.fn();
-
-vi.mock('@/lib/config', () => ({
-  sdk: { client: { fetch: (...args: unknown[]) => fetchMock(...args) } },
-  mercurClient: {}
+/**
+ * review-fix 1-2-F1: testowy `sdk` przechodzi przez `applyLocaleInterceptor`,
+ * czyli przez DOKŁADNIE tę warstwę, która w produkcji wykonuje fetch. Wcześniej
+ * mock podmieniał `@/lib/config` na goły obiekt, więc interceptor znikał —
+ * a razem z nim jedyne miejsce, w którym auto-resolve mógł wejść do cache scope.
+ * Asercja „zero auto-resolve w cache scope" była wtedy zielona z konstrukcji.
+ *
+ * `interceptorResolveSpy` stoi w miejscu `resolveStorefrontLocale` (a więc
+ * `getLocale()` z next-intl) — jego wywołanie w cache scope to naruszenie AD-1.
+ */
+const { fetchMock, interceptorResolveSpy } = vi.hoisted(() => ({
+  fetchMock: vi.fn(),
+  interceptorResolveSpy: vi.fn(async () => 'pl-PL' as 'pl-PL' | 'en-US' | 'uk-UA' | 'de-DE')
 }));
+
+vi.mock('@/lib/config', async () => {
+  const { applyLocaleInterceptor } =
+    await vi.importActual<typeof LocaleInterceptorModule>('@/lib/sdk/locale-interceptor');
+
+  return {
+    sdk: applyLocaleInterceptor(
+      { client: { fetch: (...args: unknown[]) => fetchMock(...args) } },
+      interceptorResolveSpy
+    ),
+    mercurClient: {}
+  };
+});
 
 const getAuthHeadersMock = vi.fn(async () => ({}) as Record<string, string>);
 
@@ -100,9 +125,7 @@ const resolveLocaleSlugSpy = vi.fn(async () => 'pl' as 'pl' | 'en' | 'ua' | 'de'
 
 vi.mock('@/lib/sdk/locale-interceptor', async () => {
   const actual =
-    await vi.importActual<typeof import('@/lib/sdk/locale-interceptor')>(
-      '@/lib/sdk/locale-interceptor'
-    );
+    await vi.importActual<typeof LocaleInterceptorModule>('@/lib/sdk/locale-interceptor');
   return {
     ...actual,
     resolveStorefrontLocaleSlug: () => resolveLocaleSlugSpy()
@@ -147,6 +170,8 @@ beforeEach(() => {
   cacheHits = 0;
   cacheMisses = 0;
   fetchMock.mockReset();
+  interceptorResolveSpy.mockClear();
+  interceptorResolveSpy.mockResolvedValue('pl-PL');
   resolveLocaleSlugSpy.mockClear();
   resolveLocaleSlugSpy.mockResolvedValue('pl');
   getAuthHeadersMock.mockReset();
@@ -253,6 +278,21 @@ describe('AC4 — sekwencja /pl → /ua na tym samym zasobie (getCategoryByHandl
     expect(cacheHits).toBe(1);
   });
 
+  // review-fix 1-2-F4: brak trafienia NIE może zostać zapisany na 600 s —
+  // inaczej świeżo opublikowana kategoria jest 404 przez cały TTL.
+  it('brak trafienia NIE jest cache’owany (świeżo dodana kategoria nie jest 404 na TTL)', async () => {
+    fetchMock.mockResolvedValueOnce({ product_categories: [] });
+
+    const missing = await getCategoryByHandle('swiezo-dodana', 'pl');
+    expect(missing).toBeUndefined();
+    expect(cacheStore.size).toBe(0);
+
+    // Kategoria pojawia się w backendzie sekundę później — widać ją od razu.
+    const found = await getCategoryByHandle('swiezo-dodana', 'pl');
+    expect(found?.name).toBe('Zabiegi na twarz');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('inny handle to inny wpis (klucz obejmuje argumenty, nie tylko locale)', async () => {
     await getCategoryByHandle('twarz', 'pl');
     await getCategoryByHandle('dlonie', 'pl');
@@ -326,6 +366,32 @@ describe('AC2 — w cache scope locale jest JAWNE, auto-resolve zakazany', () =>
     // Locale podane jawnie na obu ścieżkach ⇒ auto-resolve nie jest w ogóle potrzebny.
     expect(resolveLocaleSlugSpy).toHaveBeenCalledTimes(0);
     expect(outgoingLocales()).toEqual(['uk-UA', 'uk-UA']);
+  });
+
+  // review-fix 1-2-F1: to jest asercja, której poprzednia wersja testu nie
+  // mogła postawić — interceptor był wycięty przez mock `@/lib/config`.
+  it('interceptor NIE rozwiązuje locale wewnątrz cache scope (auto-resolve = 0)', async () => {
+    await listCategories({ locale: 'ua' });
+    await getCategoryByHandle('twarz', 'de');
+    await listProducts({ countryCode: 'pl', locale: 'en' });
+
+    // Jawny `x-medusa-locale` z `withLocaleHeaderForSlug` ⇒ interceptor nie
+    // sięga po kontekst requestu (`getLocale()`), który w cache scope rzuca
+    // i cicho degraduje do pl-PL.
+    expect(interceptorResolveSpy).toHaveBeenCalledTimes(0);
+    expect(outgoingLocales()).toEqual(['uk-UA', 'de-DE', 'en-US']);
+  });
+
+  it('NON-VACUOUS: bez jawnego nagłówka interceptor JEST tym, kto rozwiązuje locale', async () => {
+    // Guard test-the-test: gdyby spy nie był wpięty, asercja wyżej byłaby
+    // trywialnie zielona niezależnie od stanu kodu produkcyjnego.
+    const { sdk } = await import('@/lib/config');
+    interceptorResolveSpy.mockResolvedValue('uk-UA');
+
+    await sdk.client.fetch('/store/products', {});
+
+    expect(interceptorResolveSpy).toHaveBeenCalledTimes(1);
+    expect(outgoingLocales()).toEqual(['uk-UA']);
   });
 
   it('auto-resolve zachodzi PRZED wejściem do cache, gdy locale pominięto', async () => {

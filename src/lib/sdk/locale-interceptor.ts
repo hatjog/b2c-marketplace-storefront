@@ -26,28 +26,42 @@ const DEFAULT_CANONICAL_LOCALE: CanonicalLocale = 'pl-PL';
 // canonical BCP-47 — cel różny od kanonicznego helpera (4 storefront-kody → BCP-47),
 // więc importowanie helpera nie jest tu właściwe. Każda zmiana mapowania
 // `ua ↔ uk-UA` MUSI być odzwierciedlona w obu miejscach równocześnie.
-const LOCALE_ALIASES: Record<string, CanonicalLocale> = {
+/**
+ * v1.14.0 Story 1.2 (review-fix 1-2-F2) — SSOT mapowania slug → BCP-47.
+ *
+ * Typ `Record<StorefrontLocaleSlug, CanonicalLocale>` czyni tę mapę TOTALNĄ:
+ * dodanie slugu do `SUPPORTED_LOCALES` bez wpisu tutaj jest błędem kompilacji,
+ * a nie cichym `undefined` w nagłówku `x-medusa-locale` i w tagu cache
+ * (`products-undefined`). Razem z `ROUTE_LOCALE_BY_CANONICAL` (drugi kierunek)
+ * daje to guard DWUKIERUNKOWY — dokładnie to, co obiecuje komentarz niżej.
+ */
+const CANONICAL_BY_ROUTE_LOCALE: Record<StorefrontLocaleSlug, CanonicalLocale> = {
   pl: 'pl-PL',
+  en: 'en-US',
+  ua: 'uk-UA',
+  de: 'de-DE'
+};
+
+const LOCALE_ALIASES: Record<string, CanonicalLocale> = {
+  // Slugi routingu pochodzą z jedynego SSOT powyżej (żadnej trzeciej kopii).
+  ...CANONICAL_BY_ROUTE_LOCALE,
   'pl-pl': 'pl-PL',
   pl_pl: 'pl-PL',
-  en: 'en-US',
   'en-us': 'en-US',
   en_us: 'en-US',
   uk: 'uk-UA',
-  ua: 'uk-UA',
   'uk-ua': 'uk-UA',
   uk_ua: 'uk-UA',
   'ua-ua': 'uk-UA',
   ua_ua: 'uk-UA',
-  de: 'de-DE',
   'de-de': 'de-DE',
   de_de: 'de-DE'
 };
 
 // v1.14.0 Story 1.2: typ zacieśniony z `string` do `StorefrontLocaleSlug` — to
 // jest miejsce, w którym `CanonicalLocale` (BCP-47) i slug routingu są ze sobą
-// pogodzone. TS wyłapie rozjazd, gdyby ktoś dodał canonical bez slugu (albo
-// odwrotnie: `SUPPORTED_LOCALES` bez odpowiednika w `CANONICAL_LOCALES`).
+// pogodzone. TS wyłapie rozjazd, gdyby ktoś dodał canonical bez slugu; drugi
+// kierunek (slug bez canonical) pilnuje `CANONICAL_BY_ROUTE_LOCALE`.
 const ROUTE_LOCALE_BY_CANONICAL: Record<CanonicalLocale, StorefrontLocaleSlug> = {
   'pl-PL': 'pl',
   'en-US': 'en',
@@ -103,7 +117,10 @@ export function normalizeToCanonicalLocale(locale: unknown): CanonicalLocale {
  * gdzie NIE MA kontekstu requestu (`headers()`/`cookies()`/`getLocale()`).
  */
 export function canonicalFromSlug(locale: StorefrontLocaleSlug): CanonicalLocale {
-  return LOCALE_ALIASES[locale];
+  // Czyta z mapy TOTALNEJ (`Record<StorefrontLocaleSlug, …>`), nie z aliasów
+  // typowanych `Record<string, …>` — brak wpisu = błąd kompilacji, nie
+  // `undefined` w nagłówku i w tagu cache (review-fix 1-2-F2).
+  return CANONICAL_BY_ROUTE_LOCALE[locale];
 }
 
 /**
@@ -286,6 +303,37 @@ export async function localeAwareFetch(
   });
 }
 
+/**
+ * v1.14.0 Story 1.2 (review-fix 1-2-F1) — LENIWY auto-resolve dla interceptora.
+ *
+ * Kluczowa różnica wobec starego kształtu: `resolveLocale()` jest wołane
+ * WYŁĄCZNIE wtedy, gdy wołający nie podał jawnego `x-medusa-locale`. Poprzednio
+ * interceptor rozwiązywał locale bezwarunkowo, PRZED sprawdzeniem nagłówka —
+ * a że `resolveStorefrontLocale()` to `getLocale()` z `next-intl/server`, było
+ * to czytanie kontekstu requestu WEWNĄTRZ callbacku `unstable_cache` (AD-1
+ * zakazuje tego wprost). W Next 15 taki odczyt rzuca, a `catch` w
+ * `resolveStorefrontLocale` cicho degradował wynik do `pl-PL`.
+ *
+ * Po tej zmianie fetchery cache'owane (jawny nagłówek z `withLocaleHeaderForSlug`)
+ * NIE dotykają kontekstu requestu w ogóle, a bariera anty-bleed przestaje zależeć
+ * wyłącznie od precedencji nagłówka.
+ */
+async function withLazyLocaleHeader(
+  headers: HeaderInput,
+  resolveLocale: () => Promise<CanonicalLocale>
+): Promise<Record<string, string>> {
+  const base = headersToRecord(headers);
+
+  if (typeof base['x-medusa-locale'] === 'string' && base['x-medusa-locale']) {
+    return base;
+  }
+
+  return {
+    ...base,
+    'x-medusa-locale': await resolveLocale()
+  };
+}
+
 export function applyLocaleInterceptor<T>(
   sdk: T,
   resolveLocale: () => Promise<CanonicalLocale> = resolveStorefrontLocale
@@ -295,10 +343,9 @@ export function applyLocaleInterceptor<T>(
   if (localeAwareSdk.client?.fetch) {
     const originalFetch = localeAwareSdk.client.fetch.bind(localeAwareSdk.client);
     localeAwareSdk.client.fetch = async (path: string, options: FetchLikeOptions = {}) => {
-      const locale = await resolveLocale();
       return originalFetch(path, {
         ...options,
-        headers: await withLocaleHeader(options.headers, locale)
+        headers: await withLazyLocaleHeader(options.headers, resolveLocale)
       });
     };
   }
@@ -306,10 +353,9 @@ export function applyLocaleInterceptor<T>(
   if (localeAwareSdk.query?.graph) {
     const originalGraph = localeAwareSdk.query.graph.bind(localeAwareSdk.query);
     localeAwareSdk.query.graph = async (options: FetchLikeOptions) => {
-      const locale = await resolveLocale();
       return originalGraph({
         ...options,
-        headers: await withLocaleHeader(options.headers, locale)
+        headers: await withLazyLocaleHeader(options.headers, resolveLocale)
       });
     };
   }

@@ -57,7 +57,12 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
       locale: toStorefrontLocaleSlug(locale)
     })
   );
-  const categoriesPromise = listCategories({ query: { limit: 8 } });
+  // review-fix 1-2-F5: siostrzany `listProducts` powyżej dostaje locale jawnie
+  // z dokładnie tego samego powodu — ten fetch nie może być wyjątkiem.
+  const categoriesPromise = listCategories({
+    query: { limit: 8 },
+    locale: toStorefrontLocaleSlug(locale)
+  });
 
   const [productsResult, categoriesResult] = await Promise.allSettled([
     productsPromise,

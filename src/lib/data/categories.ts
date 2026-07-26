@@ -110,6 +110,32 @@ export const listCategories = async ({
 };
 
 /**
+ * v1.14.0 Story 1.2 (review-fix 1-2-F4) — sentinel „brak trafienia".
+ *
+ * Rzucany zamiast zwracania `null`, żeby BRAK KATEGORII nie stał się
+ * pełnoprawnym wpisem `unstable_cache` na 600 s. Bez tego świeżo opublikowana
+ * kategoria zwracałaby `notFound()` do 10 minut po tym, jak faktycznie istnieje
+ * (wystarczy jedno wejście bota/prefetch sekundę przed propagacją) — ryzyko
+ * sprzężone z wsadowymi publikacjami z Epic 3 / EE-1. `unstable_cache` nie
+ * zapisuje odrzuconej obietnicy, więc pustka nie przeżywa requestu; to NIE jest
+ * ta sama klasa co zaakceptowana TTL-staleness z AC5 (tam chodzi o stare TREŚCI).
+ */
+class CategoryNotFoundError extends Error {
+  constructor(handle: string) {
+    super(`[categories] no category for handle "${handle}"`);
+    this.name = 'CategoryNotFoundError';
+  }
+}
+
+/**
+ * Rozpoznanie po nazwie oprócz `instanceof` — granica `unstable_cache` może
+ * (zależnie od runtime'u/serializacji) oddać rekonstruowany obiekt błędu.
+ */
+function isCategoryNotFound(error: unknown): boolean {
+  return error instanceof Error && error.name === 'CategoryNotFoundError';
+}
+
+/**
  * v1.14.0 Story 1.2 (AD-1) — jak wyżej: locale w argumentach ⇒ w kluczu cache.
  */
 const fetchCategoryByHandleCached = createLocaleKeyedCache({
@@ -119,7 +145,7 @@ const fetchCategoryByHandleCached = createLocaleKeyedCache({
   fetcher: async (
     locale: StorefrontLocaleSlug,
     categoryHandle: string
-  ): Promise<HttpTypes.StoreProductCategory | null> => {
+  ): Promise<HttpTypes.StoreProductCategory> => {
     const { product_categories } =
       await sdk.client.fetch<HttpTypes.StoreProductCategoryListResponse>(
         `/store/product-categories`,
@@ -132,7 +158,14 @@ const fetchCategoryByHandleCached = createLocaleKeyedCache({
         }
       );
 
-    return product_categories[0] ?? null;
+    const category = product_categories[0];
+
+    // 1-2-F4: brak trafienia rzuca, więc NIE trafia do cache na cały TTL.
+    if (!category) {
+      throw new CategoryNotFoundError(categoryHandle);
+    }
+
+    return category;
   }
 });
 
@@ -141,9 +174,15 @@ export const getCategoryByHandle = async (
   locale?: StorefrontLocaleSlug
 ) => {
   const resolvedLocale = locale ?? (await resolveStorefrontLocaleSlug());
-  const category = await fetchCategoryByHandleCached(resolvedLocale, categoryHandle);
 
-  // Zastane call-site'y oczekują `undefined` dla braku trafienia; wewnątrz
-  // cache trzymamy `null` (serializowalny, jednoznaczny).
-  return category ?? undefined;
+  try {
+    return await fetchCategoryByHandleCached(resolvedLocale, categoryHandle);
+  } catch (error) {
+    // Zastane call-site'y oczekują `undefined` dla braku trafienia. Błędy
+    // backendu propagują się dalej (nie udajemy „nie ma takiej kategorii").
+    if (isCategoryNotFound(error)) {
+      return undefined;
+    }
+    throw error;
+  }
 };

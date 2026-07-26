@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { ProductCard } from '@/components/organisms/ProductCard/ProductCard';
 import { listProducts } from '@/lib/data/products';
 import type { ListedProduct } from '@/lib/helpers/normalize-listed-products';
+import type { StorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 
 import { filterCrossSellProducts, filterCrossSellSellerProducts, MIN_GROUP_SIZE } from './filters';
 
@@ -11,10 +12,18 @@ export { filterCrossSellProducts, filterCrossSellSellerProducts } from './filter
 
 export const CrossSellSection = async ({
   product,
-  countryCode
+  countryCode,
+  locale
 }: {
   product: ListedProduct;
   countryCode: string;
+  /**
+   * Story 1.2 (review-fix 1-2-F5): slug locale z route'u PDP. Ten fetch biegnie
+   * w tym samym kontekście async co reszta PDP, gdzie auto-resolve potrafi spaść
+   * na default — a wynik trafia do locale-keyed Data Cache, więc rozjazd locale
+   * między route'em a kluczem cache utrudnia pomiar hit-rate (FR-9).
+   */
+  locale: StorefrontLocaleSlug;
 }) => {
   const categoryId = product.categories?.[0]?.id;
 
@@ -24,7 +33,8 @@ export const CrossSellSection = async ({
     ? await listProducts({
         category_id: categoryId,
         countryCode,
-        queryParams: { limit: 6 }
+        queryParams: { limit: 6 },
+        locale
       })
     : { response: { products: [] as ListedProduct[] } };
 

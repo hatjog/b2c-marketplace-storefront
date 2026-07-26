@@ -19,6 +19,7 @@ import { listProducts } from '@/lib/data/products';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
 export const revalidate = 60;
@@ -35,7 +36,10 @@ export async function generateMetadata({
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
 
-  const cat = await getCategoryByHandle(categoryHandle);
+  // Story 1.2 (review-fix 1-2-F5): `generateMetadata` rozgrzewa ten fetch
+  // w kontynuacji async, gdzie `getLocale()` potrafi spaść na default — a wynik
+  // ląduje w locale-keyed Data Cache. Locale z route'u podajemy jawnie.
+  const cat = await getCategoryByHandle(categoryHandle, toStorefrontLocaleSlug(locale));
   if (!cat) {
     return {};
   }
@@ -102,7 +106,7 @@ async function Category({
   // the build-baked NEXT_PUBLIC_* env says true.
   await isMultiVendorEnabledRuntime();
 
-  const category = await getCategoryByHandle(categoryHandle);
+  const category = await getCategoryByHandle(categoryHandle, toStorefrontLocaleSlug(locale));
 
   if (!category) {
     return notFound();
@@ -131,7 +135,8 @@ async function Category({
   } = await listProducts({
     countryCode,
     queryParams: { limit: 8, order: 'created_at', fields: 'id,title,handle' },
-    category_id: categoryIds
+    category_id: categoryIds,
+    locale: toStorefrontLocaleSlug(locale)
   });
 
   const itemList = jsonLdProducts.slice(0, 8).map((p, idx) => ({

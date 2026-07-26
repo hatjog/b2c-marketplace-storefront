@@ -27,7 +27,12 @@ import { describe, expect, it } from 'vitest';
 
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
 
-import { CANONICAL_LOCALES, localeCacheTag, localeCacheTagForSlug } from '../locale-interceptor';
+import {
+  CANONICAL_LOCALES,
+  canonicalFromSlug,
+  localeCacheTag,
+  localeCacheTagForSlug
+} from '../locale-interceptor';
 
 const CACHED_SCOPES = ['products', 'product-categories'] as const;
 
@@ -42,11 +47,26 @@ const CONFIG_SRC = readFileSync(resolve(__dirname, '../../config.ts'), 'utf-8');
  * Zdejmuje komentarze, żeby guardy patrzyły na KOD, a nie na noty
  * historyczne — te celowo cytują zakazane formy (`force-cache`, `no-store`,
  * `forceCache: true`), żeby udokumentować, czego pilnujemy.
+ *
+ * OGRANICZENIE (review-fix 1-2-F8, świadome): to jest strip regexowy, nie
+ * parser. Sekwencje `/* *\/` i `//` WEWNĄTRZ literałów stringowych też zostaną
+ * usunięte. Dla dzisiejszej treści tych trzech plików działa poprawnie, a
+ * właściwą (parserową) egzekucją granicy jest lint-gate `gp/locale-cache-boundary` —
+ * te guardy są dodatkową, tanią siatką na regresję przez copy-paste.
  */
 function codeOnly(source: string): string {
   return source
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+/**
+ * review-fix 1-2-F8: guard na `cache: '<mode>'` tolerujący dowolny whitespace
+ * i typ cudzysłowu (`'`, `"`, backtick). Poprzedni `toContain("cache: 'force-cache'")`
+ * łapał JEDNĄ literalną formę — `cache:"force-cache"` przechodziło na zielono.
+ */
+function cacheModeRegex(mode: string): RegExp {
+  return new RegExp(`cache\\s*:\\s*['"\`]${mode}['"\`]`);
 }
 
 const PRODUCTS_CODE = codeOnly(PRODUCTS_SRC);
@@ -112,19 +132,42 @@ describe('cross-locale cache bleed — locale-aware tags (AC2, FR8, ra-3)', () =
     }
   });
 
-  // v1.14.0 Story 1.2 AC3: wejście slugowe MUSI dawać ten sam tag co zastane
-  // wejście BCP-47 — inaczej powstałaby trzecia konwencja nazewnictwa tagów
-  // i rewalidacja z jednej strony nie zdmuchnęłaby wpisów z drugiej.
+  // review-fix 1-2-F9: parowanie idzie przez `canonicalFromSlug`, a NIE przez
+  // wspólny indeks dwóch niezależnych list SSOT. Poprzedni kształt
+  // (`CANONICAL_LOCALES[i]`) miał dwie wady: zmiana kolejności w którejkolwiek
+  // liście dawała czerwień bez wskazania przyczyny, a dodanie slugu bez
+  // canonical dawało `undefined === undefined` — czyli test PRZECHODZIŁ,
+  // maskując 1-2-F2.
   it.each(CACHED_SCOPES)(
     'localeCacheTagForSlug(%s, slug) == localeCacheTag(scope, BCP-47) — jedna konwencja tagów',
     async scope => {
-      for (let i = 0; i < SUPPORTED_LOCALES.length; i++) {
-        const slug = SUPPORTED_LOCALES[i];
-        const canonical = CANONICAL_LOCALES[i];
+      for (const slug of SUPPORTED_LOCALES) {
+        const canonical = canonicalFromSlug(slug);
+        expect(canonical, `slug ${slug} nie ma canonical`).toBeTruthy();
         expect(localeCacheTagForSlug(scope, slug)).toBe(await localeCacheTag(scope, canonical));
       }
     }
   );
+
+  // review-fix 1-2-F2/F9: bijekcja SUPPORTED_LOCALES ↔ CANONICAL_LOCALES.
+  // Dodanie 5. slugu (`cs`) bez canonical daje `products-undefined` jako tag
+  // wspólny dla KAŻDEGO przyszłego slugu bez aliasu — ten test to łapie.
+  it('SUPPORTED_LOCALES i CANONICAL_LOCALES są w bijekcji (totalność konwersji)', () => {
+    expect(SUPPORTED_LOCALES.length).toBe(CANONICAL_LOCALES.length);
+
+    const mapped = SUPPORTED_LOCALES.map(slug => canonicalFromSlug(slug));
+
+    // Każdy slug ma canonical…
+    mapped.forEach((canonical, i) => {
+      expect(canonical, `slug ${SUPPORTED_LOCALES[i]} bez canonical`).toBeTruthy();
+      expect(CANONICAL_LOCALES).toContain(canonical);
+    });
+
+    // …i żadne dwa slugi nie dzielą canonical (inaczej dwa locale = jeden tag).
+    expect(new Set(mapped).size).toBe(SUPPORTED_LOCALES.length);
+    // …a pokrycie jest pełne w drugą stronę (żaden canonical bez slugu).
+    expect(new Set(mapped)).toEqual(new Set(CANONICAL_LOCALES));
+  });
 
   it('localeCacheTagForSlug daje rozłączne tagi per slug (bariera anty-bleed cache scope)', () => {
     const tags = SUPPORTED_LOCALES.flatMap(slug =>
@@ -143,8 +186,8 @@ describe('cross-locale cache bleed — locale-aware tags (AC2, FR8, ra-3)', () =
     // Locale jest JAWNIE wstrzykiwane w cache scope, nie auto-resolvowane.
     expect(CATEGORIES_SRC).toContain('withLocaleHeaderForSlug');
     // REGRESJA, której pilnujemy: powrót do współdzielonego force-cache.
-    expect(CATEGORIES_CODE).not.toContain("cache: 'force-cache'");
-    expect(CATEGORIES_CODE).not.toContain("cache: 'no-store'");
+    expect(CATEGORIES_CODE).not.toMatch(cacheModeRegex('force-cache'));
+    expect(CATEGORIES_CODE).not.toMatch(cacheModeRegex('no-store'));
   });
 
   it('products.ts: locale-keyed unstable_cache zamiast force-cache/no-store', () => {
@@ -153,8 +196,10 @@ describe('cross-locale cache bleed — locale-aware tags (AC2, FR8, ra-3)', () =
     expect(PRODUCTS_SRC).toContain('withLocaleHeaderForSlug');
     // Katalogowy odczyt `listProducts` nie może wrócić do współdzielonego
     // force-cache. `no-cache` na innych endpointach (search/filtered) zostaje.
-    expect(PRODUCTS_CODE).not.toContain("cache: 'force-cache'");
-    expect(PRODUCTS_CODE).not.toContain("? 'force-cache' :");
+    expect(PRODUCTS_CODE).not.toMatch(cacheModeRegex('force-cache'));
+    // Wariant warunkowy (`forceCache ? 'force-cache' : …`) — też z tolerancją
+    // whitespace'u i cudzysłowu.
+    expect(PRODUCTS_CODE).not.toMatch(/\?\s*['"`]force-cache['"`]\s*:/);
   });
 
   it('locale-cache.ts: locale jest częścią keyParts ORAZ tagu unstable_cache', () => {

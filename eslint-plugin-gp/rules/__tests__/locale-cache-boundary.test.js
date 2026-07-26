@@ -91,13 +91,51 @@ ruleTester.run("locale-cache-boundary", rule, {
       filename: DATA_FILE,
       code: `
         const client = mercurClient as unknown as { store: any };
-        const res = await client.store.vouchers.byCode(await withMercurLocaleOptions({ code }));
+        const res = await client.store.vouchers.query(await withMercurLocaleOptions({ code }));
       `,
     },
     // (b) Wywołania innych klientów reguły nie dotyczą.
     {
       filename: DATA_FILE,
       code: `const res = await sdk.client.fetch('/store/products', { method: 'GET' });`,
+    },
+    // (b) 1-2-F7 #1: wrapper przypisany do zmiennej to ten sam wzorzec.
+    // Wcześniej reguła wymagała inline'owania wywołania (false positive).
+    {
+      filename: ADAPTER_FILE,
+      code: `
+        const opts = await withMercurLocaleOptions({ handle, limit: 1 });
+        const result = await mercurClient.store.sellers.query(opts);
+      `,
+    },
+    // (b) 1-2-F7 #2: metody nie-żądaniowe nie wymagają wrappera locale.
+    {
+      filename: ADAPTER_FILE,
+      code: `mercurClient.client.setToken(token);`,
+    },
+    // (c) Auto-resolve POZA cache scope jest legalny (AC2).
+    {
+      filename: ADAPTER_FILE,
+      code: `
+        export const load = async () => {
+          const opts = await withMercurLocaleOptions({ handle });
+          return mercurClient.store.sellers.query(opts);
+        };
+      `,
+    },
+    // (c) Cache scope z jawnym slugiem — kanoniczny kształt AD-1.
+    {
+      filename: ADAPTER_FILE,
+      code: `
+        const cached = unstable_cache(
+          async (handle, locale) =>
+            mercurClient.store.sellers.query(
+              withMercurLocaleOptionsForSlug({ handle }, locale)
+            ),
+          ['seller-handle-to-id'],
+          { revalidate: 600 }
+        );
+      `,
     },
   ],
 
@@ -141,7 +179,7 @@ ruleTester.run("locale-cache-boundary", rule, {
       filename: DATA_FILE,
       code: `
         const client = mercurClient as unknown as { store: any };
-        const res = await client.store.vouchers.byCode({ code });
+        const res = await client.store.vouchers.query({ code });
       `,
       errors: [{ messageId: "bareMercurClient" }],
     },
@@ -150,6 +188,47 @@ ruleTester.run("locale-cache-boundary", rule, {
       filename: ADAPTER_FILE,
       code: `const result = await mercurClient.store?.sellers?.query({ handle });`,
       errors: [{ messageId: "bareMercurClient" }],
+    },
+    // (b) 1-2-F7 #3: alias zadeklarowany PO użyciu jest teraz wykrywany
+    // (prescan na Program zamiast zależności od kolejności traversal).
+    {
+      filename: ADAPTER_FILE,
+      code: `
+        export const f = () => client.store.sellers.query({});
+        const client = mercurClient;
+      `,
+      errors: [{ messageId: "bareMercurClient" }],
+    },
+    // (c) REGRESJA 1-2-F3: auto-resolve'owy wrapper WEWNĄTRZ cache scope.
+    // To jest dokładnie ta klasa błędu, której AC2 zakazuje, a której gate
+    // przed review-fixem w ogóle nie widział.
+    {
+      filename: ADAPTER_FILE,
+      code: `
+        const cached = unstable_cache(
+          async (handle, locale) =>
+            mercurClient.store.sellers.query(await withMercurLocaleOptions({ handle })),
+          ['seller-handle-to-id'],
+          { revalidate: 600 }
+        );
+      `,
+      errors: [{ messageId: "autoResolveInCacheScope" }],
+    },
+    // (c) REGRESJA: odczyt kontekstu requestu w callbacku createLocaleKeyedCache.
+    {
+      filename: DATA_FILE,
+      code: `
+        const cached = createLocaleKeyedCache({
+          keyPrefix: 'x',
+          tagScope: 'products',
+          revalidate: 300,
+          fetcher: async () => {
+            const locale = await resolveStorefrontLocaleSlug();
+            return locale;
+          }
+        });
+      `,
+      errors: [{ messageId: "autoResolveInCacheScope" }],
     },
   ],
 });

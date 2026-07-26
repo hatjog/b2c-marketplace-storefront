@@ -244,6 +244,7 @@ export const ProductDetailsPage = async ({
       <CrossSellSection
         product={prod}
         countryCode={countryCode}
+        locale={toStorefrontLocaleSlug(locale)}
       />
       <section
         className="mt-10 rounded-[var(--bb-radius-card)] bg-[var(--bb-surface-muted)] p-6"

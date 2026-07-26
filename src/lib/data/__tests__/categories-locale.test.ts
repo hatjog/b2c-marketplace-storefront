@@ -19,8 +19,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
+// import type jest wymazywany, więc alias nie koliduje z hoistingiem `vi.mock`.
+import type * as LocaleInterceptorModule from '../../sdk/locale-interceptor';
 
-const fetchMock = vi.fn();
+// review-fix 1-2-F1: testowy sdk znów przechodzi przez `applyLocaleInterceptor`
+// (jak przed Story 1.2) — inaczej ten plik przestałby obserwować jedyną warstwę,
+// w której auto-resolve może wejść do cache scope.
+const { fetchMock, interceptorResolveSpy } = vi.hoisted(() => ({
+  fetchMock: vi.fn(),
+  interceptorResolveSpy: vi.fn(async () => 'pl-PL' as 'pl-PL' | 'en-US' | 'uk-UA' | 'de-DE')
+}));
 
 // `unstable_cache` wymaga runtime'u Next (incremental cache w AsyncLocalStorage),
 // którego vitest nie ma. Podmieniamy na przezroczysty passthrough — ten plik
@@ -32,14 +40,19 @@ vi.mock('next/cache', () => ({
       fn(...args)
 }));
 
-vi.mock('../../config', () => ({
-  sdk: {
-    client: {
-      fetch: fetchMock
-    }
-  },
-  mercurClient: {}
-}));
+vi.mock('../../config', async () => {
+  const { applyLocaleInterceptor } = await vi.importActual<typeof LocaleInterceptorModule>(
+    '../../sdk/locale-interceptor'
+  );
+
+  return {
+    sdk: applyLocaleInterceptor(
+      { client: { fetch: (...args: unknown[]) => fetchMock(...args) } },
+      interceptorResolveSpy
+    ),
+    mercurClient: {}
+  };
+});
 
 vi.mock('../../helpers/market-filter', () => ({
   filterByMarket: <T,>(items: T[]) => items,
@@ -48,7 +61,7 @@ vi.mock('../../helpers/market-filter', () => ({
 
 const resolveLocaleSlugMock = vi.fn();
 vi.mock('../../sdk/locale-interceptor', async () => {
-  const actual = await vi.importActual<typeof import('../../sdk/locale-interceptor')>(
+  const actual = await vi.importActual<typeof LocaleInterceptorModule>(
     '../../sdk/locale-interceptor'
   );
   return {
@@ -71,6 +84,8 @@ describe('listCategories — x-medusa-locale header propagation (L-1)', () => {
   beforeEach(() => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue({ product_categories: [] });
+    interceptorResolveSpy.mockClear();
+    interceptorResolveSpy.mockResolvedValue('pl-PL');
     resolveLocaleSlugMock.mockReset();
     resolveLocaleSlugMock.mockResolvedValue('pl');
   });
@@ -89,8 +104,10 @@ describe('listCategories — x-medusa-locale header propagation (L-1)', () => {
       expect(options.headers).toMatchObject({
         'x-medusa-locale': EXPECTED_CANONICAL[slug]
       });
-      // Jawny slug ⇒ auto-resolve w ogóle nie jest wołany.
+      // Jawny slug ⇒ auto-resolve w ogóle nie jest wołany — ani na wejściu
+      // warstwy danych, ani (review-fix 1-2-F1) w interceptorze pod cache.
       expect(resolveLocaleSlugMock).toHaveBeenCalledTimes(0);
+      expect(interceptorResolveSpy).toHaveBeenCalledTimes(0);
     }
   );
 
