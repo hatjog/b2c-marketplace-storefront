@@ -25,14 +25,18 @@ import 'server-only';
 import * as Sentry from '@sentry/nextjs';
 
 import { SUPPORTED_LOCALES, isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
+import { PHASE_1_GATE_SLUG } from '@/lib/content-gate-constants';
 import { readRuntimeMarketConfig } from '@/lib/runtime-market-config';
 
 /**
  * Slug baru używany w FAZIE 1 dla KAŻDEGO locale requestu. To jest ta jedna
  * liczba stopni swobody, dzięki której reland PDP (1.3) nie zeruje katalogu
  * na `/ua` `/de` `/en` przed shipem treści (ryzyko E-3).
+ *
+ * Definicja żyje w `content-gate-constants.ts` (bez `server-only`; review
+ * 1-4-F8) — re-eksport zachowuje dotychczasowy punkt importu.
  */
-export const PHASE_1_GATE_SLUG: SupportedLocale = 'pl';
+export { PHASE_1_GATE_SLUG };
 
 // Key set of `properties.content_gate` in market-runtime-config.v1.schema.json.
 // Drift-tested against the schema (AC3 allowed-keys == schema-properties parity).

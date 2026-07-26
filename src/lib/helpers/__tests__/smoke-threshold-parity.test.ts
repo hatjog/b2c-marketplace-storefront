@@ -48,7 +48,17 @@ describe('Story 1.3 (1-3-F6) / 1.4 (AD-4) — parity smoke vs checkQualityGate',
     // Gdyby ktoś cofnął klasyfikator do liczenia słów, gate i smoke rozjechałyby
     // się dokładnie w release'ie, w którym smoke ma dowodzić HG-6.
     expect(SMOKE_SOURCE).toContain('metadata?.gp?.content_bar');
-    expect(SMOKE_SOURCE).toContain('readContentBarFlag(contentBar, CONTENT_BAR_GATE_SLUG_PHASE_1)');
+    expect(SMOKE_SOURCE).toContain('readContentBarFlag(contentBar, gateSlug)');
     expect(SMOKE_SOURCE).toContain('404_gate_description_legacy');
+  });
+
+  it('smoke czyta realną fazę z content_gate marketu, nie literał FAZY 1 (review 1-4-F5)', () => {
+    // Po flipie FAZY 2 smoke z zaszytą FAZĄ 1 klasyfikowałby 404 po złym slugu
+    // i wpisywał do evidence fazę, której market nie ma — czyli tę samą klasę
+    // błędu, którą 1.4 naprawiła rozdziałem `404_gate_description(_legacy)`.
+    expect(SMOKE_SOURCE).toContain("content_gate");
+    expect(SMOKE_SOURCE).toContain('phase_2_locales');
+    expect(SMOKE_SOURCE).toMatch(/gateSlugFor\s*=\s*\(locale\)\s*=>/);
+    expect(SMOKE_SOURCE).toContain('gate_phase: gatePhaseLabel');
   });
 });

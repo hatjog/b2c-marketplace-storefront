@@ -61,8 +61,10 @@
  * Sygnał gate'u jest lustrem checkQualityGate
  * (src/lib/helpers/normalize-listed-products.ts + src/lib/content-gate.ts):
  * od Story 1.4 (AD-4) decyduje `metadata.gp.content_bar[<slug>].bar` liczony
- * w SYNC-TIME, a slug w FAZIE 1 to zawsze `pl` — niezależnie od locale
- * requestu. MIN_DESCRIPTION_WORDS pozostaje wyłącznie dla ścieżki legacy EE-1.
+ * w SYNC-TIME. Slug per locale wynika z REALNEJ fazy marketu (review 1-4-F5):
+ * smoke czyta `content_gate.phase_2_locales` z runtime `market.yaml` (lustro
+ * `narrowPhase2Locales`) — FAZA 1 ⇒ `pl`, FAZA 2 dla locale ⇒ ten locale.
+ * MIN_DESCRIPTION_WORDS pozostaje wyłącznie dla ścieżki legacy EE-1.
  * Zgodność obu stałych pilnuje test parity
  * `src/lib/helpers/__tests__/smoke-threshold-parity.test.ts` (review 1-3-F6,
  * przepięty w 1.4) — rozjazd failuje test, zamiast po cichu kłamać o
@@ -86,9 +88,18 @@
  *                                       # NEEDS-REVIEW, nie PASS
  *     [--limit-handles N]               # TYLKO do debugowania; wynik z
  *                                       # limitem jest zawsze partial=true
+ *     [--market bonbeauty]              # market dla odczytu content_gate;
+ *                                       # default NEXT_PUBLIC_PAYLOAD_MARKET_ID
+ *     [--config-root path]              # root runtime configu; default
+ *                                       # GP_CONFIG_ROOT albo ../config, ../../config
+ *     [--expect-phase-2 "ua,de"|none]   # twardy fail (TOOL-ERROR), gdy config
+ *                                       # marketu ma inną listę phase_2_locales
+ *                                       # niż deklaruje runbook (review 1-4-F5)
  */
 import fs from 'node:fs';
 import path from 'node:path';
+
+import yaml from 'js-yaml';
 
 const LOCALES = ['pl', 'ua', 'de', 'en'];
 const BCP47_BY_SLUG = { pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' };
@@ -97,7 +108,11 @@ const BCP47_BY_SLUG = { pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' };
 //
 // Story 1.4 (AD-4): kryterium `description` gate'u czyta
 // `metadata.gp.content_bar[<slug>].bar`, a NIE wordcount pobranego opisu.
-// W FAZIE 1 slug = 'pl' niezależnie od locale requestu.
+// W FAZIE 1 slug = 'pl' niezależnie od locale requestu; w FAZIE 2 dla locale
+// z `content_gate.phase_2_locales` slug = ten locale. Review 1-4-F5: faza NIE
+// jest zaszyta na sztywno — smoke czyta `content_gate` z runtime configu
+// marketu (lustro `narrowPhase2Locales` z content-gate.ts), inaczej po flipie
+// klasyfikowałby 404 po złym slugu i wpisywał do evidence fazę, której nie ma.
 const CONTENT_BAR_GATE_SLUG_PHASE_1 = 'pl';
 // Zachowany zastany próg — używany WYŁĄCZNIE na ścieżce legacy EE-1 (encja bez
 // `content_bar`, okno deploy→re-sync). Nie jest już torem głównym.
@@ -150,6 +165,73 @@ function needsLiveRun(reason) {
       'Uruchom backend (docker compose) i prod-build storefrontu (pnpm build && pnpm start -p 3002).'
   );
   process.exit(2);
+}
+
+/**
+ * Lustro `narrowPhase2Locales` z `content-gate.ts` (review 1-4-F5; granica
+ * ESM/.mjs jak przy `readContentBarFlag`). Zwraca Set slugów w FAZIE 2 dla
+ * marketu, czytany z runtime `market.yaml` (ta sama ścieżka rozwiązywania co
+ * `runtime-market-config.ts`). Każde odchylenie od schematu ⇒ warn + FAZA 1
+ * (pusty zbiór) — identycznie ze storefrontem, dowód i produkcja nie mogą
+ * degradować w różne strony.
+ */
+function readPhase2Locales(env, args) {
+  const warnPhase1 = (problem) => {
+    console.warn(`UWAGA: content_gate ${problem} — smoke przyjmuje FAZĘ 1 dla wszystkich locale.`);
+    return new Set();
+  };
+
+  const marketId = (args.market ?? env.NEXT_PUBLIC_PAYLOAD_MARKET_ID ?? '').trim();
+  if (!marketId) {
+    return warnPhase1('nieodczytany: brak --market i NEXT_PUBLIC_PAYLOAD_MARKET_ID');
+  }
+
+  const instanceId = (env.GP_INSTANCE_ID ?? 'gp-dev').trim();
+  const configRoots = args['config-root']
+    ? [path.resolve(args['config-root'])]
+    : env.GP_CONFIG_ROOT
+      ? [path.resolve(env.GP_CONFIG_ROOT)]
+      : [path.resolve(process.cwd(), '../config'), path.resolve(process.cwd(), '../../config')];
+  const marketYamlPath = configRoots
+    .map((root) => path.join(root, instanceId, 'markets', marketId, 'market.yaml'))
+    .find((candidate) => fs.existsSync(candidate));
+  if (!marketYamlPath) {
+    return warnPhase1(`nieodczytany: brak market.yaml dla '${marketId}' w [${configRoots.join(', ')}]`);
+  }
+
+  let config;
+  try {
+    config = yaml.load(fs.readFileSync(marketYamlPath, 'utf8'));
+  } catch (error) {
+    return warnPhase1(`nieparsowalny (${marketYamlPath}): ${error.message}`);
+  }
+
+  const block = config?.content_gate;
+  if (block === null || block === undefined) {
+    return new Set(); // legalny stan domyślny — FAZA 1 bez warna
+  }
+  if (typeof block !== 'object' || Array.isArray(block)) {
+    return warnPhase1('nie jest obiektem');
+  }
+  const unknownKeys = Object.keys(block).filter((key) => key !== 'phase_2_locales');
+  if (unknownKeys.length > 0) {
+    return warnPhase1(`zawiera nieznane klucze [${unknownKeys.join(', ')}]`);
+  }
+  const rawPhase2 = block.phase_2_locales;
+  if (rawPhase2 === null || rawPhase2 === undefined) {
+    return new Set();
+  }
+  if (!Array.isArray(rawPhase2)) {
+    return warnPhase1('phase_2_locales nie jest tablicą');
+  }
+  const phase2 = new Set();
+  for (const entry of rawPhase2) {
+    if (typeof entry !== 'string' || !LOCALES.includes(entry)) {
+      return warnPhase1(`phase_2_locales zawiera "${String(entry)}" spoza [${LOCALES.join(', ')}]`);
+    }
+    phase2.add(entry);
+  }
+  return phase2;
 }
 
 function wordCount(text) {
@@ -286,6 +368,29 @@ async function main() {
   const limitHandles = args['limit-handles'] ? Number(args['limit-handles']) : null;
   const translatedHandles = readTranslatedHandles(args['translated-handles']);
 
+  // Review 1-4-F5: realna faza gate'u z runtime configu marketu, nie literał.
+  const phase2Locales = readPhase2Locales(env, args);
+  const gateSlugFor = (locale) =>
+    phase2Locales.has(locale) ? locale : CONTENT_BAR_GATE_SLUG_PHASE_1;
+  const gatePhaseLabel =
+    phase2Locales.size === 0
+      ? 'FAZA 1 (content_bar.pl dla każdego locale)'
+      : `FAZA 2 dla [${[...phase2Locales].join(', ')}] (content_bar[locale]); FAZA 1 dla pozostałych`;
+  // Twardy fail dla runbooków: podana oczekiwana faza MUSI zgadzać się z configiem.
+  if (args['expect-phase-2'] !== undefined) {
+    const expected = args['expect-phase-2'] === 'none'
+      ? []
+      : args['expect-phase-2'].split(',').map((s) => s.trim()).filter(Boolean);
+    const actual = [...phase2Locales].sort();
+    if (JSON.stringify(expected.sort()) !== JSON.stringify(actual)) {
+      throw new ToolError(
+        `--expect-phase-2 [${expected.join(', ')}] ≠ config phase_2_locales [${actual.join(', ')}] — ` +
+          'dowód HG-6 dla fazy, której market nie ma, jest bezwartościowy (review 1-4-F5).'
+      );
+    }
+  }
+  console.log(`Faza gate'u: ${gatePhaseLabel}`);
+
   if (!publishableKey) {
     needsLiveRun('brak NEXT_PUBLIC_PUBLISHABLE_API_KEY (env / .env.local)');
   }
@@ -372,11 +477,12 @@ async function main() {
         ? independentSource.has(handle)
         : backendDiffSuggestsTranslation;
       const descriptionWords = wordCount(backendEntry?.description);
-      // FAZA 1: gate ocenia `content_bar.pl` niezależnie od locale requestu,
-      // więc sygnał bierzemy z wpisu katalogu /pl (overlay locale zmienia opis,
-      // nie mapę barów — mapa jest wspólna dla encji).
+      // Mapa barów jest wspólna dla encji (overlay locale zmienia opis, nie
+      // mapę) — sygnał bierzemy z wpisu katalogu /pl, ale SLUG zależy od fazy
+      // danego locale (review 1-4-F5): FAZA 1 ⇒ 'pl', FAZA 2 ⇒ locale.
+      const gateSlug = gateSlugFor(locale);
       const contentBar = (backendPl ?? backendEntry)?.content_bar ?? null;
-      const contentBarFlag = readContentBarFlag(contentBar, CONTENT_BAR_GATE_SLUG_PHASE_1);
+      const contentBarFlag = readContentBarFlag(contentBar, gateSlug);
       const gateSignal = contentBarFlag === undefined ? 'legacy_wordcount' : 'content_bar';
 
       let verdict;
@@ -438,8 +544,9 @@ async function main() {
         // Story 1.4 (AD-4/AC6): jawny ślad, KTÓRYM torem szedł gate i jaki był
         // sygnał — bez tego „404_gate_description = 0" nie odróżnia „bar zielony"
         // od „encja nigdy nie przeszła przez sync".
-        gate_slug: CONTENT_BAR_GATE_SLUG_PHASE_1,
+        gate_slug: gateSlug,
         gate_signal: gateSignal,
+        content_bar_gate_flag: contentBarFlag ?? null,
         content_bar_pl: readContentBarFlag(contentBar, CONTENT_BAR_GATE_SLUG_PHASE_1) ?? null,
         translation_exists: locale === 'pl' ? null : translationExists,
         translation_ground_truth:
@@ -468,9 +575,11 @@ async function main() {
   const evidence = {
     story: args.story ?? '1-3-pdp-reland-lokalizowanego-fetchu',
     acceptance_criterion: args['acceptance-criterion'] ?? 'AC5 (ship-bar HG-6)',
-    // Story 1.4 (AD-4): która faza gate'u obowiązuje w tym przebiegu.
-    gate_phase: 'FAZA 1 (content_bar.pl dla każdego locale)',
-    gate_slug: CONTENT_BAR_GATE_SLUG_PHASE_1,
+    // Story 1.4 (AD-4): która faza gate'u obowiązuje w tym przebiegu —
+    // odczytana z runtime configu marketu, nie zadeklarowana (review 1-4-F5).
+    gate_phase: gatePhaseLabel,
+    gate_slug_phase_1: CONTENT_BAR_GATE_SLUG_PHASE_1,
+    phase_2_locales: [...phase2Locales],
     generated_at: new Date().toISOString(),
     base_url: baseUrl,
     backend_url: backendUrl,
@@ -495,7 +604,7 @@ async function main() {
       translation_exists:
         'przy backend_diff_dependent dowodzi tylko overlay backendu (ten sam kanał) — stąd NEEDS-REVIEW zamiast PASS bez niezależnego źródła',
       gate_signal:
-        'werdykt 404_gate_description = `content_bar[pl].bar === false` (sygnał sync-time, AD-4); 404_gate_description_legacy = encja BEZ content_bar (okno EE-1) odrzucona zastanym wordcountem — dwie różne przyczyny, nie wolno ich sumować'
+        'werdykt 404_gate_description = `content_bar[<gate_slug>].bar === false` (sygnał sync-time, AD-4; gate_slug per locale wg fazy z content_gate marketu — review 1-4-F5); 404_gate_description_legacy = encja BEZ wpisu content_bar dla gate_slug (okno EE-1 / luka pokrycia locale) odrzucona zastanym wordcountem — dwie różne przyczyny, nie wolno ich sumować'
     },
     summary,
     results

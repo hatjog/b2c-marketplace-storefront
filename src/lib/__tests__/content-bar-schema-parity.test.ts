@@ -71,4 +71,18 @@ describe.skipIf(!schemaAvailable)('content-bar.v1 schema parity (AC1, konsument)
       expect(readContentBarFlag(metadata, locale)).toBe(true);
     }
   });
+
+  it('x-key-semantics: brak wpisu dla sluga == brak mapy (ścieżka legacy EE-1), NIE `bar: false`', () => {
+    // Review 1-4-F4: zdanie z kontraktu ma być testowane, nie tylko napisane.
+    // Mapa istnieje, ale nie ma wpisu dla żądanego sluga ⇒ `undefined` (legacy),
+    // czyli to samo co brak całej mapy — a NIE odrzucenie jak przy `bar: false`.
+    const partialMap = { gp: { content_bar: { pl: { words: 120, bar: true } } } };
+    expect(readContentBarFlag(partialMap, 'ua')).toBeUndefined();
+    expect(readContentBarFlag({ gp: {} }, 'ua')).toBeUndefined();
+    expect(readContentBarFlag({ gp: { content_bar: { ua: { words: 5, bar: false } } } }, 'ua')).toBe(false);
+
+    const semantics: string = schema['x-key-semantics'] ?? '';
+    expect(semantics).toContain('nieodróżnialny od braku mapy');
+    expect(semantics).not.toContain('to samo co `bar: false`');
+  });
 });

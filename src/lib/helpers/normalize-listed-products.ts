@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/nextjs';
 
 import type { SellerProps } from '@/types/seller';
 import type { MultiVendorPricingFields } from '@/types/product';
+import { PHASE_1_GATE_SLUG } from '@/lib/content-gate-constants';
 import { resolveMarketAssetUrl } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { getGpField, readContentBarFlag } from '@/lib/helpers/metadata-utils';
@@ -40,34 +41,57 @@ export const MIN_DESCRIPTION_WORDS = 80;
  * w per-produkt spam na każdym renderze listingu.
  */
 const LEGACY_GATE_SIGNAL_INTERVAL_MS = 10 * 60 * 1000;
-let legacyGateSignalLastSentAt = 0;
+// Review 1-4-F10: dławik per gate_slug (nie globalny) + liczniki skumulowane
+// od startu procesu — pojedynczy komunikat w oknie dławienia musi nieść skalę
+// zjawiska („ile legacy od startu"), a nie licznik jednego losowego batcha.
+const legacyGateSignalLastSentAtBySlug = new Map<string, number>();
+let legacyProductsTotalSinceStart = 0;
+let legacyBatchesSeenSinceStart = 0;
 
 function reportLegacyGateFallback(legacyCount: number, batchSize: number, gateSlug: string): void {
   if (legacyCount === 0) {
     return;
   }
 
+  legacyProductsTotalSinceStart += legacyCount;
+  legacyBatchesSeenSinceStart += 1;
+
   const now = Date.now();
-  if (now - legacyGateSignalLastSentAt < LEGACY_GATE_SIGNAL_INTERVAL_MS) {
+  const lastSentAt = legacyGateSignalLastSentAtBySlug.get(gateSlug) ?? 0;
+  if (now - lastSentAt < LEGACY_GATE_SIGNAL_INTERVAL_MS) {
     return;
   }
-  legacyGateSignalLastSentAt = now;
+  legacyGateSignalLastSentAtBySlug.set(gateSlug, now);
+
+  // Review 1-4-F6: w FAZIE 2 (slug ≠ FAZA-1) legacy NIE znaczy „okno migracji",
+  // tylko „luka pokrycia locale w mapie content_bar" — telemetria musi te dwa
+  // stany rozróżniać, inaczej po flipie są nieodróżnialne.
+  const gatePhase = gateSlug === PHASE_1_GATE_SLUG ? 'FAZA 1' : 'FAZA 2';
 
   Sentry.captureMessage(
-    `Quality gate legacy fallback (EE-1): ${legacyCount}/${batchSize} products in this batch have no usable ` +
+    `Quality gate legacy fallback (EE-1) [${gatePhase}]: ${legacyCount}/${batchSize} products in this batch have no usable ` +
       `metadata.gp.content_bar['${gateSlug}'] — gate fell back to wordcount >= ${MIN_DESCRIPTION_WORDS}. ` +
-      'Expected only inside the deploy→re-sync migration window; a persistent signal means the catalog backfill is missing.',
+      (gatePhase === 'FAZA 1'
+        ? 'Expected only inside the deploy→re-sync migration window; a persistent signal means the catalog backfill is missing.'
+        : `PHASE 2 is flipped for '${gateSlug}' — this is a locale-coverage gap in content_bar (entity has no '${gateSlug}' entry), NOT the EE-1 migration window.`),
     {
       level: 'warning',
-      tags: { gate_slug: gateSlug },
-      extra: { legacy_products: legacyCount, batch_size: batchSize }
+      tags: { gate_slug: gateSlug, gate_phase: gatePhase },
+      extra: {
+        legacy_products: legacyCount,
+        batch_size: batchSize,
+        legacy_products_total_since_start: legacyProductsTotalSinceStart,
+        legacy_batches_seen_since_start: legacyBatchesSeenSinceStart
+      }
     }
   );
 }
 
-/** Test-only escape hatch dla dławika sygnału legacy. */
+/** Test-only escape hatch dla dławika i liczników sygnału legacy. */
 export function resetLegacyGateSignalThrottleForTests(): void {
-  legacyGateSignalLastSentAt = 0;
+  legacyGateSignalLastSentAtBySlug.clear();
+  legacyProductsTotalSinceStart = 0;
+  legacyBatchesSeenSinceStart = 0;
 }
 
 const PLACEHOLDER_PATTERNS = [
@@ -190,9 +214,10 @@ export const normalizeListedProducts = (
   options?: NormalizeListedProductsOptions
 ): ListedProduct[] => {
   const marketId = getMarketId();
-  // Default 'pl' celowo lokalny: helper nie może importować `content-gate.ts`
-  // (server-only + odczyt fs) — decyzja o fazie należy do warstwy danych.
-  const gateSlug = options?.gateSlug ?? 'pl';
+  // Default = FAZA 1. Helper nie może importować `content-gate.ts` (server-only
+  // + odczyt fs) — decyzja o fazie należy do warstwy danych; stała FAZY 1 jest
+  // współdzielona przez `content-gate-constants.ts` (review 1-4-F8).
+  const gateSlug = options?.gateSlug ?? PHASE_1_GATE_SLUG;
   let legacyPathCount = 0;
   let gatedBatchSize = 0;
 

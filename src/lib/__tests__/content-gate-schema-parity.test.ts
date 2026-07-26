@@ -60,7 +60,11 @@ describe.skipIf(!schemaAvailable)('market-runtime-config.v1 content_gate schema 
     expect(contentGateSchema.properties.phase_2_locales.uniqueItems).toBe(true);
   });
 
-  it('x-schema-version zbumpowany do 1.9 (additive minor)', () => {
-    expect(schema['x-schema-version']).toBe('1.9');
+  it('bump wprowadzający content_gate jest odnotowany w x-version-history', () => {
+    // Review 1-4-F11: bez pinu konkretnej wersji — przyszły additive bump
+    // INNEGO bloku nie może wywalać testu o tematyce content_gate. Dowodem
+    // jest wpis historii wersji wspominający ten blok, nie numer.
+    const history: string[] = schema['x-version-history'] ?? [];
+    expect(history.some(entry => entry.includes('content_gate'))).toBe(true);
   });
 });
