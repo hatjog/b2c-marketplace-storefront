@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 
+import { resolveMarketLocales } from '@/lib/market-locales';
 import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
@@ -68,6 +69,25 @@ export function resolveGpSeoMetadata(
 }
 
 /**
+ * Story 1.3 cykl 2 (finding 1-3-c2-pl-fallback-live): `metadata.gp.seo.meta_title`
+ * / `meta_description` są kuratorowane BEZ wymiaru locale — w praktyce w języku
+ * domyślnym marketu. Na locale != default nadpisywały zlokalizowany
+ * `product.title`/fallback i18n we WSZYSTKICH kanałach head (<title>, og:*,
+ * twitter:*), podczas gdy body renderowało już tłumaczenie — czyli klasa
+ * PL-fallback zakazana przez AC1/AC3. Tekstowe overridy stosujemy więc tylko
+ * dla default locale marketu; `og_image_url` jest locale-neutralny i zostaje.
+ */
+export async function resolveLocalizedGpSeoMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+  localeSlug: string
+): Promise<GpSeoMetadata> {
+  const seo = resolveGpSeoMetadata(metadata);
+  const { defaultLocale } = await resolveMarketLocales();
+  if (localeSlug === defaultLocale) return seo;
+  return { og_image_url: seo.og_image_url };
+}
+
+/**
  * Builds Next.js Metadata for PDP including BCP47 hreflang matrix + OG/Twitter
  * per locale (Story 2.3 / D-122).
  *
@@ -95,7 +115,12 @@ export const generateProductMetadata = async (
   // na DEFAULT_LOCALE innym mechanizmem niż render (rozjazd klasy v1.13.0).
   const localeSlug = toStorefrontLocaleSlug(locale);
 
-  const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
+  // Cykl 2: overridy tekstowe seo.* tylko dla default locale marketu — patrz
+  // resolveLocalizedGpSeoMetadata.
+  const seo = await resolveLocalizedGpSeoMetadata(
+    product?.metadata as Record<string, unknown> | null | undefined,
+    localeSlug
+  );
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const gpVendor =

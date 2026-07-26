@@ -24,8 +24,15 @@
  *                           NEEDS-REVIEW (soft), NIE cichy PASS (fail-open
  *                           klasy 1-3-F5: awaria overlay'a backendu dawałaby
  *                           inaczej zieleń),
- *  - `pl_fallback`        — FAIL: tłumaczenie istnieje, a render jest
- *                           identyczny z /pl (klasa błędu v1.13.0),
+ *  - `pl_fallback_title`  — FAIL: tłumaczenie istnieje, body (h1 produktu)
+ *                           jest zlokalizowane, ale HEAD (<title> + meta
+ *                           description) identyczny z /pl — klasa przecieku
+ *                           PL-only `metadata.gp.seo.*` (cykl 2,
+ *                           1-3-c2-pl-fallback-live),
+ *  - `pl_fallback_body`   — FAIL: tłumaczenie istnieje, a treść body jest
+ *                           identyczna z /pl LUB sygnału h1 nie da się
+ *                           odczytać (fail-closed) — pełna klasa błędu
+ *                           v1.13.0,
  *  - `404_gate_description` — produkt jest w backendzie, opis w tym locale
  *                           ma `content_bar[<gate_slug>].bar === false` ⇒
  *                           odfiltrowany przez kryterium `description`
@@ -53,7 +60,7 @@
  * być prawdą przy 3 sprawdzonych.
  *
  * Exit: 0 = zero FAILi (soft NEEDS-REVIEW nie blokuje, ale jest jawny w
- * evidence i na stderr); 1 = są FAILe (pl_fallback / pl_content_mismatch /
+ * evidence i na stderr); 1 = są FAILe (pl_fallback_* / pl_content_mismatch /
  * 404 / błędy); 2 = NEEDS-LIVE-RUN (stack niedostępny / katalog pusty);
  * 3 = TOOL-ERROR (bug skryptu / błąd zapisu — NIE problem środowiska,
  * review 1-3-F10).
@@ -246,7 +253,13 @@ function extractRendered(html) {
     /<meta\s+name="description"\s+content="([^"]*)"/i.exec(html)?.[1] ??
     /<meta\s+content="([^"]*)"\s+name="description"/i.exec(html)?.[1] ??
     null;
-  return { title, description };
+  // Cykl 2 (1-3-c2-pl-fallback-live): sygnał BODY niezależny od <head> —
+  // tytuł produktu w treści strony (h1 data-testid="product-title"). Bez
+  // niego werdykt nie odróżnia „head PL, body zlokalizowane" (przeciek
+  // seo.meta_title) od pełnego fallbacku treści.
+  const h1 =
+    /<h1[^>]*data-testid="product-title"[^>]*>([^<]*)</i.exec(html)?.[1]?.trim() ?? null;
+  return { title, description, h1 };
 }
 
 /**
@@ -445,13 +458,16 @@ async function main() {
       const html = response.status === 200 ? await response.text() : '';
       rendered.set(`${handle}|${locale}`, {
         status: response.status,
-        ...(response.status === 200 ? extractRendered(html) : { title: null, description: null })
+        ...(response.status === 200
+          ? extractRendered(html)
+          : { title: null, description: null, h1: null })
       });
     } catch (error) {
       rendered.set(`${handle}|${locale}`, {
         status: null,
         title: null,
         description: null,
+        h1: null,
         error: String(error.message ?? error)
       });
     }
@@ -500,11 +516,27 @@ async function main() {
             ? '200_ok_no_translation'
             : '200_ok_no_translation_unverified';
         } else {
-          const identicalToPl =
+          // Cykl 2 (1-3-c2-pl-fallback-live): osobne werdykty na kanał HEAD
+          // (<title> + meta description) i BODY (h1 produktu). OBA są FAIL —
+          // rozdzielenie służy diagnozie (przeciek seo.* vs fallback treści),
+          // NIE osłabia kryterium HG-6. Brak sygnału h1 po którejkolwiek
+          // stronie = fail-closed (body nieudowodnione ⇒ pl_fallback_body).
+          const headIdenticalToPl =
             plRender?.status === 200 &&
             render.title === plRender.title &&
             render.description === plRender.description;
-          verdict = identicalToPl ? 'pl_fallback' : '200_ok_localized';
+          const bodyLocalized =
+            plRender?.status === 200 &&
+            render.h1 != null &&
+            plRender.h1 != null &&
+            render.h1 !== plRender.h1;
+          if (!headIdenticalToPl && bodyLocalized) {
+            verdict = '200_ok_localized';
+          } else if (bodyLocalized) {
+            verdict = 'pl_fallback_title';
+          } else {
+            verdict = 'pl_fallback_body';
+          }
         }
       } else if (render.status === 404) {
         // Review 1-3-F4: „gate odfiltrował" ≠ „produktu nie ma". Kryteria
@@ -538,6 +570,7 @@ async function main() {
         status: render.status,
         verdict,
         rendered_title: render.title,
+        rendered_h1: render.h1,
         backend_title: backendEntry?.title ?? null,
         backend_description_words: descriptionWords,
         backend_has_thumbnail: backendEntry ? backendEntry.thumbnail != null : null,
@@ -562,7 +595,7 @@ async function main() {
   }
   const failVerdicts = results.filter(
     (r) =>
-      r.verdict === 'pl_fallback' ||
+      r.verdict.startsWith('pl_fallback') ||
       r.verdict === 'pl_content_mismatch' ||
       r.verdict.startsWith('404') ||
       r.verdict.startsWith('http_') ||
@@ -600,7 +633,7 @@ async function main() {
       pl_render_content:
         'werdykt 200_ok_pl_content = żywy render /pl zawiera tytuł produktu z backendu — tor renderu przenosi treść',
       pl_fallback_semantics:
-        'pl_fallback liczony WYŁĄCZNIE na renderach 200 dla /ua /de /en; przy 0 takich renderów wartość 0 znaczy „zero PL-fallbacku na ścieżce renderu, brak próbek 200 poza /pl" — NIE „zweryfikowano brak fallbacku end-to-end"',
+        'pl_fallback_title/pl_fallback_body liczone WYŁĄCZNIE na renderach 200 dla /ua /de /en; przy 0 takich renderów wartość 0 znaczy „zero PL-fallbacku na ścieżce renderu, brak próbek 200 poza /pl" — NIE „zweryfikowano brak fallbacku end-to-end". _title = HEAD identyczny z /pl przy zlokalizowanym body (przeciek seo.*); _body = body identyczne z /pl lub sygnał h1 nieodczytywalny (fail-closed). OBA są FAIL.',
       translation_exists:
         'przy backend_diff_dependent dowodzi tylko overlay backendu (ten sam kanał) — stąd NEEDS-REVIEW zamiast PASS bez niezależnego źródła',
       gate_signal:

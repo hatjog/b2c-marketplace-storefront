@@ -156,16 +156,75 @@ describe('Story 1.3 AC3 — generateProductMetadata bez PL fallbacku', () => {
     expect(de.description).toContain('Gutschein für eine Behandlung bei Salon Kyiv');
   });
 
-  it('jawne metadata.gp.seo.meta_description wygrywa z fallbackiem (bez regresji ADR-054)', async () => {
+  it('jawne metadata.gp.seo.meta_description wygrywa z fallbackiem NA DEFAULT LOCALE (bez regresji ADR-054)', async () => {
     const metadata = await generateProductMetadata(
       makeProduct({
+        title: 'Masaż relaksacyjny',
         metadata: {
-          gp: { seo: { meta_description: 'Опис від продавця' }, vendor_name: 'Salon Kyiv' }
+          gp: { seo: { meta_description: 'Opis od sprzedawcy' }, vendor_name: 'Salon Kyiv' }
         }
       }),
-      'ua'
+      'pl'
     );
 
-    expect(metadata.description).toBe('Опис від продавця');
+    expect(metadata.description).toBe('Opis od sprzedawcy');
+  });
+
+  // Cykl 2 (finding 1-3-c2-pl-fallback-live): pola metadata.gp.seo.* NIE mają
+  // wymiaru locale (kuratorowane w języku domyślnym marketu). Na starym kodzie
+  // seo.meta_title wygrywało w KAŻDYM locale — /ua dostawało PL <title>/og/twitter
+  // przy poprawnie zlokalizowanym body (evidence 1-4-smoke: pl_fallback ×339).
+  describe('cykl 2 — seo.* (PL-only) nie nadpisuje zlokalizowanych metadanych poza default locale', () => {
+    const plSeoProduct = () =>
+      makeProduct({
+        metadata: {
+          gp: {
+            seo: {
+              meta_title: 'Aromaterapia masaż olejkami | BonBeauty',
+              meta_description: 'Aromaterapia — masaż relaksacyjny. BonBeauty Warszawa.',
+              og_image_url: 'https://cdn.example/curated-og.jpg'
+            },
+            vendor_name: 'Salon Kyiv'
+          }
+        }
+      });
+
+    it('/ua: <title>/og:title/twitter:title = zlokalizowany product.title, NIE seo.meta_title', async () => {
+      const metadata = await generateProductMetadata(plSeoProduct(), 'ua');
+
+      expect(metadata.title).toBe('Розслаблюючий масаж');
+      expect(metadata.openGraph?.title).toBe('Розслаблюючий масаж');
+      expect((metadata.twitter as { title?: string })?.title).toBe('Розслаблюючий масаж');
+      for (const channel of [
+        metadata.title,
+        metadata.openGraph?.title,
+        (metadata.twitter as { title?: string })?.title
+      ]) {
+        expect(channel).not.toContain('Aromaterapia');
+      }
+    });
+
+    it('/ua: description z i18n fallbacku, NIE z PL-only seo.meta_description', async () => {
+      const metadata = await generateProductMetadata(plSeoProduct(), 'ua');
+
+      const expected = 'Розслаблюючий масаж — ваучер на послугу в Salon Kyiv. Купуйте на BonBeauty.';
+      expect(metadata.description).toBe(expected);
+      expect(metadata.openGraph?.description).toBe(expected);
+      expect((metadata.twitter as { description?: string })?.description).toBe(expected);
+    });
+
+    it('/ua: locale-neutralny seo.og_image_url ZOSTAJE (tylko pola tekstowe są gate-owane)', async () => {
+      const metadata = await generateProductMetadata(plSeoProduct(), 'ua');
+      const images = metadata.openGraph?.images as Array<{ url: string }>;
+
+      expect(images[0].url).toBe('https://cdn.example/curated-og.jpg');
+    });
+
+    it('/pl (default locale marketu): kuratorowane seo.meta_title/meta_description dalej wygrywają', async () => {
+      const metadata = await generateProductMetadata(plSeoProduct(), 'pl');
+
+      expect(metadata.title).toBe('Aromaterapia masaż olejkami | BonBeauty');
+      expect(metadata.description).toBe('Aromaterapia — masaż relaksacyjny. BonBeauty Warszawa.');
+    });
   });
 });

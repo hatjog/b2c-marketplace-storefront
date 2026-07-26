@@ -21,7 +21,7 @@ import { getSellerByHandle } from '@/lib/data/seller';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getGpField } from '@/lib/helpers/metadata-utils';
-import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { generateProductMetadata, resolveLocalizedGpSeoMetadata } from '@/lib/helpers/seo';
 import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 
 /**
@@ -108,7 +108,13 @@ export default async function ProductPage({
   const gpVendor =
     getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
-  const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
+  // Cykl 2 (1-3-c2-pl-fallback-live): JSON-LD description szło z PL-only
+  // seo.meta_description na każdym locale — ta sama klasa co head; overridy
+  // tekstowe tylko dla default locale marketu.
+  const seo = await resolveLocalizedGpSeoMetadata(
+    product?.metadata as Record<string, unknown> | null | undefined,
+    toStorefrontLocaleSlug(locale)
+  );
   const resolvedDescription =
     seo.meta_description ??
     t('meta.description_fallback', {
