@@ -241,6 +241,59 @@ function readPhase2Locales(env, args) {
   return phase2;
 }
 
+/**
+ * Cykl 3: klasyfikator body/head dla renderu 200 na locale ≠ pl, gdy
+ * tłumaczenie istnieje (translationExists). Wydzielony do czystej funkcji
+ * (bez sieci/fs), żeby dało się go pokryć testem jednostkowym — regresja
+ * translation-invariant (nazwa własna identyczna PL/target) inaczej wymaga
+ * live stacku, żeby ją zobaczyć.
+ *
+ * PRZED testem fallbacku na /pl sprawdzamy ground truth DOCELOWEGO locale
+ * wprost — `backend_title` tego locale. Gdy h1 renderu zgadza się z tym
+ * tytułem, treść JEST zlokalizowana, nawet jeśli przypadkiem identyczna z PL
+ * (np. „Hammam" bez tłumaczenia w PL/DE/EN) — porównanie h1↔h1(/pl) dawało
+ * wtedy fałszywy pl_fallback_body. `translationInvariant=true` znaczy „tytuł
+ * PL i docelowego locale są tożsame w źródle", NIE „brak sygnału" — nadal
+ * 200_ok_localized.
+ *
+ * Realny fallback NIE jest osłabiony: gdy h1 == PL i h1 != target,
+ * `bodyMatchesTargetGroundTruth` jest false, więc klasyfikacja leci normalnie
+ * w dół do pl_fallback_body.
+ */
+export function classifyLocalizedRender({ render, plRender, backendEntry, backendPl }) {
+  const targetGroundTruthTitle = backendEntry?.title ?? null;
+  const bodyMatchesTargetGroundTruth =
+    targetGroundTruthTitle != null && render.h1 === targetGroundTruthTitle;
+  const translationInvariant =
+    bodyMatchesTargetGroundTruth && backendPl?.title === targetGroundTruthTitle;
+  // Cykl 2 (1-3-c2-pl-fallback-live): osobne werdykty na kanał HEAD
+  // (<title> + meta description) i BODY (h1 produktu). OBA są FAIL —
+  // rozdzielenie służy diagnozie (przeciek seo.* vs fallback treści), NIE
+  // osłabia kryterium HG-6. Brak sygnału h1 po którejkolwiek stronie =
+  // fail-closed (body nieudowodnione ⇒ pl_fallback_body).
+  const headIdenticalToPl =
+    plRender?.status === 200 &&
+    render.title === plRender.title &&
+    render.description === plRender.description;
+  const bodyLocalized =
+    plRender?.status === 200 &&
+    render.h1 != null &&
+    plRender.h1 != null &&
+    render.h1 !== plRender.h1;
+
+  let verdict;
+  if (bodyMatchesTargetGroundTruth) {
+    verdict = '200_ok_localized';
+  } else if (!headIdenticalToPl && bodyLocalized) {
+    verdict = '200_ok_localized';
+  } else if (bodyLocalized) {
+    verdict = 'pl_fallback_title';
+  } else {
+    verdict = 'pl_fallback_body';
+  }
+  return { verdict, translationInvariant };
+}
+
 function wordCount(text) {
   return String(text ?? '')
     .split(/\s+/)
@@ -502,6 +555,7 @@ async function main() {
       const gateSignal = contentBarFlag === undefined ? 'legacy_wordcount' : 'content_bar';
 
       let verdict;
+      let translationInvariant = null;
       if (render.status === 200) {
         if (locale === 'pl') {
           // Ścieżka dowodowa AC1 na /pl (review 1-3-F2): żywe 200 to za mało —
@@ -516,27 +570,9 @@ async function main() {
             ? '200_ok_no_translation'
             : '200_ok_no_translation_unverified';
         } else {
-          // Cykl 2 (1-3-c2-pl-fallback-live): osobne werdykty na kanał HEAD
-          // (<title> + meta description) i BODY (h1 produktu). OBA są FAIL —
-          // rozdzielenie służy diagnozie (przeciek seo.* vs fallback treści),
-          // NIE osłabia kryterium HG-6. Brak sygnału h1 po którejkolwiek
-          // stronie = fail-closed (body nieudowodnione ⇒ pl_fallback_body).
-          const headIdenticalToPl =
-            plRender?.status === 200 &&
-            render.title === plRender.title &&
-            render.description === plRender.description;
-          const bodyLocalized =
-            plRender?.status === 200 &&
-            render.h1 != null &&
-            plRender.h1 != null &&
-            render.h1 !== plRender.h1;
-          if (!headIdenticalToPl && bodyLocalized) {
-            verdict = '200_ok_localized';
-          } else if (bodyLocalized) {
-            verdict = 'pl_fallback_title';
-          } else {
-            verdict = 'pl_fallback_body';
-          }
+          const classified = classifyLocalizedRender({ render, plRender, backendEntry, backendPl });
+          verdict = classified.verdict;
+          translationInvariant = classified.translationInvariant;
         }
       } else if (render.status === 404) {
         // Review 1-3-F4: „gate odfiltrował" ≠ „produktu nie ma". Kryteria
@@ -572,6 +608,10 @@ async function main() {
         rendered_title: render.title,
         rendered_h1: render.h1,
         backend_title: backendEntry?.title ?? null,
+        // Cykl 3: true gdy verdict 200_ok_localized wynika z ground-truth
+        // docelowego locale, którego tytuł jest identyczny z PL (nazwa
+        // własna) — odróżnia to od realnej różnicy tłumaczenia.
+        translation_invariant: translationInvariant,
         backend_description_words: descriptionWords,
         backend_has_thumbnail: backendEntry ? backendEntry.thumbnail != null : null,
         // Story 1.4 (AD-4/AC6): jawny ślad, KTÓRYM torem szedł gate i jaki był
@@ -669,11 +709,17 @@ async function main() {
   console.log('PASS: zero FAILi handle × locale.');
 }
 
-main().catch((error) => {
-  // Review 1-3-F10: wyjątek spoza jawnych bramek fail-closed to bug NARZĘDZIA,
-  // nie problem środowiska — osobny exit code, żeby operator nie dostawał
-  // instrukcji „postaw stack" na TypeError w klasyfikatorze.
-  console.error(`TOOL-ERROR: nieoczekiwany błąd smoke (bug skryptu, NIE brak stacku):`);
-  console.error(error?.stack ?? String(error));
-  process.exit(3);
-});
+// Guard: uruchom main() tylko przy bezpośrednim wywołaniu (`node
+// smoke-pdp-locales.mjs`), NIE przy imporcie z testu jednostkowego
+// klasyfikatora (cykl 3) — inaczej import ciągnąłby za sobą sieć/fs i
+// process.exit w każdym teście.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    // Review 1-3-F10: wyjątek spoza jawnych bramek fail-closed to bug NARZĘDZIA,
+    // nie problem środowiska — osobny exit code, żeby operator nie dostawał
+    // instrukcji „postaw stack" na TypeError w klasyfikatorze.
+    console.error(`TOOL-ERROR: nieoczekiwany błąd smoke (bug skryptu, NIE brak stacku):`);
+    console.error(error?.stack ?? String(error));
+    process.exit(3);
+  });
+}
