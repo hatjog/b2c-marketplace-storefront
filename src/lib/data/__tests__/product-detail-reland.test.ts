@@ -174,6 +174,18 @@ describe('Story 1.3 AC1 — PDP renderuje zmaterializowane tłumaczenie, nie PL 
     // Locale płynie JAWNIE — zero auto-resolve w całej kontynuacji (AD-3).
     expect(resolveLocaleSlugSpy).not.toHaveBeenCalled();
     expect(interceptorResolveSpy).not.toHaveBeenCalled();
+
+    // Review 1-3-F2 (H2): asercja na NAGŁÓWKU żądania per locale — kanał
+    // niezależny od asercji na treści powyżej. Treść dowodzi „co wróciło",
+    // nagłówek dowodzi „o co tor faktycznie poprosił" — razem wykluczają
+    // wariant, w którym mock przypadkiem zwraca dobrą treść mimo złego locale.
+    const sentLocales = fetchMock.mock.calls.map(
+      ([, options]) =>
+        (options as { headers?: Record<string, string> })?.headers?.['x-medusa-locale']
+    );
+    expect(sentLocales).toContain('uk-UA');
+    expect(sentLocales).toContain('pl-PL');
+    expect(sentLocales).not.toContain(undefined);
   });
 
   it('subtitle wchodzi do fields i wraca zlokalizowany (decyzja AC1/T2)', async () => {

@@ -106,6 +106,23 @@ describe('PDP helpers', () => {
     });
   });
 
+  it('Story 1.3 (1-3-F8): kolizja natywnego subtitle z metadata.gp.subtitle — natywny (lokalizowalny przez Translation Module) wygrywa ŚWIADOMIE', () => {
+    // Do 1.3 natywny subtitle nie wchodził do `fields` w listProducts, więc ta
+    // gałąź była martwa i PDP zawsze pokazywał metadata.gp.subtitle. Po dodaniu
+    // `subtitle` do fields precedencja staje się OSIĄGALNA — i jest decyzją
+    // story (Dev Agent Record 1.3): natywne pole jest jedynym, które overlay
+    // Translation Module lokalizuje; metadata.gp.subtitle zostaje fallbackiem.
+    // Weryfikacja na danych bonbeauty (2026-07-26): 0/134 produktów ma
+    // ustawiony natywny subtitle LUB metadata.gp.subtitle ⇒ zmiana nie
+    // modyfikuje żadnej widocznej treści /pl w momencie relandu.
+    const fields = resolveProductCatalogDisplayFields(
+      { id: 'prod_1', title: 'Masaż', subtitle: 'Година спокою' } as never,
+      { subtitle: 'Godzina spokoju (kuratorowany PL)' }
+    );
+
+    expect(fields.subtitle).toBe('Година спокою');
+  });
+
   it('normalizes missing PDP images to a stable placeholder', () => {
     const images = normalizePdpGalleryImages({
       id: 'prod_1',

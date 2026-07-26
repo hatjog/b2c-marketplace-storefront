@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
 import { getGpField } from './metadata-utils';
@@ -64,6 +65,12 @@ export const generateProductMetadata = async (
   const host = headersList.get('host');
   const protocol = headersList.get('x-forwarded-proto') || 'https';
 
+  // Story 1.3 (review 1-3-F15): surowy param route'u normalizowany tym samym
+  // torem co warstwa danych (`page.tsx` → toStorefrontLocaleSlug) — bez tego
+  // nieobsługiwana wartość szłaby do getTranslations/hreflang i cofała metadane
+  // na DEFAULT_LOCALE innym mechanizmem niż render (rozjazd klasy v1.13.0).
+  const localeSlug = toStorefrontLocaleSlug(locale);
+
   const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
@@ -74,23 +81,32 @@ export const generateProductMetadata = async (
   // Story 1.3 (AC3): fallback description przez i18n z JAWNYM locale z route'u
   // (R-7 — nigdy auto-resolve w kontynuacji metadanych), tym samym kluczem,
   // którego używa ProductPage. Poprzedni hardcoded PL literał wyciekał do
-  // SERP/og:description/twitter:description na /ua /de /en.
-  const tPdp = await getTranslations({ locale, namespace: 'pdp' });
+  // SERP/og:description/twitter:description na /ua /de /en. Fallback liczony
+  // leniwie (review 1-3-F14): przy jawnym meta_description nie ładujemy
+  // namespace'u na gorącej ścieżce crawlera.
   const description =
     seo.meta_description ??
-    tPdp('meta.description_fallback', {
-      title: product?.title ?? siteName,
-      vendor: gpVendor,
-      siteName
-    });
+    (await getTranslations({ locale: localeSlug, namespace: 'pdp' }))(
+      'meta.description_fallback',
+      {
+        title: product?.title ?? siteName,
+        vendor: gpVendor,
+        siteName
+      }
+    );
   const ogImageRaw = seo.og_image_url ?? product?.thumbnail ?? null;
   const ogImage = toSafeOgImageUrl(
     ogImageRaw,
     `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
   );
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
-  const alternates = await buildLocaleSeoAlternates(baseUrl, locale, 'products', product?.handle ?? '');
-  const social = await buildLocaleSocialMetadata(locale);
+  const alternates = await buildLocaleSeoAlternates(
+    baseUrl,
+    localeSlug,
+    'products',
+    product?.handle ?? ''
+  );
+  const social = await buildLocaleSocialMetadata(localeSlug);
 
   return {
     title,
@@ -122,101 +138,5 @@ export const generateProductMetadata = async (
       images: [ogImage]
     },
     other: social.other
-  };
-};
-
-export const generateCategoryMetadata = async (
-  category: HttpTypes.StoreProductCategory
-): Promise<Metadata> => {
-  const headersList = await headers();
-  const host = headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
-
-  const seo = resolveGpSeoMetadata(
-    category?.metadata as Record<string, unknown> | null | undefined
-  );
-
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
-  const title = seo.meta_title ?? category.name;
-  const description =
-    seo.meta_description ?? `${category.name} — zabiegi i vouchery na ${siteName}.`;
-  const ogImage = toSafeOgImageUrl(
-    seo.og_image_url,
-    `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
-  );
-
-  return {
-    robots: 'index, follow',
-    metadataBase: new URL(`${protocol}://${host}/categories/${category.handle}`),
-    title,
-    description,
-
-    openGraph: {
-      title,
-      description,
-      url: `${protocol}://${host}/categories/${category.handle}`,
-      siteName,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title
-        }
-      ],
-      type: 'website'
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage]
-    }
-  };
-};
-
-export const generateCollectionMetadata = (
-  collection: HttpTypes.StoreCollection,
-  baseUrl: string,
-  locale: string
-): Metadata => {
-  const seo = resolveGpSeoMetadata(
-    collection?.metadata as Record<string, unknown> | null | undefined
-  );
-
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
-  const title = seo.meta_title ?? collection.title;
-  const description =
-    seo.meta_description ?? `${collection.title} — zabiegi i vouchery na ${siteName}.`;
-  const canonical = new URL(
-    `/${locale}/collections/${collection.handle}`,
-    `${baseUrl}/`
-  ).toString();
-  const ogImage = toSafeOgImageUrl(seo.og_image_url, `${baseUrl}/B2C_Storefront_Open_Graph.png`);
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical
-    },
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      url: canonical,
-      images: [
-        {
-          url: ogImage,
-          alt: title
-        }
-      ]
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage]
-    }
   };
 };

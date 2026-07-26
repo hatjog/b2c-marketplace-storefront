@@ -28,6 +28,22 @@
  * 1.2 na CAŁYM storefroncie — potwierdzone testem RuleTester na ścieżce
  * route'u detalu w __tests__/require-set-request-locale.test.js.
  *
+ *  (d4) ARGUMENT: `setRequestLocale` z literałem stringowym / template bez
+ *       ekspresji (np. `setRequestLocale('pl')`) NIE spełnia gate'a — hardcoded
+ *       locale to ta sama awaria (cichy default w kontynuacji), tylko wpisana
+ *       jawnie. Raportowane osobnym messageId `literalArgument`; wywołanie
+ *       z literałem nie liczy się jako spełnienie (d1)/(d2).
+ *
+ * Zakres plików: `page` | `layout` | `default` (parallel-route fallback —
+ * dostaje `params`, jest wejściem renderu). ŚWIADOMIE wyłączone
+ * (review 1-3-F12, uzasadnienie):
+ *  - `not-found.tsx` — App Router NIE przekazuje props/params; jedyny dostęp
+ *    do locale to `getLocale()` z kontekstu ustawionego przez layout (który
+ *    reguła egzekwuje) — plik nie MOŻE wołać setRequestLocale(locale),
+ *  - `error.tsx` — musi być komponentem klienckim ("use client"), a
+ *    setRequestLocale to API serwerowe,
+ *  - `template.tsx` — otrzymuje tylko `children`, bez `params` (jak not-found).
+ *
  * Pomijane: pliki z dyrektywą "use client" (setRequestLocale to API serwerowe),
  * pliki testowe oraz wpisy z `allowlist` (opcja; wymaga uzasadnienia w PR).
  *
@@ -65,7 +81,9 @@ function isTestFile(filename) {
 
 function isRouteEntryFile(filename, routePatterns) {
   if (!matchesAny(filename, routePatterns)) return false;
-  return /\/(page|layout)\.[jt]sx?$/.test(filename);
+  // `default` = parallel-route fallback (dostaje params). Wyłączenia
+  // not-found/error/template udokumentowane w nagłówku (review 1-3-F12).
+  return /\/(page|layout|default)\.[jt]sx?$/.test(filename);
 }
 
 /** Zdejmuje `await`, `as X`, `satisfies X` i nawiasy — jak w regule 1.2. */
@@ -139,15 +157,36 @@ function isSetRequestLocaleCall(node) {
 }
 
 /**
- * Skanuje ciało funkcji: pierwsza pozycja `setRequestLocale(...)` i pierwsza
- * pozycja kontekstozależnego resolvera. Zagnieżdżone funkcje wliczają się do
- * subtree (wystarczy, że wołanie jest osiągalne leksykalnie z tej funkcji).
+ * (d4) Hardcoded argument: literał stringowy, template bez ekspresji albo brak
+ * argumentu. Taki call NIE spełnia gate'a — komunikaty reguły obiecują
+ * `setRequestLocale(locale)`; heurystyka przepuszcza identyfikatory i wyrażenia
+ * (reguła jest leksykalna, nie śledzi przepływu danych do `params`).
+ */
+function hasHardcodedLocaleArgument(callNode) {
+  if (callNode.arguments.length === 0) return true;
+  const firstArg = unwrap(callNode.arguments[0]);
+  if (!firstArg) return true;
+  if (firstArg.type === "Literal") return true;
+  if (firstArg.type === "TemplateLiteral" && firstArg.expressions.length === 0) return true;
+  return false;
+}
+
+/**
+ * Skanuje ciało funkcji: pierwsza pozycja `setRequestLocale(...)` (z
+ * NIE-literałowym argumentem), pierwsza pozycja kontekstozależnego resolvera
+ * oraz wywołania z hardcoded argumentem (d4). Zagnieżdżone funkcje wliczają
+ * się do subtree (wystarczy, że wołanie jest osiągalne leksykalnie).
  */
 function scanFunction(fnNode) {
   let firstSet = null;
   let firstResolve = null;
+  const literalCalls = [];
   walkAst(fnNode.body, (node) => {
     if (isSetRequestLocaleCall(node)) {
+      if (hasHardcodedLocaleArgument(node)) {
+        literalCalls.push(node);
+        return;
+      }
       if (firstSet === null || node.range[0] < firstSet) firstSet = node.range[0];
     } else if (isContextResolverCall(node)) {
       if (firstResolve === null || node.range[0] < firstResolve) {
@@ -155,7 +194,7 @@ function scanFunction(fnNode) {
       }
     }
   });
-  return { firstSet, firstResolve };
+  return { firstSet, firstResolve, literalCalls };
 }
 
 module.exports = {
@@ -182,6 +221,8 @@ module.exports = {
         "Eksportowany generateMetadata pod src/app/[locale]/** nie woła setRequestLocale(locale). generateMetadata to osobna kontynuacja poza drzewem page/layout — cichy fallback do pl-PL w metadanych to przyczyna wycofania relandu PDP w v1.13.0 (AD-3, Story 1.3 AC2).",
       setAfterResolve:
         "setRequestLocale(locale) występuje PO pierwszym kontekstozależnym {{resolver}} w tej funkcji — dla już rozwiązanego kontekstu to no-op. Przenieś setRequestLocale przed pierwsze getTranslations()/getLocale() (AC2), albo użyj jawnej formy getTranslations({ locale, … }).",
+      literalArgument:
+        "setRequestLocale z hardcoded locale ({{argText}}) — to ta sama awaria, którą gate blokuje (cichy default w kontynuacji), tylko wpisana jawnie. Przekaż locale z destrukturyzacji params route'u (AD-3, review 1-3-F11).",
     },
   },
 
@@ -205,7 +246,21 @@ module.exports = {
     const isLayout = /\/layout\.[jt]sx?$/.test(filename);
 
     function checkFunction(fnNode, reportNode, messageId) {
-      const { firstSet, firstResolve } = scanFunction(fnNode);
+      const { firstSet, firstResolve, literalCalls } = scanFunction(fnNode);
+      // (d4) Hardcoded argument raportowany zawsze — nawet gdy obok stoi
+      // poprawne wywołanie (literał to świadomy błąd, nie szum).
+      for (const literalCall of literalCalls) {
+        const argNode = literalCall.arguments[0];
+        context.report({
+          node: literalCall,
+          messageId: "literalArgument",
+          data: {
+            argText: argNode
+              ? context.sourceCode.getText(argNode)
+              : "(bez argumentu)",
+          },
+        });
+      }
       if (firstSet === null) {
         context.report({
           node: reportNode,

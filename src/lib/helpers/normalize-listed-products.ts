@@ -15,7 +15,9 @@ import { getGpField } from '@/lib/helpers/metadata-utils';
  */
 export type ListedProduct = HttpTypes.StoreProduct & { seller?: SellerProps | null } & MultiVendorPricingFields;
 
-const MIN_DESCRIPTION_WORDS = 80;
+// Eksport wyłącznie dla testu parity progu w scripts/smoke-pdp-locales.mjs
+// (Story 1.3, review 1-3-F6) — semantyka gate'a bez zmian (zakres 1.4).
+export const MIN_DESCRIPTION_WORDS = 80;
 
 const PLACEHOLDER_PATTERNS = [
   /placeholder/i,

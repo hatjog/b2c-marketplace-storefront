@@ -35,7 +35,8 @@ import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 const SELLER_FROM_RE = /^seller:([a-z0-9-]+)$/;
 
 async function resolveSalonContext(
-  fromParam: string | undefined
+  fromParam: string | undefined,
+  locale: string
 ): Promise<SalonContextChipSeller | null> {
   if (!fromParam) return null;
   const match = SELLER_FROM_RE.exec(fromParam);
@@ -43,7 +44,10 @@ async function resolveSalonContext(
 
   const sellerHandle = match[1];
   try {
-    const seller = await getSellerByHandle(sellerHandle);
+    // Story 1.3 (AD-3, review 1-3-F3): locale JAWNIE z route'u — bez argumentu
+    // getSellerByHandle robi auto-resolve (getLocale()) w kontynuacji fetch,
+    // czyli dokładnie klasę, którą AC1 zakazuje na route'ach detalu.
+    const seller = await getSellerByHandle(sellerHandle, locale);
     if (!seller) return null;
     return { name: seller.name, handle: seller.handle };
   } catch {
@@ -98,7 +102,7 @@ export default async function ProductPage({
   // Story v160-4-6: parse `?from=seller:{handle}` → optional salon context for
   // the sticky overlay chip. Defensive null on malformed param / 5xx / unknown
   // seller — chip simply doesn't render in those cases.
-  const salonContext = await resolveSalonContext(resolvedSearchParams.from);
+  const salonContext = await resolveSalonContext(resolvedSearchParams.from, locale);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const gpVendor =

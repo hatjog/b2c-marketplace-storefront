@@ -40,6 +40,10 @@ const NON_ROUTE_FILE =
   "/repo/GP/storefront/src/components/sections/ProductDetailsPage.tsx";
 const ROUTE_TEST_FILE =
   "/repo/GP/storefront/src/app/[locale]/(main)/__tests__/page.test.tsx";
+const DEFAULT_SLOT_FILE =
+  "/repo/GP/storefront/src/app/[locale]/(main)/@modal/default.tsx";
+const NOT_FOUND_FILE =
+  "/repo/GP/storefront/src/app/[locale]/(main)/products/[handle]/not-found.tsx";
 
 ruleTester.run("require-set-request-locale", rule, {
   valid: [
@@ -119,6 +123,19 @@ ruleTester.run("require-set-request-locale", rule, {
     {
       filename: ROUTE_TEST_FILE,
       code: `export default function Fixture() { return null; }`,
+    },
+    // not-found.tsx: ŚWIADOMIE poza zakresem — App Router nie przekazuje mu
+    // params, więc nie może wołać setRequestLocale(locale) (review 1-3-F12,
+    // uzasadnienie w nagłówku reguły).
+    {
+      filename: NOT_FOUND_FILE,
+      code: `
+        import { getLocale, getTranslations } from 'next-intl/server';
+        export default async function ProductNotFound() {
+          const locale = await getLocale();
+          return null;
+        }
+      `,
     },
     // Allowlist (opcja) — wpis wymaga uzasadnienia w PR.
     {
@@ -216,6 +233,55 @@ ruleTester.run("require-set-request-locale", rule, {
         }
       `,
       errors: [{ messageId: "setAfterResolve" }],
+    },
+    // (d4) Hardcoded locale: setRequestLocale('pl') to ta sama awaria co brak
+    // wywołania, wpisana jawnie — literał raportowany + funkcja liczy się
+    // jako niespełniająca (d1) (review 1-3-F11).
+    {
+      filename: PDP_FILE,
+      code: `
+        import { setRequestLocale } from 'next-intl/server';
+        export default async function ProductPage({ params }) {
+          setRequestLocale('pl');
+          return null;
+        }
+      `,
+      errors: [
+        { messageId: "missingInComponent" },
+        { messageId: "literalArgument" },
+      ],
+    },
+    // (d4) Literał w generateMetadata obok poprawnego wywołania w page —
+    // raportowany jest sam literał (call z identyfikatorem spełnia (d2)).
+    {
+      filename: SELLER_FILE,
+      code: `
+        import { setRequestLocale } from 'next-intl/server';
+        export async function generateMetadata({ params }) {
+          const { locale } = await params;
+          setRequestLocale('pl');
+          setRequestLocale(locale);
+          return { title: 'x' };
+        }
+        export default async function SellerPage({ params }) {
+          const { locale } = await params;
+          setRequestLocale(locale);
+          return null;
+        }
+      `,
+      errors: [{ messageId: "literalArgument" }],
+    },
+    // Zakres plików: default.tsx (parallel-route fallback) dostaje params i
+    // JEST wejściem renderu — podlega (d1) (review 1-3-F12).
+    {
+      filename: DEFAULT_SLOT_FILE,
+      code: `
+        export default async function ModalDefault({ params }) {
+          const { locale } = await params;
+          return null;
+        }
+      `,
+      errors: [{ messageId: "missingInComponent" }],
     },
     // (d2) `export const generateMetadata = …` (arrow) też jest sprawdzany.
     {
