@@ -64,9 +64,25 @@ const MVP_FLAG_SNAPSHOT_TS_KEY = 'mvp_flag_snapshot_ts';
  * NIE BCP-47 — to ten sam alfabet, którym operuje `locales.supported` marketu
  * (D-55), więc backend waliduje ją bez tłumaczenia.
  *
- * Zapis biegnie PRZED `completeCart` (a nie przy tworzeniu koszyka), bo
- * kupująca może przełączyć język w trakcie sesji — liczy się język w momencie
- * zakupu. Ostatni zapis wygrywa świadomie.
+ * Moment zapisu (R-2.3-H2): przy INICJACJI SESJI PŁATNOŚCI — czyli wtedy, gdy
+ * kupująca wchodzi w krok płatności, a więc PRZED autoryzacją karty. NIE przy
+ * tworzeniu koszyka (zamrażałoby język z momentu dodania pierwszego produktu)
+ * i — co ważniejsze — NIE między `confirmCardPayment` a `/complete`.
+ *
+ * Dlaczego nie tuż przed `/complete`: `POST /store/carts/:id` uruchamia
+ * `updateCartWorkflow` → `refreshCartItemsWorkflow` →
+ * `refreshPaymentCollectionForCartWorkflow`, który KASUJE sesje płatności, gdy
+ * przeliczona suma koszyka rozjedzie się z kwotą payment collection. W oknie
+ * post-charge (karta już obciążona, `/complete` jeszcze nie) dałoby to
+ * osierocone obciążenie — tę samą klasę incydentu co „błąd przetwarzania"
+ * z v1.11.0. `try/catch` fail-open przed tym NIE chroni: szkodliwy jest
+ * przypadek, w którym zapis SIĘ POWIEDZIE. Przy inicjacji sesji ten sam efekt
+ * uboczny jest nieszkodliwy — sesja i tak powstaje zaraz po zapisie, a żadna
+ * płatność nie została jeszcze autoryzowana.
+ *
+ * Semantyka ADR-162 „ostatni zapis wygrywa" zachowana: zapis biegnie przy
+ * każdej inicjacji sesji płatności (zmiana metody / powrót do kroku płatności
+ * po przełączeniu języka nadpisuje wartość).
  *
  * Zapis jest FAIL-OPEN: locale nie jest warunkiem sprzedaży, więc błąd
  * persystencji loguje ostrzeżenie i NIE wywraca checkoutu (backend ma jawny,
@@ -118,10 +134,14 @@ function readFlagSnapshotFromCart(
 /**
  * Story 2.3 (AC3) — utrwala locale zakupu w `cart.metadata.purchase_locale`.
  *
- * Wywoływane bezpośrednio przed `completeCart`, żeby wartość trafiła do
- * `order.metadata`. Fail-open: KAŻDY błąd (sieć, 4xx, brak koszyka) kończy się
- * ostrzeżeniem w logu i kontynuacją checkoutu — mail w języku fallbacku jest
- * nieskończenie lepszy niż nieudany zakup.
+ * Wywoływane przy inicjacji sesji płatności (patrz komentarz przy
+ * `PURCHASE_LOCALE_KEY`), czyli PRZED autoryzacją karty. `cart.metadata` jest
+ * kopiowane do `order.metadata` przy `completeCart`, więc wartość dociera do
+ * subscribera bez dotykania koszyka w oknie post-charge.
+ *
+ * Fail-open: KAŻDY błąd (sieć, 4xx, brak koszyka) kończy się ostrzeżeniem
+ * w logu i kontynuacją checkoutu — mail w języku fallbacku jest nieskończenie
+ * lepszy niż nieudany zakup.
  *
  * Idempotentne w praktyce: powtórny zapis tej samej wartości jest pomijany
  * (oszczędza jedno zapytanie i nie unieważnia cache koszyka bez potrzeby).
@@ -751,6 +771,14 @@ export async function initiatePaymentSession(
     ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
   };
 
+  // Story 2.3 (AC3) — locale zakupu utrwalane TUTAJ: to ostatni moment przed
+  // autoryzacją płatności, w którym mutacja koszyka jest bezpieczna (sesja
+  // płatności powstaje dopiero poniżej, więc ewentualne przeliczenie koszyka
+  // nie może osierocić obciążenia). Fail-open w środku.
+  if (cart?.id) {
+    await persistPurchaseLocale(cart.id, headers);
+  }
+
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, headers)
     .then(async resp => {
@@ -942,10 +970,11 @@ async function completeCartOrder(cartId?: string) {
     console.warn('[atomic-flag-check] snapshot read failed, fail-open', e);
   }
 
-  // Story 2.3 (AC3) — locale zakupu MUSI być zapisane przed `complete`, żeby
-  // Medusa przeniosła je z `cart.metadata` do `order.metadata`. Po `complete`
-  // koszyk jest już zamknięty i wartość przepadłaby.
-  await persistPurchaseLocale(id, headers);
+  // Story 2.3 (AC3): `purchase_locale` jest zapisywane przy inicjacji sesji
+  // płatności (`initiatePaymentSession`), a NIE tutaj — między
+  // `confirmCardPayment` a `/complete` nie wolno mutować koszyka (R-2.3-H2:
+  // `updateCartWorkflow` może skasować sesje płatności → osierocone
+  // obciążenie). Ten komentarz jest celowo zostawiony jako znacznik zakazu.
 
   const res = await fetchQuery(`/store/carts/${id}/complete`, {
     method: 'POST',

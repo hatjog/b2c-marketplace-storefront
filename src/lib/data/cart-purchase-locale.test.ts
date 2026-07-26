@@ -2,18 +2,22 @@
  * cart-purchase-locale.test.ts — Story 2.3 (AC3), strona storefrontu.
  *
  * Kontrakt broniony tutaj:
- *   - `purchase_locale` jest zapisywane do `cart.metadata` PRZED `completeCart`
- *     (po `complete` koszyk jest zamknięty i wartość przepadłaby),
+ *   - `purchase_locale` jest zapisywane do `cart.metadata` przy INICJACJI SESJI
+ *     PŁATNOŚCI, czyli PRZED autoryzacją karty (R-2.3-H2),
+ *   - ścieżka `complete` NIE mutuje koszyka — żadnego `POST /store/carts/:id`
+ *     między `confirmCardPayment` a `/complete` (regresja = ryzyko osieroconego
+ *     obciążenia, klasa incydentu z v1.11.0),
  *   - zapis MERGE-uje metadane (nie zdmuchuje `mvp_flag_snapshot` z v160-5-9),
  *   - wartość to slug routingu (`pl|en|ua|de`), nie BCP-47,
- *   - błąd zapisu jest FAIL-OPEN: checkout kończy się sukcesem (locale nie jest
- *     warunkiem sprzedaży),
+ *   - błąd zapisu jest FAIL-OPEN: sesja płatności i checkout idą dalej (locale
+ *     nie jest warunkiem sprzedaży),
  *   - powtórny zapis tej samej wartości jest pomijany (bez zbędnego zapytania).
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockCartUpdate = vi.fn();
+const mockInitiatePaymentSession = vi.fn();
 const mockFetchQuery = vi.fn();
 const mockGetCartId = vi.fn();
 const mockGetAuthHeaders = vi.fn();
@@ -41,6 +45,9 @@ vi.mock('../config', () => ({
     store: {
       cart: {
         update: (...args: unknown[]) => mockCartUpdate(...args)
+      },
+      payment: {
+        initiatePaymentSession: (...args: unknown[]) => mockInitiatePaymentSession(...args)
       }
     }
   }
@@ -89,17 +96,19 @@ vi.mock('../security/flagAtomicCheck', () => ({
   verifyFlagUnchanged: vi.fn()
 }));
 
-const { completeOrderAfterStripePayment } = await import('./cart');
+const { completeOrderAfterStripePayment, initiatePaymentSession } = await import('./cart');
 
 const CART_ID = 'cart_2_3_001';
 const HEADERS = { authorization: 'Bearer test-token' };
+const CART = { id: CART_ID } as never;
+const PAYMENT_DATA = { provider_id: 'pp_stripe_stripe' };
 
 /** Ustawia metadane koszyka zwracane przez `retrieveCart` (sdk.client.fetch). */
 function setCartMetadata(metadata: Record<string, unknown>): void {
   mockClientFetch.mockResolvedValue({ cart: { id: CART_ID, metadata } });
 }
 
-/** Kolejność wywołań: zapis metadanych MUSI wyprzedzić POST /complete. */
+/** Kolejność wywołań: zapis metadanych MUSI wyprzedzić inicjację sesji płatności. */
 const callOrder: string[] = [];
 
 beforeEach(() => {
@@ -124,6 +133,12 @@ beforeEach(() => {
     return { cart: { id: CART_ID, metadata: (args[1] as { metadata?: unknown })?.metadata } };
   });
 
+  mockInitiatePaymentSession.mockReset();
+  mockInitiatePaymentSession.mockImplementation(async () => {
+    callOrder.push('payment.initiate');
+    return { payment_collection: { id: 'pay_col_1' } };
+  });
+
   mockFetchQuery.mockReset();
   mockFetchQuery.mockImplementation(async (path: string) => {
     callOrder.push(`fetch:${path}`);
@@ -132,8 +147,8 @@ beforeEach(() => {
 });
 
 describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
-  it('zapisuje purchase_locale do cart.metadata przed POST /complete', async () => {
-    await completeOrderAfterStripePayment(CART_ID);
+  it('zapisuje purchase_locale do cart.metadata przed inicjacją sesji płatności', async () => {
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
     expect(mockCartUpdate).toHaveBeenCalledTimes(1);
     const [cartId, body, , headers] = mockCartUpdate.mock.calls[0];
@@ -143,13 +158,13 @@ describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
     );
     expect(headers).toEqual(HEADERS);
 
-    // Kolejność jest istotna: po `complete` koszyk jest zamknięty.
+    // Kolejność jest istotna: zapis MUSI być przed autoryzacją płatności.
     expect(callOrder[0]).toBe('cart.update');
-    expect(callOrder[1]).toBe(`fetch:/store/carts/${CART_ID}/complete`);
+    expect(callOrder[1]).toBe('payment.initiate');
   });
 
   it('MERGE-uje metadane — nie zdmuchuje snapshotu flagi z v160-5-9', async () => {
-    await completeOrderAfterStripePayment(CART_ID);
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
     const [, body] = mockCartUpdate.mock.calls[0];
     expect((body as { metadata: Record<string, unknown> }).metadata).toEqual({
@@ -162,7 +177,7 @@ describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
   it('zapisuje SLUG routingu (pl|en|ua|de), nie BCP-47', async () => {
     mockResolveLocaleSlug.mockResolvedValue('de');
 
-    await completeOrderAfterStripePayment(CART_ID);
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
     const [, body] = mockCartUpdate.mock.calls[0];
     const value = (body as { metadata: Record<string, unknown> }).metadata
@@ -174,20 +189,17 @@ describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
   it('pomija zapis, gdy wartość już jest ta sama (idempotencja bez zbędnego zapytania)', async () => {
     setCartMetadata({ purchase_locale: 'ua' });
 
-    await completeOrderAfterStripePayment(CART_ID);
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
     expect(mockCartUpdate).not.toHaveBeenCalled();
-    expect(mockFetchQuery).toHaveBeenCalledWith(
-      `/store/carts/${CART_ID}/complete`,
-      expect.anything()
-    );
+    expect(mockInitiatePaymentSession).toHaveBeenCalledTimes(1);
   });
 
   it('nadpisuje poprzednią wartość, gdy kupująca zmieniła język w trakcie sesji', async () => {
     setCartMetadata({ purchase_locale: 'pl' });
     mockResolveLocaleSlug.mockResolvedValue('en');
 
-    await completeOrderAfterStripePayment(CART_ID);
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
     const [, body] = mockCartUpdate.mock.calls[0];
     expect((body as { metadata: Record<string, unknown> }).metadata.purchase_locale).toBe(
@@ -196,45 +208,48 @@ describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
   });
 });
 
-describe('purchase_locale — FAIL-OPEN (AC3: locale nie jest warunkiem sprzedaży)', () => {
-  it('błąd zapisu metadanych NIE wywraca checkoutu', async () => {
-    mockCartUpdate.mockRejectedValue(new Error('409 conflict'));
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
+describe('R-2.3-H2 — ścieżka `complete` NIE mutuje koszyka po obciążeniu karty', () => {
+  it('completeOrderAfterStripePayment nie woła sdk.store.cart.update', async () => {
     const result = await completeOrderAfterStripePayment(CART_ID);
 
     expect(result).toMatchObject({ ok: true });
-    expect(mockFetchQuery).toHaveBeenCalledWith(
-      `/store/carts/${CART_ID}/complete`,
-      expect.anything()
-    );
+    // Jedyne żądanie w oknie post-charge to samo `/complete`.
+    expect(mockCartUpdate).not.toHaveBeenCalled();
+    expect(callOrder).toEqual([`fetch:/store/carts/${CART_ID}/complete`]);
+  });
+});
+
+describe('purchase_locale — FAIL-OPEN (AC3: locale nie jest warunkiem sprzedaży)', () => {
+  it('błąd zapisu metadanych NIE blokuje inicjacji sesji płatności', async () => {
+    mockCartUpdate.mockRejectedValue(new Error('409 conflict'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    await initiatePaymentSession(CART, PAYMENT_DATA);
+
+    expect(mockInitiatePaymentSession).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
 
-  it('błąd odczytu koszyka NIE wywraca checkoutu', async () => {
+  it('błąd odczytu koszyka NIE blokuje inicjacji sesji płatności', async () => {
     mockClientFetch.mockRejectedValue(new Error('network down'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    const result = await completeOrderAfterStripePayment(CART_ID);
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
-    expect(result).toMatchObject({ ok: true });
     expect(mockCartUpdate).not.toHaveBeenCalled();
-    expect(mockFetchQuery).toHaveBeenCalledWith(
-      `/store/carts/${CART_ID}/complete`,
-      expect.anything()
-    );
+    expect(mockInitiatePaymentSession).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
 
-  it('awaria rozwiązywania locale NIE wywraca checkoutu', async () => {
+  it('awaria rozwiązywania locale NIE blokuje inicjacji sesji płatności', async () => {
     mockResolveLocaleSlug.mockRejectedValue(new Error('brak kontekstu żądania'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    const result = await completeOrderAfterStripePayment(CART_ID);
+    await initiatePaymentSession(CART, PAYMENT_DATA);
 
-    expect(result).toMatchObject({ ok: true });
     expect(mockCartUpdate).not.toHaveBeenCalled();
+    expect(mockInitiatePaymentSession).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
 });
