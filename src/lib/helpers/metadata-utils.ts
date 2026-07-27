@@ -36,3 +36,37 @@ export function getGpField<T>(
   const gp = getGpMetadata<Record<string, unknown>>(metadata);
   return gp?.[field] as T | undefined;
 }
+
+/** Kształt `metadata.gp.content_bar[<slug>]` — kontrakt content-bar.v1.schema.json. */
+export type ContentBarMeasurement = { words: number; bar: boolean };
+
+/**
+ * Story 1.4 v1.14.0 (AD-4, ADR-164) — odczyt sygnału quality-gate liczonego
+ * w SYNC-TIME. JEDYNY punkt, w którym storefront interpretuje `content_bar`;
+ * konsumenci (gate listingu, metadane SEO PDP) czytają wyłącznie stąd, żeby
+ * nie powstało drugie miejsce oceny jakości.
+ *
+ * Zwraca `undefined` dla KAŻDEGO kształtu, który nie jest booleanem `bar` pod
+ * wybranym slugiem — brak mapy, `null`, nie-obiekt, brak wpisu locale, `bar`
+ * nie-boolean. Wywołujący traktuje `undefined` jak „encja jeszcze nie przeszła
+ * przez sync z materializacją" i wybiera własną ścieżkę zastępczą (EE-1).
+ * Nigdy nie rzuca: uszkodzony kształt metadanych nie może wywalić listingu.
+ */
+export function readContentBarFlag(
+  metadata: Record<string, unknown> | null | undefined,
+  slug: string
+): boolean | undefined {
+  const contentBar = getGpField<unknown>(metadata, 'content_bar');
+  if (!contentBar || typeof contentBar !== 'object' || Array.isArray(contentBar)) {
+    return undefined;
+  }
+
+  const measurement = (contentBar as Record<string, unknown>)[slug] as
+    | Partial<ContentBarMeasurement>
+    | undefined;
+  if (!measurement || typeof measurement !== 'object' || Array.isArray(measurement)) {
+    return undefined;
+  }
+
+  return typeof measurement.bar === 'boolean' ? measurement.bar : undefined;
+}

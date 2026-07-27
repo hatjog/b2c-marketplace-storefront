@@ -21,7 +21,7 @@ import { getSellerByHandle } from '@/lib/data/seller';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
 import { getGpField } from '@/lib/helpers/metadata-utils';
-import { generateProductMetadata, resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { generateProductMetadata, resolveLocalizedGpSeoMetadata } from '@/lib/helpers/seo';
 import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 
 /**
@@ -35,7 +35,8 @@ import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 const SELLER_FROM_RE = /^seller:([a-z0-9-]+)$/;
 
 async function resolveSalonContext(
-  fromParam: string | undefined
+  fromParam: string | undefined,
+  locale: string
 ): Promise<SalonContextChipSeller | null> {
   if (!fromParam) return null;
   const match = SELLER_FROM_RE.exec(fromParam);
@@ -43,7 +44,10 @@ async function resolveSalonContext(
 
   const sellerHandle = match[1];
   try {
-    const seller = await getSellerByHandle(sellerHandle);
+    // Story 1.3 (AD-3, review 1-3-F3): locale JAWNIE z route'u — bez argumentu
+    // getSellerByHandle robi auto-resolve (getLocale()) w kontynuacji fetch,
+    // czyli dokładnie klasę, którą AC1 zakazuje na route'ach detalu.
+    const seller = await getSellerByHandle(sellerHandle, locale);
     if (!seller) return null;
     return { name: seller.name, handle: seller.handle };
   } catch {
@@ -69,6 +73,11 @@ export async function generateMetadata({
   params: Promise<{ handle: string; locale: string }>;
 }): Promise<Metadata> {
   const { handle, locale } = await params;
+  // Story 1.3 (AD-3): `generateMetadata` jest OSOBNĄ kontynuacją async poza
+  // drzewem page/layout — bez setRequestLocale każdy `getTranslations()`/
+  // `getLocale()` w tej kontynuacji spada na default (przyczyna wycofania
+  // relandu w v1.13.0). PRZED pierwszym fetchem/getTranslations.
+  setRequestLocale(locale);
   const prod = await fetchProductForPage(handle, locale);
 
   return generateProductMetadata(prod, locale);
@@ -93,13 +102,19 @@ export default async function ProductPage({
   // Story v160-4-6: parse `?from=seller:{handle}` → optional salon context for
   // the sticky overlay chip. Defensive null on malformed param / 5xx / unknown
   // seller — chip simply doesn't render in those cases.
-  const salonContext = await resolveSalonContext(resolvedSearchParams.from);
+  const salonContext = await resolveSalonContext(resolvedSearchParams.from, locale);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const gpVendor =
     getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
-  const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
+  // Cykl 2 (1-3-c2-pl-fallback-live): JSON-LD description szło z PL-only
+  // seo.meta_description na każdym locale — ta sama klasa co head; overridy
+  // tekstowe tylko dla default locale marketu.
+  const seo = await resolveLocalizedGpSeoMetadata(
+    product?.metadata as Record<string, unknown> | null | undefined,
+    toStorefrontLocaleSlug(locale)
+  );
   const resolvedDescription =
     seo.meta_description ??
     t('meta.description_fallback', {

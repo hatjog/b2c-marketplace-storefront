@@ -23,6 +23,7 @@ interface ConsentPageProps {
 
 export async function generateMetadata({ params }: ConsentPageProps): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'voucher-consent' });
   return {
     title: t('title'),

@@ -31,13 +31,22 @@ const composePath = (locale: string, routeType: SeoRouteType, slug: string): str
  * Single source per D-122 (R-3); since Story 1.1 v1.14.0 entries are emitted
  * only for the market's locales (resolver, AD-2) and x-default points at the
  * market's `locales.default` — the `ua↔uk-UA` map stays in `toHreflang`.
+ *
+ * Story 1.4 v1.14.0 (ADR-153 pkt 3, amend ADR-164): opcjonalny `includeLocale`
+ * pozwala wyłączyć z hreflang-setu locale, w których dana encja jest poniżej
+ * progu jakości. Sygnały SEO mają być SPÓJNE — `noindex` bez hreflang-exclude
+ * to dokładnie alternatywa odrzucona w ADR-153. `canonical` zostaje self-em
+ * bieżącego locale nawet przy `noindex` (poprawne: strona istnieje i jest
+ * serwowana, po prostu nie chcemy jej w indeksie).
  */
 export async function buildLocaleAlternates(
   locale: string,
   pathFor: (loc: string) => string,
-  baseUrl?: string
+  baseUrl?: string,
+  options?: { includeLocale?: (loc: string) => boolean }
 ): Promise<LocaleSeoAlternates> {
   const { supported, defaultLocale } = await resolveMarketLocales();
+  const includeLocale = options?.includeLocale ?? (() => true);
 
   const toUrl = (loc: string): string => {
     const path = pathFor(loc);
@@ -46,9 +55,13 @@ export async function buildLocaleAlternates(
 
   const languages: Record<string, string> = {};
   for (const marketLocale of supported) {
-    languages[toHreflang(marketLocale)] = toUrl(marketLocale);
+    if (includeLocale(marketLocale)) {
+      languages[toHreflang(marketLocale)] = toUrl(marketLocale);
+    }
   }
-  languages['x-default'] = toUrl(defaultLocale);
+  if (includeLocale(defaultLocale)) {
+    languages['x-default'] = toUrl(defaultLocale);
+  }
 
   return {
     canonical: toUrl(locale),
@@ -60,9 +73,15 @@ export async function buildLocaleSeoAlternates(
   baseUrl: string,
   locale: string,
   routeType: SeoRouteType,
-  slug: string
+  slug: string,
+  options?: { includeLocale?: (loc: string) => boolean }
 ): Promise<LocaleSeoAlternates> {
-  return buildLocaleAlternates(locale, (loc) => composePath(loc, routeType, slug), baseUrl);
+  return buildLocaleAlternates(
+    locale,
+    (loc) => composePath(loc, routeType, slug),
+    baseUrl,
+    options
+  );
 }
 
 export async function buildLocaleSocialMetadata(locale: string): Promise<LocaleSocialMetadata> {

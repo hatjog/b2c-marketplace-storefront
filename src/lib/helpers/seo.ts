@@ -1,10 +1,37 @@
 import type { HttpTypes } from '@medusajs/types';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 
+import { resolveMarketLocales } from '@/lib/market-locales';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
-import { getGpField } from './metadata-utils';
+import { getGpField, readContentBarFlag } from './metadata-utils';
+
+/**
+ * Story 1.4 v1.14.0 — ADR-153 pkt 3 (spójność sygnałów SEO), amend ADR-164.
+ *
+ * PDP poniżej progu jakości w danym locale dostaje `noindex` ORAZ wypada
+ * z hreflang-setu. Sygnałem jest `metadata.gp.content_bar[<locale>].bar`,
+ * liczony w sync-time (AD-4) — TEN SAM, którego używa `checkQualityGate`;
+ * storefront nadal nie liczy słów i nie ma drugiego miejsca oceny jakości.
+ *
+ * Trzeci sygnał ADR-153 — sitemap-exclude — jest spełniony konstrukcyjnie:
+ * `src/lib/seo/sitemap.ts` publikuje pięć rodzin route'ów (`static`,
+ * `category`, `seller`, `blog_post`, `programmatic_geo_landing`) i NIE emituje
+ * PDP w ogóle. Regresję pilnuje `src/lib/seo/sitemap-pdp-exclusion.test.ts`.
+ *
+ * EE-1: encja BEZ `content_bar` (okno deploy→re-sync) zachowuje zastane
+ * zachowanie — `index, follow` + pełny hreflang-set. Brak sygnału nie może
+ * po cichu wygasić SEO całego katalogu.
+ */
+function isLocaleAboveContentBar(
+  metadata: Record<string, unknown> | null | undefined,
+  locale: string
+): boolean {
+  return readContentBarFlag(metadata, locale) !== false;
+}
 
 /**
  * Returns `url` unless it points to an SVG file, in which case returns `fallback`.
@@ -42,6 +69,25 @@ export function resolveGpSeoMetadata(
 }
 
 /**
+ * Story 1.3 cykl 2 (finding 1-3-c2-pl-fallback-live): `metadata.gp.seo.meta_title`
+ * / `meta_description` są kuratorowane BEZ wymiaru locale — w praktyce w języku
+ * domyślnym marketu. Na locale != default nadpisywały zlokalizowany
+ * `product.title`/fallback i18n we WSZYSTKICH kanałach head (<title>, og:*,
+ * twitter:*), podczas gdy body renderowało już tłumaczenie — czyli klasa
+ * PL-fallback zakazana przez AC1/AC3. Tekstowe overridy stosujemy więc tylko
+ * dla default locale marketu; `og_image_url` jest locale-neutralny i zostaje.
+ */
+export async function resolveLocalizedGpSeoMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+  localeSlug: string
+): Promise<GpSeoMetadata> {
+  const seo = resolveGpSeoMetadata(metadata);
+  const { defaultLocale } = await resolveMarketLocales();
+  if (localeSlug === defaultLocale) return seo;
+  return { og_image_url: seo.og_image_url };
+}
+
+/**
  * Builds Next.js Metadata for PDP including BCP47 hreflang matrix + OG/Twitter
  * per locale (Story 2.3 / D-122).
  *
@@ -63,29 +109,62 @@ export const generateProductMetadata = async (
   const host = headersList.get('host');
   const protocol = headersList.get('x-forwarded-proto') || 'https';
 
-  const seo = resolveGpSeoMetadata(product?.metadata as Record<string, unknown> | null | undefined);
+  // Story 1.3 (review 1-3-F15): surowy param route'u normalizowany tym samym
+  // torem co warstwa danych (`page.tsx` → toStorefrontLocaleSlug) — bez tego
+  // nieobsługiwana wartość szłaby do getTranslations/hreflang i cofała metadane
+  // na DEFAULT_LOCALE innym mechanizmem niż render (rozjazd klasy v1.13.0).
+  const localeSlug = toStorefrontLocaleSlug(locale);
+
+  // Cykl 2: overridy tekstowe seo.* tylko dla default locale marketu — patrz
+  // resolveLocalizedGpSeoMetadata.
+  const seo = await resolveLocalizedGpSeoMetadata(
+    product?.metadata as Record<string, unknown> | null | undefined,
+    localeSlug
+  );
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
   const gpVendor =
     getGpField<string>(product?.metadata as Record<string, unknown>, 'vendor_name') ?? siteName;
 
   const title = seo.meta_title ?? product?.title ?? siteName;
+  // Story 1.3 (AC3): fallback description przez i18n z JAWNYM locale z route'u
+  // (R-7 — nigdy auto-resolve w kontynuacji metadanych), tym samym kluczem,
+  // którego używa ProductPage. Poprzedni hardcoded PL literał wyciekał do
+  // SERP/og:description/twitter:description na /ua /de /en. Fallback liczony
+  // leniwie (review 1-3-F14): przy jawnym meta_description nie ładujemy
+  // namespace'u na gorącej ścieżce crawlera.
   const description =
     seo.meta_description ??
-    `${product?.title} — voucher na zabieg w ${gpVendor}. Kup na ${siteName}.`;
+    (await getTranslations({ locale: localeSlug, namespace: 'pdp' }))(
+      'meta.description_fallback',
+      {
+        title: product?.title ?? siteName,
+        vendor: gpVendor,
+        siteName
+      }
+    );
   const ogImageRaw = seo.og_image_url ?? product?.thumbnail ?? null;
   const ogImage = toSafeOgImageUrl(
     ogImageRaw,
     `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
   );
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
-  const alternates = await buildLocaleSeoAlternates(baseUrl, locale, 'products', product?.handle ?? '');
-  const social = await buildLocaleSocialMetadata(locale);
+  const productMetadata = product?.metadata as Record<string, unknown> | null | undefined;
+  const alternates = await buildLocaleSeoAlternates(
+    baseUrl,
+    localeSlug,
+    'products',
+    product?.handle ?? '',
+    { includeLocale: (loc) => isLocaleAboveContentBar(productMetadata, loc) }
+  );
+  const social = await buildLocaleSocialMetadata(localeSlug);
 
   return {
     title,
     description,
-    robots: 'index, follow',
+    robots: isLocaleAboveContentBar(productMetadata, localeSlug)
+      ? 'index, follow'
+      : 'noindex, follow',
     metadataBase: new URL(baseUrl),
     alternates,
 
@@ -112,101 +191,5 @@ export const generateProductMetadata = async (
       images: [ogImage]
     },
     other: social.other
-  };
-};
-
-export const generateCategoryMetadata = async (
-  category: HttpTypes.StoreProductCategory
-): Promise<Metadata> => {
-  const headersList = await headers();
-  const host = headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
-
-  const seo = resolveGpSeoMetadata(
-    category?.metadata as Record<string, unknown> | null | undefined
-  );
-
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
-  const title = seo.meta_title ?? category.name;
-  const description =
-    seo.meta_description ?? `${category.name} — zabiegi i vouchery na ${siteName}.`;
-  const ogImage = toSafeOgImageUrl(
-    seo.og_image_url,
-    `${protocol}://${host}/B2C_Storefront_Open_Graph.png`
-  );
-
-  return {
-    robots: 'index, follow',
-    metadataBase: new URL(`${protocol}://${host}/categories/${category.handle}`),
-    title,
-    description,
-
-    openGraph: {
-      title,
-      description,
-      url: `${protocol}://${host}/categories/${category.handle}`,
-      siteName,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title
-        }
-      ],
-      type: 'website'
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage]
-    }
-  };
-};
-
-export const generateCollectionMetadata = (
-  collection: HttpTypes.StoreCollection,
-  baseUrl: string,
-  locale: string
-): Metadata => {
-  const seo = resolveGpSeoMetadata(
-    collection?.metadata as Record<string, unknown> | null | undefined
-  );
-
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? 'BonBeauty';
-  const title = seo.meta_title ?? collection.title;
-  const description =
-    seo.meta_description ?? `${collection.title} — zabiegi i vouchery na ${siteName}.`;
-  const canonical = new URL(
-    `/${locale}/collections/${collection.handle}`,
-    `${baseUrl}/`
-  ).toString();
-  const ogImage = toSafeOgImageUrl(seo.og_image_url, `${baseUrl}/B2C_Storefront_Open_Graph.png`);
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical
-    },
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      url: canonical,
-      images: [
-        {
-          url: ogImage,
-          alt: title
-        }
-      ]
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage]
-    }
   };
 };
