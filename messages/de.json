@@ -387,8 +387,8 @@
         "privacy_copy": "Wir verarbeiten nur E-Mail und Nachricht des Empfängers, um den Gutschein als Geschenk zuzustellen. Grundlage sind Einwilligung und Auftragserfüllung; die Daten werden nicht für Marketing genutzt.",
         "email_label": "E-Mail des Empfängers",
         "email_error": "Gib eine gültige E-Mail-Adresse ein.",
-        "message_label": "Nachricht an den Empfänger",
-        "message_hint": "Maximal 200 Zeichen.",
+        "message_label": "Nachricht an die beschenkte Person (optional)",
+        "message_hint": "Kann leer bleiben. Maximal 200 Zeichen.",
         "message_error": "Gib eine Nachricht mit höchstens 200 Zeichen ein.",
         "send_timing_label": "Wie soll der Gutschein übergeben werden?",
         "send_timing_now": "Sofort senden",
@@ -399,7 +399,8 @@
         "saved_status": "Empfängerdaten sind gespeichert und mit der Gutscheinausgabe verknüpft.",
         "error_status": "Vervollständige gültige Empfängerdaten vor der Zahlung.",
         "missing_line_item_status": "Keine Warenkorbposition für die Gutscheinverknüpfung verfügbar.",
-        "payment_block": "Speichere zuerst die Empfängerdaten, bevor du zur Zahlung gehst."
+        "payment_block": "Speichere zuerst die Empfängerdaten, bevor du zur Zahlung gehst.",
+        "save_failed_status": "Die Empfängerdaten konnten nicht gespeichert werden. Prüfe die Verbindung und versuche es erneut."
       },
       "flag_changed_title": "Bestellkonfiguration geändert",
       "flag_changed_message": "Die Multi-Vendor-Angebotseinstellungen haben sich während Ihrer Bestellung geändert. Bitte überprüfen Sie Ihren Warenkorb und versuchen Sie es erneut.",
@@ -1237,7 +1238,11 @@
     "gift_recipient": {
       "payment_block": "Speichere zuerst die Empfängerdaten, bevor du zur Zahlung gehst."
     },
-    "submitting_order_aria": "Bestellung wird übermittelt"
+    "submitting_order_aria": "Bestellung wird übermittelt",
+    "locked_reason": {
+      "address_incomplete": "Fülle zuerst die Adressdaten aus — danach wählst du die Versandart.",
+      "shipping_incomplete": "Wähle zuerst eine Versandart, um fortzufahren."
+    }
   },
   "confirmation": {
     "meta_title": "Bestellung bestätigt",

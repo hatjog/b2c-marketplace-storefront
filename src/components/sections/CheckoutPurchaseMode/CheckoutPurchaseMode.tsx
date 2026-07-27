@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { PurchaseModeToggle, type PurchaseMode } from '@/components/molecules/PurchaseModeToggle';
+import { SectionLockedNotice } from '@/components/molecules/SectionLockedNotice/SectionLockedNotice';
 import { parsePurchaseMode, SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 import type { GiftRecipientIssueMetadata } from '@/lib/voucher/gift-recipient';
 
@@ -59,6 +60,10 @@ export function CheckoutPurchaseMode({
   locked?: boolean;
 } = {}): ReactElement {
   const t = useTranslations('seller.checkout');
+  // Powody blokady sekcji checkoutu żyją w namespace `checkout` (wspólnym dla
+  // dostawy i płatności), nie w `seller.checkout` — stąd drugi hook zamiast
+  // duplikowania stringa.
+  const tCheckout = useTranslations('checkout');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -107,33 +112,46 @@ export function CheckoutPurchaseMode({
   );
 
   return (
-    <section
-      data-testid="checkout-purchase-mode-section"
-      className="bb-section-shell flex flex-col gap-4"
-      data-locked={locked || undefined}
-      aria-disabled={locked || undefined}
-    >
-      <div className={`step-head ${isDone ? 'is-done' : ''}`}>
-        <span className="step-num">{isDone ? '✓' : '3'}</span>
-        <h2>{t('checkout_step_invoice')}</h2>
-      </div>
-      <div className="consent-row">
-        <span
-          className="cb"
-          aria-hidden="true"
-        />
-        <span className="label">{t('invoice_vat_hint')}</span>
-      </div>
-      <PurchaseModeToggle
-        mode={mode}
-        onChange={handleChange}
+    // Wrapper zamiast fragmentu — notice i sekcja jako jeden element flex
+    // rodzica (patrz CartPaymentSection).
+    <div className="flex flex-col gap-2">
+      {/* Rodzeństwo `.bb-section-shell` — patrz SectionLockedNotice. Ten
+          przypadek jest krytyczny: gdy `listCartShippingMethods` zawiedzie
+          (fail-closed ⇒ `shippingIsComplete=false`), zablokowana jest ZARÓWNO
+          ta sekcja, jak i płatność — bez komunikatu kupująca nie ma jak
+          odkryć, że formularza prezentu nie da się wypełnić. */}
+      <SectionLockedNotice
+        reason={locked ? tCheckout('locked_reason.shipping_incomplete') : undefined}
+        data-testid="checkout-purchase-mode-block-reason"
       />
-      {mode === 'gift' && (
-        <GiftRecipientForm
-          lineItemIds={giftLineItemIds}
-          initialValue={initialGiftRecipient}
+      <section
+        data-testid="checkout-purchase-mode-section"
+        className="bb-section-shell flex flex-col gap-4"
+        data-locked={locked || undefined}
+        aria-disabled={locked || undefined}
+      >
+        <div className={`step-head ${isDone ? 'is-done' : ''}`}>
+          <span className="step-num">{isDone ? '✓' : '3'}</span>
+          <h2>{t('checkout_step_invoice')}</h2>
+        </div>
+        <div className="consent-row">
+          <span
+            className="cb"
+            aria-hidden="true"
+          />
+          <span className="label">{t('invoice_vat_hint')}</span>
+        </div>
+        <PurchaseModeToggle
+          mode={mode}
+          onChange={handleChange}
         />
-      )}
-    </section>
+        {mode === 'gift' && (
+          <GiftRecipientForm
+            lineItemIds={giftLineItemIds}
+            initialValue={initialGiftRecipient}
+          />
+        )}
+      </section>
+    </div>
   );
 }

@@ -122,11 +122,11 @@ async function CheckoutPageContent({
   // unchanged — `locked` is purely the visual/interaction state, not a new payment gate.
   const addressDone = Boolean(
     cart.shipping_address?.first_name &&
-      cart.shipping_address?.last_name &&
-      cart.shipping_address?.address_1 &&
-      cart.shipping_address?.city &&
-      cart.shipping_address?.postal_code &&
-      cart.shipping_address?.country_code
+    cart.shipping_address?.last_name &&
+    cart.shipping_address?.address_1 &&
+    cart.shipping_address?.city &&
+    cart.shipping_address?.postal_code &&
+    cart.shipping_address?.country_code
   );
 
   // Reflect the PDP "buy as gift" choice (persisted as line-item
@@ -244,7 +244,16 @@ async function CheckoutPageContent({
               giftRecipientRequired={giftRecipientRequired}
               giftRecipientComplete={giftRecipientComplete}
               forceExpanded
-              locked={!shippingIsComplete || (giftRecipientRequired && !giftRecipientComplete)}
+              // `locked` (pointer-events:none + wyszarzenie) zostaje WYŁĄCZNIE
+              // dla niekompletnej dostawy. Brak danych obdarowanej blokuje
+              // ZAPŁATĘ, nie interakcję: sekcja pozostaje klikalna i sama
+              // renderuje powód, a realna bramka trzyma tam, gdzie trzymała —
+              // `blocked`/`blockedReason` w StripePaymentElement + guard
+              // `checkoutReady` w handleSubmit. Wcześniej brak odbiorcy zabijał
+              // całą sekcję, przez co komunikat `gift_recipient.payment_block`
+              // (mieszkający wewnątrz PaymentElement) był kodem martwym —
+              // kupująca dostawała wyszarzony box bez jednego słowa wyjaśnienia.
+              locked={!shippingIsComplete}
             />
           </div>
 

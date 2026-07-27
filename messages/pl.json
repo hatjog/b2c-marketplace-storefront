@@ -387,8 +387,8 @@
         "privacy_copy": "Przetwarzamy wyłącznie e-mail odbiorcy i wiadomość, żeby dostarczyć voucher jako prezent. Podstawą jest zgoda i realizacja zamówienia; dane nie służą marketingowi.",
         "email_label": "E-mail odbiorcy",
         "email_error": "Podaj poprawny adres e-mail odbiorcy.",
-        "message_label": "Wiadomość dla odbiorcy",
-        "message_hint": "Maksymalnie 200 znaków.",
+        "message_label": "Wiadomość dla odbiorcy (opcjonalnie)",
+        "message_hint": "Możesz zostawić puste. Maksymalnie 200 znaków.",
         "message_error": "Wpisz wiadomość do 200 znaków.",
         "send_timing_label": "Jak przekazać voucher?",
         "send_timing_now": "Wyślij od razu",
@@ -399,7 +399,8 @@
         "saved_status": "Dane odbiorcy są zapisane i powiązane z wydaniem vouchera.",
         "error_status": "Uzupełnij poprawnie dane odbiorcy przed płatnością.",
         "missing_line_item_status": "Brak pozycji koszyka do powiązania z voucherem.",
-        "payment_block": "Najpierw zapisz dane odbiorcy prezentu, zanim przejdziesz do płatności."
+        "payment_block": "Najpierw zapisz dane odbiorcy prezentu, zanim przejdziesz do płatności.",
+        "save_failed_status": "Nie udało się zapisać danych odbiorcy. Sprawdź połączenie i spróbuj ponownie."
       },
       "flag_changed_title": "Konfiguracja zamówienia uległa zmianie",
       "flag_changed_message": "Ustawienia oferty wielosprzedawcowej zostały zmienione w trakcie Twojego zamówienia. Sprawdź zawartość koszyka i spróbuj ponownie.",
@@ -1237,7 +1238,11 @@
     "gift_recipient": {
       "payment_block": "Najpierw zapisz dane odbiorcy prezentu, zanim przejdziesz do płatności."
     },
-    "submitting_order_aria": "Przesyłanie zamówienia"
+    "submitting_order_aria": "Przesyłanie zamówienia",
+    "locked_reason": {
+      "address_incomplete": "Najpierw uzupełnij dane adresowe — potem wybierzesz sposób dostawy.",
+      "shipping_incomplete": "Najpierw wybierz sposób dostawy, żeby przejść dalej."
+    }
   },
   "confirmation": {
     "meta_title": "Zamówienie potwierdzone",

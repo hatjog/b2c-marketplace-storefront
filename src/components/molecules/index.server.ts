@@ -2,6 +2,11 @@ export { Breadcrumbs } from './Breadcrumbs';
 // v1.7.0 Story 2.1: BonBeauty DS shared state surface (empty/error/unavailable)
 export { StateCard } from './StateCard/StateCard';
 export type { StateCardVariant } from './StateCard/StateCard';
+// SectionLockedNotice CELOWO nie jest tu re-eksportowany: wszyscy trzej
+// konsumenci to komponenty klienckie i importują go pełną ścieżką. Dokładanie
+// komponentu konsumowanego przez klienta do barrela serwerowego to ta sama
+// klasa problemu, przed którą ostrzega CLAUDE.md („barrel exports leak server
+// modules into client bundles") — a martwy eksport i tak nie miałby konsumenta.
 export { CartDropdownItem } from './CartDropdownItem/CartDropdownItem';
 export { SanitizedHTML } from './SanitizedHTML/SanitizedHTML';
 export { Dropdown } from './Dropdown/Dropdown';
