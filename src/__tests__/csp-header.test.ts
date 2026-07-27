@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CSP_DIRECTIVE_LIST,
@@ -193,5 +193,87 @@ describe('CSP header value parity between modes (D-64 AC #7)', () => {
     // to a fixed string (env-dependent backend origin is appended at module
     // load time).
     expect(CSP_DIRECTIVES).toBe(CSP_DIRECTIVE_LIST.join('; '));
+  });
+});
+
+describe("dev-only 'unsafe-eval' gating (v1.14.0 dev-hydration fix)", () => {
+  // `next dev` bundles client code through eval/new Function; under the
+  // enforce-mode policy the browser throws EvalError, React never hydrates
+  // and PDP buttons are dead SSR markup. Dev (and ONLY dev) therefore gets
+  // 'unsafe-eval' in script-src, per Next.js's own CSP guidance.
+
+  it("isDev=true adds 'unsafe-eval' to script-src in BOTH builder variants", () => {
+    const staticScript = buildCspDirectiveList([], true).find((d) => d.startsWith('script-src '));
+    expect(staticScript).toContain("'unsafe-eval'");
+    expect(staticScript).toContain("'self'");
+
+    // The nonce variant is what src/middleware.ts actually emits in dev —
+    // it MUST carry the dev fragment too, additively to the nonce.
+    const nonceScript = buildCspDirectiveListWithNonce('devnonce', [], true).find((d) =>
+      d.startsWith('script-src ')
+    );
+    expect(nonceScript).toContain("'unsafe-eval'");
+    expect(nonceScript).toContain("'nonce-devnonce'");
+    // No weakening beyond eval: nonce mechanism intact, zero 'unsafe-inline'.
+    expect(nonceScript).not.toContain("'unsafe-inline'");
+    expect(nonceScript?.split(/\s+/)).not.toContain('*');
+  });
+
+  it("isDev=true only touches script-src — every other directive stays identical", () => {
+    const dev = buildCspDirectiveList([], true);
+    const prod = buildCspDirectiveList([], false);
+    expect(dev.filter((d) => !d.startsWith('script-src '))).toEqual(
+      prod.filter((d) => !d.startsWith('script-src '))
+    );
+  });
+
+  it("isDev=false produces the exact production baseline (zero 'unsafe-eval')", () => {
+    expect(buildCspDirectiveList([], false)).toEqual(EXPECTED_DIRECTIVES);
+    const nonceScript = buildCspDirectiveListWithNonce('abc', [], false).find((d) =>
+      d.startsWith('script-src ')
+    );
+    expect(nonceScript).toBe("script-src 'self' 'nonce-abc' https://js.stripe.com https://cdn.talkjs.com");
+  });
+
+  it("default gating under NODE_ENV=test leaves 'unsafe-eval' out (fail-closed to prod policy)", () => {
+    // Vitest runs with NODE_ENV=test → the NODE_ENV === 'development'
+    // default must resolve false, so the policy equals prod baseline.
+    const scriptSrc = buildCspDirectiveList([]).find((d) => d.startsWith('script-src '));
+    expect(scriptSrc).not.toContain("'unsafe-eval'");
+    const nonceScript = buildCspDirectiveListWithNonce('xyz', []).find((d) =>
+      d.startsWith('script-src ')
+    );
+    expect(nonceScript).not.toContain("'unsafe-eval'");
+  });
+});
+
+describe('NODE_ENV default-path gating (review findings BH#1/ECH#5, BH#6)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("NODE_ENV=development via the DEFAULT parameter yields 'unsafe-eval' in both variants", () => {
+    // Guards the gate itself, not just the fragment mechanics: a typo in the
+    // default expression (or a swap to NEXT_PUBLIC_*) would pass every
+    // explicit-isDev test while `next dev` ships dead hydration again.
+    // Default params re-read process.env per call, so stubbing is enough.
+    vi.stubEnv('NODE_ENV', 'development');
+    const staticScript = buildCspDirectiveList([]).find((d) => d.startsWith('script-src '));
+    expect(staticScript).toContain("'unsafe-eval'");
+    const nonceScript = buildCspDirectiveListWithNonce('envnonce', []).find((d) =>
+      d.startsWith('script-src ')
+    );
+    expect(nonceScript).toContain("'unsafe-eval'");
+    expect(nonceScript).toContain("'nonce-envnonce'");
+  });
+
+  it('nonce variant at isDev=true leaves every non-script-src directive identical to prod', () => {
+    // BH#6: the nonce variant is the one middleware actually emits — pin the
+    // blast radius of the dev relaxation to script-src for it as well.
+    const dev = buildCspDirectiveListWithNonce('n1', [], true);
+    const prod = buildCspDirectiveListWithNonce('n1', [], false);
+    expect(dev.filter((d) => !d.startsWith('script-src '))).toEqual(
+      prod.filter((d) => !d.startsWith('script-src '))
+    );
   });
 });

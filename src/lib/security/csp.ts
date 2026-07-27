@@ -68,12 +68,39 @@ function resolveMedusaBackendOriginsForCsp(): string[] {
  * (lub `child-src 'self' blob:` fallback) do directive listy. Aktualny stack
  * (raster) workerów nie używa.
  */
+let devCspRelaxationWarned = false;
+function warnOnceDevCspRelaxation(): void {
+  if (devCspRelaxationWarned) return;
+  devCspRelaxationWarned = true;
+  // One-shot audit signal: if this ever shows up in staging/production logs,
+  // the process is running with a leaked NODE_ENV=development and is serving
+  // an eval-relaxed CSP to real users — fix the deployment env, not this file.
+  console.warn(
+    "[csp] NODE_ENV=development → script-src includes 'unsafe-eval' (dev-only relaxation). " +
+      'If you see this outside a local dev server, the deployment NODE_ENV is wrong.'
+  );
+}
+
 export function buildCspDirectiveList(
-  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
+  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp(),
+  isDev: boolean = process.env.NODE_ENV === 'development'
 ): readonly string[] {
   const backendConnectFragments = medusaBackendOrigins.length
     ? ' ' + medusaBackendOrigins.join(' ')
     : '';
+  // v1.14.0 dev-hydration fix: `next dev` bundles client code through
+  // eval/new Function (fast rebuilds + source maps), so under the enforce-mode
+  // policy the browser throws EvalError, React never hydrates and every button
+  // on the page is dead SSR markup. Next.js's own CSP guidance is to allow
+  // 'unsafe-eval' in development only:
+  // https://nextjs.org/docs/app/guides/content-security-policy
+  // Gated on NODE_ENV (never NEXT_PUBLIC_*, which would bake the dev policy
+  // into production client bundles); prod and test directive lists stay
+  // byte-identical to the pre-fix policy.
+  const devScriptFragments = isDev ? " 'unsafe-eval'" : '';
+  if (isDev) {
+    warnOnceDevCspRelaxation();
+  }
   // v1.11.0 Gate A (ra-1 live-render finding 2026-05-31): the TalkJS chat widget
   // loads https://cdn.talkjs.com/talk.js, talks to https://api.talkjs.com over a
   // wss://*.talkjs.com websocket, and renders its UI in an https://*.talkjs.com
@@ -86,7 +113,7 @@ export function buildCspDirectiveList(
   // so it fell back to default-src 'self').
   return [
     "default-src 'self'",
-    "script-src 'self' https://js.stripe.com https://cdn.talkjs.com",
+    `script-src 'self'${devScriptFragments} https://js.stripe.com https://cdn.talkjs.com`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' fonts.gstatic.com https://cdn.talkjs.com",
     "img-src 'self' https: blob: data:",
@@ -116,22 +143,30 @@ export function buildCspDirectiveList(
  * `script-src` is identical to {@link buildCspDirectiveList}; `'unsafe-inline'`
  * is deliberately NOT added (it would defeat the policy). `js.stripe.com`
  * stays host-allowlisted; `'self'` still covers Next's external chunks.
+ *
+ * v1.14.0 dev-hydration fix: the ONLY `script-src` delta versus the base list
+ * is the injected `'nonce-…'` token — every other token (hosts, dev-only
+ * `'unsafe-eval'`) comes verbatim from {@link buildCspDirectiveList}, so a
+ * token added there can never silently miss the header middleware emits.
  */
 export function buildCspDirectiveListWithNonce(
   nonce: string,
-  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp()
+  medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp(),
+  isDev: boolean = process.env.NODE_ENV === 'development'
 ): readonly string[] {
-  return buildCspDirectiveList(medusaBackendOrigins).map((directive) =>
-    directive.startsWith('script-src ')
-      ? `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://cdn.talkjs.com`
+  return buildCspDirectiveList(medusaBackendOrigins, isDev).map((directive) =>
+    directive.startsWith("script-src 'self'")
+      ? directive.replace("script-src 'self'", `script-src 'self' 'nonce-${nonce}'`)
       : directive
   );
 }
 
 /**
  * Back-compat: `CSP_DIRECTIVE_LIST` and `CSP_DIRECTIVES` are evaluated at
- * module-load time using whatever env vars are set then. For runtime
- * resolution under `next.config.ts` `headers()` use `buildCspDirectiveList()`.
+ * module-load time using whatever env vars are set then — since v1.14.0 that
+ * includes `NODE_ENV` (a process imported under `NODE_ENV=development` bakes
+ * the dev-only `'unsafe-eval'` into these constants). For runtime resolution
+ * under `next.config.ts` `headers()` use `buildCspDirectiveList()`.
  */
 export const CSP_DIRECTIVE_LIST: readonly string[] = buildCspDirectiveList();
 
