@@ -1694,6 +1694,8 @@
   "account": {
     "vouchers": {
       "title": "My vouchers",
+      "snapshot_email": "Email",
+      "page_intro": "Review your vouchers, expiry dates and redemption status without leaving your account.",
       "row_cta_open": "Open voucher",
       "expires_label": "Expires {date}",
       "orders_crosslink": "See orders",

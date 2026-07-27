@@ -1694,6 +1694,8 @@
   "account": {
     "vouchers": {
       "title": "Meine Gutscheine",
+      "snapshot_email": "E-Mail",
+      "page_intro": "Prüfen Sie Ihre Gutscheine, Gültigkeitsdaten und den Einlösestatus direkt im Konto.",
       "row_cta_open": "Gutschein öffnen",
       "expires_label": "Läuft ab {date}",
       "orders_crosslink": "Bestellungen ansehen",

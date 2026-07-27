@@ -87,7 +87,7 @@
     "@typescript-eslint/parser": "^8.53.1",
     "eslint": "^9",
     "eslint-config-next": "15.5.12",
-    "eslint-plugin-gp": "file:./eslint-plugin-gp",
+    "eslint-plugin-gp": "link:./eslint-plugin-gp",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-storybook": "^0.11.2",
     "jsdom": "^29.0.1",

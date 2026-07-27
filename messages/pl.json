@@ -1694,6 +1694,8 @@
   "account": {
     "vouchers": {
       "title": "Moje vouchery",
+      "snapshot_email": "E-mail",
+      "page_intro": "Przeglądaj swoje vouchery, terminy ważności i status realizacji bez wychodzenia z konta.",
       "row_cta_open": "Otwórz voucher",
       "expires_label": "Wygasa {date}",
       "orders_crosslink": "Zobacz zamówienia",
