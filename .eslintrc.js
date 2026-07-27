@@ -46,6 +46,14 @@ module.exports = {
     // (e) mercurClient ⇒ withMercurLocaleOptions* pokrywa już część (b) 1.2
     //     na całym storefroncie (w tym route'y detalu) — patrz testy reguły.
     "gp/require-set-request-locale": "error",
+    // v1.14.0 — gate przeciwko dryfowi namespace↔klucz w next-intl.
+    // Parity katalogów (scripts/check-i18n-key-parity.ts) sprawdza, że cztery
+    // locale mają te same klucze; NIE sprawdza, czy namespace otwarty przez
+    // komponent zawiera klucz, o który komponent prosi. Rozjazd = fail-loud
+    // throw w src/lib/i18n/rawKeyGuard.ts i 500 na całej powierzchni, mimo że
+    // klucz istnieje (tylko gdzie indziej). Dwa incydenty produkcyjne:
+    // checkout `voucher_delivery_label`, seller hero `verified_seller`.
+    "gp/i18n-namespace-key-resolves": "error",
     "no-restricted-syntax": [
       "error",
       {

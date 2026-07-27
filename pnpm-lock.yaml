@@ -227,8 +227,8 @@ importers:
         specifier: 15.5.12
         version: 15.5.12(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       eslint-plugin-gp:
-        specifier: file:./eslint-plugin-gp
-        version: file:eslint-plugin-gp(eslint@9.39.4(jiti@1.21.7))
+        specifier: link:./eslint-plugin-gp
+        version: link:eslint-plugin-gp
       eslint-plugin-import:
         specifier: ^2.32.0
         version: 2.32.0(@typescript-eslint/parser@8.59.1(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7))
@@ -4560,11 +4560,6 @@ packages:
         optional: true
       eslint-import-resolver-webpack:
         optional: true
-
-  eslint-plugin-gp@file:eslint-plugin-gp:
-    resolution: {directory: eslint-plugin-gp, type: directory}
-    peerDependencies:
-      eslint: '>=8'
 
   eslint-plugin-import@2.32.0:
     resolution: {integrity: sha512-whOE1HFo/qJDyX4SnXzP4N6zOWn79WhnCUY/iDR0mPfQZO8wcYE4JClzI2oZrhBnnMUCBCHZhO6VQyoBU95mZA==}
@@ -11709,10 +11704,6 @@ snapshots:
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@1.21.7))
     transitivePeerDependencies:
       - supports-color
-
-  eslint-plugin-gp@file:eslint-plugin-gp(eslint@9.39.4(jiti@1.21.7)):
-    dependencies:
-      eslint: 9.39.4(jiti@1.21.7)
 
   eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7)):
     dependencies:

@@ -11,6 +11,13 @@
  * pilnujący, że warstwa danych operuje na slugach (nie BCP-47) i że każde
  * wywołanie `mercurClient` przechodzi przez `withMercurLocaleOptions*`.
  *
+ * v1.14.0: introduces `i18n-namespace-key-resolves` — lint-gate przeciwko
+ * dryfowi namespace↔klucz w next-intl. Parity katalogów nie widzi przypadku,
+ * w którym klucz ISTNIEJE, ale pod innym namespace niż ten otwarty przez
+ * komponent; taki klucz rzuca fail-loud w rawKeyGuard i zwraca 500. Ta klasa
+ * błędu trafiła na produkcję dwukrotnie (checkout `voucher_delivery_label`,
+ * seller hero `verified_seller`).
+ *
  * v1.14.0 Story 1.3: introduces `require-set-request-locale` — lint-gate AD-3
  * (rozszerzenie gate'u 1.2 NOWĄ regułą obok, nie przepisaniem): każdy
  * `[locale]` layout/page ORAZ eksportowany `generateMetadata` woła
@@ -26,6 +33,7 @@ const noColorLiterals = require("./rules/no-color-literals");
 const noHardcodedI18nStrings = require("./rules/no-hardcoded-i18n-strings");
 const localeCacheBoundary = require("./rules/locale-cache-boundary");
 const requireSetRequestLocale = require("./rules/require-set-request-locale");
+const i18nNamespaceKeyResolves = require("./rules/i18n-namespace-key-resolves");
 
 module.exports = {
   rules: {
@@ -33,6 +41,7 @@ module.exports = {
     "no-hardcoded-i18n-strings": noHardcodedI18nStrings,
     "locale-cache-boundary": localeCacheBoundary,
     "require-set-request-locale": requireSetRequestLocale,
+    "i18n-namespace-key-resolves": i18nNamespaceKeyResolves,
   },
   configs: {
     recommended: {
@@ -42,6 +51,7 @@ module.exports = {
         "gp/no-hardcoded-i18n-strings": "error",
         "gp/locale-cache-boundary": "error",
         "gp/require-set-request-locale": "error",
+        "gp/i18n-namespace-key-resolves": "error",
       },
     },
   },

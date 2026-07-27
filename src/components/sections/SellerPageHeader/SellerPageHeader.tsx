@@ -17,6 +17,10 @@ export const SellerPageHeader = async ({
   locale: string;
 }) => {
   const t = await getTranslations('products');
+  // `verified_seller` lives in the `pdp` namespace (shared trust label with the
+  // product detail page) — resolving it from `products` throws MISSING_MESSAGE
+  // under the fail-loud rawKeyGuard and 500s the whole seller surface.
+  const pdpT = await getTranslations('pdp');
   const sellerT = await getTranslations('seller.detail');
   const sharedT = await getTranslations('seller.shared');
   const reviews = Array.isArray(seller.reviews)
@@ -48,7 +52,7 @@ export const SellerPageHeader = async ({
           name={seller.name}
           photo={seller.photo || null}
           verified={seller.verified === true}
-          verifiedLabel={t('verified_seller')}
+          verifiedLabel={pdpT('verified_seller')}
           tagline={sellerT('hero_tagline')}
           breadcrumbs={
             <Breadcrumbs

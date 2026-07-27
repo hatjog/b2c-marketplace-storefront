@@ -1,0 +1,28 @@
+{
+  "products": {
+    "add_to_cart": "Do koszyka",
+    "seller_reviews": "Opinie"
+  },
+  "pdp": {
+    "verified_seller": "Zweryfikowany salon",
+    "tabs": {
+      "salon": {
+        "address": "Adres"
+      }
+    }
+  },
+  "cart": {
+    "voucher_delivery_label": "Dostawa vouchera"
+  },
+  "checkout": {
+    "pay": "Zapłać"
+  },
+  "seller": {
+    "shared": {
+      "breadcrumb_home": "Start"
+    },
+    "detail": {
+      "hero_tagline": "Salon"
+    }
+  }
+}
