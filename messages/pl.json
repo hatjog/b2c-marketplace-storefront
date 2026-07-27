@@ -1885,6 +1885,7 @@
     "unavailable_body": "Nie udało się pobrać informacji o zamówieniu. Skontaktuj się z obsługą klienta.",
     "access_denied_title": "Brak dostępu do tego zamówienia",
     "access_denied_body": "Nie masz uprawnień do podglądu tego zamówienia. Zaloguj się na konto, z którego zostało złożone, lub skontaktuj się z obsługą.",
+    "access_denied_guest_body": "Link do statusu tego zamówienia wygasł. Otwórz je z linku w e-mailu potwierdzającym zakup albo napisz do obsługi klienta.",
     "refreshing": "Sprawdzam...",
     "paid": {
       "label": "Płatność potwierdzona",

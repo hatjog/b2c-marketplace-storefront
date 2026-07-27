@@ -180,6 +180,48 @@ describe('createPaymentStatusPoller', async () => {
     vi.clearAllMocks();
   });
 
+  it('zatrzymuje polling na 401 i zgłasza access_denied_guest', async () => {
+    // Regresja: `!res.ok` traktowało odmowę dostępu jak błąd przejściowy, więc
+    // po wygaśnięciu dowodu poller walił co 5s przez 10 minut, a UI kończyło
+    // na `expired` („wróć do koszyka") dla zamówienia realnie opłaconego.
+    const onError = vi.fn();
+    fetchMock.mockImplementation(() => Promise.resolve({ ok: false, status: 401 }));
+    const poller = createPaymentStatusPoller('order-1', { onStatusChange, onCountdownTick, onError });
+    poller.start();
+
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS + 100);
+    // 401 = brak dowodu, typowo kupująca bez konta → osobna, wykonalna rada.
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: 'access_denied_guest' }));
+
+    const callsAfterDenial = fetchMock.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 3);
+    expect(fetchMock).toHaveBeenCalledTimes(callsAfterDenial);
+    poller.stop();
+  });
+
+  it('403 zgłasza access_denied (sesja bez uprawnień), nie wariant gościa', async () => {
+    const onError = vi.fn();
+    fetchMock.mockImplementation(() => Promise.resolve({ ok: false, status: 403 }));
+    const poller = createPaymentStatusPoller('order-1', { onStatusChange, onCountdownTick, onError });
+    poller.start();
+
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS + 100);
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: 'access_denied' }));
+    poller.stop();
+  });
+
+  it('nadal ponawia przy błędzie przejściowym 5xx', async () => {
+    const onError = vi.fn();
+    fetchMock.mockImplementation(() => Promise.resolve({ ok: false, status: 503 }));
+    const poller = createPaymentStatusPoller('order-1', { onStatusChange, onCountdownTick, onError });
+    poller.start();
+
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 2 + 100);
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+    expect(onError).not.toHaveBeenCalled();
+    poller.stop();
+  });
+
   it('fires first poll after POLL_INTERVAL_MS (5s)', async () => {
     const poller = createPaymentStatusPoller('order-1', { onStatusChange, onCountdownTick });
     poller.start();
@@ -459,4 +501,55 @@ describe.skip('Sprint 5 gate — J3 E2E lifecycle', () => {
   it('paid → failed_retryable → retry → paid recovery path', () => { /* Sprint 5 gate */ });
   it('webhook race during pending_psp polling', () => { /* Sprint 5 gate */ });
   it('3DS interleaving with auto-poll', () => { /* Sprint 5 gate */ });
+});
+
+// ─── Rozdzielenie diagnozy błędu (v1.14.0 guest access) ──────────────────────
+
+describe('payment-status error copy', async () => {
+  const { getErrorCopy } = await import('@/lib/payment/payment-status-v180-config');
+  const messages = {
+    pl: (await import('../../../../../../../../messages/pl.json')).default,
+    en: (await import('../../../../../../../../messages/en.json')).default,
+    ua: (await import('../../../../../../../../messages/ua.json')).default,
+    de: (await import('../../../../../../../../messages/de.json')).default,
+  } as Record<string, any>;
+
+  it('403 (sesja bez uprawnień) dostaje copy o zalogowaniu na właściwe konto', () => {
+    const copy = getErrorCopy('access_denied');
+    expect(copy.titleKey).toBe('payment_status.access_denied_title');
+    expect(copy.bodyKey).toBe('payment_status.access_denied_body');
+    expect(copy.assertive).toBe(true);
+    expect(copy.testId).toBe('payment-status-v180-access-denied');
+  });
+
+  it('401 (gość bez dowodu) dostaje copy WYKONALNE bez konta', () => {
+    // Rada „zaloguj się na konto, z którego złożono zamówienie" jest dla
+    // checkoutu bez konta ślepym zaułkiem — takiego konta nie ma.
+    const copy = getErrorCopy('access_denied_guest');
+    expect(copy.bodyKey).toBe('payment_status.access_denied_guest_body');
+    expect(copy.assertive).toBe(true);
+  });
+
+  it('każdy inny błąd zostaje przy copy o niedostępności', () => {
+    for (const reason of ['unavailable', null, 'cokolwiek']) {
+      const copy = getErrorCopy(reason);
+      expect(copy.bodyKey).toBe('payment_status.unavailable_body');
+      expect(copy.assertive).toBe(false);
+    }
+  });
+
+  it('oba warianty copy istnieją we wszystkich 4 locale', () => {
+    for (const locale of ['pl', 'en', 'ua', 'de']) {
+      const ps = messages[locale].payment_status;
+      for (const key of [
+        'access_denied_title',
+        'access_denied_body',
+        'access_denied_guest_body',
+        'unavailable_title',
+        'unavailable_body',
+      ]) {
+        expect(ps?.[key], `${locale}.payment_status.${key}`).toBeTruthy();
+      }
+    }
+  });
 });

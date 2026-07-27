@@ -1885,6 +1885,7 @@
     "unavailable_body": "We could not retrieve your order information. Please contact customer support.",
     "access_denied_title": "You don't have access to this order",
     "access_denied_body": "You are not authorised to view this order. Please sign in with the account it was placed from, or contact support.",
+    "access_denied_guest_body": "The status link for this order has expired. Open the order from the link in your confirmation email, or contact customer support.",
     "refreshing": "Checking...",
     "paid": {
       "label": "Payment confirmed",

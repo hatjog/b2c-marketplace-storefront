@@ -36,7 +36,8 @@ import {
   getCacheTag,
   getCartId,
   removeCartId,
-  setCartId
+  setCartId,
+  setCompletedCartId
 } from './cookies';
 import { getRegion } from './regions';
 
@@ -777,6 +778,12 @@ export async function initiatePaymentSession(
   // nie może osierocić obciążenia). Fail-open w środku.
   if (cart?.id) {
     await persistPurchaseLocale(cart.id, headers);
+    // Dowód dostępu do statusu zapisujemy JUŻ TERAZ, a nie dopiero po domknięciu
+    // zamówienia: przy pełnym przekierowaniu 3DS/BLIK przeglądarka opuszcza
+    // stronę i `completeOrderAfterStripePayment` nigdy się w niej nie wykona,
+    // więc dowód zapisany po fakcie by nie powstał. Zapis jest nieszkodliwy —
+    // dowód otwiera wyłącznie zamówienia, które ten koszyk realnie wyprodukuje.
+    await setCompletedCartId(cart.id);
   }
 
   return sdk.store.payment
@@ -931,6 +938,12 @@ export async function placeOrder(cartId?: string) {
     resolveCompletedOrderId(res) ?? (id ? await resolveCompletedOrderIdForCart(id) : null);
 
   if (orderId) {
+    // Ta sama zasada co w `completeOrderAfterStripePayment`: zapisz dowód
+    // dostępu, zanim koszyk zniknie. To drugi, niezależny punkt domknięcia
+    // zamówienia — pominięcie go zostawia gościa bez dostępu do statusu.
+    if (id) {
+      await setCompletedCartId(id);
+    }
     removeCartId();
     redirect(`/order/${orderId}/confirmed`);
   }
@@ -1047,6 +1060,14 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
 
     revalidatePath(await localePath('/user/reviews'));
     revalidatePath(await localePath('/user/orders'));
+    // Dowód dostępu do statusu MUSI przeżyć skasowanie koszyka — kupująca bez
+    // konta nie ma sesji, więc bez niego ekran płatności odbije ją 401-ką.
+    // Rozwiązane id, nie surowy argument: funkcja jest eksportowana i sama
+    // potrafi wziąć koszyk z cookie, więc `if (cartId)` cicho gubiłoby dowód.
+    const completedCartId = cartId || (await getCartId());
+    if (completedCartId) {
+      await setCompletedCartId(completedCartId);
+    }
     removeCartId();
 
     return { ok: true, orderId };

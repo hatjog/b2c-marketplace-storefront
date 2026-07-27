@@ -19,6 +19,12 @@
  *   The backend returns only lifecycle state ids — no Stripe decline_code,
  *   error.message, or stack traces are forwarded to the browser.
  *
+ * Dostęp gościa:
+ *   Checkout bez konta nie zostawia sesji, więc dla gościa dokładamy dowód
+ *   posiadania koszyka (cookie `_gp_completed_cart` → `?cart_id=`), który
+ *   backend weryfikuje w `order_cart`. Dowód nigdy nie pochodzi z query stringu
+ *   przeglądarki i nigdy nie jest doklejany, gdy sesja klienta działa.
+ *
  * @see GP/backend/src/api/store/orders/[id]/payment-status/route.ts (backend)
  * @see GP/storefront/src/components/sections/PaymentStatusPageContent/PaymentStatusPageContent.tsx (consumer)
  */
@@ -26,6 +32,7 @@
 import { cookies as nextCookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { getCompletedCartId } from '@/lib/data/cookies';
 import { resolveMedusaBackendUrl } from '@/lib/env';
 
 import { isAllowedOrigin } from './origin-guard';
@@ -43,6 +50,10 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 
   const cookies = await nextCookies();
   const token = cookies.get('_medusa_jwt')?.value;
+  // Dowód gościa pochodzi WYŁĄCZNIE z naszego cookie. Wartość z query stringu
+  // jest ignorowana — inaczej dowolna strona mogłaby podstawić własny cart_id
+  // i zamienić ten proxy w wyrocznię „czy ten koszyk zrobił to zamówienie".
+  const completedCartId = await getCompletedCartId();
 
   const headers: Record<string, string> = {
     'x-publishable-api-key': publishableKey,
@@ -51,14 +62,30 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     headers.authorization = `Bearer ${token}`;
   }
 
+  const upstreamUrl = (withProof: boolean): string => {
+    const base = `${backendUrl}/store/orders/${encodeURIComponent(id)}/payment-status`;
+    return withProof && completedCartId
+      ? `${base}?cart_id=${encodeURIComponent(completedCartId)}`
+      : base;
+  };
+
   try {
-    const res = await fetch(
-      `${backendUrl}/store/orders/${encodeURIComponent(id)}/payment-status`,
-      {
-        headers,
-        cache: 'no-store',
-      },
-    );
+    let res = await fetch(upstreamUrl(!token), { headers, cache: 'no-store' });
+
+    // Sesja nie może kasować dostępu gościa. Dwa realne przypadki:
+    //   401/403 — `_medusa_jwt` wygasł albo jest nieważny;
+    //   404      — sesja jest WAŻNA, ale zamówienie złożono bez konta, więc
+    //              backend widzi „nie twoje" i nie zdradza jego istnienia.
+    // Bez 404 kupująca, która zamówiła jako gość, a potem się zalogowała,
+    // dostawała „nie znaleziono" mimo poprawnego dowodu w cookie.
+    if (
+      (res.status === 401 || res.status === 403 || res.status === 404) &&
+      token &&
+      completedCartId
+    ) {
+      const { authorization: _dropped, ...guestHeaders } = headers;
+      res = await fetch(upstreamUrl(true), { headers: guestHeaders, cache: 'no-store' });
+    }
 
     if (!res.ok) {
       // Preserve semantically meaningful status codes:

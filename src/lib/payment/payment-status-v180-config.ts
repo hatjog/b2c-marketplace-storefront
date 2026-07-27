@@ -71,3 +71,51 @@ export function buildSupportMailto(
   }
   return `mailto:${supportEmail}?subject=${encodeURIComponent(orderLabel)}&body=${encodeURIComponent(`${orderLabel}: ${orderId}`)}`;
 }
+
+/** Powód, dla którego ekran statusu nie ma czego pokazać. */
+export type PaymentStatusFetchError = 'access_denied' | 'access_denied_guest' | 'unavailable';
+
+export type PaymentStatusErrorCopy = {
+  titleKey: string;
+  bodyKey: string;
+  testId: string;
+  /** 401/403 to komunikat wymagający uwagi, awaria backendu — nie. */
+  assertive: boolean;
+};
+
+/**
+ * Rozdziela „nie masz dostępu" od „nie udało się pobrać".
+ *
+ * Do v1.14.0 obie sytuacje renderowały `unavailable_body` („skontaktuj się
+ * z obsługą klienta"), więc kupująca bez ważnej sesji dostawała diagnozę
+ * awarii zamiast informacji, że wystarczy się zalogować. Mapowanie żyje tutaj,
+ * a nie w komponencie, bo środowisko testowe tej powierzchni jest node-owe —
+ * w komponencie ta gałąź byłaby niepokryta.
+ */
+export function getErrorCopy(fetchError: PaymentStatusFetchError | string | null): PaymentStatusErrorCopy {
+  // 401 = brak dowodu uprawnienia. Dla kupującej BEZ konta rada „zaloguj się na
+  // konto, z którego złożono zamówienie" jest niewykonalna — takiego konta nie
+  // ma. Kierujemy ją tam, gdzie realnie ma link: do e-maila potwierdzającego.
+  if (fetchError === 'access_denied_guest') {
+    return {
+      titleKey: 'payment_status.access_denied_title',
+      bodyKey: 'payment_status.access_denied_guest_body',
+      testId: 'payment-status-v180-access-denied',
+      assertive: true,
+    };
+  }
+  if (fetchError === 'access_denied') {
+    return {
+      titleKey: 'payment_status.access_denied_title',
+      bodyKey: 'payment_status.access_denied_body',
+      testId: 'payment-status-v180-access-denied',
+      assertive: true,
+    };
+  }
+  return {
+    titleKey: 'payment_status.unavailable_title',
+    bodyKey: 'payment_status.unavailable_body',
+    testId: 'payment-status-v180-error',
+    assertive: false,
+  };
+}
