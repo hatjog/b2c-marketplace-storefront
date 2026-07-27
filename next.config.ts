@@ -7,7 +7,6 @@ import plMessages from './messages/pl.json';
 import uaMessages from './messages/ua.json';
 import { loadSlugRedirectsForNext } from './scripts/slug-redirects';
 import { generateLocaleRewrites } from './src/i18n/locale-rewrite-rules';
-import { CSP_DIRECTIVES, resolveCspHeaderName } from './src/lib/security/csp';
 
 const distDir = process.env.GP_STOREFRONT_DIST_DIR || '.next';
 

@@ -9,9 +9,10 @@
  * name without redeploy (~30s config-only cycle; NIE full redeploy).
  * Invalid value → boot fail-fast (NIE silently default).
  *
- * Single source of truth: directive list and header-name resolver are
- * imported by `next.config.ts` AND `src/__tests__/csp-header.test.ts`
- * to keep the policy identical between modes (only header name flips).
+ * Single source of truth: since v1.10.0 ra-1 the policy is emitted ONLY by
+ * `src/middleware.ts` (per-request nonce variant); `next.config.ts` `headers()`
+ * deliberately returns `[]`. `src/__tests__/csp-header.test.ts` pins the
+ * directive inventory so both modes stay identical (only header name flips).
  */
 
 /**
@@ -149,11 +150,22 @@ export function buildCspDirectiveList(
  * `'unsafe-eval'`) comes verbatim from {@link buildCspDirectiveList}, so a
  * token added there can never silently miss the header middleware emits.
  */
+// CSP nonce charset per the spec's base64-value grammar (RFC 4648 base64 /
+// base64url plus padding). Anything outside — quotes, whitespace, `;` — could
+// terminate the token early and inject extra sources into the directive.
+const VALID_CSP_NONCE_RE = /^[A-Za-z0-9+/_-]+={0,2}$/;
+
 export function buildCspDirectiveListWithNonce(
   nonce: string,
   medusaBackendOrigins: readonly string[] = resolveMedusaBackendOriginsForCsp(),
   isDev: boolean = process.env.NODE_ENV === 'development'
 ): readonly string[] {
+  // Fail-fast guard: today the only caller is src/middleware.ts with
+  // btoa(crypto.randomUUID()), but the function boundary must not rely on
+  // that — a malformed nonce corrupts the browser-enforced policy.
+  if (!VALID_CSP_NONCE_RE.test(nonce)) {
+    throw new Error('[csp] invalid CSP nonce: must be a non-empty base64/base64url token');
+  }
   return buildCspDirectiveList(medusaBackendOrigins, isDev).map((directive) =>
     directive.startsWith("script-src 'self'")
       ? directive.replace("script-src 'self'", `script-src 'self' 'nonce-${nonce}'`)
@@ -166,7 +178,7 @@ export function buildCspDirectiveListWithNonce(
  * module-load time using whatever env vars are set then — since v1.14.0 that
  * includes `NODE_ENV` (a process imported under `NODE_ENV=development` bakes
  * the dev-only `'unsafe-eval'` into these constants). For runtime resolution
- * under `next.config.ts` `headers()` use `buildCspDirectiveList()`.
+ * call `buildCspDirectiveList()` directly.
  */
 export const CSP_DIRECTIVE_LIST: readonly string[] = buildCspDirectiveList();
 
