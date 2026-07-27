@@ -139,7 +139,10 @@ function productPayload(locale: string, options?: { stub?: boolean }) {
     thumbnail: 'https://cdn.example/masaz.jpg',
     variants: [{ calculated_price: { calculated_amount: 18000, currency_code: 'PLN' } }],
     metadata: {},
-    seller: { id: 'sel_1', name: 'Salon', handle: 'salon', store_status: 'ACTIVE' }
+    // Słownik Mercur 2: aktywny sprzedawca to `seller.status === 'open'`
+    // (legacy `store_status: 'ACTIVE'` z Mercur 1.5 to już tylko shim w
+    // normalize-listed-products.ts — fixture nie utrwala starego enuma).
+    seller: { id: 'sel_1', name: 'Salon', handle: 'salon', status: 'open' }
   };
 }
 
