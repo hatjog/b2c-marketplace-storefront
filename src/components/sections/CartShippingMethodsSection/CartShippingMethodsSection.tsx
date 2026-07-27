@@ -138,11 +138,14 @@ const CartShippingMethodsSection: FC<ShippingProps> = ({
 }) => {
   const t = useTranslations('checkout');
   const tCommon = useTranslations('common');
+  const tCart = useTranslations('cart');
   // BonBeauty delivery is a digital voucher by email; the backend ships a generic option
   // name ("bonbeauty checkout"), so present the buyer-facing label instead (Robert).
   const displayDeliveryName = (name?: string | null): string => {
     const trimmed = (name ?? '').trim();
-    return !trimmed || /bonbeauty|checkout/i.test(trimmed) ? t('voucher_delivery_label') : trimmed;
+    return !trimmed || /bonbeauty|checkout/i.test(trimmed)
+      ? tCart('voucher_delivery_label')
+      : trimmed;
   };
   const [isLoadingPrices, setIsLoadingPrices] = useState(false);
   const [calculatedPricesMap, setCalculatedPricesMap] = useState<Record<string, number>>({});
