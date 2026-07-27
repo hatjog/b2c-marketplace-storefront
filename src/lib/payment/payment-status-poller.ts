@@ -107,6 +107,16 @@ export function createPaymentStatusPoller(
 
         if (!res.ok) {
           if (!active) return;
+          // Odmowa dostępu NIE jest błędem przejściowym: ponawianie nigdy jej
+          // nie naprawi, a po 10 minutach poller ogłaszał `expired` („wróć do
+          // koszyka") dla zamówienia realnie opłaconego. Kończymy i oddajemy
+          // powód warstwie UI.
+          if (res.status === 401 || res.status === 403) {
+            active = false;
+            clearTimers();
+            callbacks.onError?.(new Error(res.status === 401 ? 'access_denied_guest' : 'access_denied'));
+            return;
+          }
           schedulePoll();
           return;
         }

@@ -1885,6 +1885,7 @@
     "unavailable_body": "Ihre Bestellinformationen konnten nicht abgerufen werden. Bitte wenden Sie sich an den Kundendienst.",
     "access_denied_title": "Kein Zugriff auf diese Bestellung",
     "access_denied_body": "Sie sind nicht berechtigt, diese Bestellung anzuzeigen. Bitte melden Sie sich mit dem Konto an, von dem die Bestellung aufgegeben wurde, oder kontaktieren Sie den Kundendienst.",
+    "access_denied_guest_body": "Der Status-Link zu dieser Bestellung ist abgelaufen. Öffne die Bestellung über den Link in deiner Bestellbestätigung oder wende dich an den Kundenservice.",
     "refreshing": "Überprüfe...",
     "paid": {
       "label": "Zahlung bestätigt",

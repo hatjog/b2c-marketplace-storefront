@@ -33,6 +33,7 @@ import {
   buildSupportMailto,
   getAriaLiveRole,
   getCtaPath,
+  getErrorCopy,
   hasPrimaryCta,
 } from '@/lib/payment/payment-status-v180-config';
 import { usePaymentStatusPoll } from '@/hooks/usePaymentStatusPoll';
@@ -171,7 +172,11 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
       .then(async (res) => {
         if (cancelled) return;
         if (!res.ok) {
-          setFetchError(res.status === 401 || res.status === 403 ? 'access_denied' : 'unavailable');
+          // 401 = brak dowodu (typowo gość), 403 = sesja bez uprawnień do tego
+          // zamówienia. Dwie różne rady dla kupującej, więc dwa różne stany.
+          if (res.status === 401) setFetchError('access_denied_guest');
+          else if (res.status === 403) setFetchError('access_denied');
+          else setFetchError('unavailable');
           return;
         }
         const data = (await res.json()) as BackendPaymentStatusResponse;
@@ -198,10 +203,22 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
     [],
   );
 
+  // Bez `onError` rozróżnienie access_denied/unavailable działałoby wyłącznie
+  // w pierwszym fetchu — wygaśnięcie dowodu w trakcie oczekiwania na płatność
+  // asynchroniczną zostawiałoby ekran w stanie „czekamy" bez końca.
+  const handlePollError = useCallback((err: Error) => {
+    if (err.message === 'access_denied' || err.message === 'access_denied_guest') {
+      setFetchError(err.message);
+    } else {
+      setFetchError('unavailable');
+    }
+  }, []);
+
   const { countdown, isSecondTier, secondsTotalElapsed } = usePaymentStatusPoll({
     orderId,
     enabled: status === 'pending_psp' && !loading,
     onStatusChange: handleStatusChange,
+    onError: handlePollError,
   });
 
   // Auto-redirect to confirmed after 2s on paid
@@ -241,14 +258,18 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
   }
 
   if (fetchError || !status || !responseData) {
+    // 401/403 to inna diagnoza niż awaria: zamówienie istnieje, brakuje dowodu
+    // uprawnienia. Wspólny komunikat „nie udało się pobrać informacji" wysyłał
+    // kupującą do obsługi klienta zamiast pokazać jej realne wyjście.
+    const errorCopy = getErrorCopy(fetchError);
     return (
       <div
         className="mx-auto max-w-[560px] rounded-sm border border-[var(--bb-border-error)] bg-stone-50 p-6"
-        data-testid="payment-status-v180-error"
+        data-testid={errorCopy.testId}
+        role={errorCopy.assertive ? 'alert' : undefined}
       >
-        <p className="text-sm text-secondary">
-          {t('payment_status.unavailable_body')}
-        </p>
+        <h1 className="heading-sm text-primary">{t(errorCopy.titleKey)}</h1>
+        <p className="mt-2 text-sm text-secondary">{t(errorCopy.bodyKey)}</p>
       </div>
     );
   }

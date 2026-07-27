@@ -63,8 +63,12 @@ vi.mock('./cookies', () => ({
   getCacheTag: (...args: unknown[]) => mockGetCacheTag(...args),
   getCartId: (...args: unknown[]) => mockGetCartId(...args),
   removeCartId: vi.fn(),
-  setCartId: vi.fn()
+  setCartId: vi.fn(),
+  setCompletedCartId: (...args: unknown[]) => mockSetCompletedCartId(...args),
+  getCompletedCartId: vi.fn(async () => undefined)
 }));
+
+const mockSetCompletedCartId = vi.fn(async (..._args: unknown[]) => undefined);
 
 vi.mock('./regions', () => ({
   getRegion: vi.fn()
@@ -251,5 +255,19 @@ describe('purchase_locale — FAIL-OPEN (AC3: locale nie jest warunkiem sprzeda�
     expect(mockCartUpdate).not.toHaveBeenCalled();
     expect(mockInitiatePaymentSession).toHaveBeenCalledTimes(1);
     warn.mockRestore();
+  });
+});
+
+describe('dowód dostępu gościa przy inicjacji sesji płatności', () => {
+  it('zapisuje cart_id jako dowód JUŻ przy initiatePaymentSession', async () => {
+    // Przy pełnym przekierowaniu 3DS/BLIK przeglądarka opuszcza stronę i kod
+    // po `confirmPayment` nigdy się w niej nie wykona — dowód zapisany dopiero
+    // po domknięciu zamówienia by nie powstał, a gość wróciłby na 401.
+    mockSetCompletedCartId.mockClear();
+    const { initiatePaymentSession } = await import('./cart');
+
+    await initiatePaymentSession({ id: CART_ID } as any, { provider_id: 'pp_stripe_stripe' });
+
+    expect(mockSetCompletedCartId).toHaveBeenCalledWith(CART_ID);
   });
 });
