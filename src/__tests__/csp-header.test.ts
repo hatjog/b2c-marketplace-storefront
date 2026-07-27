@@ -277,3 +277,20 @@ describe('NODE_ENV default-path gating (review findings BH#1/ECH#5, BH#6)', () =
     );
   });
 });
+
+describe('nonce format guard (deferred-work: CSP directive injection)', () => {
+  it('accepts base64 / base64url nonces (middleware shape: btoa(uuid))', () => {
+    for (const nonce of ['abc123', 'YWJjMTIzZGVmNDU2Nzg5MA==', 'a-b_c', 'x+y/z=']) {
+      const scriptSrc = buildCspDirectiveListWithNonce(nonce, [], false).find((d) =>
+        d.startsWith('script-src ')
+      );
+      expect(scriptSrc).toContain(`'nonce-${nonce}'`);
+    }
+  });
+
+  it('throws on nonces that could terminate the token or inject sources', () => {
+    for (const bad of ['', "x' 'unsafe-inline", 'a b', 'a;c', "'", 'ab\n', 'a"b']) {
+      expect(() => buildCspDirectiveListWithNonce(bad, [], false)).toThrow(/invalid CSP nonce/);
+    }
+  });
+});
