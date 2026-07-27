@@ -20,6 +20,7 @@ import {
   buildGiftRecipientIssueMetadata,
   GIFT_RECIPIENT_MESSAGE_MAX,
   isGiftRecipientFormValid,
+  readGiftRecipientIssueMetadata,
   toEditableSendTiming,
   validateGiftRecipientForm,
   type GiftRecipientFormData
@@ -79,8 +80,52 @@ describe('GiftRecipientForm — AC2: message char-counter and hard limit', () =>
     expect(validateGiftRecipientForm({ ...baseForm, message: msg201 }).message).toBe('invalid');
   });
 
-  it('rejects an empty message', () => {
-    expect(validateGiftRecipientForm({ ...baseForm, message: '' }).message).toBe('invalid');
+  it('accepts an empty message — the note is optional, never a gate to payment', () => {
+    // Decyzja PO 2026-07-27. Wymóg niepustej wiadomości nie wynikał ani z
+    // FR-15a, ani ze story 2.4, a blokował checkout: kupująca podawała poprawny
+    // e-mail, zapis się nie wykonywał i sekcja płatności zostawała wyszarzona
+    // bez wyjaśnienia.
+    expect(validateGiftRecipientForm({ ...baseForm, message: '' }).message).toBeUndefined();
+    expect(isGiftRecipientFormValid({ ...baseForm, message: '' })).toBe(true);
+  });
+
+  it('a saved record with an empty message reads back as COMPLETE (both directions)', () => {
+    // Kontrakt musi się domykać: gdyby odczyt odrzucał pusty message,
+    // `giftRecipientComplete` zostałoby false po udanym zapisie i blokada
+    // płatności wróciłaby natychmiast po zapisaniu danych.
+    const persisted = buildGiftRecipientIssueMetadata({ ...baseForm, message: '' });
+    expect(persisted.gift_recipient_message).toBe('');
+
+    const readBack = readGiftRecipientIssueMetadata({ ...persisted });
+    expect(readBack).not.toBeNull();
+    expect(readBack?.gift_recipient_email).toBe('r@example.com');
+    expect(readBack?.gift_recipient_message).toBe('');
+  });
+
+  it('BRAK klucza message (Medusa kasuje puste stringi) czyta się jako kompletny', () => {
+    // @medusajs/utils modules-sdk/medusa-internal-service.js stosuje
+    // `mergeMetadata` w generycznej ścieżce update KAŻDEGO modułu, a ta USUWA
+    // klucz o wartości ''. Bez tolerancji na brak klucza zapis samego e-maila
+    // kończyłby się `giftRecipientComplete=false` i sekcja płatności blokowałaby
+    // się ponownie NATYCHMIAST po udanym zapisie — ten sam bug tylnym wejściem.
+    const afterMedusaMerge = {
+      gift_recipient_email: 'r@example.com',
+      gift_recipient_send_timing: 'now',
+      gift_recipient_send_date: null,
+      gift_recipient_bound_to_voucher_issue: true
+      // gift_recipient_message — skasowany przez mergeMetadata
+    };
+
+    const readBack = readGiftRecipientIssueMetadata(afterMedusaMerge);
+    expect(readBack).not.toBeNull();
+    expect(readBack?.gift_recipient_message).toBe('');
+  });
+
+  it('wiadomość zawierająca same białe znaki jest traktowana jak pusta', () => {
+    expect(validateGiftRecipientForm({ ...baseForm, message: '   ' }).message).toBeUndefined();
+    expect(
+      buildGiftRecipientIssueMetadata({ ...baseForm, message: '   ' }).gift_recipient_message
+    ).toBe('');
   });
 
   it('buildGiftRecipientIssueMetadata trims message to max 200 chars', () => {
@@ -115,8 +160,7 @@ describe('GiftRecipientForm — FR-15a: send-timing A-minimal', () => {
 
   it('the persisted payload never carries a date in v1.14.0', () => {
     expect(
-      buildGiftRecipientIssueMetadata({ ...baseForm, sendTiming: 'now' })
-        .gift_recipient_send_date
+      buildGiftRecipientIssueMetadata({ ...baseForm, sendTiming: 'now' }).gift_recipient_send_date
     ).toBeNull();
   });
 
@@ -135,7 +179,10 @@ describe('GiftRecipientForm — FR-14/FR-15a: i18n parity across 4 locales', () 
     'send_timing_now',
     'send_timing_handover',
     'send_timing_now_hint',
-    'send_timing_handover_hint'
+    'send_timing_handover_hint',
+    // Błąd zapisu MUSI być odróżnialny od błędu walidacji w każdym locale —
+    // inaczej „zapisałem i nic się nie stało" znów kieruje w złe miejsce.
+    'save_failed_status'
   ] as const;
   const REMOVED_KEYS = [
     'send_date_label',
@@ -146,10 +193,7 @@ describe('GiftRecipientForm — FR-14/FR-15a: i18n parity across 4 locales', () 
   ] as const;
 
   const blockFor = (locale: string): Record<string, string> => {
-    const raw = readFileSync(
-      resolve(process.cwd(), `messages/${locale}.json`),
-      'utf8'
-    );
+    const raw = readFileSync(resolve(process.cwd(), `messages/${locale}.json`), 'utf8');
     return JSON.parse(raw).seller.checkout.gift_recipient;
   };
 
@@ -177,7 +221,8 @@ describe('GiftRecipientForm — FR-14/FR-15a: i18n parity across 4 locales', () 
 
   it('no locale promises a scheduled send — copy must not oversell v1.14.0', () => {
     // FR-15a: „copy nie obiecuje niczego, czego system nie robi".
-    const forbidden = /data wysyłki|zaplanuj|schedule|дата надсилання|запланувати|versanddatum|planen/i;
+    const forbidden =
+      /data wysyłki|zaplanuj|schedule|дата надсилання|запланувати|versanddatum|planen/i;
     for (const locale of LOCALES) {
       expect(JSON.stringify(blockFor(locale))).not.toMatch(forbidden);
     }

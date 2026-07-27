@@ -387,8 +387,8 @@
         "privacy_copy": "We process only the recipient email and message to deliver the voucher as a gift. The basis is consent and order fulfilment; the data is not used for marketing.",
         "email_label": "Recipient email",
         "email_error": "Enter a valid recipient email.",
-        "message_label": "Message for the recipient",
-        "message_hint": "Up to 200 characters.",
+        "message_label": "Message for the recipient (optional)",
+        "message_hint": "You can leave this empty. Up to 200 characters.",
         "message_error": "Enter a message up to 200 characters.",
         "send_timing_label": "How should the voucher be handed over?",
         "send_timing_now": "Send right away",
@@ -399,7 +399,8 @@
         "saved_status": "Recipient details are saved and bound to voucher issue.",
         "error_status": "Complete valid recipient details before payment.",
         "missing_line_item_status": "No cart line item is available for voucher binding.",
-        "payment_block": "Save gift recipient details before continuing to payment."
+        "payment_block": "Save gift recipient details before continuing to payment.",
+        "save_failed_status": "We could not save the recipient details. Check your connection and try again."
       },
       "flag_changed_title": "Order configuration changed",
       "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",
@@ -1237,7 +1238,11 @@
     "gift_recipient": {
       "payment_block": "Save gift recipient details before continuing to payment."
     },
-    "submitting_order_aria": "Submitting order"
+    "submitting_order_aria": "Submitting order",
+    "locked_reason": {
+      "address_incomplete": "Fill in your address details first — then you can choose a delivery method.",
+      "shipping_incomplete": "Choose a delivery method first to continue."
+    }
   },
   "confirmation": {
     "meta_title": "Order confirmed",

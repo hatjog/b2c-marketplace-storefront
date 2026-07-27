@@ -20,9 +20,7 @@ export type GiftRecipientSendTiming = 'now' | 'handover';
  * (koszyki utworzone przed v1.14.0). `scheduled` jest kontraktem v1.15.0 —
  * nieosiągalnym z UI i nigdy nieprodukowanym przez ten moduł.
  */
-export type GiftRecipientPersistedSendTiming =
-  | GiftRecipientSendTiming
-  | 'scheduled';
+export type GiftRecipientPersistedSendTiming = GiftRecipientSendTiming | 'scheduled';
 
 export type GiftRecipientFormData = {
   recipientEmail: string;
@@ -43,15 +41,11 @@ export type GiftRecipientIssueMetadata = {
   gift_recipient_bound_to_voucher_issue: true;
 };
 
-export type GiftRecipientValidationErrors = Partial<
-  Record<'recipientEmail' | 'message', string>
->;
+export type GiftRecipientValidationErrors = Partial<Record<'recipientEmail' | 'message', string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function isPersistedSendTiming(
-  value: unknown
-): value is GiftRecipientPersistedSendTiming {
+function isPersistedSendTiming(value: unknown): value is GiftRecipientPersistedSendTiming {
   return value === 'now' || value === 'handover' || value === 'scheduled';
 }
 
@@ -63,9 +57,7 @@ function isPersistedSendTiming(
  * jest nieodwracalny. Ta sama semantyka po stronie backendu (`gift-handoff.ts`
  * → `scheduled_deferred_v1150`).
  */
-export function toEditableSendTiming(
-  value: unknown
-): GiftRecipientSendTiming {
+export function toEditableSendTiming(value: unknown): GiftRecipientSendTiming {
   if (value === 'now') return 'now';
   return 'handover';
 }
@@ -81,7 +73,12 @@ export function validateGiftRecipientForm(
     errors.recipientEmail = 'invalid';
   }
 
-  if (message.length === 0 || message.length > GIFT_RECIPIENT_MESSAGE_MAX) {
+  // Wiadomość jest OPCJONALNA (decyzja PO 2026-07-27). Ani FR-15a, ani story
+  // 2.4 jej nie wymagają, a wymóg niepustej treści był niezakomunikowaną bramą
+  // na drodze do płatności: kupująca podawała poprawny e-mail, zapis się nie
+  // wykonywał, a sekcja płatności zostawała zablokowana bez wyjaśnienia.
+  // Limit 200 znaków zostaje — to kontrakt szablonu handoff-maila.
+  if (message.length > GIFT_RECIPIENT_MESSAGE_MAX) {
     errors.message = 'invalid';
   }
 
@@ -120,7 +117,18 @@ export function readGiftRecipientIssueMetadata(
   if (!metadata) return null;
 
   const recipientEmail = metadata.gift_recipient_email;
-  const message = metadata.gift_recipient_message;
+  // BRAK klucza znaczy „pusta wiadomość", nie „rekord niekompletny".
+  //
+  // Medusa stosuje `mergeMetadata` w generycznej ścieżce update KAŻDEGO modułu
+  // (@medusajs/utils modules-sdk/medusa-internal-service.js), a ta funkcja
+  // USUWA klucz, którego wartością jest pusty string. Skoro wiadomość jest
+  // opcjonalna, zapis samego e-maila wysyła `gift_recipient_message: ''` —
+  // Medusa kasuje klucz — i gdyby odczyt tego nie tolerował, zwracałby `null`,
+  // `giftRecipientComplete` zostawałoby `false`, a sekcja płatności blokowała
+  // się PONOWNIE zaraz po UDANYM zapisie. Czyli dokładnie ten bug, tylko
+  // tylnym wejściem. Odczyt jest tu odporny na semantykę backendu, zamiast na
+  // niej polegać.
+  const message = metadata.gift_recipient_message ?? '';
   const sendTiming = metadata.gift_recipient_send_timing;
   const sendDate = metadata.gift_recipient_send_date;
 

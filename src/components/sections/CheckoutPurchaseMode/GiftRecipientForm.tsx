@@ -38,9 +38,7 @@ function toInitialFormData(
     message: initialValue?.gift_recipient_message ?? '',
     // Koszyk sprzed v1.14.0 mógł nieść `scheduled` — sprowadzamy go do
     // „nie wysyłaj", nigdy do „od razu" (wysyłka jest nieodwracalna).
-    sendTiming: initialValue
-      ? toEditableSendTiming(initialValue.gift_recipient_send_timing)
-      : 'now'
+    sendTiming: initialValue ? toEditableSendTiming(initialValue.gift_recipient_send_timing) : 'now'
   };
 }
 
@@ -54,7 +52,12 @@ export function GiftRecipientForm({
     toInitialFormData(initialValue)
   );
   const [errors, setErrors] = useState<GiftRecipientValidationErrors>({});
-  const [status, setStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  // `invalid` (formularz wypełniony źle) i `failed` (zapis nie doszedł do
+  // backendu) MUSZĄ być rozróżnialne. Wcześniej oba dawały ten sam komunikat
+  // „Uzupełnij poprawnie dane odbiorcy" — przy błędzie sieci kupująca dostawała
+  // instrukcję kierującą ją w złe miejsce i nie miała jak odkryć, że dane
+  // po prostu się nie zapisały, a sekcja płatności zostaje zablokowana.
+  const [status, setStatus] = useState<'idle' | 'saved' | 'invalid' | 'failed'>('idle');
   const [isSaving, setIsSaving] = useState(false);
 
   const messageLength = formData.message.length;
@@ -85,7 +88,7 @@ export function GiftRecipientForm({
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0 || !hasLineItems) {
-      setStatus('error');
+      setStatus('invalid');
       return;
     }
 
@@ -96,7 +99,7 @@ export function GiftRecipientForm({
       setStatus('saved');
       router.refresh();
     } catch {
-      setStatus('error');
+      setStatus('failed');
     } finally {
       setIsSaving(false);
     }
@@ -174,11 +177,12 @@ export function GiftRecipientForm({
               </button>
             ))}
           </div>
-          <p className="text-xs text-[var(--text-secondary)]" data-testid="gift-recipient-send-hint">
+          <p
+            className="text-xs text-[var(--text-secondary)]"
+            data-testid="gift-recipient-send-hint"
+          >
             {t(
-              formData.sendTiming === 'now'
-                ? 'send_timing_now_hint'
-                : 'send_timing_handover_hint'
+              formData.sendTiming === 'now' ? 'send_timing_now_hint' : 'send_timing_handover_hint'
             )}
           </p>
         </fieldset>
@@ -209,6 +213,21 @@ export function GiftRecipientForm({
           >
             {t('save_cta')}
           </Button>
+          {/* Ślepy zaułek musi być NAZWANY od razu, nie po kliknięciu.
+              Gdy koszyk ma ≥2 pozycje bez markera prezentu, `giftBindingTargets`
+              jest puste, przycisk zapisu wychodzi `disabled` — a komunikat
+              wyjaśniający pokazywał się dopiero po kliknięciu, którego nie da
+              się wykonać. Kupująca widziała martwy przycisk i zablokowaną
+              płatność, znowu bez powodu. */}
+          {!hasLineItems && (
+            <span
+              role="alert"
+              className="text-sm text-[var(--color-error)]"
+              data-testid="gift-recipient-missing-line-item-status"
+            >
+              {t('missing_line_item_status')}
+            </span>
+          )}
           {status === 'saved' && (
             <span
               className="text-sm text-[var(--text-secondary)]"
@@ -217,13 +236,22 @@ export function GiftRecipientForm({
               {t('saved_status')}
             </span>
           )}
-          {status === 'error' && (
+          {status === 'invalid' && hasLineItems && (
             <span
               role="alert"
               className="text-sm text-[var(--color-error)]"
               data-testid="gift-recipient-error-status"
             >
-              {hasLineItems ? t('error_status') : t('missing_line_item_status')}
+              {t('error_status')}
+            </span>
+          )}
+          {status === 'failed' && (
+            <span
+              role="alert"
+              className="text-sm text-[var(--color-error)]"
+              data-testid="gift-recipient-save-failed-status"
+            >
+              {t('save_failed_status')}
             </span>
           )}
         </div>
