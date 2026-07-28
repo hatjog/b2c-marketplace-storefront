@@ -18,7 +18,7 @@ import { getCategoryByHandle } from '@/lib/data/categories';
 import { listProducts } from '@/lib/data/products';
 import { isMultiVendorEnabledRuntime } from '@/lib/flags/multiVendorPricing';
 import { getCountryCode } from '@/lib/helpers/country-code';
-import { resolveGpSeoMetadata } from '@/lib/helpers/seo';
+import { resolveLocalizedGpSeoMetadata } from '@/lib/helpers/seo';
 import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSeoAlternates, buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 
@@ -39,12 +39,23 @@ export async function generateMetadata({
   // Story 1.2 (review-fix 1-2-F5): `generateMetadata` rozgrzewa ten fetch
   // w kontynuacji async, gdzie `getLocale()` potrafi spaść na default — a wynik
   // ląduje w locale-keyed Data Cache. Locale z route'u podajemy jawnie.
-  const cat = await getCategoryByHandle(categoryHandle, toStorefrontLocaleSlug(locale));
+  const localeSlug = toStorefrontLocaleSlug(locale);
+  const cat = await getCategoryByHandle(categoryHandle, localeSlug);
   if (!cat) {
     return {};
   }
 
-  const seo = resolveGpSeoMetadata(cat.metadata as Record<string, unknown> | null | undefined);
+  // Story 4.6 / AC-A4: `metadata.gp.seo.meta_title` / `meta_description` są
+  // kuratorowane BEZ wymiaru locale, więc do 4.6 wygrywały w KAŻDYM locale —
+  // `/ua` i `/de` dostawały polski <title>/og:*/twitter:* przy poprawnie
+  // zlokalizowanym `category.name` w body. To ta sama klasa, którą Story 1.3
+  // (finding 1-3-c2-pl-fallback-live) domknęła na PDP i jawnie zostawiła
+  // otwartą tutaj. Bramka jest symetryczna: overridy tekstowe tylko dla
+  // default locale MARKETU, `og_image_url` (locale-neutralny) zostaje.
+  const seo = await resolveLocalizedGpSeoMetadata(
+    cat.metadata as Record<string, unknown> | null | undefined,
+    localeSlug
+  );
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
   const title = seo.meta_title ?? cat.name;
   // v1.7.0 Story 2.2 re-review fix (HIGH H1'): description fallback resolved

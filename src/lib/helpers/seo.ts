@@ -54,6 +54,17 @@ export interface GpSeoMetadata {
 }
 
 /**
+ * Wejście `localizeGpSeoMetadata`. Warstwa danych sellera (`SellerSeoMetadata`)
+ * modeluje „brak" jako `null`, a `metadata.gp.seo` jako `undefined` — bramka
+ * locale przyjmuje więc oba zapisy zamiast zmuszać wołających do konwersji.
+ */
+export interface NullableGpSeoMetadata {
+  meta_title?: string | null;
+  meta_description?: string | null;
+  og_image_url?: string | null;
+}
+
+/**
  * Resolves GP SEO metadata from entity metadata using ADR-054 namespace:
  * metadata.gp.seo.* → undefined
  */
@@ -81,10 +92,41 @@ export async function resolveLocalizedGpSeoMetadata(
   metadata: Record<string, unknown> | null | undefined,
   localeSlug: string
 ): Promise<GpSeoMetadata> {
-  const seo = resolveGpSeoMetadata(metadata);
+  return localizeGpSeoMetadata(resolveGpSeoMetadata(metadata), localeSlug);
+}
+
+/**
+ * Story 4.6 / AC-A4 — ta sama bramka co wyżej, ale dla JUŻ rozwiązanego
+ * obiektu SEO.
+ *
+ * Finding `1-3-c2-pl-fallback-live` domknął przeciek `seo.meta_title` tylko
+ * dla PDP i jawnie odnotował, że ta sama klasa istnieje na category detail
+ * (`categories/[category]/page.tsx`) i seller detail
+ * (`sellers/[handle]/page.tsx`). Seller nie trzyma jednak SEO pod
+ * `metadata.gp.seo` — dostaje je z warstwy danych jako płaskie
+ * `seller.seo` (`SellerSeoMetadata`) — więc `resolveLocalizedGpSeoMetadata`
+ * nie dawało się tam wpiąć bez opakowywania danych w sztuczne `metadata`.
+ * Wydzielenie samej REGUŁY (a nie tylko ścieżki odczytu) pozwala trzymać
+ * jedno miejsce decyzji „które pola przeżywają poza default locale" dla
+ * wszystkich trzech route'ów detalu.
+ *
+ * Reguła bez zmian: tekstowe overridy (`meta_title`, `meta_description`) są
+ * kuratorowane BEZ wymiaru locale, więc obowiązują wyłącznie w domyślnym
+ * locale MARKETU (`resolveMarketLocales().defaultLocale`, per-market — nigdy
+ * stała `pl`). `og_image_url` jest locale-neutralny i zostaje zawsze.
+ */
+export async function localizeGpSeoMetadata(
+  seo: NullableGpSeoMetadata | null | undefined,
+  localeSlug: string
+): Promise<GpSeoMetadata> {
+  const resolved: GpSeoMetadata = {
+    meta_title: seo?.meta_title ?? undefined,
+    meta_description: seo?.meta_description ?? undefined,
+    og_image_url: seo?.og_image_url ?? undefined
+  };
   const { defaultLocale } = await resolveMarketLocales();
-  if (localeSlug === defaultLocale) return seo;
-  return { og_image_url: seo.og_image_url };
+  if (localeSlug === defaultLocale) return resolved;
+  return { og_image_url: resolved.og_image_url };
 }
 
 /**

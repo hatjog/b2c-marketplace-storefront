@@ -13,6 +13,8 @@ import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getSellerByHandle, getSellers } from '@/lib/data/seller';
 import { getCountryCode } from '@/lib/helpers/country-code';
+import { localizeGpSeoMetadata } from '@/lib/helpers/seo';
+import { toStorefrontLocaleSlug } from '@/lib/sdk/locale-interceptor';
 import { buildLocaleSocialMetadata } from '@/lib/seo/hreflang';
 import { buildSellerAlternates } from '@/lib/seo/sellerAlternates';
 import { assessSellerStructuredData } from '@/lib/seo/sellerStructuredData';
@@ -95,7 +97,14 @@ export async function generateMetadata({
     };
   }
 
-  const sellerSeo = seller.seo ?? null;
+  // Story 4.6 / AC-A4: `seller.seo.*` pochodzi z kuratorowanego
+  // `market.yaml → vendors[].seo` i NIE ma wymiaru locale (jest w języku
+  // domyślnym marketu). Do 4.6 nadpisywało zlokalizowany `title_template`
+  // i `seller.description` we WSZYSTKICH kanałach head na `/ua` i `/de` —
+  // ta sama klasa przecieku, którą Story 1.3 domknęła na PDP i jawnie
+  // odnotowała jako otwartą na tym route. Bramka trzyma tylko
+  // `og_image_url` (locale-neutralny) poza default locale marketu.
+  const sellerSeo = await localizeGpSeoMetadata(seller.seo, toStorefrontLocaleSlug(locale));
   const title = sellerSeo?.meta_title ?? tDetail('title_template', { name: seller.name });
   const rawDescription = (seller.description ?? '').trim();
   const description =
