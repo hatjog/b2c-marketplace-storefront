@@ -27,6 +27,7 @@ const mockPush = vi.fn();
 const mockInitiatePaymentSession = vi.fn().mockResolvedValue({});
 const mockComputeCartHash = vi.fn().mockResolvedValue('hash-abc');
 const mockGetIdempotencyKey = vi.fn().mockReturnValue('idem-uuid');
+const mockResetIdempotencyKey = vi.fn();
 
 // Capture RadioGroup onChange for direct invocation in tests.
 let capturedOnChange: ((value: string) => void) | undefined;
@@ -80,7 +81,8 @@ vi.mock('@/lib/data/cart', () => ({
 
 vi.mock('@/lib/checkout/payment-idempotency', () => ({
   computeCheckoutCartHash: (...a: unknown[]) => mockComputeCartHash(...a),
-  getCheckoutPaymentIdempotencyKey: () => mockGetIdempotencyKey()
+  getCheckoutPaymentIdempotencyKey: (...a: unknown[]) => mockGetIdempotencyKey(...a),
+  resetCheckoutPaymentIdempotencyKey: (...a: unknown[]) => mockResetIdempotencyKey(...a)
 }));
 
 vi.mock('@/lib/constants', () => ({
@@ -93,10 +95,11 @@ vi.mock('@/components/organisms/PaymentContainer/PaymentContainer', () => ({
 }));
 
 vi.mock('@/components/sections/CartPaymentSection/StripePaymentElement', () => ({
-  default: ({ clientSecret }: { clientSecret: string }) =>
-    React.createElement('div', {
+  default: ({ clientSecret, onPaymentCompleted }: { clientSecret: string; onPaymentCompleted?: () => void }) =>
+    React.createElement('button', {
       'data-testid': 'stripe-payment-element-mock',
-      'data-secret': clientSecret
+      'data-secret': clientSecret,
+      onClick: onPaymentCompleted
     })
 }));
 
@@ -183,7 +186,26 @@ describe('CartPaymentSection — integration (H-2 / L-1)', () => {
     });
 
     expect(mockInitiatePaymentSession).toHaveBeenCalledOnce();
+    expect(mockGetIdempotencyKey).toHaveBeenCalledWith('cart_1');
     expect(mockRefresh).toHaveBeenCalledOnce();
+  });
+
+  it('H-5: wires idempotency reset to a completed Stripe payment', async () => {
+    await act(async () => {
+      root = createRoot(container);
+      root.render(
+        React.createElement(CartPaymentSection, {
+          cart: cartWithSession,
+          availablePaymentMethods: paymentMethods
+        })
+      );
+    });
+
+    await act(async () => {
+      (container.querySelector('[data-testid="stripe-payment-element-mock"]') as HTMLButtonElement).click();
+    });
+
+    expect(mockResetIdempotencyKey).toHaveBeenCalledWith('cart_1');
   });
 
   it('H-2: does NOT call router.refresh() when non-Stripe method selected', async () => {

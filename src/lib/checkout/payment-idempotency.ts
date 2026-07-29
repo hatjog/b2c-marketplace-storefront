@@ -1,5 +1,5 @@
-const STORAGE_KEY = 'gp.checkout.payment_idempotency_uuid';
-let processFallbackKey: string | null = null;
+const STORAGE_KEY_PREFIX = 'gp.checkout.payment_idempotency_uuid';
+const processFallbackKeys = new Map<string, string>();
 
 export type CheckoutCartFingerprintInput = {
   id?: string | null;
@@ -25,27 +25,53 @@ function uuidFromRandomValues(): string {
   ].join('-');
 }
 
-export function getCheckoutPaymentIdempotencyKey(): string {
-  if (typeof window === 'undefined') {
-    processFallbackKey ??= uuidFromRandomValues();
-    return processFallbackKey;
-  }
-
-  const existing = window.sessionStorage.getItem(STORAGE_KEY);
-  if (existing) return existing;
-
-  const next =
-    typeof globalThis.crypto?.randomUUID === 'function'
-      ? globalThis.crypto.randomUUID()
-      : uuidFromRandomValues();
-  window.sessionStorage.setItem(STORAGE_KEY, next);
-  return next;
+function storageKeyForCart(cartId?: string | null): string {
+  // A key may only be reused with identical Stripe request parameters. A cart
+  // is the smallest stable checkout boundary available at both call sites.
+  return `${STORAGE_KEY_PREFIX}:${cartId?.trim() || 'unknown'}`;
 }
 
-export function resetCheckoutPaymentIdempotencyKey(): void {
-  processFallbackKey = null;
+export function getCheckoutPaymentIdempotencyKey(cartId?: string | null): string {
+  const storageKey = storageKeyForCart(cartId);
+  if (typeof window === 'undefined') {
+    const existing = processFallbackKeys.get(storageKey);
+    if (existing) return existing;
+    const next = uuidFromRandomValues();
+    processFallbackKeys.set(storageKey, next);
+    return next;
+  }
+
+  try {
+    const existing = window.sessionStorage.getItem(storageKey);
+    if (existing) return existing;
+
+    const next =
+      typeof globalThis.crypto?.randomUUID === 'function'
+        ? globalThis.crypto.randomUUID()
+        : uuidFromRandomValues();
+    window.sessionStorage.setItem(storageKey, next);
+    return next;
+  } catch {
+    // Privacy modes may deny sessionStorage. Keep checkout usable, but do not
+    // share a fallback key across carts or browser requests.
+    const existing = processFallbackKeys.get(storageKey);
+    if (existing) return existing;
+    const next = uuidFromRandomValues();
+    processFallbackKeys.set(storageKey, next);
+    return next;
+  }
+}
+
+export function resetCheckoutPaymentIdempotencyKey(cartId?: string | null): void {
+  const storageKey = storageKeyForCart(cartId);
+  processFallbackKeys.delete(storageKey);
   if (typeof window !== 'undefined') {
-    window.sessionStorage.removeItem(STORAGE_KEY);
+    try {
+      window.sessionStorage.removeItem(storageKey);
+    } catch {
+      // Same fail-open policy as key creation: denied storage cannot make a
+      // completed payment look failed to the buyer.
+    }
   }
 }
 
@@ -58,6 +84,12 @@ export async function computeCheckoutCartHash(cart: CheckoutCartFingerprintInput
     tax_total: cart.tax_total ?? null,
     total: cart.total ?? null
   });
+
+  if (!globalThis.crypto?.subtle) {
+    // The hash only scopes our idempotency lookup. HTTP origins without Web
+    // Crypto must not turn the checkout button into a dead end.
+    return '';
+  }
 
   const digest = await globalThis.crypto.subtle.digest(
     'SHA-256',

@@ -59,6 +59,8 @@ type StripePaymentElementProps = {
    */
   blocked?: boolean;
   blockedReason?: string;
+  /** Closes the cart-scoped payment-session idempotency lifecycle on success. */
+  onPaymentCompleted?: () => void;
   /** Buyer's chip choice (card/blik/p24/apple_pay/google_pay) — surfaced first in the
    *  PaymentElement so the chip click visibly drives the embedded Stripe method picker. */
   preferredMethod?: string;
@@ -186,7 +188,8 @@ function PaymentElementForm({
   preferredMethod,
   returnUrl,
   blocked = false,
-  blockedReason
+  blockedReason,
+  onPaymentCompleted
 }: {
   cartId?: string;
   enabledMethods: readonly string[];
@@ -194,6 +197,7 @@ function PaymentElementForm({
   returnUrl: string;
   blocked?: boolean;
   blockedReason?: string;
+  onPaymentCompleted?: () => void;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -236,6 +240,7 @@ function PaymentElementForm({
     });
     switch (result.status) {
       case 'completed':
+        onPaymentCompleted?.();
         redirectToOrderStatus(result.orderId);
         return; // keep the spinner up while navigating away
       case 'processing':
@@ -256,7 +261,7 @@ function PaymentElementForm({
         break;
     }
     setIsLoading(false);
-  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus, t, blocked, blockedReason]);
+  }, [stripe, elements, returnUrl, cartId, redirectToOrderStatus, t, blocked, blockedReason, onPaymentCompleted]);
 
   return (
     <div
@@ -306,7 +311,8 @@ export default function StripePaymentElement({
   returnUrl,
   blocked = false,
   blockedReason,
-  preferredMethod
+  preferredMethod,
+  onPaymentCompleted
 }: StripePaymentElementProps) {
   const t = useTranslations('checkout');
   const stripePromise = getStripePromise();
@@ -349,6 +355,7 @@ export default function StripePaymentElement({
         returnUrl={returnUrl}
         blocked={blocked}
         blockedReason={blockedReason}
+        onPaymentCompleted={onPaymentCompleted}
       />
     </Elements>
   );

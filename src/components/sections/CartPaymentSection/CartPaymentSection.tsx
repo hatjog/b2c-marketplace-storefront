@@ -14,7 +14,8 @@ import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { SectionLockedNotice } from '@/components/molecules/SectionLockedNotice/SectionLockedNotice';
 import {
   computeCheckoutCartHash,
-  getCheckoutPaymentIdempotencyKey
+  getCheckoutPaymentIdempotencyKey,
+  resetCheckoutPaymentIdempotencyKey
 } from '@/lib/checkout/payment-idempotency';
 import { initiatePaymentSession } from '@/lib/data/cart';
 
@@ -118,7 +119,7 @@ const CartPaymentSection = ({
             provider_id: method,
             data: { gp_checkout_cart_hash: cartHash }
           },
-          getCheckoutPaymentIdempotencyKey()
+          getCheckoutPaymentIdempotencyKey(cart.id)
         );
         // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
         // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
@@ -207,7 +208,7 @@ const CartPaymentSection = ({
             provider_id: selectedPaymentMethod,
             data: { gp_checkout_cart_hash: cartHash }
           },
-          getCheckoutPaymentIdempotencyKey()
+          getCheckoutPaymentIdempotencyKey(cart.id)
         );
       }
 
@@ -297,6 +298,7 @@ const CartPaymentSection = ({
                             cartId={cart.id}
                             clientSecret={stripeClientSecret}
                             returnUrl={paymentStatusReturnUrl}
+                            onPaymentCompleted={() => resetCheckoutPaymentIdempotencyKey(cart.id)}
                             blocked={!checkoutReady}
                             blockedReason={blockReason}
                           />

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import {
   StorefrontI18nLongContentProbe,
@@ -22,6 +22,7 @@ import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode
 import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
 import { getShippingCoverage, missingShippingSellerNames } from '@/lib/checkout/shippingCoverage';
 import { retrieveCart } from '@/lib/data/cart';
+import { getCompletedCartId } from '@/lib/data/cookies';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
@@ -95,6 +96,14 @@ async function CheckoutPageContent({
   const cart = await retrieveCart();
 
   if (!cart) {
+    // `completeCart` consumes the cart before client-side navigation commits.
+    // A revalidated checkout RSC in that short window must lead the buyer to
+    // the durable payment-status surface, not a misleading 404.
+    const completedCartIds = await getCompletedCartId();
+    const completedCartId = completedCartIds?.split(',')[0]?.trim();
+    if (completedCartId) {
+      redirect(`/${locale}/order/${completedCartId}/payment-status`);
+    }
     return notFound();
   }
 
