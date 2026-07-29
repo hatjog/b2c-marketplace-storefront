@@ -300,6 +300,11 @@ function wordCount(text) {
     .filter(Boolean).length;
 }
 
+/** HG-6: HTTP 200 nie kompensuje opisu krótszego od kanonicznego baru produktu. */
+export function isProductDescriptionBelowBar(words) {
+  return !Number.isInteger(words) || words < MIN_DESCRIPTION_WORDS;
+}
+
 function extractRendered(html) {
   const title = /<title[^>]*>([^<]*)<\/title>/i.exec(html)?.[1]?.trim() ?? null;
   const description =
@@ -565,6 +570,8 @@ async function main() {
           const plContentCarried =
             expectedPlTitle != null && render.title != null && render.title.includes(expectedPlTitle);
           verdict = plContentCarried ? '200_ok_pl_content' : 'pl_content_mismatch';
+        } else if (isProductDescriptionBelowBar(descriptionWords)) {
+          verdict = '200_below_content_bar';
         } else if (!translationExists) {
           verdict = independentSource
             ? '200_ok_no_translation'
@@ -637,6 +644,7 @@ async function main() {
     (r) =>
       r.verdict.startsWith('pl_fallback') ||
       r.verdict === 'pl_content_mismatch' ||
+      r.verdict === '200_below_content_bar' ||
       r.verdict.startsWith('404') ||
       r.verdict.startsWith('http_') ||
       r.verdict === 'fetch_error'

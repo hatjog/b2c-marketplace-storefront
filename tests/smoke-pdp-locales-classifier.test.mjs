@@ -1,7 +1,10 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { classifyLocalizedRender } from '../scripts/smoke-pdp-locales.mjs';
+import {
+  classifyLocalizedRender,
+  isProductDescriptionBelowBar
+} from '../scripts/smoke-pdp-locales.mjs';
 
 /**
  * Cykl 3 (1-4-c3-classifier-invariant): przed 1.4-c3 klasyfikator porównywał
@@ -12,6 +15,12 @@ import { classifyLocalizedRender } from '../scripts/smoke-pdp-locales.mjs';
  * docelowego locale).
  */
 describe('smoke-pdp-locales — classifyLocalizedRender (cykl 3)', () => {
+  test('HG-6: 200 z opisem poniżej 80 słów jest fail-closed', () => {
+    assert.equal(isProductDescriptionBelowBar(79), true);
+    assert.equal(isProductDescriptionBelowBar(80), false);
+    assert.equal(isProductDescriptionBelowBar(189), false);
+  });
+
   test('translation-invariant: h1 == backend_title docelowego locale, identyczny z PL ⇒ 200_ok_localized', () => {
     const result = classifyLocalizedRender({
       render: { status: 200, title: 'Hammam | Sklep', description: 'Opis DE', h1: 'Hammam' },
