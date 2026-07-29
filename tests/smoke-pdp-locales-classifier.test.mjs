@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   classifyLocalizedRender,
-  isProductDescriptionBelowBar
+  isProductDescriptionBelowBar,
+  readCanonicalProductBarThreshold
 } from '../scripts/smoke-pdp-locales.mjs';
 
 /**
@@ -19,6 +20,10 @@ describe('smoke-pdp-locales — classifyLocalizedRender (cykl 3)', () => {
     assert.equal(isProductDescriptionBelowBar(79), true);
     assert.equal(isProductDescriptionBelowBar(80), false);
     assert.equal(isProductDescriptionBelowBar(189), false);
+  });
+
+  test('HG-6 czyta próg z kanonicznego content-bar.ts (AD-4)', () => {
+    assert.equal(readCanonicalProductBarThreshold(), 80);
   });
 
   test('translation-invariant: h1 == backend_title docelowego locale, identyczny z PL ⇒ 200_ok_localized', () => {

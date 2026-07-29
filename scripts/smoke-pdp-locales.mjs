@@ -105,6 +105,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 import yaml from 'js-yaml';
 
@@ -121,9 +122,22 @@ const BCP47_BY_SLUG = { pl: 'pl-PL', ua: 'uk-UA', de: 'de-DE', en: 'en-US' };
 // marketu (lustro `narrowPhase2Locales` z content-gate.ts), inaczej po flipie
 // klasyfikowałby 404 po złym slugu i wpisywał do evidence fazę, której nie ma.
 const CONTENT_BAR_GATE_SLUG_PHASE_1 = 'pl';
-// Zachowany zastany próg — używany WYŁĄCZNIE na ścieżce legacy EE-1 (encja bez
-// `content_bar`, okno deploy→re-sync). Nie jest już torem głównym.
-const MIN_DESCRIPTION_WORDS = 80;
+/**
+ * AD-4: smoke nie posiada własnego progu. Czyta kanoniczną stałą backendu,
+ * dzięki czemu zmiana `CONTENT_BAR_THRESHOLDS.product` nie może po cichu
+ * rozjechać HG-6 od sync-time content_baru.
+ */
+export function readCanonicalProductBarThreshold(sourcePath = process.env.CONTENT_BAR_SOURCE ??
+  path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../backend/packages/api/src/scripts/lib/content-bar.ts')) {
+  const source = fs.readFileSync(sourcePath, 'utf8');
+  const match = /product:\s*(\d+)/.exec(source);
+  if (!match) {
+    throw new ToolError(`Nie odczytano CONTENT_BAR_THRESHOLDS.product z kanonicznego źródła: ${sourcePath}`);
+  }
+  return Number(match[1]);
+}
+
+const MIN_DESCRIPTION_WORDS = readCanonicalProductBarThreshold();
 
 /**
  * Lustro `readContentBarFlag` ze storefrontu: `undefined` dla każdego kształtu,
@@ -332,7 +346,8 @@ function readTranslatedHandles(filePath) {
   if (!fs.existsSync(resolved)) {
     throw new ToolError(`--translated-handles: plik nie istnieje: ${resolved}`);
   }
-  const parsed = JSON.parse(fs.readFileSync(resolved, 'utf8'));
+  const raw = fs.readFileSync(resolved, 'utf8');
+  const parsed = JSON.parse(raw);
   const byLocale = {};
   for (const [locale, handles] of Object.entries(parsed)) {
     if (!Array.isArray(handles)) {
@@ -340,7 +355,13 @@ function readTranslatedHandles(filePath) {
     }
     byLocale[locale] = new Set(handles);
   }
-  return byLocale;
+  return {
+    byLocale,
+    source: {
+      path: resolved,
+      sha256: crypto.createHash('sha256').update(raw).digest('hex'),
+    },
+  };
 }
 
 async function fetchJson(url, headers) {
@@ -546,7 +567,7 @@ async function main() {
         backendPl != null &&
         (backendEntry.title !== backendPl.title ||
           backendEntry.description !== backendPl.description);
-      const independentSource = translatedHandles?.[locale] ?? null;
+      const independentSource = translatedHandles?.byLocale[locale] ?? null;
       const translationExists = independentSource
         ? independentSource.has(handle)
         : backendDiffSuggestsTranslation;
@@ -573,8 +594,10 @@ async function main() {
         } else if (isProductDescriptionBelowBar(descriptionWords)) {
           verdict = '200_below_content_bar';
         } else if (!translationExists) {
+          // HG-6 dowodzi treści W żądanym locale. Brak wpisu w niezależnej
+          // liście nie jest upoważnieniem do zielonego PL fallbacku.
           verdict = independentSource
-            ? '200_ok_no_translation'
+            ? '200_missing_translation'
             : '200_ok_no_translation_unverified';
         } else {
           const classified = classifyLocalizedRender({ render, plRender, backendEntry, backendPl });
@@ -645,6 +668,7 @@ async function main() {
       r.verdict.startsWith('pl_fallback') ||
       r.verdict === 'pl_content_mismatch' ||
       r.verdict === '200_below_content_bar' ||
+      r.verdict === '200_missing_translation' ||
       r.verdict.startsWith('404') ||
       r.verdict.startsWith('http_') ||
       r.verdict === 'fetch_error'
@@ -675,7 +699,14 @@ async function main() {
     partial: limitHandles != null,
     pass: failVerdicts.length === 0 && limitHandles == null,
     needs_review: needsReviewVerdicts.length > 0,
-    translation_ground_truth: translatedHandles ? 'independent (--translated-handles)' : 'backend_diff_dependent',
+    translation_ground_truth: translatedHandles
+      ? { kind: 'independent', via: '--translated-handles', ...translatedHandles.source }
+      : 'backend_diff_dependent',
+    content_bar_threshold: {
+      product_words: MIN_DESCRIPTION_WORDS,
+      source: process.env.CONTENT_BAR_SOURCE ??
+        path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../backend/packages/api/src/scripts/lib/content-bar.ts'),
+    },
     // Uczciwy zakres dowodu (review 1-3-F2): co ten smoke DOWODZI, a czego nie.
     proof_scope: {
       pl_render_content:
