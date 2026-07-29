@@ -63,6 +63,23 @@ export function getCheckoutPaymentIdempotencyKey(cartId?: string | null): string
 }
 
 export function resetCheckoutPaymentIdempotencyKey(cartId?: string | null): void {
+  if (!cartId) {
+    processFallbackKeys.clear();
+    if (typeof window !== 'undefined') {
+      try {
+        for (let index = window.sessionStorage.length - 1; index >= 0; index -= 1) {
+          const key = window.sessionStorage.key(index);
+          if (key?.startsWith(`${STORAGE_KEY_PREFIX}:`)) {
+            window.sessionStorage.removeItem(key);
+          }
+        }
+      } catch {
+        // Storage cleanup is best-effort for the same reason as key creation.
+      }
+    }
+    return;
+  }
+
   const storageKey = storageKeyForCart(cartId);
   processFallbackKeys.delete(storageKey);
   if (typeof window !== 'undefined') {
