@@ -22,7 +22,7 @@ import { CheckoutPurchaseMode } from '@/components/sections/CheckoutPurchaseMode
 import { CheckoutVoucherSummary } from '@/components/sections/CheckoutVoucherSummary/CheckoutVoucherSummary';
 import { getShippingCoverage, missingShippingSellerNames } from '@/lib/checkout/shippingCoverage';
 import { retrieveCart } from '@/lib/data/cart';
-import { getCompletedCartId } from '@/lib/data/cookies';
+import { getCartId, getCompletedCartId } from '@/lib/data/cookies';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
@@ -93,7 +93,8 @@ async function CheckoutPageContent({
   const tCheckout = await getTranslations({ locale, namespace: 'checkout' });
   const tPage = await getTranslations({ locale, namespace: 'page' });
   const tPaymentStatus = await getTranslations({ locale, namespace: 'payment_status' });
-  const cart = await retrieveCart();
+  const cartId = await getCartId();
+  const cart = await retrieveCart(cartId);
 
   if (!cart) {
     // `completeCart` consumes the cart before client-side navigation commits.
@@ -101,7 +102,10 @@ async function CheckoutPageContent({
     // the durable payment-status surface, not a misleading 404.
     const completedCartIds = await getCompletedCartId();
     const completedCartId = completedCartIds?.split(',')[0]?.trim();
-    if (completedCartId) {
+    // `removeCartId()` is the durable signal that completeCart consumed this
+    // checkout. A failed cart fetch while the cart cookie still exists must not
+    // claim that a payment is being checked.
+    if (!cartId && completedCartId) {
       redirect(`/${locale}/order/${completedCartId}/payment-status`);
     }
     return notFound();

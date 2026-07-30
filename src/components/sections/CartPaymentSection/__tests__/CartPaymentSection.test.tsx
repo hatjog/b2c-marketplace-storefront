@@ -186,7 +186,7 @@ describe('CartPaymentSection — integration (H-2 / L-1)', () => {
     });
 
     expect(mockInitiatePaymentSession).toHaveBeenCalledOnce();
-    expect(mockGetIdempotencyKey).toHaveBeenCalledWith('cart_1');
+    expect(mockGetIdempotencyKey).toHaveBeenCalledWith('cart_1', 'hash-abc', 'pp_stripe_stripe');
     expect(mockRefresh).toHaveBeenCalledOnce();
   });
 

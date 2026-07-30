@@ -25,14 +25,26 @@ function uuidFromRandomValues(): string {
   ].join('-');
 }
 
-function storageKeyForCart(cartId?: string | null): string {
-  // A key may only be reused with identical Stripe request parameters. A cart
-  // is the smallest stable checkout boundary available at both call sites.
-  return `${STORAGE_KEY_PREFIX}:${cartId?.trim() || 'unknown'}`;
+function storageKeyForPaymentRequest(
+  cartId?: string | null,
+  cartHash?: string | null,
+  providerId?: string | null
+): string {
+  // Stripe accepts a key only for an identical request. `cart.id` alone is not
+  // that boundary: totals and provider may change while the cart survives.
+  const normalizedHash = cartHash?.trim();
+  if (!normalizedHash) {
+    throw new Error('Checkout payment fingerprint is required');
+  }
+  return `${STORAGE_KEY_PREFIX}:${cartId?.trim() || 'unknown'}:${providerId?.trim() || 'unknown'}:${normalizedHash}`;
 }
 
-export function getCheckoutPaymentIdempotencyKey(cartId?: string | null): string {
-  const storageKey = storageKeyForCart(cartId);
+export function getCheckoutPaymentIdempotencyKey(
+  cartId?: string | null,
+  cartHash?: string | null,
+  providerId?: string | null
+): string {
+  const storageKey = storageKeyForPaymentRequest(cartId, cartHash, providerId);
   if (typeof window === 'undefined') {
     const existing = processFallbackKeys.get(storageKey);
     if (existing) return existing;
@@ -80,11 +92,16 @@ export function resetCheckoutPaymentIdempotencyKey(cartId?: string | null): void
     return;
   }
 
-  const storageKey = storageKeyForCart(cartId);
-  processFallbackKeys.delete(storageKey);
+  const cartPrefix = `${STORAGE_KEY_PREFIX}:${cartId.trim()}:`;
+  for (const key of processFallbackKeys.keys()) {
+    if (key.startsWith(cartPrefix)) processFallbackKeys.delete(key);
+  }
   if (typeof window !== 'undefined') {
     try {
-      window.sessionStorage.removeItem(storageKey);
+      for (let index = window.sessionStorage.length - 1; index >= 0; index -= 1) {
+        const key = window.sessionStorage.key(index);
+        if (key?.startsWith(cartPrefix)) window.sessionStorage.removeItem(key);
+      }
     } catch {
       // Same fail-open policy as key creation: denied storage cannot make a
       // completed payment look failed to the buyer.
@@ -103,9 +120,15 @@ export async function computeCheckoutCartHash(cart: CheckoutCartFingerprintInput
   });
 
   if (!globalThis.crypto?.subtle) {
-    // The hash only scopes our idempotency lookup. HTTP origins without Web
-    // Crypto must not turn the checkout button into a dead end.
-    return '';
+    // This is a request fingerprint, not a secret. It MUST stay non-empty so
+    // the backend reconciliation lock and Stripe key share one boundary even
+    // on HTTP/LAN development origins without Web Crypto.
+    let hash = 0x811c9dc5;
+    for (let index = 0; index < canonical.length; index += 1) {
+      hash ^= canonical.charCodeAt(index);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    return `fnv1a:${(hash >>> 0).toString(16).padStart(8, '0')}`;
   }
 
   const digest = await globalThis.crypto.subtle.digest(

@@ -119,7 +119,7 @@ const CartPaymentSection = ({
             provider_id: method,
             data: { gp_checkout_cart_hash: cartHash }
           },
-          getCheckoutPaymentIdempotencyKey(cart.id)
+          getCheckoutPaymentIdempotencyKey(cart.id, cartHash, method)
         );
         // H-2 fix: revalidateTag (wykonane przez initiatePaymentSession) unieważnia
         // cache Next.js, ale NIE wymusza re-renderu RSC ani refetchu propsa `cart`.
@@ -208,7 +208,7 @@ const CartPaymentSection = ({
             provider_id: selectedPaymentMethod,
             data: { gp_checkout_cart_hash: cartHash }
           },
-          getCheckoutPaymentIdempotencyKey(cart.id)
+          getCheckoutPaymentIdempotencyKey(cart.id, cartHash, selectedPaymentMethod)
         );
       }
 
