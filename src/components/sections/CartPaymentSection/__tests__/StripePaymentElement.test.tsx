@@ -18,7 +18,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // Wrapper component wywołuje useMemo — mock passthrough dla testów funkcyjnych.
 vi.mock('react', async (importOriginal) => {
-  const actual = await importOriginal() as typeof import('react');
+  const actual = await importOriginal() as typeof React;
   return { ...actual, useMemo: (fn: () => unknown) => fn() };
 });
 

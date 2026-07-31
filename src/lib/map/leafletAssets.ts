@@ -6,6 +6,8 @@
 // zeby nie wmuszac globalnie geometrii na Default prototype — chroni przed
 // nadpisaniem przyszlych Leaflet defaults (tooltipAnchor itp.) i zmniejsza
 // ryzyko ordering w stories z `parallel_with`.
+import type * as Leaflet from 'leaflet';
+
 export const leafletAssets = {
   iconUrl: '/leaflet-assets/marker-icon.png',
   iconRetinaUrl: '/leaflet-assets/marker-icon-2x.png',
@@ -22,6 +24,6 @@ export const leafletIconUrls = {
   shadowUrl: leafletAssets.shadowUrl
 } as const;
 
-export function getDefaultMarkerIcon(L: typeof import('leaflet')) {
+export function getDefaultMarkerIcon(L: typeof Leaflet) {
   return new L.Icon(leafletAssets);
 }

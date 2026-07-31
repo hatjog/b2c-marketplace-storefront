@@ -83,9 +83,8 @@ export function LanguageSwitcher({
           aria-label={t('language_switcher_label')}
         >
           <span className="txt-compact-small mx-auto flex items-center gap-x-2">
-            {/* @ts-ignore */}
             <ReactCountryFlag
-              alt={`${currentOption.flagCode} flag`}
+              alt={t('country_flag_alt', { countryCode: currentOption.flagCode })}
               svg
               style={{ width: '16px', height: '16px' }}
               countryCode={currentOption.flagCode}

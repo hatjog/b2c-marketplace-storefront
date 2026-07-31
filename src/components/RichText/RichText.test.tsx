@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { RichTextDocument, RichTextNode } from '@/types/richtext';
+import type { RichTextDocument } from '@/types/richtext';
 
 import publicFixture from '../../../__tests__/richtext/twenty-nodes.json';
 import canonicalFixture from './__fixtures__/twenty-nodes.json';

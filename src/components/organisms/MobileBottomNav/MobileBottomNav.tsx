@@ -34,7 +34,7 @@ export function MobileBottomNav({
   cartCount = 0,
   wishlistCount = 0,
   hideOnCheckout = true,
-  className,
+  className: _className,
 }: MobileBottomNavProps) {
   const pathname = usePathname();
   const t = useTranslations('mobile_bottom_nav');

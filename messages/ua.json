@@ -42,6 +42,7 @@
     "logo_alt": "Логотип",
     "shipping_to": "Доставка до",
     "language_switcher_label": "Вибрати мову",
+    "country_flag_alt": "Прапор країни {countryCode}",
     "language_polish": "Польська",
     "language_english": "Англійська",
     "search_placeholder": "Пошук товарів...",

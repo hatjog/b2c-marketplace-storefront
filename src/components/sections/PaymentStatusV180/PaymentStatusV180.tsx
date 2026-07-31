@@ -32,9 +32,7 @@ import { COUNTDOWN_SECONDS } from '@/lib/payment/payment-status-poller';
 import {
   buildSupportMailto,
   getAriaLiveRole,
-  getCtaPath,
   getErrorCopy,
-  hasPrimaryCta,
 } from '@/lib/payment/payment-status-v180-config';
 import { usePaymentStatusPoll } from '@/hooks/usePaymentStatusPoll';
 
@@ -498,7 +496,7 @@ export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
     <>
       {/* LP2 pulse animation keyframes (pending_psp only) */}
       {status === 'pending_psp' && !reducedMotion && (
-        <style dangerouslySetInnerHTML={{ __html: LP2_PULSE_CSS }} />
+        <style>{LP2_PULSE_CSS}</style>
       )}
 
       {/* Narrow live region for state announcement — assertive or polite */}

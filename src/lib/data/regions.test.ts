@@ -18,7 +18,7 @@
  *   non-vacuous (every locale is asserted).
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // --------------------------------------------------------------------------
 // Mocks — must be declared before the module under test is imported.

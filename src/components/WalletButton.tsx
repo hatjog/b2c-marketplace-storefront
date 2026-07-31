@@ -119,7 +119,7 @@ export type WalletButtonProps = {
 export function WalletButton({
   voucherCode,
   provider,
-  locale,
+  locale: _locale,
   disabled = false,
   className,
 }: WalletButtonProps) {

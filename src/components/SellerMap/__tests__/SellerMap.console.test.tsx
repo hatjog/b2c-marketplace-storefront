@@ -13,6 +13,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
 
+import type { SellerMap as SellerMapComponent } from '../SellerMap.client';
+
 // Przechwyć eventHandlers i attribution TileLayer dla assertów error-path i attribution.
 declare global {
   // eslint-disable-next-line no-var
@@ -79,7 +81,7 @@ const sellers = [
 let errorSpy: ReturnType<typeof vi.spyOn>;
 let warnSpy: ReturnType<typeof vi.spyOn>;
 
-async function mount(render: (Comp: typeof import('../SellerMap.client').SellerMap) => React.ReactElement) {
+async function mount(render: (Comp: typeof SellerMapComponent) => React.ReactElement) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);

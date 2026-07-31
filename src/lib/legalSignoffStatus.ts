@@ -6,6 +6,8 @@
 
 import yaml from 'js-yaml';
 
+import type * as NodePath from 'node:path';
+
 // `node:fs/promises` and `node:path` are imported LAZILY inside readLedger()
 // rather than at module top-level. This server-only reader is transitively
 // reachable from the `@/components/organisms` barrel (Footer/SiteFooter are
@@ -17,8 +19,6 @@ import yaml from 'js-yaml';
 // Deferring the import keeps the module free of any static `node:` external, so
 // it is harmless if pulled into a client chunk; the dynamic import only resolves
 // when readLedger() actually runs (server components only).
-type NodePath = typeof import('node:path');
-
 export type LegalSignoffDocType = 'regulamin' | 'polityka_prywatnosci' | 'zasady_voucher' | 'pomoc';
 
 export type LegalSignoffStatus =
@@ -65,7 +65,7 @@ const RUNTIME_TO_LEDGER_LOCALE: Record<string, LegalSignoffLocale> = {
   de: 'de-DE'
 };
 
-function ledgerCandidateRoots(path: NodePath): string[] {
+function ledgerCandidateRoots(path: typeof NodePath): string[] {
   const env = process.env.LEGAL_SIGNOFF_LEDGER_ROOT;
   if (env && env.trim()) {
     return [path.resolve(env)];

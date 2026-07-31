@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import Link from 'next/link';
+
 import { cn } from '@/lib/utils';
 
 /**
@@ -306,12 +308,12 @@ export function BlogLayout(props: BlogLayoutProps) {
               )}
               {backToBlogLabel ? (
                 <p className="mt-8 text-sm">
-                  <a
+                  <Link
                     href="/blog"
                     className="underline decoration-[var(--bb-text-tint-22)] underline-offset-4"
                   >
                     {backToBlogLabel}
-                  </a>
+                  </Link>
                 </p>
               ) : null}
             </article>

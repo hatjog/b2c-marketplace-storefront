@@ -56,10 +56,15 @@ vi.mock('leaflet', () => {
 });
 
 vi.mock('react-leaflet', () => {
-  const passthrough =
-    (testid: string) =>
-    ({ children, ...rest }: { children?: React.ReactNode } & Record<string, unknown>) =>
+  const passthrough = (testid: string) => {
+    const MockLeafletComponent = ({
+      children,
+      ...rest
+    }: { children?: React.ReactNode } & Record<string, unknown>) =>
       createElement('div', { 'data-testid': testid, ...rest }, children);
+    MockLeafletComponent.displayName = `MockLeafletComponent(${testid})`;
+    return MockLeafletComponent;
+  };
   return {
     MapContainer: passthrough('seller-map-container'),
     TileLayer: passthrough('seller-map-tile'),

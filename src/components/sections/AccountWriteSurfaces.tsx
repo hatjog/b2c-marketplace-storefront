@@ -1553,7 +1553,7 @@ export function AccountSettingsSurface({ customer, supportedLocales }: SettingsP
                     autoComplete="off"
                     pattern="(ending-)?\d{2,4}"
                     aria-describedby="payment-card-help"
-                    placeholder="ending-4242"
+                    /* i18n-ignore technical example of the accepted last-four card-token format */ placeholder="ending-4242"
                     {...paymentForm.register('defaultCard')}
                   />
                   <p id="payment-card-help" className="text-xs text-secondary">

@@ -42,6 +42,7 @@
     "logo_alt": "Logo",
     "shipping_to": "Shipping to",
     "language_switcher_label": "Select language",
+    "country_flag_alt": "Flag for country {countryCode}",
     "language_polish": "Polish",
     "language_english": "English",
     "search_placeholder": "Search products...",
