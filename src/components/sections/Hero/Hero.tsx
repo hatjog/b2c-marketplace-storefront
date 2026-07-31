@@ -136,7 +136,7 @@ export const Hero = ({
           </h1>
           <p
             className="max-w-[58ch] text-base leading-7 text-white md:text-lg md:leading-8"
-            style={{ textShadow: '0 1px 14px rgba(20,16,12,0.55)' }}
+            style={{ textShadow: 'var(--bb-shadow-hero-text)' }}
           >
             {paragraph}
           </p>

@@ -59,6 +59,7 @@
   --bb-shadow-lift:  0 30px 80px rgba(37, 28, 12, 0.14);   /* elevated / focus lift       */
   --bb-shadow-card:  0 12px 35px rgba(90, 67, 28, 0.08);   /* product tile / card         */
   --bb-shadow-hero:  0 30px 80px rgba(37, 28, 12, 0.18);   /* immersive hero frame        */
+  --bb-shadow-hero-text: 0 1px 14px rgba(20,16,12,0.55);   /* hero copy contrast           */
   --bb-overlay-backdrop: rgba(9, 9, 9, 0.60);              /* modal/drawer/sheet backdrop */
   --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.08);       /* legacy alias (used in Tailwind boxShadow.card) */
   --shadow-inset-hairline: inset 0 0 0 1px rgba(144, 112, 50, 0.14); /* inset ring accent  */
@@ -89,6 +90,7 @@
   --bb-gradient-seller-radial: radial-gradient(circle at top, rgba(255, 245, 232, 0.85), rgba(250, 248, 245, 1) 60%);
   --bb-gradient-seller-veil:   linear-gradient(180deg, rgba(255, 248, 239, 0.85) 0%, rgba(250, 248, 245, 1) 30%, rgba(250, 248, 245, 1) 100%);
   --bb-gradient-seller-card:   linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 240, 229, 0.9));
+  --bb-gradient-seller-hero-scrim: radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.24), rgba(249, 244, 236, 0) 58%), linear-gradient(180deg, rgba(239, 229, 210, 0.72), rgba(249, 244, 236, 0.3));
   --bb-shadow-seller-soft:     0 20px 60px rgba(113, 88, 40, 0.08);
 
   /* ------------------------------------------------------------------

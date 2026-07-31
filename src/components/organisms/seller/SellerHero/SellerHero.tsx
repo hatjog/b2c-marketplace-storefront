@@ -48,8 +48,7 @@ export function SellerHero({
         aria-hidden="true"
         data-testid="seller-hero-gold-scrim"
         style={{
-          background:
-            'radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.24), rgba(249, 244, 236, 0) 58%), linear-gradient(180deg, rgba(239, 229, 210, 0.72), rgba(249, 244, 236, 0.3))'
+          background: 'var(--bb-gradient-seller-hero-scrim)'
         }}
       />
       <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
