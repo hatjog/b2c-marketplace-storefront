@@ -3,7 +3,7 @@ import type { HttpTypes } from '@medusajs/types';
 import type { SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 
 type CategoryPlpSemanticFilters = {
-  salonHandle?: string;
+  sellerHandle?: string;
   availability?: 'in_stock';
   purchaseMode?: SelfPurchaseMode;
 };
@@ -110,7 +110,7 @@ export function applyCategoryPlpSemanticFilters(
   return products.filter((rawProduct) => {
     const product = rawProduct as ProductWithSeller;
 
-    if (filters.salonHandle && product.seller?.handle !== filters.salonHandle) {
+    if (filters.sellerHandle && product.seller?.handle !== filters.sellerHandle) {
       return false;
     }
 

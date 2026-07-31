@@ -45,7 +45,7 @@ import { ListingRetryButton } from './ListingRetryButton';
 
 type Category = { id: string; name: string; handle: string };
 type Tag = { id: string; value: string };
-type SalonOption = { handle: string; name: string };
+type SellerOption = { handle: string; name: string };
 
 const HANDLE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const CITY_ALLOWED_CHARS_RE = /[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]/g;
@@ -117,7 +117,7 @@ function sanitizeSearchParams(searchParams: Record<string, string | string[] | u
     durations,
     sellerRatings,
     page,
-    salonHandle: rawSalon && HANDLE_RE.test(rawSalon) ? rawSalon : undefined,
+    sellerHandle: rawSalon && HANDLE_RE.test(rawSalon) ? rawSalon : undefined,
     availability: rawAvailability === 'in_stock' ? ('in_stock' as const) : undefined,
     purchaseMode: parsePurchaseMode(rawMode)
   };
@@ -167,7 +167,7 @@ export const ProductListing = async ({
     durations,
     sellerRatings,
     page,
-    salonHandle,
+    sellerHandle,
     availability,
     purchaseMode,
   } = sanitizeSearchParams(searchParams);
@@ -181,12 +181,12 @@ export const ProductListing = async ({
   const region = await getRegion(countryCode);
   const currencyCode = (region?.currency_code ?? 'PLN').toUpperCase();
   const semanticFilters: {
-    salonHandle?: string;
+    sellerHandle?: string;
     availability?: 'in_stock';
     purchaseMode?: SelfPurchaseMode;
   } | undefined = categoryPlp
     ? {
-        salonHandle,
+        sellerHandle,
         availability,
         purchaseMode,
       }
@@ -198,7 +198,7 @@ export const ProductListing = async ({
   let categories: Category[] = [];
   let tags: Tag[] = [];
   let sidebarCities: string[] = [];
-  let salonOptions: SalonOption[] = [];
+  let salonOptions: SellerOption[] = [];
 
   if (showSidebar && !marketId) {
     console.warn(

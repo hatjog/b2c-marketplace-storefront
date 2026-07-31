@@ -172,7 +172,7 @@ export function ProductDetailsTabs({
           tabIndex={0}
           hidden={activeTab !== 'salon'}
         >
-          <SalonPanel seller={seller} />
+          <SellerPanel seller={seller} />
         </div>
         <div
           role="tabpanel"
@@ -242,7 +242,7 @@ function VoucherPanel({ rules }: { rules: PdpVoucherRules }) {
   );
 }
 
-function SalonPanel({ seller }: { seller: ProductDetailsTabsSeller | null }) {
+function SellerPanel({ seller }: { seller: ProductDetailsTabsSeller | null }) {
   const t = useTranslations('pdp.tabs.salon');
   const gallery = seller?.gallery?.filter(item => item?.url).slice(0, 3) ?? [];
   const openingHours = seller?.openingHours

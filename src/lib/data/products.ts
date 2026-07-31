@@ -446,7 +446,7 @@ export const listProductsWithSort = async ({
   durations?: number[];
   sellerRatings?: number[];
   semanticFilters?: {
-    salonHandle?: string;
+    sellerHandle?: string;
     availability?: 'in_stock';
     purchaseMode?: SelfPurchaseMode;
   };
@@ -461,7 +461,7 @@ export const listProductsWithSort = async ({
   queryParams?: ProductQueryParams;
 }> => {
   const hasSemanticFilters = Boolean(
-    semanticFilters?.salonHandle ||
+    semanticFilters?.sellerHandle ||
       semanticFilters?.availability === 'in_stock' ||
       semanticFilters?.purchaseMode
   );

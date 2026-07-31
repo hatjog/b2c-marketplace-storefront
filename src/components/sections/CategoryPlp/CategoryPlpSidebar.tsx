@@ -12,13 +12,13 @@ const PRICE_MIN = 0;
 const PRICE_MAX = 2000;
 const PRICE_STEP = 50;
 
-type SalonOption = {
+type SellerOption = {
   handle: string;
   name: string;
 };
 
 type CategoryPlpSidebarProps = {
-  salons: SalonOption[];
+  salons: SellerOption[];
   cities: string[];
   locale: string;
   currencyCode: string;

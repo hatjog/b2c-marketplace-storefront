@@ -38,7 +38,7 @@ describe('applyCategoryPlpSemanticFilters', () => {
       makeProduct('b', { sellerHandle: 'beta' }),
     ];
 
-    const filtered = applyCategoryPlpSemanticFilters(products, { salonHandle: 'alpha' });
+    const filtered = applyCategoryPlpSemanticFilters(products, { sellerHandle: 'alpha' });
     expect(filtered.map((p) => p.id)).toEqual(['a']);
   });
 
