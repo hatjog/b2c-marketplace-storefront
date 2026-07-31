@@ -203,7 +203,7 @@ async function CheckoutPageContent({
           locale={locale}
           surface="checkout"
         />
-        <div className="checkout-header flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[rgba(249,244,236,0.96)] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+        <div className="checkout-header flex flex-col gap-3 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-[var(--bb-page-bg-96)] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
           <a
             href={`/${locale}/cart`}
             className="text-sm text-[var(--text-secondary)] underline-offset-4 hover:underline"

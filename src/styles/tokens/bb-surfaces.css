@@ -37,6 +37,7 @@
    * Source: bonbeauty.css :root + computed-tokens.json
    * ------------------------------------------------------------------ */
   --bb-page-bg:        rgb(249, 244, 236);          /* #F9F4EC — warm cream (BonBeauty v4) */
+  --bb-page-bg-96:     rgba(249, 244, 236, 0.96);   /* checkout header veil               */
   --bb-surface:        rgba(255, 252, 247, 0.92);   /* near-white, slight transparency     */
   --bb-surface-strong: rgb(255, 249, 240);          /* #FFF9F0 — pearl                     */
   --bb-surface-muted:  rgba(239, 229, 210, 0.52);   /* gold-tinted wisp                    */
@@ -57,6 +58,7 @@
   --bb-shadow-soft:  0 20px 60px rgba(90, 67, 28, 0.08);   /* section-level ambient       */
   --bb-shadow-lift:  0 30px 80px rgba(37, 28, 12, 0.14);   /* elevated / focus lift       */
   --bb-shadow-card:  0 12px 35px rgba(90, 67, 28, 0.08);   /* product tile / card         */
+  --bb-shadow-hero:  0 30px 80px rgba(37, 28, 12, 0.18);   /* immersive hero frame        */
   --bb-overlay-backdrop: rgba(9, 9, 9, 0.60);              /* modal/drawer/sheet backdrop */
   --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.08);       /* legacy alias (used in Tailwind boxShadow.card) */
   --shadow-inset-hairline: inset 0 0 0 1px rgba(144, 112, 50, 0.14); /* inset ring accent  */
@@ -73,6 +75,7 @@
   --bb-hero-overlay:   linear-gradient(110deg, rgba(16, 16, 16, 0.74) 0%, rgba(16, 16, 16, 0.48) 38%, rgba(16, 16, 16, 0.12) 70%, rgba(16, 16, 16, 0.04) 100%);
   --bb-soft-gradient:  linear-gradient(135deg, rgba(255, 249, 240, 0.98) 0%, rgba(246, 237, 222, 0.96) 100%);
   --bb-dark-gradient:  linear-gradient(145deg, rgba(26, 26, 26, 0.96) 0%, rgba(56, 42, 16, 0.98) 100%);
+  --bb-hero-bg:        rgb(31, 23, 15); /* warm image-tone base behind hero art */
   /* v1.9.1 Wave G5 — voucher recipient page warm hero gradient */
   --bb-voucher-page-gradient: radial-gradient(circle at top left, rgba(214, 180, 112, 0.18), transparent 32%), radial-gradient(circle at bottom right, rgba(214, 180, 112, 0.12), transparent 28%);
   /* v1.9.1 Wave G5 — additional gradient tokens for collections / sellers / loading-states surfaces */
@@ -210,7 +213,9 @@
   --bb-white-90:      rgba(255, 255, 255, 0.90);
 
   /* Muted gold-tinted surface ladder (anchor rgb(239,229,210))         */
+  --bb-muted-30:      rgba(239, 229, 210, 0.30);
   --bb-muted-35:      rgba(239, 229, 210, 0.35);
+  --bb-muted-60:      rgba(239, 229, 210, 0.60);
   --bb-muted-72:      rgba(239, 229, 210, 0.72);
   --bb-muted-80:      rgba(239, 229, 210, 0.80);
 

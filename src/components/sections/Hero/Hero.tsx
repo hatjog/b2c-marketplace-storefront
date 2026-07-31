@@ -71,7 +71,7 @@ export const Hero = ({
 
   return (
     <section
-      className="relative w-full overflow-hidden rounded-[28px] border border-white/12 bg-[rgb(31,23,15)] shadow-[0_30px_80px_rgba(37,28,12,0.18)]"
+      className="relative w-full overflow-hidden rounded-[var(--bb-radius-hero)] border border-white/12 bg-[var(--bb-hero-bg)] shadow-[var(--bb-shadow-hero)]"
       data-testid="homepage-hero"
       style={sectionStyle}
     >

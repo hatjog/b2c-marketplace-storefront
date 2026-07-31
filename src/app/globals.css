@@ -162,8 +162,8 @@ body {
   }
 
   .checkout-header .secure-pill {
-    background: rgba(22, 101, 52, 0.08);
-    color: rgb(22, 101, 52);
+    background: var(--bb-trust-card-bg);
+    color: var(--color-trust);
   }
 
   .step-head {
@@ -172,18 +172,18 @@ body {
 
   .step-head .step-num {
     @apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-medium;
-    background: #1a1a1a;
-    color: #faf8f5;
+    background: var(--bg-action);
+    color: var(--text-on-action);
   }
 
   .step-head.is-done .step-num {
-    background: rgb(22, 101, 52);
+    background: var(--color-trust);
   }
 
   .step-head h2,
   .step-head h3 {
     @apply m-0 text-[17px] font-medium leading-6;
-    color: #1a1a1a;
+    color: var(--bg-action);
   }
 
   .pm-grid {
@@ -191,15 +191,15 @@ body {
   }
 
   .pmchip {
-    @apply flex min-h-[54px] items-center justify-center rounded-[8px] border px-2 py-3 text-center text-xs transition-colors;
+    @apply flex min-h-[54px] items-center justify-center rounded-[var(--radius-sm)] border px-2 py-3 text-center text-xs transition-colors;
     background: white;
     border-color: var(--bb-border-soft, rgba(144, 112, 50, 0.14));
-    color: #1a1a1a;
+    color: var(--bg-action);
   }
 
   .pmchip.is-active {
-    background: rgba(239, 229, 210, 0.3);
-    border-color: #1a1a1a;
+    background: var(--bb-muted-30);
+    border-color: var(--border-action);
   }
 
   .pmchip:disabled {
@@ -215,34 +215,34 @@ body {
   }
 
   .consent-row .cb {
-    @apply mt-0.5 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border text-xs leading-none;
+    @apply mt-0.5 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[var(--radius-xs)] border text-xs leading-none;
     border-color: var(--bb-border-strong, rgba(144, 112, 50, 0.28));
     color: transparent;
   }
 
   .consent-row.is-checked .cb {
-    background: #1a1a1a;
-    border-color: #1a1a1a;
-    color: #faf8f5;
+    background: var(--bg-action);
+    border-color: var(--border-action);
+    color: var(--text-on-action);
   }
 
   .consent-row .label {
     @apply text-[13px] font-light leading-5;
-    color: #1a1a1a;
+    color: var(--bg-action);
   }
 
   .consent-row .req-mark {
-    color: #bb251a;
+    color: var(--color-error);
   }
 
   .os-method-badge {
-    background: rgba(239, 229, 210, 0.6);
+    background: var(--bb-muted-60);
     color: var(--cta-hover, #8a6b2d);
   }
 
   .os-trust-row .tt {
-    background: rgba(22, 101, 52, 0.08);
-    color: rgb(22, 101, 52);
+    background: var(--bb-trust-card-bg);
+    color: var(--color-trust);
   }
 
   .checkout-spinner-gold[aria-busy='true'] svg {
