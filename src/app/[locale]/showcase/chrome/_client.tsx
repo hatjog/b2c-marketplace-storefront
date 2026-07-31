@@ -1,5 +1,8 @@
 'use client';
 
+// @chrome-manifest: W6-05
+// @chrome-manifest: W6-06
+// @chrome-manifest: W6-09
 /**
  * ShowcaseChrome — client component.
  *
