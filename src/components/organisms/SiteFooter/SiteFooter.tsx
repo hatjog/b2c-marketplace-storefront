@@ -40,10 +40,13 @@ export async function SiteFooter({
   marketConfig?: MarketConfig | null;
   locale: string;
 }) {
-  // QD-02: locale is EXPLICIT. `getTranslations('footer')` reads the ambient
-  // request locale, which is exactly the implicit boundary this spec removes —
-  // the component already receives the route locale, so it must use it.
+  // QD-03 (CAP-3): jawne locale — to samo, które idzie do
+  // `loadLegalSignoffStatusMap(marketId, locale)` niżej. Zakres treści footera
+  // (etykiety, copyright z market config) pozostaje w QD-02; tu zmienia się
+  // wyłącznie sposób rozstrzygania locale dla `messages/*.json`.
   const t = await getTranslations({ locale, namespace: 'footer' });
+  // QD-02: notice fallbacku jest chrome w locale TRASY, więc korzysta z tego
+  // samego jawnego locale co `t` powyżej.
   const tCommon = await getTranslations({ locale, namespace: 'common' });
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);

@@ -93,7 +93,12 @@ export default async function ProductPage({
   const { handle, locale } = await params;
   setRequestLocale(locale);
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const t = await getTranslations('pdp');
+  // QD-03 (CAP-3): jawne locale również w route entry. `setRequestLocale` wyżej
+  // zostaje — chroni dzieci klienckie (NextIntlClientProvider) i `generateMetadata`
+  // — ale sam odczyt tłumaczeń nie zależy już od tego, czy store przeżył
+  // kontynuację async. To reguła systemowa dla całej powierzchni PDP, nie
+  // wyjątek dla metadata.
+  const t = await getTranslations({ locale, namespace: 'pdp' });
   // Story v160-cleanup-13c — warm runtime feature-flag cache before sync gates.
   await isMultiVendorEnabledRuntime();
   // Full product fetch (no field restriction) — variants include calculated_price + inventory_quantity

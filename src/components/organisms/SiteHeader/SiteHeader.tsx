@@ -43,7 +43,8 @@ export const SiteHeader = async ({
   // now renders the brand lockup (not the market-configured logo). See LogoLockup below.
   marketConfig?: MarketConfig | null;
 }) => {
-  const tHeader = await getTranslations('header');
+  // QD-03 (CAP-3): jawne locale — chrome zawsze odpowiada locale trasy.
+  const tHeader = await getTranslations({ locale, namespace: 'header' });
   const user = await retrieveCustomer().catch(() => null);
   const isLoggedIn = Boolean(user);
   const countryCode = await getCountryCode(locale);

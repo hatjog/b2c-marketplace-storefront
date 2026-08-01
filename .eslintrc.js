@@ -54,6 +54,13 @@ module.exports = {
     // klucz istnieje (tylko gdzie indziej). Dwa incydenty produkcyjne:
     // checkout `voucher_delivery_label`, seller hero `verified_seller`.
     "gp/i18n-namespace-key-resolves": "error",
+    // v1.14.0 QD-03 — bramka CAP-3 (granica renderu). `locale` w zasięgu ⇒
+    // tłumaczenia jawną formą getTranslations({ locale, namespace }). Forma
+    // skrócona poza drzewem page/layout dziedziczy pusty request store i
+    // next-intl cicho spada na DEFAULT_LOCALE='pl' (src/i18n.ts:25). Route
+    // entries pod src/app/** rządzi gp/require-set-request-locale — dlatego
+    // ta reguła celowo ich NIE obejmuje.
+    "gp/explicit-locale-get-translations": "error",
     "no-restricted-syntax": [
       "error",
       {

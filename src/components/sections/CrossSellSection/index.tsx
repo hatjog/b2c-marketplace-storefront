@@ -50,7 +50,10 @@ export const CrossSellSection = async ({
     return null;
   }
 
-  const t = await getTranslations('cross_sell');
+  // QD-03 (CAP-3): jawne locale. `locale` jest już kanonicznym slugiem z PDP,
+  // więc klucz renderu i klucz cache danych (`listProducts`) używają tej samej
+  // reprezentacji. Bramka: `gp/explicit-locale-get-translations`.
+  const t = await getTranslations({ locale, namespace: 'cross_sell' });
   const recommendedProducts =
     sellerFiltered.length >= MIN_GROUP_SIZE ? sellerFiltered : categoryFiltered;
   const fromContext = product.seller?.handle

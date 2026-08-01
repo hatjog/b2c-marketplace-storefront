@@ -42,7 +42,8 @@ export async function SellersSearchForm({
   lat,
   lng
 }: SellersSearchFormProps) {
-  const t = await getTranslations('seller.search');
+  // QD-03 (CAP-3): jawne locale — to samo, które trafia do `action` formularza.
+  const t = await getTranslations({ locale, namespace: 'seller.search' });
 
   return (
     <form

@@ -138,7 +138,7 @@ export const ProductListing = async ({
   seller_id,
   showSidebar = false,
   categoryPlp = false,
-  locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'pl',
+  locale,
   searchParams = {},
   fromContext
 }: {
@@ -147,7 +147,14 @@ export const ProductListing = async ({
   seller_id?: string;
   showSidebar?: boolean;
   categoryPlp?: boolean;
-  locale?: string;
+  /**
+   * QD-03 (CAP-3): locale trasy, WYMAGANE. Wcześniej domyślną wartością było
+   * `process.env.NEXT_PUBLIC_DEFAULT_REGION` — kod REGIONU podstawiany pod
+   * locale (`getCountryCode(locale)` niżej ujawnia to pomieszanie). Jedyny
+   * call site (`/[locale]/categories/[category]`) zawsze przekazuje locale
+   * trasy; typ pilnuje teraz, żeby żaden przyszły nie pominął.
+   */
+  locale: string;
   searchParams?: Record<string, string | string[] | undefined>;
   /**
    * Story v160-4-6: optional salon-anchored context — when set, product cards
@@ -330,7 +337,10 @@ export const ProductListing = async ({
   const visibleProducts = paginatedProducts;
   const effectiveTotal = totalFiltered;
   const showContextualEditorialCta = categoryPlp && totalFiltered > 0 && totalFiltered < 10;
-  const tCategoryPlp = categoryPlp ? await getTranslations('category_plp') : null;
+  // QD-03 (CAP-3): jawne locale trasy.
+  const tCategoryPlp = categoryPlp
+    ? await getTranslations({ locale, namespace: 'category_plp' })
+    : null;
   const contextualCtaLabel = tCategoryPlp?.('editorial_cta') ?? '';
 
   return (

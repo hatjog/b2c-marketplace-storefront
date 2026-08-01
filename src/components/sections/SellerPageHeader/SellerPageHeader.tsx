@@ -16,13 +16,16 @@ export const SellerPageHeader = async ({
   user: HttpTypes.StoreCustomer | null;
   locale: string;
 }) => {
-  const t = await getTranslations('products');
+  // QD-03 (CAP-3): jawne locale we wszystkich czterech namespace'ach tej
+  // powierzchni — `locale` jest w propsach, więc nic nie usprawiedliwia
+  // odczytu z request store.
+  const t = await getTranslations({ locale, namespace: 'products' });
   // `verified_seller` lives in the `pdp` namespace (shared trust label with the
   // product detail page) — resolving it from `products` throws MISSING_MESSAGE
   // under the fail-loud rawKeyGuard and 500s the whole seller surface.
-  const pdpT = await getTranslations('pdp');
-  const sellerT = await getTranslations('seller.detail');
-  const sharedT = await getTranslations('seller.shared');
+  const pdpT = await getTranslations({ locale, namespace: 'pdp' });
+  const sellerT = await getTranslations({ locale, namespace: 'seller.detail' });
+  const sharedT = await getTranslations({ locale, namespace: 'seller.shared' });
   const reviews = Array.isArray(seller.reviews)
     ? (seller.reviews.filter(Boolean) as Array<{ rating?: number | null }>)
     : [];

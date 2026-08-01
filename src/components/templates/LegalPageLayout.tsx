@@ -30,9 +30,12 @@ interface LegalPageLayoutProps {
    */
   document?: LegalDocument;
   /**
-   * Storefront locale code. Required when `document` is provided.
+   * QD-03 (CAP-3): locale trasy, WYMAGANE na OBU ścieżkach. Wcześniej było
+   * opcjonalne („required when `document` is provided"), a legacy placeholder
+   * czytał `getTranslations('legal')` z request store — czyli dokładnie ta
+   * granica renderu, na której store bywa pusty.
    */
-  locale?: LegalDocLayoutProps['locale'];
+  locale: LegalDocLayoutProps['locale'];
   /**
    * Optional explicit title override (forwarded to LegalDocLayout).
    */
@@ -46,7 +49,7 @@ export async function LegalPageLayout({
   locale,
   title
 }: LegalPageLayoutProps) {
-  if (document && locale) {
+  if (document) {
     return (
       <LegalDocLayout
         document={document}
@@ -62,7 +65,8 @@ export async function LegalPageLayout({
   // Legacy backward-compat path: no document → render placeholder shell with
   // optional agent disclaimer. Used by routes that still render hand-curated
   // JSX (/pomoc with FR64 state card, /zasady with runtime-config sections).
-  const t = await getTranslations('legal');
+  // QD-03 (CAP-3): jawne locale trasy także na ścieżce legacy.
+  const t = await getTranslations({ locale, namespace: 'legal' });
   return (
     <main
       className="min-h-screen"

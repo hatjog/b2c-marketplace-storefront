@@ -211,7 +211,10 @@ export const ProductDetails = async ({
   // heading, so the semantic name now matches the render path.
   // R6 fix: error branch now uses the `expired` message key matching its kind
   // (was mismatched: kind=expired + message=status_unavailable_*).
-  const tVoucher = await getTranslations('voucher.clarity');
+  // QD-03 (CAP-3): jawne locale — ten komponent jest renderowany jako dziecko
+  // PDP i strony sellera, więc nie może zakładać, że request store przeżył
+  // granicę renderu. Bramka: `gp/explicit-locale-get-translations`.
+  const tVoucher = await getTranslations({ locale, namespace: 'voucher.clarity' });
   const voucherStatus =
     voucherVariant === 'warning'
       ? {
