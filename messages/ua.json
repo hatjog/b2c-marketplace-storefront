@@ -375,7 +375,8 @@
       "group_header_label": "Від продавця: {seller_name}",
       "default_seller_group_label": "Інші позиції",
       "subtotal_per_seller": "Проміжна сума: {amount}",
-      "visit_seller_storefront": "Переглянути крамницю продавця"
+      "visit_seller_storefront": "Переглянути крамницю продавця",
+      "joined_since": "Приєднався: {date}"
     },
     "checkout": {
       "purchase_mode_label": "Для кого купуєте?",
@@ -798,7 +799,24 @@
     "state_province": "Область / регіон",
     "phone": "Телефон",
     "email": "E-mail",
-    "email_validation": "Введіть правильну адресу e-mail, наприклад ivan@example.com."
+    "email_validation": "Введіть правильну адресу e-mail, наприклад ivan@example.com.",
+    "country_label": "Країна",
+    "country_placeholder": "Оберіть країну",
+    "address_select_placeholder": "Оберіть адресу",
+    "report": {
+      "reason_label": "Причина",
+      "comment_label": "Коментар",
+      "reason_dmca": "Порушення торгової марки, авторського права або DMCA",
+      "submit_seller": "Поскаржитися на продавця",
+      "submit_listing": "Поскаржитися на оголошення",
+      "success_heading": "Дякуємо!",
+      "success_body": "Ми перевіримо, чи не порушує оголошення наші правила, і вживемо необхідних заходів, щоб покупки були безпечними для всіх. Дякуємо, що допомагаєте підтримувати спільноту, якій можна довіряти.",
+      "success_ack": "Зрозуміло",
+      "errors": {
+        "reason_required": "Оберіть причину",
+        "comment_required": "Додайте коментар"
+      }
+    }
   },
   "cart": {
     "open_cart_drawer_aria": "Відкрити кошик",
@@ -3347,6 +3365,11 @@
         "primary_cta": "Спробувати ще раз після підключення",
         "secondary_cta": "Відкрити допомогу",
         "suggested_action": "Відновіть мережеве з’єднання і лише потім повторіть спробу."
+      },
+      "technical_details_fields": {
+        "request_id": "Ідентифікатор запиту",
+        "timestamp": "Позначка часу",
+        "suggested_action": "Рекомендована дія"
       }
     }
   },
