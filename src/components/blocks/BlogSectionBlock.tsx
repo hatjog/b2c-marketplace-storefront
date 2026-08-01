@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { BlogSection } from '@/components/sections';
 import { fetchHomepageBlogPosts } from '@/lib/homepage/dynamic-blocks';
@@ -9,10 +9,18 @@ export type BlogSectionSectionBlock = {
 };
 
 export async function BlogSectionBlock({ section }: { section: BlogSectionSectionBlock }) {
-  const [posts, t] = await Promise.all([
-    fetchHomepageBlogPosts({ limit: section.limit }),
-    getTranslations('blog'),
-  ]);
+  const [locale, t] = await Promise.all([getLocale(), getTranslations('blog')]);
+  const posts = await fetchHomepageBlogPosts({
+    locale,
+    limit: section.limit,
+    labels: {
+      untitledPost: t('untitled_post'),
+      excerptFallback: t('excerpt_fallback'),
+      authorName: t('author_default_name'),
+      authorRole: t('author_default_role'),
+      authorBio: t('author_default_bio')
+    }
+  });
 
   return (
     <BlogSection

@@ -1,3 +1,4 @@
+import type { PayloadLocale } from '@/lib/blog-locale';
 import type { SupportedLocale } from '@/i18n/routing';
 
 export type BlogLocale = SupportedLocale;
@@ -148,6 +149,13 @@ export type BlogPostCard = {
   author: BlogAuthor;
   readTimeMinutes: number;
   publishedAt: string | null;
+  /**
+   * QD-I18N-04 / CAP-4 — set when the card's copy comes from
+   * `market.locales.default` instead of the requested locale. Non-null means the
+   * surface MUST show a fallback notice and mark the fragment with `lang`;
+   * it must never be rendered as if it were a translation.
+   */
+  contentFallbackLocale?: PayloadLocale | null;
 };
 
 export type BlogPost = BlogPostCard;

@@ -56,6 +56,15 @@ type BlogLayoutProps = {
   backToBlogLabel?: ReactNode;
   relatedCtaLabel?: ReactNode;
   newsletterSlot?: ReactNode;
+  /**
+   * QD-I18N-04 / CAP-4 — BCP-47 tag of the content fragment when it comes from
+   * `market.locales.default` rather than the route locale. Applied to the title,
+   * intro and reading column only, never to the surrounding chrome, so a `de`
+   * page does not declare itself Polish (party review PR-2).
+   */
+  contentLang?: string;
+  /** Visible fallback notice, rendered adjacent to the fragment it describes. */
+  contentNotice?: ReactNode;
   filters?: ReactNode;
   posts?: ReactNode;
   empty?: ReactNode;
@@ -186,7 +195,8 @@ function HeroBand({
   intro,
   meta,
   heroImage,
-  heroImageAlt
+  heroImageAlt,
+  contentLang
 }: {
   eyebrow?: ReactNode;
   title?: ReactNode;
@@ -194,6 +204,7 @@ function HeroBand({
   meta?: ReactNode;
   heroImage?: string;
   heroImageAlt?: string;
+  contentLang?: string;
 }) {
   if (!eyebrow && !title && !intro && !meta && !heroImage) return null;
   return (
@@ -210,8 +221,22 @@ function HeroBand({
         />
       ) : null}
       {eyebrow ? <p className="bb-eyebrow text-[var(--text-secondary)]">{eyebrow}</p> : null}
-      {title ? <h1 className="heading-lg text-[var(--text-primary)]">{title}</h1> : null}
-      {intro ? <p className="text-lg text-[var(--text-secondary)]">{intro}</p> : null}
+      {title ? (
+        <h1
+          lang={contentLang}
+          className="heading-lg text-[var(--text-primary)]"
+        >
+          {title}
+        </h1>
+      ) : null}
+      {intro ? (
+        <p
+          lang={contentLang}
+          className="text-lg text-[var(--text-secondary)]"
+        >
+          {intro}
+        </p>
+      ) : null}
       {meta ? <div>{meta}</div> : null}
     </section>
   );
@@ -238,6 +263,8 @@ export function BlogLayout(props: BlogLayoutProps) {
     backToBlogLabel,
     relatedCtaLabel,
     newsletterSlot,
+    contentLang,
+    contentNotice,
     filters,
     posts,
     empty,
@@ -269,6 +296,7 @@ export function BlogLayout(props: BlogLayoutProps) {
               meta={meta}
               heroImage={heroImage}
               heroImageAlt={heroImageAlt}
+              contentLang={contentLang}
             />
           )}
 
@@ -291,7 +319,8 @@ export function BlogLayout(props: BlogLayoutProps) {
               className="mx-auto w-full max-w-[720px]"
               data-testid="blog-post-reading-column"
             >
-              {content}
+              {contentNotice}
+              <div lang={contentLang}>{content}</div>
               {newsletterSlot ? <div className="mt-10">{newsletterSlot}</div> : null}
               <AuthorCard
                 author={authorCard}
@@ -325,6 +354,7 @@ export function BlogLayout(props: BlogLayoutProps) {
               empty
             ) : (
               <div>
+                {contentNotice}
                 {posts}
                 {content}
               </div>

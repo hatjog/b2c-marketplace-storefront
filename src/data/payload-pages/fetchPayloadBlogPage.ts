@@ -2,6 +2,11 @@ import 'server-only';
 
 import { normalizeLexicalRichText, RichTextValidationError } from '@/components/rich-text';
 import type { SupportedLocale } from '@/i18n/routing';
+import {
+  blogCacheTag,
+  mapRouteLocaleToPayloadLocale,
+  type PayloadLocale
+} from '@/lib/blog-locale';
 import { fetchMarketConfig } from '@/lib/portal.server';
 import type { BlogAuthor, BlogPostCard, BlogRichTextNode } from '@/types/blog';
 
@@ -42,7 +47,7 @@ type PayloadCollectionResponse<T> = {
   docs?: T[];
 };
 
-export type PayloadLocale = 'pl' | 'en' | 'uk' | 'de';
+export type { PayloadLocale };
 
 export type PayloadBlogPage = {
   id: string;
@@ -63,19 +68,16 @@ export type PayloadBlogPage = {
     description: string;
     canonicalUrl: string | null;
   };
+  /**
+   * `null` → the article was authored in the requested locale.
+   * Non-null → this is the `market.locales.default` variant served under the
+   * CAP-4 fallback policy; the route MUST render a visible notice and set
+   * `lang` on the fallback fragment (party review PR-2).
+   */
+  contentFallbackLocale: PayloadLocale | null;
 };
 
-export function mapRouteLocaleToPayloadLocale(locale: SupportedLocale | string): PayloadLocale {
-  if (locale === 'ua' || locale === 'uk') {
-    return 'uk';
-  }
-
-  if (locale === 'pl' || locale === 'en' || locale === 'de') {
-    return locale;
-  }
-
-  return 'pl';
-}
+export { mapRouteLocaleToPayloadLocale };
 
 function getPayloadApiUrl() {
   return process.env.PAYLOAD_API_URL;
@@ -161,7 +163,10 @@ function estimateReadTime(content: BlogRichTextNode[]) {
   return Math.max(4, Math.ceil(textContent.split(/\s+/).filter(Boolean).length / 180));
 }
 
-function toPayloadBlogPage(doc: PayloadBlogPageDoc): PayloadBlogPage | null {
+function toPayloadBlogPage(
+  doc: PayloadBlogPageDoc,
+  contentFallbackLocale: PayloadLocale | null
+): PayloadBlogPage | null {
   if (doc.page_type !== 'blog' || doc._status !== 'published') {
     return null;
   }
@@ -206,40 +211,38 @@ function toPayloadBlogPage(doc: PayloadBlogPageDoc): PayloadBlogPage | null {
       title: text(doc.meta?.title, title),
       description: text(doc.meta?.description, excerpt),
       canonicalUrl: text(doc.canonicalUrl) || null
-    }
+    },
+    contentFallbackLocale
   };
 }
 
-export async function fetchPayloadBlogPage({
-  locale,
+async function fetchOnePayloadLocale({
+  payloadLocale,
   slug,
-  marketId
+  tenantId,
+  contentFallbackLocale
 }: {
-  locale: SupportedLocale | string;
+  payloadLocale: PayloadLocale;
   slug: string;
-  marketId: string;
+  tenantId: string | null;
+  contentFallbackLocale: PayloadLocale | null;
 }): Promise<PayloadBlogPage | null> {
   const url = buildPayloadUrl('api/pages');
 
-  if (!url || !slug.trim()) {
+  if (!url) {
     return null;
   }
 
-  if (marketId) {
-    const marketConfig = await fetchMarketConfig(marketId);
-    const tenantId = getTenantIdFromMarketConfig(marketConfig);
-
-    if (!tenantId) {
-      return null;
-    }
-
+  if (tenantId) {
     url.searchParams.set('where[tenant][equals]', tenantId);
   }
 
   url.searchParams.set('where[page_type][equals]', 'blog');
   url.searchParams.set('where[_status][equals]', 'published');
-  url.searchParams.set('where[slug][equals]', slug.trim());
-  url.searchParams.set('locale', mapRouteLocaleToPayloadLocale(locale));
+  url.searchParams.set('where[slug][equals]', slug);
+  url.searchParams.set('locale', payloadLocale);
+  // Payload's own fallback would hand us Polish prose labelled as German with
+  // no way to tell the difference. The fallback decision belongs to the caller.
   url.searchParams.set('fallback-locale', 'none');
   url.searchParams.set('depth', '2');
   url.searchParams.set('limit', '1');
@@ -249,7 +252,11 @@ export async function fetchPayloadBlogPage({
       method: 'GET',
       next: {
         revalidate: 600,
-        tags: ['pages', `page-${slug.trim()}`]
+        // Canonical locale in the cache key — SPEC decision 5.
+        tags: [
+          blogCacheTag('pages', payloadLocale),
+          blogCacheTag(`page-${slug}`, payloadLocale)
+        ]
       }
     });
 
@@ -260,8 +267,64 @@ export async function fetchPayloadBlogPage({
     const data = (await response.json()) as PayloadCollectionResponse<PayloadBlogPageDoc>;
     const doc = data.docs?.[0];
 
-    return doc ? toPayloadBlogPage(doc) : null;
+    return doc ? toPayloadBlogPage(doc, contentFallbackLocale) : null;
   } catch {
     return null;
   }
+}
+
+export async function fetchPayloadBlogPage({
+  locale,
+  fallbackLocale,
+  slug,
+  marketId
+}: {
+  locale: SupportedLocale | string;
+  /**
+   * `market.locales.default` from the ADR-154 resolver. Required so the fallback
+   * target is never guessed at the reader boundary.
+   */
+  fallbackLocale: SupportedLocale | string;
+  slug: string;
+  marketId: string;
+}): Promise<PayloadBlogPage | null> {
+  const normalizedSlug = slug.trim();
+
+  if (!normalizedSlug || !buildPayloadUrl('api/pages')) {
+    return null;
+  }
+
+  let tenantId: string | null = null;
+
+  if (marketId) {
+    const marketConfig = await fetchMarketConfig(marketId);
+    tenantId = getTenantIdFromMarketConfig(marketConfig);
+
+    if (!tenantId) {
+      return null;
+    }
+  }
+
+  const requestedLocale = mapRouteLocaleToPayloadLocale(locale);
+  const defaultLocale = mapRouteLocaleToPayloadLocale(fallbackLocale);
+
+  const requested = await fetchOnePayloadLocale({
+    payloadLocale: requestedLocale,
+    slug: normalizedSlug,
+    tenantId,
+    contentFallbackLocale: null
+  });
+
+  if (requested || requestedLocale === defaultLocale) {
+    return requested;
+  }
+
+  // CAP-4: no variant in the requested locale → serve the market default,
+  // tagged so the route renders a notice instead of a silent translation.
+  return fetchOnePayloadLocale({
+    payloadLocale: defaultLocale,
+    slug: normalizedSlug,
+    tenantId,
+    contentFallbackLocale: defaultLocale
+  });
 }

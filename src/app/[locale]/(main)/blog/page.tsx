@@ -6,6 +6,8 @@ import Image from 'next/image';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { BlogLayout } from '@/components/templates';
 import { getBlogIndexData } from '@/lib/blog';
+import { formatFallbackLanguageName, payloadLocaleToBcp47 } from '@/lib/blog-locale';
+import { getMarketDefaultLocale } from '@/lib/market-locales';
 import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 600;
@@ -66,7 +68,15 @@ export default async function BlogIndexPage({
     selectedTag: activeTag
   } = await getBlogIndexData({
     locale: locale as 'pl' | 'en' | 'ua' | 'de',
+    fallbackLocale: await getMarketDefaultLocale(),
     marketId,
+    labels: {
+      untitledPost: t('untitled_post'),
+      excerptFallback: t('excerpt_fallback'),
+      authorName: t('author_default_name'),
+      authorRole: t('author_default_role'),
+      authorBio: t('author_default_bio')
+    },
     selectedTag
   });
 
@@ -137,8 +147,29 @@ export default async function BlogIndexPage({
               <span>{post.category}</span>
               <span>{t('min_read', { minutes: post.readTimeMinutes })}</span>
             </div>
-            <h2 className="heading-sm text-primary">{post.title}</h2>
-            <p className="line-clamp-3 text-sm leading-6 text-secondary">{post.excerpt}</p>
+            {post.contentFallbackLocale ? (
+              <span
+                data-testid="blog-card-fallback-badge"
+                data-fallback-locale={post.contentFallbackLocale}
+                className="w-fit rounded-full border border-dashed border-[var(--bb-tint-gold-24)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-secondary"
+              >
+                {t('content_fallback_badge', {
+                  language: formatFallbackLanguageName(post.contentFallbackLocale, locale)
+                })}
+              </span>
+            ) : null}
+            <h2
+              lang={post.contentFallbackLocale ? payloadLocaleToBcp47(post.contentFallbackLocale) : undefined}
+              className="heading-sm text-primary"
+            >
+              {post.title}
+            </h2>
+            <p
+              lang={post.contentFallbackLocale ? payloadLocaleToBcp47(post.contentFallbackLocale) : undefined}
+              className="line-clamp-3 text-sm leading-6 text-secondary"
+            >
+              {post.excerpt}
+            </p>
             <div className="mt-auto flex flex-wrap items-center gap-3 text-xs text-secondary">
               <span>{post.author.name}</span>
               {post.tags.slice(0, 2).map(tag => (

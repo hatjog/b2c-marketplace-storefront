@@ -1,12 +1,15 @@
-import { getFixtureBlogCards, getFixtureBlogPost } from '@/lib/blog-fixtures';
+import { getFixtureBlogCards } from '@/lib/blog-fixtures';
+import {
+  blogCacheTag,
+  mapRouteLocaleToPayloadLocale,
+  type PayloadLocale
+} from '@/lib/blog-locale';
 import { stripHtml } from '@/lib/helpers/text';
 import { fetchMarketConfig } from '@/lib/portal.server';
 import type {
   BlogIndexData,
-  BlogInlineNode,
   BlogLocale,
   BlogPostCard,
-  BlogPostDetail,
   BlogRichTextNode,
   BlogTag,
   TocEntry
@@ -47,6 +50,20 @@ const FALLBACK_IMAGES = [
 
 const IFRAME_HOST_ALLOWLIST = new Set(['www.youtube.com', 'youtube.com', 'player.vimeo.com']);
 
+/**
+ * QD-I18N-04 — every user-visible fallback string on a blog card comes from
+ * `messages/{locale}.json`, never from a hardcoded English literal. Callers are
+ * server components that already hold `getTranslations('blog')`, so the labels
+ * are passed in rather than resolved inside this (locale-agnostic) module.
+ */
+export type BlogCardLabels = {
+  untitledPost: string;
+  excerptFallback: string;
+  authorName: string;
+  authorRole: string;
+  authorBio: string;
+};
+
 export function getPayloadApiUrl() {
   return process.env.PAYLOAD_API_URL;
 }
@@ -78,11 +95,13 @@ function getTenantIdFromMarketConfig(marketConfig: Awaited<ReturnType<typeof fet
 
 async function fetchMarketScopedPages({
   marketId,
+  payloadLocale,
   searchParams,
   revalidate = 600,
   tags = ['pages']
 }: {
   marketId: string;
+  payloadLocale: PayloadLocale;
   searchParams: Array<[string, string]>;
   revalidate?: number;
   tags?: string[];
@@ -108,11 +127,20 @@ async function fetchMarketScopedPages({
       url.searchParams.set(key, value);
     }
 
+    // CAP-4: the request carries the canonical Payload locale and refuses
+    // Payload's implicit cross-locale fallback. A missing variant must surface
+    // as "missing" here so the caller can apply the market fallback policy
+    // (visible notice + `lang`) instead of silently serving another language.
+    url.searchParams.set('locale', payloadLocale);
+    url.searchParams.set('fallback-locale', 'none');
+
     const response = await fetch(url.toString(), {
       method: 'GET',
       next: {
         revalidate,
-        tags
+        // Locale is part of every cache key (SPEC decision 5): without it a
+        // `pl` response is replayed for a later `de` request.
+        tags: tags.map(tag => blogCacheTag(tag, payloadLocale))
       }
     });
 
@@ -186,10 +214,8 @@ export function getBlogCategory(page: PayloadPage) {
   return page.page_type || 'Blog';
 }
 
-export function getBlogDescription(page: PayloadPage) {
-  return stripHtml(
-    page.excerpt || page.summary || 'Read the latest updates from our marketplace blog.'
-  );
+export function getBlogDescription(page: PayloadPage, excerptFallback: string) {
+  return stripHtml(page.excerpt || page.summary || excerptFallback);
 }
 
 export function getBlogHref(page: PayloadPage) {
@@ -241,13 +267,18 @@ function estimateReadTimeFromContent(content: unknown) {
   return Math.max(4, Math.ceil(text.split(/\s+/).filter(Boolean).length / 180));
 }
 
-function payloadPageToBlogCard(page: PayloadPage, index: number): BlogPostCard | null {
+export function payloadPageToBlogCard(
+  page: PayloadPage,
+  index: number,
+  labels: BlogCardLabels,
+  contentFallbackLocale: PayloadLocale | null = null
+): BlogPostCard | null {
   const slug = page.slug?.trim();
   if (!slug) {
     return null;
   }
 
-  const title = page.title || page.name || 'Untitled post';
+  const title = page.title || page.name || labels.untitledPost;
   const category = getBlogCategory(page).toUpperCase();
   const tag: BlogTag = {
     slug: sanitizeTagSlug(category),
@@ -258,43 +289,50 @@ function payloadPageToBlogCard(page: PayloadPage, index: number): BlogPostCard |
     id: String(page.id ?? slug),
     slug,
     title,
-    excerpt: getBlogDescription(page),
+    excerpt: getBlogDescription(page, labels.excerptFallback),
     image: getPageImageUrl(page, index),
     imageAlt: title,
     category,
     href: getBlogHref(page),
     tags: [tag],
     author: {
-      name: 'Grow Platform Editorial',
-      role: 'Editorial team',
-      bio: 'Market-specific notes and editorial updates published from the storefront content layer.',
+      name: labels.authorName,
+      role: labels.authorRole,
+      bio: labels.authorBio,
       avatar: null,
       profileUrl: '/blog'
     },
     readTimeMinutes: estimateReadTimeFromContent(page.content),
-    publishedAt: page.publishedAt ?? null
+    publishedAt: page.publishedAt ?? null,
+    contentFallbackLocale
   };
 }
 
-export function mapPayloadPageToBlogPost(page: PayloadPage, index: number): BlogPostCard {
+export function mapPayloadPageToBlogPost(
+  page: PayloadPage,
+  index: number,
+  labels: BlogCardLabels,
+  contentFallbackLocale: PayloadLocale | null = null
+): BlogPostCard {
   return (
-    payloadPageToBlogCard(page, index) || {
+    payloadPageToBlogCard(page, index, labels, contentFallbackLocale) || {
       id: `fallback-${index + 1}`,
       slug: `fallback-${index + 1}`,
-      title: page.title || page.name || 'Untitled post',
-      excerpt: getBlogDescription(page),
+      title: page.title || page.name || labels.untitledPost,
+      excerpt: getBlogDescription(page, labels.excerptFallback),
       image: getPageImageUrl(page, index),
-      imageAlt: page.title || page.name || 'Untitled post',
+      imageAlt: page.title || page.name || labels.untitledPost,
       category: getBlogCategory(page).toUpperCase(),
       href: getBlogHref(page),
       tags: [],
       author: {
-        name: 'Grow Platform Editorial',
-        role: 'Editorial team',
-        bio: 'Market-specific notes and editorial updates published from the storefront content layer.'
+        name: labels.authorName,
+        role: labels.authorRole,
+        bio: labels.authorBio
       },
       readTimeMinutes: estimateReadTimeFromContent(page.content),
-      publishedAt: page.publishedAt ?? null
+      publishedAt: page.publishedAt ?? null,
+      contentFallbackLocale
     }
   );
 }
@@ -380,29 +418,21 @@ export function extractLexicalParagraphs(content: unknown): string[] {
   return rootChildren.map(node => collectText(node).trim()).filter(Boolean);
 }
 
-function lexicalParagraphsToRichText(content: unknown): BlogRichTextNode[] {
-  const paragraphs = extractLexicalParagraphs(content);
-  if (paragraphs.length === 0) {
-    return [];
-  }
-
-  return paragraphs.map(paragraph => ({
-    type: 'paragraph',
-    content: [{ type: 'text', text: paragraph }] satisfies BlogInlineNode[]
-  }));
-}
-
 export async function fetchHomepageBlogPageDocs({
   marketId,
+  locale,
   limit
 }: {
   marketId: string;
+  /** Route locale — explicit on every call site (CAP-3/CAP-4, no implicit default). */
+  locale: BlogLocale | string;
   limit?: number | null;
 }) {
   const resolvedLimit = Math.max(1, Math.min(limit ?? 12, 24));
 
   return fetchMarketScopedPages({
     marketId,
+    payloadLocale: mapRouteLocaleToPayloadLocale(locale),
     searchParams: [
       ['where[page_type][equals]', 'blog'],
       ['where[_status][equals]', 'published'],
@@ -413,13 +443,23 @@ export async function fetchHomepageBlogPageDocs({
   });
 }
 
-export async function fetchBlogPageBySlug({ marketId, slug }: { marketId: string; slug: string }) {
+export async function fetchBlogPageBySlug({
+  marketId,
+  locale,
+  slug
+}: {
+  marketId: string;
+  locale: BlogLocale | string;
+  slug: string;
+}) {
   if (!slug) {
     return null;
   }
 
   const docs = await fetchMarketScopedPages({
     marketId,
+    payloadLocale: mapRouteLocaleToPayloadLocale(locale),
+    tags: ['pages', `page-${slug}`],
     searchParams: [
       ['where[page_type][equals]', 'blog'],
       ['where[_status][equals]', 'published'],
@@ -432,25 +472,64 @@ export async function fetchBlogPageBySlug({ marketId, slug }: { marketId: string
   return docs[0] ?? null;
 }
 
+/** A Payload doc counts as "translated" only if the localized title survived. */
+function hasLocalizedVariant(page: PayloadPage | undefined): page is PayloadPage {
+  return Boolean(page && (page.title?.trim() || page.name?.trim()));
+}
+
 export async function getBlogIndexData({
   locale,
+  fallbackLocale,
   marketId,
+  labels,
   selectedTag
 }: {
   locale: BlogLocale;
+  /** `market.locales.default` from the ADR-154 resolver — the only fallback target. */
+  fallbackLocale: BlogLocale;
   marketId: string;
+  labels: BlogCardLabels;
   selectedTag: string | null;
 }): Promise<BlogIndexData> {
-  const [payloadPages, fixtureCards] = await Promise.all([
-    fetchHomepageBlogPageDocs({
-      marketId,
-      limit: 12
-    }),
+  const requestedPayloadLocale = mapRouteLocaleToPayloadLocale(locale);
+  const fallbackPayloadLocale = mapRouteLocaleToPayloadLocale(fallbackLocale);
+  const fallbackIsDistinct = requestedPayloadLocale !== fallbackPayloadLocale;
+
+  const [requestedPages, fallbackPages, fixtureCards] = await Promise.all([
+    fetchHomepageBlogPageDocs({ marketId, locale, limit: 12 }),
+    fallbackIsDistinct
+      ? fetchHomepageBlogPageDocs({ marketId, locale: fallbackLocale, limit: 12 })
+      : Promise.resolve(null),
     Promise.resolve(getFixtureBlogCards(locale))
   ]);
 
-  const payloadCards = payloadPages
-    .map((page, index) => payloadPageToBlogCard(page, index))
+  // The default locale is the authoring source, so it carries the canonical
+  // post set and ordering; the requested locale only supplies translations.
+  const basePages = fallbackPages ?? requestedPages;
+  const requestedBySlug = new Map(
+    requestedPages
+      .filter(page => page.slug?.trim())
+      .map(page => [page.slug!.trim(), page] as const)
+  );
+
+  const payloadCards = basePages
+    .map((basePage, index) => {
+      const slug = basePage.slug?.trim();
+      const requestedPage = slug ? requestedBySlug.get(slug) : undefined;
+
+      if (hasLocalizedVariant(requestedPage)) {
+        return payloadPageToBlogCard(requestedPage, index, labels);
+      }
+
+      // No variant in the requested locale → serve the market default with an
+      // explicit marker. Never present it as a translation (SPEC decision 3).
+      return payloadPageToBlogCard(
+        basePage,
+        index,
+        labels,
+        fallbackIsDistinct ? fallbackPayloadLocale : null
+      );
+    })
     .filter((card): card is BlogPostCard => Boolean(card));
 
   const merged = dedupeCards([...payloadCards, ...fixtureCards]).slice(0, 12);
@@ -465,51 +544,10 @@ export async function getBlogIndexData({
   };
 }
 
-export async function getBlogPostDetail({
-  locale,
-  marketId,
-  slug
-}: {
-  locale: BlogLocale;
-  marketId: string;
-  slug: string;
-}): Promise<BlogPostDetail | null> {
-  const fixture = getFixtureBlogPost(locale, slug);
-  if (fixture) {
-    return fixture;
-  }
-
-  const page = await fetchBlogPageBySlug({
-    marketId,
-    slug
-  });
-
-  if (!page) {
-    return null;
-  }
-
-  const card = payloadPageToBlogCard(page, 0);
-  if (!card) {
-    return null;
-  }
-
-  const allCards = (
-    await getBlogIndexData({
-      locale,
-      marketId,
-      selectedTag: null
-    })
-  ).posts;
-
-  return {
-    ...card,
-    heroImage: getPageImageUrl(page, 0, { preferHeroImage: true }),
-    heroImageAlt: card.title,
-    updatedAt: page.updatedAt ?? null,
-    content: lexicalParagraphsToRichText(page.content),
-    relatedPosts: allCards.filter(entry => entry.slug !== slug).slice(0, 3)
-  };
-}
+// `getBlogPostDetail` (a second, locale-unaware blog detail reader that shadowed
+// Payload with static fixtures) was removed in QD-I18N-04: it had no call site —
+// `/[locale]/blog/[slug]` renders through `fetchPayloadBlogPage` — and an unused
+// reader cannot be kept honest against the CAP-4 fallback contract.
 
 export function isAllowedIframeUrl(src: string) {
   try {

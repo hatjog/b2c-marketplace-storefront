@@ -913,7 +913,13 @@
     "breadcrumb_home": "Startseite",
     "disallowed_embed": "Dieses Embed ist in der sicheren Storefront-Ansicht nicht verfügbar.",
     "newsletter_heading": "Verpassen Sie die nächsten Rituale nicht",
-    "inline_embed_label": "Zusatzmaterial"
+    "inline_embed_label": "Zusatzmaterial",
+    "excerpt_fallback": "Die neuesten redaktionellen Updates aus unserem Marketplace-Blog.",
+    "author_default_name": "Grow Platform Redaktion",
+    "author_default_role": "Redaktionsteam",
+    "author_default_bio": "Redaktionelle Notizen und Updates aus der Content-Ebene des Storefronts.",
+    "content_fallback_notice": "Dieser Beitrag ist in der gewählten Sprache noch nicht verfügbar. Unten steht die Originalfassung ({language}) — es ist keine Übersetzung.",
+    "content_fallback_badge": "Originalfassung ({language})"
   },
   "programmaticLanding": {
     "metadata_title": "{offer} in {location} | BonBeauty",
