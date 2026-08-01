@@ -35,7 +35,6 @@ const Review = ({
   shippingComplete: boolean;
 }) => {
   const t = useTranslations('checkout');
-  const tCart = useTranslations('cart');
   const locale = useLocale();
 
   // Consent state — required before submit (FR60 + FR64).
@@ -99,10 +98,7 @@ const Review = ({
   return (
     <div className="space-y-4">
       <div className="mb-6 w-full">
-        <CartItems
-          cart={cart}
-          deliveryLabel={tCart('delivery')}
-        />
+        <CartItems cart={cart} />
       </div>
 
       <div className={'mb-6'}>

@@ -20,9 +20,10 @@ import { EmptyCart } from './EmptyCart';
  * Turbopack TDZ-safe pattern.
  */
 
-// `deliveryLabel` is required and has NO literal default. The former
-// `= 'Delivery'` default was rendered verbatim by every caller that omitted it
-// (CartReview did), which is untranslated copy no JSX-level guard can see.
+// `deliveryLabel` is required and has NO literal default: a default parameter
+// reaches the DOM exactly like a written attribute, so a literal here is
+// untranslated copy that no JSX-level guard can see. Making it required means a
+// future caller cannot silently reintroduce the English fallback.
 export const CartItems = ({
   cart,
   deliveryLabel
