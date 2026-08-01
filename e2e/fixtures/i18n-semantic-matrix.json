@@ -1,0 +1,78 @@
+{
+  "contract_version": 1,
+  "spec": "QD-I18N-07",
+  "release": "v1.14.0",
+  "market_id": "bonbeauty",
+  "description": "Kontrakt denominatora semantycznej macierzy i18n. Jednostka pokrycia to route x state x locale x fixture_id. Lista locale NIE jest tutaj utrzymywana - pochodzi z runtime market config (ADR-154). Ten plik opisuje WYLACZNIE trasy, stany, wymagane fixture i klucze asercji.",
+  "assertion_model": {
+    "positive": "Dla kazdego probe_key wartosc z messages/<locale>.json musi wystapic w widocznym tekscie stronu.",
+    "negative": "Dla kazdego probe_key wartosc z messages/pl.json NIE moze wystapic na locale != pl, chyba ze jest identyczna z wartoscia docelowa albo trafiona przez proper_noun_allowlist.",
+    "note": "Komorka bez co najmniej jednej asercji pozytywnej I jednej negatywnej nie moze miec statusu PASS."
+  },
+  "proper_noun_allowlist": {
+    "version": 1,
+    "reason": "Nazwy wlasne i terminy wspoldzielone miedzy jezykami. Kazdy wpis musi byc nazwa wlasna albo terminem, ktory jest POPRAWNY w docelowym locale - nie sposobem na uciszenie defektu.",
+    "terms": [
+      "BonBeauty",
+      "Blog",
+      "FAQ",
+      "Studio Nova",
+      "City Beauty",
+      "Kremidotyk",
+      "Warszawa",
+      "zł",
+      "PLN",
+      "Stripe",
+      "Instagram",
+      "Facebook",
+      "TikTok"
+    ]
+  },
+  "states": {
+    "guest": "Brak sesji. Wykonywalny bez provisioningu.",
+    "empty-cart": "Guest z pustym koszykiem.",
+    "invalid-token": "Token/kod celowo nieprawidlowy. NIE zamyka rodziny voucher/recovery (AC5).",
+    "authenticated": "Zalogowany klient z realna sesja. Wymaga provisioningu.",
+    "valid-token": "Token/kod realnie wystawiony przez backend. Wymaga provisioningu."
+  },
+  "cells": [
+    { "family": "public_list", "route": "/{locale}", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_list", "route": "/{locale}/categories", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_detail", "route": "/{locale}/categories/{category}", "state": "guest", "fixture_id": "FX-CATEGORY-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_detail", "route": "/{locale}/products/{product}", "state": "guest", "fixture_id": "FX-PRODUCT-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_list", "route": "/{locale}/sellers", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_detail", "route": "/{locale}/sellers/{seller}", "state": "guest", "fixture_id": "FX-SELLER-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_list", "route": "/{locale}/blog", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_detail", "route": "/{locale}/blog/{blogpost}", "state": "guest", "fixture_id": "FX-BLOGPOST-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "public_detail", "route": "/{locale}/{cmspage}", "state": "guest", "fixture_id": "FX-CMSPAGE-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+
+    { "family": "auth", "route": "/{locale}/login", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["auth.layout.skip_to_form"] },
+    { "family": "auth", "route": "/{locale}/register", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["auth.layout.skip_to_form"] },
+    { "family": "auth", "route": "/{locale}/forgot-password", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["auth.layout.skip_to_form"] },
+
+    { "family": "cart_checkout", "route": "/{locale}/cart", "state": "empty-cart", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
+    { "family": "cart_checkout", "route": "/{locale}/checkout", "state": "empty-cart", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content"], "expect_redirect_keeps_locale": true },
+
+    { "family": "legal_help", "route": "/{locale}/regulamin", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.nav.regulamin"] },
+    { "family": "legal_help", "route": "/{locale}/polityka-prywatnosci", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"] },
+    { "family": "legal_help", "route": "/{locale}/zasady", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"] },
+    { "family": "legal_help", "route": "/{locale}/pomoc", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"] },
+
+    { "family": "voucher_token", "route": "/{locale}/voucher/{invalid_voucher}", "state": "invalid-token", "fixture_id": "FX-VOUCHER-INVALID", "probe_keys": ["voucher.recipient.expired.heading"] },
+    { "family": "voucher_token", "route": "/{locale}/voucher/{valid_voucher}", "state": "valid-token", "fixture_id": "FX-VOUCHER-VALID", "probe_keys": ["accessibility.skip_to_content"], "closes_family": true },
+    { "family": "voucher_token", "route": "/{locale}/user/recover", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["auth.layout.skip_to_form"] },
+    { "family": "voucher_token", "route": "/{locale}/user/recover/{valid_recovery_token}", "state": "valid-token", "fixture_id": "FX-RECOVERY-TOKEN-VALID", "probe_keys": ["auth.layout.skip_to_form"], "closes_family": true },
+    { "family": "voucher_token", "route": "/{locale}/voucher/consent/{valid_consent_token}", "state": "valid-token", "fixture_id": "FX-CONSENT-TOKEN-VALID", "probe_keys": ["accessibility.skip_to_content"], "closes_family": true },
+
+    { "family": "account", "route": "/{locale}/user", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": [], "expect_redirect_keeps_locale": true, "redirect_only": true },
+    { "family": "account", "route": "/{locale}/user", "state": "authenticated", "fixture_id": "FX-CUSTOMER-AUTH", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
+    { "family": "account", "route": "/{locale}/user/addresses", "state": "authenticated", "fixture_id": "FX-CUSTOMER-AUTH", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
+    { "family": "account", "route": "/{locale}/user/wishlist", "state": "authenticated", "fixture_id": "FX-CUSTOMER-AUTH", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
+
+    { "family": "order_return", "route": "/{locale}/user/orders", "state": "authenticated", "fixture_id": "FX-CUSTOMER-AUTH", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
+    { "family": "order_return", "route": "/{locale}/user/orders/{order}", "state": "authenticated", "fixture_id": "FX-ORDER-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
+    { "family": "order_return", "route": "/{locale}/user/orders/{order}/return", "state": "authenticated", "fixture_id": "FX-ORDER-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
+
+    { "family": "error_notfound", "route": "/{locale}/{notfound_slug}", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content"], "expect_http": 404 }
+  ]
+}
