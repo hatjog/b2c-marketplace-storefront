@@ -8,13 +8,13 @@ import { fileURLToPath } from 'node:url';
 // BEFORE the module graph loads.
 process.env.GP_CONFIG_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  'fixtures/market-config'
+  '../fixtures/market-config'
 );
 process.env.GP_INSTANCE_ID = 'gp-dev';
 process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID = 'bonbeauty';
 
 const { buildLocaleSeoAlternates, buildLocaleSocialMetadata } =
-  await import('../src/lib/seo/hreflang.ts');
+  await import('../../src/lib/seo/hreflang.ts');
 
 describe('SEO hreflang matrix', () => {
   test('builds category alternates with four BCP 47 locales and x-default', async () => {

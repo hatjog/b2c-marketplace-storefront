@@ -5,9 +5,18 @@
  */
 "use strict";
 
+const { describe, it } = require("node:test");
 const { RuleTester } = require("eslint");
 const tsParser = require("@typescript-eslint/parser");
 const rule = require("../no-hardcoded-i18n-strings");
+
+// Without this wiring RuleTester runs the cases but registers none of them with
+// the test runner: the suite reported a flat "52 tests" no matter how many
+// cases were added, so a case that silently stopped running was
+// indistinguishable from one that passed. It also stops RuleTester from
+// aborting the whole file on the first failure.
+RuleTester.describe = describe;
+RuleTester.it = it;
 
 const parserOptions = {
   ecmaVersion: 2022,
@@ -94,18 +103,19 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
     {
       name: "central allowlist exact value",
       filename: tsx,
-      options: [{ allowlist: [{ value: "BonBeauty", reason: "brand name" }] }],
+      options: [
+        { allowlist: [{ file: tsx, value: "BonBeauty", reason: "brand name" }] },
+      ],
       code: "const C = () => <span>BonBeauty</span>;",
     },
     {
-      name: "central allowlist file and line",
+      name: "central allowlist file scope",
       filename: "src/components/Allowed.tsx",
       options: [
         {
           allowlist: [
             {
               file: "src/components/Allowed.tsx",
-              line: 1,
               value: "Grow Platform",
               reason: "legal product name",
             },
@@ -115,9 +125,68 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
       code: "const C = () => <span>Grow Platform</span>;",
     },
     {
+      // Regression guard for the failure mode that fired twice in QD-05: a
+      // comment inserted above a waived literal shifted its reported line and
+      // the gate lit up on an unrelated edit. Entries anchor to content, so
+      // pushing the literal down the file must NOT resurrect the error.
+      name: "allowlist survives a line shift (QD-05 brittleness regression)",
+      filename: "src/components/Allowed.tsx",
+      options: [
+        {
+          allowlist: [
+            {
+              file: "src/components/Allowed.tsx",
+              value: "Grow Platform",
+              reason: "legal product name",
+            },
+          ],
+        },
+      ],
+      code: [
+        "// a newly added comment",
+        "// and another one",
+        "const C = () => <span>Grow Platform</span>;",
+      ].join("\n"),
+    },
+    {
+      name: "default parameter outside the user-visible attr set is not flagged",
+      filename: tsx,
+      code: "const C = ({ deliveryCode = 'DHL' }) => <span>{deliveryCode}</span>;",
+    },
+    {
+      name: "user-visible default parameter bound to a translation is fine",
+      filename: tsx,
+      code: "const C = ({ t, placeholder = t('forms.country') }) => <input placeholder={placeholder} />;",
+    },
+    {
+      name: "rest element in a destructured param does not crash the walker",
+      filename: tsx,
+      code: "const C = ({ placeholder, ...rest }) => <input placeholder={placeholder} {...rest} />;",
+    },
+    {
+      name: "allowlist matches across Unicode normalization forms",
+      filename: "src/components/Allowed.tsx",
+      options: [
+        {
+          // NFC form of "Przeglądaj"
+          allowlist: [
+            {
+              file: "src/components/Allowed.tsx",
+              value: "Przeglądaj",
+              reason: "waived brand copy",
+            },
+          ],
+        },
+      ],
+      // NFD form: a + combining ogonek
+      code: "const C = () => <span>Przeglądaj</span>;",
+    },
+    {
       name: "central allowlist ignores malformed no-reason entry",
       filename: tsx,
-      options: [{ allowlist: [{ value: "x", reason: "not this value" }] }],
+      options: [
+        { allowlist: [{ file: tsx, value: "x", reason: "not this value" }] },
+      ],
       code: "const C = () => <span>{'123'}</span>;",
     },
     {
@@ -283,16 +352,96 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
       errors: [{ messageId: "hardcodedText" }],
     },
     {
-      name: "central allowlist line mismatch does not suppress",
+      name: "central allowlist value mismatch does not suppress",
       filename: "src/components/Allowed.tsx",
       options: [
         {
           allowlist: [
             {
               file: "src/components/Allowed.tsx",
-              line: 2,
               value: "Grow Platform",
               reason: "legal product name",
+            },
+          ],
+        },
+      ],
+      code: "const C = () => <span>Grow Platfrom</span>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
+    {
+      // `placeholder = 'Country'` shipped untranslated copy that nothing
+      // reported, because a default parameter never becomes a JSXAttribute node.
+      name: "hardcoded default for a user-visible prop is flagged",
+      filename: tsx,
+      code: "const C = ({ placeholder = 'Select...' }) => <input placeholder={placeholder} />;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "hardcoded default in a destructured forwardRef param is flagged",
+      filename: tsx,
+      code: "const C = ({ label = 'Delivery', price }) => <p>{label}{price}</p>;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "hardcoded default in a plain function declaration is flagged",
+      filename: tsx,
+      code: "function C({ title = 'Order summary' }) { return <h2>{title}</h2>; }",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "hardcoded default reached through a fallback chain is flagged",
+      filename: tsx,
+      code: "const C = ({ alt = props.alt || 'Product photo' }) => <img alt={alt} />;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    // Each case below was a VERIFIED 0-error evasion of the first version of
+    // this branch. They are pinned so the branch cannot silently narrow again.
+    {
+      name: "renaming the binding does not move the literal out of scope",
+      filename: tsx,
+      code: "const C = ({ placeholder: ph = 'Select a country' }) => <input placeholder={ph} />;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "nested destructuring is flagged",
+      filename: tsx,
+      code: "const C = ({ opts: { label = 'Delivery cost' } }) => <p>{label}</p>;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "whole-parameter default object is flagged",
+      filename: tsx,
+      code: "const C = ({ placeholder = 'Select a country' } = {}) => <input placeholder={placeholder} />;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "array pattern default is flagged",
+      filename: tsx,
+      code: "const C = ([label = 'Delivery']) => <p>{label}</p>;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    {
+      name: "satisfies expression does not bypass the default check",
+      filename: tsx,
+      code: "const C = ({ placeholder = ('Country' satisfies string) }) => <input placeholder={placeholder} />;",
+      errors: [{ messageId: "hardcodedDefault" }],
+    },
+    // NOTE: an allowlist entry WITHOUT `file` is rejected by the rule schema
+    // (`required: [file, value, reason]`), so it surfaces as a hard ESLint
+    // configuration error rather than as an unsuppressed report. That is
+    // deliberate: a file-less waiver would disable a literal storefront-wide.
+    // RuleTester cannot assert schema rejection, so the guarantee lives in the
+    // schema plus `pathMatches` returning false for a missing pattern.
+    {
+      name: "allowlist file match must land on a path-segment boundary",
+      filename: "src/components/MiniCart.tsx",
+      options: [
+        {
+          allowlist: [
+            {
+              file: "Cart.tsx",
+              value: "Grow Platform",
+              reason: "scoped to a different component",
             },
           ],
         },
@@ -320,7 +469,9 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
     {
       name: "central allowlist requires reason",
       filename: tsx,
-      options: [{ allowlist: [{ value: "Grow Platform", reason: "" }] }],
+      options: [
+        { allowlist: [{ file: tsx, value: "Grow Platform", reason: "" }] },
+      ],
       code: "const C = () => <span>Grow Platform</span>;",
       errors: [{ messageId: "hardcodedText" }],
     },

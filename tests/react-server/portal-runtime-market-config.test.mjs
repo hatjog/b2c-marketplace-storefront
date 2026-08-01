@@ -8,7 +8,7 @@ function restoreEnvironment() {
 }
 
 async function importPortalServerModule(tag) {
-  const moduleUrl = new URL('../src/lib/portal.server.ts', import.meta.url);
+  const moduleUrl = new URL('../../src/lib/portal.server.ts', import.meta.url);
   return import(`${moduleUrl.href}?${tag}`);
 }
 
@@ -23,7 +23,7 @@ async function importPortalServerModule(tag) {
  * `src/lib/__tests__/homepage-locale-resolution.test.ts` (vitest stubs the guard).
  */
 async function marketDefaultLocale() {
-  const moduleUrl = new URL('../src/lib/market-locales.ts', import.meta.url);
+  const moduleUrl = new URL('../../src/lib/market-locales.ts', import.meta.url);
   const module = await import(moduleUrl.href);
   return (module.default ?? module).getMarketDefaultLocale();
 }

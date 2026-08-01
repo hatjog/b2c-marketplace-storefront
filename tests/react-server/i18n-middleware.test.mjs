@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { resolveLang, resolveRegion } = await import('../src/middleware.ts');
+const { resolveLang, resolveRegion } = await import('../../src/middleware.ts');
 
 describe('i18n middleware helpers', () => {
   describe('resolveLang', () => {

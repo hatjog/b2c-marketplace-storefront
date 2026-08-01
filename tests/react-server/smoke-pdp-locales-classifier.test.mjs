@@ -5,7 +5,7 @@ import {
   classifyLocalizedRender,
   isProductDescriptionBelowBar,
   readCanonicalProductBarThreshold
-} from '../scripts/smoke-pdp-locales.mjs';
+} from '../../scripts/smoke-pdp-locales.mjs';
 
 /**
  * Cykl 3 (1-4-c3-classifier-invariant): przed 1.4-c3 klasyfikator porównywał

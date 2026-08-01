@@ -41,7 +41,10 @@ function isUserVisibleLiteral(value) {
 }
 
 function normalizeValue(value) {
-  return String(value).replace(/\s+/g, " ").trim();
+  // NFC matters for Polish copy: an allowlisted `Przeglądaj` written NFC does
+  // not string-compare equal to the same word stored NFD, so the waiver would
+  // silently stop matching and the gate would fire on already-waived copy.
+  return String(value).normalize("NFC").replace(/\s+/g, " ").trim();
 }
 
 function filenameLooksTsx(filename) {
@@ -73,22 +76,34 @@ function isInsideNonVisibleElement(node) {
 }
 
 function pathMatches(filename, filePattern) {
-  if (!filePattern) return true;
+  // A waiver without a file scope would disable the literal across the whole
+  // storefront; `file` is required by the schema, and a missing one never matches.
+  if (!filePattern) return false;
   const normalizedFilename = filename.split(path.sep).join("/");
   const normalizedPattern = String(filePattern).split(path.sep).join("/");
+  // The suffix match must land on a path-segment boundary, otherwise an entry
+  // scoped to `Cart.tsx` also waives `MiniCart.tsx`.
   return (
     normalizedFilename === normalizedPattern ||
-    normalizedFilename.endsWith(normalizedPattern)
+    normalizedFilename.endsWith(`/${normalizedPattern}`)
   );
 }
 
-function centralAllowlistMatches(entries, filename, value, line) {
+/**
+ * Allowlist entries are anchored to CONTENT (`file` + `value`), never to a line
+ * number. Line pinning was the previous design and it failed twice in v1.14.0
+ * QD-05 alone: adding a comment above an entry shifts the reported line, so an
+ * unrelated edit made the gate fire on already-waived copy. A gate that cries
+ * wolf on unrelated edits gets waived wholesale, which is how it dies. The
+ * `line` property is additionally rejected by the schema, so re-pinning is a
+ * config error rather than a silent regression.
+ */
+function centralAllowlistMatches(entries, filename, value) {
   const normalizedValue = normalizeValue(value);
   return entries.some((entry) => {
     if (!entry || typeof entry !== "object") return false;
     if (!entry.reason || !String(entry.reason).trim()) return false;
     if (!pathMatches(filename, entry.file)) return false;
-    if (entry.line != null && Number(entry.line) !== Number(line)) return false;
     return normalizeValue(entry.value) === normalizedValue;
   });
 }
@@ -145,7 +160,14 @@ function walkStringExpressions(node, cb) {
       walkStringExpressions(node.left, cb);
       walkStringExpressions(node.right, cb);
     }
-  } else if (node.type === "TSAsExpression" || node.type === "TSNonNullExpression") {
+  } else if (
+    node.type === "TSAsExpression" ||
+    node.type === "TSNonNullExpression" ||
+    node.type === "TSSatisfiesExpression" ||
+    node.type === "TSTypeAssertion"
+  ) {
+    // Without `satisfies`/angle-bracket assertions here, `as const` was flagged
+    // while `satisfies string` was silent — a one-keyword bypass.
     walkStringExpressions(node.expression, cb);
   }
 }
@@ -167,11 +189,13 @@ module.exports = {
             type: "array",
             items: {
               type: "object",
+              // `line` is deliberately absent: entries anchor to content, and
+              // `additionalProperties: false` turns any attempt to re-pin an
+              // entry to a line number into a hard config error.
               additionalProperties: false,
-              required: ["value", "reason"],
+              required: ["file", "value", "reason"],
               properties: {
                 file: { type: "string" },
-                line: { type: "number" },
                 value: { type: "string" },
                 reason: { type: "string" },
               },
@@ -185,6 +209,8 @@ module.exports = {
         "Hardcoded user-visible JSX text `{{value}}`; use an i18n message or add `// i18n-ignore <reason>` for a documented exception.",
       hardcodedAttr:
         "Hardcoded user-visible `{{attr}}` attribute `{{value}}`; use an i18n message or add `// i18n-ignore <reason>` for a documented exception.",
+      hardcodedDefault:
+        "Hardcoded user-visible default for prop `{{attr}}` (`{{value}}`); a default parameter reaches the DOM exactly like a written attribute. Pass an i18n message from the caller or add `// i18n-ignore <reason>`.",
     },
   },
 
@@ -206,7 +232,7 @@ module.exports = {
     function isAllowed(node, value) {
       const line = node.loc && node.loc.start ? node.loc.start.line : null;
       if (line != null && ignoredLines.has(line)) return true;
-      return centralAllowlistMatches(allowlist, filename, value, line);
+      return centralAllowlistMatches(allowlist, filename, value);
     }
 
     function reportText(node, value) {
@@ -227,7 +253,90 @@ module.exports = {
       });
     }
 
+    function reportDefault(node, attr, value) {
+      if (!isUserVisibleLiteral(value) || isAllowed(node, value)) return;
+      context.report({
+        node,
+        messageId: "hardcodedDefault",
+        data: { attr, value: normalizeValue(value) },
+      });
+    }
+
+    /**
+     * `placeholder = 'Country'` shipped an untranslated attribute that nothing
+     * reported, because a default parameter is structurally invisible to a rule
+     * that only visits JSXAttribute nodes (post-mortem recorded in
+     * CountrySelect.tsx). This intentionally does NOT widen the ADR-151 §1
+     * attribute set — it narrows the ways that set can be bypassed.
+     *
+     * It does NOT close the class. Reaching a user-visible attribute through a
+     * local variable (`const ph = x ?? 'Country'`) or `Component.defaultProps`
+     * would need dataflow analysis rather than a parameter-name match, and both
+     * remain undetected — recorded in deferred-work.md. Treat this as a guard
+     * against the common shapes, not as proof of non-evadability.
+     */
+    function checkDefaultParams(node) {
+      // Walks parameter patterns to any depth. A single-level, binding-name-based
+      // check was evadable by renaming (`{ placeholder: ph = 'Country' }`),
+      // nesting (`{ opts: { label = 'x' } }`), or wrapping the whole parameter
+      // (`({ placeholder = 'x' } = {})`) — all of which still render the literal.
+      const visit = (target, propertyName) => {
+        if (!target) return;
+
+        if (target.type === "AssignmentPattern") {
+          // The declared prop name wins over the local alias, so renaming the
+          // binding cannot move a literal out of the user-visible attribute set.
+          const name =
+            propertyName ||
+            (target.left && target.left.type === "Identifier"
+              ? target.left.name
+              : null);
+          if (name && USER_VISIBLE_ATTRS.has(name)) {
+            walkStringExpressions(target.right, (value, valueNode) => {
+              reportDefault(valueNode, name, value);
+            });
+          }
+          // `({ placeholder = 'x' } = {})` — keep descending into the pattern.
+          visit(target.left, propertyName);
+          return;
+        }
+
+        if (target.type === "ObjectPattern") {
+          for (const property of target.properties || []) {
+            if (property.type === "RestElement") {
+              visit(property.argument, null);
+              continue;
+            }
+            const key = property.key;
+            const keyName =
+              key && (key.type === "Identifier" ? key.name : key.value);
+            visit(property.value, keyName != null ? String(keyName) : null);
+          }
+          return;
+        }
+
+        if (target.type === "ArrayPattern") {
+          for (const element of target.elements || []) visit(element, null);
+          return;
+        }
+
+        if (target.type === "RestElement") {
+          visit(target.argument, propertyName);
+          return;
+        }
+
+        if (target.type === "TSParameterProperty") {
+          visit(target.parameter, propertyName);
+        }
+      };
+
+      for (const param of node.params || []) visit(param, null);
+    }
+
     return {
+      FunctionDeclaration: checkDefaultParams,
+      FunctionExpression: checkDefaultParams,
+      ArrowFunctionExpression: checkDefaultParams,
       JSXText(node) {
         if (isInsideNonVisibleElement(node)) return;
         reportText(node, node.value);

@@ -1,997 +1,666 @@
 [
   {
-    "file": "src/app/[locale]/(main)/error/page.tsx",
-    "line": 201,
-    "value": "variant:",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/error/page.tsx",
-    "line": 204,
-    "value": "timestamp:",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/loading-states/page.tsx",
-    "line": 87,
-    "value": "LP1 —",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/loading-states/page.tsx",
-    "line": 122,
-    "value": "LP2 —",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/loading-states/page.tsx",
-    "line": 150,
-    "value": "LP3 —",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/loading-states/page.tsx",
-    "line": 197,
-    "value": "LP4 —",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/loading-states/page.tsx",
-    "line": 234,
-    "value": "LP5 —",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/loading-states/page.tsx",
-    "line": 263,
-    "value": "LP6 —",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/polityka-prywatnosci/page.tsx",
-    "line": 80,
-    "value": "market=",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/polityka-prywatnosci/page.tsx",
-    "line": 81,
-    "value": "· locale=",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/polityka-prywatnosci/page.tsx",
-    "line": 81,
-    "value": "· slug=",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/regulamin/page.tsx",
-    "line": 85,
-    "value": "market=",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/regulamin/page.tsx",
-    "line": 86,
-    "value": "· locale=",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/(main)/regulamin/page.tsx",
-    "line": 86,
-    "value": "· slug=",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/showcase/chrome/_client.tsx",
-    "line": 81,
-    "value": "Showcase: SearchOverlay (w6-09)",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/showcase/chrome/_client.tsx",
-    "line": 120,
-    "value": "Showcase: ToastAlert all variants (w6-06)",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/showcase/chrome/_client.tsx",
-    "line": 134,
-    "value": "Showcase: ModalShell (w6-05)",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/showcase/chrome/_client.tsx",
-    "line": 140,
-    "value": "Showcase: ModalShell — detailed-info (w6-05)",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/app/[locale]/showcase/chrome/_client.tsx",
-    "line": 142,
-    "value": "Treść showcase dla golden baseline. Komponent ModalShell w stanie open, bez triggerów interaktywnych, deterministyczny snapshot.",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/atoms/__tests__/Button.test.tsx",
-    "line": 29,
     "value": "Hello",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/atoms/LogoLockup/LogoLockup.tsx",
-    "line": 39,
-    "value": "BonBeauty",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/atoms/LogoLockup/LogoLockup.tsx",
-    "line": 56,
     "value": "BonBeauty",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/atoms/LowestPriceBadge/LowestPriceBadge.stories.tsx",
-    "line": 77,
     "value": "149 zł",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/atoms/MultiVendorIndicator/MultiVendorIndicator.stories.tsx",
-    "line": 77,
     "value": "od",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/atoms/MultiVendorIndicator/MultiVendorIndicator.stories.tsx",
-    "line": 79,
     "value": "149 zł",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/MobileNavbar/components/MobileCategoryDrawer.tsx",
-    "line": 68,
-    "value": "Close drawer",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/cells/MobileNavbar/components/MobileCategoryDrawer.tsx",
-    "line": 76,
     "value": "Close drawer",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/MobileNavbar/components/MobileCategoryNavbar.tsx",
-    "line": 107,
     "value": "View ${...} subcategories",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/MobileNavbar/MobileNavbar.tsx",
-    "line": 77,
     "value": "BonBeauty",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderAddresses/OrderAddresses.tsx",
-    "line": 14,
     "value": "Shipping address",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderAddresses/OrderAddresses.tsx",
-    "line": 36,
     "value": "Billing address",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderAddresses/OrderAddresses.tsx",
-    "line": 38,
     "value": "Same as shipping address",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderReturn/OrderReturn.tsx",
-    "line": 11,
     "value": "Return Order",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderReturn/OrderReturn.tsx",
-    "line": 12,
     "value": "Once you receive your order, you will have [14] days to return items. Find out more about",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderReturn/OrderReturn.tsx",
-    "line": 17,
     "value": "returns and refunds",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderReturn/OrderReturn.tsx",
-    "line": 28,
     "value": "Return",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderTrack/OrderTrack.tsx",
-    "line": 10,
     "value": "Order Tracking",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 23,
     "value": "More pages",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 35,
     "value": "Go to page ${...}",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 48,
     "value": "Current page, page ${...}",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 59,
-    "value": "Go to page ${...}",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 73,
-    "value": "More pages",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 93,
     "value": "Previous page",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/Pagination/Pagination.tsx",
-    "line": 108,
     "value": "Next page",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/SellerMap/SellerMap.tsx",
-    "line": 415,
     "value": "user location",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/SellerSelector/NoActiveVendorsFallback.tsx",
-    "line": 76,
     "value": "Coming soon",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/SellerSelector/SellerSelector.tsx",
-    "line": 300,
     "value": "zł",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/SellerSelector/SoleVendorBadge.tsx",
-    "line": 54,
     "value": "zł",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/SellNowButton/SellNowButton.tsx",
-    "line": 9,
     "value": "Sell now",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/tokens/SpacingScale.tsx",
-    "line": 28,
     "value": "Skala spacingu",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/WishlistItem/WishlistItem.tsx",
-    "line": 65,
     "value": "Product placeholder",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/__tests__/StateCard.test.tsx",
-    "line": 204,
     "value": "Przeglądaj",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/Breadcrumbs/Breadcrumbs.tsx",
-    "line": 33,
     "value": "Breadcrumb",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/CartDropdownItem/CartDropdownItem.tsx",
-    "line": 64,
     "value": "Product thumbnail",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/CartDropdownItem/CartDropdownItem.tsx",
-    "line": 89,
     "value": "Quantity:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/CategoryNavbar/components/FeaturedCategory.tsx",
-    "line": 35,
     "value": "Shop Now",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/molecules/LanguageSwitcher/LanguageSwitcher.tsx",
-    "line": 76,
-    "value": "${...} flag",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordion.tsx",
-    "line": 34,
     "value": "ORDER SET",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordion.tsx",
-    "line": 40,
     "value": "Order date:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordion.tsx",
-    "line": 49,
     "value": "Total:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordion.tsx",
-    "line": 65,
     "value": "VIEW ORDER",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
-    "line": 52,
     "value": "Order #",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
-    "line": 56,
     "value": "Seller:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
-    "line": 59,
     "value": "Shipping:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProdutMeasurementRow/ProdutMeasurementRow.tsx",
-    "line": 12,
     "value": "in",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProdutMeasurementRow/ProdutMeasurementRow.tsx",
-    "line": 13,
     "value": "cm",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProfileDetails/ProfileDetails.tsx",
-    "line": 27,
     "value": "Profile details",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProfileDetails/ProfileDetails.tsx",
-    "line": 36,
     "value": "Edit details",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProfileDetails/ProfileDetails.tsx",
-    "line": 51,
     "value": "Name",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProfileDetails/ProfileDetails.tsx",
-    "line": 69,
     "value": "Email",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ProfileDetails/ProfileDetails.tsx",
-    "line": 87,
     "value": "Phone number",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 132,
     "value": "Historia voucheru",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 137,
     "value": "Historia audytu jest pusta",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 142,
     "value": "Brak wpisów w historii voucheru",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 145,
     "value": "Tutaj zobaczysz każdą zmianę dotyczącą tego voucheru — kto, kiedy i jaką operację wykonał. Historia pojawi się przy pierwszej akcji vendora lub systemu.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 153,
     "value": "Zobacz instrukcje odbioru",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 176,
-    "value": "Historia voucheru",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/RecipientAuditTrailTimeline/RecipientAuditTrailTimeline.stories.tsx",
-    "line": 181,
     "value": "Ładuję historię…",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/SellerInfoHeader/SellerInfoHeader.tsx",
-    "line": 37,
     "value": "reviews",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/SellerReview/SellerReview.tsx",
-    "line": 48,
     "value": "Reply from",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/SiteNav/SiteNav.tsx",
-    "line": 41,
     "value": "BonBeauty",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 69,
     "value": "Addresses",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 80,
     "value": "No saved shipping addresses",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 86,
     "value": "You currently have no saved shipping addresses.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 87,
     "value": "Add an address to make your checkout process quicker and easier.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 94,
     "value": "Add address",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 152,
     "value": "Delete",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 159,
     "value": "Edit",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 170,
-    "value": "Add address",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 198,
     "value": "Are you sure you want to delete this address?",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 204,
     "value": "Cancel",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/organisms/Addressess/Addresses.tsx",
-    "line": 211,
-    "value": "Delete",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/organisms/OrderAddresses/OrderAddresses.tsx",
-    "line": 4,
     "value": "OrderAddresses",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderDetails.tsx",
-    "line": 20,
     "value": "Order date",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderDetails.tsx",
-    "line": 24,
     "value": "Order number",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderDetails.tsx",
-    "line": 29,
     "value": "Order status:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderDetails.tsx",
-    "line": 41,
     "value": "Payment status:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderShipping.tsx",
-    "line": 18,
     "value": "Shipping Address",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderShipping.tsx",
-    "line": 37,
     "value": "Contact",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderShipping.tsx",
-    "line": 46,
     "value": "Delivery method",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderDefails/OrderShipping.tsx",
-    "line": 59,
     "value": "Payment method",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderItems/Item.tsx",
-    "line": 36,
     "value": "Product thumbnail",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderItems/Item.tsx",
-    "line": 44,
-    "value": "Product thumbnail",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/organisms/OrderItems/Item.tsx",
-    "line": 62,
     "value": "Quantity:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderParcels/OrderParcels.tsx",
-    "line": 19,
     "value": "Order #",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderTotals/OrderTotals.tsx",
-    "line": 13,
     "value": "Subtotal:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderTotals/OrderTotals.tsx",
-    "line": 22,
     "value": "Delivery:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/OrderTotals/OrderTotals.tsx",
-    "line": 32,
     "value": "Total:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/PaymentContainer/PaymentTest.tsx",
-    "line": 9,
     "value": "Attention:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/PaymentContainer/PaymentTest.tsx",
-    "line": 9,
     "value": "For testing purposes only.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/OrderCard.tsx",
-    "line": 27,
     "value": "Seller photo",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/OrderCard.tsx",
-    "line": 36,
-    "value": "Seller photo",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/organisms/Reviews/OrderCard.tsx",
-    "line": 61,
     "value": "Date:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/OrderCard.tsx",
-    "line": 73,
     "value": "Write review",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/ReviewCard.tsx",
-    "line": 17,
     "value": "Seller photo",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/ReviewsToWrite.tsx",
-    "line": 30,
     "value": "Reviews",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/ReviewsToWrite.tsx",
-    "line": 52,
     "value": "No reviews to write",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/ReviewsToWrite.tsx",
-    "line": 58,
     "value": "You currently have no one to review.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
-    "line": 79,
     "value": "Order: #",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
-    "line": 86,
     "value": "Return requested date:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
-    "line": 231,
     "value": "Total:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/sections/AccountWriteSurfaces.tsx",
-    "line": 1552,
-    "value": "ending-4242",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/sections/OrderReturnSection/OrderReturnSection.tsx",
-    "line": 95,
     "value": "Order details",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/OrderReturnSection.tsx",
-    "line": 105,
     "value": "Select items",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnItemsTab.tsx",
-    "line": 26,
     "value": "Seller:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnItemsTab.tsx",
-    "line": 119,
     "value": "Please select reason",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnMethodsTab.tsx",
-    "line": 22,
     "value": "Return methods",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnMethodsTab.tsx",
-    "line": 26,
     "value": "No shipping methods available",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnMethodsTab.tsx",
-    "line": 47,
     "value": "Shipping address",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
-    "line": 69,
     "value": "Subtotal refund:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/UserMessagesSection/UserMessagesSection.tsx",
-    "line": 22,
     "value": "Loading..",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/__tests__/ErrorSurface.test.tsx",
-    "line": 46,
     "value": "Home",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/__tests__/HelpCenter.test.tsx",
-    "line": 39,
     "value": "Calm help",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 52,
     "value": "Wave 6 SiteHeader (stub)",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 58,
     "value": "Wave 6 SiteFooter (stub)",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 64,
     "value": "Surface content area (stub)",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 65,
     "value": "This is where W2-01..W2-13 surface-specific content renders.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 78,
     "value": "2 active",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 79,
     "value": "1 available",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AccountLayout.stories.tsx",
-    "line": 80,
     "value": "Silver",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/AuthLayout.tsx",
-    "line": 82,
-    "value": "BonBeauty",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/templates/AuthLayout.tsx",
-    "line": 106,
-    "value": "BonBeauty",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/templates/AuthLayout.tsx",
-    "line": 119,
     "value": "BonBeauty",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LegalDocLayout.tsx",
-    "line": 163,
     "value": "Fail-closed render guard active — this layout only renders when fetchLegalDocument resolved successfully. Missing document MUST throw LegalDocumentNotFoundError and the route MUST render an explicit error branch.",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LegalDocLayout.tsx",
-    "line": 364,
     "value": "doc_id=",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LegalDocLayout.tsx",
-    "line": 365,
     "value": "· version=",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LegalDocLayout.tsx",
-    "line": 366,
     "value": "· locale=",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LegalDocLayout.tsx",
-    "line": 368,
     "value": "· review_status=",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderProductListItem/OrderProductListItem.tsx",
-    "line": 54,
     "value": "Variant:",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderProductListItem/OrderProductListItem.tsx",
-    "line": 60,
     "value": "Quantity:",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
-    "line": 71,
     "value": "${...} Items",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/molecules/ParcelAccordion/ParcelAccordionItems.tsx",
-    "line": 71,
     "value": "${...} Item",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/ReviewCard.tsx",
-    "line": 40,
     "value": "${...} day${...} ago",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/Reviews/ReviewCard.tsx",
-    "line": 43,
     "value": "${...} week${...} ago",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
-    "line": 110,
     "value": "items",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
-    "line": 110,
     "value": "item",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
-    "line": 85,
     "value": "Continue",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
-    "line": 86,
     "value": "Select Items",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
-    "line": 88,
     "value": "Select return method",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnSummaryTab.tsx",
-    "line": 89,
     "value": "Request return",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LegalDocLayout.tsx",
-    "line": 368,
     "value": "(fallback → pl)",
     "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/templates/LoadingStatesCatalogue.tsx",
-    "line": 34,
     "value": "Processing…",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/atoms/Avatar/Avatar.tsx",
-    "line": 36,
     "value": "Avatar",
     "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
   },
   {
-    "file": "src/components/molecules/CartDropdownItem/CartDropdownItem.tsx",
-    "line": 55,
-    "value": "Product thumbnail",
-    "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
-  },
-  {
     "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
-    "line": 210,
     "value": "No reason provided",
     "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
   },
   {
     "file": "src/components/sections/OrderReturnSection/ReturnItemsTab.tsx",
-    "line": 97,
     "value": "Select Reason",
     "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
   }

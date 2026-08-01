@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { getPageImageUrl } = await import('../src/lib/blog.ts');
+const { getPageImageUrl } = await import('../../src/lib/blog.ts');
 
 describe('blog media helpers', () => {
   test('prefers page.image for blog cards by default', () => {
