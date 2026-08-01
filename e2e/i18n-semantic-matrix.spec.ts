@@ -251,13 +251,25 @@ test.describe('QD-I18N-07 @i18n-semantic-matrix — route x state x locale x fix
         // Taka strona nie niesie ZADNEGO sygnalu o kompletnosci tlumaczen -
         // gdyby wpadla do MISSING_LOCALIZED_VALUE, przejsciowa awaria danych
         // zostalaby zaraportowana jako defekt i18n.
-        const errorBoundary = await page
-          .locator('[data-testid="runtime-error-boundary"],[data-testid="categories-error-state"]')
-          .count();
-        if (errorBoundary > 0) {
+        //
+        // Wykrywanie idzie po TRESCI, nie po testidzie: boundary bywa renderowany
+        // przez rozne pliki error.tsx z roznymi testidami, a wspolny jest komunikat.
+        const boundaryMarkers = [
+          ...new Set(
+            plan.locales
+              .map((l) => messageAt(l, 'wave5_errors.runtime.server-error.eyebrow'))
+              .filter((v): v is string => typeof v === 'string' && v.length > 0)
+          )
+        ];
+        const hitMarker = boundaryMarkers.find((mk) => visible.includes(mk));
+        const hasBoundaryTestId =
+          (await page
+            .locator('[data-testid="runtime-error-boundary"],[data-testid="categories-error-state"]')
+            .count()) > 0;
+        if (hitMarker !== undefined || hasBoundaryTestId) {
           base.violations.push({
             kind: 'ERROR_BOUNDARY_RENDERED',
-            selector: '[data-testid=runtime-error-boundary|categories-error-state]',
+            selector: hitMarker !== undefined ? 'wave5_errors.runtime.server-error.eyebrow' : '[data-testid=error-boundary]',
             expected: 'strona tresci',
             actual_excerpt: `HTTP ${base.http_status} + error boundary — komorka NIE niesie sygnalu i18n`
           });
