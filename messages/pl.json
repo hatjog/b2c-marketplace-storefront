@@ -493,10 +493,13 @@
       "faq": "FAQ",
       "kontakt": "Kontakt",
       "regulamin": "Regulamin",
-      "polityka-prywatnosci": "Polityka prywatności"
+      "polityka-prywatnosci": "Polityka prywatności",
+      "pomoc": "Pomoc",
+      "zasady": "Zasady voucherów"
     },
     "go_to_social": "Przejdź do strony {name}",
     "section_legal": "Dane prawne sprzedawcy",
+    "tax_id_label": "NIP:",
     "legal_signoff_badge": "Sygnowane wewnętrznie ✓ (rewizja przed prod v1.15.0)",
     "legal_signoff_badge_aria": "Dokument sygnowany wewnętrznie; rewizja zewnętrzna zaplanowana przed wejściem na prod v1.15.0",
     "rights_reserved": "Wszelkie prawa zastrzeżone",

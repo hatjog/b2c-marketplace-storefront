@@ -145,12 +145,33 @@ const LEGAL_DOC_PATHS: Record<string, LegalDocType> = {
   '/pomoc': 'pomoc'
 };
 
-const FOOTER_NAV_I18N_KEYS_BY_PATH: Record<string, string> = {
-  '/about': 'nav.about',
-  '/faq': 'nav.faq',
-  '/kontakt': 'nav.kontakt',
-  '/regulamin': 'nav.regulamin',
-  '/polityka-prywatnosci': 'nav.polityka-prywatnosci'
+/**
+ * QD-02 — canonical route contract for footer navigation.
+ *
+ * Every path a market may configure maps onto ONE canonical destination, and the
+ * destination — never the configured label — decides which chrome key renders.
+ * Before QD-02 this table keyed on `/about` while every Polish market ships
+ * `/o-nas`, so the i18n overlay missed and the raw YAML label ("O nas") rendered
+ * on `/ua`, `/de` and `/en`. Recognition by route is what makes that impossible:
+ * a route is a stable identifier, a label is copy.
+ *
+ * Aliases are the same destination expressed in different market vocabularies
+ * (`/o-nas` ≡ `/about`, `/regulamin` ≡ `/terms`, …). They resolve to one key so
+ * the chrome translation is authored once.
+ */
+const FOOTER_NAV_KEY_BY_CANONICAL_PATH: Record<string, string> = {
+  '/o-nas': 'about',
+  '/about': 'about',
+  '/faq': 'faq',
+  '/kontakt': 'kontakt',
+  '/contact': 'kontakt',
+  '/regulamin': 'regulamin',
+  '/terms': 'regulamin',
+  '/polityka-prywatnosci': 'polityka-prywatnosci',
+  '/privacy': 'polityka-prywatnosci',
+  '/pomoc': 'pomoc',
+  '/help': 'pomoc',
+  '/zasady': 'zasady'
 };
 
 // Path PARSING (not language exposure): nav paths configured in market.yaml may
@@ -172,17 +193,42 @@ function normalizeFooterNavI18nPath(path: string) {
   return withoutTrailingSlash;
 }
 
+/**
+ * Footer nav labels are CHROME: they must answer the route locale exactly, with
+ * no cross-locale fallback (SPEC constraint, decision 2). So there is no
+ * `fallbackLabel` parameter any more — returning the configured string would be
+ * the very defect this package removes. An unresolvable link is dropped and
+ * reported instead of being rendered in the wrong language.
+ */
 function resolveFooterNavLabel(
   path: string,
-  fallbackLabel: string,
-  translateNavLabel?: FooterNavLabelResolver
-) {
-  const key = FOOTER_NAV_I18N_KEYS_BY_PATH[normalizeFooterNavI18nPath(path)];
-  if (!key || !translateNavLabel) {
-    return fallbackLabel;
+  translateNavLabel: FooterNavLabelResolver | undefined,
+  marketId: string | null
+): string | null {
+  const canonicalPath = normalizeFooterNavI18nPath(path);
+  const key = FOOTER_NAV_KEY_BY_CANONICAL_PATH[canonicalPath];
+
+  if (!key) {
+    console.warn(
+      `[footer] market '${marketId ?? 'unknown'}' configures nav link '${path}' ` +
+        'which is not in the canonical route contract — link dropped. Add the ' +
+        'route to FOOTER_NAV_KEY_BY_CANONICAL_PATH together with its ' +
+        'footer.nav.* key in messages/*.json.'
+    );
+    return null;
   }
 
-  return normalizeString(translateNavLabel(key)) ?? fallbackLabel;
+  const label = translateNavLabel ? normalizeString(translateNavLabel(`nav.${key}`)) : null;
+
+  if (!label) {
+    console.warn(
+      `[footer] missing chrome translation 'footer.nav.${key}' for the active ` +
+        `locale (route '${path}') — link dropped rather than shown in another language.`
+    );
+    return null;
+  }
+
+  return label;
 }
 
 export function resolveFooterLegalSignoffBadge(
@@ -233,14 +279,25 @@ export function resolveFooterNavLinks(
       return [];
     }
 
-    const fallbackLabel = normalizeString(item.label);
     const path = normalizeRelativePath(item.href);
 
-    if (!fallbackLabel || !path) {
+    if (!path) {
       return [];
     }
 
-    const label = resolveFooterNavLabel(path, fallbackLabel, translateNavLabel);
+    // `item.label` is deliberately NOT read. Both config sources still carry one
+    // (Payload's column is NOT NULL), and reading it is exactly how the Polish
+    // label reached /ua before QD-02.
+    const label = resolveFooterNavLabel(
+      path,
+      translateNavLabel,
+      normalizeString(marketConfig?.market_id)
+    );
+
+    if (!label) {
+      return [];
+    }
+
     const legalSignoffBadge = resolveFooterLegalSignoffBadge(
       marketConfig,
       path,
@@ -258,8 +315,27 @@ export function resolveFooterNavLinks(
   return [{ section: 'about', links }];
 }
 
+/**
+ * QD-02 guard. By the time a market config reaches a component its `copyright`
+ * has already been resolved to a string at the `resolveMarketConfig` boundary
+ * (`resolveFooterLocalizedCopy`). If a locale map ever arrives here, some new
+ * call path bypassed that boundary — rendering it would print `[object Object]`
+ * or, worse, silently degrade to the fallback `© year name`. Fail loud instead:
+ * this is the "mapa nie ma jak wyciec do JSX" invariant, enforced at runtime and
+ * not only by the type.
+ */
 export function resolveFooterCopyright(marketConfig?: MarketConfig | null) {
-  const copyright = normalizeString(marketConfig?.footer?.copyright);
+  const rawCopyright = marketConfig?.footer?.copyright;
+
+  if (rawCopyright !== null && rawCopyright !== undefined && typeof rawCopyright !== 'string') {
+    throw new Error(
+      '[footer] footer.copyright reached the renderer unresolved — expected a string, got ' +
+        `${Array.isArray(rawCopyright) ? 'array' : typeof rawCopyright}. ` +
+        'Market config must pass through resolveMarketConfig (QD-02 resolution boundary).'
+    );
+  }
+
+  const copyright = normalizeString(rawCopyright);
 
   if (copyright) {
     return copyright;

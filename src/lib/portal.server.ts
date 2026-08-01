@@ -3,10 +3,12 @@ import * as Sentry from '@sentry/nextjs';
 import type { SupportedLocale } from '@/i18n/routing';
 import { resolveMarketLocales } from '@/lib/market-locales';
 import {
+  resolveFooterLocalizedCopy,
   resolveLegalEntity,
   resolveRuntimePortalMarketConfig,
   resolveRuntimeSocialLinks,
   type LegalEntity,
+  type MarketLocaleContext,
   type MarketSocialLinks
 } from '@/lib/runtime-market-config';
 import { getFallbackMarketConfig, type MarketConfig } from '@/lib/portal';
@@ -64,6 +66,32 @@ function withRuntimeLegalEntity(marketConfig: MarketConfig, legalEntity: LegalEn
   return {
     ...marketConfig,
     legal_entity: legalEntity
+  } satisfies MarketConfig;
+}
+
+/**
+ * QD-02 — the ONE place a footer locale map becomes a string.
+ *
+ * Applied inside `applyRuntimeOverrides`, so it covers all THREE exits of
+ * `resolveMarketConfig`: the runtime YAML config, the Payload API fallback, and
+ * the hardcoded fallback config. Resolving only in the YAML loader would leave
+ * the Payload path serving its non-localized scalar `footer_copyright` verbatim
+ * — the shim in `resolveLocalizedConfigValue` labels that as a fallback instead
+ * of passing it off as a translation, and its removal criterion is QD-04
+ * (Payload `localized: true`), not this package.
+ */
+function withResolvedFooterCopy(
+  marketConfig: MarketConfig,
+  locale: SupportedLocale,
+  marketLocales: MarketLocaleContext
+) {
+  return {
+    ...marketConfig,
+    footer: resolveFooterLocalizedCopy(marketConfig.footer, {
+      locale,
+      marketLocales,
+      marketId: marketConfig.market_id ?? 'unknown'
+    })
   } satisfies MarketConfig;
 }
 
@@ -129,7 +157,11 @@ export async function resolveMarketConfig(marketId: string, locale: SupportedLoc
   ]);
 
   const applyRuntimeOverrides = (config: MarketConfig) =>
-    withRuntimeLegalEntity(withRuntimeSocialLinks(config, runtimeSocialLinks), legalEntity);
+    withResolvedFooterCopy(
+      withRuntimeLegalEntity(withRuntimeSocialLinks(config, runtimeSocialLinks), legalEntity),
+      locale,
+      marketLocales
+    );
 
   try {
     const runtimeMarketConfig = await resolveRuntimePortalMarketConfig(marketId, locale, marketLocales);

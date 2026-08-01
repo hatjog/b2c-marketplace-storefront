@@ -493,10 +493,13 @@
       "faq": "FAQ",
       "kontakt": "Kontakt",
       "regulamin": "Nutzungsbedingungen",
-      "polityka-prywatnosci": "Datenschutzrichtlinie"
+      "polityka-prywatnosci": "Datenschutzrichtlinie",
+      "pomoc": "Hilfe",
+      "zasady": "Gutschein-Regeln"
     },
     "go_to_social": "Zur {name}-Seite",
     "section_legal": "Rechtliche Verkäuferinformationen",
+    "tax_id_label": "USt-IdNr.:",
     "legal_signoff_badge": "Intern freigegeben ✓ (Review vor Prod v1.15.0)",
     "legal_signoff_badge_aria": "Dokument intern freigegeben; externe Prüfung ist vor Produktion v1.15.0 geplant",
     "rights_reserved": "Alle Rechte vorbehalten",
