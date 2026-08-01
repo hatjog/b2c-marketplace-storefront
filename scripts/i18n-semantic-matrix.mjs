@@ -76,7 +76,9 @@ function parseArgs(argv) {
     'implementation-artifacts/evidence',
     'qd-07-i18n-semantic-matrix.json'
   );
-  args.cellsOut ??= path.join(STOREFRONT_ROOT, 'test-results', 'i18n-semantic-matrix-cells.json');
+  // UWAGA: NIE uzywac `test-results/` — Playwright czysci swoj outputDir przy
+  // starcie, wiec plan zniknalby, zanim spec zdazylby go odczytac.
+  args.cellsOut ??= path.join(STOREFRONT_ROOT, '.qd07', 'i18n-semantic-matrix-cells.json');
   return args;
 }
 
@@ -161,14 +163,24 @@ async function resolveLocales(baseUrl, marketId, env) {
   }
   const gpOps = path.join(REPO_ROOT, 'gp-ops/markets', marketId, 'config/gp-dev/markets', marketId, 'market.yaml');
   if (fs.existsSync(gpOps)) {
-    const text = fs.readFileSync(gpOps, 'utf8');
-    const block = /^locales:\s*$([\s\S]*?)^\S/m.exec(`${text}\n#`);
-    if (block) {
-      const supported = [...block[1].matchAll(/^\s+-\s+([a-z]{2}(?:-[A-Z]{2})?)\s*$/gm)].map((m) => m[1]);
-      const def = /^\s+default:\s*([a-z-]+)\s*$/m.exec(block[1])?.[1];
-      if (supported.length > 0) {
-        return { locales: supported, default_locale: def ?? supported[0], source: `gp-ops:${path.relative(REPO_ROOT, gpOps)}` };
+    // Parser YAML, nie regex: `locales:` sasiaduje z `supported_locales:` oraz
+    // `fallback_chain:`, ktore niosa te same kody. Skanowanie tekstem sklejalo
+    // te listy i produkowalo zdublowane locale (i zdublowane komorki macierzy).
+    const yamlMod = await import('yaml');
+    const parse = yamlMod.parse ?? yamlMod.default?.parse;
+    if (typeof parse !== 'function') throw new ToolError('Pakiet "yaml" nie udostepnia parse()');
+    const doc = parse(fs.readFileSync(gpOps, 'utf8'));
+    const supported = doc?.locales?.supported;
+    if (Array.isArray(supported) && supported.length > 0) {
+      const uniq = [...new Set(supported.map(String))];
+      if (uniq.length !== supported.length) {
+        throw new ToolError(`market.locales.supported zawiera duplikaty: ${JSON.stringify(supported)}`);
       }
+      return {
+        locales: uniq,
+        default_locale: doc?.locales?.default ?? uniq[0],
+        source: `gp-ops:${path.relative(REPO_ROOT, gpOps)}#locales.supported`
+      };
     }
   }
   throw new NeedsLiveRun(
@@ -405,7 +417,7 @@ async function main() {
     writeEvidence(args.out, evidence);
 
     // 5. pomiar
-    const planPath = path.join(STOREFRONT_ROOT, 'test-results', 'i18n-semantic-matrix-plan.json');
+    const planPath = path.join(STOREFRONT_ROOT, '.qd07', 'i18n-semantic-matrix-plan.json');
     fs.mkdirSync(path.dirname(planPath), { recursive: true });
     fs.writeFileSync(
       planPath,
@@ -438,6 +450,21 @@ async function main() {
     }
     const cells = JSON.parse(fs.readFileSync(args.cellsOut, 'utf8'));
     evidence.cells = cells;
+
+    // Denominator jest liczony z KONTRAKTU, nie z tego, co udalo sie wykonac.
+    // Inaczej przebieg, ktory zgubil polowe komorek, raportowalby 100% pokrycia.
+    const denominator = contract.cells.length * evidence.locales.length;
+    evidence.coverage_denominator_expected = denominator;
+    const ids = new Set(cells.map((c) => c.cell_id));
+    if (ids.size !== cells.length) {
+      throw new ToolError(`Zdublowane cell_id w wynikach (${cells.length} rekordow, ${ids.size} unikalnych)`);
+    }
+    if (cells.length !== denominator) {
+      throw new NeedsLiveRun(
+        `Zmierzono ${cells.length} komorek, kontrakt wymaga ${denominator} ` +
+          `(${contract.cells.length} tras x ${evidence.locales.length} locale). Brakujacy pomiar to NIE jest PASS.`
+      );
+    }
 
     const expected = cells.length;
     const executed = cells.filter((c) => c.status === 'PASS' || c.status === 'FAIL').length;

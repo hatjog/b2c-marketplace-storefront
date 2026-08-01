@@ -284,7 +284,27 @@ test.describe('QD-I18N-07 @i18n-semantic-matrix — route x state x locale x fix
   }
 
   test.afterAll(() => {
+    // Playwright uruchamia retry w NOWYM workerze, wiec zwykly zapis nadpisalby
+    // caly plik wynikiem jednej ponowionej komorki. Scalamy z tym, co juz jest.
+    //
+    // Wiazacy jest PIERWSZY pomiar komorki. Retry moze zebrac trace, ale nie
+    // moze podniesc FAIL/UNEXECUTED do PASS - inaczej flake kupowalby zielen.
     fs.mkdirSync(path.dirname(CELLS_OUT!), { recursive: true });
-    fs.writeFileSync(CELLS_OUT!, `${JSON.stringify(results, null, 2)}\n`, 'utf8');
+    let merged: CellResult[] = [];
+    if (fs.existsSync(CELLS_OUT!)) {
+      try {
+        merged = JSON.parse(fs.readFileSync(CELLS_OUT!, 'utf8')) as CellResult[];
+      } catch {
+        merged = [];
+      }
+    }
+    const seen = new Set(merged.map((c) => c.cell_id));
+    for (const r of results) {
+      if (!seen.has(r.cell_id)) {
+        merged.push(r);
+        seen.add(r.cell_id);
+      }
+    }
+    fs.writeFileSync(CELLS_OUT!, `${JSON.stringify(merged, null, 2)}\n`, 'utf8');
   });
 });

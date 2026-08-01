@@ -51,7 +51,7 @@
     { "family": "auth", "route": "/{locale}/forgot-password", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["auth.layout.skip_to_form"] },
 
     { "family": "cart_checkout", "route": "/{locale}/cart", "state": "empty-cart", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.section_about"] },
-    { "family": "cart_checkout", "route": "/{locale}/checkout", "state": "empty-cart", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content"], "expect_redirect_keeps_locale": true },
+    { "family": "cart_checkout", "route": "/{locale}/checkout", "state": "empty-cart", "fixture_id": "FX-NONE", "probe_keys": ["checkout.back_to_cart"], "expect_redirect_keeps_locale": true, "probe_key_note": "Checkout ma wlasny layout BEZ skip-linku; sonda musi celowac w chrome, ktore ta trasa faktycznie renderuje." },
 
     { "family": "legal_help", "route": "/{locale}/regulamin", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline", "footer.nav.regulamin"] },
     { "family": "legal_help", "route": "/{locale}/polityka-prywatnosci", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"] },
@@ -73,6 +73,6 @@
     { "family": "order_return", "route": "/{locale}/user/orders/{order}", "state": "authenticated", "fixture_id": "FX-ORDER-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
     { "family": "order_return", "route": "/{locale}/user/orders/{order}/return", "state": "authenticated", "fixture_id": "FX-ORDER-1", "probe_keys": ["accessibility.skip_to_content", "footer.tagline"], "closes_family": true },
 
-    { "family": "error_notfound", "route": "/{locale}/{notfound_slug}", "state": "guest", "fixture_id": "FX-NONE", "probe_keys": ["accessibility.skip_to_content"], "expect_http": 404 }
+    { "family": "error_notfound", "route": "/{locale}/{notfound_slug}", "state": "guest", "fixture_id": "FX-NOTFOUND-SLUG", "probe_keys": ["wave5_errors.not_found.title"], "expect_http": 404, "probe_key_note": "Sonda celuje w kopie, ktora renderuje app/[locale]/not-found.tsx - dzieki temu porazka rozroznia 'brak tlumaczenia' od 'zlokalizowany not-found w ogole sie nie renderuje'." }
   ]
 }
