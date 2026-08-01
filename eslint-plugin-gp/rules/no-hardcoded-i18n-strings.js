@@ -41,7 +41,10 @@ function isUserVisibleLiteral(value) {
 }
 
 function normalizeValue(value) {
-  return String(value).replace(/\s+/g, " ").trim();
+  // NFC matters for Polish copy: an allowlisted `Przeglądaj` written NFC does
+  // not string-compare equal to the same word stored NFD, so the waiver would
+  // silently stop matching and the gate would fire on already-waived copy.
+  return String(value).normalize("NFC").replace(/\s+/g, " ").trim();
 }
 
 function filenameLooksTsx(filename) {
@@ -73,12 +76,16 @@ function isInsideNonVisibleElement(node) {
 }
 
 function pathMatches(filename, filePattern) {
-  if (!filePattern) return true;
+  // A waiver without a file scope would disable the literal across the whole
+  // storefront; `file` is required by the schema, and a missing one never matches.
+  if (!filePattern) return false;
   const normalizedFilename = filename.split(path.sep).join("/");
   const normalizedPattern = String(filePattern).split(path.sep).join("/");
+  // The suffix match must land on a path-segment boundary, otherwise an entry
+  // scoped to `Cart.tsx` also waives `MiniCart.tsx`.
   return (
     normalizedFilename === normalizedPattern ||
-    normalizedFilename.endsWith(normalizedPattern)
+    normalizedFilename.endsWith(`/${normalizedPattern}`)
   );
 }
 
@@ -153,7 +160,14 @@ function walkStringExpressions(node, cb) {
       walkStringExpressions(node.left, cb);
       walkStringExpressions(node.right, cb);
     }
-  } else if (node.type === "TSAsExpression" || node.type === "TSNonNullExpression") {
+  } else if (
+    node.type === "TSAsExpression" ||
+    node.type === "TSNonNullExpression" ||
+    node.type === "TSSatisfiesExpression" ||
+    node.type === "TSTypeAssertion"
+  ) {
+    // Without `satisfies`/angle-bracket assertions here, `as const` was flagged
+    // while `satisfies string` was silent — a one-keyword bypass.
     walkStringExpressions(node.expression, cb);
   }
 }
@@ -179,7 +193,7 @@ module.exports = {
               // `additionalProperties: false` turns any attempt to re-pin an
               // entry to a line number into a hard config error.
               additionalProperties: false,
-              required: ["value", "reason"],
+              required: ["file", "value", "reason"],
               properties: {
                 file: { type: "string" },
                 value: { type: "string" },
@@ -257,25 +271,61 @@ module.exports = {
      * parameter names already declared user-visible.
      */
     function checkDefaultParams(node) {
-      for (const param of node.params || []) {
-        const targets =
-          param.type === "ObjectPattern"
-            ? param.properties || []
-            : [param];
-        for (const target of targets) {
-          const assignment =
-            target.type === "Property" ? target.value : target;
-          if (!assignment || assignment.type !== "AssignmentPattern") continue;
+      // Walks parameter patterns to any depth. A single-level, binding-name-based
+      // check was evadable by renaming (`{ placeholder: ph = 'Country' }`),
+      // nesting (`{ opts: { label = 'x' } }`), or wrapping the whole parameter
+      // (`({ placeholder = 'x' } = {})`) — all of which still render the literal.
+      const visit = (target, propertyName) => {
+        if (!target) return;
+
+        if (target.type === "AssignmentPattern") {
+          // The declared prop name wins over the local alias, so renaming the
+          // binding cannot move a literal out of the user-visible attribute set.
           const name =
-            assignment.left && assignment.left.type === "Identifier"
-              ? assignment.left.name
-              : null;
-          if (!name || !USER_VISIBLE_ATTRS.has(name)) continue;
-          walkStringExpressions(assignment.right, (value, valueNode) => {
-            reportDefault(valueNode, name, value);
-          });
+            propertyName ||
+            (target.left && target.left.type === "Identifier"
+              ? target.left.name
+              : null);
+          if (name && USER_VISIBLE_ATTRS.has(name)) {
+            walkStringExpressions(target.right, (value, valueNode) => {
+              reportDefault(valueNode, name, value);
+            });
+          }
+          // `({ placeholder = 'x' } = {})` — keep descending into the pattern.
+          visit(target.left, propertyName);
+          return;
         }
-      }
+
+        if (target.type === "ObjectPattern") {
+          for (const property of target.properties || []) {
+            if (property.type === "RestElement") {
+              visit(property.argument, null);
+              continue;
+            }
+            const key = property.key;
+            const keyName =
+              key && (key.type === "Identifier" ? key.name : key.value);
+            visit(property.value, keyName != null ? String(keyName) : null);
+          }
+          return;
+        }
+
+        if (target.type === "ArrayPattern") {
+          for (const element of target.elements || []) visit(element, null);
+          return;
+        }
+
+        if (target.type === "RestElement") {
+          visit(target.argument, propertyName);
+          return;
+        }
+
+        if (target.type === "TSParameterProperty") {
+          visit(target.parameter, propertyName);
+        }
+      };
+
+      for (const param of node.params || []) visit(param, null);
     }
 
     return {

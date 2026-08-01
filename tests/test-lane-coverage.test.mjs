@@ -18,7 +18,7 @@
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import test from 'node:test';
 
 const testsDir = dirname(fileURLToPath(import.meta.url));
@@ -46,21 +46,34 @@ test('every .test.mjs file sits in exactly one test:node lane', () => {
 test('no .test.mjs file hides in an unrun subdirectory of tests/', () => {
   // Both lane globs are single-level (`tests/*` and `tests/react-server/*`).
   // A test file nested any deeper is collected by neither and would vanish
-  // from the count without ever reporting a failure.
-  const strayDirs = readdirSync(testsDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name !== 'react-server')
-    .flatMap((entry) => {
-      const nested = readdirSync(join(testsDir, entry.name), {
-        withFileTypes: true,
-      })
-        .filter((child) => child.isFile() && isTestFile(child.name))
-        .map((child) => `${entry.name}/${child.name}`);
-      return nested;
+  // from the count without ever reporting a failure. This walks the whole
+  // tree — a single-level check would itself miss `tests/a/b/x.test.mjs` and
+  // `tests/react-server/sub/x.test.mjs`.
+  const collected = readdirSync(testsDir, {
+    withFileTypes: true,
+    recursive: true,
+  });
+
+  const stray = collected
+    .filter((entry) => entry.isFile() && isTestFile(entry.name))
+    .map((entry) => {
+      // `parentPath` is the directory the entry was found in.
+      const parent = entry.parentPath ?? entry.path ?? testsDir;
+      const rel = relative(testsDir, join(parent, entry.name));
+      return rel.split(sep).join('/');
+    })
+    // Exactly two locations are collected by a lane glob: `<file>` and
+    // `react-server/<file>`. Anything with more separators is in neither.
+    .filter((rel) => {
+      const depth = rel.split('/').length;
+      if (depth === 1) return false;
+      if (depth === 2 && rel.startsWith('react-server/')) return false;
+      return true;
     });
 
   assert.deepEqual(
-    strayDirs,
+    stray,
     [],
-    `test files in unrun subdirectories: ${strayDirs.join(', ')}`
+    `test files in unrun subdirectories: ${stray.join(', ')}`
   );
 });
