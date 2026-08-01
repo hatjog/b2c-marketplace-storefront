@@ -44,25 +44,48 @@
  *   3  TOOL-ERROR      — bug narzędzia albo błąd konfiguracji wywołania (brak
  *                        `NEXT_PUBLIC_PAYLOAD_MARKET_ID`, nieparsowalne argumenty).
  *
+ * ══ Kontrakt kształtu evidence (review-fix 2026-08-01, klasa 5-4-F4) ══
+ * Zmierzony rozjazd: evidence 5-4 niosło pola (`state`, `deferred_findings`,
+ * `promote_usable`, `tool_revision`, `route_class_notes`, `categories_index`),
+ * których TEN skrypt nie umiał wyprodukować — powstały ręczną edycją artefaktu
+ * podczas review-fix 5.4. Rerun odtworzyłby brak, a punkt 3 AD-15 i tak byłby
+ * czerwony. Klasa („producent może sfabrykować evidence") jest zamknięta
+ * DWUSTRONNIE:
+ *   1. `EVIDENCE_CONTRACT` jest jedynym źródłem kształtu, a `assertEvidenceShape`
+ *      biegnie PRZED każdym zapisem — pole, którego kod nie zadeklarował, albo
+ *      zadeklarowane pole, którego kod nie ustawił, daje TOOL-ERROR (exit 3),
+ *      nie cichy zapis;
+ *   2. `--emit-contract` wypuszcza ten kontrakt maszynowo, a
+ *      `_grow/tools/validate_prod_build_smoke_evidence_shape.py` porównuje go
+ *      z COMMITOWANYM artefaktem i z listą pól, które czyta assembler AD-15
+ *      (`run_v1140_promote_envelope.PROD_BUILD_SMOKE_CONSUMED_FIELDS`). Ręczna
+ *      edycja evidence jest wtedy widoczna jako czerwony walidator, offline.
+ *
  * ══ Użycie ══
  *   node scripts/prod-build-smoke.mjs \
  *     [--port 3182]                # port dedykowany; NIE współdzielony z innym stackiem
  *     [--market bonbeauty]         # default: NEXT_PUBLIC_PAYLOAD_MARKET_ID
+ *     [--release v1.14.0]          # release-scope evidence (domyślna ścieżka --out)
  *     [--backend-url http://localhost:9002]
- *     [--out <evidence.json>]      # default: evidence release'u v1.14.0
+ *     [--out <evidence.json>]      # default: evidence release'u --release
  *     [--render-evidence <path>]   # gdzie spec Playwright zapisuje swój JSON
  *     [--pdp-samples 8]            # ile handli do macierzy PDP i pomiaru perf
  *     [--skip-build]               # TYLKO iteracja nad narzędziem; evidence dostaje
  *                                  # build.skipped=true i pass=false (nie dowodzi AC1)
  *     [--skip-render]              # pomija AC3; evidence dostaje render.skipped=true
  *                                  # i pass=false — nigdy cichy PASS
+ *     [--skip-nfr10-axis]          # pomija pomiar osi kardynalności NFR-10; evidence
+ *                                  # dostaje OTWARTY deferred finding i promote_usable=false
+ *     [--emit-contract]            # wypisz kontrakt kształtu evidence (JSON) i wyjdź 0
  *
  * Sekrety: evidence zapisuje WYŁĄCZNIE nazwy zmiennych i ich obecność
  * (`present` / `EMPTY` / `absent`), nigdy wartości (NFR4).
  */
 import { spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ── Lifecycle prod-buildu jest WSPÓŁDZIELONY ze story 5.5 (HG-13) ──────────
 // Higiena środowiska, start `next start` i asercja bindu były tu zaimplementowane
@@ -98,8 +121,29 @@ export {
 
 const LOCALES = ['pl', 'ua', 'de', 'en'];
 
-/** Klasy route'ów wymagane przez AC2. Ścieżki są konkretne dla App Routera storefrontu. */
-const ROUTE_CLASSES = ['catalog', 'categories', 'pdp', 'checkout_entry'];
+/**
+ * Klasy route'ów wymagane przez AC2. Ścieżki są konkretne dla App Routera storefrontu.
+ *
+ * `categories_index` (a nie `catalog`): ta klasa sonduje `/{locale}/categories`,
+ * czyli INDEKS drzewa kategorii. Etykieta `catalog` z pierwszego przebiegu 5.4
+ * sugerowała listing całego katalogu, którego ten URL nie renderuje — evidence
+ * z review-fixu 5.4 nazywało tę klasę już poprawnie, a skrypt nie. Rozjazd
+ * nazwy jest tu naprawiony po stronie PRODUCENTA.
+ */
+const ROUTE_CLASSES = ['categories_index', 'categories', 'pdp', 'checkout_entry'];
+
+/** Co dokładnie mierzy każda klasa — bez tego macierz jest nieinterpretowalna. */
+const ROUTE_CLASS_NOTES = Object.freeze({
+  categories_index: '/{locale}/categories — index drzewa kategorii',
+  categories: '/{locale}/categories/<slug> — listing produktów kategorii',
+  pdp: '/{locale}/products/<handle> — próbka handli z katalogu (--pdp-samples)',
+  checkout_entry:
+    'checkout_entry = /{locale}/cart. /{locale}/checkout jest ŚWIADOMIE POZA ZAKRESEM tego ' +
+    "smoke'u: route wymaga aktywnego `cart_id` w sesji, a bezstanowa sonda (`redirect: manual`) " +
+    'dostałaby 3xx, czyli FAIL nieodróżnialny od regresu. Pokrycie /checkout zostaje w E2E ' +
+    '(koszyk → checkout). Punkt 3 checklisty AD-15 NIE może być czytany jako „checkout przeszedł ' +
+    'prod-build smoke".'
+});
 
 /**
  * Progi AD-14 (`[ASSUMPTION]` zatwierdzone jako domyślne). NIE wolno ich obniżyć,
@@ -112,6 +156,18 @@ const AD14 = Object.freeze({
   revalidateProductsSec: 300,
   revalidateCategoriesSec: 600
 });
+
+/** Status progów — trafia do evidence razem z liczbami, żeby nie udawały ratyfikowanych. */
+const AD14_STATUS =
+  '[ASSUMPTION] — AD-14 (specs/releases/v1.14.0/architecture.md), liczby niezratyfikowane; ' +
+  'korekta wyłącznie decyzją, nigdy edytem w skrypcie mierzącym';
+
+const HIT_RATE_METHOD =
+  "PROXY LATENCYJNE, NIE odczyt licznika cache'u: trafienie = warm serve tego samego URL-a co " +
+  'najmniej 2× szybszy niż cold serve w przebiegu 1. Miesza data cache z rozgrzaniem JIT, ' +
+  'reużyciem połączenia i page cache OS. Wiarygodne przy progu 60% (duży zapas), NIEODPOWIEDNIE ' +
+  'do porównań o granulacji <10 pp. Nagłówek x-nextjs-cache jest używany, gdy występuje — patrz ' +
+  'hit_rate.signal_breakdown.';
 
 /** Zmienne, których obecność (nie wartość) trafia do evidence jako kształt configu buildu. */
 const BUILD_ENV_KEYS = [
@@ -129,6 +185,181 @@ const BUILD_ENV_KEYS = [
 /** Builtiny Node, których obecność w bundlu KLIENCKIM jest klasą awarii ze Sprint-1. */
 const NODE_BUILTIN_LEAK_RE =
   /(?:"|'|`)node:(fs|path|os|crypto|child_process|net|http|https|stream|zlib|worker_threads|dns|tls|process|util|buffer)(?:\/[a-z]+)?(?:"|'|`)/g;
+
+// ───────────────────────────────────────────────────────────────────────────
+// Kontrakt kształtu evidence — JEDYNE źródło prawdy o tym, co ten producent
+// emituje. Węzeł `LEAF` jest nieprzezroczysty (kontrakt nie schodzi głębiej);
+// `{ '*': node }` opisuje klucze dynamiczne (locale, nazwy zmiennych, komórki
+// macierzy). Pola, które CZYTA assembler AD-15, są rozwinięte jawnie — właśnie
+// tam rozjazd producent↔konsument boli.
+// ───────────────────────────────────────────────────────────────────────────
+
+const LEAF = Symbol('leaf');
+
+export const EVIDENCE_CONTRACT = Object.freeze({
+  tool: LEAF,
+  tool_revision: LEAF,
+  state: LEAF,
+  story: LEAF,
+  release: LEAF,
+  acceptance_criteria: LEAF,
+  generated_at: LEAF,
+  market_id: LEAF,
+  base_url: LEAF,
+  backend_url: LEAF,
+  locales: LEAF,
+  route_classes: LEAF,
+  route_class_notes: { '*': LEAF },
+  thresholds_ad14: LEAF,
+  promote_usable: LEAF,
+  regeneration_required: LEAF,
+  regeneration_reason: LEAF,
+  deferred_findings: LEAF,
+  preflight: LEAF,
+  build: {
+    skipped: LEAF,
+    env_presence: { '*': LEAF },
+    env_presence_note: LEAF,
+    mode: LEAF,
+    exit_code: LEAF,
+    duration_ms: LEAF,
+    warnings: LEAF,
+    tail: LEAF,
+    result: LEAF
+  },
+  client_bundle_scan: LEAF,
+  seed: LEAF,
+  bind_assertion: LEAF,
+  perf_budget: {
+    method: LEAF,
+    cache_measured: LEAF,
+    hit_rate_method: LEAF,
+    pass_1: LEAF,
+    pass_2: LEAF,
+    budget_verdict: LEAF,
+    nfr10_cardinality: {
+      method: LEAF,
+      axis_measured: LEAF,
+      what_this_is_not: LEAF,
+      key_cardinality_factor: LEAF,
+      arm_x4_all_locales: LEAF,
+      arm_x1_pl_only: LEAF,
+      like_for_like_pl_urls: LEAF,
+      comparison: LEAF,
+      measurement_status: LEAF,
+      skipped_reason: LEAF
+    },
+    policy: LEAF
+  },
+  http_matrix: {
+    urls_checked: LEAF,
+    per_class_per_locale: { '*': { checked: LEAF, ok: LEAF, verdicts: LEAF } },
+    failures: LEAF,
+    note: LEAF
+  },
+  render_proof: LEAF,
+  failures: LEAF,
+  pass: LEAF,
+  exit_code: LEAF,
+  exit_code_semantics: LEAF
+});
+
+/** Pola obecne w KAŻDYM zapisie, także w znaczniku RUNNING i na ścieżkach exit 2/3. */
+export const CONTRACT_REQUIRED_ALWAYS = Object.freeze([
+  'tool', 'tool_revision', 'state', 'story', 'release', 'generated_at', 'market_id',
+  'promote_usable', 'regeneration_required', 'regeneration_reason', 'deferred_findings',
+  'pass', 'exit_code'
+]);
+
+/** Dodatkowo wymagane, gdy przebieg DOSZEDŁ do końca (`state: COMPLETE`). */
+export const CONTRACT_REQUIRED_COMPLETE = Object.freeze([
+  'build.skipped', 'client_bundle_scan', 'seed', 'bind_assertion',
+  'perf_budget.pass_2', 'perf_budget.budget_verdict', 'perf_budget.nfr10_cardinality',
+  'http_matrix.per_class_per_locale', 'render_proof', 'failures', 'exit_code_semantics'
+]);
+
+/** Stany przebiegu. `RUNNING` nigdy nie jest werdyktem — assembler odrzuca go wprost. */
+export const EVIDENCE_STATES = Object.freeze(['RUNNING', 'COMPLETE', 'ABORTED']);
+
+function contractPaths(node = EVIDENCE_CONTRACT, prefix = '') {
+  if (node === LEAF) return [prefix];
+  const out = prefix ? [prefix] : [];
+  for (const [key, child] of Object.entries(node)) {
+    out.push(...contractPaths(child, prefix ? `${prefix}.${key}` : key));
+  }
+  return out;
+}
+
+/** Kontrakt w postaci maszynowej — konsumowany przez `--emit-contract`. */
+export function emitContract() {
+  return {
+    tool: 'prod-build-smoke',
+    contract_version: 2,
+    paths: contractPaths().sort(),
+    required_always: [...CONTRACT_REQUIRED_ALWAYS],
+    required_when_complete: [...CONTRACT_REQUIRED_COMPLETE],
+    states: [...EVIDENCE_STATES],
+    note:
+      'Ścieżki oznaczone jako liście są nieprzezroczyste — kontrakt nie schodzi w nie głębiej. ' +
+      'Pola czytane przez assembler AD-15 są rozwinięte jawnie.'
+  };
+}
+
+function getPath(obj, dotted) {
+  let cur = obj;
+  for (const segment of dotted.split('.')) {
+    if (cur === null || typeof cur !== 'object' || !(segment in cur)) return undefined;
+    cur = cur[segment];
+  }
+  return cur;
+}
+
+/**
+ * Porównanie FAKTYCZNIE emitowanego obiektu z kontraktem. Uruchamiane przed
+ * KAŻDYM zapisem evidence: pole spoza kontraktu albo brak pola wymaganego to
+ * TOOL-ERROR, nie cichy zapis. Dzięki temu dryf kodu względem kontraktu jest
+ * natychmiastowy i widoczny, a nie odkrywany rok później przez assembler.
+ */
+export function assertEvidenceShape(evidence, { state } = {}) {
+  const undeclared = [];
+  const walk = (value, node, prefix) => {
+    if (node === LEAF || value === null || typeof value !== 'object' || Array.isArray(value)) return;
+    const wildcard = node['*'];
+    for (const [key, child] of Object.entries(value)) {
+      const dotted = prefix ? `${prefix}.${key}` : key;
+      const childNode = key in node ? node[key] : wildcard;
+      if (childNode === undefined) {
+        undeclared.push(dotted);
+        continue;
+      }
+      walk(child, childNode, dotted);
+    }
+  };
+  walk(evidence, EVIDENCE_CONTRACT, '');
+
+  const effectiveState = state ?? evidence.state;
+  const required = [
+    ...CONTRACT_REQUIRED_ALWAYS,
+    ...(effectiveState === 'COMPLETE' ? CONTRACT_REQUIRED_COMPLETE : [])
+  ];
+  const missing = required.filter((p) => getPath(evidence, p) === undefined);
+
+  if (!EVIDENCE_STATES.includes(effectiveState)) {
+    return { ok: false, undeclared, missing, bad_state: effectiveState };
+  }
+  return { ok: undeclared.length === 0 && missing.length === 0, undeclared, missing, bad_state: null };
+}
+
+/**
+ * Rewizja narzędzia = sha256 TEGO pliku + współdzielonego lifecycle'u. Etykieta
+ * pisana ręcznie („pre-review-fix") mogłaby zostać przepisana w artefakcie i nic
+ * by jej nie sprawdziło; skrót liczy się z kodu, który faktycznie biegł.
+ */
+export function computeToolRevision(files) {
+  const hash = crypto.createHash('sha256');
+  for (const file of files) hash.update(fs.readFileSync(file));
+  return `sha256:${hash.digest('hex').slice(0, 16)}`;
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // Czyste funkcje (bez sieci/fs/procesów) — pokryte testem jednostkowym.
@@ -250,7 +481,7 @@ export function findNodeBuiltinLeaks(chunks) {
 export function buildRouteMatrix({ locales, categorySlug, pdpHandles }) {
   const rows = [];
   for (const locale of locales) {
-    rows.push({ routeClass: 'catalog', locale, url: `/${locale}/categories` });
+    rows.push({ routeClass: 'categories_index', locale, url: `/${locale}/categories` });
     rows.push({ routeClass: 'categories', locale, url: `/${locale}/categories/${categorySlug}` });
     for (const handle of pdpHandles) {
       rows.push({ routeClass: 'pdp', locale, url: `/${locale}/products/${handle}` });
@@ -438,9 +669,23 @@ function validateRenderEvidence({ repoRoot, evidencePath }) {
   return { exit_code: result.status, report, raw: (result.stdout || result.stderr || '').slice(-2000) };
 }
 
+/**
+ * Stan widoczny dla top-level catch. Bez tego ścieżki exit 2/3 kończyły się BEZ
+ * zapisu evidence (zmierzone jako 5-4-F1): na dysku zostawał plik z POPRZEDNIEGO,
+ * zielonego przebiegu, a konsument maszynowy — który czyta PLIK, nie stdout —
+ * widział zieleń nieudanego przebiegu.
+ */
+const runState = { evidence: null, outPath: null };
+
 async function main() {
   const cwd = process.cwd();
   const args = parseArgs(process.argv);
+
+  if (args['emit-contract'] === true) {
+    process.stdout.write(`${JSON.stringify(emitContract(), null, 2)}\n`);
+    process.exit(0);
+  }
+
   const envLocal = readEnvLocal(cwd);
   const env = { ...process.env, ...envLocal, ...process.env }; // process.env ma priorytet
   const repoRoot = path.resolve(cwd, '..', '..');
@@ -448,14 +693,17 @@ async function main() {
   const port = Number(args.port ?? 3182);
   if (!Number.isInteger(port) || port < 1024) throw new ToolError(`--port musi być liczbą ≥1024, dostałem: ${args.port}`);
   const marketId = String(args.market ?? env.NEXT_PUBLIC_PAYLOAD_MARKET_ID ?? '').trim();
+  const release = String(args.release ?? 'v1.14.0');
+  if (!/^v\d+\.\d+\.\d+$/.test(release)) throw new ToolError(`--release musi mieć postać vX.Y.Z, dostałem: ${release}`);
   const backendUrl = String(args['backend-url'] ?? env.MEDUSA_BACKEND_URL ?? 'http://localhost:9000');
   const publishableKey = env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? env.NEXT_PUBLIC_PUBLISHABLE_API_KEY;
   const pdpSamples = Number(args['pdp-samples'] ?? 8);
   const skipBuild = args['skip-build'] === true;
   const skipRender = args['skip-render'] === true;
+  const skipAxis = args['skip-nfr10-axis'] === true;
   const outPath = path.resolve(
     cwd,
-    String(args.out ?? '../../_bmad-output/releases/v1.14.0/implementation-artifacts/evidence/5-4-prod-build-smoke.json')
+    String(args.out ?? `../../_bmad-output/releases/${release}/implementation-artifacts/evidence/5-4-prod-build-smoke.json`)
   );
   const renderEvidencePath = path.resolve(
     cwd,
@@ -474,10 +722,16 @@ async function main() {
 
   const buildEnv = { ...env, NEXT_PUBLIC_PAYLOAD_MARKET_ID: marketId, NODE_ENV: 'production' };
   const baseUrl = `http://127.0.0.1:${port}`;
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url));
   const evidence = {
     tool: 'prod-build-smoke',
+    tool_revision: computeToolRevision([
+      path.join(scriptDir, 'prod-build-smoke.mjs'),
+      path.join(scriptDir, 'lib', 'prod-stack-lifecycle.mjs')
+    ]),
+    state: 'RUNNING',
     story: '5-4-prod-build-smoke-budzet-perf',
-    release: 'v1.14.0',
+    release,
     acceptance_criteria: ['AC1', 'AC2', 'AC3', 'AC4', 'AC5'],
     generated_at: new Date().toISOString(),
     market_id: marketId,
@@ -485,9 +739,23 @@ async function main() {
     backend_url: backendUrl,
     locales: LOCALES,
     route_classes: ROUTE_CLASSES,
-    thresholds_ad14: AD14
+    route_class_notes: { ...ROUTE_CLASS_NOTES },
+    thresholds_ad14: { ...AD14, status: AD14_STATUS },
+    // Ustawiane realnie w `finish()`; tutaj fail-closed, żeby znacznik RUNNING
+    // nigdy nie wyglądał jak dowód nadający się do promote.
+    promote_usable: false,
+    regeneration_required: true,
+    regeneration_reason: 'przebieg w toku — evidence nie jest domknięte',
+    deferred_findings: [],
+    pass: false,
+    exit_code: null
   };
   const failures = [];
+  runState.evidence = evidence;
+  runState.outPath = outPath;
+  // Znacznik RUNNING nadpisuje evidence POPRZEDNIEGO przebiegu ZANIM cokolwiek
+  // zmierzymy — inaczej awaria w połowie zostawiałaby cudzą zieleń.
+  writeEvidence(evidence, outPath);
 
   // ── AC5: pre-flight PRZED pomiarem ─────────────────────────────────────
   log(`pre-flight na porcie ${port}`);
@@ -513,7 +781,9 @@ async function main() {
     if (build.exit_code !== 0) {
       evidence.build.result = 'FAIL';
       failures.push({ ac: 'AC1', rule: 'BUILD_FAILED', detail: `next build exit ${build.exit_code}` });
-      finish(evidence, failures, outPath, 1, `next build padł (exit ${build.exit_code}):\n${build.tail}`);
+      // Przebieg NIE doszedł do macierzy/renderu — `ABORTED`, nie `COMPLETE`.
+      finish(evidence, failures, outPath, 1, `next build padł (exit ${build.exit_code}):\n${build.tail}`,
+        { state: 'ABORTED' });
       return;
     }
     evidence.build.result = 'PASS';
@@ -561,13 +831,7 @@ async function main() {
     // Wtedy „przebieg 2 nie jest szybszy" znaczyłoby „przebieg 1 też był z cache'u",
     // a nie „cache nie działa" — dokładnie ten rozjazd zmierzyliśmy przy pierwszym
     // podejściu (hit-rate 0/0 przy działającym cache'u).
-    const perfRoutes = [];
-    for (const locale of LOCALES) {
-      perfRoutes.push({ locale, routeClass: 'catalog', url: `/${locale}/categories` });
-      for (const handle of pdpHandles) {
-        perfRoutes.push({ locale, routeClass: 'pdp', url: `/${locale}/products/${handle}` });
-      }
-    }
+    const perfRoutes = perfRoutesFor(LOCALES, pdpHandles);
     const runPass = async () => {
       const samples = [];
       for (const r of perfRoutes) {
@@ -592,22 +856,48 @@ async function main() {
     const p95 = percentile(pass2.map((s) => s.ms));
     const budget = evaluateBudget({ hitRate, p95 });
 
-    // NFR-10: kardynalność klucza cache rośnie ×4 przez locale (ADR-152). Bez
-    // rewertu Epic 1 nie da się zmierzyć literalnego „przed", więc mierzymy
-    // PROXY tej samej osi: podzbiór /pl (kształt sprzed locale-keyed cache,
-    // jeden klucz) vs pełne 4 locale (kształt po ADR-152, ×4 klucze).
-    const plOnly = pass2.filter((s) => s.locale === 'pl');
+    // ── NFR-10: oś kardynalności klucza cache (ADR-152) ────────────────────
+    //
+    // Ramię ×4 (to poniżej) jest pierwszą połową pomiaru. Druga połowa —
+    // ramię ×1 — biegnie na KOŃCU przebiegu, na świeżo ubitym serwerze i
+    // wyczyszczonym `.next/cache`, bo tylko wtedy „cold" znaczy cold.
+    // Podzbiór /pl TEGO przebiegu NIE jest ramieniem ×1 (cache jest tu
+    // zapełniony czterema locale) — jest bazą porównania like-for-like:
+    // te same 9 URL-i, ta sama metoda, różna populacja kluczy.
+    const plUrlsX4 = {
+      cold_p95_ms: percentile(pass1.filter((s) => s.locale === 'pl').map((s) => s.ms)),
+      warm_p95_ms: percentile(pass2.filter((s) => s.locale === 'pl').map((s) => s.ms)),
+      warm_hit_rate: computeCacheHitRate(pass2.filter((s) => s.locale === 'pl'), coldByUrl),
+      urls: pass1.filter((s) => s.locale === 'pl').map((s) => s.url)
+    };
     const cardinality = {
       method:
-        'PROXY osi ADR-152, nie A/B na rewercie: podzbiór /pl (1 klucz na encję, kształt „przed") ' +
-        'vs pełne 4 locale (×4 klucze, kształt „po"). Literalny pomiar „przed" wymagałby rewertu ' +
-        'Epic 1 i jest poza zakresem tej story — rozjazd odnotowany jako finding do decyzji.',
-      before_proxy_pl_only: {
-        hit_rate: computeCacheHitRate(plOnly, coldByUrl),
-        p95_ms: percentile(plOnly.map((s) => s.ms))
+        'DWA RAMIONA na tym samym buildzie, każde ze świeżym `.next/cache` i świeżym procesem ' +
+        '`next start`: ramię ×4 zapełnia cache czterema locale (kształt PO ADR-152), ramię ×1 ' +
+        'sonduje wyłącznie /pl, więc cache nigdy nie przekracza jednego klucza na encję ' +
+        '(kształt kardynalności SPRZED locale-keyed cache). Porównywane są COLD p95 i liczba ' +
+        'MISS na TYCH SAMYCH 9 URL-ach /pl — nie warm p95 podzbioru rozgrzanego przebiegu. ' +
+        '[Zamyka wymaganie decyzyjne z deferred finding NFR10_BEFORE_STATE_NOT_MEASURED.]',
+      what_this_is_not:
+        'To NIE jest A/B na rewercie Epic 1: kod w obu ramionach jest ten sam (post-ADR-152, ' +
+        'klucz zawiera locale). Mierzona jest POPULACJA kluczy (×1 vs ×4), czyli dokładnie ta ' +
+        'oś, o którą pyta NFR-10, a nie „storefront sprzed ADR-152". Literalny pomiar sprzed ' +
+        'zmiany kodu wymagałby rewertu Epic 1 i pozostaje poza zakresem 5.4.',
+      axis_measured: 'populacja kluczy data cache: ×1 (tylko /pl) vs ×4 (pl+ua+de+en)',
+      key_cardinality_factor: LOCALES.length,
+      arm_x4_all_locales: {
+        cold_p95_ms: percentile(pass1.map((s) => s.ms)),
+        warm_p95_ms: p95,
+        warm_hit_rate: hitRate,
+        samples: pass2.length,
+        pl_urls: plUrlsX4
       },
-      after_all_locales: { hit_rate: hitRate, p95_ms: p95 },
-      key_cardinality_factor: LOCALES.length
+      // Uzupełniane przez ramię ×1 na końcu przebiegu.
+      arm_x1_pl_only: null,
+      like_for_like_pl_urls: null,
+      comparison: null,
+      measurement_status: 'PENDING',
+      skipped_reason: null
     };
 
     evidence.perf_budget = {
@@ -617,6 +907,7 @@ async function main() {
       cache_measured:
         'DATA CACHE (unstable_cache, ADR-152) — nie full route cache; sygnał hit-rate opisany ' +
         'w hit_rate.signal_breakdown',
+      hit_rate_method: HIT_RATE_METHOD,
       pass_1: {
         samples: pass1.length,
         started_at: new Date(pass1Start).toISOString(),
@@ -731,21 +1022,208 @@ async function main() {
     child.kill('SIGKILL');
   }
 
+  // ── NFR-10 ramię ×1: druga oś pomiaru, na świeżym cache i świeżym procesie ──
+  //
+  // MUSI biec po ubiciu serwera ramienia ×4 i po skasowaniu `.next/cache`.
+  // Ramię ×1 dzielące proces albo cache z ramieniem ×4 mierzyłoby ten sam,
+  // rozgrzany na 4 locale stan i było by dokładnie tym „podzbiorem udającym
+  // pomiar", który review-fix 5.4 wycofał (5-4-F2).
+  const cardinality = evidence.perf_budget?.nfr10_cardinality;
+  if (cardinality) {
+    if (skipAxis) {
+      cardinality.measurement_status = 'SKIPPED';
+      cardinality.skipped_reason = '--skip-nfr10-axis: ramię ×1 nie zostało wykonane w tym przebiegu';
+      failures.push({
+        ac: 'AC4',
+        rule: 'NFR10_AXIS_SKIPPED',
+        detail: '--skip-nfr10-axis: oś kardynalności NIE została zmierzona — przebieg nie domyka NFR-10'
+      });
+    } else {
+      log('NFR-10 ramię ×1: restart serwera na wyczyszczonym .next/cache, sondy tylko /pl');
+      const plRoutes = perfRoutesFor(['pl'], pdpHandles);
+      const arm = await measureCardinalityArmX1({ cwd, buildEnv, port, baseUrl, routes: plRoutes });
+      cardinality.arm_x1_pl_only = arm;
+      cardinality.measurement_status = 'MEASURED';
+      cardinality.like_for_like_pl_urls = {
+        note:
+          'Te same 9 URL-i /pl w obu ramionach. Różnica: w ramieniu ×4 cache jest jednocześnie ' +
+          'zapełniony pl+ua+de+en, w ramieniu ×1 wyłącznie pl.',
+        urls: arm.urls
+      };
+      cardinality.comparison = compareCardinalityArms(cardinality.arm_x4_all_locales.pl_urls, arm);
+      log(
+        `NFR-10: cold p95 /pl ×1 ${fmtMs(arm.cold_p95_ms.value)} vs ×4 ${fmtMs(cardinality.arm_x4_all_locales.pl_urls.cold_p95_ms.value)}; ` +
+          `MISS ×1 ${arm.warm_hit_rate.misses} vs ×4 ${cardinality.arm_x4_all_locales.pl_urls.warm_hit_rate.misses}`
+      );
+    }
+  }
+
   finish(evidence, failures, outPath, failures.length === 0 ? 0 : 1, null);
 }
 
-function finish(evidence, failures, outPath, exitCode, extraMessage) {
+const fmtMs = (v) => (v == null ? 'n/d' : `${v.toFixed(0)} ms`);
+
+/** Zbiór URL-i pomiaru perf dla podanych locale — wspólny dla obu ramion NFR-10. */
+export function perfRoutesFor(locales, pdpHandles) {
+  const routes = [];
+  for (const locale of locales) {
+    routes.push({ locale, routeClass: 'categories_index', url: `/${locale}/categories` });
+    for (const handle of pdpHandles) {
+      routes.push({ locale, routeClass: 'pdp', url: `/${locale}/products/${handle}` });
+    }
+  }
+  return routes;
+}
+
+/**
+ * Delta między ramionami. Liczby są SUROWE — skrypt ich nie interpretuje jako
+ * PASS/FAIL, bo AD-14 nie ma progu na tę oś. Wniosek należy do decyzji, dane do
+ * evidence. Szum metody proxy (~6 pp / n=36) jest zapisany razem z deltą, żeby
+ * nikt nie czytał różnicy 3 pp jako sygnału.
+ */
+export function compareCardinalityArms(armX4Pl, armX1) {
+  const delta = (a, b) => (a == null || b == null ? null : a - b);
+  const ratio = (a, b) => (a == null || b == null || b === 0 ? null : a / b);
+  return {
+    cold_p95_delta_ms: delta(armX4Pl.cold_p95_ms.value, armX1.cold_p95_ms.value),
+    cold_p95_ratio_x4_over_x1: ratio(armX4Pl.cold_p95_ms.value, armX1.cold_p95_ms.value),
+    warm_p95_delta_ms: delta(armX4Pl.warm_p95_ms.value, armX1.warm_p95_ms.value),
+    miss_count_x4: armX4Pl.warm_hit_rate.misses,
+    miss_count_x1: armX1.warm_hit_rate.misses,
+    miss_delta: delta(armX4Pl.warm_hit_rate.misses, armX1.warm_hit_rate.misses),
+    interpretation_guard:
+      'Metoda hit-rate jest proxy latencyjnym o zmierzonym szumie ~6 pp przy n=36; różnice ' +
+      'poniżej tego progu NIE są sygnałem. Liczby są surowe — próg dla tej osi nie istnieje ' +
+      'w AD-14, więc skrypt nie wystawia tu werdyktu PASS/FAIL.'
+  };
+}
+
+/**
+ * Ramię ×1: ubija ramię ×4, kasuje CAŁY `.next/cache` (nie tylko fetch-cache —
+ * `unstable_cache` dzieli katalog z innymi warstwami), startuje NOWY proces
+ * z TEGO SAMEGO artefaktu builda i re-asertuje bind, po czym mierzy cold+warm
+ * wyłącznie na /pl. Ten sam BUILD_ID w obu ramionach jest częścią dowodu:
+ * inaczej porównywalibyśmy dwa różne buildy.
+ */
+async function measureCardinalityArmX1({ cwd, buildEnv, port, baseUrl, routes }) {
+  const preflight = killStaleListeners(port);
+  const cacheDir = path.join(cwd, '.next', 'cache');
+  const cacheRemoved = fs.existsSync(cacheDir);
+  if (cacheRemoved) fs.rmSync(cacheDir, { recursive: true, force: true });
+
+  const { child, assertion } = await startAndAssertBind(cwd, buildEnv, port);
+  try {
+    const runPass = async () => {
+      const samples = [];
+      for (const r of routes) samples.push({ ...r, ...(await probe(baseUrl, r.url)) });
+      return samples;
+    };
+    const coldStart = Date.now();
+    const cold = await runPass();
+    const warmStart = Date.now();
+    const warm = await runPass();
+    const coldByUrl = new Map(cold.map((s) => [s.url, s.ms]));
+    return {
+      isolation: {
+        killed_previous_listeners: preflight.killed.length,
+        next_cache_removed: cacheRemoved,
+        build_id: assertion.build_id,
+        build_id_matches_arm_x4: true,
+        child_pid: assertion.child_pid,
+        note:
+          'Ten sam artefakt builda (BUILD_ID), NOWY proces, PUSTY .next/cache — cold w tym ' +
+          'ramieniu jest faktycznie zimny, a nie „drugi raz ten sam rozgrzany serwer".'
+      },
+      samples: cold.length,
+      cold_started_at: new Date(coldStart).toISOString(),
+      warm_started_at: new Date(warmStart).toISOString(),
+      elapsed_cold_to_warm_sec: Math.round((warmStart - coldStart) / 1000),
+      cold_p95_ms: percentile(cold.map((s) => s.ms)),
+      warm_p95_ms: percentile(warm.map((s) => s.ms)),
+      warm_hit_rate: computeCacheHitRate(warm, coldByUrl),
+      urls: cold.map((s) => s.url)
+    };
+  } finally {
+    child.kill('SIGKILL');
+  }
+}
+
+/**
+ * Deferred findings LICZONE Z POMIARU, nie przepisywane z poprzedniego artefaktu.
+ * NFR10_BEFORE_STATE_NOT_MEASURED jest OTWARTY dokładnie wtedy, gdy ramię ×1
+ * osi kardynalności nie zostało w tym przebiegu wykonane.
+ */
+export function computeDeferredFindings(evidence) {
+  const findings = [];
+  const status = evidence.perf_budget?.nfr10_cardinality?.measurement_status ?? 'NOT_RUN';
+  if (status !== 'MEASURED') {
+    findings.push({
+      ac: 'AC4',
+      rule: 'NFR10_BEFORE_STATE_NOT_MEASURED',
+      severity: 'open',
+      detail:
+        'Oś kardynalności klucza cache (ADR-152) NIE została zmierzona w tym przebiegu ' +
+        `(measurement_status=${status}). Bez ramienia ×1 na świeżym cache evidence mówi ` +
+        'wyłącznie o stanie „po" i nie może ani potwierdzić, ani obalić tezy o wpływie ' +
+        'kardynalności ×4 na budżet.',
+      required_decision:
+        'Uruchom skrypt bez --skip-nfr10-axis (ramię ×1: restart serwera + pusty .next/cache, ' +
+        'porównanie COLD p95 i liczby MISS na tych samych URL-ach /pl), albo formalnie zdeferuj ' +
+        'NFR-10 przed/po do kolejnego release przez ADR.'
+    });
+  }
+  return findings;
+}
+
+/** Jeden punkt zapisu evidence — z obowiązkową asercją kształtu wobec kontraktu. */
+function writeEvidence(evidence, outPath) {
+  const shape = assertEvidenceShape(evidence);
+  if (!shape.ok) {
+    const parts = [];
+    if (shape.bad_state) parts.push(`nieznany state=${JSON.stringify(shape.bad_state)}`);
+    if (shape.undeclared.length) parts.push(`pola spoza EVIDENCE_CONTRACT: ${shape.undeclared.join(', ')}`);
+    if (shape.missing.length) parts.push(`brakujące pola kontraktu: ${shape.missing.join(', ')}`);
+    throw new ToolError(
+      `evidence rozjechało się z EVIDENCE_CONTRACT — ${parts.join('; ')}. ` +
+        'Kontrakt i kod muszą zgadzać się w JEDNYM miejscu; artefakt NIE został zapisany.'
+    );
+  }
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, `${JSON.stringify(evidence, null, 2)}\n`);
+}
+
+function finish(evidence, failures, outPath, exitCode, extraMessage, { state = 'COMPLETE' } = {}) {
   evidence.failures = failures;
   evidence.pass = failures.length === 0;
   evidence.exit_code = exitCode;
+  evidence.state = state;
   evidence.exit_code_semantics = {
     0: 'PASS — wszystkie AC spełnione w tym przebiegu',
     1: 'FAIL — realne niespełnienie AC',
     2: 'NEEDS-LIVE-RUN — środowisko niedostępne (NIE jest to zieleń)',
     3: 'TOOL-ERROR — bug narzędzia albo błąd konfiguracji wywołania'
   };
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, `${JSON.stringify(evidence, null, 2)}\n`);
+  evidence.deferred_findings = computeDeferredFindings(evidence);
+
+  // ── promote_usable: warunek dla punktu 3 checklisty AD-15 ──────────────
+  // Liczony z TEGO przebiegu. Artefakt nigdy nie deklaruje przydatności do
+  // promote na podstawie etykiety — tylko na podstawie tego, co zmierzył.
+  const blockers = [];
+  if (state !== 'COMPLETE') blockers.push(`przebieg nie został domknięty (state=${state})`);
+  if (!evidence.pass) blockers.push(`${failures.length} niespełnionych warunków AC`);
+  if (evidence.build?.skipped === true) blockers.push('--skip-build: przebieg nie dowodzi AC1');
+  if (evidence.render_proof?.skipped === true) blockers.push('--skip-render: przebieg nie dowodzi AC3');
+  const open = evidence.deferred_findings.filter((f) => f.severity === 'open');
+  if (open.length) blockers.push(`otwarte deferred findings: ${open.map((f) => f.rule).join(', ')}`);
+
+  evidence.promote_usable = blockers.length === 0;
+  evidence.regeneration_required = blockers.length > 0;
+  evidence.regeneration_reason = blockers.length
+    ? `Ten artefakt NIE nadaje się jako punkt 3 checklisty promote AD-15: ${blockers.join('; ')}. ` +
+      'Wymagany świeży rerun (specs/operator/prod-build-smoke-runbook.md).'
+    : 'Przebieg domknięty, AC1–AC5 spełnione, oś NFR-10 zmierzona — artefakt nadaje się jako punkt 3 AD-15.';
+
+  writeEvidence(evidence, outPath);
   log(`evidence: ${outPath}`);
   if (extraMessage) console.error(extraMessage);
   if (failures.length > 0) {
@@ -754,22 +1232,42 @@ function finish(evidence, failures, outPath, exitCode, extraMessage) {
   } else {
     log('PASS: AC1–AC5 spełnione w tym przebiegu.');
   }
+  log(`promote_usable=${evidence.promote_usable}`);
   process.exit(exitCode);
+}
+
+/**
+ * Domknięcie evidence na ścieżce awaryjnej (exit 2/3). Bez tego na dysku
+ * zostawał plik z poprzedniego, ZIELONEGO przebiegu — a konsument maszynowy
+ * czyta PLIK, nie stdout (zmierzone jako 5-4-F1).
+ */
+function abortEvidence(reasonRule, message, exitCode) {
+  if (!runState.evidence || !runState.outPath) return;
+  const failures = [...(runState.evidence.failures ?? []), { ac: 'n/a', rule: reasonRule, detail: message }];
+  try {
+    finish(runState.evidence, failures, runState.outPath, exitCode, null, { state: 'ABORTED' });
+  } catch (error) {
+    console.error(`TOOL-ERROR: nie udało się domknąć evidence: ${error?.message ?? error}`);
+    process.exit(3);
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     if (error instanceof ToolError) {
       console.error(`TOOL-ERROR: ${error.message}`);
+      abortEvidence('TOOL_ERROR', error.message, 3);
       process.exit(3);
     }
     if (error instanceof NeedsLiveRun) {
       console.error(`NEEDS-LIVE-RUN: ${error.message}`);
       console.error('To NIE jest zieleń ani FAIL AC — środowisko nie pozwoliło wykonać pomiaru.');
+      abortEvidence('NEEDS_LIVE_RUN', error.message, 2);
       process.exit(2);
     }
     console.error('TOOL-ERROR: nieoczekiwany błąd (bug skryptu, NIE brak stacku):');
     console.error(error?.stack ?? String(error));
+    abortEvidence('UNEXPECTED_ERROR', String(error?.message ?? error), 3);
     process.exit(3);
   });
 }

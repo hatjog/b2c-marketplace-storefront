@@ -11,17 +11,43 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  CONTRACT_REQUIRED_ALWAYS,
+  assertEvidenceShape,
   buildRouteMatrix,
   classifyCacheSample,
   classifyProbe,
+  compareCardinalityArms,
   computeCacheHitRate,
+  computeDeferredFindings,
   describeEnvPresence,
+  emitContract,
   evaluateBudget,
   findNodeBuiltinLeaks,
   parsePortOwners,
   percentile,
+  perfRoutesFor,
   redactBuildLog
 } from '../scripts/prod-build-smoke.mjs';
+
+/** Minimalne evidence spełniające kontrakt na ścieżce awaryjnej (state != COMPLETE). */
+function minimalEvidence(overrides = {}) {
+  const base = {
+    tool: 'prod-build-smoke',
+    tool_revision: 'sha256:deadbeefdeadbeef',
+    state: 'ABORTED',
+    story: '5-4-prod-build-smoke-budzet-perf',
+    release: 'v1.14.0',
+    generated_at: '2026-08-01T00:00:00.000Z',
+    market_id: 'bonbeauty',
+    promote_usable: false,
+    regeneration_required: true,
+    regeneration_reason: 'test',
+    deferred_findings: [],
+    pass: false,
+    exit_code: 2
+  };
+  return { ...base, ...overrides };
+}
 
 test('redactBuildLog: sekret z logu builda nie trafia do evidence (NFR4)', () => {
   // Log builda to cudzy stdout — na jednym przebiegu czysty, na następnym może
@@ -196,7 +222,7 @@ test('buildRouteMatrix: KAŻDA klasa × KAŻDY locale (zbiorcze N/N ukrywa, któ
   });
 
   for (const locale of ['pl', 'ua', 'de', 'en']) {
-    for (const routeClass of ['catalog', 'categories', 'pdp', 'checkout_entry']) {
+    for (const routeClass of ['categories_index', 'categories', 'pdp', 'checkout_entry']) {
       assert.ok(
         rows.some((r) => r.locale === locale && r.routeClass === routeClass),
         `brak ${routeClass} dla /${locale}`
@@ -221,4 +247,111 @@ test('describeEnvPresence: obecność, nigdy wartość (NFR4) — puste ≠ usta
   });
   // Żadna wartość nie może wyciec do evidence.
   assert.ok(!JSON.stringify(shape).includes('bonbeauty'));
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Kontrakt kształtu evidence (klasa 5-4-F4: producent nie umiał wyprodukować
+// pól, które artefakt niósł). Test-the-test: każdy przypadek pokazuje RED na
+// wejściu odtwarzającym zmierzony rozjazd i GREEN po poprawce.
+// ───────────────────────────────────────────────────────────────────────────
+
+test('assertEvidenceShape: GREEN na kształcie, który producent faktycznie emituje', () => {
+  const result = assertEvidenceShape(minimalEvidence());
+  assert.deepEqual(result.undeclared, []);
+  assert.deepEqual(result.missing, []);
+  assert.equal(result.ok, true);
+});
+
+test('assertEvidenceShape: RED na polu dopisanym RĘCZNIE do artefaktu (klasa 5-4-F4)', () => {
+  // Dokładnie ten rozjazd: review-fix 5.4 dopisał do evidence pola, których
+  // skrypt nie emitował. Kontrakt musi to nazwać, a nie przepuścić.
+  const result = assertEvidenceShape(minimalEvidence({ recznie_dopisane_pole: 'x' }));
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.undeclared, ['recznie_dopisane_pole']);
+});
+
+test('assertEvidenceShape: RED, gdy kod przestał ustawiać pole wymagane kontraktem', () => {
+  const evidence = minimalEvidence();
+  delete evidence.promote_usable;
+  const result = assertEvidenceShape(evidence);
+  assert.equal(result.ok, false);
+  assert.ok(result.missing.includes('promote_usable'));
+});
+
+test('assertEvidenceShape: state COMPLETE wymaga pełnego zestawu pomiarów', () => {
+  // „Domknięty" przebieg bez macierzy i bez perf to nie jest domknięty przebieg.
+  const result = assertEvidenceShape(minimalEvidence({ state: 'COMPLETE' }));
+  assert.equal(result.ok, false);
+  assert.ok(result.missing.includes('http_matrix.per_class_per_locale'));
+  assert.ok(result.missing.includes('perf_budget.nfr10_cardinality'));
+});
+
+test('assertEvidenceShape: nieznany state jest RED (RUNNING nigdy nie jest werdyktem)', () => {
+  const result = assertEvidenceShape(minimalEvidence({ state: 'ZIELONY' }));
+  assert.equal(result.ok, false);
+  assert.equal(result.bad_state, 'ZIELONY');
+});
+
+test('emitContract: kontrakt jest maszynowy i pokrywa pola czytane przez assembler AD-15', () => {
+  const contract = emitContract();
+  for (const field of ['promote_usable', 'regeneration_required', 'state', 'deferred_findings',
+    'build.skipped', 'pass', 'generated_at', 'market_id', 'release', 'tool_revision',
+    'http_matrix.per_class_per_locale']) {
+    assert.ok(contract.paths.includes(field), `assembler czyta ${field}, a kontrakt go nie zna`);
+  }
+  for (const field of CONTRACT_REQUIRED_ALWAYS) {
+    assert.ok(contract.paths.includes(field), `${field} wymagane, a spoza kontraktu`);
+  }
+});
+
+test('computeDeferredFindings: NFR-10 OTWARTY bez ramienia ×1, ZAMKNIĘTY po pomiarze', () => {
+  const notMeasured = computeDeferredFindings({
+    perf_budget: { nfr10_cardinality: { measurement_status: 'SKIPPED' } }
+  });
+  assert.equal(notMeasured.length, 1);
+  assert.equal(notMeasured[0].rule, 'NFR10_BEFORE_STATE_NOT_MEASURED');
+  assert.equal(notMeasured[0].severity, 'open');
+
+  const measured = computeDeferredFindings({
+    perf_budget: { nfr10_cardinality: { measurement_status: 'MEASURED' } }
+  });
+  assert.deepEqual(measured, []);
+
+  // Brak sekcji perf w ogóle też jest brakiem pomiaru, nie zieleń.
+  assert.equal(computeDeferredFindings({}).length, 1);
+});
+
+test('perfRoutesFor: ramię ×1 i ×4 mierzą TE SAME URL-e /pl (porównanie like-for-like)', () => {
+  const x1 = perfRoutesFor(['pl'], ['a', 'b']).map((r) => r.url);
+  const x4 = perfRoutesFor(['pl', 'ua', 'de', 'en'], ['a', 'b'])
+    .filter((r) => r.locale === 'pl')
+    .map((r) => r.url);
+  assert.deepEqual(x1, x4);
+  assert.ok(x1.includes('/pl/categories'));
+  assert.ok(x1.includes('/pl/products/b'));
+});
+
+test('compareCardinalityArms: surowa delta, bez werdyktu i bez dzielenia przez zero', () => {
+  const armX4 = {
+    cold_p95_ms: { value: 200, samples: 9 },
+    warm_p95_ms: { value: 60, samples: 9 },
+    warm_hit_rate: { misses: 3 }
+  };
+  const armX1 = {
+    cold_p95_ms: { value: 160, samples: 9 },
+    warm_p95_ms: { value: 50, samples: 9 },
+    warm_hit_rate: { misses: 1 }
+  };
+  const cmp = compareCardinalityArms(armX4, armX1);
+  assert.equal(cmp.cold_p95_delta_ms, 40);
+  assert.equal(cmp.cold_p95_ratio_x4_over_x1, 1.25);
+  assert.equal(cmp.miss_delta, 2);
+  assert.ok(!('pass' in cmp), 'skrypt nie wystawia werdyktu na osi bez progu w AD-14');
+
+  const nulls = compareCardinalityArms(
+    { cold_p95_ms: { value: null }, warm_p95_ms: { value: null }, warm_hit_rate: { misses: 0 } },
+    { cold_p95_ms: { value: 0 }, warm_p95_ms: { value: null }, warm_hit_rate: { misses: 0 } }
+  );
+  assert.equal(nulls.cold_p95_delta_ms, null);
+  assert.equal(nulls.cold_p95_ratio_x4_over_x1, null);
 });
