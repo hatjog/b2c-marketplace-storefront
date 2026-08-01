@@ -10,6 +10,8 @@ import { BlogLayout, BlogRichText, BlogTocNav } from '@/components/templates';
 import { fetchPayloadBlogPage } from '@/data/payload-pages';
 import { type SupportedLocale } from '@/i18n/routing';
 import { buildTocEntries, formatBlogPublishedDate } from '@/lib/blog';
+import { formatFallbackLanguageName, payloadLocaleToBcp47 } from '@/lib/blog-locale';
+import { getMarketDefaultLocale } from '@/lib/market-locales';
 import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 600;
@@ -38,6 +40,7 @@ export async function generateMetadata({
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const page = await fetchPayloadBlogPage({
     locale: locale as SupportedLocale,
+    fallbackLocale: await getMarketDefaultLocale(),
     marketId,
     slug
   });
@@ -82,6 +85,7 @@ export default async function BlogArticlePage({
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const page = await fetchPayloadBlogPage({
     locale: locale as SupportedLocale,
+    fallbackLocale: await getMarketDefaultLocale(),
     marketId,
     slug
   });
@@ -89,6 +93,23 @@ export default async function BlogArticlePage({
   if (!page) {
     return notFound();
   }
+
+  // CAP-4 — a fallback article is labelled as such and carries its own `lang`;
+  // the surrounding page chrome stays in the route locale.
+  const fallbackLocale = page.contentFallbackLocale;
+  const contentLang = fallbackLocale ? payloadLocaleToBcp47(fallbackLocale) : undefined;
+  const contentNotice = fallbackLocale ? (
+    <p
+      role="note"
+      data-testid="blog-content-fallback-notice"
+      data-fallback-locale={fallbackLocale}
+      className="mb-6 rounded-[var(--bb-radius-card)] border border-dashed border-[var(--bb-tint-gold-24)] bg-[var(--bb-tint-gold-05)] px-4 py-3 text-sm text-secondary"
+    >
+      {t('content_fallback_notice', {
+        language: formatFallbackLanguageName(fallbackLocale, locale)
+      })}
+    </p>
+  ) : null;
 
   const tocEntries = buildTocEntries(page.slug, page.content);
   const publishedDate = formatBlogPublishedDate(page.publishedAt, locale);
@@ -146,6 +167,8 @@ export default async function BlogArticlePage({
           inlineEmbedLabel={t('inline_embed_label')}
         />
       }
+      contentLang={contentLang}
+      contentNotice={contentNotice}
       author={page.author}
       authorHeading={t('author_heading')}
       relatedHeading={t('related_heading')}

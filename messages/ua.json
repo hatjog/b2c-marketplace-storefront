@@ -913,7 +913,13 @@
     "breadcrumb_home": "Головна",
     "disallowed_embed": "Цей embed недоступний у безпечному storefront-перегляді.",
     "newsletter_heading": "Не пропустіть наступні ритуали",
-    "inline_embed_label": "Додатковий матеріал"
+    "inline_embed_label": "Додатковий матеріал",
+    "excerpt_fallback": "Найсвіжіші редакційні оновлення з блогу нашого маркетплейсу.",
+    "author_default_name": "Редакція Grow Platform",
+    "author_default_role": "Редакційна команда",
+    "author_default_bio": "Редакційні нотатки та оновлення, опубліковані з контентного шару вітрини.",
+    "content_fallback_notice": "Цей запис ще не доступний обраною мовою. Нижче — оригінальна версія ({language}); це не переклад.",
+    "content_fallback_badge": "Оригінальна версія ({language})"
   },
   "programmaticLanding": {
     "metadata_title": "{offer} у {location} | BonBeauty",

@@ -21,7 +21,8 @@ import { resolveMarketLocales, type MarketLocales } from '@/lib/market-locales';
 import { toHreflangBare } from '@/lib/helpers/hreflang';
 import { listCategories } from '@/lib/data/categories';
 import { getSellers } from '@/lib/data/seller';
-import { fetchHomepageBlogPageDocs, mapPayloadPageToBlogPost } from '@/lib/blog';
+import { fetchHomepageBlogPageDocs } from '@/lib/blog';
+import { getMarketDefaultLocale } from '@/lib/market-locales';
 import {
   PROGRAMMATIC_LOCATIONS,
   PROGRAMMATIC_OFFERS
@@ -138,11 +139,17 @@ async function safeListSellers(): Promise<Array<{ handle: string }>> {
 async function safeListBlogPosts(): Promise<Array<{ slug: string }>> {
   try {
     const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || 'bonbeauty';
-    const payloadPages = await fetchHomepageBlogPageDocs({ marketId, limit: 100 });
-    const cards = payloadPages
-      .map((p, i) => mapPayloadPageToBlogPost(p, i))
-      .filter(card => card.slug && !card.slug.startsWith('fallback-'));
-    return cards.map(c => ({ slug: c.slug }));
+    // Slugs are locale-invariant, but the read still needs an explicit locale;
+    // the market default is the authoring source and therefore the full set.
+    const payloadPages = await fetchHomepageBlogPageDocs({
+      marketId,
+      locale: await getMarketDefaultLocale(),
+      limit: 100
+    });
+    return payloadPages
+      .map(page => page.slug?.trim())
+      .filter((slug): slug is string => Boolean(slug))
+      .map(slug => ({ slug }));
   } catch {
     return [];
   }

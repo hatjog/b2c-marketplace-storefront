@@ -1,6 +1,11 @@
 import type { HttpTypes } from '@medusajs/types';
 
-import { fetchHomepageBlogPageDocs, getPayloadApiUrl, mapPayloadPageToBlogPost } from '@/lib/blog';
+import {
+  type BlogCardLabels,
+  fetchHomepageBlogPageDocs,
+  getPayloadApiUrl,
+  mapPayloadPageToBlogPost
+} from '@/lib/blog';
 import {
   CATEGORIES_CACHE_TAG_SCOPE,
   PRODUCTS_CACHE_TAG_SCOPE
@@ -226,9 +231,14 @@ export async function fetchHomepageCategories({
 }
 
 export async function fetchHomepageBlogPosts({
-  limit
+  locale,
+  limit,
+  labels
 }: {
+  /** Route locale — explicit, never inferred inside the fetch (CAP-3/CAP-4). */
+  locale: string;
   limit?: number | null;
+  labels: BlogCardLabels;
 }): Promise<BlogPost[]> {
   if (!getPayloadApiUrl()) {
     console.error('[homepage][blog] PAYLOAD_API_URL is required');
@@ -238,10 +248,11 @@ export async function fetchHomepageBlogPosts({
   try {
     const pages = await fetchHomepageBlogPageDocs({
       marketId: getMarketId(),
+      locale,
       limit
     });
 
-    return pages.map(mapPayloadPageToBlogPost);
+    return pages.map((page, index) => mapPayloadPageToBlogPost(page, index, labels));
   } catch (error) {
     console.error('[homepage][blog] request error', error);
     return [];
