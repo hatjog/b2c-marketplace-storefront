@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 
+import type { SupportedLocale } from '@/i18n/routing';
+import { resolveMarketLocales } from '@/lib/market-locales';
 import {
   resolveLegalEntity,
   resolveRuntimePortalMarketConfig,
@@ -107,17 +109,30 @@ export async function fetchMarketConfig(marketId: string) {
   return request;
 }
 
-export async function resolveMarketConfig(marketId: string) {
-  const [runtimeSocialLinks, legalEntity] = await Promise.all([
+/**
+ * QD-01 (SPEC-storefront-i18n-completeness): `locale` is REQUIRED.
+ *
+ * Market config carries user-facing copy, so it cannot be resolved without a
+ * locale. Making the parameter mandatory turns "did every call site pass the
+ * route locale?" from a review question into a compile error. Surfaces with no
+ * route locale (the non-localized root layout, the filters sidebar) must pass
+ * `await getMarketDefaultLocale()` explicitly — never implicitly.
+ *
+ * The effective locale set comes from the single ADR-154 resolver; this function
+ * does not keep a locale list of its own.
+ */
+export async function resolveMarketConfig(marketId: string, locale: SupportedLocale) {
+  const [runtimeSocialLinks, legalEntity, marketLocales] = await Promise.all([
     resolveRuntimeSocialLinks(marketId),
-    resolveLegalEntity(marketId)
+    resolveLegalEntity(marketId),
+    resolveMarketLocales()
   ]);
 
   const applyRuntimeOverrides = (config: MarketConfig) =>
     withRuntimeLegalEntity(withRuntimeSocialLinks(config, runtimeSocialLinks), legalEntity);
 
   try {
-    const runtimeMarketConfig = await resolveRuntimePortalMarketConfig(marketId);
+    const runtimeMarketConfig = await resolveRuntimePortalMarketConfig(marketId, locale, marketLocales);
 
     if (runtimeMarketConfig) {
       return {

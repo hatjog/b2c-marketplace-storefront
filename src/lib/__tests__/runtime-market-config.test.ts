@@ -24,6 +24,11 @@ afterEach(() => {
   }
 });
 
+// QD-01: the fixture carries a `locales` block because that is the only source of
+// the market's locale set (ADR-154). Tests never keep a locale list of their own —
+// they read `defaultLocale`/`supported` back from the resolver.
+const FIXTURE_LOCALES = ['pl', 'en'] as const;
+
 async function createRuntimeMarketConfig(theme: string | null) {
   const configRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'gp-runtime-market-config-'));
   const marketRoot = path.join(configRoot, 'gp-dev', 'markets', 'bonbeauty');
@@ -33,6 +38,10 @@ async function createRuntimeMarketConfig(theme: string | null) {
     [
       'market_id: bonbeauty',
       'name: BonBeauty',
+      'locales:',
+      `  default: ${FIXTURE_LOCALES[0]}`,
+      '  supported:',
+      ...FIXTURE_LOCALES.map(locale => `    - ${locale}`),
       'storefront:',
       theme ? `  theme: ${theme}` : '  primary_color: "#111111"',
       ''
@@ -41,6 +50,12 @@ async function createRuntimeMarketConfig(theme: string | null) {
   );
 
   return configRoot;
+}
+
+/** The locale context every `resolveRuntimePortalMarketConfig` call needs. */
+async function fixtureLocaleContext() {
+  const { resolveMarketLocales } = await import('../market-locales');
+  return resolveMarketLocales();
 }
 
 describe('resolveRuntimePortalMarketConfig', () => {
@@ -53,8 +68,9 @@ describe('resolveRuntimePortalMarketConfig', () => {
 
     const { resolveRuntimePortalMarketConfig } = await import('../runtime-market-config');
 
-    const firstResult = await resolveRuntimePortalMarketConfig('');
-    const secondResult = await resolveRuntimePortalMarketConfig('');
+    const locales = await fixtureLocaleContext();
+    const firstResult = await resolveRuntimePortalMarketConfig('', locales.defaultLocale, locales);
+    const secondResult = await resolveRuntimePortalMarketConfig('', locales.defaultLocale, locales);
 
     expect(firstResult?.market_id).toBe('bonbeauty');
     expect(firstResult?.theme).toBe('bonbeauty');
@@ -72,7 +88,8 @@ describe('resolveRuntimePortalMarketConfig', () => {
 
     const { resolveRuntimePortalMarketConfig } = await import('../runtime-market-config');
 
-    const result = await resolveRuntimePortalMarketConfig('');
+    const locales = await fixtureLocaleContext();
+    const result = await resolveRuntimePortalMarketConfig('', locales.defaultLocale, locales);
 
     expect(result).not.toBeNull();
     expect(result?.market_id).toBe('bonbeauty');
@@ -88,7 +105,11 @@ describe('resolveRuntimePortalMarketConfig', () => {
 
     const { resolveRuntimePortalMarketConfig } = await import('../runtime-market-config');
 
-    await expect(resolveRuntimePortalMarketConfig('')).resolves.toBeNull();
+    // No market.yaml at all: the resolver returns null before any locale lookup,
+    // so the locale context is a plain literal here rather than a resolver read.
+    await expect(
+      resolveRuntimePortalMarketConfig('', 'pl', { supported: ['pl'], defaultLocale: 'pl' })
+    ).resolves.toBeNull();
   });
 
   it('keeps Payload as secondary fetch when empty market id resolves from runtime YAML', async () => {
@@ -105,7 +126,8 @@ describe('resolveRuntimePortalMarketConfig', () => {
 
     const { resolveMarketConfig } = await import('../portal.server');
 
-    const result = await resolveMarketConfig('');
+    const locales = await fixtureLocaleContext();
+    const result = await resolveMarketConfig('', locales.defaultLocale);
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(result.usedFallback).toBe(false);

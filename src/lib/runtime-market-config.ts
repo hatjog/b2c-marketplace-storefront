@@ -11,9 +11,54 @@ import * as Sentry from '@sentry/nextjs';
 import yaml from 'js-yaml';
 import { cache } from 'react';
 
+import type { SupportedLocale } from '@/i18n/routing';
+import { resolveLocalizedConfigValue } from '@/lib/i18n/localized-config-value';
 import type { MarketConfig } from '@/lib/portal';
 
 const RUNTIME_ASSET_ROUTE_BASE = '/api/runtime-market-assets';
+
+/**
+ * QD-01 — the effective locale set for one market, as produced by the ADR-154
+ * resolver (`src/lib/market-locales.ts`). It is passed IN rather than imported so
+ * this module keeps a single direction of dependency (market-locales reads the
+ * runtime config, not the other way round) and so no caller can skip it.
+ */
+export type HomepageLocaleContext = {
+  supported: readonly SupportedLocale[];
+  defaultLocale: SupportedLocale;
+};
+
+/**
+ * User-facing fields on a homepage section. Every one of them is a locale map in
+ * source. CONTRACT: must stay in sync with HOMEPAGE_TRANSLATABLE_FIELDS in
+ * gp-ops/cli/src/config-load.ts and _grow/tools/validate_gp_runtime_config.py.
+ */
+const TRANSLATABLE_SECTION_FIELDS = ['heading', 'paragraph', 'subheading', 'label'] as const;
+
+/** Repeatable children whose `label` is user-facing (hero buttons, style items). */
+const TRANSLATABLE_LIST_FIELDS = ['buttons', 'items'] as const;
+
+/**
+ * Marker attached to a section whose copy had to fall back to the market default
+ * locale. The renderer uses it to label the fragment (`lang` + visible notice);
+ * `null` means "fully in the requested locale".
+ */
+export type SectionLocaleFallback = {
+  /** Locale the fallen-back copy came from (always `market.locales.default`). */
+  locale: SupportedLocale;
+  /** Dotted paths of the fields that fell back. */
+  fields: string[];
+  /**
+   * True when EVERY translatable field of the section fell back.
+   *
+   * Only then may the renderer put `lang` on the whole section: with a partial
+   * fallback the section still contains correctly translated siblings, and
+   * labelling them with the fallback language would be a different lie than the
+   * one this package removes. The notice is shown either way — see
+   * `LocaleFallbackFragment`.
+   */
+  whole: boolean;
+};
 
 const SOCIAL_LINK_KEYS = [
   'facebook',
@@ -546,17 +591,69 @@ function normalizeHomepageImage(value: unknown, marketId: string) {
   return url ? { url } : null;
 }
 
-function normalizeHomepageButtons(value: unknown) {
+/**
+ * Collects fallbacks for one section while resolving it. One accumulator per
+ * section keeps the notice attached to the fragment that actually fell back
+ * (party review PR-2) instead of flagging the whole page.
+ */
+type FallbackAccumulator = {
+  locale: SupportedLocale | null;
+  fields: string[];
+  /** Fields that resolved in the requested locale — needed to tell partial from whole. */
+  resolvedInRequestedLocale: number;
+};
+
+function resolveSectionText(
+  raw: unknown,
+  fieldPath: string,
+  locales: HomepageLocaleContext,
+  requestedLocale: SupportedLocale,
+  accumulator: FallbackAccumulator
+): string | null {
+  const resolved = resolveLocalizedConfigValue(raw, {
+    locale: requestedLocale,
+    defaultLocale: locales.defaultLocale,
+    supported: locales.supported,
+    fieldPath
+  });
+
+  if (!resolved) {
+    return null;
+  }
+
+  if (resolved.isFallback) {
+    accumulator.locale = resolved.locale;
+    accumulator.fields.push(fieldPath);
+  } else {
+    accumulator.resolvedInRequestedLocale += 1;
+  }
+
+  return resolved.value;
+}
+
+function normalizeHomepageButtons(
+  value: unknown,
+  sectionPath: string,
+  locales: HomepageLocaleContext,
+  requestedLocale: SupportedLocale,
+  accumulator: FallbackAccumulator
+) {
   if (!Array.isArray(value)) {
     return null;
   }
 
-  const buttons = value.flatMap(item => {
+  const buttons = value.flatMap((item, index) => {
     if (!isRecord(item)) {
       return [];
     }
 
-    const label = normalizeNonEmptyString(item.label);
+    const label = resolveSectionText(
+      item.label,
+      `${sectionPath}.buttons[${index}].label`,
+      locales,
+      requestedLocale,
+      accumulator
+    );
     const path = normalizeNonEmptyString(item.path) ?? normalizeNonEmptyString(item.url);
     const variant = normalizeNonEmptyString(item.variant);
 
@@ -570,17 +667,30 @@ function normalizeHomepageButtons(value: unknown) {
   return buttons.length > 0 ? buttons : null;
 }
 
-function normalizeStyleSectionItems(value: unknown, marketId: string) {
+function normalizeStyleSectionItems(
+  value: unknown,
+  marketId: string,
+  sectionPath: string,
+  locales: HomepageLocaleContext,
+  requestedLocale: SupportedLocale,
+  accumulator: FallbackAccumulator
+) {
   if (!Array.isArray(value)) {
     return null;
   }
 
-  const items = value.flatMap(item => {
+  const items = value.flatMap((item, index) => {
     if (!isRecord(item)) {
       return [];
     }
 
-    const label = normalizeNonEmptyString(item.label);
+    const label = resolveSectionText(
+      item.label,
+      `${sectionPath}.items[${index}].label`,
+      locales,
+      requestedLocale,
+      accumulator
+    );
     const link = normalizeNonEmptyString(item.link);
     const image = normalizeHomepageImage(item.image, marketId);
 
@@ -594,9 +704,19 @@ function normalizeStyleSectionItems(value: unknown, marketId: string) {
   return items.length > 0 ? items : null;
 }
 
-function normalizeHomepageSections(
+/**
+ * QD-01: resolves market copy for ONE explicit locale.
+ *
+ * This is the only boundary through which homepage sections reach the renderer,
+ * which is why locale resolution lives here and not in the blocks: a locale map
+ * has no path by which it can leak into JSX and render as `[object Object]`.
+ * Blocks keep receiving plain strings and need no changes.
+ */
+export function normalizeHomepageSections(
   value: HomepageRuntimeConfig | null,
-  marketId: string
+  marketId: string,
+  locale: SupportedLocale,
+  locales: HomepageLocaleContext
 ): MarketConfig['homepage_sections'] | null {
   if (!isRecord(value?.sections)) {
     return null;
@@ -607,23 +727,77 @@ function normalizeHomepageSections(
       return [];
     }
 
+    const accumulator: FallbackAccumulator = {
+      locale: null,
+      fields: [],
+      resolvedInRequestedLocale: 0
+    };
+    const sectionPath = `sections.${blockType}`;
+
     const normalizedSection: Record<string, unknown> = {
       id: blockType,
       blockType,
       ...section
     };
 
+    for (const field of TRANSLATABLE_SECTION_FIELDS) {
+      if (!(field in section)) continue;
+      normalizedSection[field] = resolveSectionText(
+        section[field],
+        `${sectionPath}.${field}`,
+        locales,
+        locale,
+        accumulator
+      );
+    }
+
     if ('image' in section) {
       normalizedSection.image = normalizeHomepageImage(section.image, marketId);
     }
 
     if ('buttons' in section) {
-      normalizedSection.buttons = normalizeHomepageButtons(section.buttons);
+      normalizedSection.buttons = normalizeHomepageButtons(
+        section.buttons,
+        sectionPath,
+        locales,
+        locale,
+        accumulator
+      );
     }
 
     if ('items' in section) {
-      normalizedSection.items = normalizeStyleSectionItems(section.items, marketId);
+      normalizedSection.items = normalizeStyleSectionItems(
+        section.items,
+        marketId,
+        sectionPath,
+        locales,
+        locale,
+        accumulator
+      );
     }
+
+    // Belt and braces: TRANSLATABLE_LIST_FIELDS documents which repeatables carry
+    // user-facing labels, so a new one added to the config contract without a
+    // resolver here fails loudly instead of rendering a raw map.
+    for (const listField of TRANSLATABLE_LIST_FIELDS) {
+      const list = normalizedSection[listField];
+      if (!Array.isArray(list)) continue;
+      for (const item of list) {
+        if (isRecord(item) && isRecord(item.label)) {
+          throw new Error(
+            `[runtime-market-config] ${sectionPath}.${listField}: unresolved locale map reached the renderer`
+          );
+        }
+      }
+    }
+
+    normalizedSection.locale_fallback = accumulator.locale
+      ? ({
+          locale: accumulator.locale,
+          fields: accumulator.fields,
+          whole: accumulator.resolvedInRequestedLocale === 0
+        } satisfies SectionLocaleFallback)
+      : null;
 
     return [normalizedSection];
   });
@@ -679,8 +853,52 @@ export const resolveLegalEntity = cache(async (marketId: string): Promise<LegalE
   return normalizeLegalEntity(config?.legal_entity);
 });
 
+/**
+ * QD-01: homepage SEO copy for one explicit locale.
+ *
+ * `homepage.yaml` owns market-authored metadata; `messages/*.json` stays the
+ * generic default for markets that author none. Keeping the read here (rather
+ * than leaving the `seo:` block unread, as it was before this package) means the
+ * localized values are actually rendered somewhere instead of being four
+ * translations of a dead field.
+ */
+export const resolveRuntimeHomepageSeo = cache(async (
+  marketId: string,
+  locale: SupportedLocale,
+  locales: HomepageLocaleContext
+): Promise<{ meta_title: string | null; meta_description: string | null }> => {
+  const resolvedMarketId = await resolveRuntimeMarketId(marketId);
+  if (!resolvedMarketId) {
+    return { meta_title: null, meta_description: null };
+  }
+
+  const homepageConfig = await readRuntimeHomepageConfig(resolvedMarketId);
+  const seo = (homepageConfig as Record<string, unknown> | null)?.seo;
+  if (!isRecord(seo)) {
+    return { meta_title: null, meta_description: null };
+  }
+
+  const resolve = (field: 'meta_title' | 'meta_description') =>
+    resolveLocalizedConfigValue(seo[field], {
+      locale,
+      defaultLocale: locales.defaultLocale,
+      supported: locales.supported,
+      fieldPath: `seo.${field}`
+    })?.value ?? null;
+
+  return { meta_title: resolve('meta_title'), meta_description: resolve('meta_description') };
+});
+
+/**
+ * QD-01: `locale` is a REQUIRED argument. Market copy cannot be resolved without
+ * naming a locale, so the type system — not a review checklist — guarantees every
+ * call site supplies one. `locale` is part of the `cache()` key, satisfying
+ * decision 5 (locale belongs in every cache key for localized data).
+ */
 export const resolveRuntimePortalMarketConfig = cache(async (
-  marketId: string
+  marketId: string,
+  locale: SupportedLocale,
+  locales: HomepageLocaleContext
 ): Promise<MarketConfig | null> => {
   const resolvedMarketId = await resolveRuntimeMarketId(marketId);
   if (!resolvedMarketId) {
@@ -712,7 +930,7 @@ export const resolveRuntimePortalMarketConfig = cache(async (
     storefront_filters: Array.isArray(marketConfig?.storefront?.storefront_filters)
       ? (marketConfig.storefront.storefront_filters as MarketConfig['storefront_filters'])
       : null,
-    homepage_sections: normalizeHomepageSections(homepageConfig, resolvedMarketId),
+    homepage_sections: normalizeHomepageSections(homepageConfig, resolvedMarketId, locale, locales),
     tenant: null,
     favicon: normalizeAssetReference(marketConfig?.storefront?.favicon, resolvedMarketId),
     vendor_panel_url: normalizeHttpUrl(marketConfig?.storefront?.vendor_panel_url),

@@ -29,7 +29,8 @@
       "to": "to",
       "price": "Price",
       "minute": "min"
-    }
+    },
+    "locale_fallback_notice": "This section is not available in the selected language yet — it is shown in {locale}."
   },
   "banner": {
     "workingOnIt": {

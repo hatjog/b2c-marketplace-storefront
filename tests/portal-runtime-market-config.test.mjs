@@ -12,6 +12,22 @@ async function importPortalServerModule(tag) {
   return import(`${moduleUrl.href}?${tag}`);
 }
 
+/**
+ * QD-01: `resolveMarketConfig` takes an explicit locale. The value comes from the
+ * ADR-154 resolver, never from a literal in this file.
+ *
+ * KNOWN GAP (pre-existing, not introduced by QD-01): this whole file is currently
+ * red under `pnpm test:node` because `src/lib/runtime-market-config.ts` imports
+ * `server-only`, which throws outside the `react-server` export condition that
+ * `tsx --test` does not set. The live locale-resolution proof therefore lives in
+ * `src/lib/__tests__/homepage-locale-resolution.test.ts` (vitest stubs the guard).
+ */
+async function marketDefaultLocale() {
+  const moduleUrl = new URL('../src/lib/market-locales.ts', import.meta.url);
+  const module = await import(moduleUrl.href);
+  return (module.default ?? module).getMarketDefaultLocale();
+}
+
 test('resolveMarketConfig uses Bonbeauty runtime YAML without calling Payload', async () => {
   let fetchCalls = 0;
 
@@ -23,7 +39,7 @@ test('resolveMarketConfig uses Bonbeauty runtime YAML without calling Payload', 
   try {
     const module = await importPortalServerModule(`runtime-market-config=${Date.now()}`);
     const { resolveMarketConfig } = module.default ?? module;
-    const result = await resolveMarketConfig('bonbeauty');
+    const result = await resolveMarketConfig('bonbeauty', await marketDefaultLocale());
 
     assert.equal(fetchCalls, 0);
     assert.equal(result.usedFallback, false);
@@ -63,7 +79,7 @@ test('resolveMarketConfig uses Mercur runtime YAML assets without calling Payloa
   try {
     const module = await importPortalServerModule(`runtime-market-config-mercur=${Date.now()}`);
     const { resolveMarketConfig } = module.default ?? module;
-    const result = await resolveMarketConfig('mercur');
+    const result = await resolveMarketConfig('mercur', await marketDefaultLocale());
 
     assert.equal(fetchCalls, 0);
     assert.equal(result.usedFallback, false);

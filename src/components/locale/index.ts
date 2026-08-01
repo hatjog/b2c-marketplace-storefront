@@ -1,3 +1,4 @@
+export { LocaleFallbackFragment } from './LocaleFallbackFragment';
 export {
   FALLBACK_LOCALE,
   LOCALE_FALLBACK_NOTICE_STORAGE_KEY,
