@@ -24,8 +24,10 @@ export async function SellersPagination({
   offset,
   preservedParams
 }: SellersPaginationProps) {
-  const t = await getTranslations('seller.search');
-  const tList = await getTranslations('seller.list');
+  // QD-03 (CAP-3): jawne locale — komponent i tak dostaje je w propsach
+  // i używa w `href`; tłumaczenia muszą iść z tego samego źródła.
+  const t = await getTranslations({ locale, namespace: 'seller.search' });
+  const tList = await getTranslations({ locale, namespace: 'seller.list' });
 
   if (total <= limit) {
     return (

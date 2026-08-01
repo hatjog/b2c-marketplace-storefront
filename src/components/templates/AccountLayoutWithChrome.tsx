@@ -23,7 +23,9 @@ export async function AccountLayoutWithChrome({
   locale,
   ...rest
 }: AccountLayoutWithChromeProps) {
-  const tLayout = await getTranslations('account.layout');
+  // QD-03 (CAP-3): jawne locale — to samo, którym `AccountLayout` buduje
+  // `localizedHref`. Zakres treści transakcyjnych kont pozostaje w QD-05.
+  const tLayout = await getTranslations({ locale, namespace: 'account.layout' });
 
   // Story 4.3 M3 fix 2026-05-23: page-level auth gate already calls retrieveCustomer()
   // and passes `user` explicitly (including `user: null` for unauthenticated visitors).

@@ -76,9 +76,11 @@ export const SellerTabs = async ({
   countryCode: string;
   currency_code: string;
 }) => {
-  const commonT = await getTranslations('common');
-  const sellerT = await getTranslations('seller.detail');
-  const productsT = await getTranslations('products');
+  // QD-03 (CAP-3): jawne locale — to samo, którym komponent formatuje daty
+  // (`getTodayIndex(locale)`); tłumaczenia nie mogą iść z innego źródła.
+  const commonT = await getTranslations({ locale, namespace: 'common' });
+  const sellerT = await getTranslations({ locale, namespace: 'seller.detail' });
+  const productsT = await getTranslations({ locale, namespace: 'products' });
   const todayIndex = getTodayIndex(locale);
   const address = [
     seller.address_line,
@@ -153,6 +155,7 @@ export const SellerTabs = async ({
             <ProductListing
               showSidebar
               seller_id={seller_id}
+              locale={locale}
               fromContext={{ type: 'seller', handle: seller_handle }}
             />
           ) : (

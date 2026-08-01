@@ -37,7 +37,11 @@ export async function SiteFooter({
   marketConfig?: MarketConfig | null;
   locale: string;
 }) {
-  const t = await getTranslations('footer');
+  // QD-03 (CAP-3): jawne locale — to samo, które idzie do
+  // `loadLegalSignoffStatusMap(marketId, locale)` niżej. Zakres treści footera
+  // (etykiety, copyright z market config) pozostaje w QD-02; tu zmienia się
+  // wyłącznie sposób rozstrzygania locale dla `messages/*.json`.
+  const t = await getTranslations({ locale, namespace: 'footer' });
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);
   const marketId = typeof marketConfig?.market_id === 'string' ? marketConfig.market_id : null;

@@ -17,7 +17,14 @@ export default async function LocaleLayout({
   // back to the default locale inside fetch continuations, so the x-medusa-locale
   // header was sent as pl-PL and the backend returned untranslated (PL) catalog data.
   setRequestLocale(locale);
-  const messages = await getMessages();
+  // QD-03 (CAP-3) — ZMIERZONE ŻYWYM RENDEREM, nie wywnioskowane: mimo
+  // `setRequestLocale(locale)` linijkę wyżej, `getMessages()` bez argumentu
+  // zwracało na prod buildzie słownik PL na trasach /ua, /de i /en. Cały
+  // chrome KLIENCKI (`useTranslations`) leciał więc po polsku — to jest
+  // faktyczne źródło „Adres" / „Godziny otwarcia" / „O nas" z audytu
+  // kompletności i18n v1.14.0, a nie tylko trust bar renderowany serwerowo.
+  // `setRequestLocale` NIE wystarcza jako gwarancja na tej granicy.
+  const messages = await getMessages({ locale });
 
   return (
     <NextIntlClientProvider

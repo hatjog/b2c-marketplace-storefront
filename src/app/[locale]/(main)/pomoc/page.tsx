@@ -43,6 +43,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { VoucherWithdrawalStateCard } from '@/components/molecules/VoucherWithdrawalStateCard';
 import { LegalPageLayout } from '@/components/templates/LegalPageLayout';
+import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/routing';
 import type { WithdrawalStateResult } from '@/types/voucher';
 
 export const dynamic = 'force-dynamic';
@@ -108,7 +109,10 @@ export default async function PomocPage({ params }: { params: Promise<{ locale: 
   ] as const;
 
   return (
-    <LegalPageLayout showDisclaimer={false}>
+    <LegalPageLayout
+      showDisclaimer={false}
+      locale={isSupportedLocale(locale) ? locale : DEFAULT_LOCALE}
+    >
       {/* F-E7-CR-11 fix: /pomoc is informational; the
           "BonBeauty jest pośrednikiem. Usługę świadczy salon."
           disclaimer reads as wrong context here. */}

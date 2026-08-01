@@ -23,6 +23,13 @@
  * `[locale]` layout/page ORAZ eksportowany `generateMetadata` woła
  * `setRequestLocale(locale)` przed kontekstozależnym `getTranslations()`.
  *
+ * v1.14.0 QD-03: introduces `explicit-locale-get-translations` — bramka CAP-3
+ * na GRANICY RENDERU: jeśli `locale` jest w zasięgu, tłumaczenia MUSZĄ iść
+ * jawną formą `getTranslations({ locale, namespace })`. Forma skrócona poza
+ * drzewem page/layout dziedziczy pusty request store i cicho spada na `pl`
+ * (polski chrome PDP na /ua, /de, /en — audyt kompletności i18n v1.14.0).
+ * Route entries pod `src/app/**` rządzi `require-set-request-locale`.
+ *
  * Companion validator: `_grow/tools/validate_storefront_ds_literals.py`.
  * Cross-ref: ADR-119 token replication, D-V180-ARCH-3 SSOT boundary,
  * ux.md §5.5 token discipline.
@@ -34,6 +41,7 @@ const noHardcodedI18nStrings = require("./rules/no-hardcoded-i18n-strings");
 const localeCacheBoundary = require("./rules/locale-cache-boundary");
 const requireSetRequestLocale = require("./rules/require-set-request-locale");
 const i18nNamespaceKeyResolves = require("./rules/i18n-namespace-key-resolves");
+const explicitLocaleGetTranslations = require("./rules/explicit-locale-get-translations");
 
 module.exports = {
   rules: {
@@ -42,6 +50,7 @@ module.exports = {
     "locale-cache-boundary": localeCacheBoundary,
     "require-set-request-locale": requireSetRequestLocale,
     "i18n-namespace-key-resolves": i18nNamespaceKeyResolves,
+    "explicit-locale-get-translations": explicitLocaleGetTranslations,
   },
   configs: {
     recommended: {
@@ -52,6 +61,7 @@ module.exports = {
         "gp/locale-cache-boundary": "error",
         "gp/require-set-request-locale": "error",
         "gp/i18n-namespace-key-resolves": "error",
+        "gp/explicit-locale-get-translations": "error",
       },
     },
   },

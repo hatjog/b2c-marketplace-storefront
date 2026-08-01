@@ -9,7 +9,12 @@ export type BlogSectionSectionBlock = {
 };
 
 export async function BlogSectionBlock({ section }: { section: BlogSectionSectionBlock }) {
-  const [locale, t] = await Promise.all([getLocale(), getTranslations('blog')]);
+  // QD-03 (CAP-3): locale najpierw, tłumaczenia jawnie z tego samego locale.
+  // Poprzednio oba szły równolegle przez `Promise.all`, więc `getTranslations`
+  // rozwiązywało locale z request store niezależnie od `getLocale()` — dwa
+  // niezależne odczyty tego samego faktu na jednej granicy renderu.
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'blog' });
   const posts = await fetchHomepageBlogPosts({
     locale,
     limit: section.limit,
