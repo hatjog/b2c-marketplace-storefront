@@ -60,3 +60,6 @@ lighthouse.[0-9]*/
 
 # Lighthouse Chrome user-data-dir leaks (Windows paths from headless runs)
 C:\\Users\\
+
+# QD-07 semantic i18n matrix run artifacts
+.qd07/

@@ -181,7 +181,10 @@ export async function SiteFooter({
                 className="space-y-0.5 text-xs text-[var(--bb-muted-72)]"
                 data-testid="site-footer-legal-entity"
               >
-                {legalEntity.name && <p>{legalEntity.name}</p>}
+                {/* QD-07: nazwa podmiotu dostaje wlasny testid. e2e-16 asertowal
+                    `footer-legal-name`, ktorego SiteFooter nigdy nie emitowal, wiec
+                    asercja skipowala sie w nieskonczonosc i raportowala zielen. */}
+                {legalEntity.name && <p data-testid="site-footer-legal-name">{legalEntity.name}</p>}
                 {/* QD-02: the tax-ID VALUE is a non-localized fact, but its LABEL
                     is chrome — "NIP:" was rendering verbatim on /en, /ua and /de. */}
                 {legalEntity.tax_id && (
