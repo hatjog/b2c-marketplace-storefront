@@ -49,6 +49,11 @@ describe('ErrorSurface', () => {
         requestId: 'req-123',
         timestampIso: '2026-05-18T12:00:00.000Z',
         suggestedAction: 'Refresh',
+        labels: {
+          requestId: 'Identyfikator żądania',
+          timestamp: 'Znacznik czasu',
+          suggestedAction: 'Sugerowane działanie',
+        },
       },
     });
 

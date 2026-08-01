@@ -51,7 +51,9 @@ export async function SellersViewToggle({
   return (
     <div
       role="tablist"
-      aria-label={t('view_toggle_aria') ?? 'Widok listy lub mapy'}
+      // `t()` never returns nullish (it throws or echoes the key), so the old
+      // `?? 'Widok listy lub mapy'` fallback was unreachable Polish copy.
+      aria-label={t('view_toggle_aria')}
       className="mb-6 inline-flex gap-2"
       data-testid="sellers-view-toggle"
     >

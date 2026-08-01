@@ -4,6 +4,7 @@ import { Radio, Radio as RadioGroupOption } from '@headlessui/react';
 import { clx, Text } from '@medusajs/ui';
 import { CardElement } from '@stripe/react-stripe-js';
 import type { StripeCardElementOptions } from '@stripe/stripe-js';
+import { useTranslations } from 'next-intl';
 
 import { isManual } from '../../../lib/constants';
 import PaymentTest from './PaymentTest';
@@ -77,6 +78,7 @@ export const StripeCardContainer = ({
   setCardComplete: (complete: boolean) => void;
 }) => {
   const stripeReady = useContext(StripeContext);
+  const t = useTranslations('checkout');
 
   const useOptions: StripeCardElementOptions = useMemo(() => {
     return {
@@ -105,7 +107,9 @@ export const StripeCardContainer = ({
       {selectedPaymentOptionId === paymentProviderId &&
         (stripeReady ? (
           <div className="my-4 transition-all duration-150 ease-in-out">
-            <Text className="txt-medium-plus text-ui-fg-base mb-1">Enter your card details:</Text>
+            <Text className="txt-medium-plus text-ui-fg-base mb-1">
+              {t('enter_card_details')}
+            </Text>
             <CardElement
               options={useOptions as StripeCardElementOptions}
               onChange={e => {

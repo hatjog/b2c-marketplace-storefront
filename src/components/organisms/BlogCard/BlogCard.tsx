@@ -9,7 +9,9 @@ import type { BlogPost } from '@/types/blog';
 interface BlogCardProps {
   post: BlogPost;
   index: number;
-  readMoreLabel?: string;
+  /** Required: an optional prop with a literal default silently shipped English
+   *  `Read more` on every locale whenever a call site forgot to pass it. */
+  readMoreLabel: string;
 }
 
 export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
@@ -37,7 +39,7 @@ export function BlogCard({ post, index, readMoreLabel }: BlogCardProps) {
         <h3 className="heading-sm">{post.title}</h3>
         <p className="text-md line-clamp-3 text-secondary">{post.excerpt}</p>
         <div className="label-md mt-auto flex items-center gap-4 uppercase text-[var(--cta-hover)]">
-          {readMoreLabel ?? 'Read more'}{' '}
+          {readMoreLabel}{' '}
           <ArrowRightIcon
             size={20}
             color="rgba(var(--content-primary))"
