@@ -9,8 +9,11 @@ import Script from 'next/script';
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { HomepageRenderer } from '@/components/blocks/HomepageRenderer';
 import { TrustStripBlock } from '@/components/blocks/TrustStripBlock';
+import { isSupportedLocale } from '@/i18n/routing';
 import { toHreflang } from '@/lib/helpers/hreflang';
+import { resolveMarketLocales } from '@/lib/market-locales';
 import { resolveMarketConfig } from '@/lib/portal.server';
+import { resolveRuntimeHomepageSeo } from '@/lib/runtime-market-config';
 import { buildLocaleAlternates } from '@/lib/seo/hreflang';
 
 export const revalidate = 300;
@@ -82,8 +85,20 @@ export async function generateMetadata({
   const alternates = await buildLocaleAlternates(locale, loc => `/${loc}`, baseUrl);
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'BonBeauty';
-  const title = t('meta_title');
-  const description = t('meta_description');
+
+  // QD-01: market-authored, locale-resolved SEO copy wins; `messages` stays the
+  // generic default for markets that do not author a `seo:` block. Before this
+  // package the YAML block had no reader at all.
+  const marketLocales = await resolveMarketLocales();
+  const routeLocale = isSupportedLocale(locale) ? locale : marketLocales.defaultLocale;
+  const marketSeo = await resolveRuntimeHomepageSeo(
+    process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '',
+    routeLocale,
+    marketLocales
+  );
+
+  const title = marketSeo.meta_title ?? t('meta_title');
+  const description = marketSeo.meta_description ?? t('meta_description');
   const ogImage = '/B2C_Storefront_Open_Graph.png';
   const canonical = alternates.canonical;
 
@@ -134,7 +149,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   setRequestLocale(locale);
   const tHome = await getTranslations({ locale, namespace: 'home_v3.hero' });
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig } = await resolveMarketConfig(marketId);
+  // QD-01: the route locale is handed to the market-copy resolver explicitly.
+  // A locale outside the market's set never reaches here (middleware redirects
+  // per ADR-154), so falling back to the market default is a type guard, not policy.
+  const marketLocales = await resolveMarketLocales();
+  const routeLocale = isSupportedLocale(locale) ? locale : marketLocales.defaultLocale;
+  const { marketConfig } = await resolveMarketConfig(marketId, routeLocale);
   const homepageSectionsFromConfig =
     Array.isArray(marketConfig.homepage_sections) && marketConfig.homepage_sections.length > 0
       ? marketConfig.homepage_sections

@@ -17,6 +17,7 @@ import { retrieveCart } from '@/lib/data/cart';
 import { resolveStorefrontBaseUrl, validateStorefrontEnv } from '@/lib/env';
 import { toHreflang } from '@/lib/helpers/hreflang';
 import { getMarketFaviconUrl } from '@/lib/portal';
+import { getMarketDefaultLocale } from '@/lib/market-locales';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 import { Providers } from './providers';
@@ -42,7 +43,11 @@ validateStorefrontEnv();
 
 export async function generateMetadata(): Promise<Metadata> {
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig } = await resolveMarketConfig(marketId);
+  // QD-01: the root layout sits ABOVE the `[locale]` segment, so there is no
+  // route locale here. It reads only non-textual config (theme, logo, favicon),
+  // and names the market default locale explicitly rather than letting the
+  // resolver pick one implicitly.
+  const { marketConfig } = await resolveMarketConfig(marketId, await getMarketDefaultLocale());
   const siteName =
     marketConfig.name ||
     process.env.NEXT_PUBLIC_SITE_NAME ||
@@ -92,7 +97,11 @@ export default async function RootLayout({
 }>) {
   const cart = await retrieveCart();
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig, usedFallback } = await resolveMarketConfig(marketId);
+  // QD-01: see generateMetadata above — root layout has no route locale.
+  const { marketConfig, usedFallback } = await resolveMarketConfig(
+    marketId,
+    await getMarketDefaultLocale()
+  );
   const showFallbackBanner = usedFallback && process.env.NODE_ENV === 'development';
 
   const ALGOLIA_APP = process.env.NEXT_PUBLIC_ALGOLIA_ID;

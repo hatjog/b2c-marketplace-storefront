@@ -1,3 +1,6 @@
+import { isSupportedLocale, type SupportedLocale } from '@/i18n/routing';
+import { LocaleFallbackFragment } from '@/components/locale/LocaleFallbackFragment';
+
 import { BannerBlock } from './BannerBlock';
 import { BlogSectionBlock } from './BlogSectionBlock';
 import { CategoriesGridBlock } from './CategoriesGridBlock';
@@ -21,6 +24,37 @@ import type { HeroSectionBlock } from './HeroBlock';
 import { StyleSectionBlock } from './StyleSectionBlock';
 import type { BlogSectionSectionBlock } from './BlogSectionBlock';
 
+/**
+ * QD-01: `normalizeHomepageSections` tags a section whose copy fell back to
+ * `market.locales.default`. Reading it here — one place, above every block —
+ * keeps the notice and the `lang` attached to exactly the fragment that fell
+ * back (party review PR-2), and keeps the blocks free of locale logic.
+ */
+function readSectionFallback(
+  section: RawSection
+): { locale: SupportedLocale; whole: boolean; fields: string[] } | null {
+  const marker = section.locale_fallback;
+  if (typeof marker !== 'object' || marker === null) {
+    return null;
+  }
+
+  const { locale, whole, fields } = marker as {
+    locale?: unknown;
+    whole?: unknown;
+    fields?: unknown;
+  };
+
+  if (typeof locale !== 'string' || !isSupportedLocale(locale)) {
+    return null;
+  }
+
+  return {
+    locale,
+    whole: whole === true,
+    fields: Array.isArray(fields) ? fields.filter((f): f is string => typeof f === 'string') : []
+  };
+}
+
 export function HomepageRenderer({
   sections,
   locale
@@ -40,12 +74,37 @@ export function HomepageRenderer({
     return null;
   }
 
+  const routeLocale = isSupportedLocale(locale) ? locale : null;
+
   return (
     <>
       {enabledSections.map((section, index) => {
         const key = section.id ?? `${section.blockType ?? 'unknown'}-${index}`;
+        const fallback = readSectionFallback(section);
+        const rendered = renderSection(section, key, locale);
 
-        switch (section.blockType) {
+        if (!rendered || !fallback || !routeLocale) {
+          return rendered;
+        }
+
+        return (
+          <LocaleFallbackFragment
+            key={key}
+            locale={routeLocale}
+            fallbackLocale={fallback.locale}
+            whole={fallback.whole}
+            fields={fallback.fields}
+          >
+            {rendered}
+          </LocaleFallbackFragment>
+        );
+      })}
+    </>
+  );
+}
+
+function renderSection(section: RawSection, key: string | number, locale: string) {
+  switch (section.blockType) {
           case 'hero':
             return (
               <HeroBlock
@@ -135,8 +194,5 @@ export function HomepageRenderer({
               section
             );
             return null;
-        }
-      })}
-    </>
-  );
+  }
 }

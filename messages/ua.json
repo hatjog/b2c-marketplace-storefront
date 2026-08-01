@@ -29,7 +29,8 @@
       "to": "до",
       "price": "Ціна",
       "minute": "хв"
-    }
+    },
+    "locale_fallback_notice": "Цей розділ ще не доступний вибраною мовою — показуємо його мовою {locale}."
   },
   "banner": {
     "workingOnIt": {

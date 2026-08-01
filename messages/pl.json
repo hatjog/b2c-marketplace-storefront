@@ -29,7 +29,8 @@
       "to": "do",
       "price": "Cena",
       "minute": "min"
-    }
+    },
+    "locale_fallback_notice": "Ta sekcja nie jest jeszcze dostępna w wybranym języku — pokazujemy ją w wersji {locale}."
   },
   "banner": {
     "workingOnIt": {

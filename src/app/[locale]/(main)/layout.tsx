@@ -16,9 +16,11 @@ import {
 import { MobileBottomNav } from '@/components/organisms/MobileBottomNav/MobileBottomNav';
 import { SiteFooter } from '@/components/organisms/SiteFooter/SiteFooter';
 import { SiteHeader } from '@/components/organisms/SiteHeader/SiteHeader';
+import { isSupportedLocale } from '@/i18n/routing';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { checkRegion } from '@/lib/helpers/check-region';
 import { computeLocaleCoverage } from '@/lib/i18n/localeCoverage';
+import { resolveMarketLocales } from '@/lib/market-locales';
 import { resolveMarketConfig } from '@/lib/portal.server';
 
 const BCP47_LOCALE_BY_ROUTE_LOCALE: Record<string, LocaleFallbackTargetLocale> = {
@@ -43,7 +45,12 @@ export default async function RootLayout({
   const { locale } = await params;
   setRequestLocale(locale);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
-  const { marketConfig } = await resolveMarketConfig(marketId);
+  // QD-01: market copy is resolved for the route locale (see resolveMarketConfig).
+  const marketLocales = await resolveMarketLocales();
+  const { marketConfig } = await resolveMarketConfig(
+    marketId,
+    isSupportedLocale(locale) ? locale : marketLocales.defaultLocale
+  );
 
   const user = await retrieveCustomer();
   const regionCheck = await checkRegion(locale);

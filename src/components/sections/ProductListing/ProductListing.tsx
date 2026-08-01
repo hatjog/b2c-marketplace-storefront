@@ -39,6 +39,7 @@ import { getMarketId } from '@/lib/helpers/market-filter';
 import { parsePurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 import type { SelfPurchaseMode } from '@/lib/helpers/parse-purchase-mode';
 import { sanitizeTagIdList } from '@/lib/helpers/sanitize-tag-id';
+import { getMarketDefaultLocale } from '@/lib/market-locales';
 import { resolveMarketConfig } from '@/lib/portal.server';
 import { ClearFiltersButton } from './ClearFiltersButton';
 import { ListingRetryButton } from './ListingRetryButton';
@@ -208,7 +209,10 @@ export const ProductListing = async ({
 
   if (showSidebar && marketId) {
     try {
-      const { marketConfig } = await resolveMarketConfig(marketId);
+      // QD-01: only `storefront_filters` is read here — no homepage/market copy.
+      // There is no route locale on this surface, so the market default locale is
+      // named explicitly instead of being inferred inside the resolver.
+      const { marketConfig } = await resolveMarketConfig(marketId, await getMarketDefaultLocale());
       const rawFilters = normalizeFilters(marketConfig.storefront_filters);
       storefrontFilters.push(...rawFilters);
 
