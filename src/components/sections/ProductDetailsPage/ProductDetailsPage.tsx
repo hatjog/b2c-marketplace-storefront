@@ -52,19 +52,25 @@ export const ProductDetailsPage = async ({
   handle: string;
   locale: string;
 }) => {
+  // QD-03 (CAP-3): jedna kanonizacja slugu na wejściu komponentu. Ten sam slug
+  // trafia do klucza cache DANYCH (`fetchProductForDetailPage`) i do klucza
+  // renderu (`getTranslations({ locale })`), więc obie granice cache mówią
+  // o locale tą samą reprezentacją (AD-1).
+  const localeSlug = toStorefrontLocaleSlug(locale);
   const countryCode = await getCountryCode(locale);
-  const t = await getTranslations('pdp');
+  // QD-03: JAWNE locale. To NIE jest wyjątek dla metadata — to reguła systemowa:
+  // async Server Component nie ma gwarancji, w której kontynuacji renderu
+  // zostanie wykonany, a poza drzewem page/layout request store bywa pusty
+  // i `src/i18n.ts` cicho spada na DEFAULT_LOCALE='pl'. Bramka: reguła AST
+  // `gp/explicit-locale-get-translations`.
+  const t = await getTranslations({ locale: localeSlug, namespace: 'pdp' });
 
   // D-09: cache()-wrapped fetcher. The outer route page.tsx already invoked
   // this with the same (handle, countryCode, locale); React 19 cache() returns
   // the memoized payload here, so listProducts() runs once per render.
   // Story 1.2: locale MUSI być tym samym slugiem co w page.tsx — inaczej
   // krotka argumentów się rozjeżdża i dedupe przestaje działać.
-  const prod = await fetchProductForDetailPage(
-    handle,
-    countryCode,
-    toStorefrontLocaleSlug(locale)
-  );
+  const prod = await fetchProductForDetailPage(handle, countryCode, localeSlug);
 
   // notFound() throws — if prod is null, execution stops here.
   // W5-05: Next.js notFound() triggers the nearest not-found.tsx boundary,
@@ -244,7 +250,7 @@ export const ProductDetailsPage = async ({
       <CrossSellSection
         product={prod}
         countryCode={countryCode}
-        locale={toStorefrontLocaleSlug(locale)}
+        locale={localeSlug}
       />
       <section
         className="mt-10 rounded-[var(--bb-radius-card)] bg-[var(--bb-surface-muted)] p-6"

@@ -26,7 +26,8 @@ export async function SellersViewToggle({
   view,
   preservedParams = {}
 }: SellersViewToggleProps) {
-  const t = await getTranslations('seller.list.map');
+  // QD-03 (CAP-3): jawne locale — to samo, które buduje `href` toggle'a.
+  const t = await getTranslations({ locale, namespace: 'seller.list.map' });
 
   function buildHref(target: SellersView): string {
     const params = new URLSearchParams();

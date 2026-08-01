@@ -6,7 +6,7 @@ import type { Product } from '@/types/product';
 
 export const HomeProductSection = async ({
   heading,
-  locale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'pl',
+  locale,
   products = [],
   home = false,
   maxItems = 4,
@@ -14,14 +14,21 @@ export const HomeProductSection = async ({
   showVendor = true,
 }: {
   heading: string;
-  locale?: string;
+  /**
+   * QD-03 (CAP-3): locale trasy, WYMAGANE. Wcześniej domyślną wartością było
+   * `process.env.NEXT_PUBLIC_DEFAULT_REGION` — czyli kod REGIONU podstawiany
+   * pod locale. Każdy call site, który pominąłby ten props, renderowałby chrome
+   * w regionie zamiast w języku trasy. Pokrycia call sites pilnuje teraz typ.
+   */
+  locale: string;
   products?: (Product | HttpTypes.StoreProduct)[];
   home?: boolean;
   maxItems?: number;
   showPrice?: boolean;
   showVendor?: boolean;
 }) => {
-  const t = await getTranslations('homepage');
+  // QD-03 (CAP-3): jawne locale trasy.
+  const t = await getTranslations({ locale, namespace: 'homepage' });
   const resolvedMaxItems = Math.max(1, maxItems);
 
   return (

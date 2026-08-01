@@ -356,6 +356,55 @@ describe('AC4 — PDP (fetchProductForDetailPage)', () => {
   });
 });
 
+// --- QD-03 (CAP-3): symetria kolejności PL→DE i DE→PL ---------------------
+//
+// Blok wyżej mierzy JEDNĄ kolejność (pl → ua). Cache bleed jest jednak
+// asymetryczny z natury: przecieka ten wpis, który został zapisany PIERWSZY.
+// Test, który zawsze grzeje cache tym samym locale, nie odróżni „klucz zawiera
+// locale" od „pierwszy zapis wygrywa". Dlatego QD-03 mierzy OBIE kolejności na
+// tym samym zasobie — i robi to w TYM pliku, żeby nie powstał drugi,
+// niezależnie napisany model semantyki `unstable_cache` (nowy model = nowy
+// drift; ta sama zasada, którą QD-01 zastosował do reguły homepage).
+
+describe('QD-03 — kolejność PL→DE i DE→PL nie zmienia wyniku', () => {
+  it('PL→DE: DE nie dostaje payloadu PL', async () => {
+    const pl = await listProducts({ countryCode: 'pl', locale: 'pl' });
+    const de = await listProducts({ countryCode: 'pl', locale: 'de' });
+
+    expect(pl.response.products[0].title).toBe('Masaż relaksacyjny');
+    expect(de.response.products[0].title).toBe('Entspannungsmassage');
+    expect(cacheMisses).toBe(2);
+    expect(cacheHits).toBe(0);
+  });
+
+  it('DE→PL: PL nie dostaje payloadu DE (symetria)', async () => {
+    const de = await listProducts({ countryCode: 'pl', locale: 'de' });
+    const pl = await listProducts({ countryCode: 'pl', locale: 'pl' });
+
+    expect(de.response.products[0].title).toBe('Entspannungsmassage');
+    expect(pl.response.products[0].title).toBe('Masaż relaksacyjny');
+    expect(cacheMisses).toBe(2);
+    expect(cacheHits).toBe(0);
+  });
+
+  it('PDP: obie kolejności dają dwa rozłączne wpisy i dwa języki', async () => {
+    const firstDe = await fetchProductForDetailPage('masaz', 'pl', 'de');
+    const thenPl = await fetchProductForDetailPage('masaz', 'pl', 'pl');
+
+    expect(firstDe?.title).toBe('Entspannungsmassage');
+    expect(thenPl?.title).toBe('Masaż relaksacyjny');
+    expect(cacheStore.size).toBe(2);
+
+    // NON-VACUOUS: powrót do locale zapisanego jako pierwszy to HIT, a nie
+    // kolejny MISS — czyli wpisy naprawdę istnieją obok siebie.
+    const hitsBefore = cacheHits;
+    const againDe = await fetchProductForDetailPage('masaz', 'pl', 'de');
+    expect(againDe?.title).toBe('Entspannungsmassage');
+    expect(cacheHits).toBe(hitsBefore + 1);
+    expect(cacheStore.size).toBe(2);
+  });
+});
+
 // --- AC2: jawność locale w cache scope ------------------------------------
 
 describe('AC2 — w cache scope locale jest JAWNE, auto-resolve zakazany', () => {

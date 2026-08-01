@@ -116,8 +116,11 @@ export async function SellerProofSurface({
   className,
   instanceId = 'seller-proof',
 }: SellerProofSurfaceProps) {
-  const t = await getTranslations('seller.proof');
+  // QD-03 (CAP-3): locale rozstrzygnięte raz i użyte jawnie — również przez
+  // `getTranslations`. Wcześniej ten sam fakt był czytany dwa razy: raz przez
+  // `getLocale()`, raz niejawnie wewnątrz `getTranslations`.
   const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: 'seller.proof' });
 
   // R11 fix: format rating with locale-aware decimal separator. toFixed(1)
   // emits a period regardless of locale, which PL screen readers pronounce
