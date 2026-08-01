@@ -82,13 +82,21 @@ function pathMatches(filename, filePattern) {
   );
 }
 
-function centralAllowlistMatches(entries, filename, value, line) {
+/**
+ * Allowlist entries are anchored to CONTENT (`file` + `value`), never to a line
+ * number. Line pinning was the previous design and it failed twice in v1.14.0
+ * QD-05 alone: adding a comment above an entry shifts the reported line, so an
+ * unrelated edit made the gate fire on already-waived copy. A gate that cries
+ * wolf on unrelated edits gets waived wholesale, which is how it dies. The
+ * `line` property is additionally rejected by the schema, so re-pinning is a
+ * config error rather than a silent regression.
+ */
+function centralAllowlistMatches(entries, filename, value) {
   const normalizedValue = normalizeValue(value);
   return entries.some((entry) => {
     if (!entry || typeof entry !== "object") return false;
     if (!entry.reason || !String(entry.reason).trim()) return false;
     if (!pathMatches(filename, entry.file)) return false;
-    if (entry.line != null && Number(entry.line) !== Number(line)) return false;
     return normalizeValue(entry.value) === normalizedValue;
   });
 }
@@ -167,11 +175,13 @@ module.exports = {
             type: "array",
             items: {
               type: "object",
+              // `line` is deliberately absent: entries anchor to content, and
+              // `additionalProperties: false` turns any attempt to re-pin an
+              // entry to a line number into a hard config error.
               additionalProperties: false,
               required: ["value", "reason"],
               properties: {
                 file: { type: "string" },
-                line: { type: "number" },
                 value: { type: "string" },
                 reason: { type: "string" },
               },
@@ -185,6 +195,8 @@ module.exports = {
         "Hardcoded user-visible JSX text `{{value}}`; use an i18n message or add `// i18n-ignore <reason>` for a documented exception.",
       hardcodedAttr:
         "Hardcoded user-visible `{{attr}}` attribute `{{value}}`; use an i18n message or add `// i18n-ignore <reason>` for a documented exception.",
+      hardcodedDefault:
+        "Hardcoded user-visible default for prop `{{attr}}` (`{{value}}`); a default parameter reaches the DOM exactly like a written attribute. Pass an i18n message from the caller or add `// i18n-ignore <reason>`.",
     },
   },
 
@@ -206,7 +218,7 @@ module.exports = {
     function isAllowed(node, value) {
       const line = node.loc && node.loc.start ? node.loc.start.line : null;
       if (line != null && ignoredLines.has(line)) return true;
-      return centralAllowlistMatches(allowlist, filename, value, line);
+      return centralAllowlistMatches(allowlist, filename, value);
     }
 
     function reportText(node, value) {
@@ -227,7 +239,49 @@ module.exports = {
       });
     }
 
+    function reportDefault(node, attr, value) {
+      if (!isUserVisibleLiteral(value) || isAllowed(node, value)) return;
+      context.report({
+        node,
+        messageId: "hardcodedDefault",
+        data: { attr, value: normalizeValue(value) },
+      });
+    }
+
+    /**
+     * `placeholder = 'Country'` shipped an untranslated attribute that nothing
+     * reported, because a default parameter is structurally invisible to a rule
+     * that only visits JSXAttribute nodes (post-mortem recorded in
+     * CountrySelect.tsx). This intentionally does NOT widen the ADR-151 §1
+     * attribute set — it only makes that same set non-evadable by matching
+     * parameter names already declared user-visible.
+     */
+    function checkDefaultParams(node) {
+      for (const param of node.params || []) {
+        const targets =
+          param.type === "ObjectPattern"
+            ? param.properties || []
+            : [param];
+        for (const target of targets) {
+          const assignment =
+            target.type === "Property" ? target.value : target;
+          if (!assignment || assignment.type !== "AssignmentPattern") continue;
+          const name =
+            assignment.left && assignment.left.type === "Identifier"
+              ? assignment.left.name
+              : null;
+          if (!name || !USER_VISIBLE_ATTRS.has(name)) continue;
+          walkStringExpressions(assignment.right, (value, valueNode) => {
+            reportDefault(valueNode, name, value);
+          });
+        }
+      }
+    }
+
     return {
+      FunctionDeclaration: checkDefaultParams,
+      FunctionExpression: checkDefaultParams,
+      ArrowFunctionExpression: checkDefaultParams,
       JSXText(node) {
         if (isInsideNonVisibleElement(node)) return;
         reportText(node, node.value);

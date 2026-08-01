@@ -17,7 +17,10 @@ export type NativeSelectProps = {
 } & SelectHTMLAttributes<HTMLSelectElement>;
 
 const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
-  ({ placeholder = 'Select...', defaultValue, className, children, ...props }, ref) => {
+  // `placeholder` intentionally has NO default literal — see CountrySelect:
+  // a default parameter reaches the DOM exactly like a written attribute, so a
+  // literal default is an untranslated string the i18n guard used to miss.
+  ({ placeholder, defaultValue, className, children, ...props }, ref) => {
     const innerRef = useRef<HTMLSelectElement>(null);
     const [isPlaceholder, setIsPlaceholder] = useState(false);
 

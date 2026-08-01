@@ -20,12 +20,15 @@ import { EmptyCart } from './EmptyCart';
  * Turbopack TDZ-safe pattern.
  */
 
+// `deliveryLabel` is required and has NO literal default. The former
+// `= 'Delivery'` default was rendered verbatim by every caller that omitted it
+// (CartReview did), which is untranslated copy no JSX-level guard can see.
 export const CartItems = ({
   cart,
-  deliveryLabel = 'Delivery'
+  deliveryLabel
 }: {
   cart: HttpTypes.StoreCart | null;
-  deliveryLabel?: string;
+  deliveryLabel: string;
 }) => {
   if (!cart) return null;
 
