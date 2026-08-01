@@ -60,9 +60,41 @@
  * Sekrety: evidence zapisuje WYŁĄCZNIE nazwy zmiennych i ich obecność
  * (`present` / `EMPTY` / `absent`), nigdy wartości (NFR4).
  */
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+
+// ── Lifecycle prod-buildu jest WSPÓŁDZIELONY ze story 5.5 (HG-13) ──────────
+// Higiena środowiska, start `next start` i asercja bindu były tu zaimplementowane
+// przez story 5.4. Story 5.5 potrzebuje ich 1:1 (AC1: pre-flight jest częścią
+// pomiaru), więc zostały PRZENIESIONE do `scripts/lib/prod-stack-lifecycle.mjs`
+// i są importowane przez oba skrypty. Kopia dałaby trzeci, dryfujący harness.
+// Re-eksport poniżej utrzymuje zastane importy testów jednostkowych 5.4.
+import {
+  NeedsLiveRun,
+  ToolError,
+  describeEnvPresence,
+  killStaleListeners,
+  parsePortOwners,
+  purgeBuildArtifacts,
+  readEnvLocal,
+  redactBuildLog,
+  runBuild,
+  startAndAssertBind
+} from './lib/prod-stack-lifecycle.mjs';
+
+export {
+  NeedsLiveRun,
+  ToolError,
+  describeEnvPresence,
+  killStaleListeners,
+  parsePortOwners,
+  purgeBuildArtifacts,
+  readEnvLocal,
+  redactBuildLog,
+  runBuild,
+  startAndAssertBind
+};
 
 const LOCALES = ['pl', 'ua', 'de', 'en'];
 
@@ -97,9 +129,6 @@ const BUILD_ENV_KEYS = [
 /** Builtiny Node, których obecność w bundlu KLIENCKIM jest klasą awarii ze Sprint-1. */
 const NODE_BUILTIN_LEAK_RE =
   /(?:"|'|`)node:(fs|path|os|crypto|child_process|net|http|https|stream|zlib|worker_threads|dns|tls|process|util|buffer)(?:\/[a-z]+)?(?:"|'|`)/g;
-
-class ToolError extends Error {}
-class NeedsLiveRun extends Error {}
 
 // ───────────────────────────────────────────────────────────────────────────
 // Czyste funkcje (bez sieci/fs/procesów) — pokryte testem jednostkowym.
@@ -199,20 +228,6 @@ export function percentile(values, p = 95) {
 }
 
 /**
- * PID-y nasłuchujące na porcie, wyciągnięte z `ss -lptn`. Asercja bindu (AC5)
- * stoi na tym, że listener jest NASZYM procesem — „port odpowiada" to za mało,
- * bo dokładnie tak wygląda zombie next-server z innego builda.
- */
-export function parsePortOwners(ssOutput, port) {
-  const pids = new Set();
-  for (const line of String(ssOutput).split('\n')) {
-    if (!new RegExp(`[:.]${port}\\s`).test(line)) continue;
-    for (const m of line.matchAll(/pid=(\d+)/g)) pids.add(Number(m[1]));
-  }
-  return [...pids];
-}
-
-/**
  * Przeciek `node:*` do bundle'a KLIENCKIEGO (klasa awarii Sprint-1). Wejście:
  * `[{ file, source }]` z `.next/static/chunks`. Kontrola ARTEFAKTU, nie deklaracja
  * w opisie — build potrafi przejść, a moduł i tak wyląduje w chunku klienckim.
@@ -273,34 +288,6 @@ export function evaluateBudget({ hitRate, p95, thresholds = AD14 }) {
   return { pass: findings.length === 0, findings };
 }
 
-/**
- * Redakcja logu builda przed zapisem do evidence (NFR4).
- *
- * Log builda to zrzut cudzego stdout — nie kontrolujemy, co się w nim znajdzie.
- * Na tym przebiegu było czysto (same URL-e `localhost`), ale wystarczy jeden
- * `fetch` z tokenem w query stringu, żeby sekret wylądował w artefakcie
- * commitowanym do repo. Redagujemy więc zawsze, a nie „gdy zauważymy".
- */
-export function redactBuildLog(text) {
-  return String(text)
-    .replace(
-      /([?&][^=&\s]*(?:key|token|secret|password|auth|pwd|sig)[^=&\s]*=)([^&\s"'`]+)/gi,
-      '$1<REDACTED>'
-    )
-    .replace(/\b((?:pk|sk|rk)_(?:test|live)_)[A-Za-z0-9]+/g, '$1<REDACTED>')
-    .replace(/\b[A-Za-z0-9_-]{40,}\b/g, '<REDACTED-LONG-TOKEN>');
-}
-
-/** Obecność zmiennych — NIGDY wartości (NFR4). */
-export function describeEnvPresence(env, keys) {
-  const out = {};
-  for (const key of keys) {
-    const value = env[key];
-    out[key] = value === undefined ? 'absent' : String(value).trim() === '' ? 'EMPTY' : 'present';
-  }
-  return out;
-}
-
 // ───────────────────────────────────────────────────────────────────────────
 // Warstwa efektów.
 // ───────────────────────────────────────────────────────────────────────────
@@ -322,94 +309,7 @@ function parseArgs(argv) {
   return args;
 }
 
-/** Minimalny parser `.env.local` — Next auto-loaduje go w runtime, my nie. */
-function readEnvLocal(cwd) {
-  const envPath = path.resolve(cwd, '.env.local');
-  const result = {};
-  if (!fs.existsSync(envPath)) return result;
-  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
-    const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
-    if (match) result[match[1]] = match[2].replace(/^"|"$/g, '');
-  }
-  return result;
-}
-
 const log = (msg) => console.log(`[prod-build-smoke] ${msg}`);
-
-/**
- * Pre-flight AC5 krok 1: ubicie procesów `next-server`/`next start` nasłuchujących
- * na NASZYM porcie. Bez tego smoke potrafi odpytywać stary proces z innego builda
- * (zmierzone w Sprint-3), a wynik — zielony czy czerwony — jest nieinterpretowalny.
- */
-function killStaleListeners(port) {
-  const ss = spawnSync('ss', ['-lptn'], { encoding: 'utf8' });
-  const owners = parsePortOwners(ss.stdout ?? '', port);
-  const killed = [];
-  for (const pid of owners) {
-    let cmdline = '';
-    try {
-      cmdline = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').replace(/\0/g, ' ');
-    } catch {
-      continue;
-    }
-    // Ubijamy WYŁĄCZNIE procesy Next — nie chcemy zabić cudzego stacku dlatego,
-    // że akurat trafił na ten sam port. Obcy listener ⇒ NEEDS-LIVE-RUN niżej.
-    if (/next-server|next start|next\/dist/.test(cmdline)) {
-      try {
-        process.kill(pid, 'SIGKILL');
-        killed.push({ pid, cmdline: cmdline.slice(0, 120) });
-      } catch { /* zniknął sam */ }
-    }
-  }
-  return { owners_before: owners, killed };
-}
-
-/** Pre-flight AC5 krok 2/3: stale fetch-cache i współdzielony `.next`. */
-function purgeBuildArtifacts(cwd, { fullRebuild }) {
-  const nextDir = path.join(cwd, '.next');
-  const fetchCache = path.join(nextDir, 'cache', 'fetch-cache');
-  const actions = [];
-  if (fullRebuild) {
-    if (fs.existsSync(nextDir)) {
-      fs.rmSync(nextDir, { recursive: true, force: true });
-      actions.push('rm -rf .next (współdzielony .next kontaminuje middleware)');
-    } else {
-      actions.push('.next nie istniał (nic do usunięcia)');
-    }
-  } else if (fs.existsSync(fetchCache)) {
-    fs.rmSync(fetchCache, { recursive: true, force: true });
-    actions.push('rm -rf .next/cache/fetch-cache (stale fetch-cache)');
-  } else {
-    actions.push('.next/cache/fetch-cache nie istniał');
-  }
-  return actions;
-}
-
-function runBuild(cwd, env) {
-  const started = Date.now();
-  const result = spawnSync('node_modules/.bin/next', ['build'], {
-    cwd,
-    env,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024
-  });
-  const stdout = result.stdout ?? '';
-  const stderr = result.stderr ?? '';
-  const failed = result.status !== 0;
-  return {
-    exit_code: result.status,
-    duration_ms: Date.now() - started,
-    warnings: [...stdout.matchAll(/^.*\b(Warning|warn)\b.*$/gim)]
-      .map((m) => redactBuildLog(m[0].trim()))
-      .slice(0, 40),
-    // Ogon logu trafia do evidence WYŁĄCZNIE przy padniętym buildzie, gdzie jest
-    // niezbędny diagnostycznie — i nawet wtedy po redakcji. Na ścieżce sukcesu
-    // nie ma powodu commitować cudzego stdout do repo (NFR4).
-    tail: failed
-      ? redactBuildLog((stderr || stdout).split('\n').slice(-25).join('\n'))
-      : '(pominięty — build zakończony sukcesem; ogon logu zapisujemy tylko przy FAIL, NFR4)'
-  };
-}
 
 /** Kontrola artefaktu `.next` — AC1, wykonywalnie. */
 function scanClientBundle(cwd) {
@@ -431,104 +331,6 @@ function scanClientBundle(cwd) {
     source: fs.readFileSync(file, 'utf8')
   }));
   return { scanned_files: chunks.length, leaks: findNodeBuiltinLeaks(chunks) };
-}
-
-/**
- * Start z artefaktu prod-build + ASERCJA BINDU (AC5 pkt 4). Trzy niezależne
- * dowody, że pytamy TEN proces z TEGO builda:
- *   (a) marker gotowości w stdout naszego dziecka,
- *   (b) PID nasłuchujący na porcie należy do drzewa procesów naszego dziecka,
- *   (c) serwowany HTML odwołuje się do `/_next/static/<BUILD_ID>` z naszego `.next`.
- * Brak którejkolwiek ⇒ NEEDS-LIVE-RUN, nigdy PASS.
- */
-async function startAndAssertBind(cwd, env, port) {
-  const buildIdPath = path.join(cwd, '.next', 'BUILD_ID');
-  if (!fs.existsSync(buildIdPath)) {
-    throw new NeedsLiveRun('brak .next/BUILD_ID — nie ma artefaktu prod-build do wystartowania');
-  }
-  const buildId = fs.readFileSync(buildIdPath, 'utf8').trim();
-
-  const child = spawn('node_modules/.bin/next', ['start', '-p', String(port)], {
-    cwd,
-    env,
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
-  let serverLog = '';
-  child.stdout.on('data', (d) => { serverLog += d.toString(); });
-  child.stderr.on('data', (d) => { serverLog += d.toString(); });
-
-  const deadline = Date.now() + 90_000;
-  let ready = false;
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) {
-      throw new NeedsLiveRun(`next start zakończył się kodem ${child.exitCode}:\n${serverLog.slice(-1500)}`);
-    }
-    if (/Ready in|- Local:|started server on/i.test(serverLog)) { ready = true; break; }
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  if (!ready) {
-    child.kill('SIGKILL');
-    throw new NeedsLiveRun(`next start nie zgłosił gotowości w 90 s:\n${serverLog.slice(-1500)}`);
-  }
-
-  // (b) właściciel portu w drzewie naszego dziecka
-  const tree = new Set([child.pid]);
-  for (let depth = 0; depth < 4; depth++) {
-    const pgrep = spawnSync('pgrep', ['-P', [...tree].join(',')], { encoding: 'utf8' });
-    for (const line of (pgrep.stdout ?? '').split('\n')) {
-      const pid = Number(line.trim());
-      if (pid) tree.add(pid);
-    }
-  }
-  const ss = spawnSync('ss', ['-lptn'], { encoding: 'utf8' });
-  const owners = parsePortOwners(ss.stdout ?? '', port);
-  const ownedByUs = owners.filter((pid) => tree.has(pid));
-  if (owners.length === 0 || ownedByUs.length === 0) {
-    child.kill('SIGKILL');
-    throw new NeedsLiveRun(
-      `asercja bindu NIEUDANA: na :${port} nasłuchują [${owners.join(', ')}], ` +
-        `nasze drzewo to [${[...tree].join(', ')}] — „port odpowiada" nie znaczy „to nasz proces"`
-    );
-  }
-
-  // (c) serwowany artefakt pochodzi z TEGO builda.
-  //
-  // Sprawdzamy `/_next/static/<BUILD_ID>/_ssgManifest.js`, a NIE obecność BUILD_ID
-  // w HTML: App Router nie wstawia ścieżki `/_next/static/<BUILD_ID>/` do markupu
-  // (to konwencja Pages Routera), więc asercja na HTML odrzucała poprawny bind.
-  // Manifest leży pod BUILD_ID naszego `.next`, więc 200 znaczy „serwer czyta TEN
-  // katalog builda".
-  //
-  // Kontrola negatywna jest częścią asercji, nie ozdobą: serwer, który na wszystko
-  // odpowiada 200 (proxy, catch-all, obcy stack), przepuściłby sam pozytywny
-  // strzał. Zmyślony BUILD_ID MUSI dać nie-200, inaczej dowód jest pusty.
-  const manifestUrl = (id) => `http://127.0.0.1:${port}/_next/static/${id}/_ssgManifest.js`;
-  const ours = await fetch(manifestUrl(buildId), { redirect: 'manual' });
-  const bogusId = `${buildId}-nie-istnieje`;
-  const bogus = await fetch(manifestUrl(bogusId), { redirect: 'manual' });
-  if (ours.status !== 200 || bogus.status === 200) {
-    child.kill('SIGKILL');
-    throw new NeedsLiveRun(
-      `asercja bindu NIEUDANA: serwer na :${port} nie potwierdza BUILD_ID=${buildId} ` +
-        `(manifest naszego builda → HTTP ${ours.status}, zmyślony BUILD_ID → HTTP ${bogus.status}; ` +
-        'oczekiwane 200 / nie-200) — odpowiada inny build albo catch-all (klasa false-FAIL ze Sprint-3)'
-    );
-  }
-
-  return {
-    child,
-    assertion: {
-      port,
-      build_id: buildId,
-      child_pid: child.pid,
-      listening_pids: owners,
-      listening_pids_owned_by_run: ownedByUs,
-      build_id_manifest_status: ours.status,
-      bogus_build_id_manifest_status: bogus.status,
-      build_id_negative_control: 'zmyślony BUILD_ID musi dać nie-200 — inaczej catch-all udaje nasz build',
-      ready_marker: /Ready in|- Local:|started server on/i.exec(serverLog)?.[0] ?? null
-    }
-  };
 }
 
 async function probe(baseUrl, url) {
