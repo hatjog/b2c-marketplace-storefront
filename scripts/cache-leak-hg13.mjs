@@ -49,6 +49,7 @@ import {
   NeedsLiveRun,
   ToolError,
   assertNoStaleListener,
+  assertServerStillServing,
   describeEnvPresence,
   killStaleListeners,
   purgeBuildArtifacts,
@@ -440,6 +441,20 @@ async function main() {
       raw_samples: path.relative(repoRoot, samplesPath),
       tail: spec.tail
     };
+
+    // ── Asercja żywotności PO obciążeniu ────────────────────────────────
+    // Asercja bindu biegnie PRZED pomiarem i opiera się na statyku z dysku, więc
+    // nie widzi serwera, który zakleszczył się DOPIECO pod obciążeniem profilu.
+    // Bez tego kroku przebieg, w którym serwer padł w połowie fal, mógłby dojść
+    // do werdyktu na niepełnych próbkach — a „proces żyje, port zbindowany"
+    // wyglądałoby na zdrowie. Fail-closed: NeedsLiveRun, nigdy PASS.
+    evidence.preflight.post_load_liveness = await assertServerStillServing(port, {
+      paths: HG13_LOCALES.map((l) => `/${l}`),
+      budgetMs: 30_000,
+      buildId: assertion.build_id,
+      phase: 'po profilu HG-13'
+    });
+    log(`żywotność po obciążeniu OK: ${HG13_LOCALES.map((l) => `/${l}`).join(', ')} renderują`);
 
     if (!fs.existsSync(samplesPath)) {
       throw new NeedsLiveRun(

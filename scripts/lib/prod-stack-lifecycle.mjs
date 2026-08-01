@@ -178,6 +178,101 @@ export function runBuild(cwd, env) {
  *       wszystko odpowiada 200, przepuściłby sam pozytywny strzał).
  * Brak którejkolwiek ⇒ NeedsLiveRun, nigdy PASS.
  */
+/**
+ * Asercja, że serwer NADAL RENDERUJE — nie że „port jest zajęty".
+ *
+ * ══ Dlaczego to nie jest kolejny health check ══
+ * `startAndAssertBind` sprawdza bind + tożsamość builda, ale robi to
+ *   (a) RAZ, przed pomiarem, i
+ *   (b) na `/_next/static/<BUILD_ID>/_ssgManifest.js` — czyli na PLIKU Z DYSKU.
+ * Serwer, któremu zakleszczył się pipeline SSR, dalej odda ten plik: statyki
+ * serwuje warstwa, która nie potrzebuje renderu. Dokładnie tak wygląda objaw
+ * zgłoszony przez PO: proces żyje, port zbindowany, `curl` na stronę wisi.
+ * Bramka oparta na bindzie świeci wtedy zielenią na martwym serwisie — to ta
+ * sama klasa co „mechanizm istnieje, ale nie mierzy tego, co ma mierzyć".
+ *
+ * Dlatego ta funkcja:
+ *   • odpytuje TRASY SSR (`/pl`, …), nigdy statyków;
+ *   • wymaga 200 ORAZ ciała, które wygląda jak wyrenderowany dokument — puste
+ *     200 z catch-all nie jest dowodem renderu;
+ *   • ma twardy budżet czasu: brak odpowiedzi w budżecie to FAIL, nie „wolno";
+ *   • jest fail-closed — timeout, ECONNREFUSED i socket hang up kończą się
+ *     NeedsLiveRun/FAIL, nigdy cichym PASS.
+ * Kontrolnie odpytuje też statyk, żeby EVIDENCE zapisało sygnaturę
+ * „statyk 200 / SSR martwy" zamiast gubić ją w jednym zbiorczym błędzie.
+ */
+export async function assertServerStillServing(
+  port,
+  { paths = ['/pl'], budgetMs = 30_000, buildId = null, phase = 'post-load' } = {}
+) {
+  const probes = [];
+  for (const p of paths) {
+    const url = `http://127.0.0.1:${port}${p}`;
+    const t0 = Date.now();
+    let status = null;
+    let bytes = 0;
+    let error = null;
+    let looksRendered = false;
+    try {
+      const res = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(budgetMs) });
+      status = res.status;
+      const body = await res.text();
+      bytes = body.length;
+      looksRendered = /<html[\s>]/i.test(body) || /<!doctype html/i.test(body);
+    } catch (e) {
+      // AbortSignal.timeout → TimeoutError. Rozróżniamy je od odmowy połączenia,
+      // bo to DWA różne tryby awarii: zakleszczony render vs martwy listener.
+      error = e?.name === 'TimeoutError'
+        ? `brak odpowiedzi w ${budgetMs} ms (zakleszczenie renderu — port żyje, render nie)`
+        : String(e?.message ?? e);
+    }
+    probes.push({ url, status, bytes, looks_rendered: looksRendered, duration_ms: Date.now() - t0, error });
+  }
+
+  // Kontrola: statyk z dysku. Jeśli on odpowiada, a SSR nie — to jest DOKŁADNIE
+  // ta sygnatura, którą bramka na bindzie przepuszcza.
+  let staticProbe = null;
+  if (buildId) {
+    const url = `http://127.0.0.1:${port}/_next/static/${buildId}/_ssgManifest.js`;
+    try {
+      const res = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(budgetMs) });
+      await res.text();
+      staticProbe = { url, status: res.status };
+    } catch (e) {
+      staticProbe = { url, status: null, error: String(e?.message ?? e) };
+    }
+  }
+
+  const dead = probes.filter((p) => p.status !== 200 || !p.looks_rendered);
+  const assertion = {
+    phase,
+    port,
+    budget_ms: budgetMs,
+    probes,
+    static_control: staticProbe,
+    contract:
+      'trasa SSR musi zwrócić 200 z wyrenderowanym dokumentem; statyk odpowiadający ' +
+      'przy martwym SSR to sygnatura „proces żyje, port zbindowany, zero odpowiedzi"',
+    ok: dead.length === 0
+  };
+
+  if (dead.length > 0) {
+    const detail = dead
+      .map((p) => `${p.url} → ${p.error ? p.error : `HTTP ${p.status}, ${p.bytes} B, rendered=${p.looks_rendered}`}`)
+      .join('; ');
+    const staticNote =
+      staticProbe && staticProbe.status === 200
+        ? ` STATYK ODPOWIADA (${staticProbe.url} → 200), więc asercja bindu przepuściłaby ten stan jako zielony.`
+        : '';
+    throw new NeedsLiveRun(
+      `serwer na :${port} przestał renderować (${phase}): ${detail}.${staticNote} ` +
+        '„Port zbindowany" nie jest dowodem, że serwis odpowiada.'
+    );
+  }
+
+  return assertion;
+}
+
 export async function startAndAssertBind(cwd, env, port, { distDir = '.next' } = {}) {
   const buildIdPath = path.join(cwd, distDir, 'BUILD_ID');
   if (!fs.existsSync(buildIdPath)) {
