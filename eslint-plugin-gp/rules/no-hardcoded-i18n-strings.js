@@ -267,8 +267,13 @@ module.exports = {
      * reported, because a default parameter is structurally invisible to a rule
      * that only visits JSXAttribute nodes (post-mortem recorded in
      * CountrySelect.tsx). This intentionally does NOT widen the ADR-151 §1
-     * attribute set — it only makes that same set non-evadable by matching
-     * parameter names already declared user-visible.
+     * attribute set — it narrows the ways that set can be bypassed.
+     *
+     * It does NOT close the class. Reaching a user-visible attribute through a
+     * local variable (`const ph = x ?? 'Country'`) or `Component.defaultProps`
+     * would need dataflow analysis rather than a parameter-name match, and both
+     * remain undetected — recorded in deferred-work.md. Treat this as a guard
+     * against the common shapes, not as proof of non-evadability.
      */
     function checkDefaultParams(node) {
       // Walks parameter patterns to any depth. A single-level, binding-name-based
