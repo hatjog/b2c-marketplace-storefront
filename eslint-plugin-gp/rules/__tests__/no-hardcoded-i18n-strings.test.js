@@ -150,9 +150,54 @@ ruleTester.run("no-hardcoded-i18n-strings", rule, {
       filename: tsx,
       code: "const C = () => <script>{`window.__label = 'Buy now';`}</script>;",
     },
+    {
+      name: "logical fallback to an i18n call is not a literal",
+      filename: tsx,
+      code: "const C = ({ label, t }) => <span>{label || t('common.untitled')}</span>;",
+    },
+    {
+      name: "logical AND guard on a non-copy condition still renders keyed copy",
+      filename: tsx,
+      code: "const C = ({ isOpen, t }) => <span>{isOpen && t('common.open')}</span>;",
+    },
   ],
 
   invalid: [
+    // v1.14.0 QD-05 — LogicalExpression was structurally invisible to
+    // walkStringExpressions, so fallback copy (the most common way a literal
+    // reaches the DOM) was never reported. `CountrySelect` shipped an
+    // untranslated `'Choose a country'` through the whole v1.13.0 baseline
+    // precisely because nothing ever flagged it.
+    {
+      name: "logical OR fallback literal in JSX text",
+      filename: tsx,
+      code: "const C = ({ label }) => <span>{label || 'Choose a country'}</span>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
+    {
+      name: "nullish coalescing fallback literal in JSX text",
+      filename: tsx,
+      code: "const C = ({ label }) => <span>{label ?? 'Choose a country'}</span>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
+    {
+      name: "logical AND right operand literal in JSX text",
+      filename: tsx,
+      code: "const C = ({ soldOut }) => <span>{soldOut && 'Sold out'}</span>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
+    {
+      name: "logical OR fallback literal in a user visible attribute",
+      filename: tsx,
+      code: "const C = ({ label }) => <img alt={label || 'Product thumbnail'} />;",
+      errors: [{ messageId: "hardcodedAttr" }],
+    },
+    {
+      name: "logical fallback nested under a conditional expression",
+      filename: tsx,
+      code: "const C = ({ a, b, t }) => <span>{a ? (b || 'Choose a country') : t('x.y')}</span>;",
+      errors: [{ messageId: "hardcodedText" }],
+    },
     {
       name: "simple JSX text",
       filename: tsx,

@@ -375,7 +375,8 @@
       "group_header_label": "Von Verkäufer: {seller_name}",
       "default_seller_group_label": "Andere Artikel",
       "subtotal_per_seller": "Zwischensumme: {amount}",
-      "visit_seller_storefront": "Verkäufer-Shop besuchen"
+      "visit_seller_storefront": "Verkäufer-Shop besuchen",
+      "joined_since": "Beigetreten: {date}"
     },
     "checkout": {
       "purchase_mode_label": "Für wen kaufen Sie?",
@@ -798,7 +799,24 @@
     "state_province": "Bundesland / Provinz",
     "phone": "Telefonnummer",
     "email": "E-Mail",
-    "email_validation": "Geben Sie eine gültige E-Mail-Adresse ein, zum Beispiel jana@example.com."
+    "email_validation": "Geben Sie eine gültige E-Mail-Adresse ein, zum Beispiel jana@example.com.",
+    "country_label": "Land",
+    "country_placeholder": "Land auswählen",
+    "address_select_placeholder": "Adresse auswählen",
+    "report": {
+      "reason_label": "Grund",
+      "comment_label": "Kommentar",
+      "reason_dmca": "Verletzung von Marken-, Urheberrecht oder DMCA",
+      "submit_seller": "Verkäufer melden",
+      "submit_listing": "Angebot melden",
+      "success_heading": "Vielen Dank!",
+      "success_body": "Wir prüfen, ob das Angebot gegen unsere Richtlinien verstößt, und ergreifen die notwendigen Maßnahmen, damit das Einkaufen für alle sicher bleibt. Danke, dass Sie uns helfen, eine vertrauenswürdige Community zu erhalten.",
+      "success_ack": "Verstanden",
+      "errors": {
+        "reason_required": "Bitte einen Grund auswählen",
+        "comment_required": "Bitte einen Kommentar hinzufügen"
+      }
+    }
   },
   "cart": {
     "open_cart_drawer_aria": "Warenkorb öffnen",
@@ -3347,6 +3365,11 @@
         "primary_cta": "Nach Wiederherstellung erneut versuchen",
         "secondary_cta": "Hilfe öffnen",
         "suggested_action": "Stellen Sie die Netzwerkverbindung wieder her und versuchen Sie es erst dann erneut."
+      },
+      "technical_details_fields": {
+        "request_id": "Anfrage-ID",
+        "timestamp": "Zeitstempel",
+        "suggested_action": "Empfohlene Aktion"
       }
     }
   },

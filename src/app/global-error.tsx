@@ -98,7 +98,14 @@ export default function GlobalError({
             },
           ]}
           technicalDetailsLabel={messages.runtime.technical_details}
-          technicalDetails={details}
+          technicalDetails={{
+            ...details,
+            labels: {
+              requestId: messages.runtime.technical_details_fields.request_id,
+              timestamp: messages.runtime.technical_details_fields.timestamp,
+              suggestedAction: messages.runtime.technical_details_fields.suggested_action,
+            },
+          }}
           secondaryAction={
             variant === 'offline' ? (
               <Link

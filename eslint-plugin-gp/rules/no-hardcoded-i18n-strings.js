@@ -131,6 +131,22 @@ function walkStringExpressions(node, cb) {
   } else if (node.type === "ConditionalExpression") {
     walkStringExpressions(node.consequent, cb);
     walkStringExpressions(node.alternate, cb);
+  } else if (node.type === "LogicalExpression") {
+    // Fallback copy (`value || 'Choose a country'`, `value ?? 'Country'`,
+    // `flag && 'Sold out'`) is the single most common way a literal reaches
+    // the DOM, and it was structurally invisible to this rule until v1.14.0
+    // QD-05. Only operand positions that can actually be the produced value
+    // are walked: for `&&` the left operand is a condition, never rendered
+    // as the result when it is a non-empty string being tested, but it IS
+    // rendered by `||`/`??` when truthy — so `&&` walks right only.
+    if (node.operator === "&&") {
+      walkStringExpressions(node.right, cb);
+    } else {
+      walkStringExpressions(node.left, cb);
+      walkStringExpressions(node.right, cb);
+    }
+  } else if (node.type === "TSAsExpression" || node.type === "TSNonNullExpression") {
+    walkStringExpressions(node.expression, cb);
   }
 }
 

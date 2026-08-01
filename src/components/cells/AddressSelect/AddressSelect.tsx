@@ -1,3 +1,5 @@
+'use client';
+
 import { Fragment, useMemo } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
@@ -5,6 +7,7 @@ import { ChevronUpDown } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { clx } from '@medusajs/ui';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 
 import compareAddresses from '@/lib/helpers/compare-addresses';
 
@@ -15,6 +18,8 @@ type AddressSelectProps = {
 };
 
 const AddressSelect = ({ addresses, addressInput, onSelect }: AddressSelectProps) => {
+  const t = useTranslations('forms');
+
   const handleSelect = (id: string) => {
     const savedAddress = addresses.find(a => a.id === id);
     if (savedAddress) {
@@ -41,7 +46,7 @@ const AddressSelect = ({ addresses, addressInput, onSelect }: AddressSelectProps
           {({ open }) => (
             <>
               <span className="block truncate">
-                {selectedAddress ? selectedAddress.address_name : 'Choose an address'}
+                {selectedAddress ? selectedAddress.address_name : t('address_select_placeholder')}
               </span>
               <ChevronUpDown
                 className={clx('transition-rotate duration-200', {

@@ -65,9 +65,11 @@ export async function BlogSection({
   readMoreLabel,
 }: {
   posts?: BlogPost[];
-  heading?: string;
-  readMoreLabel?: string;
-} = {}) {
+  /** Required for the same reason as `BlogCard.readMoreLabel`: the previous
+   *  optional prop + literal default rendered English on PL/UA/DE. */
+  heading: string;
+  readMoreLabel: string;
+}) {
   const t = await getTranslations('homepage');
   const postsToRender = posts?.length ? posts : blogPosts;
 
@@ -75,7 +77,7 @@ export async function BlogSection({
     <section className="bb-section-shell w-full bg-transparent">
       <div className="mb-8 space-y-2">
         <p className="bb-eyebrow">{t('blog_eyebrow')}</p>
-        <h2 className="heading-lg text-primary">{heading ?? 'Stay up to date'}</h2>
+        <h2 className="heading-lg text-primary">{heading}</h2>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {postsToRender.map((post, index) => (

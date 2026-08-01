@@ -1,3 +1,5 @@
+'use client';
+
 import { forwardRef, Fragment, useImperativeHandle, useMemo, useRef } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
@@ -5,6 +7,7 @@ import { ChevronUpDown } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { clx } from '@medusajs/ui';
 import clsx from 'clsx';
+import { useTranslations } from 'next-intl';
 
 import NativeSelect, {
   type NativeSelectProps
@@ -15,7 +18,11 @@ const CountrySelect = forwardRef<
   NativeSelectProps & {
     region?: HttpTypes.StoreRegion;
   }
->(({ placeholder = 'Country', region, defaultValue, ...props }, ref) => {
+  // `placeholder` intentionally has NO default literal: a default parameter is
+  // structurally invisible to the JSX-AST i18n guard, so `placeholder = 'Country'`
+  // shipped an untranslated attribute that nothing ever reported.
+>(({ placeholder, region, defaultValue, ...props }, ref) => {
+  const t = useTranslations('forms');
   const innerRef = useRef<HTMLSelectElement>(null);
 
   useImperativeHandle<HTMLSelectElement | null, HTMLSelectElement | null>(
@@ -47,7 +54,7 @@ const CountrySelect = forwardRef<
 
   return (
     <label className="label-md">
-      <p className="mb-2">Country</p>
+      <p className="mb-2">{t('country_label')}</p>
       <Listbox
         onChange={handleSelect}
         value={selectedValue}
@@ -63,7 +70,7 @@ const CountrySelect = forwardRef<
               <>
                 <span className="block truncate">
                   {countryOptions?.find(country => country.value === selectedValue)?.label ||
-                    'Choose a country'}
+                    t('country_placeholder')}
                 </span>
                 <ChevronUpDown
                   className={clx('transition-rotate duration-200', {
@@ -100,7 +107,7 @@ const CountrySelect = forwardRef<
       <div className="hidden">
         <NativeSelect
           ref={innerRef}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t('country_label')}
           defaultValue={defaultValue}
           className={clsx('hidden h-12 w-full items-center bg-component-secondary')}
           {...props}

@@ -375,7 +375,8 @@
       "group_header_label": "Od sprzedawcy: {seller_name}",
       "default_seller_group_label": "Pozostałe pozycje",
       "subtotal_per_seller": "Suma częściowa: {amount}",
-      "visit_seller_storefront": "Zobacz sklep sprzedawcy"
+      "visit_seller_storefront": "Zobacz sklep sprzedawcy",
+      "joined_since": "Dołączył: {date}"
     },
     "checkout": {
       "purchase_mode_label": "Dla kogo kupujesz?",
@@ -798,7 +799,24 @@
     "state_province": "Województwo / region",
     "phone": "Telefon",
     "email": "E-mail",
-    "email_validation": "Wprowadź poprawny adres e-mail, np. jan@example.com."
+    "email_validation": "Wprowadź poprawny adres e-mail, np. jan@example.com.",
+    "country_label": "Kraj",
+    "country_placeholder": "Wybierz kraj",
+    "address_select_placeholder": "Wybierz adres",
+    "report": {
+      "reason_label": "Powód",
+      "comment_label": "Komentarz",
+      "reason_dmca": "Naruszenie znaku towarowego, praw autorskich lub DMCA",
+      "submit_seller": "Zgłoś sprzedawcę",
+      "submit_listing": "Zgłoś ofertę",
+      "success_heading": "Dziękujemy!",
+      "success_body": "Sprawdzimy zgłoszenie pod kątem naruszenia naszych zasad i podejmiemy niezbędne działania, aby zakupy były bezpieczne dla wszystkich. Dziękujemy za pomoc w utrzymaniu zaufanej społeczności.",
+      "success_ack": "Rozumiem",
+      "errors": {
+        "reason_required": "Wybierz powód",
+        "comment_required": "Dodaj komentarz"
+      }
+    }
   },
   "cart": {
     "open_cart_drawer_aria": "Otwórz koszyk",
@@ -3347,6 +3365,11 @@
         "primary_cta": "Spróbuj ponownie po połączeniu",
         "secondary_cta": "Przejdź do pomocy",
         "suggested_action": "Przywróć połączenie z siecią i dopiero wtedy ponów próbę."
+      },
+      "technical_details_fields": {
+        "request_id": "Identyfikator żądania",
+        "timestamp": "Znacznik czasu",
+        "suggested_action": "Sugerowane działanie"
       }
     }
   },

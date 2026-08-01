@@ -1,4 +1,7 @@
+'use client';
+
 import { format, isValid } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 import { Divider } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -6,7 +9,12 @@ import type { SingleProductSeller } from '@/types/product';
 
 import { SellerAvatar } from '../SellerAvatar/SellerAvatar';
 
+// Client component on purpose: both parents are server components that do not
+// carry `locale`, so the `getTranslations` shorthand here would silently resolve
+// against DEFAULT_LOCALE. The client provider dictionary is keyed by route
+// locale (QD-03 `getMessages({ locale })`), so this is the correct boundary.
 export const CartItemsHeader = ({ seller }: { seller: SingleProductSeller }) => {
+  const t = useTranslations('seller');
   const joinedDate = formatSellerJoinDate(seller.created_at);
 
   const content = (
@@ -23,7 +31,7 @@ export const CartItemsHeader = ({ seller }: { seller: SingleProductSeller }) => 
           <div className="flex items-center gap-2">
             <Divider square />
             <p className="label-md text-secondary">
-              Joined: {joinedDate}
+              {t('cart.joined_since', { date: joinedDate })}
             </p>
           </div>
         )}

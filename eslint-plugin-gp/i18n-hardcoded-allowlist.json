@@ -150,18 +150,6 @@
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/cells/CartItemsHeader/CartItemsHeader.tsx",
-    "line": 25,
-    "value": "Joined:",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/cells/CountrySelect/CountrySelect.tsx",
-    "line": 50,
-    "value": "Country",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/cells/MobileNavbar/components/MobileCategoryDrawer.tsx",
     "line": 68,
     "value": "Close drawer",
@@ -480,78 +468,6 @@
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/molecules/ReportListingForm/ReportListingForm.tsx",
-    "line": 50,
-    "value": "Reason",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportListingForm/ReportListingForm.tsx",
-    "line": 64,
-    "value": "Comment",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportListingForm/ReportListingForm.tsx",
-    "line": 80,
-    "value": "Report Listing",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportListingForm/ReportListingForm.tsx",
-    "line": 88,
-    "value": "Thank you!",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportListingForm/ReportListingForm.tsx",
-    "line": 89,
-    "value": "We'll check the listing to see if it violates our guidelines and take the necessary action to ensure a safe shopping experience for everyone. Thank you for helping us maintain a trusted community.",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportListingForm/ReportListingForm.tsx",
-    "line": 100,
-    "value": "Got it",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportSellerForm/ReportSellerForm.tsx",
-    "line": 50,
-    "value": "Reason",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportSellerForm/ReportSellerForm.tsx",
-    "line": 64,
-    "value": "Comment",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportSellerForm/ReportSellerForm.tsx",
-    "line": 80,
-    "value": "Report Seller",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportSellerForm/ReportSellerForm.tsx",
-    "line": 88,
-    "value": "Thank you!",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportSellerForm/ReportSellerForm.tsx",
-    "line": 89,
-    "value": "We'll check the listing to see if it violates our guidelines and take the necessary action to ensure a safe shopping experience for everyone. Thank you for helping us maintain a trusted community.",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/molecules/ReportSellerForm/ReportSellerForm.tsx",
-    "line": 100,
-    "value": "Got it",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/molecules/SellerInfoHeader/SellerInfoHeader.tsx",
     "line": 37,
     "value": "reviews",
@@ -729,12 +645,6 @@
     "file": "src/components/organisms/OrderTotals/OrderTotals.tsx",
     "line": 32,
     "value": "Total:",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/organisms/PaymentContainer/PaymentContainer.tsx",
-    "line": 108,
-    "value": "Enter your card details:",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
@@ -948,30 +858,6 @@
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/templates/ErrorSurface.tsx",
-    "line": 117,
-    "value": "B",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/templates/ErrorSurface.tsx",
-    "line": 250,
-    "value": "request_id",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/templates/ErrorSurface.tsx",
-    "line": 265,
-    "value": "timestamp",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/templates/ErrorSurface.tsx",
-    "line": 271,
-    "value": "suggested_action",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/templates/LegalDocLayout.tsx",
     "line": 163,
     "value": "Fail-closed render guard active — this layout only renders when fetchLegalDocument resolved successfully. Missing document MUST throw LegalDocumentNotFoundError and the route MUST render an explicit error branch.",
@@ -1000,12 +886,6 @@
     "line": 368,
     "value": "· review_status=",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
-    "file": "src/components/cells/AddressSelect/AddressSelect.tsx",
-    "line": 44,
-    "value": "Choose an address",
-    "reason": "v1.13.0 Story 2.2 expression-child baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
     "file": "src/components/cells/OrderProductListItem/OrderProductListItem.tsx",
@@ -1090,5 +970,29 @@
     "line": 34,
     "value": "Processing…",
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
+  },
+  {
+    "file": "src/components/atoms/Avatar/Avatar.tsx",
+    "line": 36,
+    "value": "Avatar",
+    "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
+  },
+  {
+    "file": "src/components/molecules/CartDropdownItem/CartDropdownItem.tsx",
+    "line": 55,
+    "value": "Product thumbnail",
+    "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
+  },
+  {
+    "file": "src/components/organisms/SingleOrderReturn/SingleOrderReturn.tsx",
+    "line": 210,
+    "value": "No reason provided",
+    "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
+  },
+  {
+    "file": "src/components/sections/OrderReturnSection/ReturnItemsTab.tsx",
+    "line": 97,
+    "value": "Select Reason",
+    "reason": "v1.14.0 QD-05: literal ujawniony dopiero po rozszerzeniu reguly o LogicalExpression. Plik NIE jest osiagalny renderem z src/app/** (zero konsumentow JSX w src/e2e/tests) — tlumaczenie go stworzyloby drugie, niczyje zrodlo copy zamowien, ktore posiada accountRead.*. Usuniecie martwego drzewa legacy jest osobnym celem z wlasnym rollbackiem."
   }
 ]

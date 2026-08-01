@@ -375,7 +375,8 @@
       "group_header_label": "From seller: {seller_name}",
       "default_seller_group_label": "Other items",
       "subtotal_per_seller": "Subtotal: {amount}",
-      "visit_seller_storefront": "Visit seller storefront"
+      "visit_seller_storefront": "Visit seller storefront",
+      "joined_since": "Joined: {date}"
     },
     "checkout": {
       "purchase_mode_label": "Who are you buying for?",
@@ -798,7 +799,24 @@
     "state_province": "State / Province",
     "phone": "Phone",
     "email": "E-mail",
-    "email_validation": "Enter a valid e-mail address, for example jane@example.com."
+    "email_validation": "Enter a valid e-mail address, for example jane@example.com.",
+    "country_label": "Country",
+    "country_placeholder": "Choose a country",
+    "address_select_placeholder": "Choose an address",
+    "report": {
+      "reason_label": "Reason",
+      "comment_label": "Comment",
+      "reason_dmca": "Trademark, Copyright or DMCA Violation",
+      "submit_seller": "Report Seller",
+      "submit_listing": "Report Listing",
+      "success_heading": "Thank you!",
+      "success_body": "We'll check the listing to see if it violates our guidelines and take the necessary action to ensure a safe shopping experience for everyone. Thank you for helping us maintain a trusted community.",
+      "success_ack": "Got it",
+      "errors": {
+        "reason_required": "Please select reason",
+        "comment_required": "Please add comment"
+      }
+    }
   },
   "cart": {
     "open_cart_drawer_aria": "Open cart",
@@ -3347,6 +3365,11 @@
         "primary_cta": "Try again when you are back online",
         "secondary_cta": "Open help",
         "suggested_action": "Restore the network connection and only then retry the purchase flow."
+      },
+      "technical_details_fields": {
+        "request_id": "Request ID",
+        "timestamp": "Timestamp",
+        "suggested_action": "Suggested action"
       }
     }
   },

@@ -16,6 +16,14 @@ interface ErrorSurfaceProps {
     requestId: string;
     timestampIso: string;
     suggestedAction: string;
+    /** Required, not optional: the `<dt>` terms used to be raw literals, and a
+     *  default here would let a call site silently keep shipping English. Making
+     *  it mandatory makes TypeScript enumerate every call site for us. */
+    labels: {
+      requestId: string;
+      timestamp: string;
+      suggestedAction: string;
+    };
   };
   supportTitle?: string;
   supportPaths?: Array<{ id: string; label: string; description: string }>;
@@ -114,7 +122,7 @@ export function ErrorSurface({
                 fontSize: '2rem',
                 fontWeight: 600,
               }}
-            >
+            >{/* i18n-ignore BonBeauty brand monogram, a proper name, identical in every locale */}
               B
             </div>
           </div>
@@ -247,7 +255,9 @@ export function ErrorSurface({
                 }}
               >
                 <div>
-                  <dt style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>request_id</dt>
+                  <dt style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                    {technicalDetails.labels.requestId}
+                  </dt>
                   <dd style={{ margin: '0.25rem 0 0' }}>
                     <code
                       style={{
@@ -262,13 +272,17 @@ export function ErrorSurface({
                   </dd>
                 </div>
                 <div>
-                  <dt style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>timestamp</dt>
+                  <dt style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                    {technicalDetails.labels.timestamp}
+                  </dt>
                   <dd style={{ margin: '0.25rem 0 0', color: 'var(--text-primary)' }}>
                     <time dateTime={technicalDetails.timestampIso}>{technicalDetails.timestampIso}</time>
                   </dd>
                 </div>
                 <div>
-                  <dt style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>suggested_action</dt>
+                  <dt style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                    {technicalDetails.labels.suggestedAction}
+                  </dt>
                   <dd style={{ margin: '0.25rem 0 0', color: 'var(--text-primary)' }}>
                     {technicalDetails.suggestedAction}
                   </dd>

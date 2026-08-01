@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { signout } from '@/lib/data/customer';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +16,8 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
   children,
   'data-testid': dataTestId
 }) => {
+  const t = useTranslations('header');
+
   const handleLogout = async () => {
     await signout();
   };
@@ -24,7 +28,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       className={cn(!unstyled && 'label-md my-3 px-4 py-3 uppercase md:my-0', className)}
       data-testid={dataTestId}
     >
-      {children || 'Logout'}
+      {children || t('logout')}
     </button>
   );
 };

@@ -74,7 +74,14 @@ export default function MainErrorBoundary({
         { id: 'panic', label: t('runtime.support.panic.label'), description: t('runtime.support.panic.description') },
       ]}
       technicalDetailsLabel={t('runtime.technical_details')}
-      technicalDetails={details}
+      technicalDetails={{
+        ...details,
+        labels: {
+          requestId: t('runtime.technical_details_fields.request_id'),
+          timestamp: t('runtime.technical_details_fields.timestamp'),
+          suggestedAction: t('runtime.technical_details_fields.suggested_action'),
+        },
+      }}
       secondaryAction={
         variant === 'offline' ? (
           <Link
