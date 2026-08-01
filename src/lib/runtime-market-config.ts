@@ -12,18 +12,20 @@ import yaml from 'js-yaml';
 import { cache } from 'react';
 
 import type { SupportedLocale } from '@/i18n/routing';
+import type { LocalizedConfigValue } from '@/lib/i18n/localized-config-value';
 import { resolveLocalizedConfigValue } from '@/lib/i18n/localized-config-value';
 import type { MarketConfig } from '@/lib/portal';
 
 const RUNTIME_ASSET_ROUTE_BASE = '/api/runtime-market-assets';
 
 /**
- * QD-01 — the effective locale set for one market, as produced by the ADR-154
- * resolver (`src/lib/market-locales.ts`). It is passed IN rather than imported so
- * this module keeps a single direction of dependency (market-locales reads the
- * runtime config, not the other way round) and so no caller can skip it.
+ * QD-01/QD-02 — the effective locale set for one market, as produced by the
+ * ADR-154 resolver (`src/lib/market-locales.ts`). It is passed IN rather than
+ * imported so this module keeps a single direction of dependency (market-locales
+ * reads the runtime config, not the other way round) and so no caller can skip
+ * it. Named for the contract, not for one surface: homepage and footer share it.
  */
-export type HomepageLocaleContext = {
+export type MarketLocaleContext = {
   supported: readonly SupportedLocale[];
   defaultLocale: SupportedLocale;
 };
@@ -544,15 +546,17 @@ function normalizeFooterNavLinks(
       return [];
     }
 
-    const label = normalizeNonEmptyString(item.label);
     const href = normalizeRelativePath(item.href) ?? normalizeRelativePath(item.url);
     const enabled = typeof item.enabled === 'boolean' ? item.enabled : null;
 
-    if (!label || !href) {
+    // QD-02: a link is a ROUTE. Its label is chrome resolved from the canonical
+    // route contract (`src/lib/footer.ts`), so a missing label no longer drops
+    // the link — only a missing route does.
+    if (!href) {
       return [];
     }
 
-    return [{ label, href, enabled }];
+    return [{ href, enabled }];
   });
 
   return links.length > 0 ? links : null;
@@ -563,7 +567,14 @@ function normalizeFooter(value: unknown): MarketConfig['footer'] | null {
     return null;
   }
 
-  const copyright = normalizeNonEmptyString(value.copyright);
+  // QD-02 / QD-01 lesson: the LOADER hands back the raw locale map. Flattening
+  // here would destroy every non-default variant for all future consumers; the
+  // single resolution boundary is `resolveMarketConfig` (see
+  // `resolveFooterLocalizedCopy`). `normalizeNonEmptyString` used to live here
+  // and silently turned a locale map into `null`, which nulled the whole footer.
+  const copyright = isRecord(value.copyright)
+    ? (value.copyright as LocalizedConfigValue)
+    : normalizeNonEmptyString(value.copyright);
   const social = normalizeFooterSocialLinks(value.social);
   const nav_links = normalizeFooterNavLinks(value.nav_links);
 
@@ -575,6 +586,49 @@ function normalizeFooter(value: unknown): MarketConfig['footer'] | null {
     copyright,
     social,
     nav_links
+  };
+}
+
+/**
+ * QD-02 — the single boundary where a footer locale map becomes a string.
+ *
+ * It runs in `resolveMarketConfig`, not in `normalizeFooter`, on purpose:
+ * `resolveMarketConfig` has TWO sources (runtime YAML and the Payload API
+ * fallback) and only this point sees both. Resolving inside the YAML loader
+ * would leave the Payload path handing a raw Polish scalar straight to the
+ * renderer — a mechanism that is green in tests and dead on the real path.
+ *
+ * `copyright` is a single field in a single `<p>`, so a fallback is always a
+ * WHOLE-fragment fallback and stamping `lang` on it is honest. That is why this
+ * returns `whole: true` unconditionally rather than pretending to compute it —
+ * see the QD-01 change log for what partial fallbacks cost.
+ */
+export function resolveFooterLocalizedCopy(
+  footer: MarketConfig['footer'],
+  options: {
+    locale: SupportedLocale;
+    marketLocales: MarketLocaleContext;
+    marketId: string;
+  }
+): MarketConfig['footer'] {
+  if (!footer) {
+    return footer;
+  }
+
+  const resolved = resolveLocalizedConfigValue(footer.copyright, {
+    locale: options.locale,
+    defaultLocale: options.marketLocales.defaultLocale,
+    supported: options.marketLocales.supported,
+    fieldPath: `markets.${options.marketId}.storefront.footer.copyright`
+  });
+
+  return {
+    ...footer,
+    copyright: resolved?.value ?? null,
+    copyright_fallback:
+      resolved && resolved.isFallback
+        ? { locale: resolved.locale, whole: true, fromLegacyScalar: resolved.fromLegacyScalar }
+        : null
   };
 }
 
@@ -606,7 +660,7 @@ type FallbackAccumulator = {
 function resolveSectionText(
   raw: unknown,
   fieldPath: string,
-  locales: HomepageLocaleContext,
+  locales: MarketLocaleContext,
   requestedLocale: SupportedLocale,
   accumulator: FallbackAccumulator
 ): string | null {
@@ -634,7 +688,7 @@ function resolveSectionText(
 function normalizeHomepageButtons(
   value: unknown,
   sectionPath: string,
-  locales: HomepageLocaleContext,
+  locales: MarketLocaleContext,
   requestedLocale: SupportedLocale,
   accumulator: FallbackAccumulator
 ) {
@@ -671,7 +725,7 @@ function normalizeStyleSectionItems(
   value: unknown,
   marketId: string,
   sectionPath: string,
-  locales: HomepageLocaleContext,
+  locales: MarketLocaleContext,
   requestedLocale: SupportedLocale,
   accumulator: FallbackAccumulator
 ) {
@@ -716,7 +770,7 @@ export function normalizeHomepageSections(
   value: HomepageRuntimeConfig | null,
   marketId: string,
   locale: SupportedLocale,
-  locales: HomepageLocaleContext
+  locales: MarketLocaleContext
 ): MarketConfig['homepage_sections'] | null {
   if (!isRecord(value?.sections)) {
     return null;
@@ -865,7 +919,7 @@ export const resolveLegalEntity = cache(async (marketId: string): Promise<LegalE
 export const resolveRuntimeHomepageSeo = cache(async (
   marketId: string,
   locale: SupportedLocale,
-  locales: HomepageLocaleContext
+  locales: MarketLocaleContext
 ): Promise<{ meta_title: string | null; meta_description: string | null }> => {
   const resolvedMarketId = await resolveRuntimeMarketId(marketId);
   if (!resolvedMarketId) {
@@ -898,7 +952,7 @@ export const resolveRuntimeHomepageSeo = cache(async (
 export const resolveRuntimePortalMarketConfig = cache(async (
   marketId: string,
   locale: SupportedLocale,
-  locales: HomepageLocaleContext
+  locales: MarketLocaleContext
 ): Promise<MarketConfig | null> => {
   const resolvedMarketId = await resolveRuntimeMarketId(marketId);
   if (!resolvedMarketId) {

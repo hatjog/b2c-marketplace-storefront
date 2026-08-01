@@ -493,10 +493,13 @@
       "faq": "FAQ",
       "kontakt": "Contact",
       "regulamin": "Terms of Service",
-      "polityka-prywatnosci": "Privacy policy"
+      "polityka-prywatnosci": "Privacy policy",
+      "pomoc": "Help",
+      "zasady": "Voucher rules"
     },
     "go_to_social": "Go to {name} page",
     "section_legal": "Seller legal information",
+    "tax_id_label": "VAT ID:",
     "legal_signoff_badge": "Signed in-house ✓ (review before prod v1.15.0)",
     "legal_signoff_badge_aria": "Document signed in-house; external review is scheduled before production v1.15.0",
     "rights_reserved": "All rights reserved",

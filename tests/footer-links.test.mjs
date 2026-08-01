@@ -83,130 +83,167 @@ describe('footer social links resolution', () => {
   });
 });
 
+// QD-02: nav labels are CHROME. `resolveFooterNavLinks` no longer reads
+// `item.label` — it maps the route onto a canonical key and asks the chrome
+// translator. This fake stands in for `messages/<locale>.json`; the real message
+// files are exercised against real config in
+// src/lib/__tests__/footer-locale-resolution.test.ts.
+const UA_CHROME = {
+  'nav.about': 'Про нас',
+  'nav.faq': 'FAQ',
+  'nav.kontakt': 'Контакт',
+  'nav.regulamin': 'Умови використання',
+  'nav.polityka-prywatnosci': 'Політика конфіденційності',
+  'nav.pomoc': 'Допомога',
+  'nav.zasady': 'Правила ваучерів'
+};
+
+const translateUa = key => UA_CHROME[key] ?? null;
+
 describe('footer nav links resolution', () => {
   test('returns empty array when footer.nav_links is absent', () => {
-    const sections = resolveFooterNavLinks({ name: 'TestMarket' });
+    const sections = resolveFooterNavLinks({ name: 'TestMarket' }, null, translateUa);
     assert.deepEqual(sections, []);
   });
 
   test('returns empty array when footer.nav_links is null', () => {
-    const sections = resolveFooterNavLinks({ footer: { nav_links: null } });
+    const sections = resolveFooterNavLinks({ footer: { nav_links: null } }, null, translateUa);
     assert.deepEqual(sections, []);
   });
 
   test('returns empty array when footer.nav_links is empty array', () => {
-    const sections = resolveFooterNavLinks({ footer: { nav_links: [] } });
+    const sections = resolveFooterNavLinks({ footer: { nav_links: [] } }, null, translateUa);
     assert.deepEqual(sections, []);
   });
 
-  test('parses flat nav_links with valid href fields', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [
-          { label: 'FAQs', href: '/faq' },
-          { label: 'Returns', href: '/returns' },
-          { label: 'About us', href: '/about' }
-        ]
-      }
-    });
+  test('resolves every alias of the canonical route contract to the same chrome key', () => {
+    // The point of QD-02: /o-nas and /about are the same destination, so both
+    // must yield the ROUTE-LOCALE label, not the market's own vocabulary.
+    for (const [aliasA, aliasB] of [
+      ['/o-nas', '/about'],
+      ['/kontakt', '/contact'],
+      ['/regulamin', '/terms'],
+      ['/polityka-prywatnosci', '/privacy'],
+      ['/pomoc', '/help']
+    ]) {
+      const [a] = resolveFooterNavLinks(
+        { footer: { nav_links: [{ href: aliasA }] } },
+        null,
+        translateUa
+      );
+      const [b] = resolveFooterNavLinks(
+        { footer: { nav_links: [{ href: aliasB }] } },
+        null,
+        translateUa
+      );
 
-    assert.deepEqual(sections, [
+      assert.equal(a.links[0].label, b.links[0].label, `${aliasA} vs ${aliasB}`);
+      assert.equal(a.links[0].path, aliasA);
+      assert.equal(b.links[0].path, aliasB);
+    }
+  });
+
+  test('renders the route-locale label and NEVER the label carried by the config', () => {
+    const sections = resolveFooterNavLinks(
       {
-        section: 'about',
-        links: [
-          { label: 'FAQs', path: '/faq' },
-          { label: 'Returns', path: '/returns' },
-          { label: 'About us', path: '/about' }
-        ]
-      }
-    ]);
+        footer: {
+          // A stale Polish label, exactly as Payload's NOT NULL column still holds.
+          nav_links: [{ label: 'O nas', href: '/o-nas' }]
+        }
+      },
+      null,
+      translateUa
+    );
+
+    assert.equal(sections[0].links[0].label, UA_CHROME['nav.about']);
+    assert.notEqual(sections[0].links[0].label, 'O nas');
   });
 
-  test('skips items with missing or empty label', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [
-          { label: null, href: '/faq' },
-          { label: '  ', href: '/faq' },
-          { label: 'About us', href: '/about' }
-        ]
-      }
-    });
+  test('strips a locale prefix before matching the canonical route', () => {
+    const sections = resolveFooterNavLinks(
+      { footer: { nav_links: [{ href: '/de/regulamin' }] } },
+      null,
+      translateUa
+    );
 
-    assert.equal(sections.length, 1);
-    assert.equal(sections[0].links.length, 1);
-    assert.equal(sections[0].links[0].label, 'About us');
+    assert.equal(sections[0].links[0].label, UA_CHROME['nav.regulamin']);
   });
 
-  test('skips items with missing label or href', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [
-          { label: 'FAQ', href: '/faq' },
-          { label: null, href: '/returns' },
-          { label: 'Delivery', href: null }
-        ]
-      }
-    });
+  test('drops a route outside the canonical contract instead of guessing a label', () => {
+    const sections = resolveFooterNavLinks(
+      { market_id: 'bonbeauty', footer: { nav_links: [{ label: 'Promo', href: '/promo' }] } },
+      null,
+      translateUa
+    );
 
-    assert.deepEqual(sections, [
-      {
-        section: 'about',
-        links: [{ label: 'FAQ', path: '/faq' }]
-      }
-    ]);
+    assert.deepEqual(sections, []);
   });
 
-  test('returns empty array when all items are invalid', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [{ label: null, href: null }]
-      }
-    });
+  test('drops a link whose chrome key is missing rather than showing another language', () => {
+    const sections = resolveFooterNavLinks(
+      { footer: { nav_links: [{ label: 'O nas', href: '/o-nas' }, { href: '/faq' }] } },
+      null,
+      key => (key === 'nav.faq' ? 'FAQ' : null)
+    );
+
+    assert.deepEqual(sections, [{ section: 'about', links: [{ label: 'FAQ', path: '/faq' }] }]);
+  });
+
+  test('drops every link when no chrome translator is wired at all', () => {
+    // Chrome has no cross-locale fallback: no translator means no honest label.
+    const sections = resolveFooterNavLinks({ footer: { nav_links: [{ href: '/faq' }] } });
 
     assert.deepEqual(sections, []);
   });
 
   test('skips disabled items', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [
-          { label: 'About', href: '/about', enabled: true },
-          { label: 'Hidden', href: '/hidden', enabled: false }
-        ]
-      }
-    });
+    const sections = resolveFooterNavLinks(
+      {
+        footer: {
+          nav_links: [
+            { href: '/o-nas', enabled: true },
+            { href: '/faq', enabled: false }
+          ]
+        }
+      },
+      null,
+      translateUa
+    );
 
-    assert.deepEqual(sections, [{ section: 'about', links: [{ label: 'About', path: '/about' }] }]);
+    assert.deepEqual(sections, [
+      { section: 'about', links: [{ label: UA_CHROME['nav.about'], path: '/o-nas' }] }
+    ]);
   });
 
   test('rejects nav link hrefs that do not start with /', () => {
-    const sections = resolveFooterNavLinks({
-      footer: {
-        nav_links: [
-          { label: 'Safe', href: '/about' },
-          { label: 'XSS', href: 'javascript:alert(1)' },
-          { label: 'External', href: 'https://evil.com' },
-          { label: 'Relative', href: 'about' }
-        ]
-      }
-    });
+    const sections = resolveFooterNavLinks(
+      {
+        footer: {
+          nav_links: [
+            { href: '/o-nas' },
+            { href: 'javascript:alert(1)' },
+            { href: 'https://evil.com' },
+            { href: 'about' }
+          ]
+        }
+      },
+      null,
+      translateUa
+    );
 
-    assert.deepEqual(sections, [{ section: 'about', links: [{ label: 'Safe', path: '/about' }] }]);
+    assert.deepEqual(sections, [
+      { section: 'about', links: [{ label: UA_CHROME['nav.about'], path: '/o-nas' }] }
+    ]);
   });
 
   test('marks BonBeauty legal document links with in-house sign-off badge metadata when ledger status is accepted-in-house', () => {
     const sections = resolveFooterNavLinks(
       {
         market_id: 'bonbeauty',
-        footer: {
-          nav_links: [
-            { label: 'Regulamin', href: '/regulamin' },
-            { label: 'Blog', href: '/blog' }
-          ]
-        }
+        footer: { nav_links: [{ href: '/regulamin' }, { href: '/faq' }] }
       },
-      { regulamin: 'accepted-in-house' }
+      { regulamin: 'accepted-in-house' },
+      translateUa
     );
 
     assert.deepEqual(sections[0].links[0].legalSignoffBadge, {
@@ -217,25 +254,20 @@ describe('footer nav links resolution', () => {
   });
 
   test('hides legal sign-off badge when ledger status map is missing (no opt-in)', () => {
-    const sections = resolveFooterNavLinks({
-      market_id: 'bonbeauty',
-      footer: {
-        nav_links: [{ label: 'Regulamin', href: '/regulamin' }]
-      }
-    });
+    const sections = resolveFooterNavLinks(
+      { market_id: 'bonbeauty', footer: { nav_links: [{ href: '/regulamin' }] } },
+      null,
+      translateUa
+    );
 
     assert.equal(sections[0].links[0].legalSignoffBadge, undefined);
   });
 
   test('hides legal sign-off badge when ledger status is WAIVED-demo (demo market)', () => {
     const sections = resolveFooterNavLinks(
-      {
-        market_id: 'bongarden',
-        footer: {
-          nav_links: [{ label: 'Regulamin', href: '/regulamin' }]
-        }
-      },
-      { regulamin: 'WAIVED-demo' }
+      { market_id: 'bongarden', footer: { nav_links: [{ href: '/regulamin' }] } },
+      { regulamin: 'WAIVED-demo' },
+      translateUa
     );
 
     assert.equal(sections[0].links[0].legalSignoffBadge, undefined);
@@ -287,5 +319,26 @@ describe('footer copyright resolution', () => {
     });
 
     assert.equal(copyright, `© ${year} BonBeauty`);
+  });
+
+  test('renders an already-resolved string unchanged', () => {
+    assert.equal(
+      resolveFooterCopyright({ footer: { copyright: '© 2026 BonBeauty. All rights reserved.' } }),
+      '© 2026 BonBeauty. All rights reserved.'
+    );
+  });
+
+  test('throws when a locale map reaches the renderer unresolved', () => {
+    // The map must never leak past resolveMarketConfig. Degrading quietly here
+    // would print [object Object] or silently swap in the `© year name`
+    // fallback — both hide a broken call path instead of naming it.
+    assert.throws(
+      () =>
+        resolveFooterCopyright({
+          name: 'BonBeauty',
+          footer: { copyright: { pl: '© 2026 BonBeauty', en: '© 2026 BonBeauty' } }
+        }),
+      /reached the renderer unresolved/
+    );
   });
 });

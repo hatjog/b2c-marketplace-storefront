@@ -1,4 +1,6 @@
 // Source: portal/src/collections/MarketConfig.ts
+import type { SupportedLocale } from '@/i18n/routing';
+import type { LocalizedConfigValue } from '@/lib/i18n/localized-config-value';
 import type { LegalEntity, MarketSocialLinks } from '@/lib/runtime-market-config';
 
 export type { LegalEntity };
@@ -15,13 +17,37 @@ type MarketConfigSeoDefaults = {
 };
 
 type MarketConfigFooterLink = {
+  /**
+   * QD-02: for `nav_links` this is NOT consumed. Both config sources still carry
+   * one (Payload's column is NOT NULL, so the seed writes the route there), but
+   * the rendered label comes from the canonical route contract in
+   * `src/lib/footer.ts` → `messages/*.json`. Reading it is what put "O nas" on
+   * /ua. For `social` it IS the label — a platform name, not localizable copy.
+   */
   label?: string | null;
   href?: string | null;
   enabled?: boolean | null;
 };
 
+/**
+ * QD-02 — a footer copyright that fell back to `market.locales.default`.
+ * `whole` is always true: `copyright` is a single field in a single element, so
+ * there is no correctly-translated sibling that `lang` could mislabel.
+ */
+export type FooterCopyrightFallback = {
+  locale: SupportedLocale;
+  whole: boolean;
+  fromLegacyScalar: boolean;
+};
+
 type MarketConfigFooter = {
-  copyright?: string | null;
+  /**
+   * A locale map BEFORE `resolveMarketConfig`, a plain string after it. The
+   * union is deliberate: it makes every consumer that skips the resolution
+   * boundary a type error instead of an `[object Object]` in the DOM.
+   */
+  copyright?: string | LocalizedConfigValue | null;
+  copyright_fallback?: FooterCopyrightFallback | null;
   social?: MarketConfigFooterLink[] | null;
   nav_links?: MarketConfigFooterLink[] | null;
 };

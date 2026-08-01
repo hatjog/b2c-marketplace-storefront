@@ -14,6 +14,7 @@ import {
   resolveFooterLegalEntity,
   resolveFooterNavLinks
 } from '@/lib/footer';
+import { toHreflang } from '@/lib/helpers/hreflang';
 import { loadLegalSignoffStatusMap } from '@/lib/legalSignoffStatus';
 import type { MarketConfig } from '@/lib/portal';
 
@@ -28,7 +29,9 @@ type FooterNavMessageKey =
   | 'nav.faq'
   | 'nav.kontakt'
   | 'nav.regulamin'
-  | 'nav.polityka-prywatnosci';
+  | 'nav.polityka-prywatnosci'
+  | 'nav.pomoc'
+  | 'nav.zasady';
 
 export async function SiteFooter({
   marketConfig,
@@ -37,9 +40,15 @@ export async function SiteFooter({
   marketConfig?: MarketConfig | null;
   locale: string;
 }) {
-  const t = await getTranslations('footer');
+  // QD-02: locale is EXPLICIT. `getTranslations('footer')` reads the ambient
+  // request locale, which is exactly the implicit boundary this spec removes —
+  // the component already receives the route locale, so it must use it.
+  const t = await getTranslations({ locale, namespace: 'footer' });
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
   const connectLinks = resolveFooterConnectLinks(marketConfig);
   const copyright = resolveFooterCopyright(marketConfig);
+  const copyrightFallback = marketConfig?.footer?.copyright_fallback ?? null;
+  const copyrightFallbackTag = copyrightFallback ? toHreflang(copyrightFallback.locale) : null;
   const marketId = typeof marketConfig?.market_id === 'string' ? marketConfig.market_id : null;
   const legalSignoffStatus = marketId ? await loadLegalSignoffStatusMap(marketId, locale) : null;
   const translateFooterNavLabel = (key: string) => {
@@ -143,8 +152,25 @@ export async function SiteFooter({
         {/* Divider */}
         <div className="mt-10 border-t border-[var(--bb-tint-gold-12)] pt-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            {/* Copyright */}
-            <p className="text-xs text-[var(--bb-muted-72)]">{copyright}</p>
+            {/* Copyright. QD-02: `lang` marks the fallback ONLY when the copy
+                really came from another locale. `copyright` is one field in one
+                element, so a fallback is always whole and `lang` never mislabels
+                a correctly translated sibling (QD-01 change log, party PR-2). */}
+            <div className="text-xs text-[var(--bb-muted-72)]">
+              <p
+                data-testid="site-footer-copyright"
+                {...(copyrightFallbackTag
+                  ? { lang: copyrightFallbackTag, 'data-locale-fallback': copyrightFallbackTag }
+                  : {})}
+              >
+                {copyright}
+              </p>
+              {copyrightFallbackTag && (
+                <p role="status">
+                  {tCommon('locale_fallback_notice', { locale: copyrightFallbackTag })}
+                </p>
+              )}
+            </div>
 
             {/* slot: legal-entity — dane prawne sprzedawcy NIP/REGON/KRS (W6-02 spec) */}
             {legalEntity && (
@@ -153,7 +179,13 @@ export async function SiteFooter({
                 data-testid="site-footer-legal-entity"
               >
                 {legalEntity.name && <p>{legalEntity.name}</p>}
-                {legalEntity.tax_id && <p>NIP: {legalEntity.tax_id}</p>}
+                {/* QD-02: the tax-ID VALUE is a non-localized fact, but its LABEL
+                    is chrome — "NIP:" was rendering verbatim on /en, /ua and /de. */}
+                {legalEntity.tax_id && (
+                  <p>
+                    {t('tax_id_label')} {legalEntity.tax_id}
+                  </p>
+                )}
                 {legalEntity.address && <p>{legalEntity.address}</p>}
               </div>
             )}

@@ -816,12 +816,6 @@
     "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
   },
   {
-    "file": "src/components/organisms/SiteFooter/SiteFooter.tsx",
-    "line": 156,
-    "value": "NIP:",
-    "reason": "v1.13.0 Story 2.2 baseline; remediacja hardcoded stringow nalezy do Epic 4"
-  },
-  {
     "file": "src/components/sections/AccountWriteSurfaces.tsx",
     "line": 1552,
     "value": "ending-4242",
