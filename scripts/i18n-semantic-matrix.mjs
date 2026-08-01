@@ -218,10 +218,68 @@ async function assertFreshness(baseUrl, env, skip) {
 }
 
 /**
+ * Fixture CMS musi byc DETERMINISTYCZNY i ZWERYFIKOWANY renderem.
+ *
+ * Payload potrafi zwrocic dokument `published`, ktorego storefront nie serwuje
+ * (404 na wszystkich locale). Wybranie takiego wpisu zamienia macierz i18n w
+ * pomiar zepsutego routingu: komorki czerwienia sie rownomiernie na kazdym
+ * locale i wygladaja jak defekt tlumaczen, ktorym nie sa.
+ *
+ * Dlatego: kandydaci sortowani po slugu (powtarzalnosc), pierwszy OSIAGALNY na
+ * locale domyslnym wygrywa, a kazdy nieosiagalny trafia do `notes` jako osobny
+ * finding - zamiast zostac po cichu ominietym.
+ */
+async function resolveCmsFixture(o) {
+  const { id, pageType, urlFor, payloadUrl, baseUrl, marketId, available, unavailable, notes } = o;
+  const r = await probe(`${payloadUrl}/api/pages?where[page_type][equals]=${pageType}&depth=0&limit=100`);
+  if (!r.ok || r.status !== 200) {
+    unavailable(id, `payload /api/pages[page_type=${pageType}] -> ${r.status ?? r.error}`);
+    return;
+  }
+  const body = await r.res.json().catch(() => null);
+  const candidates = (body?.docs ?? [])
+    .filter((d) => d?.slug && d?._status === 'published')
+    .filter((d) => !/^(bonevent|mercur)-/.test(String(d.slug)))
+    .map((d) => String(d.slug))
+    .sort();
+
+  if (candidates.length === 0) {
+    unavailable(id, `brak opublikowanego dokumentu page_type=${pageType} dla rynku ${marketId}`);
+    return;
+  }
+
+  const unreachable = [];
+  for (const slug of candidates) {
+    const p = await probe(`${baseUrl}${urlFor(slug)}`, { timeout: 45_000 });
+    if (p.ok && p.status === 200) {
+      available(id, slug, `${payloadUrl}/api/pages[page_type=${pageType}] -> zweryfikowany 200 na ${urlFor(slug)}`);
+      if (unreachable.length > 0) {
+        notes.push({
+          kind: 'CMS_PUBLISHED_BUT_UNROUTABLE',
+          page_type: pageType,
+          slugs: unreachable,
+          detail:
+            'Dokumenty sa `published` w Payload, ale storefront zwraca dla nich non-200 na locale ' +
+            'domyslnym. To defekt routingu tresci, NIE defekt i18n - odnotowany osobno, zeby nie ' +
+            'zanieczyszczal macierzy jezykowej.'
+        });
+      }
+      return;
+    }
+    unreachable.push({ slug, status: p.status ?? p.error });
+  }
+  unavailable(
+    id,
+    `zaden z ${candidates.length} opublikowanych dokumentow page_type=${pageType} nie jest osiagalny: ` +
+      JSON.stringify(unreachable)
+  );
+}
+
+/**
  * Fixture sa ROZSTRZYGANE z zywego backendu. Brak fixture'a nie jest cicho
  * pomijany - staje sie jawnym `unavailable`, ktory zamienia komorki w UNEXECUTED.
  */
-async function resolveFixtures(backendUrl, env, payloadUrl, marketId) {
+async function resolveFixtures(backendUrl, env, payloadUrl, marketId, baseUrl, defaultLocale, notes) {
   const pk = env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
   const H = pk ? { 'x-publishable-api-key': pk } : {};
   const fixtures = {};
@@ -263,24 +321,28 @@ async function resolveFixtures(backendUrl, env, payloadUrl, marketId) {
   } else unavailable('FX-SELLER-1', `backend /store/seller -> ${sel.status ?? sel.error}`);
 
   if (payloadUrl) {
-    const posts = await probe(`${payloadUrl}/api/pages?where[page_type][equals]=blog&depth=0&limit=50`);
-    if (posts.ok && posts.status === 200) {
-      const b = await posts.res.json().catch(() => null);
-      const docs = b?.docs ?? [];
-      const bb = docs.find((d) => !/^(bonevent|mercur)-/.test(String(d.slug)));
-      if (bb?.slug) available('FX-BLOGPOST-1', bb.slug, `${payloadUrl}/api/pages[page_type=blog]`);
-      else unavailable('FX-BLOGPOST-1', `brak wpisu bloga dla rynku ${marketId}`);
-      const page = docs.length ? null : null;
-      void page;
-    } else unavailable('FX-BLOGPOST-1', `payload /api/pages -> ${posts.status ?? posts.error}`);
-
-    const pages = await probe(`${payloadUrl}/api/pages?where[page_type][equals]=page&depth=0&limit=50`);
-    if (pages.ok && pages.status === 200) {
-      const b = await pages.res.json().catch(() => null);
-      const d = (b?.docs ?? []).find((x) => x.slug === 'o-nas') ?? (b?.docs ?? [])[0];
-      if (d?.slug) available('FX-CMSPAGE-1', d.slug, `${payloadUrl}/api/pages[page_type=page]`);
-      else unavailable('FX-CMSPAGE-1', 'brak strony CMS');
-    } else unavailable('FX-CMSPAGE-1', `payload /api/pages -> ${pages.status ?? pages.error}`);
+    await resolveCmsFixture({
+      id: 'FX-BLOGPOST-1',
+      pageType: 'blog',
+      urlFor: (slug) => `/${defaultLocale}/blog/${slug}`,
+      payloadUrl,
+      baseUrl,
+      marketId,
+      available,
+      unavailable,
+      notes
+    });
+    await resolveCmsFixture({
+      id: 'FX-CMSPAGE-1',
+      pageType: 'page',
+      urlFor: (slug) => `/${defaultLocale}/${slug}`,
+      payloadUrl,
+      baseUrl,
+      marketId,
+      available,
+      unavailable,
+      notes
+    });
   } else {
     unavailable('FX-BLOGPOST-1', 'PAYLOAD_API_URL nieustawiony');
     unavailable('FX-CMSPAGE-1', 'PAYLOAD_API_URL nieustawiony');
@@ -412,7 +474,17 @@ async function main() {
     evidence.default_locale = loc.default_locale;
 
     // 4. fixture
-    evidence.fixtures = await resolveFixtures(args.backendUrl, env, payloadUrl, args.market);
+    const fixtureNotes = [];
+    evidence.fixtures = await resolveFixtures(
+      args.backendUrl,
+      env,
+      payloadUrl,
+      args.market,
+      baseUrl,
+      evidence.default_locale,
+      fixtureNotes
+    );
+    evidence.fixture_notes = fixtureNotes;
 
     writeEvidence(args.out, evidence);
 

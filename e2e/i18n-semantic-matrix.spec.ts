@@ -42,7 +42,14 @@ type Plan = {
 };
 
 type Violation = {
-  kind: 'MISSING_LOCALIZED_VALUE' | 'BASELINE_PL_LEAK' | 'HTTP_UNEXPECTED' | 'LOCALE_LOST_ON_REDIRECT';
+  kind:
+    | 'MISSING_LOCALIZED_VALUE'
+    | 'BASELINE_PL_LEAK'
+    | 'CROSS_LOCALE_LEAK'
+    | 'HTTP_UNEXPECTED'
+    | 'HTTP_SERVER_ERROR'
+    | 'ERROR_BOUNDARY_RENDERED'
+    | 'LOCALE_LOST_ON_REDIRECT';
   probe_key?: string;
   selector: string;
   expected?: string;
@@ -182,6 +189,23 @@ test.describe('QD-I18N-07 @i18n-semantic-matrix — route x state x locale x fix
         }
         base.http_status = response?.status() ?? null;
 
+        // Blad 5xx jest klasyfikowany OSOBNO. Gdyby wpadl do worka
+        // MISSING_LOCALIZED_VALUE, strona bledu 500 wygladalaby w raporcie
+        // identycznie jak brakujace tlumaczenie - i przejsciowy flake backendu
+        // zostalby zaraportowany jako defekt i18n.
+        if (base.http_status !== null && base.http_status >= 500) {
+          base.violations.push({
+            kind: 'HTTP_SERVER_ERROR',
+            selector: ':root',
+            expected: 'HTTP < 500',
+            actual_excerpt: `HTTP ${base.http_status} — komorka NIE niesie sygnalu i18n`
+          });
+          base.status = 'FAIL';
+          base.reason = `HTTP ${base.http_status} — awaria serwera, nie defekt tlumaczen.`;
+          results.push(base);
+          return;
+        }
+
         if (cell.expect_http !== undefined && base.http_status !== cell.expect_http) {
           base.violations.push({
             kind: 'HTTP_UNEXPECTED',
@@ -222,6 +246,29 @@ test.describe('QD-I18N-07 @i18n-semantic-matrix — route x state x locale x fix
           return (clone.innerText || clone.textContent || '').replace(/\s+/g, ' ').trim();
         });
 
+        // HTTP 200 NIE oznacza zielonej komorki. Next potrafi oddac status 200 i
+        // wyrenderowac kliencki error boundary ("500 · Cos poszlo nie tak").
+        // Taka strona nie niesie ZADNEGO sygnalu o kompletnosci tlumaczen -
+        // gdyby wpadla do MISSING_LOCALIZED_VALUE, przejsciowa awaria danych
+        // zostalaby zaraportowana jako defekt i18n.
+        const errorBoundary = await page
+          .locator('[data-testid="runtime-error-boundary"],[data-testid="categories-error-state"]')
+          .count();
+        if (errorBoundary > 0) {
+          base.violations.push({
+            kind: 'ERROR_BOUNDARY_RENDERED',
+            selector: '[data-testid=runtime-error-boundary|categories-error-state]',
+            expected: 'strona tresci',
+            actual_excerpt: `HTTP ${base.http_status} + error boundary — komorka NIE niesie sygnalu i18n`
+          });
+          base.status = 'FAIL';
+          base.reason =
+            `Wyrenderowany error boundary przy HTTP ${base.http_status} (soft-500). ` +
+            'Awaria renderu/danych, nie defekt tlumaczen.';
+          results.push(base);
+          return;
+        }
+
         for (const key of cell.probe_keys) {
           const expected = messageAt(locale, key);
           const baseline = messageAt(plan.default_locale, key);
@@ -239,36 +286,40 @@ test.describe('QD-I18N-07 @i18n-semantic-matrix — route x state x locale x fix
             }
           }
 
-          if (
-            locale !== plan.default_locale &&
-            isComparable(baseline) &&
-            baseline !== expected &&
-            !ALLOWLIST.includes(baseline)
-          ) {
+          // Asercja negatywna jest uogolniona na KAZDE inne locale, nie tylko na
+          // bazowe PL. Na locale domyslnym "brak PL" bylby warunkiem pustym z
+          // definicji — komorki /pl mialyby zero asercji negatywnych i nie
+          // spelnialyby AC1. Tak sformulowany warunek jest nietrywialny dla
+          // wszystkich locale i lapie wyciek cache'u w OBIE strony.
+          for (const other of plan.locales) {
+            if (other === locale) continue;
+            const otherValue = messageAt(other, key);
+            if (!isComparable(otherValue)) continue;
+            if (otherValue === expected) continue;
+            if (ALLOWLIST.includes(otherValue)) continue;
+
             base.negative_assertions += 1;
-            if (visible.includes(baseline)) {
-              const at = visible.indexOf(baseline);
+            if (visible.includes(otherValue)) {
+              const at = visible.indexOf(otherValue);
               base.violations.push({
-                kind: 'BASELINE_PL_LEAK',
+                kind: other === plan.default_locale ? 'BASELINE_PL_LEAK' : 'CROSS_LOCALE_LEAK',
                 probe_key: key,
                 selector: 'body[visible-text]',
-                expected: `brak "${baseline}" (${plan.default_locale}) na /${locale}`,
-                actual_excerpt: visible.slice(Math.max(0, at - 60), at + baseline.length + 60)
+                expected: `brak "${otherValue}" (${other}) na /${locale}`,
+                actual_excerpt: visible.slice(Math.max(0, at - 60), at + otherValue.length + 60)
               });
             }
           }
         }
 
-        // Komorka bez obu rodzajow asercji nie jest dowodem (AC1).
+        // Komorka bez OBU rodzajow asercji nie jest dowodem (AC1) - niezaleznie
+        // od locale. Zielona komorka, ktora niczego nie sprawdzila, jest gorsza
+        // niz brak komorki, bo powieksza mianownik pokrycia.
         if (base.positive_assertions === 0 || base.negative_assertions === 0) {
-          if (locale === plan.default_locale) {
-            base.status = base.violations.length === 0 ? 'PASS' : 'FAIL';
-          } else {
-            base.status = 'UNEXECUTED';
-            base.reason =
-              `Brak kompletu asercji (pozytywne=${base.positive_assertions}, ` +
-              `negatywne=${base.negative_assertions}) - komorka nie jest dowodem wg AC1.`;
-          }
+          base.status = 'UNEXECUTED';
+          base.reason =
+            `Brak kompletu asercji (pozytywne=${base.positive_assertions}, ` +
+            `negatywne=${base.negative_assertions}) - komorka nie jest dowodem wg AC1.`;
           results.push(base);
           return;
         }
