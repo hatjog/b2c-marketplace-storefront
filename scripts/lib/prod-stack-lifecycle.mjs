@@ -19,12 +19,26 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
+
+const require = createRequire(import.meta.url);
 
 /** Błąd wywołania/narzędzia — exit 3. Nie jest to brak środowiska. */
 export class ToolError extends Error {}
 /** Środowisko nie pozwoliło wykonać pomiaru — exit 2. NIE jest to zieleń ani FAIL AC. */
 export class NeedsLiveRun extends Error {}
+
+function resolveNextCli() {
+  try {
+    return require.resolve('next/dist/bin/next');
+  } catch (cause) {
+    throw new NeedsLiveRun(
+      'brak zależności Next.js w storefront/node_modules — prod-build jest niewykonalny',
+      { cause }
+    );
+  }
+}
 
 /**
  * PID-y nasłuchujące na porcie, wyciągnięte z `ss -lptn`. Asercja bindu stoi na
@@ -147,7 +161,8 @@ export function purgeBuildArtifacts(cwd, { fullRebuild, distDir = '.next' }) {
 
 export function runBuild(cwd, env) {
   const started = Date.now();
-  const result = spawnSync('node_modules/.bin/next', ['build'], {
+  const nextCli = resolveNextCli();
+  const result = spawnSync(process.execPath, [nextCli, 'build'], {
     cwd,
     env,
     encoding: 'utf8',
@@ -274,13 +289,14 @@ export async function assertServerStillServing(
 }
 
 export async function startAndAssertBind(cwd, env, port, { distDir = '.next' } = {}) {
+  const nextCli = resolveNextCli();
   const buildIdPath = path.join(cwd, distDir, 'BUILD_ID');
   if (!fs.existsSync(buildIdPath)) {
     throw new NeedsLiveRun(`brak ${distDir}/BUILD_ID — nie ma artefaktu prod-build do wystartowania`);
   }
   const buildId = fs.readFileSync(buildIdPath, 'utf8').trim();
 
-  const child = spawn('node_modules/.bin/next', ['start', '-p', String(port)], {
+  const child = spawn(process.execPath, [nextCli, 'start', '-p', String(port)], {
     cwd,
     env,
     stdio: ['ignore', 'pipe', 'pipe']
@@ -337,6 +353,7 @@ export async function startAndAssertBind(cwd, env, port, { distDir = '.next' } =
 
   return {
     child,
+    getServerLogTail: () => redactBuildLog(serverLog.slice(-4000)),
     assertion: {
       port,
       build_id: buildId,
