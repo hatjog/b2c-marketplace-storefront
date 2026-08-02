@@ -40,7 +40,7 @@
  *
  * Sekrety: evidence zapisuje obecność/nazwy zmiennych, nigdy wartości (NFR4).
  */
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -159,19 +159,19 @@ async function fetchBackendHandles(backendUrl, publishableKey) {
   return { productHandles, categoryHandles };
 }
 
-function runHg13Spec({ repoRoot, baseUrl, oraclePath, samplesPath, waves, reportPath }) {
+async function runHg13Spec({ repoRoot, baseUrl, oraclePath, samplesPath, waves, reportPath }) {
   const e2eDir = path.join(repoRoot, 'GP', 'e2e');
   if (!fs.existsSync(path.join(e2eDir, 'node_modules', '.bin', 'playwright'))) {
     throw new NeedsLiveRun(`brak zależności Playwright w ${e2eDir} (npm ci) — profil HG-13 niewykonalny`);
   }
   if (fs.existsSync(samplesPath)) fs.rmSync(samplesPath); // stale samples = false-PASS
-  const result = spawnSync(
+  // Asynchroniczny child jest konieczny: podczas profilu proces rodzica musi
+  // stale drenować stdout/stderr `next start`, inaczej pełny pipe blokuje SSR.
+  const child = spawn(
     'node_modules/.bin/playwright',
     ['test', '--project=hg13-cache-leak', '--reporter=list,json'],
     {
       cwd: e2eDir,
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
       env: {
         ...process.env,
         GP_E2E_SKIP_WEB_SERVER: '1',
@@ -186,9 +186,20 @@ function runHg13Spec({ repoRoot, baseUrl, oraclePath, samplesPath, waves, report
       }
     }
   );
+  let output = '';
+  const append = (chunk) => {
+    output += chunk.toString();
+    if (output.length > 64 * 1024 * 1024) output = output.slice(-64 * 1024 * 1024);
+  };
+  child.stdout.on('data', append);
+  child.stderr.on('data', append);
+  const exitCode = await new Promise((resolve, reject) => {
+    child.once('error', reject);
+    child.once('close', resolve);
+  });
   return {
-    exit_code: result.status,
-    tail: ((result.stdout || '') + (result.stderr || '')).split('\n').slice(-30).join('\n')
+    exit_code: exitCode,
+    tail: output.split('\n').slice(-30).join('\n')
   };
 }
 
@@ -422,7 +433,7 @@ async function main() {
 
   // ── Start prod-buildu + asercja bindu ──────────────────────────────────
   log(`next start -p ${port} + asercja bindu`);
-  const { child, assertion } = await startAndAssertBind(cwd, buildEnv, port);
+  const { child, assertion, getServerLogTail } = await startAndAssertBind(cwd, buildEnv, port);
   evidence.preflight.bind_assertion = assertion;
   evidence.preflight.build_id = assertion.build_id;
   evidence.preflight.pid = assertion.child_pid;
@@ -432,7 +443,7 @@ async function main() {
   try {
     // ── AC2/AC3: profil HG-13 w zastanym harnessie ───────────────────────
     log(`profil HG-13: cold-fill + ${waves} fal × ${HG13_LOCALES.length * HG13_CLASSES.length} żądań równoległych`);
-    const spec = runHg13Spec({ repoRoot, baseUrl, oraclePath, samplesPath, waves, reportPath });
+    const spec = await runHg13Spec({ repoRoot, baseUrl, oraclePath, samplesPath, waves, reportPath });
     evidence.harness = {
       runner: 'GP/e2e — projekt `hg13-cache-leak` (zastana instalacja Playwright, nie nowy framework)',
       spec: 'GP/e2e/specs/locale-cache-leak-hg13.spec.ts',
@@ -448,12 +459,17 @@ async function main() {
     // Bez tego kroku przebieg, w którym serwer padł w połowie fal, mógłby dojść
     // do werdyktu na niepełnych próbkach — a „proces żyje, port zbindowany"
     // wyglądałoby na zdrowie. Fail-closed: NeedsLiveRun, nigdy PASS.
-    evidence.preflight.post_load_liveness = await assertServerStillServing(port, {
-      paths: HG13_LOCALES.map((l) => `/${l}`),
-      budgetMs: 30_000,
-      buildId: assertion.build_id,
-      phase: 'po profilu HG-13'
-    });
+    try {
+      evidence.preflight.post_load_liveness = await assertServerStillServing(port, {
+        paths: HG13_LOCALES.map((l) => `/${l}`),
+        budgetMs: 30_000,
+        buildId: assertion.build_id,
+        phase: 'po profilu HG-13'
+      });
+    } catch (error) {
+      error.message += `\nOgon logu next start:\n${getServerLogTail() || '<pusty>'}`;
+      throw error;
+    }
     log(`żywotność po obciążeniu OK: ${HG13_LOCALES.map((l) => `/${l}`).join(', ')} renderują`);
 
     if (!fs.existsSync(samplesPath)) {

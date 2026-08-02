@@ -11,6 +11,7 @@
  * w story 5.6 (RUNTIME_UNAVAILABLE przechodził jako sukces).
  */
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import { HG13_MIN, computeHg13Counters, evaluateHg13 } from '../scripts/cache-leak-hg13.mjs';
@@ -23,6 +24,13 @@ import {
 
 const LOCALES = ['pl', 'ua', 'de'];
 const CLASSES = ['catalog', 'category', 'pdp'];
+
+test('runner Playwrighta nie blokuje drenowania logow next start', () => {
+  const source = fs.readFileSync(new URL('../scripts/cache-leak-hg13.mjs', import.meta.url), 'utf8');
+  const body = source.slice(source.indexOf('async function runHg13Spec'), source.indexOf('/**\n * Liczniki HG-13'));
+  assert.match(body, /const child = spawn\(/);
+  assert.doesNotMatch(body, /spawnSync\(/);
+});
 
 /** Buduje kompletną, czystą macierz: 20 fal × 3 locale × 3 klasy = 180 próbek. */
 function cleanRun({ waves = 20, maxInFlight = 9 } = {}) {
