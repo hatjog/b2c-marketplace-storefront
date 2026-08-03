@@ -310,8 +310,14 @@ async function main() {
   const evidenceDir = path.join(repoRoot, '_bmad-output', 'releases', 'v1.14.0', 'implementation-artifacts', 'evidence');
   const outPath = path.resolve(cwd, String(args.out ?? path.join(evidenceDir, '5-5-cache-leak-e2e.json')));
   const oraclePath = path.join(evidenceDir, '5-5-cache-leak-oracle.json');
-  const samplesPath = path.join(repoRoot, 'GP', 'e2e', 'test-results', 'hg13-cache-leak-samples.json');
-  const reportPath = path.join(repoRoot, 'GP', 'e2e', 'test-results', 'hg13-cache-leak-playwright.json');
+  // Surowe próbki i raport Playwrighta MUSZĄ być trwałe: walidator AC3 przelicza
+  // liczniki z próbek i nie ufa werdyktowi producenta. `GP/e2e/test-results/` jest
+  // gitignorowane (`GP/e2e/.gitignore:3`), więc evidence tam zapisane przestaje być
+  // weryfikowalne z chwilą sprzątnięcia katalogu — walidator widzi wtedy 0 próbek
+  // i słusznie zwraca FAIL mimo zielonego przebiegu. Story 5.5 (Project Structure
+  // Notes) wymaga wprost: artefakty runu wyłącznie w release-scoped `evidence/`.
+  const samplesPath = path.resolve(cwd, String(args['samples-out'] ?? path.join(evidenceDir, '5-5-cache-leak-samples.json')));
+  const reportPath = path.resolve(cwd, String(args['report-out'] ?? path.join(evidenceDir, '5-5-cache-leak-playwright.json')));
 
   const buildEnv = { ...env, NEXT_PUBLIC_PAYLOAD_MARKET_ID: market, NODE_ENV: 'production' };
   const baseUrl = `http://127.0.0.1:${port}`;
