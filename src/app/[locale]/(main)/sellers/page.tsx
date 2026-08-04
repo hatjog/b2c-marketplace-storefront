@@ -121,8 +121,8 @@ export async function generateMetadata({
   const q = parseString(sp.q).trim();
   const city = parseString(sp.city).trim();
 
-  const t = await getTranslations('seller.search');
-  const tList = await getTranslations('seller.list');
+  const t = await getTranslations({ locale, namespace: 'seller.search' });
+  const tList = await getTranslations({ locale, namespace: 'seller.list' });
 
   let title: string;
   if (q && city) {
@@ -182,9 +182,9 @@ export default async function SellersListPage({
   // Effective near-me only when toggle is on AND we have valid coords.
   const nearMeEffective = nearMe && typeof userLat === 'number' && typeof userLng === 'number';
 
-  const t = await getTranslations('seller.list');
-  const tSearch = await getTranslations('seller.search');
-  const tSellerPage = await getTranslations('seller.shared');
+  const t = await getTranslations({ locale, namespace: 'seller.list' });
+  const tSearch = await getTranslations({ locale, namespace: 'seller.search' });
+  const tSellerPage = await getTranslations({ locale, namespace: 'seller.shared' });
 
   const { items: pageItems, total } = await searchSellers({
     q,

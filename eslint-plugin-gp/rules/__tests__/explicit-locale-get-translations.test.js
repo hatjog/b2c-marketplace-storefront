@@ -38,15 +38,17 @@ const TEST_FILE =
 
 ruleTester.run("gp/explicit-locale-get-translations", rule, {
   valid: [
-    // page.tsx POZOSTAJE poza zakresem — tam rządzi gp/require-set-request-locale.
-    // Gdyby ta reguła też tego wymagała, dwie bramki żądałyby dwóch rzeczy naraz.
+    // page.tsx z formą jawną — cel migracji 52 wywołań (2026-08-04).
+    // `setRequestLocale` ZOSTAJE: rządzi nim gp/require-set-request-locale (d1),
+    // a ta reguła pilnuje wyłącznie determinizmu translatora. Bramki są
+    // komplementarne — (d3) sam dopuszcza formę jawną bez wymogu kolejności.
     {
       filename: ROUTE_FILE,
       code: `
         export default async function ProductPage({ params }) {
           const { locale } = await params;
           setRequestLocale(locale);
-          const t = await getTranslations('pdp');
+          const t = await getTranslations({ locale, namespace: 'pdp' });
           return t('title');
         }
       `,
@@ -83,17 +85,15 @@ ruleTester.run("gp/explicit-locale-get-translations", rule, {
         };
       `,
     },
-    // Route entry + getTranslations — rządzi nim gp/require-set-request-locale.
-    // Gdyby ta reguła też go obejmowała, dwie bramki wymagałyby dwóch różnych
-    // rzeczy na tym samym pliku.
+    // Route entry BEZ locale w zasięgu — reguła jest leksykalna i celowo milczy.
+    // Tak wygląda `not-found.tsx`: App Router nie przekazuje mu `params`, więc
+    // nie ma czego przekazać jawnie (udokumentowane wykluczenie AD-3).
     {
-      filename: ROUTE_FILE,
+      filename: "/repo/GP/storefront/src/app/[locale]/not-found.tsx",
       code: `
-        export default async function ProductPage({ params }) {
-          const { locale } = await params;
-          setRequestLocale(locale);
-          const t = await getTranslations('pdp');
-          return t('x');
+        export default async function NotFound() {
+          const t = await getTranslations('not_found');
+          return t('title');
         }
       `,
     },
@@ -215,6 +215,20 @@ ruleTester.run("gp/explicit-locale-get-translations", rule, {
         export async function buildMeta(locale: string) {
           const t = await getTranslations('pdp');
           return t('meta.title');
+        }
+      `,
+      errors: [{ messageId: "implicitLocale" }],
+    },
+    // page.tsx z formą niejawną — od 2026-08-04 w zakresie. Wcześniej ta reguła
+    // wykluczała `src/app/`, więc 51 takich wywołań żyło niezauważonych.
+    {
+      filename: ROUTE_FILE,
+      code: `
+        export default async function ProductPage({ params }) {
+          const { locale } = await params;
+          setRequestLocale(locale);
+          const t = await getTranslations('pdp');
+          return t('title');
         }
       `,
       errors: [{ messageId: "implicitLocale" }],

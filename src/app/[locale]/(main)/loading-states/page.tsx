@@ -32,7 +32,7 @@ export default async function LoadingStatesCataloguePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('loading_states_catalogue');
+  const t = await getTranslations({ locale, namespace: 'loading_states_catalogue' });
 
   return (
     <main

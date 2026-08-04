@@ -24,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('legal');
+  const t = await getTranslations({ locale, namespace: 'legal' });
   return {
     title: t('title_zasady'),
     description: t('zasady_description'),
@@ -37,8 +37,8 @@ export default async function ZasadyPage({ params }: { params: Promise<{ locale:
   setRequestLocale(locale);
   const marketId = getMarketId();
   const sections = await resolveZasadySections(marketId);
-  const tW = await getTranslations('voucher_withdrawal');
-  const tLegal = await getTranslations('legal');
+  const tW = await getTranslations({ locale, namespace: 'voucher_withdrawal' });
+  const tLegal = await getTranslations({ locale, namespace: 'legal' });
 
   if (!sections) {
     redirect(`/${locale}`);

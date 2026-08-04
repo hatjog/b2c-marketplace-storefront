@@ -34,7 +34,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('collections_editorial_v180.meta');
+  const t = await getTranslations({ locale, namespace: 'collections_editorial_v180.meta' });
   const baseUrl = await getBaseUrl();
 
   return {
@@ -54,7 +54,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   setRequestLocale(locale);
   const [t, listing] = await Promise.all([
-    getTranslations('collections_editorial_v180'),
+    getTranslations({ locale, namespace: 'collections_editorial_v180' }),
     listEditorialCollections(locale)
   ]);
   const featured = listing.featured;

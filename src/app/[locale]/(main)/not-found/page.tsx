@@ -32,7 +32,7 @@ export default async function NotFoundPreviewPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('not_found');
+  const t = await getTranslations({ locale, namespace: 'not_found' });
 
   return (
     <main

@@ -11,7 +11,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   setRequestLocale(locale);
   const [t, user, marketLocales] = await Promise.all([
-    getTranslations('account_write'),
+    getTranslations({ locale, namespace: 'account_write' }),
     retrieveCustomer(),
     resolveMarketLocales(),
   ]);

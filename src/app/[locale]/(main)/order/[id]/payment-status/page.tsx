@@ -46,7 +46,7 @@ type Props = {
 export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('payment_status');
+  const t = await getTranslations({ locale, namespace: 'payment_status' });
   return {
     title: t('page_title'),
     description: t('page_description'),

@@ -56,7 +56,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, handle } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('collections_editorial_v180.detail.meta');
+  const t = await getTranslations({ locale, namespace: 'collections_editorial_v180.detail.meta' });
   const data = await getEditorialCollectionDetail({ handle, locale });
 
   if (!data) {
@@ -95,7 +95,7 @@ export default async function CollectionDetailPage({
   const resolvedSearchParams = (await searchParams) ?? {};
   const sort = resolveSort(resolvedSearchParams.sort);
   const [t, data] = await Promise.all([
-    getTranslations('collections_editorial_v180.detail'),
+    getTranslations({ locale, namespace: 'collections_editorial_v180.detail' }),
     getEditorialCollectionDetail({ handle, locale, sort })
   ]);
 

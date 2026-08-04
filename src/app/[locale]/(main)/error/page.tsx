@@ -60,7 +60,7 @@ export default async function ErrorPreviewPage({
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const variant = getVariant(resolvedSearchParams.variant);
 
-  const t = await getTranslations('error_surface');
+  const t = await getTranslations({ locale, namespace: 'error_surface' });
 
   const headlineKey = variant === 'server-error'
     ? 'server_error_headline'

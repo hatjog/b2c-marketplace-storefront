@@ -14,7 +14,7 @@ export default async function ReturnOrderPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
   const [t, customer] = await Promise.all([
-    getTranslations('account_write'),
+    getTranslations({ locale, namespace: 'account_write' }),
     retrieveCustomer(),
   ]);
   const [orders, returnReasons] = customer
