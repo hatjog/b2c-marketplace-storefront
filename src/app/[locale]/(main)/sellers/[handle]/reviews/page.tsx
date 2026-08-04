@@ -110,7 +110,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, handle } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('seller.reviews_v180.meta');
+  const t = await getTranslations({ locale, namespace: 'seller.reviews_v180.meta' });
   const data = await loadPageData({
     locale,
     handle,
@@ -162,8 +162,8 @@ export default async function SellerReviewsPage({
   const rating = resolveRating(resolvedSearchParams.rating);
   const page = resolvePage(resolvedSearchParams.page);
   const [t, tShared, user, data] = await Promise.all([
-    getTranslations('seller.reviews_v180'),
-    getTranslations('seller.shared'),
+    getTranslations({ locale, namespace: 'seller.reviews_v180' }),
+    getTranslations({ locale, namespace: 'seller.shared' }),
     retrieveCustomer(),
     loadPageData({ locale, handle, sort, rating, page })
   ]);

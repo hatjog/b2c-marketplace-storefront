@@ -61,7 +61,7 @@ export async function generateMetadata({
   // v1.7.0 Story 2.2 re-review fix (HIGH H1'): description fallback resolved
   // through i18n instead of the previous hardcoded PL literal that bled into
   // EN/UA/DE SERPs and og:description channels.
-  const tMeta = await getTranslations('category');
+  const tMeta = await getTranslations({ locale, namespace: 'category' });
   const description =
     seo.meta_description ?? tMeta('fallback_description', { categoryName: cat.name, siteName });
   const ogImage = seo.og_image_url ?? `${baseUrl}/B2C_Storefront_Open_Graph.png`;
@@ -108,8 +108,8 @@ async function Category({
   // v1.7.0 Story 2.2 review fix (HIGH H1): Suspense fallback aria-label must
   // come from i18n — not a hardcoded PL string — so EN/UA/DE SR announcements
   // match the visible page locale (AC3).
-  const tAccessibility = await getTranslations('accessibility');
-  const tPlp = await getTranslations('category_plp');
+  const tAccessibility = await getTranslations({ locale, namespace: 'accessibility' });
+  const tPlp = await getTranslations({ locale, namespace: 'category_plp' });
 
   // Story v160-cleanup-13c — warm runtime feature-flag cache before any
   // downstream sync `isMultiVendorEnabled()` calls inside ProductCard etc.

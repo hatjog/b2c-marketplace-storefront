@@ -55,7 +55,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const tWL = await getTranslations('voucher_withdrawal.legal');
+  const tWL = await getTranslations({ locale, namespace: 'voucher_withdrawal.legal' });
   return {
     title: tWL('page_title'),
     description: tWL('page_description'),
@@ -66,9 +66,9 @@ export async function generateMetadata({
 export default async function PomocPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('voucher_withdrawal');
-  const tWL = await getTranslations('voucher_withdrawal.legal');
-  const tLegal = await getTranslations('legal');
+  const t = await getTranslations({ locale, namespace: 'voucher_withdrawal' });
+  const tWL = await getTranslations({ locale, namespace: 'voucher_withdrawal.legal' });
+  const tLegal = await getTranslations({ locale, namespace: 'legal' });
 
   // Review fix M1: the legal-help page has NO voucher in scope, so deriving
   // a state from `getWithdrawalState({})` would always emit a misleading

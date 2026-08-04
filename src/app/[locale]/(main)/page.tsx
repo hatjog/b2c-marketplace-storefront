@@ -73,7 +73,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('homepage');
+  const t = await getTranslations({ locale, namespace: 'homepage' });
 
   const headersList = await headers();
   const host = headersList.get('host');

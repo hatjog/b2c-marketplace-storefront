@@ -6,7 +6,7 @@ import { ErrorSurface } from '@/components/templates/ErrorSurface';
 
 export default async function LocaleNotFound() {
   const locale = await getLocale();
-  const t = await getTranslations('wave5_errors');
+  const t = await getTranslations({ locale, namespace: 'wave5_errors' });
 
   return (
     <ErrorSurface

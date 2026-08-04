@@ -35,7 +35,7 @@ export async function generateMetadata({
   setRequestLocale(locale);
   const baseUrl = await getBaseUrl();
   const alternates = await buildBlogIndexAlternates(baseUrl, locale);
-  const t = await getTranslations('blog');
+  const t = await getTranslations({ locale, namespace: 'blog' });
 
   return {
     title: t('title'),
@@ -59,7 +59,7 @@ export default async function BlogIndexPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [resolvedSearchParams, t] = await Promise.all([searchParams, getTranslations('blog')]);
+  const [resolvedSearchParams, t] = await Promise.all([searchParams, getTranslations({ locale, namespace: 'blog' })]);
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const selectedTag = resolvedSearchParams.tag || null;
   const {

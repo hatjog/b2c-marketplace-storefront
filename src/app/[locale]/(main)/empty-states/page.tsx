@@ -135,7 +135,7 @@ export default async function EmptyStatesCataloguePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('empty_states_catalogue');
+  const t = await getTranslations({ locale, namespace: 'empty_states_catalogue' });
 
   const patterns: EmptyStatePatternProps[] = [
     {

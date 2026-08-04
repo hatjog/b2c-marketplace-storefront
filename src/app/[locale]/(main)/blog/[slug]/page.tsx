@@ -81,7 +81,7 @@ export default async function BlogArticlePage({
 }) {
   const { slug, locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('blog');
+  const t = await getTranslations({ locale, namespace: 'blog' });
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const page = await fetchPayloadBlogPage({
     locale: locale as SupportedLocale,

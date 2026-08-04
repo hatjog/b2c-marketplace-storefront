@@ -61,7 +61,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, handle } = await params;
   setRequestLocale(locale);
-  const tDetail = await getTranslations('seller.detail');
+  const tDetail = await getTranslations({ locale, namespace: 'seller.detail' });
 
   let seller: Awaited<ReturnType<typeof getSellerByHandle>> = null;
   try {
@@ -156,8 +156,8 @@ export default async function SellerPage({
     notFound();
   }
 
-  const tDetail = await getTranslations('seller.detail');
-  const tSellerProof = await getTranslations('pdp.seller_proof');
+  const tDetail = await getTranslations({ locale, namespace: 'seller.detail' });
+  const tSellerProof = await getTranslations({ locale, namespace: 'pdp.seller_proof' });
 
   const user = await retrieveCustomer();
   const countryCode = await getCountryCode(locale);

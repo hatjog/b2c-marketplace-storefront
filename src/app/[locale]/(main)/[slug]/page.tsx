@@ -45,7 +45,7 @@ export default async function ContentPage({ params }: { params: PageParams }) {
   const marketId = process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID || '';
   const [page, t] = await Promise.all([
     fetchPayloadPage({ locale, slug, marketId }),
-    getTranslations('blog')
+    getTranslations({ locale, namespace: 'blog' })
   ]);
 
   if (!page) {

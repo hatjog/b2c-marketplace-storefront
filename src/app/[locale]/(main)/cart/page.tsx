@@ -29,7 +29,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('page');
+  const t = await getTranslations({ locale, namespace: 'page' });
   return {
     title: t('cart_title'),
     description: t('cart_description')
@@ -84,7 +84,7 @@ export default async function CartPage({ params }: { params: Promise<{ locale: s
   } else {
     console.error('[cart] Failed to load curated categories feed:', categoriesResult.reason);
   }
-  const t = await getTranslations('page');
+  const t = await getTranslations({ locale, namespace: 'page' });
   return (
     <main
       id="main-content"

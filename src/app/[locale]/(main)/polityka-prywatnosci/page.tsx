@@ -38,7 +38,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('legal');
+  const t = await getTranslations({ locale, namespace: 'legal' });
   return {
     title: t('title_privacy'),
     description: t('privacy_description'),
@@ -55,8 +55,8 @@ export default async function PolitykaPrywatnosciPage({
   setRequestLocale(localeRaw);
   const locale = asLocale(localeRaw);
   const marketId = getMarketId();
-  const t = await getTranslations('legal');
-  const tWL = await getTranslations('voucher_withdrawal.legal');
+  const t = await getTranslations({ locale, namespace: 'legal' });
+  const tWL = await getTranslations({ locale, namespace: 'voucher_withdrawal.legal' });
 
   let document;
   try {

@@ -42,7 +42,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('legal');
+  const t = await getTranslations({ locale, namespace: 'legal' });
   return {
     title: t('title_regulamin'),
     description: t('regulamin_description'),
@@ -59,8 +59,8 @@ export default async function RegulaminPage({
   setRequestLocale(localeRaw);
   const locale = asLocale(localeRaw);
   const marketId = getMarketId();
-  const t = await getTranslations('legal');
-  const tW = await getTranslations('voucher_withdrawal');
+  const t = await getTranslations({ locale, namespace: 'legal' });
+  const tW = await getTranslations({ locale, namespace: 'voucher_withdrawal' });
 
   let document;
   try {

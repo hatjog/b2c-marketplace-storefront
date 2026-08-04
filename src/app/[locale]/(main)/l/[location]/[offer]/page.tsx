@@ -51,7 +51,7 @@ export async function generateMetadata({
     return {};
   }
 
-  const t = await getTranslations('programmaticLanding');
+  const t = await getTranslations({ locale, namespace: 'programmaticLanding' });
   const baseUrl = await getBaseUrl();
   const alternates = await buildLandingAlternates(baseUrl, locale, data.location.slug, data.offer.slug);
 
@@ -87,7 +87,7 @@ export default async function ProgrammaticLandingPage({
 }) {
   const { locale, location, offer } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('programmaticLanding');
+  const t = await getTranslations({ locale, namespace: 'programmaticLanding' });
   const data = getProgrammaticLandingData({
     locale: locale as SupportedLocale,
     locationSlug: location,
