@@ -4,6 +4,7 @@ import {
   buildGiftRecipientIssueMetadata,
   GIFT_RECIPIENT_MESSAGE_MAX,
   isGiftRecipientFormValid,
+  isRecipientEmailRequired,
   readGiftRecipientIssueMetadata,
   toEditableSendTiming,
   validateGiftRecipientForm,
@@ -104,3 +105,75 @@ describe('gift recipient voucher issue binding', () => {
     });
   });
 });
+
+describe('handover: e-mail obdarowanej nie ma celu przetwarzania (RODO art. 5 ust. 1 lit. c)', () => {
+  const handoverForm: GiftRecipientFormData = {
+    recipientEmail: '',
+    message: 'Do odbioru w salonie',
+    sendTiming: 'handover'
+  };
+
+  it('wymaga adresu WYLACZNIE przy wysylce od razu', () => {
+    expect(isRecipientEmailRequired('now')).toBe(true);
+    expect(isRecipientEmailRequired('handover')).toBe(false);
+  });
+
+  it('pusty adres przy handover NIE blokuje bramki platnosci', () => {
+    // Rdzen defektu: gate `giftRecipientComplete` wymuszal podanie e-maila
+    // osoby trzeciej, do ktorej nigdy nie wysylamy zadnej wiadomosci.
+    expect(validateGiftRecipientForm(handoverForm)).toEqual({});
+    expect(isGiftRecipientFormValid(handoverForm)).toBe(true);
+  });
+
+  it('pusty adres przy `now` NADAL blokuje — wysylka bez adresu nie ma jak dojsc', () => {
+    expect(validateGiftRecipientForm({ ...handoverForm, sendTiming: 'now' })).toEqual({
+      recipientEmail: 'invalid'
+    });
+  });
+
+  it('NIE ZAPISUJE adresu przy handover, nawet jesli zostal wpisany', () => {
+    // Zdjecie samego wymogu z formularza nie wystarczy: adres wpisany zanim
+    // kupujaca przelaczyla timing i tak wyladowalby w `line_item.metadata`.
+    const payload = buildGiftRecipientIssueMetadata({
+      ...handoverForm,
+      recipientEmail: 'obdarowana@example.com'
+    });
+    expect(payload.gift_recipient_email).toBe('');
+    expect(JSON.stringify(payload)).not.toContain('obdarowana@example.com');
+  });
+
+  it('literowka w adresie jest zglaszana takze przy handover', () => {
+    expect(
+      validateGiftRecipientForm({ ...handoverForm, recipientEmail: 'nie-adres' })
+    ).toEqual({ recipientEmail: 'invalid' });
+  });
+
+  it('odczyt bez klucza `gift_recipient_email` nie wywraca checkoutu', () => {
+    // `mergeMetadata` Medusy USUWA klucz o wartosci pustego stringa, wiec zapis
+    // wariantu handover zostawia metadane BEZ tego klucza. Gdyby odczyt tego nie
+    // tolerowal, `giftRecipientComplete` bylby `false` zaraz po UDANYM zapisie —
+    // oryginalny bug tylnym wejsciem, odtworzony przez sama poprawke.
+    expect(
+      readGiftRecipientIssueMetadata({
+        gift_recipient_message: 'Do odbioru w salonie',
+        gift_recipient_send_timing: 'handover',
+        gift_recipient_bound_to_voucher_issue: true
+      })
+    ).toEqual({
+      gift_recipient_email: '',
+      gift_recipient_message: 'Do odbioru w salonie',
+      gift_recipient_send_timing: 'handover',
+      gift_recipient_send_date: null,
+      gift_recipient_bound_to_voucher_issue: true
+    });
+  });
+
+  it('zastane `scheduled` bez adresu tez sie odczytuje (normalizacja do handover)', () => {
+    const read = readGiftRecipientIssueMetadata({
+      gift_recipient_send_timing: 'scheduled',
+      gift_recipient_bound_to_voucher_issue: true
+    });
+    expect(read?.gift_recipient_send_timing).toBe('handover');
+  });
+});
+

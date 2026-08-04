@@ -403,7 +403,10 @@
         "error_status": "Vervollständige gültige Empfängerdaten vor der Zahlung.",
         "missing_line_item_status": "Keine Warenkorbposition für die Gutscheinverknüpfung verfügbar.",
         "payment_block": "Speichere zuerst die Empfängerdaten, bevor du zur Zahlung gehst.",
-        "save_failed_status": "Die Empfängerdaten konnten nicht gespeichert werden. Prüfe die Verbindung und versuche es erneut."
+        "save_failed_status": "Die Empfängerdaten konnten nicht gespeichert werden. Prüfe die Verbindung und versuche es erneut.",
+        "privacy_copy_handover": "Bei persönlicher Übergabe fragen wir nicht nach der E-Mail der beschenkten Person und speichern sie NICHT — es wird keine Nachricht an sie gesendet. Wir verarbeiten nur Ihre Nachricht auf dem Gutschein.",
+        "email_label_optional": "E-Mail der empfangenden Person (bei persönlicher Übergabe nicht nötig)",
+        "email_hint_handover": "Lassen Sie das Feld leer. Da Sie den Gutschein selbst übergeben, benötigen wir die Adresse nicht und speichern sie nicht."
       },
       "flag_changed_title": "Bestellkonfiguration geändert",
       "flag_changed_message": "Die Multi-Vendor-Angebotseinstellungen haben sich während Ihrer Bestellung geändert. Bitte überprüfen Sie Ihren Warenkorb und versuchen Sie es erneut.",
