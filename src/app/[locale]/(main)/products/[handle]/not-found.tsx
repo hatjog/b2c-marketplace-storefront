@@ -7,11 +7,20 @@
  * data-testid="product-not-found" for E2E variant verification.
  * UX-DR20 EP-P1: no blame, empathic, one primary CTA.
  */
+import { headers } from 'next/headers';
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export default async function ProductNotFound() {
-  const t = await getTranslations('not_found');
+  // App Router NIE przekazuje `params` do not-found, więc locale bierzemy
+  // tak samo jak root layout (`src/app/layout.tsx`): z nagłówka `x-gp-locale`
+  // ustawianego przez middleware, z `getLocale()` jako fallbackiem dla tras
+  // spoza matchera. Bez tego translator schodzi na default 'pl' — zmierzone:
+  // na /de, /ua i /en ta strona renderowała POLSKI nagłówek obok poprawnie
+  // zlokalizowanego globalnego not-found.
+  const localeHeader = (await headers()).get('x-gp-locale');
+  const locale = localeHeader ?? (await getLocale());
+  const t = await getTranslations({ locale, namespace: 'not_found' });
 
   return (
     <main
