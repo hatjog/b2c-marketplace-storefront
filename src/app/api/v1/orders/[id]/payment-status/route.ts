@@ -26,7 +26,7 @@
  *   przeglądarki i nigdy nie jest doklejany, gdy sesja klienta działa.
  *
  * @see GP/backend/src/api/store/orders/[id]/payment-status/route.ts (backend)
- * @see GP/storefront/src/components/sections/PaymentStatusPageContent/PaymentStatusPageContent.tsx (consumer)
+ * @see GP/storefront/src/components/sections/PaymentStatusV180/PaymentStatusV180.tsx (consumer)
  */
 
 import { cookies as nextCookies } from 'next/headers';
