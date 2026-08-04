@@ -20,7 +20,7 @@
  *
  *   UX-state framework state │ shared lifecycle state id (this adapter)
  *   ─────────────────────────┼──────────────────────────────────────────
- *   loading                  │ — (rendered by PaymentStatusPageContent before fetch resolves)
+ *   loading                  │ — (rendered by the consuming section before fetch resolves)
  *   pending                  │ pending_psp_confirmation
  *   recovered / paid-stable  │ paid
  *   failed                   │ failed
