@@ -16,8 +16,12 @@
  *  - `gp/require-set-request-locale` (AD-3, Story 1.3) rządzi ROUTE ENTRIES pod
  *    `src/app/[locale]/**`: tam sankcjonowanym mechanizmem jest
  *    `setRequestLocale(locale)` przed pierwszym kontekstozależnym resolverem.
- *    Dlatego `src/app/**` jest POZA zakresem tej reguły — inaczej dwie bramki
- *    wymagałyby dwóch sprzecznych rzeczy na tym samym pliku.
+ *    Dlatego `src/app/**` jest co do zasady POZA zakresem tej reguły — inaczej
+ *    dwie bramki wymagałyby dwóch sprzecznych rzeczy na tym samym pliku.
+ *    DWA WYJĄTKI, oba wsparte pomiarem, nie założeniem: `getMessages` wszędzie
+ *    (patrz `DEFAULT_ROUTE_SCOPED_FNS`) oraz `getTranslations` w plikach
+ *    `layout.*` (patrz `DEFAULT_LAYOUT_SCOPED_FNS`) — w obu przypadkach
+ *    zmierzono, że `setRequestLocale` NIE wystarcza.
  *  - `gp/locale-cache-boundary` (AD-1, Story 1.2) rządzi reprezentacją locale
  *    w warstwie danych i cache scope.
  *  - TA reguła rządzi GRANICĄ RENDERU w `src/components/**` i `src/lib/**`,
@@ -61,6 +65,29 @@ const DEFAULT_TRANSLATION_FNS = ["getTranslations", "getMessages"];
  */
 const DEFAULT_ROUTE_SCOPED_FNS = ["getMessages"];
 const DEFAULT_ROUTE_PATTERNS = ["src/app/"];
+
+/**
+ * W route entries `getTranslations` jest egzekwowane WYŁĄCZNIE w plikach
+ * layoutu — z tego samego powodu, dla którego `getMessages` jest egzekwowane
+ * wszędzie: `setRequestLocale` tam nie wystarcza.
+ *
+ * Zmierzone żywym prod-buildem 2026-08-03 (gp-config BonBeauty, zimny cache):
+ * `src/app/[locale]/(main)/layout.tsx` wołał `getTranslations('accessibility')`
+ * jedenaście linii po `setRequestLocale(locale)` i renderował POLSKI skip-link
+ * na /en, /ua i /de dla PDP, seller-detail i collection — podczas gdy
+ * `category` renderowało poprawnie, przy TYM SAMYM layoucie. W tym samym
+ * renderze `targetLocale` wynosił już "de-DE", więc `locale` było poprawne;
+ * degradował wyłącznie translator. Po przekazaniu `locale` jawnie: zero
+ * wystąpień PL na wszystkich trzech powierzchniach, bez regresji na /pl.
+ *
+ * Dlaczego tylko layout, a nie każdy route entry: translator layoutu zasila
+ * chrome opakowujący KAŻDĄ stronę pod nim, więc jeden zły odczyt degraduje
+ * całą trasę. `page.tsx` odpowiada za własną treść — tam obowiązuje podział
+ * pracy z `gp/require-set-request-locale` i 51 wywołań czeka na osobną
+ * migrację (patrz deferred-work).
+ */
+const DEFAULT_LAYOUT_SCOPED_FNS = ["getTranslations"];
+const LAYOUT_FILE_RE = /\/layout\.[cm]?[jt]sx?$/;
 
 function normalizePath(filename) {
   return String(filename || "").split("\\").join("/");
@@ -145,6 +172,7 @@ module.exports = {
           allowlist: { type: "array", items: { type: "string" } },
           translationFns: { type: "array", items: { type: "string" } },
           routeScopedFns: { type: "array", items: { type: "string" } },
+          layoutScopedFns: { type: "array", items: { type: "string" } },
           routePatterns: { type: "array", items: { type: "string" } },
         },
         additionalProperties: false,
@@ -166,6 +194,7 @@ module.exports = {
     const translationFns = options.translationFns || DEFAULT_TRANSLATION_FNS;
     const routeScopedFns = options.routeScopedFns || DEFAULT_ROUTE_SCOPED_FNS;
     const routePatterns = options.routePatterns || DEFAULT_ROUTE_PATTERNS;
+    const layoutScopedFns = options.layoutScopedFns || DEFAULT_LAYOUT_SCOPED_FNS;
 
     const filename = normalizePath(
       context.filename || (context.getFilename && context.getFilename())
@@ -173,6 +202,7 @@ module.exports = {
 
     const inRenderBoundary = matchesAny(filename, includePatterns);
     const inRouteEntry = matchesAny(filename, routePatterns);
+    const inRouteLayout = inRouteEntry && LAYOUT_FILE_RE.test(filename);
 
     if (
       (!inRenderBoundary && !inRouteEntry) ||
@@ -182,10 +212,15 @@ module.exports = {
       return {};
     }
 
-    /** W route entries egzekwujemy tylko funkcje z `routeScopedFns`. */
+    /**
+     * W route entries egzekwujemy funkcje z `routeScopedFns` wszędzie,
+     * a `layoutScopedFns` dodatkowo w plikach `layout.*` (patrz komentarz przy
+     * `DEFAULT_LAYOUT_SCOPED_FNS` — zmierzony defekt skip-linka).
+     */
     function isEnforced(fnName) {
       if (inRenderBoundary) return true;
-      return routeScopedFns.includes(fnName);
+      if (routeScopedFns.includes(fnName)) return true;
+      return inRouteLayout && layoutScopedFns.includes(fnName);
     }
 
     let skipModule = false;
