@@ -403,7 +403,10 @@
         "error_status": "Uzupełnij poprawnie dane odbiorcy przed płatnością.",
         "missing_line_item_status": "Brak pozycji koszyka do powiązania z voucherem.",
         "payment_block": "Najpierw zapisz dane odbiorcy prezentu, zanim przejdziesz do płatności.",
-        "save_failed_status": "Nie udało się zapisać danych odbiorcy. Sprawdź połączenie i spróbuj ponownie."
+        "save_failed_status": "Nie udało się zapisać danych odbiorcy. Sprawdź połączenie i spróbuj ponownie.",
+        "privacy_copy_handover": "Przy przekazaniu osobistym nie prosimy o e-mail obdarowanej i go NIE zapisujemy — nie wysyłamy do niej żadnej wiadomości. Przetwarzamy wyłącznie Twoją wiadomość na voucherze.",
+        "email_label_optional": "E-mail odbiorcy (niepotrzebny przy przekazaniu osobistym)",
+        "email_hint_handover": "Zostaw puste. Skoro przekazujesz voucher osobiście, nie potrzebujemy adresu obdarowanej i go nie zapiszemy."
       },
       "flag_changed_title": "Konfiguracja zamówienia uległa zmianie",
       "flag_changed_message": "Ustawienia oferty wielosprzedawcowej zostały zmienione w trakcie Twojego zamówienia. Sprawdź zawartość koszyka i spróbuj ponownie.",

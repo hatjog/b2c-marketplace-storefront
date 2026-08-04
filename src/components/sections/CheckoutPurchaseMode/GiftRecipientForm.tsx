@@ -11,6 +11,7 @@ import {
   buildGiftRecipientIssueMetadata,
   GIFT_RECIPIENT_MESSAGE_MAX,
   toEditableSendTiming,
+  isRecipientEmailRequired,
   validateGiftRecipientForm,
   type GiftRecipientFormData,
   type GiftRecipientIssueMetadata,
@@ -63,6 +64,11 @@ export function GiftRecipientForm({
   const messageLength = formData.message.length;
   const remaining = GIFT_RECIPIENT_MESSAGE_MAX - messageLength;
   const hasLineItems = lineItemIds.length > 0;
+  // Przy „przekażę osobiście" nie wysyłamy nic, więc adres obdarowanej nie ma
+  // celu przetwarzania — pole przestaje być wymagane, a copy mówi wprost, że
+  // adresu NIE zapisujemy. Wcześniej gate wymuszał podanie e-maila osoby
+  // trzeciej, której nigdy nie napisaliśmy (decyzja PO 2026-08-01).
+  const emailRequired = isRecipientEmailRequired(formData.sendTiming);
 
   const isValid = useMemo(
     () => Object.keys(validateGiftRecipientForm(formData)).length === 0,
@@ -112,12 +118,14 @@ export function GiftRecipientForm({
     >
       <div className="space-y-1">
         <h3 className="text-base font-medium text-[var(--text-primary)]">{t('heading')}</h3>
-        <p className="text-sm text-[var(--text-secondary)]">{t('privacy_copy')}</p>
+        <p className="text-sm text-[var(--text-secondary)]" data-testid="gift-recipient-privacy-copy">
+          {t(emailRequired ? 'privacy_copy' : 'privacy_copy_handover')}
+        </p>
       </div>
 
       <div className="mt-4 grid gap-4">
         <label className="grid gap-2 text-sm font-medium text-[var(--text-primary)]">
-          {t('email_label')}
+          {t(emailRequired ? 'email_label' : 'email_label_optional')}
           <input
             type="email"
             name="gift_recipient_email"
@@ -127,7 +135,16 @@ export function GiftRecipientForm({
             aria-invalid={errors.recipientEmail ? 'true' : undefined}
             className="rounded-[var(--bb-radius-input)] border border-[var(--bb-border-soft)] bg-white px-3 py-2 text-sm text-[var(--text-primary)]"
             data-testid="gift-recipient-email"
+            required={emailRequired}
           />
+          {!emailRequired && (
+            <span
+              className="text-xs text-[var(--text-secondary)]"
+              data-testid="gift-recipient-email-handover-hint"
+            >
+              {t('email_hint_handover')}
+            </span>
+          )}
           {errors.recipientEmail && (
             <span className="text-xs text-[var(--color-error)]">{t('email_error')}</span>
           )}

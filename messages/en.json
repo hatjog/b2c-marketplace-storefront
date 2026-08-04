@@ -403,7 +403,10 @@
         "error_status": "Complete valid recipient details before payment.",
         "missing_line_item_status": "No cart line item is available for voucher binding.",
         "payment_block": "Save gift recipient details before continuing to payment.",
-        "save_failed_status": "We could not save the recipient details. Check your connection and try again."
+        "save_failed_status": "We could not save the recipient details. Check your connection and try again.",
+        "privacy_copy_handover": "For in-person handover we do not ask for the recipient's email and we do NOT store it — no message is sent to them. We process only your message on the voucher.",
+        "email_label_optional": "Recipient email (not needed for in-person handover)",
+        "email_hint_handover": "Leave it empty. Since you are handing the voucher over yourself, we do not need the recipient's address and will not store it."
       },
       "flag_changed_title": "Order configuration changed",
       "flag_changed_message": "The multi-vendor offer settings have changed during your order. Please review your cart and try again.",

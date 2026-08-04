@@ -62,6 +62,23 @@ export function toEditableSendTiming(value: unknown): GiftRecipientSendTiming {
   return 'handover';
 }
 
+/**
+ * Czy przy tym send-timingu adres obdarowanej jest nam do czegokolwiek POTRZEBNY.
+ *
+ * Tylko `now` wysyła handoff-mail — potwierdza to jedyny produkcyjny czytelnik
+ * po stronie backendu (`gift-handoff.ts`), który przy `handover` zwraca
+ * `handover_in_person` ZANIM w ogóle spojrzy na adres.
+ *
+ * Przy „nie wysyłaj, przekażę osobiście" nie wysyłamy nic, więc wymaganie
+ * adresu e-mail osoby trzeciej było przetwarzaniem danych osobowych BEZ CELU
+ * (minimalizacja, RODO art. 5 ust. 1 lit. c) — a `privacy_copy` deklarowało
+ * przetwarzanie „żeby dostarczyć voucher", czyli cel, którego nie realizowaliśmy.
+ * Decyzja PO (Robert, 2026-08-01): naprawiamy.
+ */
+export function isRecipientEmailRequired(sendTiming: GiftRecipientSendTiming): boolean {
+  return sendTiming === 'now';
+}
+
 export function validateGiftRecipientForm(
   data: GiftRecipientFormData
 ): GiftRecipientValidationErrors {
@@ -69,7 +86,15 @@ export function validateGiftRecipientForm(
   const email = data.recipientEmail.trim();
   const message = data.message.trim();
 
-  if (!EMAIL_RE.test(email)) {
+  if (isRecipientEmailRequired(data.sendTiming)) {
+    if (!EMAIL_RE.test(email)) {
+      errors.recipientEmail = 'invalid';
+    }
+  } else if (email.length > 0 && !EMAIL_RE.test(email)) {
+    // Adres nie jest wymagany, ale jeśli kupująca go wpisała (np. zanim
+    // przełączyła się na „przekażę osobiście"), to literówka ma być widoczna
+    // TERAZ — inaczej po powrocie do „wyślij od razu" formularz zablokowałby
+    // się bez wskazania pola.
     errors.recipientEmail = 'invalid';
   }
 
@@ -98,7 +123,13 @@ export function buildGiftRecipientIssueMetadata(
   }
 
   return {
-    gift_recipient_email: data.recipientEmail.trim().toLowerCase(),
+    // MINIMALIZACJA: przy „przekażę osobiście" adres obdarowanej NIE JEST
+    // ZAPISYWANY. Zdjęcie samego wymogu z formularza nie wystarczyłoby —
+    // adres wpisany zanim kupująca przełączyła timing i tak wylądowałby w
+    // `line_item.metadata`, czyli przetwarzalibyśmy dane osoby trzeciej bez celu.
+    gift_recipient_email: isRecipientEmailRequired(data.sendTiming)
+      ? data.recipientEmail.trim().toLowerCase()
+      : '',
     gift_recipient_message: data.message.trim().slice(0, GIFT_RECIPIENT_MESSAGE_MAX),
     gift_recipient_send_timing: data.sendTiming,
     // v1.14.0 nie produkuje daty — scheduler wchodzi w v1.15.0 (ADR-163).
@@ -116,7 +147,14 @@ export function readGiftRecipientIssueMetadata(
 ): GiftRecipientIssueMetadata | null {
   if (!metadata) return null;
 
-  const recipientEmail = metadata.gift_recipient_email;
+  // BRAK klucza `gift_recipient_email` znaczy „nie podano adresu", nie „rekord
+  // niekompletny" — DOKŁADNIE ta sama pułapka `mergeMetadata`, co przy
+  // wiadomości (opis niżej). Odkąd wariant `handover` zapisuje pusty adres,
+  // Medusa USUWA ten klucz, więc bez tego `?? ''` odczyt zwracałby `null`,
+  // `giftRecipientComplete` zostawałoby `false` i sekcja płatności blokowałaby
+  // się zaraz po UDANYM zapisie — czyli oryginalny bug tylnym wejściem,
+  // odtworzony przez zmianę, która miała go usunąć.
+  const recipientEmail = metadata.gift_recipient_email ?? '';
   // BRAK klucza znaczy „pusta wiadomość", nie „rekord niekompletny".
   //
   // Medusa stosuje `mergeMetadata` w generycznej ścieżce update KAŻDEGO modułu
