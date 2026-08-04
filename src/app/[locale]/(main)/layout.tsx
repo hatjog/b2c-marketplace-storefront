@@ -54,7 +54,26 @@ export default async function RootLayout({
 
   const user = await retrieveCustomer();
   const regionCheck = await checkRegion(locale);
-  const tA11y = await getTranslations('accessibility');
+  // Locale JAWNIE, nie ze stanu żądania.
+  //
+  // ZMIERZONE (prod-build, gp-config BonBeauty, zimny cache):
+  //   - PDP, seller-detail i collection renderowały polski skip-link na /en,
+  //     /ua i /de; `category` renderowało poprawnie — przy TYM SAMYM layoucie;
+  //   - w tym samym renderze `targetLocale` wynosił już "de-DE", więc `locale`
+  //     było poprawne — degradował wyłącznie translator;
+  //   - po przekazaniu `locale` jawnie: 0 wystąpień PL na wszystkich trzech
+  //     powierzchniach i w trzech locale, bez regresji na /pl.
+  //
+  // NIEUSTALONE: dokładny mechanizm degradacji. `src/i18n.ts` czyta
+  // `await requestLocale`, które next-intl zasila m.in. z `setRequestLocale`,
+  // więc teza „niejawne rozwiązanie nie ma źródła" NIE jest potwierdzona.
+  // Dopóki mechanizm nie jest zmierzony, nie należy zakładać, że ta klasa
+  // defektu jest zamknięta — ~88 wywołań `getTranslations` w storefroncie
+  // nadal nie przekazuje locale jawnie, w tym `sellers/[handle]/page.tsx`.
+  //
+  // `setRequestLocale` niżej zostaje — korzystają z niego komponenty potomne.
+  // Wzorzec jawnego locale: QD-03/CAP-3.
+  const tA11y = await getTranslations({ locale, namespace: 'accessibility' });
   const targetLocale = resolveTargetLocale(locale);
   // Real SSR catalog-coverage probe (FR-B.4 / Trust Invariant #7): fraction of
   // PL leaf translation keys that the active locale ships as non-empty strings.

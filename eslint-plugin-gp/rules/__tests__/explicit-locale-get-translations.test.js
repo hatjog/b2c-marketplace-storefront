@@ -38,6 +38,31 @@ const TEST_FILE =
 
 ruleTester.run("gp/explicit-locale-get-translations", rule, {
   valid: [
+    // page.tsx POZOSTAJE poza zakresem — tam rządzi gp/require-set-request-locale.
+    // Gdyby ta reguła też tego wymagała, dwie bramki żądałyby dwóch rzeczy naraz.
+    {
+      filename: ROUTE_FILE,
+      code: `
+        export default async function ProductPage({ params }) {
+          const { locale } = await params;
+          setRequestLocale(locale);
+          const t = await getTranslations('pdp');
+          return t('title');
+        }
+      `,
+    },
+    // Layout z jawnym locale — kształt, do którego reguła prowadzi.
+    {
+      filename: LOCALE_LAYOUT,
+      code: `
+        export default async function LocaleLayout({ params }) {
+          const { locale } = await params;
+          setRequestLocale(locale);
+          const tA11y = await getTranslations({ locale, namespace: 'accessibility' });
+          return tA11y('skip_to_content');
+        }
+      `,
+    },
     // Forma jawna — cel reguły.
     {
       filename: PDP_COMPONENT,
@@ -190,6 +215,36 @@ ruleTester.run("gp/explicit-locale-get-translations", rule, {
         export async function buildMeta(locale: string) {
           const t = await getTranslations('pdp');
           return t('meta.title');
+        }
+      `,
+      errors: [{ messageId: "implicitLocale" }],
+    },
+    // DEFEKT SKIP-LINKA, zmierzony żywym prod-buildem 2026-08-03: layout wołał
+    // getTranslations('accessibility') po setRequestLocale(locale) i renderował
+    // POLSKI skip-link na /en, /ua i /de. To jest przypadek, dla którego
+    // `layoutScopedFns` w ogóle istnieje — bez niego ta bramka jest ślepa.
+    {
+      filename: LOCALE_LAYOUT,
+      code: `
+        export default async function LocaleLayout({ params }) {
+          const { locale } = await params;
+          setRequestLocale(locale);
+          const tA11y = await getTranslations('accessibility');
+          return tA11y('skip_to_content');
+        }
+      `,
+      errors: [{ messageId: "implicitLocale" }],
+    },
+    // Ten sam defekt pod inną nazwą zmiennej — reguła patrzy na FORMĘ wywołania,
+    // więc nie da się jej obejść przemianowaniem (regexowy skan dawał się nabrać).
+    {
+      filename: "/repo/GP/storefront/src/app/[locale]/(checkout)/layout.tsx",
+      code: `
+        export default async function CheckoutLayout({ params }) {
+          const { locale: routeLocale } = await params;
+          setRequestLocale(routeLocale);
+          const t = await getTranslations('checkout');
+          return t('title');
         }
       `,
       errors: [{ messageId: "implicitLocale" }],

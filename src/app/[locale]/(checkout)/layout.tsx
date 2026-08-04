@@ -16,7 +16,11 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('checkout');
+  // Jawne locale — translator layoutu zasila chrome opakowujący każdą stronę
+  // checkoutu, a `setRequestLocale` tu nie wystarcza (zmierzone na layoucie
+  // `(main)`: polski skip-link na /en, /ua i /de). Egzekwuje
+  // `gp/explicit-locale-get-translations` przez `layoutScopedFns`.
+  const t = await getTranslations({ locale, namespace: 'checkout' });
 
   return (
     <>
