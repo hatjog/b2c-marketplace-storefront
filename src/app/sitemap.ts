@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/i18n/routing';
 import { getSellers } from '@/lib/data/seller';
-import { buildSitemap } from '@/lib/seo/sitemap';
+import { applyServingExclusions, buildSitemap } from '@/lib/seo/sitemap';
 
 /**
  * Storefront sitemap.xml — Next.js App Router root-level sitemap.
@@ -48,6 +48,25 @@ const _sitemapValidatorHints = { SUPPORTED_LOCALES, _sitemapValidatorLocaleMap, 
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { entries } = await buildSitemap();
-  return entries;
+  // Story 2.2 v1.15.0 (AD-19/AD-21): `buildSitemap()` RZUCA, gdy źródło padło
+  // i nie ma ostatniego dobrego wyniku — celowo nie łapiemy tego tutaj.
+  // Wyjątek daje crawlerowi `5xx` („spróbuj później"), a pusty `<urlset>`
+  // dałby mu oświadczenie „tych stron już nie ma". Wykluczenia noindex
+  // stosujemy dopiero TU, na ścieżce serwowania.
+  const result = await buildSitemap();
+
+  if (result.freshness.status === 'stale') {
+    console.warn(
+      JSON.stringify({
+        event: 'sitemap.served_stale',
+        max_age_seconds: result.freshness.maxAgeSeconds,
+        degraded_sources: result.freshness.degradedSources,
+        generated_at: result.freshness.generatedAt,
+        // Wiek danych jest też odczytywalny przez /api/seo/sitemap-health.
+        health_endpoint: '/api/seo/sitemap-health'
+      })
+    );
+  }
+
+  return applyServingExclusions(result);
 }

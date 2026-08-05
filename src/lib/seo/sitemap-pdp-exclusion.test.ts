@@ -15,12 +15,21 @@
  * trzeba świadomie przepiąć na filtr, nie usunąć.
  */
 import { describe, expect, it, vi } from 'vitest';
+import os from 'node:os';
 
+/*
+ * Story 2.2 v1.15.0 — zmiana WYŁĄCZNIE w mockach, asercje (rozstrzygnięcie
+ * ADR-153 pkt 3) pozostają nietknięte. Powód: mocki `getSellers` (obiekt
+ * zamiast tablicy) i brakujący `getMarketDefaultLocale` „działały" tylko
+ * dlatego, że stary `catch { return [] }` zjadał ich błąd. Po usunięciu tej
+ * intencji fixture musi być poprawny, żeby test mierzył to, co deklaruje.
+ */
 vi.mock('@/lib/market-locales', () => ({
   resolveMarketLocales: async () => ({
     supported: ['pl', 'en', 'ua', 'de'],
     defaultLocale: 'pl'
-  })
+  }),
+  getMarketDefaultLocale: async () => 'pl'
 }));
 
 vi.mock('@/lib/data/categories', () => ({
@@ -28,8 +37,11 @@ vi.mock('@/lib/data/categories', () => ({
 }));
 
 vi.mock('@/lib/data/seller', () => ({
-  getSellers: async () => ({ sellers: [{ handle: 'city-beauty' }] })
+  getSellersOrThrow: async () => [{ handle: 'city-beauty' }]
 }));
+
+// Nośnik ostatniego dobrego wyniku poza repo — ten test nie bada trwałości.
+process.env.GP_SITEMAP_LAST_GOOD_DIR = `${os.tmpdir()}/sitemap-pdp-exclusion-lastgood`;
 
 vi.mock('@/lib/blog', () => ({
   fetchHomepageBlogPageDocs: async () => [],

@@ -63,3 +63,10 @@ C:\\Users\\
 
 # QD-07 semantic i18n matrix run artifacts
 .qd07/
+
+# Story 2.2 v1.15.0 — nośnik "ostatniego dobrego wyniku" sitemapy.
+# To jest STAN RUNTIME per-deployment, nie artefakt repo: świadomie ignorowany
+# (werdykt `git check-ignore` zapisany w Dev Notes story 2.2).
+.sitemap-last-good/
+# Skrypty potomne testu cross-process (tworzone i kasowane w trakcie testu).
+tests/.tmp-cross-process/
