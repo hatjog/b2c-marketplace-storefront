@@ -61,7 +61,7 @@ type SellerApiItem = {
  * Routes the client is `any` — typing is enforced via the local
  * `{ sellers: SellerApiItem[] }` cast.
  */
-export const getSellers = async (): Promise<SellerListItem[]> => {
+export const getSellersOrThrow = async (): Promise<SellerListItem[]> => {
   return (
     mercurClient.store.sellers.query(
       await withMercurLocaleOptions({ fetchOptions: { cache: 'no-cache' } })
@@ -83,8 +83,19 @@ export const getSellers = async (): Promise<SellerListItem[]> => {
       }));
 
       return mapped.sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
-    })
-    .catch(() => []);
+    });
+};
+
+/**
+ * Wariant tolerancyjny dla POWIERZCHNI UI: pusta lista sprzedawców na liście
+ * jest akceptowalną degradacją widoku.
+ *
+ * Story 2.2 v1.15.0: sitemapa NIE MOŻE tego używać — dla crawlera pusta lista
+ * to oświadczenie „tych stron już nie ma" (AD-19). `lib/seo/sitemap.ts` woła
+ * `getSellersOrThrow()`, żeby porażka odczytu była widoczna jako porażka.
+ */
+export const getSellers = async (): Promise<SellerListItem[]> => {
+  return getSellersOrThrow().catch(() => []);
 };
 
 /**

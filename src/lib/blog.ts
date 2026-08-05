@@ -98,13 +98,21 @@ async function fetchMarketScopedPages({
   payloadLocale,
   searchParams,
   revalidate = 600,
-  tags = ['pages']
+  tags = ['pages'],
+  failClosed = false
 }: {
   marketId: string;
   payloadLocale: PayloadLocale;
   searchParams: Array<[string, string]>;
   revalidate?: number;
   tags?: string[];
+  /**
+   * Story 2.2 v1.15.0 (AD-19): dla powierzchni UI pusta lista wpisów jest
+   * akceptowalną degradacją widoku, ale dla SITEMAPY jest oświadczeniem
+   * „tych stron już nie ma". `failClosed: true` zamienia każdą porażkę
+   * odczytu w wyjątek, zamiast w pustą kolekcję.
+   */
+  failClosed?: boolean;
 }): Promise<PayloadPage[]> {
   try {
     const url = buildPayloadUrl('api/pages');
@@ -114,9 +122,11 @@ async function fetchMarketScopedPages({
       const tenantId = getTenantIdFromMarketConfig(marketConfig);
 
       if (!tenantId) {
-        console.warn(
-          `[blog] market-config lookup returned no tenant for market "${marketId}"; skipping page fetch`
-        );
+        const message = `[blog] market-config lookup returned no tenant for market "${marketId}"; skipping page fetch`;
+        if (failClosed) {
+          throw new Error(message);
+        }
+        console.warn(message);
         return [];
       }
 
@@ -145,13 +155,20 @@ async function fetchMarketScopedPages({
     });
 
     if (!response.ok) {
-      console.error(`[blog] fetch failed: ${response.status} ${response.statusText}`);
+      const message = `[blog] fetch failed: ${response.status} ${response.statusText}`;
+      if (failClosed) {
+        throw new Error(message);
+      }
+      console.error(message);
       return [];
     }
 
     const data = (await response.json()) as PayloadCollectionResponse<PayloadPage>;
     return data.docs || [];
   } catch (error) {
+    if (failClosed) {
+      throw error;
+    }
     console.error('[blog] request error', error);
     return [];
   }
@@ -418,20 +435,40 @@ export function extractLexicalParagraphs(content: unknown): string[] {
   return rootChildren.map(node => collectText(node).trim()).filter(Boolean);
 }
 
+/** Górny clamp dla powierzchni UI (homepage, listing) — więcej nikt nie czyta. */
+export const UI_BLOG_MAX_LIMIT = 24;
+
+/**
+ * Górny clamp dla sitemapy (`failClosed: true`). Sitemapa musi być KOMPLETNA —
+ * przycięcie zwrócone jako `fresh` byłoby niepełnym sukcesem udającym komplet.
+ */
+export const SITEMAP_BLOG_MAX_LIMIT = 1000;
+
 export async function fetchHomepageBlogPageDocs({
   marketId,
   locale,
-  limit
+  limit,
+  failClosed = false
 }: {
   marketId: string;
   /** Route locale — explicit on every call site (CAP-3/CAP-4, no implicit default). */
   locale: BlogLocale | string;
   limit?: number | null;
+  /** Story 2.2 v1.15.0: sitemapa woła z `true` — porażka ma być porażką. */
+  failClosed?: boolean;
 }) {
-  const resolvedLimit = Math.max(1, Math.min(limit ?? 12, 24));
+  // Review 2.2 [LOW]: clamp 24 był ustawiony dla powierzchni UI (homepage,
+  // listing), gdzie „więcej niż 24" nikomu nie służy. Dla sitemapy przycięcie
+  // do 24 znaczy, że 25. i dalsze wpisy dla crawlera NIE ISTNIEJĄ, a wynik
+  // wraca jako `fresh` — czyli niepełny sukces udający komplet. Ścieżka
+  // `failClosed: true` to wyłącznie sitemapa (AD-19), więc tam clamp jest
+  // podniesiony do pełnego katalogu bloga.
+  const maxLimit = failClosed ? SITEMAP_BLOG_MAX_LIMIT : UI_BLOG_MAX_LIMIT;
+  const resolvedLimit = Math.max(1, Math.min(limit ?? 12, maxLimit));
 
   return fetchMarketScopedPages({
     marketId,
+    failClosed,
     payloadLocale: mapRouteLocaleToPayloadLocale(locale),
     searchParams: [
       ['where[page_type][equals]', 'blog'],
