@@ -187,43 +187,19 @@ export default async function RootLayout({
             />
           </>
         )}
-        {/* Image origins for faster LCP */}
-        <link
-          rel="preconnect"
-          href="https://medusa-public-images.s3.eu-west-1.amazonaws.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="dns-prefetch"
-          href="https://medusa-public-images.s3.eu-west-1.amazonaws.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://mercur-connect.s3.eu-central-1.amazonaws.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="dns-prefetch"
-          href="https://mercur-connect.s3.eu-central-1.amazonaws.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://s3.eu-central-1.amazonaws.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="dns-prefetch"
-          href="https://s3.eu-central-1.amazonaws.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://api.mercurjs.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="dns-prefetch"
-          href="https://api.mercurjs.com"
-        />
+        {/*
+          Story 2.5 (FR-14c, ADR-178): the preconnect/dns-prefetch hints for
+          medusa-public-images.s3…, mercur-connect.s3…, s3.eu-central-1… and
+          api.mercurjs.com were removed together with their `remotePatterns`
+          entries. They were Mercur upstream demo leftovers: no data in this
+          repo ever pointed an image at them, so they only leaked a DNS lookup
+          to third-party infrastructure on every page load — and, worse, read
+          as evidence that those hosts were live image origins, which is how a
+          removed allowlist entry gets "helpfully" restored later.
+          If a real image origin appears (an S3/MinIO/CDN bucket for a
+          non-local instance), add the preconnect back NEXT TO its
+          remotePatterns entry so the two never drift apart again.
+        */}
         {themeStylesheet && (
           <link
             rel="stylesheet"
