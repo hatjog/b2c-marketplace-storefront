@@ -135,7 +135,13 @@ test('allowlisty nie obchodzi się bokiem (unoptimized / loader / domains / SVG)
   // własny `loader`/`loaderFile` zastępuje jego politykę, legacy
   // `images.domains` to druga, luźniejsza lista, a `dangerouslyAllowSVG`
   // wpuszcza wykonywalny SVG spod naszego originu.
-  for (const forbidden of ['unoptimized', 'loaderFile', 'dangerouslyAllowSVG', 'domains']) {
+  // 2.5 fix-review F10: the comment above always named BOTH `loader` and
+  // `loaderFile` as the bypass channel, but the loop used to check only
+  // `loaderFile` — `images.loader: 'custom'` without a `loaderFile` is a
+  // Next.js build error today, so the practical hole was narrow, but the
+  // comment/list mismatch is exactly the kind of drift that reads as
+  // "loader is covered" at the next edit. Both keys are checked now.
+  for (const forbidden of ['unoptimized', 'loader', 'loaderFile', 'dangerouslyAllowSVG', 'domains']) {
     const withoutComments = source
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/\/\/[^\n]*/g, '');
@@ -145,6 +151,40 @@ test('allowlisty nie obchodzi się bokiem (unoptimized / loader / domains / SVG)
       `next.config.ts wprowadza '${forbidden}' — to obejście zawężonej allowlisty ` +
         'obrazów (Story 2.5 AC2 zakazuje go wprost); jeśli jest naprawdę potrzebne, ' +
         'wymaga ADR, nie cichej edycji'
+    );
+  }
+});
+
+test('wpis rozszerzający dostęp na CAŁEGO dostawcę ("**.domena") wymaga uzasadnienia komentarzem z ADR', () => {
+  // 2.5 fix-review F11: `resolvesToAnyHost()` correctly catches '**', '*',
+  // '*.*' and an empty hostname, but a pattern like `'**.amazonaws.com'`
+  // legitimately narrows to a real host set (all buckets in a provider) and
+  // is NOT "any host" — AC2 requires such an entry to carry an EXPLICIT,
+  // JUSTIFIED decision (the `localhost` entry's own comment warns against
+  // exactly this: "Do NOT pre-empt it with '**.amazonaws.com'"), not a ban.
+  // Nothing enforced that machine-side before this test: the first such
+  // entry would have landed on a green pre-push. This is a proximity
+  // heuristic over the raw file text (not a strict parser) — good enough to
+  // make a missing justification loud without over-building a checker for a
+  // pattern that does not exist in the array today.
+  for (const pattern of parseRemotePatterns(source)) {
+    if (!pattern.hostname || !/^\*\*\.[^*]+$/.test(pattern.hostname)) continue;
+    const needle = pattern.raw;
+    const idx = source.indexOf(needle);
+    assert.ok(idx >= 0, `nie znaleziono w źródle surowego wpisu dla '${pattern.hostname}'`);
+    // Window is bounded by the PREVIOUS array entry (`},`) or the array
+    // opener (`[`), not a fixed character count — a fixed window would false-
+    // pass any entry placed near the large top-of-array doc comment (which
+    // mentions ADR-159/ADR-178 liberally) regardless of whether THIS entry
+    // has its own justification.
+    const prevEntryEnd = Math.max(source.lastIndexOf('},', idx), source.lastIndexOf('[', idx));
+    const window = source.slice(prevEntryEnd, idx);
+    assert.match(
+      window,
+      /ADR/,
+      `wpis '${pattern.hostname}' rozszerza dostęp na CAŁEGO dostawcę (np. cały region ` +
+        'S3 albo CDN) — AC2 wymaga jawnego uzasadnienia komentarzem wskazującym numer ADR ' +
+        'BEZPOŚREDNIO przed tym wpisem (nie gdziekolwiek wcześniej w pliku), nie cichego dodania'
     );
   }
 });
