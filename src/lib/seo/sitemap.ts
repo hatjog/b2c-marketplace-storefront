@@ -255,7 +255,7 @@ export async function readSellers(): Promise<SitemapSourceRead<{ handle: string 
     // widoku listy, zabronione dla sitemapy — AD-19).
     const sellers = await getSellersOrThrow();
     if (!Array.isArray(sellers)) {
-      throw new Error('getSellers(): odpowiedź poza kształtem (oczekiwano tablicy)');
+      throw new Error('getSellersOrThrow(): odpowiedź poza kształtem (oczekiwano tablicy)');
     }
     return sellers
       .filter(s => typeof s.handle === 'string' && (s.handle as string).trim().length > 0)
@@ -444,13 +444,20 @@ export async function buildSitemap(): Promise<SitemapBuildResult> {
 export function applyServingExclusions(result: SitemapBuildResult): MetadataRoute.Sitemap {
   const excluded = result.servingExclusions.noindexStaticSlugs;
   if (excluded.length === 0) return result.entries;
-  const localePattern = result.markets.supported
-    .map(locale => locale.replace(/[^a-zA-Z-]/g, ''))
-    .join('|');
-  const patterns = excluded.map(
-    slug => new RegExp(`/(?:${localePattern})${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)
-  );
-  return result.entries.filter(entry => !patterns.some(re => re.test(entry.url)));
+  // Review 2.2 [INFO]: wykluczamy przez PORÓWNANIE ZBIORÓW zbudowanych URL-i,
+  // nie przez rekonstrukcję URL-a regexem. Poprzednia wersja sanityzowała
+  // locale przez `[^a-zA-Z-]`, więc dla locale spoza tego alfabetu po cichu
+  // zmieniała pattern, a pusty `localePattern` dawałby regex `/(?:)/regulamin$`.
+  // Wynik budowy niesie już jawnie `markets.supported` i te same slugi, którymi
+  // budowano trasy statyczne — wykluczenie jest więc dokładną projekcją budowy.
+  const base = resolveSitemapBaseUrl();
+  const excludedUrls = new Set<string>();
+  for (const slug of excluded) {
+    for (const locale of result.markets.supported) {
+      excludedUrls.add(localizedUrl(base, locale, slug));
+    }
+  }
+  return result.entries.filter(entry => !excludedUrls.has(entry.url));
 }
 
 export type SupportedSitemapLocale = SupportedLocale;

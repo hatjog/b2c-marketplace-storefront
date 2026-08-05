@@ -10,13 +10,21 @@
  *
  * Endpoint NIE regeneruje sitemapy — raportuje licznik degradacji tego procesu
  * oraz wiek ostatniego dobrego wyniku odczytany z nośnika.
+ *
+ * CZEGO TU NIE MA I DLACZEGO (review 2.2 [LOW]):
+ * endpoint jest publiczny (bez guardu), więc NIE zwraca `last_good_store`
+ * (absolutna ścieżka w systemie plików kontenera) ani `threshold_owner`
+ * (imię i nazwisko realnej osoby). AC4 i SSOT progu wymagają, żeby wiek danych
+ * i próg były ODCZYTYWALNE PRZEZ NAZWANEGO KONSUMENTA — nie żeby dane osobowe
+ * i topologia wdrożenia były dostępne dla dowolnego żądania z internetu.
+ * Właściciel progu pozostaje zapisany w SSOT (`threshold_owner_ref` niżej)
+ * oraz w logu strukturalnym `sitemap.degraded`, który jest wewnętrzny.
  */
 import { NextResponse } from 'next/server';
 
 import { getSitemapDegradationMetrics } from '@/lib/seo/sitemap-degradation';
 import {
   readLastGood,
-  resolveLastGoodDir,
   snapshotAgeSeconds,
   type SitemapSourceId
 } from '@/lib/seo/sitemap-last-good';
@@ -41,7 +49,6 @@ export async function GET() {
   return NextResponse.json(
     {
       checked_at: now.toISOString(),
-      last_good_store: resolveLastGoodDir(),
       sources,
       degradation: {
         fresh_generations: metrics.freshGenerations,
@@ -50,11 +57,20 @@ export async function GET() {
         last_degraded_at: metrics.lastDegradedAt,
         last_max_age_seconds: metrics.lastMaxAgeSeconds,
         threshold_seconds: metrics.thresholdSeconds,
-        threshold_owner: metrics.thresholdOwner,
+        // Wskaźnik do SSOT zamiast danych osobowych właściciela.
+        threshold_owner_ref: 'specs/releases/v1.15.0/sitemap-degradation-threshold.md',
         threshold_enforced_from: metrics.thresholdEnforcedFrom,
         threshold_breached: metrics.thresholdBreached
       }
     },
-    { headers: { 'cache-control': 'no-store' } }
+    {
+      headers: {
+        'cache-control': 'no-store',
+        // Powierzchnia operacyjna, nie treść — nie ma po co trafiać do indeksu.
+        // Nagłówek jest tu, a nie w `robots.ts`, żeby wykluczenie jechało razem
+        // z endpointem i nie zależało od polityki innego pliku (review 2.2 [LOW]).
+        'x-robots-tag': 'noindex, nofollow'
+      }
+    }
   );
 }

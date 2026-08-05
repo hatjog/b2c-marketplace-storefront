@@ -18,11 +18,53 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const tsx = join(root, 'node_modules/.bin/tsx');
+
+/**
+ * Runner `tsx` rozwiązywany, nie ZAKŁADANY — review 2.2 [MEDIUM].
+ *
+ * Poprzednia wersja liczyła wyłącznie na `<root>/node_modules/.bin/tsx` i przy
+ * jego braku robiła `{ skip: ... }`. W tym repo zależności są hoistowane do
+ * roota workspace, więc `GP/storefront/node_modules/.bin` NIE ISTNIEJE —
+ * a `node --test` liczy `skip` jako sukces. Efekt: jedyna automatyczna bramka
+ * trwałości nośnika (AC2) znikała bez żadnego sygnału, a suite kończyła się
+ * zielono. Skip w bramce dowodowej jest równoważny jej braku.
+ *
+ * Dlatego: rozwiązujemy binarkę przez `require.resolve('tsx/package.json')`
+ * (odporne na hoistowanie i na strategię pnpm), z fallbackiem do ścieżek `.bin`
+ * w storefroncie i w rootach workspace. Gdy naprawdę nie da się jej znaleźć —
+ * test FAILUJE z instrukcją, nie pomija.
+ */
+function resolveTsxRunner() {
+  const require = createRequire(join(root, 'package.json'));
+  const attempted = [];
+
+  try {
+    const pkgPath = require.resolve('tsx/package.json');
+    const cli = join(dirname(pkgPath), 'dist/cli.mjs');
+    attempted.push(cli);
+    if (existsSync(cli)) return { cmd: process.execPath, prefix: [cli], attempted };
+  } catch (error) {
+    attempted.push(`require.resolve('tsx/package.json'): ${error.message}`);
+  }
+
+  for (const candidate of [
+    join(root, 'node_modules/.bin/tsx'),
+    join(root, '../../node_modules/.bin/tsx'),
+    join(root, '../../../node_modules/.bin/tsx')
+  ]) {
+    attempted.push(candidate);
+    if (existsSync(candidate)) return { cmd: candidate, prefix: [], attempted };
+  }
+
+  return { cmd: null, prefix: [], attempted };
+}
+
+const runner = resolveTsxRunner();
 const storeModule = join(root, 'src/lib/seo/sitemap-last-good.ts');
 const scriptDir = join(root, 'tests/.tmp-cross-process');
 let counter = 0;
@@ -37,10 +79,17 @@ function runInFreshProcess(code, dir) {
   // Skrypt idzie do pliku, nie do `tsx -e`: `-e` kompiluje do CJS i wywraca
   // się na top-level await. Plik musi leżeć W PROJEKCIE — poza nim loader tsx
   // nie transformuje importowanego modułu `.ts`.
+  assert.ok(
+    runner.cmd,
+    'nie udało się rozwiązać runnera `tsx` — bramka trwałości nośnika (AC2) nie ' +
+      'ma czym się wykonać, więc FAILUJE zamiast pomijać (skip = brak bramki). ' +
+      `Sprawdzone ścieżki:\n${runner.attempted.join('\n')}\n` +
+      'Napraw przez `pnpm install` w roocie workspace albo dodaj `tsx` do devDependencies storefrontu.'
+  );
   mkdirSync(scriptDir, { recursive: true });
   const scriptPath = join(scriptDir, `child-${counter++}.mts`);
   writeFileSync(scriptPath, code, 'utf8');
-  const result = spawnSync(tsx, [scriptPath], {
+  const result = spawnSync(runner.cmd, [...runner.prefix, scriptPath], {
     cwd: root,
     encoding: 'utf8',
     env: { ...process.env, GP_SITEMAP_LAST_GOOD_DIR: dir, NEXT_PUBLIC_MARKET_ID: 'bonbeauty' }
@@ -49,7 +98,7 @@ function runInFreshProcess(code, dir) {
   return result.stdout.trim();
 }
 
-test('ostatni dobry wynik przeżywa restart procesu (dwa osobne procesy)', { skip: !existsSync(tsx) && 'brak node_modules/.bin/tsx' }, () => {
+test('ostatni dobry wynik przeżywa restart procesu (dwa osobne procesy)', () => {
   const dir = mkdtempSync(join(tmpdir(), 'sitemap-crossproc-'));
   try {
     // Proces 1: udana generacja zapisuje ostatni dobry wynik.
@@ -81,7 +130,7 @@ test('ostatni dobry wynik przeżywa restart procesu (dwa osobne procesy)', { ski
   }
 });
 
-test('zimny start (brak nośnika) daje brak wyniku, nie pustą listę', { skip: !existsSync(tsx) && 'brak node_modules/.bin/tsx' }, () => {
+test('zimny start (brak nośnika) daje brak wyniku, nie pustą listę', () => {
   const dir = mkdtempSync(join(tmpdir(), 'sitemap-cold-'));
   try {
     const out = runInFreshProcess(

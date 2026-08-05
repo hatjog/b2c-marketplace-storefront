@@ -435,6 +435,15 @@ export function extractLexicalParagraphs(content: unknown): string[] {
   return rootChildren.map(node => collectText(node).trim()).filter(Boolean);
 }
 
+/** Górny clamp dla powierzchni UI (homepage, listing) — więcej nikt nie czyta. */
+export const UI_BLOG_MAX_LIMIT = 24;
+
+/**
+ * Górny clamp dla sitemapy (`failClosed: true`). Sitemapa musi być KOMPLETNA —
+ * przycięcie zwrócone jako `fresh` byłoby niepełnym sukcesem udającym komplet.
+ */
+export const SITEMAP_BLOG_MAX_LIMIT = 1000;
+
 export async function fetchHomepageBlogPageDocs({
   marketId,
   locale,
@@ -448,7 +457,14 @@ export async function fetchHomepageBlogPageDocs({
   /** Story 2.2 v1.15.0: sitemapa woła z `true` — porażka ma być porażką. */
   failClosed?: boolean;
 }) {
-  const resolvedLimit = Math.max(1, Math.min(limit ?? 12, 24));
+  // Review 2.2 [LOW]: clamp 24 był ustawiony dla powierzchni UI (homepage,
+  // listing), gdzie „więcej niż 24" nikomu nie służy. Dla sitemapy przycięcie
+  // do 24 znaczy, że 25. i dalsze wpisy dla crawlera NIE ISTNIEJĄ, a wynik
+  // wraca jako `fresh` — czyli niepełny sukces udający komplet. Ścieżka
+  // `failClosed: true` to wyłącznie sitemapa (AD-19), więc tam clamp jest
+  // podniesiony do pełnego katalogu bloga.
+  const maxLimit = failClosed ? SITEMAP_BLOG_MAX_LIMIT : UI_BLOG_MAX_LIMIT;
+  const resolvedLimit = Math.max(1, Math.min(limit ?? 12, maxLimit));
 
   return fetchMarketScopedPages({
     marketId,

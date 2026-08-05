@@ -32,6 +32,13 @@ export interface LastGoodSnapshot<T = unknown> {
 
 const DEFAULT_DIR_NAME = '.sitemap-last-good';
 
+/**
+ * Górna granica „zbędnego" odświeżenia znacznika czasu przy niezmienionej
+ * treści. 300 s przy progu alertu 24 h (`SITEMAP_STALE_ALERT_THRESHOLD_SECONDS`)
+ * to 0,35 % progu — nie przesuwa żadnej decyzji operatora.
+ */
+export const WRITE_THROTTLE_SECONDS = 300;
+
 /** Katalog nośnika. Jawny env ma pierwszeństwo (testy, wolumen w deployu). */
 export function resolveLastGoodDir(): string {
   const configured = (process.env.GP_SITEMAP_LAST_GOOD_DIR ?? '').trim();
@@ -74,6 +81,25 @@ export async function writeLastGood<T>(
     fetchedAt: fetchedAt.toISOString(),
     items
   };
+
+  // Throttling (review 2.2 [LOW]): `/sitemap.xml` renderuje się dynamicznie,
+  // więc bez tego KAŻDE żądanie crawlera robiłoby 3 pełne serializacje +
+  // `writeFile` + `rename` na współdzielonym wolumenie. Zapis pomijamy tylko
+  // wtedy, gdy treść snapshotu jest IDENTYCZNA, a istniejący wpis jest młodszy
+  // niż `WRITE_THROTTLE_SECONDS` — czyli gdy zapis nie wniósłby żadnej
+  // informacji. Zmiana treści zapisuje się ZAWSZE i natychmiast; wiek danych
+  // nigdy nie zostaje zaniżony, bo pomijamy jedynie odświeżenie `fetchedAt`
+  // o mniej niż próg (nośnik może więc raportować wiek starszy o ≤ próg, nigdy
+  // młodszy — błąd w stronę bezpieczną dla AD-19).
+  const existing = await readLastGood<T>(source);
+  if (
+    existing &&
+    snapshotAgeSeconds(existing, fetchedAt) < WRITE_THROTTLE_SECONDS &&
+    JSON.stringify(existing.items) === JSON.stringify(items)
+  ) {
+    return true;
+  }
+
   try {
     await fs.mkdir(resolveLastGoodDir(), { recursive: true });
     await fs.writeFile(`${path}.tmp`, JSON.stringify(payload), 'utf8');

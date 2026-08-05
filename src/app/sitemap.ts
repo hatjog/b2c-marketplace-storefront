@@ -1,7 +1,5 @@
 import type { MetadataRoute } from 'next';
 
-import { SUPPORTED_LOCALES } from '@/i18n/routing';
-import { getSellers } from '@/lib/data/seller';
 import { applyServingExclusions, buildSitemap } from '@/lib/seo/sitemap';
 
 /**
@@ -14,38 +12,42 @@ import { applyServingExclusions, buildSitemap } from '@/lib/seo/sitemap';
  *   - Production builds without `NEXT_PUBLIC_BASE_URL` throw at runtime
  *     (fail-closed canonical guard — review-6-6 M2).
  *
- * STATIC_LOCALIZED_ROUTES catalogue (kept inline so
- * `validate_sitemap_coverage.py` can text-scan this file):
- *   '', '/categories', '/sellers', '/blog',
- *   '/regulamin', '/polityka-prywatnosci', '/zasady', '/pomoc'
+ * Katalog tras, fetchery i wyliczenie locale żyją w `@/lib/seo/sitemap` —
+ * ten plik jest wyłącznie warstwą SERWOWANIA (AD-21). Do v1.15.0 stały tu
+ * atrapy (`_sitemapValidatorHints` z importem `getSellers` i `SUPPORTED_LOCALES`)
+ * wyłącznie po to, żeby uciszyć `validate_sitemap_coverage.py`. Review 2.2
+ * [MEDIUM] wykazał, że walidator utrwalał w ten sposób jako „wymagane"
+ * wywołanie `getSellers()`, którego ta story WPROST ZAKAZUJE na ścieżce
+ * sitemapy (połyka błąd i zwraca `[]`, AD-19) — powrót do wariantu
+ * tolerancyjnego byłby dla walidatora BARDZIEJ zielony, nie mniej.
+ * Walidator jest od tego fixu przepięty na realny katalog
+ * (`GP/storefront/src/lib/seo/sitemap.ts`), więc atrapy zniknęły.
  *
- * Dynamic families:
- *   - Sellers via `getSellers()` (kept imported here so the validator
- *     `getSellers()` invocation hint is satisfied).
- *   - Categories via `listCategories()`.
- *   - Blog posts via `fetchHomepageBlogPageDocs()`.
- *   - Programmatic geo landings via PROGRAMMATIC_LOCATIONS × PROGRAMMATIC_OFFERS.
+ * Renderowanie: `force-dynamic` — rozstrzygnięte, nie odziedziczone
+ * (review 2.2, [HIGH] blast radius + [LOW] martwy `revalidate`).
  *
- * Locale enumeration: `SUPPORTED_LOCALES` (pl / en / ua / de).
+ * Historycznie stało tu `export const revalidate = 3600` z uzasadnieniem
+ * „crawler dostaje świeży wynik co godzinę bez odczytów per żądanie". Pomiar
+ * na prod-buildzie (`evidence/2-2/t7-degradacja-prod-build.txt`) pokazał, że
+ * ta deklaracja była MARTWA: fetch `market-configs` ma `revalidate: 0`, więc
+ * Next i tak schodził na ścieżkę dynamiczną (`DYNAMIC_SERVER_USAGE`), a dwa
+ * kolejne żądania `curl` podbijały licznik degradacji. Deklarowany cache nie
+ * działał.
  *
- * Revalidation: 1h (3600s) — search engines re-crawl based on
- * changeFrequency hints; fresh sellers / posts / categories reach
- * crawlers hourly without per-request DB hits.
+ * Skutkiem ubocznym prerenderu było to, że fail-closed z AD-19 wybuchał
+ * w NIEWŁAŚCIWYM miejscu: `Export encountered an error on /sitemap.xml/route,
+ * exiting the build` — awaria backendu przestawała kosztować pozycje
+ * organiczne, a zaczynała kosztować możliwość wydania czegokolwiek (także
+ * hotfixa niezwiązanego z SEO). AD-19 wymaga „nie publikuj nowej wersji
+ * ARTEFAKTU INDEKSACYJNEGO", nie „nie publikuj storefrontu".
+ *
+ * `force-dynamic` rozdziela te dwie rzeczy: build przechodzi, a awaria źródła
+ * bez ostatniego dobrego wyniku daje crawlerowi `5xx` NA ŻĄDANIU — czyli
+ * „spróbuj później", nigdy pusty `<urlset>`. Koszt jest zerowy, bo route
+ * i tak renderował się dynamicznie.
  */
 
-export const revalidate = 3600;
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// `SUPPORTED_LOCALES` + `getSellers` imported so `validate_sitemap_coverage.py`
-// detects the locale-enumeration hint + the `getSellers()` dynamic-fetcher hint.
-// Legacy text-scan hints preserved after delegation to `@/lib/seo/sitemap`:
-// toHreflang(locale); 'x-default': localizedUrl(base, DEFAULT_LOCALE, path)
-const _sitemapValidatorLocaleMap = SUPPORTED_LOCALES.reduce<Record<string, true>>(
-  (acc, locale) => ({ ...acc, [locale]: true }),
-  {}
-);
-const _sitemapValidatorHints = { SUPPORTED_LOCALES, _sitemapValidatorLocaleMap, getSellers };
-/* eslint-enable @typescript-eslint/no-unused-vars */
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Story 2.2 v1.15.0 (AD-19/AD-21): `buildSitemap()` RZUCA, gdy źródło padło
