@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 /**
  * Środowiskowa bramka publikacji storefrontu
- * (v1.15.0 Story 7.4 — FR-15, AD-24, AD-19, ADR-181 §2.5).
+ * (v1.15.0 Story 7.4 — FR-15, AD-24, AD-19, ADR-183 §2.5).
  *
  * Do v1.15.0 obie gałęzie tego pliku zwracały bezwarunkowe `allow: '/'` — także
  * wtedy, gdy storefront serwował profile badawcze (`city-beauty`, `kremidotyk`,
@@ -19,7 +19,7 @@ import type { MetadataRoute } from 'next';
  * Fail-closed (AD-19): brak zmiennej albo wartość spoza dziedziny → polityka
  * najbardziej restrykcyjna (`disallow: '/'`). Wybrano degradację, nie twardy
  * błąd builda — brakująca zmienna ma dawać nadmiarowe `noindex`, a nie awarię
- * wdrożenia niepublicznego (uzasadnienie: ADR-181 §2.5).
+ * wdrożenia niepublicznego (uzasadnienie: ADR-183 §2.5).
  *
  * `sitemap:` pozostaje dopisywany wtedy i tylko wtedy, gdy `NEXT_PUBLIC_BASE_URL`
  * jest ustawione — kontrakt sitemapy (Story 2.2) NIE jest tu zmieniany.

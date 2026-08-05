@@ -1,5 +1,5 @@
 /**
- * Story 7.4 v1.15.0 AC4 — środowiskowa bramka publikacji (FR-15, AD-24, AD-19, ADR-181 §2.5).
+ * Story 7.4 v1.15.0 AC4 — środowiskowa bramka publikacji (FR-15, AD-24, AD-19, ADR-183 §2.5).
  *
  * Przed tą story `robots.ts` miał dwie gałęzie różniące się WYŁĄCZNIE obecnością
  * `sitemap:`, obie z `allow: '/'`, i nie czytał środowiska w ogóle.
