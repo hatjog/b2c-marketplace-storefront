@@ -951,7 +951,9 @@ export async function placeOrder(cartId?: string) {
     if (id) {
       await setCompletedCartId(id);
     }
-    removeCartId();
+    // review-fix (HIGH): `await`. Bez niego odrzucenie tej obietnicy ucieka
+    // poza `try/catch` jako unhandled rejection, a koszyk zostaje w cookie.
+    await removeCartId();
     redirect(`/order/${orderId}/confirmed`);
   }
 
@@ -1054,13 +1056,18 @@ export async function resolveCompletedOrderIdsFromCompletion(
   cartId?: string
 ): Promise<string[]> {
   const fromWorkflow = resolveCompletedOrderIds(res);
-  if (fromWorkflow.length > 1 || !cartId) {
+  if (!cartId) {
     return fromWorkflow;
   }
 
-  // Mostek jest AUTORYTETEM kardynalności: workflow potrafi oddać jedno
-  // zamówienie tam, gdzie powstały dwa (patrz nagłówek trasy mostka). Dlatego
-  // pytamy o niego także wtedy, gdy workflow już coś zwrócił.
+  // review-fix (MEDIUM): mostek jest pytany ZAWSZE, gdy znamy koszyk — także
+  // wtedy, gdy workflow zwrócił już więcej niż jedno zamówienie. Wcześniejsze
+  // `fromWorkflow.length > 1 → return` opierało się na ZAŁOŻENIU, że skoro
+  // workflow potrafi oddać N>1, to oddaje wszystkie. Liczność ogniwa 1 nie
+  // została zmierzona wykonaniem (odczytano deklaracje typów, nie realny
+  // przebieg), więc to założenie nie ma pokrycia. Poniższe `max` sprawia, że
+  // kardynalność nie zależy od nieznanego zachowania upstreamu: mostek czyta
+  // `order_cart` w bazie i jest autorytetem.
   //
   // Liczba prób jest RÓŻNA w dwóch sytuacjach i to jest celowe:
   //  • workflow nie dał NIC → mostek jest jedynym źródłem, więc pełne 4×350 ms
@@ -1083,13 +1090,26 @@ export async function resolveCompletedOrderIdsFromCompletion(
  * Ścieżka powrotu z 3DS musi najpierw sprawdzić, czy koszyk JUŻ jest domknięty
  * (odświeżenie / cofnięcie strony), zanim cokolwiek zainicjuje. Bez tego
  * odczytu każde ponowne wejście byłoby nową operacją domknięcia.
+ *
+ * review-fix (MEDIUM): ten odczyt MA RETRY. Pierwsza wersja robiła jedno
+ * podejście bez czekania — dokładnie tam, gdzie lag joina `order_set`↔cart jest
+ * najbardziej prawdopodobny. Skutek: koszyk JUŻ domknięty (inline albo
+ * poprzednim żądaniem), ale join jeszcze nie dogonił ⇒ odczyt zwraca `[]`
+ * ⇒ ścieżka powrotu inicjuje PONOWNE domknięcie zamiast odczytu, a idempotencja
+ * opiera się wyłącznie na niezmierzonym zachowaniu `POST /complete` dla koszyka
+ * już domkniętego. To podważało ten warunek AC2, który ten odczyt miał zapewnić.
+ *
+ * Liczba prób jest parametrem, bo koszt jest RÓŻNY w dwóch sytuacjach: przy
+ * odświeżeniu retry kosztuje tylko czekanie na to, co i tak istnieje; przy
+ * pierwszym wejściu każde podejście to czyste opóźnienie przed domknięciem.
+ * Wywołujący ze ścieżki powrotu używa 2 podejść — pokrywa lag joina, nie
+ * blokując kupującej na pełne 1,4 s.
  */
-export async function getCompletedOrderIdsForCart(cartId: string): Promise<string[]> {
-  const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
-    method: 'GET'
-  });
-
-  return res.ok ? resolveBridgeOrderIds(res.data) : [];
+export async function getCompletedOrderIdsForCart(
+  cartId: string,
+  { attempts = 1 }: { attempts?: number } = {}
+): Promise<string[]> {
+  return resolveCompletedOrderIdsForCart(cartId, { attempts });
 }
 
 export async function completeOrderAfterStripePayment(cartId?: string) {
@@ -1121,7 +1141,10 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
     if (completedCartId) {
       await setCompletedCartId(completedCartId);
     }
-    removeCartId();
+    // review-fix (HIGH): `await` — patrz `placeOrder`. Tu było gorzej: brak
+    // `await` sprawiał, że odrzucenie uciekało poza `try/catch` tej funkcji,
+    // czyli poza jedyny mechanizm, który miał je zamienić w nazwany kod.
+    await removeCartId();
 
     // `orderIds` niesie CAŁĄ kolekcję (Story 3.6, AD-16); `orderId` zostaje jako
     // drill-down dla dzisiejszych wywołujących, którzy routują na jedno zamówienie.

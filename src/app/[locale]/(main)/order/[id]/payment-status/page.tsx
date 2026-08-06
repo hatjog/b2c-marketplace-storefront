@@ -30,9 +30,11 @@
  */
 
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { PaymentReturnAutoRefresh } from '@/components/sections/PaymentReturnNotice/PaymentReturnAutoRefresh';
 import { PaymentReturnNotice } from '@/components/sections/PaymentReturnNotice/PaymentReturnNotice';
 import { PaymentStatusV180 } from '@/components/sections/PaymentStatusV180/PaymentStatusV180';
 import { resolvePaymentReturn } from '@/lib/data/payment-return';
@@ -66,16 +68,36 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>): Promi
  * i nigdy nieodczytane, więc `redirect_status` — jedyny sygnał odróżniający
  * porzucone uwierzytelnienie od udanego — nie miał w repo konsumenta.
  *
- * Teraz powrót jest domykany SERWEROWO (`resolvePaymentReturn`) zanim cokolwiek
- * się wyrenderuje, a rodzaj identyfikatora jest rozstrzygany, nie zakładany.
- * `force-dynamic` zostaje: stan płatności jest zmienny, ISR jest tu zakazane.
+ * Teraz powrót jest domykany SERWEROWO, a rodzaj identyfikatora jest
+ * rozstrzygany, nie zakładany. `force-dynamic` zostaje: stan płatności jest
+ * zmienny, ISR jest tu zakazane.
+ *
+ * ── review-fix (HIGH): ten render NIC nie mutuje ───────────────────────────
+ * Pierwsza wersja wołała stąd `completeOrderAfterStripePayment`, czyli
+ * `revalidateTag`/`revalidatePath` i zapis cookies — operacje, których Next.js
+ * zabrania w renderze. Wyjątek leciał PO udanym `POST /complete`, więc
+ * zamówienia powstawały, a kupująca widziała „czekamy na potwierdzenie".
+ * Teraz `resolvePaymentReturn` jest czystym ODCZYTEM, a gdy koszyk wymaga
+ * domknięcia, strona PRZEKIEROWUJE na Route Handler
+ * (`/api/v1/checkout/payment-return`), gdzie mutacja jest legalna. Handler
+ * odsyła tu z powrotem ze znacznikiem `gp_return=done`, który zamyka pętlę.
  */
 export default async function PaymentStatusPage(props: Props) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   setRequestLocale(params.locale);
 
-  const { result } = await resolvePaymentReturn(params.id, searchParams);
+  const { result, completionRedirect } = await resolvePaymentReturn(
+    params.id,
+    searchParams,
+    params.locale
+  );
+
+  if (completionRedirect) {
+    // `redirect()` rzuca — to jest jedyne „wyjście mutujące" z tego renderu
+    // i samo w sobie mutacją nie jest.
+    redirect(completionRedirect);
+  }
 
   return (
     <main
@@ -94,11 +116,21 @@ export default async function PaymentStatusPage(props: Props) {
       {result.state === 'confirmed' ? (
         <PaymentStatusV180 orderIds={result.orderIds} />
       ) : (
-        <PaymentReturnNotice
-          locale={params.locale}
-          result={result}
-          cartHref={`/${params.locale}/cart`}
-        />
+        <>
+          <PaymentReturnNotice
+            locale={params.locale}
+            result={result}
+            cartHref={`/${params.locale}/cart`}
+          />
+          {/* review-fix (MEDIUM): `pending_confirmation` to jedyny stan, który
+              może się jeszcze sam rozstrzygnąć (async push BLIK/P24). Przed tą
+              story rozstrzygał się automatycznie przez `usePaymentStatusPoll`;
+              maszyna stanów to odpytywanie zgubiła. Stany terminalne
+              (`authentication_abandoned`, `identifier_out_of_domain`) świadomie
+              go NIE dostają — odpytywanie stanu, który się nie zmieni, jest
+              kolejnym martwym mechanizmem. */}
+          {result.state === 'pending_confirmation' && <PaymentReturnAutoRefresh />}
+        </>
       )}
     </main>
   );

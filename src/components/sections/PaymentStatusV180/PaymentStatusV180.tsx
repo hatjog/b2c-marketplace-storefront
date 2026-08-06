@@ -151,10 +151,60 @@ function getContainerClasses(status: PaymentStatusV180): string {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+/**
+ * Bramka dziedziny — wydzielona z komponentu, żeby walidacja nie stała PRZED
+ * hookami (`react-hooks/rules-of-hooks`). Cała logika hooków siedzi w
+ * `PaymentStatusV180Surface` i jest wołana bezwarunkowo.
+ */
 export function PaymentStatusV180({ orderIds }: PaymentStatusV180Props) {
-  // AD-16 drill-down: odpytywanie statusu i CTA prowadzą na zamówienie wiodące,
-  // ale kolekcja NIE jest tu obcinana — `orderIds` zostaje w propsach dla 3.7.
-  const orderId = orderIds[0] ?? '';
+  const [orderId] = orderIds;
+
+  // review-fix (INFO): brak zamówień to BŁĄD, nie pusty string. Wcześniejsze
+  // `orderIds[0] ?? ''` cicho podawało `''` do `usePaymentStatusPoll`. Dziś
+  // jest to nieosiągalne (strona renderuje ten komponent tylko przy
+  // `state === 'confirmed'`, który gwarantuje niepustą kolekcję), ale milcząca
+  // wartość domyślna w miejscu, w którym AD-19 każe mieć błąd, przeżywa
+  // refaktor — a Story 3.7 ten komponent przepisuje.
+  if (!orderId) {
+    throw new Error(
+      'PaymentStatusV180: `orderIds` jest puste — powierzchnia potwierdzenia nie ma czego pokazać (AD-19).'
+    );
+  }
+
+  return (
+    <PaymentStatusV180Surface
+      orderId={orderId}
+      orderIds={orderIds}
+    />
+  );
+}
+
+function PaymentStatusV180Surface({
+  orderId,
+  orderIds: _orderIds
+}: {
+  orderId: string;
+  orderIds: string[];
+}) {
+  // ── DŁUG PRZEKAZANY DO STORY 3.7 — to NIE jest zgodność z AD-16 ───────────
+  //
+  // review-fix (MEDIUM): poprzedni komentarz brzmiał „AD-16: drill-down
+  // z powierzchni, która DOSTAJE całość". To była podmiana warunku. AD-16
+  // dopuszcza redukcję N→1 wyłącznie jako drill-down z powierzchni, która
+  // całość POKAZUJE. Ten komponent całość dostaje (`orderIds: string[]`), ale
+  // nigdzie jej nie renderuje: status i CTA są budowane wyłącznie dla jednego
+  // zamówienia. Po zakupie u dwóch sprzedawców kupująca nadal widzi jedno —
+  // czyli dokładnie to, co nazywa user story Story 3.6.
+  //
+  // Warstwa danych jest naprawiona (trzy ogniwa niosą kolekcję); granica
+  // POWIERZCHNI nie. Renderowanie wszystkich zamówień należy do Story 3.7
+  // (`blocked_by: [3.6]`). Nazywamy to długiem, bo uzasadnianie wyjątku od
+  // AD-16 zdaniem przeinaczającym jego warunek jest zaczynem kolejnej
+  // „konwencji skalarności" — tej, którą ta story miała usunąć.
+  //
+  // `_orderIds` jest tu CELOWO nieużywane: kolekcja przechodzi przez granicę
+  // komponentu, żeby Story 3.7 nie musiała jej z powrotem przeciągać — ale
+  // nazwa z podkreśleniem mówi wprost, że dziś nic jej nie renderuje.
 
   const t = useTranslations();
   const locale = useLocale();
