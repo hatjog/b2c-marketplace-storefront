@@ -1907,6 +1907,21 @@
     "cta_blocked_label": "Aktion pausiert — Support erforderlich"
   },
   "payment_status": {
+    "return_authentication_abandoned": {
+      "label": "Authentifizierung wurde nicht abgeschlossen",
+      "body": "Wir konnten die Zahlung nicht bestätigen — die Authentifizierung bei der Bank wurde abgebrochen oder abgelehnt. Es wurde kein Betrag abgebucht. Kehren Sie zum Warenkorb zurück und versuchen Sie es erneut.",
+      "cta": "Zurück zum Warenkorb"
+    },
+    "return_pending_confirmation": {
+      "label": "Warten auf die Bestätigung der Bank",
+      "body": "Die Zahlung wird von Ihrer Bank noch geprüft. Lassen Sie diese Seite geöffnet und aktualisieren Sie sie in Kürze. Ändert sich nichts, kehren Sie zum Warenkorb zurück und versuchen Sie es erneut.",
+      "cta": "Zurück zum Warenkorb"
+    },
+    "return_identifier_out_of_domain": {
+      "label": "Wir erkennen diesen Link nicht",
+      "body": "Die Adresse, über die Sie hierher gelangt sind, verweist weder auf Ihren Warenkorb noch auf Ihre Bestellung. Öffnen Sie den Status über den Link in Ihrer Kaufbestätigungs-E-Mail oder kehren Sie zum Warenkorb zurück.",
+      "cta": "Zurück zum Warenkorb"
+    },
     "page_title": "Zahlungsstatus",
     "page_description": "Überprüfen Sie den Status Ihrer Zahlung.",
     "loading": "Zahlungsstatus wird überprüft...",

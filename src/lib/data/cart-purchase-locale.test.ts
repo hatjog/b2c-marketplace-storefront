@@ -217,9 +217,17 @@ describe('R-2.3-H2 — ścieżka `complete` NIE mutuje koszyka po obciążeniu k
     const result = await completeOrderAfterStripePayment(CART_ID);
 
     expect(result).toMatchObject({ ok: true });
-    // Jedyne żądanie w oknie post-charge to samo `/complete`.
+    // Inwariant R-2.3-H2 to brak MUTACJI koszyka w oknie post-charge
+    // (`updateCartWorkflow` potrafi skasować sesje płatności ⇒ osierocone
+    // obciążenie). Odczyt jest dozwolony i od v1.15.0 (Story 3.6) występuje:
+    // mostek `completed-order` jest autorytetem kardynalności N zamówień.
     expect(mockCartUpdate).not.toHaveBeenCalled();
-    expect(callOrder).toEqual([`fetch:/store/carts/${CART_ID}/complete`]);
+    expect(callOrder).toEqual([
+      `fetch:/store/carts/${CART_ID}/complete`,
+      `fetch:/store/carts/${CART_ID}/completed-order`
+    ]);
+    // Żadne żądanie w tym oknie nie jest zapisem do koszyka.
+    expect(callOrder.filter(call => call.endsWith(`/carts/${CART_ID}`))).toEqual([]);
   });
 });
 

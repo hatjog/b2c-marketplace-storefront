@@ -5,6 +5,10 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import type { CheckoutAddressInput, CheckoutAddressPayload } from '@/lib/checkout/address-payload';
+import {
+  resolveBridgeOrderIds,
+  resolveCompletedOrderIds
+} from '@/lib/checkout/completed-order-ids';
 import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import medusaError from '@/lib/helpers/medusa-error';
@@ -934,8 +938,11 @@ export async function setAddresses(currentState: unknown, payload: CheckoutAddre
 export async function placeOrder(cartId?: string) {
   const id = cartId || (await getCartId());
   const res = await completeCartOrder(id);
-  const orderId =
-    resolveCompletedOrderId(res) ?? (id ? await resolveCompletedOrderIdForCart(id) : null);
+  const orderIds = await resolveCompletedOrderIdsFromCompletion(res, id);
+  // AD-16: przekierowanie prowadzi na JEDNO zamówienie, ale jest to DRILL-DOWN
+  // z kolekcji, która nie jest tu obcinana — `orderIds` jedzie dalej kontraktem
+  // (Story 3.7 renderuje wszystkie zamówienia potwierdzenia).
+  const orderId = orderIds[0] ?? null;
 
   if (orderId) {
     // Ta sama zasada co w `completeOrderAfterStripePayment`: zapisz dowód
@@ -1000,52 +1007,98 @@ async function completeCartOrder(cartId?: string) {
   return res;
 }
 
-function resolveCompletedOrderId(res: any): string | null {
-  return (
-    res?.data?.order_group?.orders?.[0]?.id ??
-    res?.order_group?.orders?.[0]?.id ??
-    // Mercur multi-seller completion returns an order_set (one order per seller). Read the
-    // first concrete CHILD order id (not order_set.id, which isn't an order id) so the
-    // post-payment redirect to /order/:id/payment-status resolves.
-    res?.data?.order_set?.orders?.[0]?.id ??
-    res?.data?.order_set?.order_group?.orders?.[0]?.id ??
-    res?.data?.order?.id ??
-    res?.order?.id ??
-    null
-  );
-}
-
-async function resolveCompletedOrderIdForCart(cartId: string): Promise<string | null> {
-  // The order_set / order↔cart join can lag a few hundred ms behind a freshly completed
-  // cart, so this bridge 404s transiently right after payment. Retry briefly before giving
-  // up — otherwise a SUCCESSFUL (card charged + order_set created) multi-seller payment is
-  // reported as 'no_order_id' and the buyer is wrongly told to contact support.
-  for (let attempt = 0; attempt < 4; attempt++) {
+/**
+ * Odczyt kolekcji z endpointu mostkowego `GET /store/carts/:id/completed-order`.
+ *
+ * Retry 4×350 ms zostaje: join `order_set`↔cart potrafi opóźnić się o kilkaset
+ * ms po domknięciu, a 404 był raportowany jako `no_order_id` i kupująca po
+ * UDANEJ płatności dostawała komunikat „skontaktuj się z obsługą". To
+ * uzasadnienie nie znika wraz z kardynalnością (Story 3.6).
+ */
+async function resolveCompletedOrderIdsForCart(
+  cartId: string,
+  { attempts = 4 }: { attempts?: number } = {}
+): Promise<string[]> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
     const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
       method: 'GET'
     });
 
     if (res.ok) {
-      const orderId = res.data?.order_id;
-      if (typeof orderId === 'string') {
-        return orderId;
+      const ids = resolveBridgeOrderIds(res.data);
+      if (ids.length > 0) {
+        return ids;
       }
     }
 
-    if (attempt < 3) {
+    if (attempt < attempts - 1) {
       await new Promise(resolve => setTimeout(resolve, 350));
     }
   }
 
-  return null;
+  return [];
+}
+
+/**
+ * Pełna rezolucja kardynalności dla domkniętego koszyka: najpierw z odpowiedzi
+ * workflow (ogniwo 1), a gdy ta jej nie niesie — z endpointu mostkowego
+ * (ogniwo 2). Granica upstreamu jest ZMIERZONA, nie założona: `OrderGroupDTO`
+ * (`@mercurjs/types/dist/order-group/common.d.ts:1-11`) nie ma pola `orders`,
+ * a `StoreCompleteCartResponse` (`@medusajs/types/dist/http/cart/store/
+ * responses.d.ts:36-47`) niesie pojedyncze `order` — czyli dla koszyka
+ * wielosprzedawcowego kolekcja MUSI powstać w ogniwie 2. Polityka upstream:
+ * nie czekamy na fix po stronie Mercura.
+ */
+export async function resolveCompletedOrderIdsFromCompletion(
+  res: any,
+  cartId?: string
+): Promise<string[]> {
+  const fromWorkflow = resolveCompletedOrderIds(res);
+  if (fromWorkflow.length > 1 || !cartId) {
+    return fromWorkflow;
+  }
+
+  // Mostek jest AUTORYTETEM kardynalności: workflow potrafi oddać jedno
+  // zamówienie tam, gdzie powstały dwa (patrz nagłówek trasy mostka). Dlatego
+  // pytamy o niego także wtedy, gdy workflow już coś zwrócił.
+  //
+  // Liczba prób jest RÓŻNA w dwóch sytuacjach i to jest celowe:
+  //  • workflow nie dał NIC → mostek jest jedynym źródłem, więc pełne 4×350 ms
+  //    (join `order_set`↔cart potrafi się opóźnić, a 404 był raportowany jako
+  //    `no_order_id` po UDANEJ płatności);
+  //  • workflow dał JEDNO zamówienie → mamy już użyteczną odpowiedź, więc
+  //    jedno podejście bez czekania. Blokowanie kupującej na 1,4 s tylko po to,
+  //    żeby potwierdzić liczność, byłoby regresją ścieżki jednosprzedawcowej —
+  //    czyli tej jedynej, która jest dziś realnie przechodzona.
+  const fromBridge = await resolveCompletedOrderIdsForCart(cartId, {
+    attempts: fromWorkflow.length === 0 ? 4 : 1
+  });
+
+  return fromBridge.length > fromWorkflow.length ? fromBridge : fromWorkflow;
+}
+
+/**
+ * Story 3.6 (AC2) — ODCZYT kardynalności dla koszyka, bez domykania.
+ *
+ * Ścieżka powrotu z 3DS musi najpierw sprawdzić, czy koszyk JUŻ jest domknięty
+ * (odświeżenie / cofnięcie strony), zanim cokolwiek zainicjuje. Bez tego
+ * odczytu każde ponowne wejście byłoby nową operacją domknięcia.
+ */
+export async function getCompletedOrderIdsForCart(cartId: string): Promise<string[]> {
+  const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
+    method: 'GET'
+  });
+
+  return res.ok ? resolveBridgeOrderIds(res.data) : [];
 }
 
 export async function completeOrderAfterStripePayment(cartId?: string) {
   try {
     const res = await completeCartOrder(cartId);
-    const orderId =
-      resolveCompletedOrderId(res) ??
-      (cartId ? await resolveCompletedOrderIdForCart(cartId) : null);
+    const orderIds = await resolveCompletedOrderIdsFromCompletion(res, cartId);
+    // AD-16: skalar jest DRILL-DOWNEM z `orderIds`, które lecą dalej w wyniku —
+    // powierzchnia (Story 3.7) dostaje całość, nie pierwszy element.
+    const orderId = orderIds[0] ?? null;
 
     if (!orderId) {
       // Completion returned no order — the payment was not captured (e.g. an
@@ -1070,7 +1123,9 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
     }
     removeCartId();
 
-    return { ok: true, orderId };
+    // `orderIds` niesie CAŁĄ kolekcję (Story 3.6, AD-16); `orderId` zostaje jako
+    // drill-down dla dzisiejszych wywołujących, którzy routują na jedno zamówienie.
+    return { ok: true, orderId, orderIds };
   } catch (error: any) {
     return {
       ok: false,

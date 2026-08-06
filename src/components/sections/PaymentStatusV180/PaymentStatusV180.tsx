@@ -36,8 +36,23 @@ import {
 } from '@/lib/payment/payment-status-v180-config';
 import { usePaymentStatusPoll } from '@/hooks/usePaymentStatusPoll';
 
+/**
+ * v1.15.0 Story 3.6 (AC1/AC3) — prop niesie KOLEKCJĘ zamówień.
+ *
+ * Do v1.15.0 prop nazywał się `orderId: string` i dostawał… identyfikator
+ * KOSZYKA (`page.tsx:74` przekazywał `params.id`, a `:id` w `return_url` to
+ * `cart.id`). Nazwa kłamała co do dziedziny wartości, a zakup u dwóch
+ * sprzedawców i tak mieścił się w jednym stringu tylko dlatego, że drugie
+ * zamówienie ginęło wcześniej w kontrakcie.
+ *
+ * Teraz strona powrotu ROZSTRZYGA rodzaj identyfikatora i przekazuje tu
+ * rozwiązane identyfikatory ZAMÓWIEŃ — całą kolekcję. Renderowanie wszystkich
+ * pozycji jest zakresem Story 3.7; tutaj kolekcja jest przyjmowana i jawnie
+ * zawężana do zamówienia wiodącego (AD-16: drill-down z powierzchni, która
+ * dostaje całość — nie obcięcie kontraktu).
+ */
 export interface PaymentStatusV180Props {
-  orderId: string;
+  orderIds: string[];
 }
 
 // ─── LP2 pulse animation (UX SSOT LP2: opacity 0.6→1.0→0.6 loop 1.4s) ────────
@@ -136,7 +151,11 @@ function getContainerClasses(status: PaymentStatusV180): string {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
+export function PaymentStatusV180({ orderIds }: PaymentStatusV180Props) {
+  // AD-16 drill-down: odpytywanie statusu i CTA prowadzą na zamówienie wiodące,
+  // ale kolekcja NIE jest tu obcinana — `orderIds` zostaje w propsach dla 3.7.
+  const orderId = orderIds[0] ?? '';
+
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();

@@ -33,7 +33,9 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
+import { PaymentReturnNotice } from '@/components/sections/PaymentReturnNotice/PaymentReturnNotice';
 import { PaymentStatusV180 } from '@/components/sections/PaymentStatusV180/PaymentStatusV180';
+import { resolvePaymentReturn } from '@/lib/data/payment-return';
 
 // CRITICAL: force-dynamic — payment status is volatile; no shared ISR cache.
 export const dynamic = 'force-dynamic';
@@ -55,9 +57,25 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>): Promi
   };
 }
 
+/**
+ * v1.15.0 Story 3.6 (AC2/AC3/AC4) — ta strona jest KOŃCEM kontraktu powrotu 3DS.
+ *
+ * Do v1.15.0 robiła przy każdym renderze dokładnie to samo: brała `params.id`
+ * (który przy powrocie ze Stripe'a jest KOSZYKIEM, nie zamówieniem) i podawała
+ * go dalej jako `orderId`. `searchParams` było zadeklarowane w typie `Props`
+ * i nigdy nieodczytane, więc `redirect_status` — jedyny sygnał odróżniający
+ * porzucone uwierzytelnienie od udanego — nie miał w repo konsumenta.
+ *
+ * Teraz powrót jest domykany SERWEROWO (`resolvePaymentReturn`) zanim cokolwiek
+ * się wyrenderuje, a rodzaj identyfikatora jest rozstrzygany, nie zakładany.
+ * `force-dynamic` zostaje: stan płatności jest zmienny, ISR jest tu zakazane.
+ */
 export default async function PaymentStatusPage(props: Props) {
   const params = await props.params;
+  const searchParams = await props.searchParams;
   setRequestLocale(params.locale);
+
+  const { result } = await resolvePaymentReturn(params.id, searchParams);
 
   return (
     <main
@@ -67,13 +85,21 @@ export default async function PaymentStatusPage(props: Props) {
       <StorefrontRouteStateSignal
         route="payment-status"
         surface="payment-status"
-        stateInput={{ is_pending: true }}
+        stateInput={{ is_pending: result.state !== 'confirmed' }}
       />
       <StorefrontI18nLongContentProbe
         locale={params.locale}
         surface="payment-status"
       />
-      <PaymentStatusV180 orderId={params.id} />
+      {result.state === 'confirmed' ? (
+        <PaymentStatusV180 orderIds={result.orderIds} />
+      ) : (
+        <PaymentReturnNotice
+          locale={params.locale}
+          result={result}
+          cartHref={`/${params.locale}/cart`}
+        />
+      )}
     </main>
   );
 }
