@@ -66,17 +66,16 @@ import {
 } from '@/lib/checkout/payment-return-state';
 
 import { completeOrderAfterStripePayment, getCompletedOrderIdsForCart } from './cart';
+import {
+  PAYMENT_RETURN_COMPLETION_PATH,
+  PAYMENT_RETURN_DONE_PARAM,
+  PAYMENT_RETURN_DONE_VALUE,
+} from './payment-return-constants';
 
-/**
- * Znacznik „byłam już u Route Handlera". Bez niego strona, dla której
- * domknięcie nie dało zamówienia, odsyłałaby do handlera w nieskończoność.
- * Obecność znacznika czyni z powrotu czysty ODCZYT.
- */
-export const PAYMENT_RETURN_DONE_PARAM = 'gp_return';
-const PAYMENT_RETURN_DONE_VALUE = 'done';
-
-/** Ścieżka Route Handlera domykającego koszyk. Jedno miejsce, jedna prawda. */
-export const PAYMENT_RETURN_COMPLETION_PATH = '/api/v1/checkout/payment-return';
+// Stale mieszkaja w `./payment-return-constants` — plik z `'use server'` moze
+// eksportowac WYLACZNIE funkcje asynchroniczne, a eksport stalej stad wywalal
+// kompilacje calego grafu modulow (500 na `/pl`, `/pl/categories`, `/pl/cart`).
+// Re-eksport tez by nie przeszedl: to nadal eksport nie-funkcji.
 
 /** Wyciąga pojedynczą wartość z `searchParams` Next.js (powtórzony parametr = tablica). */
 function firstParam(raw: string | string[] | undefined): string | undefined {
