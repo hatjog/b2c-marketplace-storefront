@@ -36,8 +36,23 @@ import {
 } from '@/lib/payment/payment-status-v180-config';
 import { usePaymentStatusPoll } from '@/hooks/usePaymentStatusPoll';
 
+/**
+ * v1.15.0 Story 3.6 (AC1/AC3) — prop niesie KOLEKCJĘ zamówień.
+ *
+ * Do v1.15.0 prop nazywał się `orderId: string` i dostawał… identyfikator
+ * KOSZYKA (`page.tsx:74` przekazywał `params.id`, a `:id` w `return_url` to
+ * `cart.id`). Nazwa kłamała co do dziedziny wartości, a zakup u dwóch
+ * sprzedawców i tak mieścił się w jednym stringu tylko dlatego, że drugie
+ * zamówienie ginęło wcześniej w kontrakcie.
+ *
+ * Teraz strona powrotu ROZSTRZYGA rodzaj identyfikatora i przekazuje tu
+ * rozwiązane identyfikatory ZAMÓWIEŃ — całą kolekcję. Renderowanie wszystkich
+ * pozycji jest zakresem Story 3.7; tutaj kolekcja jest przyjmowana i jawnie
+ * zawężana do zamówienia wiodącego (AD-16: drill-down z powierzchni, która
+ * dostaje całość — nie obcięcie kontraktu).
+ */
 export interface PaymentStatusV180Props {
-  orderId: string;
+  orderIds: string[];
 }
 
 // ─── LP2 pulse animation (UX SSOT LP2: opacity 0.6→1.0→0.6 loop 1.4s) ────────
@@ -136,7 +151,61 @@ function getContainerClasses(status: PaymentStatusV180): string {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function PaymentStatusV180({ orderId }: PaymentStatusV180Props) {
+/**
+ * Bramka dziedziny — wydzielona z komponentu, żeby walidacja nie stała PRZED
+ * hookami (`react-hooks/rules-of-hooks`). Cała logika hooków siedzi w
+ * `PaymentStatusV180Surface` i jest wołana bezwarunkowo.
+ */
+export function PaymentStatusV180({ orderIds }: PaymentStatusV180Props) {
+  const [orderId] = orderIds;
+
+  // review-fix (INFO): brak zamówień to BŁĄD, nie pusty string. Wcześniejsze
+  // `orderIds[0] ?? ''` cicho podawało `''` do `usePaymentStatusPoll`. Dziś
+  // jest to nieosiągalne (strona renderuje ten komponent tylko przy
+  // `state === 'confirmed'`, który gwarantuje niepustą kolekcję), ale milcząca
+  // wartość domyślna w miejscu, w którym AD-19 każe mieć błąd, przeżywa
+  // refaktor — a Story 3.7 ten komponent przepisuje.
+  if (!orderId) {
+    throw new Error(
+      'PaymentStatusV180: `orderIds` jest puste — powierzchnia potwierdzenia nie ma czego pokazać (AD-19).'
+    );
+  }
+
+  return (
+    <PaymentStatusV180Surface
+      orderId={orderId}
+      orderIds={orderIds}
+    />
+  );
+}
+
+function PaymentStatusV180Surface({
+  orderId,
+  orderIds: _orderIds
+}: {
+  orderId: string;
+  orderIds: string[];
+}) {
+  // ── DŁUG PRZEKAZANY DO STORY 3.7 — to NIE jest zgodność z AD-16 ───────────
+  //
+  // review-fix (MEDIUM): poprzedni komentarz brzmiał „AD-16: drill-down
+  // z powierzchni, która DOSTAJE całość". To była podmiana warunku. AD-16
+  // dopuszcza redukcję N→1 wyłącznie jako drill-down z powierzchni, która
+  // całość POKAZUJE. Ten komponent całość dostaje (`orderIds: string[]`), ale
+  // nigdzie jej nie renderuje: status i CTA są budowane wyłącznie dla jednego
+  // zamówienia. Po zakupie u dwóch sprzedawców kupująca nadal widzi jedno —
+  // czyli dokładnie to, co nazywa user story Story 3.6.
+  //
+  // Warstwa danych jest naprawiona (trzy ogniwa niosą kolekcję); granica
+  // POWIERZCHNI nie. Renderowanie wszystkich zamówień należy do Story 3.7
+  // (`blocked_by: [3.6]`). Nazywamy to długiem, bo uzasadnianie wyjątku od
+  // AD-16 zdaniem przeinaczającym jego warunek jest zaczynem kolejnej
+  // „konwencji skalarności" — tej, którą ta story miała usunąć.
+  //
+  // `_orderIds` jest tu CELOWO nieużywane: kolekcja przechodzi przez granicę
+  // komponentu, żeby Story 3.7 nie musiała jej z powrotem przeciągać — ale
+  // nazwa z podkreśleniem mówi wprost, że dziś nic jej nie renderuje.
+
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();

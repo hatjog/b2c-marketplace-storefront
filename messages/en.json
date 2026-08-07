@@ -1907,6 +1907,21 @@
     "cta_blocked_label": "Action paused — requires support"
   },
   "payment_status": {
+    "return_authentication_abandoned": {
+      "label": "Authentication was not completed",
+      "body": "We did not confirm the payment — bank authentication was interrupted or declined. No funds were taken. Go back to your cart and try paying again.",
+      "cta": "Back to cart"
+    },
+    "return_pending_confirmation": {
+      "label": "Waiting for the bank to confirm",
+      "body": "The payment is still being verified by your bank. Keep this page open and refresh it in a moment. If nothing changes, go back to your cart and try again.",
+      "cta": "Back to cart"
+    },
+    "return_identifier_out_of_domain": {
+      "label": "We do not recognise this link",
+      "body": "The address you arrived from does not point to your cart or order. Open the status from the link in your purchase confirmation e-mail, or go back to your cart.",
+      "cta": "Back to cart"
+    },
     "page_title": "Payment status",
     "page_description": "Check the status of your payment.",
     "loading": "Checking payment status...",

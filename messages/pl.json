@@ -1907,6 +1907,21 @@
     "cta_blocked_label": "Akcja wstrzymana — wymaga obsługi"
   },
   "payment_status": {
+    "return_authentication_abandoned": {
+      "label": "Uwierzytelnienie nie zostało ukończone",
+      "body": "Nie potwierdziliśmy płatności — uwierzytelnienie w banku zostało przerwane lub odrzucone. Nie pobraliśmy żadnych środków. Wróć do koszyka i spróbuj zapłacić ponownie.",
+      "cta": "Wróć do koszyka"
+    },
+    "return_pending_confirmation": {
+      "label": "Czekamy na potwierdzenie z banku",
+      "body": "Płatność jest jeszcze weryfikowana po stronie banku. Nie zamykaj tej strony — odśwież ją za chwilę. Jeśli nic się nie zmieni, wróć do koszyka i spróbuj ponownie.",
+      "cta": "Wróć do koszyka"
+    },
+    "return_identifier_out_of_domain": {
+      "label": "Nie rozpoznajemy tego linku",
+      "body": "Adres, z którego tu trafiłaś, nie wskazuje na Twój koszyk ani zamówienie. Otwórz status z linku w e-mailu potwierdzającym zakup albo wróć do koszyka.",
+      "cta": "Wróć do koszyka"
+    },
     "page_title": "Status płatności",
     "page_description": "Sprawdź status swojej płatności.",
     "loading": "Sprawdzanie statusu płatności...",
