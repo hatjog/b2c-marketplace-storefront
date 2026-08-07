@@ -3,6 +3,7 @@
 // @chrome-manifest: W6-08 (cell renders <MiniCartDrawer> per Story 0.14)
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import type { HttpTypes } from '@medusajs/types';
 import { usePathname, useRouter } from 'next/navigation';
@@ -45,6 +46,9 @@ function mapMiniCartItems(cart: HttpTypes.StoreCart | null, fallbackName: string
 export const CartDropdown = () => {
   const { cart, removeCartItem, refreshCart } = useCartContext();
   const [open, setOpen] = useState(false);
+  // Portal montujemy dopiero po hydratacji — `document` nie istnieje w SSR.
+  // Nie zmienia to markupu serwerowego, bo drawer i tak startuje zamkniety.
+  const [portalReady, setPortalReady] = useState(false);
   const t = useTranslations('cart');
   const tMiniCart = useTranslations('mini_cart');
   const locale = useLocale();
@@ -52,6 +56,18 @@ export const CartDropdown = () => {
   const previousItemCount = usePrevious(getItemCount(cart));
   const cartItemsCount = getItemCount(cart);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  // Zamknij przy zmianie trasy. `CartDropdown` mieszka w headerze i NIE
+  // odmontowuje sie przy nawigacji, wiec bez tego otwarty drawer jechalby
+  // z uzytkownikiem na kolejna strone i zakrywal ja razem z blokada scrolla.
+  // Nie kolidowalo to z niczym, dopoki drawer byl niewidoczny na mobile.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (
@@ -104,24 +120,41 @@ export const CartDropdown = () => {
           <Badge className="absolute -right-2 -top-2 h-4 w-4 p-0">{cartItemsCount}</Badge>
         )}
       </button>
-      <MiniCartDrawer
-        open={open}
-        onClose={() => setOpen(false)}
-        items={mapMiniCartItems(cart, t('item_fallback_name'))}
-        subtotal={toMajor(cart?.item_subtotal ?? 0)}
-        discountApplied={discountApplied}
-        currency={(cart?.currency_code || 'eur').toUpperCase()}
-        locale={locale}
-        onCheckout={() => {
-          setOpen(false);
-          router.push(`/${locale}/checkout?step=address`);
-        }}
-        onRemoveItem={async (itemId) => {
-          await removeCartItem(itemId);
-          await refreshCart();
-        }}
-        onApplyDiscount={onApplyDiscount}
-      />
+      {/* Drawer idzie do `document.body`, a NIE zostaje tutaj.
+       *
+       * `SiteHeader` trzyma ten komponent w kontenerze `hidden ... lg:flex`, wiec
+       * ponizej breakpointu `lg` cale poddrzewo — razem z drawerem — bylo
+       * `display: none`. Efekt: na telefonie dodanie do koszyka otwieralo drawer,
+       * ktorego nie dalo sie zobaczyc ani zamknac, a jego focus trap blokowal
+       * scroll calej strony (i nie puszczal, bo `CartDropdown` zyje w headerze
+       * i nie odmontowuje sie przy nawigacji). Kontrakt W6-08 mowi wprost:
+       * `breakpoint_behavior.mobile: full-screen overlay sliding from right`.
+       *
+       * Portal wyprowadza drawer spod KAZDEGO stylu przodka — nie tylko
+       * `display: none`, ale takze `transform`/`filter` (lamia `position: fixed`)
+       * i `overflow: hidden` oraz cudzych kontekstow stackowania. */}
+      {portalReady &&
+        createPortal(
+          <MiniCartDrawer
+            open={open}
+            onClose={() => setOpen(false)}
+            items={mapMiniCartItems(cart, t('item_fallback_name'))}
+            subtotal={toMajor(cart?.item_subtotal ?? 0)}
+            discountApplied={discountApplied}
+            currency={(cart?.currency_code || 'eur').toUpperCase()}
+            locale={locale}
+            onCheckout={() => {
+              setOpen(false);
+              router.push(`/${locale}/checkout?step=address`);
+            }}
+            onRemoveItem={async (itemId) => {
+              await removeCartItem(itemId);
+              await refreshCart();
+            }}
+            onApplyDiscount={onApplyDiscount}
+          />,
+          document.body
+        )}
       <span
         className="sr-only"
         aria-live="polite"

@@ -50,10 +50,10 @@ import { getCompletedOrderIdsForCart } from '@/lib/data/cart';
 import { getCartId, getCompletedCartId } from '@/lib/data/cookies';
 import {
   isStripeReturnConfirmation,
-  PAYMENT_RETURN_DONE_PARAM,
   performPaymentReturnCompletion,
   readStripeReturnParams
 } from '@/lib/data/payment-return';
+import { PAYMENT_RETURN_DONE_PARAM } from '@/lib/data/payment-return-constants';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/routing';
 
 /** Domknięcie jest mutacją — nigdy nie wolno go zapamiętać w cache'u. */

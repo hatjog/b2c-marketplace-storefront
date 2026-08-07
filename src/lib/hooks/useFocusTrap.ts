@@ -98,15 +98,30 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>({
 
     document.addEventListener('keydown', handleKeyDown, true);
 
+    // Modal, ktorego nie widac, NIE MOZE zamrozic strony.
+    //
+    // Efekty Reacta biegna niezaleznie od CSS, wiec kontener w poddrzewie
+    // `display: none` (albo w kontenerze ukrytym na danym breakpoincie) nadal
+    // wchodzil tutaj i ustawial `overflow: hidden` na `body`. Uzytkownik
+    // dostawal zamrozony ekran bez zadnego widocznego okna i bez czegokolwiek,
+    // co da sie kliknac, zeby je zamknac — zmierzone na iPhonie 2026-08-07,
+    // gdy `MiniCartDrawer` siedzial w `hidden lg:flex` w `SiteHeader`.
+    //
+    // Brak pudelka layoutu jest wlasciwym testem, bo lapie KAZDA przyczyne
+    // niewidocznosci (display:none na dowolnym przodku, zerowy rozmiar,
+    // odlaczenie od dokumentu), a nie jedna, o ktorej akurat pamietalismy.
+    const hasLayoutBox = containerEl.getClientRects().length > 0;
+    const shouldLockScroll = lockScroll && hasLayoutBox;
+
     let prevOverflow = '';
-    if (lockScroll) {
+    if (shouldLockScroll) {
       prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
-      if (lockScroll) {
+      if (shouldLockScroll) {
         document.body.style.overflow = prevOverflow;
       }
       if (shouldRestoreTabIndex) {

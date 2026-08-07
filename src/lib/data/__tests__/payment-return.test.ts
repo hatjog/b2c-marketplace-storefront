@@ -38,9 +38,12 @@ const {
   resolvePaymentReturn,
   readStripeReturnParams,
   performPaymentReturnCompletion,
-  isStripeReturnConfirmation,
-  PAYMENT_RETURN_COMPLETION_PATH
+  isStripeReturnConfirmation
 } = await import('../payment-return');
+
+// Stale przenioslo sie do modulu bez `'use server'` — plik serwerowy moze
+// eksportowac tylko funkcje asynchroniczne (inaczej kompilacja Next pada).
+const { PAYMENT_RETURN_COMPLETION_PATH } = await import('../payment-return-constants');
 
 const CART = 'cart_01STORY36CART';
 const ORDER_A = 'order_01STORY36SELLERA';
