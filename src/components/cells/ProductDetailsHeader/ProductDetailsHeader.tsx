@@ -13,6 +13,7 @@ import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { getMarketId } from '@/lib/helpers/market-filter';
+import { buildOptimisticLineItemId } from '@/lib/helpers/optimistic-line-item';
 import { toast } from '@/lib/helpers/toast';
 import { buildEntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import type { SellerProps } from '@/types/seller';
@@ -171,6 +172,10 @@ export const ProductDetailsHeader = ({
     const total = +(variantPrice?.calculated_price_number || 0);
 
     const storeCartLineItem = {
+      // Syntetyczna, deterministyczna tożsamość na czas okna optymistycznego —
+      // bez niej listy koszyka renderują `key={undefined}`. Zastępowana
+      // prawdziwym id z API przy najbliższym `refreshCart()`.
+      id: buildOptimisticLineItemId(variantId),
       thumbnail: resolveStorefrontImageSrc(product.thumbnail, marketId),
       product_title: product.title,
       quantity: 1,
