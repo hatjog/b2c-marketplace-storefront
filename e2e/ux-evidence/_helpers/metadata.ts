@@ -45,6 +45,23 @@ export function emitMeta(meta: ArtifactMeta): void {
 }
 
 /**
+ * Zapisz PEŁNY raport axe pod ścieżką artefaktu (review-fix HIGH-1).
+ *
+ * `emitMeta` zapisuje WYŁĄCZNIE sidecar `.meta.json` z werdyktem `PASS`/`FAIL`.
+ * Scenariusze deklarowały `artifact_path` wskazujący plik `.axe.json`, którego
+ * NIKT nie produkował — czyli warunek „raport axe jest osobnym artefaktem
+ * evidence" był nieosiągalny nawet po uruchomieniu Playwrighta. Nie brakowało
+ * przebiegu; brakowało kodu, który raport zapisuje.
+ */
+export function writeAxeReport(artifactPath: string, results: unknown): void {
+  const dir = path.dirname(artifactPath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+  fs.writeFileSync(artifactPath, JSON.stringify(results, null, 2) + "\n", "utf-8")
+}
+
+/**
  * Resolve the current git SHA for traceability.
  * Falls back to "unknown" if git is unavailable.
  */

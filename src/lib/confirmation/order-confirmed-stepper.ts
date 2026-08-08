@@ -97,6 +97,19 @@ export const CONFIRMATION_MAX_POLL_DURATION_MS = 600_000;
 /** Odstęp odpytywania — zastany (`ConfirmationPageContent`), wyniesiony do stałej. */
 export const CONFIRMATION_POLL_INTERVAL_MS = 5_000;
 
+/**
+ * Twardy zegar POJEDYNCZEGO żądania planisty (review-fix MEDIUM-3).
+ *
+ * Limit `CONFIRMATION_MAX_POLL_DURATION_MS` był sprawdzany wyłącznie MIĘDZY
+ * tickami, więc żądanie, które serwer przyjął i nigdy nie odpowiedział,
+ * omijało go w całości: `tick()` zawisał na `await`, a powierzchnia zostawała
+ * w stanie sprzed timeoutu — bez `timed_out`, bez komunikatu, z tym samym
+ * krokiem co w 5. sekundzie. 15 s to trzykrotność odstępu odpytywania: dłużej
+ * niż realna odpowiedź backendu, krócej niż okno, w którym człowiek uzna ekran
+ * za zawieszony.
+ */
+export const CONFIRMATION_REQUEST_TIMEOUT_MS = 15_000;
+
 const STATUS_ALIASES: Record<string, VoucherPipelineStatus> = {
   paid: 'paid',
   pending_psp: 'pending_payment',
@@ -320,10 +333,21 @@ function getCompletedThroughIndex(status: VoucherPipelineStatus): number {
     case 'pending_payment':
     case 'payment_failed':
       return -1;
+    case 'unknown':
+      // Review-fix LOW-1: `unknown` powstaje m.in. wtedy, gdy OBA odczyty
+      // padły (`readHealth: 'degraded'`, `paymentStatus: null`). Zwracanie `0`
+      // sprawiało, że krok „Opłacone ✓" dostawał stan `done` i haczyk — czyli
+      // powierzchnia stwierdzała fakt zapłaty NIE MAJĄC ani jednego udanego
+      // odczytu. To była resztka fail-soft, której story nie usunęła.
+      return -1;
+    case 'timed_out':
+      // `timed_out` zostaje na `0` ŚWIADOMIE: do przekroczenia limitu pętla
+      // zdążyła zwykle potwierdzić płatność, a cofnięcie haczyka mówiłoby
+      // kupującej „nie zapłaciłaś" nad realnie obciążoną kartą. Rozstrzygnięcie
+      // jest tu ZAPISANE, żeby nie wyglądało na przeoczenie.
+      return 0;
     case 'paid':
     case 'voucher_generating':
-    case 'unknown':
-    case 'timed_out':
       return 0;
     case 'voucher_issued':
     case 'delivery_retrying':

@@ -76,9 +76,38 @@ describe('decideConfirmationPurchase — segment trasy niesie ZAKUP', () => {
     expect(
       decideConfirmationPurchase({
         identifier: classifyPaymentReturnIdentifier('cart_123'),
-        bridge: null
+        bridge: { orderIds: [], expectedOrderCount: null, readFailed: false }
       }).kind
     ).toBe('purchase_not_found');
+  });
+
+  // ── review-fix HIGH-3 (AC3, AD-19) ────────────────────────────────────────
+  //
+  // Kontrola PĘKAJĄCA po cofnięciu poprawki: przed nią oba wejścia poniżej
+  // dawały `purchase_not_found`, więc kupująca po obciążeniu karty czytała
+  // „link jest nieaktualny" także wtedy, gdy backend leżał.
+  it('PORAŻKA ODCZYTU jest odróżnialna od „zakup nie ma zamówień"', () => {
+    const readFailed = decideConfirmationPurchase({
+      identifier: classifyPaymentReturnIdentifier('cart_123'),
+      bridge: { orderIds: [], expectedOrderCount: null, readFailed: true }
+    });
+    const empty = decideConfirmationPurchase({
+      identifier: classifyPaymentReturnIdentifier('cart_123'),
+      bridge: { orderIds: [], expectedOrderCount: null, readFailed: false }
+    });
+
+    expect(readFailed.kind).toBe('read_failed');
+    expect(empty.kind).toBe('purchase_not_found');
+    expect(readFailed.kind).not.toBe(empty.kind);
+  });
+
+  it('brak odpowiedzi mostka (wyjątek transportu) to `read_failed`, nie brak zakupu', () => {
+    expect(
+      decideConfirmationPurchase({
+        identifier: classifyPaymentReturnIdentifier('cart_123'),
+        bridge: null
+      }).kind
+    ).toBe('read_failed');
   });
 
   it('wartość spoza dziedziny jest BŁĘDEM, nie domyślną (AD-19)', () => {

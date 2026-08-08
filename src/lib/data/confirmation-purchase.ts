@@ -31,7 +31,8 @@ export async function resolveConfirmationPurchase(
     bridge = await getCompletedPurchaseForCart(identifier.value, { attempts: 2 });
   } catch (error) {
     // Odmowa musi być widoczna (NFR-2/AD-19) — nie połykamy jej po cichu i nie
-    // zamieniamy w pustą kolekcję.
+    // zamieniamy w pustą kolekcję. `bridge` zostaje `null`, a `null` znaczy
+    // teraz `read_failed`, nie `purchase_not_found` (review-fix HIGH-3).
     console.warn(`[confirmation] bridge read failed cart=${identifier.value}`, error);
   }
 

@@ -126,6 +126,27 @@ describe('order-confirmed-stepper', () => {
     expect(CONFIRMATION_MAX_POLL_DURATION_MS).toBe(MAX_POLL_DURATION_MS);
   });
 
+  // ── review-fix LOW-1 ──────────────────────────────────────────────────────
+  //
+  // `getActiveIndex('unknown')` już nie renderowało spinnera, ale
+  // `getCompletedThroughIndex('unknown')` nadal zwracało 0 — czyli krok
+  // „Opłacone" dostawał stan `done` i haczyk ✓. `unknown` powstaje m.in. gdy
+  // OBA odczyty padły, więc powierzchnia stwierdzała fakt zapłaty nie mając
+  // ani jednego udanego odczytu. Resztka fail-soft w drugiej funkcji modułu.
+  it('unknown nie oznacza ŻADNEGO kroku jako zrobiony (AD-19)', () => {
+    const steps = buildConfirmationStepperStateFrom('unknown').steps;
+    expect(steps.every(step => step.state === 'future')).toBe(true);
+  });
+
+  it('timed_out ŚWIADOMIE zostawia krok „Opłacone" jako zrobiony', () => {
+    // Rozstrzygnięcie odwrotne niż dla `unknown` i zapisane: do przekroczenia
+    // limitu pętla zwykle potwierdziła płatność, a cofnięcie haczyka mówiłoby
+    // „nie zapłaciłaś" nad realnie obciążoną kartą.
+    const steps = buildConfirmationStepperStateFrom('timed_out').steps;
+    expect(steps[0].state).toBe('done');
+    expect(steps.slice(1).every(step => step.state === 'future')).toBe(true);
+  });
+
   it('tracks elapsed seconds and second-tier threshold', () => {
     const elapsed = getGeneratingElapsedSeconds(1_000, 92_300);
     expect(elapsed).toBe(91);

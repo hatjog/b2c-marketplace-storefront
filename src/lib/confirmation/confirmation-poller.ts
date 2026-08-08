@@ -24,8 +24,9 @@
 import {
   CONFIRMATION_MAX_POLL_DURATION_MS,
   CONFIRMATION_POLL_INTERVAL_MS,
+  CONFIRMATION_REQUEST_TIMEOUT_MS,
   deriveVoucherPipelineStatus,
-  isTerminalConfirmationStatus,
+  shouldStopConfirmationPolling,
   type EntitlementSignal,
   type VoucherPipelineStatus
 } from './order-confirmed-stepper';
@@ -74,6 +75,14 @@ export interface ConfirmationPollerOptions<TPayment, TEntitlement extends Entitl
   now?: () => number;
   intervalMs?: number;
   maxDurationMs?: number;
+  /**
+   * Twardy zegar POJEDYNCZEGO żądania. Review-fix MEDIUM-3: limit
+   * `maxDurationMs` był sprawdzany wyłącznie MIĘDZY tickami, więc żądanie,
+   * które serwer przyjął i nigdy nie odpowiedział, omijało go w całości —
+   * `tick()` zawisał na `await`, a powierzchnia zostawała w stanie sprzed
+   * timeoutu, bez `timed_out` i bez komunikatu.
+   */
+  requestTimeoutMs?: number;
 }
 
 export interface ConfirmationPoller {
@@ -90,11 +99,19 @@ type ReadResult<T> =
 async function readJson<T>(
   fetchImpl: typeof fetch,
   url: string,
-  onRequest: () => void
+  onRequest: () => void,
+  timeoutMs: number
 ): Promise<ReadResult<T>> {
   onRequest();
   try {
-    const res = await fetchImpl(url, { cache: 'no-store' });
+    // `AbortSignal.timeout` jest tu ISTOTĄ, nie ozdobą: bez niego zwis
+    // połączenia zawiesza całą pętlę i twardy limit zegarowy nigdy się nie
+    // sprawdzi. Timeout kończy się `degraded` (a nie stopem), bo zwis jest
+    // przejściowy — ale POD limitem `maxDurationMs`, więc i on ma koniec.
+    const res = await fetchImpl(url, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(timeoutMs)
+    });
 
     if (!res.ok) {
       // Stany, których ponawianie NIGDY nie naprawi — kończymy natychmiast.
@@ -131,7 +148,8 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
     fetchImpl = fetch,
     now = () => Date.now(),
     intervalMs = CONFIRMATION_POLL_INTERVAL_MS,
-    maxDurationMs = CONFIRMATION_MAX_POLL_DURATION_MS
+    maxDurationMs = CONFIRMATION_MAX_POLL_DURATION_MS,
+    requestTimeoutMs = CONFIRMATION_REQUEST_TIMEOUT_MS
   } = options;
 
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -177,7 +195,8 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
     const paymentRead = await readJson<TPayment>(
       fetchImpl,
       `/api/v1/orders/${orderId}/payment-status`,
-      countRequest
+      countRequest,
+      requestTimeoutMs
     );
 
     if (!active) return;
@@ -191,7 +210,8 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
     const entitlementRead = await readJson<TEntitlement[]>(
       fetchImpl,
       `/api/v1/entitlements?order_id=${encodeURIComponent(orderId)}`,
-      countRequest
+      countRequest,
+      requestTimeoutMs
     );
 
     if (!active) return;
@@ -211,7 +231,12 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
       paymentRead.kind === 'degraded' || entitlementRead.kind === 'degraded' ? 'degraded' : 'ok';
 
     const status = deriveVoucherPipelineStatus(paymentStatus?.status, entitlements);
-    const terminal = isTerminalConfirmationStatus(status);
+    // Review-fix MEDIUM-2: planista woła `shouldStopConfirmationPolling`, a nie
+    // `isTerminalConfirmationStatus` wprost. Do tej poprawki predykat warunku
+    // stopu NIE MIAŁ w produkcji ani jednego wywołania — człon 3 bramki
+    // pilnował funkcji martwej, a realny warunek końca pętli nie był mierzony
+    // przez nikogo.
+    const terminal = shouldStopConfirmationPolling(status);
 
     if (terminal) {
       finish();

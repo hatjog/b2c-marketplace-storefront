@@ -633,8 +633,8 @@ function PaymentStatusV180Surface({
                 data-testid="payment-status-v180-position"
               >
                 {t('payment_status.order_position', {
-                  index: String(position),
-                  total: String(total)
+                  index: position,
+                  total
                 })}
               </p>
             )}

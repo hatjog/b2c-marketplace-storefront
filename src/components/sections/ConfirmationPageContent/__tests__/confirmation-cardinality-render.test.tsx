@@ -145,6 +145,42 @@ describe('powierzchnia potwierdzenia — kardynalność zakupu', () => {
     expect(html).toContain('data-testid="confirmation-cardinality-notice"');
   });
 
+  // ── review-fix HIGH-3 ─────────────────────────────────────────────────────
+  //
+  // Awaria odczytu mostka miała do tej poprawki DOKŁADNIE TEN SAM render co
+  // „takiego zakupu nie ma" — czyli kupująca po obciążeniu karty czytała
+  // „link jest nieaktualny", gdy leżał backend. Ten test pęka po zwinięciu
+  // `read_failed` z powrotem w `purchase_not_found`.
+  it('PORAŻKA ODCZYTU ma własny render, inny niż „zakup nie istnieje" (AC3, AD-19)', () => {
+    const readFailedHtml = render(
+      <ConfirmationPageContent purchase={{ kind: 'read_failed', value: 'cart_123' }} />
+    );
+    const notFoundHtml = render(
+      <ConfirmationPageContent purchase={{ kind: 'purchase_not_found', value: 'cart_123' }} />
+    );
+
+    expect(readFailedHtml).toContain('data-testid="confirmation-read-failed"');
+    expect(readFailedHtml).toContain('data-purchase-state="read_failed"');
+    expect(readFailedHtml).toContain(messages.confirmation.purchase_read_failed_title);
+
+    // Kluczowe: NIE mówimy „link jest nieaktualny", gdy to my nie umieliśmy odczytać.
+    expect(readFailedHtml).not.toContain(messages.confirmation.purchase_not_found_body);
+    expect(readFailedHtml).not.toBe(notFoundHtml);
+  });
+
+  // ── review-fix MEDIUM-1 ───────────────────────────────────────────────────
+  it('nagłówek startuje jako sukces i niesie SWÓJ ton w nośniku dla maszyny', () => {
+    const html = render(
+      <ConfirmationPageContent
+        purchase={{ kind: 'collection', orderIds: ['a'], expectedOrderCount: 1 }}
+      />
+    );
+
+    expect(html).toContain('data-hero-tone="success"');
+    expect(html).toContain('data-testid="order-confirmed-success-mark"');
+    expect(html).toContain('data-testid="order-confirmed-hero-title"');
+  });
+
   it('żaden nowy komunikat nie jest literałem w kodzie — wszystkie klucze rozwiązują się w namespace confirmation', () => {
     const html = render(
       <ConfirmationPageContent

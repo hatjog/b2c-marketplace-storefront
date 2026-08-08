@@ -56,19 +56,39 @@ export type ConfirmationPurchase =
   | { kind: 'drilldown'; orderIds: string[]; expectedOrderCount: null }
   /** Identyfikator zakupu znany, ale nie ma dla niego ŻADNEGO zamówienia. */
   | { kind: 'purchase_not_found'; value: string }
+  /**
+   * ODCZYT ZAKUPU SIĘ NIE UDAŁ — osobny stan od „nie ma takiego zakupu".
+   *
+   * Story 3.7 review-fix (HIGH-3, AD-19, AC3). Do tej poprawki awaria mostka
+   * i pusty zakup dawały ten sam `purchase_not_found`, więc kupująca po
+   * obciążeniu karty czytała „link jest nieaktualny" także wtedy, gdy backend
+   * leżał. To jest dokładnie ta zamiana awarii w ciszę, którą ta story usuwa
+   * w BFF `/api/v1/entitlements` — tylko o warstwę wyżej i na ścieżce
+   * serwerowej, gdzie żaden `page.route()` jej nie odsłoni.
+   */
+  | { kind: 'read_failed'; value: string }
   /** Wartość spoza dziedziny — BŁĄD, nie wartość domyślna (AD-19). */
   | { kind: 'out_of_domain'; value: string };
 
 export interface BridgePurchaseRead {
   orderIds: string[];
   expectedOrderCount: number | null;
+  /**
+   * `true` znaczy „ostatnia próba odczytu mostka skończyła się porażką"
+   * (HTTP 5xx/4xx inne niż 404, albo awaria transportu). Pusta kolekcja
+   * BEZ tej flagi jest stanem dziedziny, nie awarią.
+   */
+  readFailed?: boolean;
 }
 
 /**
  * Rozstrzyga, co powierzchnia potwierdzenia ma pokazać dla danego segmentu trasy.
  *
- * `bridge === null` znaczy „mostka nie pytano albo odczyt się nie udał" —
- * i wtedy wynikiem jest `purchase_not_found`, a NIE cicha pusta lista.
+ * `bridge === null` znaczy „odczytu mostka NIE UDAŁO SIĘ wykonać" — i wtedy
+ * wynikiem jest `read_failed`, a NIE `purchase_not_found`. To samo dla
+ * `bridge.readFailed === true` (odpowiedź przyszła, ale była porażką HTTP).
+ * `purchase_not_found` zostaje zarezerwowane dla UDANEGO odczytu, który zwrócił
+ * pustą kolekcję — czyli dla realnego stanu dziedziny.
  */
 export function decideConfirmationPurchase(input: {
   identifier: PaymentReturnIdentifier;
@@ -91,7 +111,11 @@ export function decideConfirmationPurchase(input: {
     return { kind: 'out_of_domain', value: identifier.value };
   }
 
-  if (!bridge || bridge.orderIds.length === 0) {
+  if (!bridge || bridge.readFailed === true) {
+    return { kind: 'read_failed', value: identifier.value };
+  }
+
+  if (bridge.orderIds.length === 0) {
     return { kind: 'purchase_not_found', value: identifier.value };
   }
 

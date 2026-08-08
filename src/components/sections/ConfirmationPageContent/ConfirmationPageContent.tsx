@@ -37,16 +37,52 @@ import { CrossActorHandoff } from '@/components/molecules/CrossActorHandoff/Cros
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import type { ConfirmationPurchase } from '@/lib/confirmation/confirmation-purchase';
 import { resolveConfirmationCardinality } from '@/lib/confirmation/order-confirmed-stepper';
+import { resolveConfirmationHeroTone } from '@/lib/confirmation/order-confirmed-surface';
 
-import { OrderConfirmationCard } from './OrderConfirmationCard';
+import { OrderConfirmationCard, type OrderCardOutcome } from './OrderConfirmationCard';
 
 type Props = {
   purchase: ConfirmationPurchase;
 };
 
+/**
+ * Stany bez kolekcji do wyrenderowania. KAŻDY ma własny nośnik tekstu i własny
+ * `data-testid` — review-fix HIGH-3 dołożył `read_failed`, bo „nie udało nam
+ * się odczytać zakupu" i „takiego zakupu nie ma" to dla kupującej po obciążeniu
+ * karty dwie zupełnie różne wiadomości (AC3, AD-19).
+ */
+const EMPTY_PURCHASE_COPY: Record<
+  'out_of_domain' | 'purchase_not_found' | 'read_failed',
+  { testId: string; titleKey: string; bodyKey: string }
+> = {
+  out_of_domain: {
+    testId: 'confirmation-out-of-domain',
+    titleKey: 'out_of_domain_title',
+    bodyKey: 'out_of_domain_body'
+  },
+  purchase_not_found: {
+    testId: 'confirmation-purchase-not-found',
+    titleKey: 'purchase_not_found_title',
+    bodyKey: 'purchase_not_found_body'
+  },
+  read_failed: {
+    testId: 'confirmation-read-failed',
+    titleKey: 'purchase_read_failed_title',
+    bodyKey: 'purchase_read_failed_body'
+  }
+};
+
 export function ConfirmationPageContent({ purchase }: Props) {
   const t = useTranslations('confirmation');
   const [guestOrders, setGuestOrders] = useState<Record<string, boolean>>({});
+  /**
+   * Agregat stanu zakupu na potrzeby NAGŁÓWKA (review-fix MEDIUM-1). Do tej
+   * poprawki hero renderował „✓ Zamówienie potwierdzone" bezwarunkowo — także
+   * nad kartą mówiącą „Płatność nie doszła do skutku". Większy, wyżej i ze
+   * znakiem potwierdzenia; dwa zdania sprzeczne na najbardziej stresującym
+   * ekranie produktu.
+   */
+  const [orderOutcomes, setOrderOutcomes] = useState<Record<string, OrderCardOutcome>>({});
 
   const onGuestDetected = useCallback((orderId: string, isGuest: boolean) => {
     setGuestOrders(current =>
@@ -54,22 +90,28 @@ export function ConfirmationPageContent({ purchase }: Props) {
     );
   }, []);
 
+  const onOutcome = useCallback((orderId: string, outcome: OrderCardOutcome) => {
+    setOrderOutcomes(current =>
+      current[orderId] === outcome ? current : { ...current, [orderId]: outcome }
+    );
+  }, []);
+
   // ── Stany, w których nie ma czego renderować — każdy NAZWANY (AD-19) ─────
-  if (purchase.kind === 'out_of_domain' || purchase.kind === 'purchase_not_found') {
-    const isOutOfDomain = purchase.kind === 'out_of_domain';
+  if (
+    purchase.kind === 'out_of_domain' ||
+    purchase.kind === 'purchase_not_found' ||
+    purchase.kind === 'read_failed'
+  ) {
+    const copy = EMPTY_PURCHASE_COPY[purchase.kind];
     return (
       <section
         className="bb-section-shell mx-auto max-w-3xl"
-        data-testid={isOutOfDomain ? 'confirmation-out-of-domain' : 'confirmation-purchase-not-found'}
+        data-testid={copy.testId}
         data-purchase-state={purchase.kind}
         role="alert"
       >
-        <h1 className="heading-xl text-primary">
-          {t(isOutOfDomain ? 'out_of_domain_title' : 'purchase_not_found_title')}
-        </h1>
-        <p className="mt-3 text-secondary">
-          {t(isOutOfDomain ? 'out_of_domain_body' : 'purchase_not_found_body')}
-        </p>
+        <h1 className="heading-xl text-primary">{t(copy.titleKey)}</h1>
+        <p className="mt-3 text-secondary">{t(copy.bodyKey)}</p>
         <LocalizedClientLink
           href="/user/orders"
           className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cta)]"
@@ -94,6 +136,19 @@ export function ConfirmationPageContent({ purchase }: Props) {
     cardinality.kind === 'over_reported' ||
     (cardinality.kind === 'unknown_expected' && rendered > 1);
 
+  // ── Agregat stanu zakupu dla nagłówka (review-fix MEDIUM-1) ──────────────
+  //
+  // `failed` liczymy WYŁĄCZNIE ze stanów terminalnych porażki raportowanych
+  // przez karty. Karta, która jeszcze nie zaraportowała, jest `pending` — więc
+  // nagłówek porażki nie pojawia się „na chwilę" w trakcie ładowania.
+  const heroTone = resolveConfirmationHeroTone(orderIds, orderOutcomes);
+  const heroTitleKey =
+    heroTone === 'failure'
+      ? 'hero_title_failure'
+      : heroTone === 'partial'
+        ? 'hero_title_partial'
+        : 'hero_title';
+
   return (
     <div
       className="mx-auto max-w-6xl space-y-8"
@@ -104,10 +159,12 @@ export function ConfirmationPageContent({ purchase }: Props) {
         purchase.expectedOrderCount === null ? 'unknown' : String(purchase.expectedOrderCount)
       }
       data-cardinality={cardinality.kind}
+      data-hero-tone={heroTone}
     >
       <header
         className="bb-section-shell bb-section-shell-strong relative overflow-hidden"
         data-testid="order-confirmed-hero"
+        data-hero-tone={heroTone}
       >
         <div
           className="confirm-orna pointer-events-none absolute right-6 top-6 h-24 w-24 rounded-full border border-[var(--bb-border-strong)] opacity-40"
@@ -115,22 +172,39 @@ export function ConfirmationPageContent({ purchase }: Props) {
           data-testid="confirm-orna"
         />
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center">
-          <div
-            className="success-mark flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)] shadow-[var(--bb-shadow-card)]"
-            aria-hidden="true"
-            data-testid="order-confirmed-success-mark"
-          >
-            <span className="text-5xl leading-none">✓</span>
-          </div>
+          {heroTone === 'success' ? (
+            <div
+              className="success-mark flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)] shadow-[var(--bb-shadow-card)]"
+              aria-hidden="true"
+              data-testid="order-confirmed-success-mark"
+            >
+              <span className="text-5xl leading-none">✓</span>
+            </div>
+          ) : (
+            <div
+              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[var(--bb-border-error)] bg-[var(--bb-icon-bg-error,#fef5f5)] text-[var(--bb-border-error)] shadow-[var(--bb-shadow-card)]"
+              aria-hidden="true"
+              data-testid="order-confirmed-attention-mark"
+            >
+              <span className="text-5xl leading-none">!</span>
+            </div>
+          )}
           <div>
             <p className="bb-eyebrow">{t('hero_eyebrow')}</p>
-            <h1 className="heading-xl text-primary">{t('hero_title')}</h1>
+            <h1
+              className="heading-xl text-primary"
+              data-testid="order-confirmed-hero-title"
+            >
+              {t(heroTitleKey)}
+            </h1>
             {rendered > 1 && (
               <p
                 className="mt-3 text-secondary"
                 data-testid="purchase-order-count"
               >
-                {t('purchase_orders_count', { count: String(rendered) })}
+                {/* Liczba jako NUMBER, nie string — inaczej ICU `plural`
+                    nie ma czym rozstrzygnąć formy (review-fix LOW-2). */}
+                {t('purchase_orders_count', { count: rendered })}
               </p>
             )}
           </div>
@@ -204,6 +278,7 @@ export function ConfirmationPageContent({ purchase }: Props) {
                 position={rendered > 1 ? index + 1 : null}
                 total={rendered}
                 onGuestDetected={onGuestDetected}
+                onOutcome={onOutcome}
               />
             </li>
           ))}

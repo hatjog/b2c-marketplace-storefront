@@ -91,3 +91,36 @@ export function resolveVoucherThumbnail(item: OrderConfirmedSurfaceItem): string
 
   return readMetadataString(item.metadata, THUMBNAIL_KEYS);
 }
+
+/**
+ * Jak KARTA zamówienia wypada dla nagłówka strony (review-fix MEDIUM-1).
+ * `pending` znaczy „jeszcze nie wiadomo" — nie „w porządku".
+ */
+export type ConfirmationOrderOutcome = 'pending' | 'success' | 'failed';
+
+export type ConfirmationHeroTone = 'success' | 'partial' | 'failure';
+
+/**
+ * Agregat stanu zakupu dla NAGŁÓWKA powierzchni potwierdzenia.
+ *
+ * Do tej poprawki hero renderował „✓ Zamówienie potwierdzone" BEZWARUNKOWO —
+ * także nad kartą mówiącą „Płatność nie doszła do skutku. Zamówienie nie
+ * zostało opłacone." Dwa sprzeczne zdania na tym samym ekranie, przy czym
+ * sprzeczne było to WIĘKSZE, WYŻEJ i ze znakiem potwierdzenia. Stan
+ * `payment_failed` na tej powierzchni nie istniał przed Story 3.7, więc
+ * sprzeczność weszła RAZEM z nią.
+ *
+ * Karta, która jeszcze nie zaraportowała, jest `pending` — dzięki temu nagłówek
+ * porażki nie mignie w trakcie ładowania.
+ */
+export function resolveConfirmationHeroTone(
+  orderIds: readonly string[],
+  outcomes: Readonly<Record<string, ConfirmationOrderOutcome>>
+): ConfirmationHeroTone {
+  const rendered = orderIds.length;
+  const failed = orderIds.filter(id => outcomes[id] === 'failed').length;
+
+  if (rendered > 0 && failed === rendered) return 'failure';
+  if (failed > 0) return 'partial';
+  return 'success';
+}

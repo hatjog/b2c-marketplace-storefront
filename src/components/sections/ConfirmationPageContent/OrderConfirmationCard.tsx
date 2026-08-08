@@ -31,6 +31,7 @@ import {
   getGeneratingElapsedSeconds,
   isFailureConfirmationStatus,
   isSecondTierGenerating,
+  isTerminalConfirmationStatus,
   maskEmail,
   type VoucherPipelineStatus
 } from '@/lib/confirmation/order-confirmed-stepper';
@@ -128,6 +129,38 @@ const STOP_COPY: Record<ConfirmationPollStop, { titleKey: string; bodyKey: strin
   }
 };
 
+/**
+ * Klucz komunikatu dla czytnika ekranu — JAWNA mapa zamiast `t(\`status_${…}\`)`.
+ *
+ * Review-fix INFO-1: klucz budowany z szablonu nie jest statycznie
+ * rozstrzygalny, więc bramka `i18n-namespace-key-resolves` nie miała go jak
+ * sprawdzić — następna wartość dopisana do `VoucherPipelineStatus` przeszłaby
+ * przez bramkę BEZ klucza i wyszła dopiero na powierzchni. `Record` po pełnym
+ * enumie sprawia, że to TypeScript wymusza komplet przy każdym rozszerzeniu.
+ */
+const STATUS_ANNOUNCEMENT_KEYS: Record<VoucherPipelineStatus, string> = {
+  pending_payment: 'status_pending_payment',
+  paid: 'status_paid',
+  voucher_generating: 'status_voucher_generating',
+  voucher_issued: 'status_voucher_issued',
+  email_sent: 'status_email_sent',
+  recipient_opened: 'status_recipient_opened',
+  delivery_retrying: 'status_delivery_retrying',
+  delivery_failed: 'status_delivery_failed',
+  payment_failed: 'status_payment_failed',
+  timed_out: 'status_timed_out',
+  unknown: 'status_unknown'
+};
+
+/**
+ * Jak ta karta wypada dla NAGŁÓWKA strony (review-fix MEDIUM-1).
+ * `pending` znaczy „jeszcze nie wiadomo" — nie „w porządku".
+ */
+export type OrderCardOutcome = 'pending' | 'success' | 'failed';
+
+/** Twardy zegar jednorazowego odczytu zamówienia (review-fix MEDIUM-2/3). */
+const ORDER_READ_TIMEOUT_MS = 15_000;
+
 export type OrderConfirmationCardProps = {
   orderId: string;
   /** 1-based pozycja w zakupie; `null`, gdy zakup ma jedno zamówienie. */
@@ -135,13 +168,16 @@ export type OrderConfirmationCardProps = {
   /** Liczba zamówień renderowanych na tej powierzchni. */
   total: number;
   onGuestDetected?: (orderId: string, isGuest: boolean) => void;
+  /** Podnosi stan karty do rodzica, żeby nagłówek nie ogłaszał sukcesu nad porażką. */
+  onOutcome?: (orderId: string, outcome: OrderCardOutcome) => void;
 };
 
 export function OrderConfirmationCard({
   orderId,
   position,
   total,
-  onGuestDetected
+  onGuestDetected,
+  onOutcome
 }: OrderConfirmationCardProps) {
   const t = useTranslations('confirmation');
   const locale = useLocale();
@@ -168,13 +204,25 @@ export function OrderConfirmationCard({
   const guestCallbackRef = useRef(onGuestDetected);
   guestCallbackRef.current = onGuestDetected;
 
+  const outcomeCallbackRef = useRef(onOutcome);
+  outcomeCallbackRef.current = onOutcome;
+
   // ── Odczyt danych zamówienia (jednorazowy — treść zamówienia się nie zmienia) ──
+  //
+  // Review-fix MEDIUM-3: żądanie ma WŁASNY twardy zegar. Bez niego zwis
+  // połączenia (serwer przyjmuje i nigdy nie odpowiada) zostawiał
+  // NIESKOŃCZONY skeleton — gałąź `if (loading)` wraca przed blokiem porażki,
+  // więc nawet wejście pollera w stan terminalny go nie zdejmowało. To jest
+  // ten sam obraz, który AC3 nazywa defektem, tylko osiągnięty inną drogą.
   useEffect(() => {
     let cancelled = false;
 
     async function loadOrder() {
       try {
-        const res = await fetch(`/api/v1/orders/${orderId}`, { cache: 'no-store' });
+        const res = await fetch(`/api/v1/orders/${orderId}`, {
+          cache: 'no-store',
+          signal: AbortSignal.timeout(ORDER_READ_TIMEOUT_MS)
+        });
         if (!res.ok) {
           if (!cancelled) {
             setOrderError(true);
@@ -234,6 +282,22 @@ export function OrderConfirmationCard({
     };
   }, [orderId]);
 
+  // ── Podniesienie stanu karty do rodzica (review-fix MEDIUM-1) ─────────────
+  //
+  // Nagłówek strony renderował „✓ Zamówienie potwierdzone" BEZWARUNKOWO, także
+  // nad kartą mówiącą „Płatność nie doszła do skutku". Rodzic nie miał czym
+  // tego rozstrzygnąć, bo karta trzymała `pipelineStatus` wyłącznie u siebie.
+  const outcome: OrderCardOutcome =
+    stopReason !== null || orderError || isFailureConfirmationStatus(pipelineStatus)
+      ? 'failed'
+      : isTerminalConfirmationStatus(pipelineStatus)
+        ? 'success'
+        : 'pending';
+
+  useEffect(() => {
+    outcomeCallbackRef.current?.(orderId, outcome);
+  }, [orderId, outcome]);
+
   const stepperState = useMemo(
     () => buildConfirmationStepperStateFrom(pipelineStatus),
     [pipelineStatus]
@@ -283,8 +347,8 @@ export function OrderConfirmationCard({
     stepperState.activeStepId === 'voucher_generating' && isSecondTierGenerating(elapsedSeconds);
 
   const positionLabel = position !== null ? t('order_position', {
-    index: String(position),
-    total: String(total)
+    index: position,
+    total
   }) : null;
 
   if (loading) {
@@ -463,7 +527,7 @@ export function OrderConfirmationCard({
           aria-live="polite"
           aria-atomic="true"
         >
-          {t(`status_${pipelineStatus}`)}
+          {t(STATUS_ANNOUNCEMENT_KEYS[pipelineStatus])}
         </div>
 
         <ol
@@ -653,7 +717,7 @@ export function OrderConfirmationCard({
                       </p>
                     </div>
                     <p className="mt-1 text-xs text-secondary">
-                      {t('summary_item_quantity', { quantity: String(item.quantity) })}
+                      {t('summary_item_quantity', { quantity: item.quantity })}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {badges.validity && (

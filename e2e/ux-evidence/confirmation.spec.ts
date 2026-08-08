@@ -8,7 +8,7 @@
  */
 import { test, expect } from "@playwright/test"
 import AxeBuilder from "@axe-core/playwright"
-import { emitMeta, resolveGitSha, buildCommand, RELEASE_ID, MARKET_ID } from "./_helpers/metadata"
+import { emitMeta, writeAxeReport, resolveGitSha, buildCommand, RELEASE_ID, MARKET_ID } from "./_helpers/metadata"
 
 const CONFIRMATION_PATH = "/order/confirmation/test-order-id"
 
@@ -80,8 +80,23 @@ test.describe("Confirmation — screenshot coverage", () => {
  * v1.7.0 nie należy do zakresu tej story.
  */
 
-const PURCHASE_ID = process.env.GP_E2E_PURCHASE_ID ?? "cart_e2e_confirmation"
-const CONFIRMED_PATH_37 = `/pl/order/${PURCHASE_ID}/confirmed`
+/**
+ * WARUNEK WEJŚCIA (review-fix MEDIUM-4): `GP_E2E_PURCHASE_ID` musi wskazywać
+ * REALNY koszyk z domkniętymi zamówieniami.
+ *
+ * Rozwinięcie zakupu w kolekcję dzieje się SERWEROWO (`page.tsx` →
+ * `resolveConfirmationPurchase` → mostek `GET /store/carts/:id/completed-order`),
+ * więc `page.route()` z tego pliku go NIE dotyka. Bez tej zmiennej strona
+ * wyrenderuje `confirmation-purchase-not-found`, a `waitForSelector` padnie po
+ * 30 s × 5 testów — pięć czerwonych, które wyglądają na regresję Story 3.7,
+ * a są brakiem fixture'u. Dokładnie ta klasa mylnej diagnozy kosztowała już tę
+ * falę jeden przebieg (pusty submoduł przeczytany jako „kod nie istnieje").
+ *
+ * Skąd wziąć wartość: identyfikator koszyka z domkniętego zakupu
+ * wielosprzedawcowego (`cart_...`) — ten sam segment, który niesie `return_url` 3DS.
+ */
+const PURCHASE_ID = process.env.GP_E2E_PURCHASE_ID
+const CONFIRMED_PATH_37 = `/pl/order/${PURCHASE_ID ?? "cart_e2e_confirmation"}/confirmed`
 
 type ConfirmationScenario = {
   slug: string
@@ -158,6 +173,12 @@ async function stubConfirmationApis(page: import("@playwright/test").Page, scena
 }
 
 test.describe("Confirmation — Story 3.7 nowe stany (axe per stan)", () => {
+  // Brak fixture'u = SKIP Z POWODEM, nigdy czerwień bez pomiaru.
+  test.skip(
+    !PURCHASE_ID,
+    "wymaga realnego koszyka z domkniętymi zamówieniami — ustaw GP_E2E_PURCHASE_ID"
+  )
+
   for (const scenario of STORY_37_SCENARIOS) {
     test(`${scenario.slug} axe at 375`, async ({ page }, testInfo) => {
       const viewport = testInfo.project.use.viewport?.width ?? 1440
@@ -179,6 +200,9 @@ test.describe("Confirmation — Story 3.7 nowe stany (axe per stan)", () => {
       )
 
       const artifactPath = `../_bmad-output/releases/v1.15.0/implementation-artifacts/evidence/3-7/axe/${scenario.slug}.${viewport}.pl.axe.json`
+
+      // Raport MUSI mieć producenta, nie tylko deklarację ścieżki (HIGH-1).
+      writeAxeReport(artifactPath, results)
 
       emitMeta({
         release_id: "v1.15.0", market_id: MARKET_ID, surface: "storefront", role: "customer",
@@ -223,11 +247,20 @@ test.describe("Confirmation — Story 3.7 nowe stany (axe per stan)", () => {
     expect(outline.style).not.toBe("none")
     expect(parseFloat(outline.width)).toBeGreaterThan(0)
 
+    const focusArtifactPath = `../_bmad-output/releases/v1.15.0/implementation-artifacts/evidence/3-7/axe/confirmation-37-delivery-failed-focus.${viewport}.pl.json`
+    // Ten sam brak co przy axe: bez tego zapisu artefakt AC5 nie istniał.
+    writeAxeReport(focusArtifactPath, {
+      cta_visible: true,
+      reached_by_tab: reached,
+      outline_width: outline.width,
+      outline_style: outline.style,
+    })
+
     emitMeta({
       release_id: "v1.15.0", market_id: MARKET_ID, surface: "storefront", role: "customer",
       path: "/[locale]/order/[id]/confirmed", path_slug: "confirmation-37-delivery-failed-focus",
       viewport, locale: "pl", check: "keyboard-focus", ac_ref: "AC-3.7-05",
-      artifact_path: `../_bmad-output/releases/v1.15.0/implementation-artifacts/evidence/3-7/axe/confirmation-37-delivery-failed-focus.${viewport}.pl.json`,
+      artifact_path: focusArtifactPath,
       command: buildCommand("confirmation.spec.ts", testInfo.project.name),
       timestamp: new Date().toISOString(), git_sha: resolveGitSha(), result: "PASS",
     })

@@ -219,6 +219,55 @@ describe('createConfirmationPoller — odpytywanie ma koniec', () => {
     expect(poller.getRequestCount()).toBe(countAtTimeout);
   });
 
+  // ── review-fix MEDIUM-3 ────────────────────────────────────────────────────
+  //
+  // Limit `maxDurationMs` był sprawdzany WYŁĄCZNIE między tickami, a same
+  // żądania szły bez `AbortController`/`AbortSignal`. Serwer, który przyjmuje
+  // połączenie i nigdy nie odpowiada, zawieszał `tick()` na `await` — limit
+  // 600 s nigdy się nie sprawdzał, a powierzchnia zostawała w stanie sprzed
+  // timeoutu. Ten test PĘKA (przez własny timeout) po zdjęciu sygnału.
+  it('zawieszone żądanie NIE zawiesza pętli — każde żądanie ma własny zegar', async () => {
+    vi.useRealTimers();
+
+    const seenSignals: (AbortSignal | null | undefined)[] = [];
+    const fetchImpl = vi.fn((_url: string | URL | Request, init?: RequestInit) => {
+      const signal = init?.signal;
+      seenSignals.push(signal);
+      // Żądanie, które NIGDY nie odpowiada — kończy je wyłącznie sygnał.
+      return new Promise<Response>((_resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(new Error('aborted')));
+      });
+    }) as unknown as typeof fetch;
+
+    const snapshots: ConfirmationSnapshot<PaymentPayload, EntitlementPayload>[] = [];
+    const poller = createConfirmationPoller<PaymentPayload, EntitlementPayload>({
+      orderId: 'order_1',
+      fetchImpl,
+      intervalMs: 1,
+      requestTimeoutMs: 5,
+      callbacks: {
+        onSnapshot: snapshot => snapshots.push(snapshot),
+        onStop: () => undefined
+      }
+    });
+
+    poller.start();
+    await new Promise(resolve => setTimeout(resolve, 120));
+    poller.stop();
+
+    expect(seenSignals.length).toBeGreaterThan(0);
+    for (const signal of seenSignals) {
+      expect(signal).toBeInstanceOf(AbortSignal);
+    }
+    // Pętla ŻYJE mimo zwisu: są zdjęcia stanu, a każde ma odczyt zdegradowany.
+    expect(snapshots.length).toBeGreaterThan(0);
+    expect(snapshots[0].readHealth).toBe('degraded');
+    expect(snapshots[0].terminal).toBe(false);
+    expect(poller.getRequestCount()).toBeGreaterThan(1);
+
+    vi.useFakeTimers();
+  });
+
   it.each<[number, ConfirmationPollStop]>([
     [401, 'access_denied_guest'],
     [403, 'access_denied'],

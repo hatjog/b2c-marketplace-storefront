@@ -1020,19 +1020,44 @@ async function completeCartOrder(cartId?: string) {
 async function resolveCompletedPurchaseForCart(
   cartId: string,
   { attempts = 4 }: { attempts?: number } = {}
-): Promise<{ orderIds: string[]; expectedOrderCount: number | null }> {
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
-      method: 'GET'
-    });
+): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
+  // Story 3.7 review-fix (HIGH-3, AD-19): „odczyt się nie udał" i „ten zakup nie
+  // ma zamówień" MUSZĄ być odróżnialne u konsumenta. Do tej poprawki obie
+  // sytuacje kończyły się identyczną pustą kolekcją, a powierzchnia mówiła
+  // kupującej po obciążeniu karty „link jest nieaktualny" także wtedy, gdy to
+  // backend leżał. `fetchQuery` nie rzuca dla HTTP 4xx/5xx (zwraca `ok: false`),
+  // więc sam `try/catch` u wołającego łapał wyłącznie awarie transportowe.
+  let readFailed = false;
 
-    if (res.ok) {
-      // Story 3.7 (AC2): `order_count` z mostka jest JEDYNĄ licznością kontraktu
-      // osiągalną dla powierzchni potwierdzenia. Do tej story była tu wyrzucana.
-      const purchase = resolveBridgePurchase(res.data);
-      if (purchase.orderIds.length > 0) {
-        return purchase;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
+        method: 'GET'
+      });
+
+      if (res.ok) {
+        // Story 3.7 (AC2): `order_count` z mostka jest JEDYNĄ licznością kontraktu
+        // osiągalną dla powierzchni potwierdzenia. Do tej story była tu wyrzucana.
+        const purchase = resolveBridgePurchase(res.data);
+        if (purchase.orderIds.length > 0) {
+          return { ...purchase, readFailed: false };
+        }
+        // Odpowiedź poprawna, ale pusta — to NIE jest porażka odczytu.
+        readFailed = false;
+      } else if (res.status === 404) {
+        // 404 z mostka znaczy „nie ma takiego domkniętego zakupu" — to jest
+        // stan dziedziny, a nie awaria. Ponawiamy (join `order_set`↔cart
+        // potrafi się opóźnić), ale nie oznaczamy jako porażki odczytu.
+        readFailed = false;
+      } else {
+        readFailed = true;
       }
+    } catch (error) {
+      console.warn(
+        `[confirmation] bridge read threw cart=${cartId} attempt=${attempt + 1}`,
+        error
+      );
+      readFailed = true;
     }
 
     if (attempt < attempts - 1) {
@@ -1040,7 +1065,7 @@ async function resolveCompletedPurchaseForCart(
     }
   }
 
-  return { orderIds: [], expectedOrderCount: null };
+  return { orderIds: [], expectedOrderCount: null, readFailed };
 }
 
 async function resolveCompletedOrderIdsForCart(
@@ -1133,7 +1158,7 @@ export async function getCompletedOrderIdsForCart(
 export async function getCompletedPurchaseForCart(
   cartId: string,
   { attempts = 2 }: { attempts?: number } = {}
-): Promise<{ orderIds: string[]; expectedOrderCount: number | null }> {
+): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
   return resolveCompletedPurchaseForCart(cartId, { attempts });
 }
 
