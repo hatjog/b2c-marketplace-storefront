@@ -57,3 +57,179 @@ test.describe("Confirmation — screenshot coverage", () => {
     expect(blockers).toHaveLength(0)
   })
 })
+
+/**
+ * ── v1.15.0 Story 3.7 (AC4, AC5) — NOWE STANY POWIERZCHNI ──────────────────
+ *
+ * Trzy stany, których ta powierzchnia przed Story 3.7 nie miała: lista N
+ * zamówień, sukces częściowy oraz STAN TERMINALNY PORAŻKI. Każdy dostaje
+ * własny przebieg axe i własny artefakt — raport dla stanu porażki jest
+ * OSOBNY, bo to on jest tu nowy.
+ *
+ * `page.route()` przechwytuje `/api/v1/*` i jest tu DOPUSZCZALNY: karty
+ * zamówień są komponentami klienckimi i fetchują z przeglądarki. NIE MOCKUJE
+ * SSR — rozwinięcie zakupu w kolekcję dzieje się serwerowo (mostek
+ * `GET /store/carts/:id/completed-order`), więc kardynalność listy w tych
+ * przebiegach pochodzi z REALNEGO backendu, nie z tych stubów. Kardynalność
+ * mierzona bez backendu jest w suicie jednostkowej
+ * (`ConfirmationPageContent/__tests__/confirmation-cardinality-render.test.tsx`).
+ *
+ * UWAGA do stanu zastanego tego pliku: `CONFIRMATION_PATH` powyżej wskazuje
+ * `/order/confirmation/[id]`, a realna trasa to `/[locale]/order/[id]/confirmed`.
+ * Przebiegi Story 3.7 używają trasy realnej; poprawienie ścieżki w przebiegach
+ * v1.7.0 nie należy do zakresu tej story.
+ */
+
+const PURCHASE_ID = process.env.GP_E2E_PURCHASE_ID ?? "cart_e2e_confirmation"
+const CONFIRMED_PATH_37 = `/pl/order/${PURCHASE_ID}/confirmed`
+
+type ConfirmationScenario = {
+  slug: string
+  acRef: string
+  /** Status z `/api/v1/orders/{id}/payment-status`. */
+  paymentStatus: string
+  /** Kolekcja uprawnień albo HTTP 502 (awaria odczytu — AD-19). */
+  entitlements: Array<{ status: string }> | { httpStatus: number }
+  /** Selektor, którego OBECNOŚĆ dowodzi, że stan naprawdę się wyrenderował. */
+  proofSelector: string
+}
+
+const STORY_37_SCENARIOS: ConfirmationScenario[] = [
+  {
+    slug: "confirmation-37-delivered",
+    acRef: "AC-3.7-04-positive",
+    paymentStatus: "paid",
+    entitlements: [{ status: "issued" }],
+    proofSelector: '[data-pipeline-status="email_sent"]',
+  },
+  {
+    slug: "confirmation-37-delivery-failed",
+    acRef: "AC-3.7-04-negative",
+    paymentStatus: "paid",
+    // `dead_lettered` jest realnym, TERMINALNYM stanem ledgera dostarczeń
+    // (`voucher-delivery/delivery-state.ts`). Przed Story 3.7 mapował się na
+    // `unknown`, a `unknown` renderował spinner i odpytywał bez końca.
+    entitlements: [{ status: "dead_lettered" }],
+    proofSelector: '[data-testid="order-terminal-delivery-failed"]',
+  },
+  {
+    slug: "confirmation-37-payment-failed",
+    acRef: "AC-3.7-03",
+    paymentStatus: "failed_nonretryable",
+    entitlements: [],
+    proofSelector: '[data-testid="order-terminal-payment-failed"]',
+  },
+  {
+    slug: "confirmation-37-read-degraded",
+    acRef: "AC-3.7-03",
+    paymentStatus: "paid",
+    entitlements: { httpStatus: 502 },
+    proofSelector: '[data-testid="order-read-degraded"]',
+  },
+]
+
+async function stubConfirmationApis(page: import("@playwright/test").Page, scenario: ConfirmationScenario) {
+  await page.route("**/api/v1/orders/*/payment-status", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: scenario.paymentStatus,
+        last_checked_at: "2026-08-08T10:00:00.000Z",
+        recommended_action_key: "wait",
+      }),
+    })
+  )
+
+  await page.route("**/api/v1/entitlements?*", (route) => {
+    if (Array.isArray(scenario.entitlements)) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(scenario.entitlements),
+      })
+    }
+    return route.fulfill({
+      status: scenario.entitlements.httpStatus,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "entitlements_read_failed" }),
+    })
+  })
+}
+
+test.describe("Confirmation — Story 3.7 nowe stany (axe per stan)", () => {
+  for (const scenario of STORY_37_SCENARIOS) {
+    test(`${scenario.slug} axe at 375`, async ({ page }, testInfo) => {
+      const viewport = testInfo.project.use.viewport?.width ?? 1440
+      if (viewport !== 375) test.skip()
+
+      await stubConfirmationApis(page, scenario)
+      await page.goto(CONFIRMED_PATH_37)
+      await page.waitForLoadState("networkidle")
+
+      // Dowód, że mierzymy TEN stan, a nie stan domyślny: bez tej asercji axe
+      // przebiegłby po spinnerze i świeciłby na zielono, nic nie mierząc.
+      await page.waitForSelector(scenario.proofSelector, { timeout: 30_000 })
+
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze()
+      const blockers = results.violations.filter(
+        (v) => v.impact === "serious" || v.impact === "critical"
+      )
+
+      const artifactPath = `../_bmad-output/releases/v1.15.0/implementation-artifacts/evidence/3-7/axe/${scenario.slug}.${viewport}.pl.axe.json`
+
+      emitMeta({
+        release_id: "v1.15.0", market_id: MARKET_ID, surface: "storefront", role: "customer",
+        path: "/[locale]/order/[id]/confirmed", path_slug: scenario.slug, viewport, locale: "pl",
+        check: "axe", ac_ref: scenario.acRef,
+        artifact_path: artifactPath,
+        command: buildCommand("confirmation.spec.ts", testInfo.project.name),
+        timestamp: new Date().toISOString(), git_sha: resolveGitSha(),
+        result: blockers.length === 0 ? "PASS" : "FAIL",
+      })
+
+      expect(blockers).toHaveLength(0)
+    })
+  }
+
+  test("stan terminalny porażki: widoczny focus i osiągalne „co dalej”", async ({ page }, testInfo) => {
+    const viewport = testInfo.project.use.viewport?.width ?? 1440
+    if (viewport !== 375) test.skip()
+
+    await stubConfirmationApis(page, STORY_37_SCENARIOS[1])
+    await page.goto(CONFIRMED_PATH_37)
+    await page.waitForSelector('[data-testid="order-terminal-delivery-failed"]', { timeout: 30_000 })
+
+    const cta = page.locator('[data-testid="order-terminal-cta"]').first()
+    await expect(cta).toBeVisible()
+
+    // Kolejność tabulacji MUSI dojść do wyjścia — stan terminalny bez
+    // osiągalnego „co dalej” jest ślepym zaułkiem, nie stanem.
+    let reached = false
+    for (let i = 0; i < 40 && !reached; i++) {
+      await page.keyboard.press("Tab")
+      reached = await cta.evaluate((el) => el === document.activeElement)
+    }
+    expect(reached).toBe(true)
+
+    // Pierścień focusu musi być WIDOCZNY — mierzone na wyliczonym stylu
+    // sfokusowanego elementu, nie na obecności klasy w kodzie.
+    const outline = await cta.evaluate((el) => {
+      const s = getComputedStyle(el)
+      return { width: s.outlineWidth, style: s.outlineStyle }
+    })
+    expect(outline.style).not.toBe("none")
+    expect(parseFloat(outline.width)).toBeGreaterThan(0)
+
+    emitMeta({
+      release_id: "v1.15.0", market_id: MARKET_ID, surface: "storefront", role: "customer",
+      path: "/[locale]/order/[id]/confirmed", path_slug: "confirmation-37-delivery-failed-focus",
+      viewport, locale: "pl", check: "keyboard-focus", ac_ref: "AC-3.7-05",
+      artifact_path: `../_bmad-output/releases/v1.15.0/implementation-artifacts/evidence/3-7/axe/confirmation-37-delivery-failed-focus.${viewport}.pl.json`,
+      command: buildCommand("confirmation.spec.ts", testInfo.project.name),
+      timestamp: new Date().toISOString(), git_sha: resolveGitSha(), result: "PASS",
+    })
+  })
+})

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 
 import type { CheckoutAddressInput, CheckoutAddressPayload } from '@/lib/checkout/address-payload';
 import {
-  resolveBridgeOrderIds,
+  resolveBridgePurchase,
   resolveCompletedOrderIds
 } from '@/lib/checkout/completed-order-ids';
 import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
@@ -1017,19 +1017,21 @@ async function completeCartOrder(cartId?: string) {
  * UDANEJ płatności dostawała komunikat „skontaktuj się z obsługą". To
  * uzasadnienie nie znika wraz z kardynalnością (Story 3.6).
  */
-async function resolveCompletedOrderIdsForCart(
+async function resolveCompletedPurchaseForCart(
   cartId: string,
   { attempts = 4 }: { attempts?: number } = {}
-): Promise<string[]> {
+): Promise<{ orderIds: string[]; expectedOrderCount: number | null }> {
   for (let attempt = 0; attempt < attempts; attempt++) {
     const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
       method: 'GET'
     });
 
     if (res.ok) {
-      const ids = resolveBridgeOrderIds(res.data);
-      if (ids.length > 0) {
-        return ids;
+      // Story 3.7 (AC2): `order_count` z mostka jest JEDYNĄ licznością kontraktu
+      // osiągalną dla powierzchni potwierdzenia. Do tej story była tu wyrzucana.
+      const purchase = resolveBridgePurchase(res.data);
+      if (purchase.orderIds.length > 0) {
+        return purchase;
       }
     }
 
@@ -1038,7 +1040,14 @@ async function resolveCompletedOrderIdsForCart(
     }
   }
 
-  return [];
+  return { orderIds: [], expectedOrderCount: null };
+}
+
+async function resolveCompletedOrderIdsForCart(
+  cartId: string,
+  { attempts = 4 }: { attempts?: number } = {}
+): Promise<string[]> {
+  return (await resolveCompletedPurchaseForCart(cartId, { attempts })).orderIds;
 }
 
 /**
@@ -1110,6 +1119,22 @@ export async function getCompletedOrderIdsForCart(
   { attempts = 1 }: { attempts?: number } = {}
 ): Promise<string[]> {
   return resolveCompletedOrderIdsForCart(cartId, { attempts });
+}
+
+/**
+ * v1.15.0 Story 3.7 (AC1/AC2) — ODCZYT CAŁEGO ZAKUPU dla powierzchni
+ * potwierdzenia: kolekcja zamówień PLUS liczność z kontraktu mostka.
+ *
+ * `getCompletedOrderIdsForCart` (wyżej) zostaje bez zmian dla ścieżki powrotu
+ * z 3DS, która liczności nie potrzebuje. Powierzchnia potwierdzenia potrzebuje
+ * obu, bo bez liczności „pokazuję 1 z 2" jest nieodróżnialne od „zakup miał
+ * jedno zamówienie" — a to jest dokładnie ten defekt, który nazywa AC2.
+ */
+export async function getCompletedPurchaseForCart(
+  cartId: string,
+  { attempts = 2 }: { attempts?: number } = {}
+): Promise<{ orderIds: string[]; expectedOrderCount: number | null }> {
+  return resolveCompletedPurchaseForCart(cartId, { attempts });
 }
 
 export async function completeOrderAfterStripePayment(cartId?: string) {
