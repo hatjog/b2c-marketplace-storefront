@@ -213,6 +213,7 @@ describe('createConfirmationPoller — odpytywanie ma koniec', () => {
     const last = snapshots[snapshots.length - 1];
     expect(last.status).toBe('timed_out');
     expect(last.terminal).toBe(true);
+    expect(last.paymentConfirmed).toBe(true);
 
     const countAtTimeout = poller.getRequestCount();
     await vi.advanceTimersByTimeAsync(CONFIRMATION_POLL_INTERVAL_MS * 50);

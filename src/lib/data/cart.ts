@@ -1019,7 +1019,7 @@ async function completeCartOrder(cartId?: string) {
  */
 async function resolveCompletedPurchaseForCart(
   cartId: string,
-  { attempts = 4 }: { attempts?: number } = {}
+  { attempts = 4, timeoutMs = 15_000 }: { attempts?: number; timeoutMs?: number } = {}
 ): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
   // Story 3.7 review-fix (HIGH-3, AD-19): „odczyt się nie udał" i „ten zakup nie
   // ma zamówień" MUSZĄ być odróżnialne u konsumenta. Do tej poprawki obie
@@ -1032,7 +1032,8 @@ async function resolveCompletedPurchaseForCart(
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
-        method: 'GET'
+        method: 'GET',
+        signal: AbortSignal.timeout(timeoutMs)
       });
 
       if (res.ok) {
@@ -1049,14 +1050,18 @@ async function resolveCompletedPurchaseForCart(
         // stan dziedziny, a nie awaria. Ponawiamy (join `order_set`↔cart
         // potrafi się opóźnić), ale nie oznaczamy jako porażki odczytu.
         readFailed = false;
+      } else if (res.status === 401 || res.status === 403) {
+        // Odmowa jest terminalna i nie jest awarią domeny zakupu. Nie ponawiamy
+        // jej i nie zapewniamy osoby bez dostępu, że cudza płatność jest bezpieczna.
+        return { orderIds: [], expectedOrderCount: null, readFailed: false };
       } else {
+        console.warn(
+          `[confirmation] bridge read failed cart=${cartId} attempt=${attempt + 1} status=${res.status}`
+        );
         readFailed = true;
       }
     } catch (error) {
-      console.warn(
-        `[confirmation] bridge read threw cart=${cartId} attempt=${attempt + 1}`,
-        error
-      );
+      console.warn(`[confirmation] bridge read threw cart=${cartId} attempt=${attempt + 1}`, error);
       readFailed = true;
     }
 
@@ -1157,9 +1162,9 @@ export async function getCompletedOrderIdsForCart(
  */
 export async function getCompletedPurchaseForCart(
   cartId: string,
-  { attempts = 2 }: { attempts?: number } = {}
+  { attempts = 2, timeoutMs = 15_000 }: { attempts?: number; timeoutMs?: number } = {}
 ): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
-  return resolveCompletedPurchaseForCart(cartId, { attempts });
+  return resolveCompletedPurchaseForCart(cartId, { attempts, timeoutMs });
 }
 
 export async function completeOrderAfterStripePayment(cartId?: string) {

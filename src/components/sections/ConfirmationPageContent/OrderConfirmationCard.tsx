@@ -15,7 +15,6 @@
  * niezależny poller. Brak danych dla jednego zamówienia jest STANEM TEGO
  * ZAMÓWIENIA, a nie powodem, żeby wypadło z listy (AC1).
  */
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
@@ -27,15 +26,6 @@ import {
   type ConfirmationReadHealth
 } from '@/lib/confirmation/confirmation-poller';
 import {
-  buildConfirmationStepperStateFrom,
-  getGeneratingElapsedSeconds,
-  isFailureConfirmationStatus,
-  isSecondTierGenerating,
-  isTerminalConfirmationStatus,
-  maskEmail,
-  type VoucherPipelineStatus
-} from '@/lib/confirmation/order-confirmed-stepper';
-import {
   isGiftOrder,
   localeTag,
   resolveDeliveryMethod,
@@ -46,9 +36,19 @@ import {
   type PaymentStatusData
 } from '@/lib/confirmation/order-confirmation-view';
 import {
+  buildConfirmationStepperStateFrom,
+  getGeneratingElapsedSeconds,
+  isFailureConfirmationStatus,
+  isSecondTierGenerating,
+  isTerminalConfirmationStatus,
+  maskEmail,
+  type VoucherPipelineStatus
+} from '@/lib/confirmation/order-confirmed-stepper';
+import {
   resolveGiftCue,
   resolveVoucherRuleBadges,
-  resolveVoucherThumbnail
+  resolveVoucherThumbnail,
+  type ConfirmationOrderOutcome
 } from '@/lib/confirmation/order-confirmed-surface';
 import { convertToLocale } from '@/lib/helpers/money';
 import { cn } from '@/lib/utils';
@@ -64,7 +64,7 @@ function formatMoney(value: number, currencyCode: string | null, locale: string)
       amount: value,
       currency_code: currency,
       locale: localeTag(locale),
-      isMinorUnit: true,
+      isMinorUnit: true
     });
   } catch {
     return '—';
@@ -111,7 +111,10 @@ const FAILURE_COPY: Record<
   }
 };
 
-const STOP_COPY: Record<ConfirmationPollStop, { titleKey: string; bodyKey: string; testId: string }> = {
+const STOP_COPY: Record<
+  ConfirmationPollStop,
+  { titleKey: string; bodyKey: string; testId: string }
+> = {
   access_denied_guest: {
     titleKey: 'terminal_access_denied_guest_title',
     bodyKey: 'terminal_access_denied_guest_body',
@@ -156,7 +159,7 @@ const STATUS_ANNOUNCEMENT_KEYS: Record<VoucherPipelineStatus, string> = {
  * Jak ta karta wypada dla NAGŁÓWKA strony (review-fix MEDIUM-1).
  * `pending` znaczy „jeszcze nie wiadomo" — nie „w porządku".
  */
-export type OrderCardOutcome = 'pending' | 'success' | 'failed';
+export type OrderCardOutcome = ConfirmationOrderOutcome;
 
 /** Twardy zegar jednorazowego odczytu zamówienia (review-fix MEDIUM-2/3). */
 const ORDER_READ_TIMEOUT_MS = 15_000;
@@ -169,7 +172,7 @@ export type OrderConfirmationCardProps = {
   total: number;
   onGuestDetected?: (orderId: string, isGuest: boolean) => void;
   /** Podnosi stan karty do rodzica, żeby nagłówek nie ogłaszał sukcesu nad porażką. */
-  onOutcome?: (orderId: string, outcome: OrderCardOutcome) => void;
+  onOutcome: (orderId: string, outcome: OrderCardOutcome) => void;
 };
 
 export function OrderConfirmationCard({
@@ -195,6 +198,7 @@ export function OrderConfirmationCard({
   /** Liczba wykonanych zapytań — pokazywana wyłącznie maszynie (data-*), dla AC4. */
   const [requestCount, setRequestCount] = useState(0);
   const [pollFinished, setPollFinished] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
   const [fallbackGeneratingStartedAtMs, setFallbackGeneratingStartedAtMs] = useState<number | null>(
     null
@@ -264,6 +268,7 @@ export function OrderConfirmationCard({
           setEntitlements(snapshot.entitlements);
           setReadHealth(snapshot.readHealth);
           setRequestCount(snapshot.requestCount);
+          setPaymentConfirmed(snapshot.paymentConfirmed);
           if (snapshot.terminal) {
             setPollFinished(true);
           }
@@ -288,19 +293,21 @@ export function OrderConfirmationCard({
   // nad kartą mówiącą „Płatność nie doszła do skutku". Rodzic nie miał czym
   // tego rozstrzygnąć, bo karta trzymała `pipelineStatus` wyłącznie u siebie.
   const outcome: OrderCardOutcome =
-    stopReason !== null || orderError || isFailureConfirmationStatus(pipelineStatus)
-      ? 'failed'
-      : isTerminalConfirmationStatus(pipelineStatus)
-        ? 'success'
-        : 'pending';
+    stopReason !== null || orderError
+      ? 'read_failed'
+      : isFailureConfirmationStatus(pipelineStatus)
+        ? 'failed'
+        : isTerminalConfirmationStatus(pipelineStatus)
+          ? 'success'
+          : 'pending';
 
   useEffect(() => {
-    outcomeCallbackRef.current?.(orderId, outcome);
+    outcomeCallbackRef.current(orderId, outcome);
   }, [orderId, outcome]);
 
   const stepperState = useMemo(
-    () => buildConfirmationStepperStateFrom(pipelineStatus),
-    [pipelineStatus]
+    () => buildConfirmationStepperStateFrom(pipelineStatus, paymentConfirmed),
+    [pipelineStatus, paymentConfirmed]
   );
 
   const generatingAnchorMs = useMemo(() => {
@@ -346,10 +353,13 @@ export function OrderConfirmationCard({
   const showSecondTier =
     stepperState.activeStepId === 'voucher_generating' && isSecondTierGenerating(elapsedSeconds);
 
-  const positionLabel = position !== null ? t('order_position', {
-    index: position,
-    total
-  }) : null;
+  const positionLabel =
+    position !== null
+      ? t('order_position', {
+          index: position,
+          total
+        })
+      : null;
 
   if (loading) {
     return (
@@ -548,7 +558,8 @@ export function OrderConfirmationCard({
                   index > 0 &&
                     'md:before:absolute md:before:-left-4 md:before:top-8 md:before:h-px md:before:w-4 md:before:bg-[var(--gold)]',
                   isDone && 'border-[var(--gold)] bg-[var(--gold-light)]',
-                  isActive && 'border-[var(--gold)] bg-[var(--bb-surface-muted)] shadow-[var(--bb-shadow-card)]',
+                  isActive &&
+                    'border-[var(--gold)] bg-[var(--bb-surface-muted)] shadow-[var(--bb-shadow-card)]',
                   step.state === 'future' && 'border-[var(--bb-border-soft)] bg-[var(--bb-surface)]'
                 )}
                 data-step-id={step.id}
@@ -560,13 +571,16 @@ export function OrderConfirmationCard({
                     'mb-3 flex h-9 w-9 items-center justify-center rounded-full border text-sm font-medium',
                     isDone && 'border-[var(--gold)] bg-[var(--gold)] text-white',
                     isActive && 'border-[var(--gold)] bg-[var(--gold-light)] text-[var(--gold)]',
-                    step.state === 'future' && 'border-[var(--bb-border-soft)] bg-[var(--bb-surface)] text-secondary'
+                    step.state === 'future' &&
+                      'border-[var(--bb-border-soft)] bg-[var(--bb-surface)] text-secondary'
                   )}
                   aria-hidden="true"
                 >
                   {isDone ? '✓' : index + 1}
                 </div>
-                <p className={`label-sm ${isDone || isActive ? 'font-medium text-primary' : 'text-secondary'}`}>
+                <p
+                  className={`label-sm ${isDone || isActive ? 'font-medium text-primary' : 'text-secondary'}`}
+                >
                   {step.id === 'paid' ? `${t('step_paid_label')}${isDone ? ' ✓' : ''}` : null}
                   {step.id === 'voucher_generating' ? t('step_generating_label') : null}
                   {step.id === 'email_sent' ? t('step_sent_label') : null}

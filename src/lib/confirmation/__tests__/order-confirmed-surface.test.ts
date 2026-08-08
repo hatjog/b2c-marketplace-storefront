@@ -70,15 +70,11 @@ describe('order-confirmed-surface', () => {
 // zostało opłacone". Ten test pęka po cofnięciu agregatu do stałej `success`.
 describe('resolveConfirmationHeroTone — nagłówek nie ogłasza sukcesu nad porażką', () => {
   it('wszystkie zamówienia terminalnie nieudane → nagłówek PORAŻKI', () => {
-    expect(
-      resolveConfirmationHeroTone(['a', 'b'], { a: 'failed', b: 'failed' })
-    ).toBe('failure');
+    expect(resolveConfirmationHeroTone(['a', 'b'], { a: 'failed', b: 'failed' })).toBe('failure');
   });
 
   it('część nieudana → nagłówek CZĘŚCIOWY, nie sukces i nie porażka', () => {
-    expect(
-      resolveConfirmationHeroTone(['a', 'b'], { a: 'failed', b: 'success' })
-    ).toBe('partial');
+    expect(resolveConfirmationHeroTone(['a', 'b'], { a: 'failed', b: 'success' })).toBe('partial');
   });
 
   it('karta jeszcze nieraportująca jest `pending` — nagłówek porażki NIE miga', () => {
@@ -88,5 +84,12 @@ describe('resolveConfirmationHeroTone — nagłówek nie ogłasza sukcesu nad po
 
   it('sam sukces zostaje sukcesem', () => {
     expect(resolveConfirmationHeroTone(['a'], { a: 'success' })).toBe('success');
+  });
+
+  it('awaria ODCZYTU daje ton zdegradowany, nigdy domenowy werdykt porażki', () => {
+    expect(resolveConfirmationHeroTone(['a'], { a: 'read_failed' })).toBe('degraded');
+    expect(resolveConfirmationHeroTone(['a', 'b'], { a: 'read_failed', b: 'success' })).toBe(
+      'degraded'
+    );
   });
 });

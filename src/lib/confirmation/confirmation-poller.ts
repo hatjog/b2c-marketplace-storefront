@@ -26,6 +26,7 @@ import {
   CONFIRMATION_POLL_INTERVAL_MS,
   CONFIRMATION_REQUEST_TIMEOUT_MS,
   deriveVoucherPipelineStatus,
+  normalizeVoucherPipelineStatus,
   shouldStopConfirmationPolling,
   type EntitlementSignal,
   type VoucherPipelineStatus
@@ -42,7 +43,10 @@ export type ConfirmationPollStop =
 
 export type ConfirmationReadHealth = 'ok' | 'degraded';
 
-export interface ConfirmationSnapshot<TPayment = unknown, TEntitlement extends EntitlementSignal = EntitlementSignal> {
+export interface ConfirmationSnapshot<
+  TPayment = unknown,
+  TEntitlement extends EntitlementSignal = EntitlementSignal
+> {
   status: VoucherPipelineStatus;
   paymentStatus: TPayment | null;
   entitlements: TEntitlement[];
@@ -59,12 +63,17 @@ export interface ConfirmationSnapshot<TPayment = unknown, TEntitlement extends E
   elapsedMs: number;
   /** `true`, gdy po tym zdjęciu stanu pętla już się nie odezwie. */
   terminal: boolean;
+  /** Czy co najmniej jeden udany odczyt potwierdził płatność. */
+  paymentConfirmed: boolean;
 }
 
 export interface ConfirmationPollerCallbacks<TPayment, TEntitlement extends EntitlementSignal> {
   onSnapshot: (snapshot: ConfirmationSnapshot<TPayment, TEntitlement>) => void;
   /** Zakończenie BEZ stanu dziedziny — powód jest nazwany, nie zgadywany. */
-  onStop: (reason: ConfirmationPollStop, snapshot: { requestCount: number; elapsedMs: number }) => void;
+  onStop: (
+    reason: ConfirmationPollStop,
+    snapshot: { requestCount: number; elapsedMs: number }
+  ) => void;
 }
 
 export interface ConfirmationPollerOptions<TPayment, TEntitlement extends EntitlementSignal> {
@@ -139,9 +148,10 @@ async function readJson<T>(
  *
  * Nie ma wyjścia „pętla po prostu ucichła".
  */
-export function createConfirmationPoller<TPayment extends { status?: string }, TEntitlement extends EntitlementSignal>(
-  options: ConfirmationPollerOptions<TPayment, TEntitlement>
-): ConfirmationPoller {
+export function createConfirmationPoller<
+  TPayment extends { status?: string },
+  TEntitlement extends EntitlementSignal
+>(options: ConfirmationPollerOptions<TPayment, TEntitlement>): ConfirmationPoller {
   const {
     orderId,
     callbacks,
@@ -156,6 +166,7 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
   let active = false;
   let startedAt = 0;
   let requestCount = 0;
+  let paymentConfirmed = false;
 
   const countRequest = () => {
     requestCount += 1;
@@ -187,7 +198,8 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
         readHealth: 'degraded',
         requestCount,
         elapsedMs,
-        terminal: true
+        terminal: true,
+        paymentConfirmed
       });
       return;
     }
@@ -223,6 +235,9 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
     }
 
     const paymentStatus = paymentRead.kind === 'ok' ? paymentRead.data : null;
+    if (normalizeVoucherPipelineStatus(paymentStatus?.status) === 'paid') {
+      paymentConfirmed = true;
+    }
     const entitlements =
       entitlementRead.kind === 'ok' && Array.isArray(entitlementRead.data)
         ? entitlementRead.data
@@ -249,7 +264,8 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
       readHealth,
       requestCount,
       elapsedMs: now() - startedAt,
-      terminal
+      terminal,
+      paymentConfirmed
     });
 
     if (!terminal && active) {
@@ -265,6 +281,7 @@ export function createConfirmationPoller<TPayment extends { status?: string }, T
       active = true;
       startedAt = now();
       requestCount = 0;
+      paymentConfirmed = false;
       void tick();
     },
     stop() {

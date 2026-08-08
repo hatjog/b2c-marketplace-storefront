@@ -1373,6 +1373,7 @@
     "purchase_orders_count": "This purchase covers {count, plural, one {# order} other {# orders}} — each has its own status below.",
     "hero_title_failure": "We could not complete this purchase",
     "hero_title_partial": "Part of this purchase needs your attention",
+    "hero_title_degraded": "We could not read the whole purchase right now",
     "purchase_read_failed_title": "We could not read this purchase right now",
     "purchase_read_failed_body": "This is a failure on our side, not a problem with your link. Your payment is safe — refresh in a moment or open your order history.",
     "order_position": "Order {index} of {total}",

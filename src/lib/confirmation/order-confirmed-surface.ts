@@ -25,7 +25,13 @@ const GIFT_MESSAGE_KEYS = [
 
 const VALIDITY_KEYS = ['validity_period', 'voucher_validity_period', 'valid_until', 'expires_at'];
 const REFUND_KEYS = ['refund_policy', 'return_policy', 'withdrawal_policy'];
-const THUMBNAIL_KEYS = ['thumbnail', 'image', 'image_url', 'product_thumbnail', 'voucher_thumbnail'];
+const THUMBNAIL_KEYS = [
+  'thumbnail',
+  'image',
+  'image_url',
+  'product_thumbnail',
+  'voucher_thumbnail'
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -96,9 +102,9 @@ export function resolveVoucherThumbnail(item: OrderConfirmedSurfaceItem): string
  * Jak KARTA zamówienia wypada dla nagłówka strony (review-fix MEDIUM-1).
  * `pending` znaczy „jeszcze nie wiadomo" — nie „w porządku".
  */
-export type ConfirmationOrderOutcome = 'pending' | 'success' | 'failed';
+export type ConfirmationOrderOutcome = 'pending' | 'success' | 'failed' | 'read_failed';
 
-export type ConfirmationHeroTone = 'success' | 'partial' | 'failure';
+export type ConfirmationHeroTone = 'success' | 'partial' | 'failure' | 'degraded';
 
 /**
  * Agregat stanu zakupu dla NAGŁÓWKA powierzchni potwierdzenia.
@@ -119,8 +125,10 @@ export function resolveConfirmationHeroTone(
 ): ConfirmationHeroTone {
   const rendered = orderIds.length;
   const failed = orderIds.filter(id => outcomes[id] === 'failed').length;
+  const readFailed = orderIds.filter(id => outcomes[id] === 'read_failed').length;
 
   if (rendered > 0 && failed === rendered) return 'failure';
   if (failed > 0) return 'partial';
+  if (readFailed > 0) return 'degraded';
   return 'success';
 }

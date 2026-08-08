@@ -328,7 +328,10 @@ function getActiveIndex(status: VoucherPipelineStatus): number | null {
   }
 }
 
-function getCompletedThroughIndex(status: VoucherPipelineStatus): number {
+function getCompletedThroughIndex(
+  status: VoucherPipelineStatus,
+  paymentConfirmed: boolean
+): number {
   switch (status) {
     case 'pending_payment':
     case 'payment_failed':
@@ -341,11 +344,9 @@ function getCompletedThroughIndex(status: VoucherPipelineStatus): number {
       // odczytu. To była resztka fail-soft, której story nie usunęła.
       return -1;
     case 'timed_out':
-      // `timed_out` zostaje na `0` ŚWIADOMIE: do przekroczenia limitu pętla
-      // zdążyła zwykle potwierdzić płatność, a cofnięcie haczyka mówiłoby
-      // kupującej „nie zapłaciłaś" nad realnie obciążoną kartą. Rozstrzygnięcie
-      // jest tu ZAPISANE, żeby nie wyglądało na przeoczenie.
-      return 0;
+      // Timeout nie jest dowodem płatności. Haczyk pokazujemy wyłącznie, gdy
+      // poller naprawdę zobaczył `paid` przed przekroczeniem limitu.
+      return paymentConfirmed ? 0 : -1;
     case 'paid':
     case 'voucher_generating':
       return 0;
@@ -372,10 +373,11 @@ function getCompletedThroughIndex(status: VoucherPipelineStatus): number {
  * w `unknown`.
  */
 export function buildConfirmationStepperStateFrom(
-  status: VoucherPipelineStatus
+  status: VoucherPipelineStatus,
+  paymentConfirmed = false
 ): ConfirmationStepperState {
   const activeIndex = getActiveIndex(status);
-  const completedThrough = getCompletedThroughIndex(status);
+  const completedThrough = getCompletedThroughIndex(status, paymentConfirmed);
 
   const steps = STEP_ORDER.map((id, idx) => {
     let state: StepState = 'future';

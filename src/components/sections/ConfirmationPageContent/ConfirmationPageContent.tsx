@@ -28,7 +28,6 @@
  * „zamówienie 1 z 1" ani baneru liczności, bo to ona jest dziś jedyną realnie
  * przechodzoną (AC1).
  */
-
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
@@ -147,7 +146,9 @@ export function ConfirmationPageContent({ purchase }: Props) {
       ? 'hero_title_failure'
       : heroTone === 'partial'
         ? 'hero_title_partial'
-        : 'hero_title';
+        : heroTone === 'degraded'
+          ? 'hero_title_degraded'
+          : 'hero_title';
 
   return (
     <div
@@ -163,6 +164,7 @@ export function ConfirmationPageContent({ purchase }: Props) {
     >
       <header
         className="bb-section-shell bb-section-shell-strong relative overflow-hidden"
+        style={{ background: 'var(--bb-surface-strong)' }}
         data-testid="order-confirmed-hero"
         data-hero-tone={heroTone}
       >

@@ -138,13 +138,13 @@ describe('order-confirmed-stepper', () => {
     expect(steps.every(step => step.state === 'future')).toBe(true);
   });
 
-  it('timed_out ŚWIADOMIE zostawia krok „Opłacone" jako zrobiony', () => {
-    // Rozstrzygnięcie odwrotne niż dla `unknown` i zapisane: do przekroczenia
-    // limitu pętla zwykle potwierdziła płatność, a cofnięcie haczyka mówiłoby
-    // „nie zapłaciłaś" nad realnie obciążoną kartą.
-    const steps = buildConfirmationStepperStateFrom('timed_out').steps;
-    expect(steps[0].state).toBe('done');
-    expect(steps.slice(1).every(step => step.state === 'future')).toBe(true);
+  it('timed_out pokazuje „Opłacone" tylko po realnym odczycie paid', () => {
+    const withoutProof = buildConfirmationStepperStateFrom('timed_out', false).steps;
+    expect(withoutProof.every(step => step.state === 'future')).toBe(true);
+
+    const withProof = buildConfirmationStepperStateFrom('timed_out', true).steps;
+    expect(withProof[0].state).toBe('done');
+    expect(withProof.slice(1).every(step => step.state === 'future')).toBe(true);
   });
 
   it('tracks elapsed seconds and second-tier threshold', () => {

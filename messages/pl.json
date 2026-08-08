@@ -1373,6 +1373,7 @@
     "purchase_orders_count": "Ten zakup obejmuje {count, plural, one {# zamówienie} few {# zamówienia} many {# zamówień} other {# zamówienia}} — każde ma własny status poniżej.",
     "hero_title_failure": "Nie udało się domknąć tego zakupu",
     "hero_title_partial": "Część zakupu wymaga Twojej uwagi",
+    "hero_title_degraded": "Nie udało nam się teraz odczytać całego zakupu",
     "purchase_read_failed_title": "Nie udało nam się teraz odczytać zakupu",
     "purchase_read_failed_body": "To awaria po naszej stronie, a nie problem z Twoim linkiem. Twoja płatność jest bezpieczna — odśwież stronę za chwilę albo otwórz historię zamówień.",
     "order_position": "Zamówienie {index} z {total}",
