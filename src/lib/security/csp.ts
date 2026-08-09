@@ -63,7 +63,7 @@ function resolveMedusaBackendOriginsForCsp(): string[] {
  * MapTiler tile endpointów, inaczej zepsujesz raster tile loading bez sygnału
  * w `connect-src` testach.
  *
- * v1.15.0 Story 2.5 / FR-14c — WERDYKT, nie przeoczenie (ADR-178 §4):
+ * v1.15.0 Story 2.5 / FR-14c — WERDYKT, nie przeoczenie (ADR-179 §4):
  * `images.remotePatterns` zostało zawężone (wildcard `https://**` usunięty),
  * ale `img-src https:` ZOSTAJE — świadomie. ADR-159 §6 nazywał oba długi
  * jednym wzorcem i miał rację: `remotePatterns` bez `img-src` domyka tylko
@@ -74,7 +74,7 @@ function resolveMedusaBackendOriginsForCsp(): string[] {
  * którego wymaga akapit powyżej. Dodatkowo statyczna CSP w tym repo już raz
  * wygasiła hydratację (v1.10.0 ra-1, blank page przy SSR 200), więc zmiana
  * wymaga dowodu w przeglądarce, nie testu jednostkowego nagłówka.
- * Nośnik długu: ADR-178 §4. Tego komentarza NIE usuwać jako „nieaktualnego" —
+ * Nośnik długu: ADR-179 §4. Tego komentarza NIE usuwać jako „nieaktualnego" —
  * zakaz z akapitu powyżej pozostaje w mocy.
  *
  * Forward-looking (Story 4.4 INFO-2 review): jeżeli future story przełączy

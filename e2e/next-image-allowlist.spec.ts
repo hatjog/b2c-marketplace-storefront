@@ -1,6 +1,6 @@
 /**
  * Kontrola negatywna i dodatnia allowlisty `/_next/image` — Story 2.5
- * (v1.15.0, FR-14c, AI-3.3, ADR-178).
+ * (v1.15.0, FR-14c, AI-3.3, ADR-179).
  *
  * ══ Dlaczego to musi być e2e na prod-buildzie ══
  * `next.config.ts` z poprawną treścią NIE jest dowodem, że optymalizator
@@ -116,7 +116,7 @@ const allowlist = parseRemotePatterns(
   fs.readFileSync(path.resolve(__dirname, "..", "next.config.ts"), "utf8")
 )
 
-test.describe("allowlista /_next/image (Story 2.5, ADR-178)", () => {
+test.describe("allowlista /_next/image (Story 2.5, ADR-179)", () => {
   test("allowlista jest niepusta i nie zawiera przepustki na dowolny host", () => {
     expect(
       allowlist.length,

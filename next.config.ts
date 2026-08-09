@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
     // bypass remotePatterns, so the real remote-origin set contributed by
     // category images is EMPTY — no entry below originates from them. Story
     // 3.2 builds its source↔allowlist drift-test (AD-12) on this invariant.
-    // TIGHTEN-PASS DONE — Story 2.5 (v1.15.0, FR-14c), ADR-178.
+    // TIGHTEN-PASS DONE — Story 2.5 (v1.15.0, FR-14c), ADR-179.
     // The `{protocol: 'https', hostname: '**'}` catch-all that used to close
     // this array is GONE. It let ANY host on the internet be fetched
     // server-side by `/_next/image`, cached, and re-served from our own
@@ -93,7 +93,7 @@ const nextConfig: NextConfig = {
         // this repo can enumerate (S3 bucket / MinIO / CDN). That origin MUST
         // be added here as an explicit host before that instance ships —
         // deriving the allowlist from gp-dev/gp-test alone is exactly the trap
-        // ADR-178 names. Do NOT pre-empt it with `'**.amazonaws.com'`: a
+        // ADR-179 names. Do NOT pre-empt it with `'**.amazonaws.com'`: a
         // whole-provider wildcard is the old catch-all in a smaller box.
         protocol: 'http',
         hostname: 'localhost'
