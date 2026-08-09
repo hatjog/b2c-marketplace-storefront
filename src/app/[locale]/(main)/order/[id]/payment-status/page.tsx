@@ -114,7 +114,13 @@ export default async function PaymentStatusPage(props: Props) {
         surface="payment-status"
       />
       {result.state === 'confirmed' ? (
-        <PaymentStatusV180 orderIds={result.orderIds} />
+        <PaymentStatusV180
+          orderIds={result.orderIds}
+          // Story 3.7 (AC1): nośnik kolekcji w nawigacji. Segment trasy powrotu
+          // jest identyfikatorem CAŁEGO zakupu (koszyk), więc CTA i redirect
+          // prowadzą na potwierdzenie całości, a nie jednego zamówienia.
+          purchaseId={params.id}
+        />
       ) : (
         <>
           <PaymentReturnNotice

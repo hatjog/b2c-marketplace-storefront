@@ -65,17 +65,46 @@ export function resolveCompletedOrderIds(res: unknown): string[] {
  * kolekcja jednoelementowa — nie jako brak wyniku.
  */
 export function resolveBridgeOrderIds(data: unknown): string[] {
-  const shape = data as { orders?: unknown; order_id?: unknown } | null | undefined;
+  return resolveBridgePurchase(data).orderIds;
+}
+
+/**
+ * v1.15.0 Story 3.7 (AC2, AD-16) — kolekcja RAZEM z licznością kontraktu.
+ *
+ * Mostek odpowiada `{ orders: [...], order_count: N, ... }`
+ * (`GP/backend/packages/api/src/api/store/carts/[id]/completed-order/route.ts`).
+ * Do tej story storefront czytał z tej odpowiedzi WYŁĄCZNIE `orders` i wyrzucał
+ * `order_count` — czyli jedyne pole, którym powierzchnia mogłaby sprawdzić, czy
+ * pokazuje cały zakup, czy tylko tyle, ile udało jej się pobrać.
+ *
+ * `expectedOrderCount === null` znaczy „kontrakt nie podał liczności" (np.
+ * backend sprzed v1.15.0, który odpowiadał samym skalarem `order_id`). To jest
+ * osobny stan, a NIE zgodność — powierzchnia ma go nazwać, nie przemilczeć.
+ */
+export function resolveBridgePurchase(data: unknown): {
+  orderIds: string[];
+  expectedOrderCount: number | null;
+} {
+  const shape = data as
+    | { orders?: unknown; order_id?: unknown; order_count?: unknown }
+    | null
+    | undefined;
+
+  const rawCount = shape?.order_count;
+  const expectedOrderCount =
+    typeof rawCount === 'number' && Number.isInteger(rawCount) && rawCount > 0 ? rawCount : null;
 
   if (Array.isArray(shape?.orders)) {
     const collection = (shape.orders as BridgeOrderEntry[])
       .map(entry => entry?.order_id)
       .filter((id): id is string => typeof id === 'string' && id.length > 0);
     if (collection.length > 0) {
-      return Array.from(new Set(collection));
+      return { orderIds: Array.from(new Set(collection)), expectedOrderCount };
     }
   }
 
   const legacyScalar = shape?.order_id;
-  return typeof legacyScalar === 'string' && legacyScalar.length > 0 ? [legacyScalar] : [];
+  const orderIds =
+    typeof legacyScalar === 'string' && legacyScalar.length > 0 ? [legacyScalar] : [];
+  return { orderIds, expectedOrderCount };
 }

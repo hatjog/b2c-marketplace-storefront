@@ -100,7 +100,8 @@ vi.mock('../security/flagAtomicCheck', () => ({
   verifyFlagUnchanged: vi.fn()
 }));
 
-const { completeOrderAfterStripePayment, initiatePaymentSession } = await import('./cart');
+const { completeOrderAfterStripePayment, getCompletedPurchaseForCart, initiatePaymentSession } =
+  await import('./cart');
 
 const CART_ID = 'cart_2_3_001';
 const HEADERS = { authorization: 'Bearer test-token' };
@@ -157,9 +158,7 @@ describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
     expect(mockCartUpdate).toHaveBeenCalledTimes(1);
     const [cartId, body, , headers] = mockCartUpdate.mock.calls[0];
     expect(cartId).toBe(CART_ID);
-    expect((body as { metadata: Record<string, unknown> }).metadata.purchase_locale).toBe(
-      'ua'
-    );
+    expect((body as { metadata: Record<string, unknown> }).metadata.purchase_locale).toBe('ua');
     expect(headers).toEqual(HEADERS);
 
     // Kolejność jest istotna: zapis MUSI być przed autoryzacją płatności.
@@ -206,9 +205,7 @@ describe('purchase_locale — utrwalanie locale zakupu (AC3)', () => {
     await initiatePaymentSession(CART, PAYMENT_DATA);
 
     const [, body] = mockCartUpdate.mock.calls[0];
-    expect((body as { metadata: Record<string, unknown> }).metadata.purchase_locale).toBe(
-      'en'
-    );
+    expect((body as { metadata: Record<string, unknown> }).metadata.purchase_locale).toBe('en');
   });
 });
 
@@ -228,6 +225,52 @@ describe('R-2.3-H2 — ścieżka `complete` NIE mutuje koszyka po obciążeniu k
     ]);
     // Żadne żądanie w tym oknie nie jest zapisem do koszyka.
     expect(callOrder.filter(call => call.endsWith(`/carts/${CART_ID}`))).toEqual([]);
+  });
+});
+
+describe('Story 3.7 — serwerowy odczyt mostka ma koniec i nie myli odmowy z awarią', () => {
+  it('zawieszone żądanie kończy sygnał i daje odróżnialne readFailed', async () => {
+    const seenSignals: AbortSignal[] = [];
+    mockFetchQuery.mockImplementation(
+      async (_path: string, options: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          if (!options.signal) return;
+          seenSignals.push(options.signal);
+          options.signal.addEventListener('abort', () => reject(new Error('aborted')));
+        })
+    );
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const result = await getCompletedPurchaseForCart(CART_ID, { attempts: 1, timeoutMs: 5 });
+
+    expect(seenSignals).toHaveLength(1);
+    expect(seenSignals[0]).toBeInstanceOf(AbortSignal);
+    expect(result).toEqual({ orderIds: [], expectedOrderCount: null, readFailed: true });
+    warn.mockRestore();
+  });
+
+  it.each([401, 403])(
+    'HTTP %i kończy odczyt natychmiast i nie udaje awarii systemu',
+    async status => {
+      mockFetchQuery.mockResolvedValue({ ok: false, status, data: null });
+
+      const result = await getCompletedPurchaseForCart(CART_ID, { attempts: 4 });
+
+      expect(mockFetchQuery).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ orderIds: [], expectedOrderCount: null, readFailed: false });
+    }
+  );
+
+  it('HTTP 502 zostawia w logu cart, próbę i status', async () => {
+    mockFetchQuery.mockResolvedValue({ ok: false, status: 502, data: null });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    await getCompletedPurchaseForCart(CART_ID, { attempts: 1 });
+
+    expect(warn).toHaveBeenCalledWith(
+      `[confirmation] bridge read failed cart=${CART_ID} attempt=1 status=502`
+    );
+    warn.mockRestore();
   });
 });
 

@@ -56,7 +56,10 @@ type FetchQueryOptions = Omit<RequestInit, 'headers' | 'body'> & {
   body?: Record<string, any>;
 };
 
-export async function fetchQuery(url: string, { method, query, headers, body }: FetchQueryOptions) {
+export async function fetchQuery(
+  url: string,
+  { method, query, headers, body, signal }: FetchQueryOptions
+) {
   const params = Object.entries(query || {}).reduce((acc, [key, value], index) => {
     if (value && value !== undefined) {
       const queryLength = Object.values(query || {}).filter(i => !!i).length;
@@ -85,7 +88,8 @@ export async function fetchQuery(url: string, { method, query, headers, body }: 
   const res = await fetch(requestUrl, {
     method,
     headers: safeHeaders as Record<string, string>,
-    body: body ? JSON.stringify(body) : null
+    body: body ? JSON.stringify(body) : null,
+    signal
   });
 
   let data;

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 
 import type { CheckoutAddressInput, CheckoutAddressPayload } from '@/lib/checkout/address-payload';
 import {
-  resolveBridgeOrderIds,
+  resolveBridgePurchase,
   resolveCompletedOrderIds
 } from '@/lib/checkout/completed-order-ids';
 import { resolveStorefrontImageSrc } from '@/lib/helpers/asset-reference';
@@ -1017,20 +1017,52 @@ async function completeCartOrder(cartId?: string) {
  * UDANEJ płatności dostawała komunikat „skontaktuj się z obsługą". To
  * uzasadnienie nie znika wraz z kardynalnością (Story 3.6).
  */
-async function resolveCompletedOrderIdsForCart(
+async function resolveCompletedPurchaseForCart(
   cartId: string,
-  { attempts = 4 }: { attempts?: number } = {}
-): Promise<string[]> {
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
-      method: 'GET'
-    });
+  { attempts = 4, timeoutMs = 15_000 }: { attempts?: number; timeoutMs?: number } = {}
+): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
+  // Story 3.7 review-fix (HIGH-3, AD-19): „odczyt się nie udał" i „ten zakup nie
+  // ma zamówień" MUSZĄ być odróżnialne u konsumenta. Do tej poprawki obie
+  // sytuacje kończyły się identyczną pustą kolekcją, a powierzchnia mówiła
+  // kupującej po obciążeniu karty „link jest nieaktualny" także wtedy, gdy to
+  // backend leżał. `fetchQuery` nie rzuca dla HTTP 4xx/5xx (zwraca `ok: false`),
+  // więc sam `try/catch` u wołającego łapał wyłącznie awarie transportowe.
+  let readFailed = false;
 
-    if (res.ok) {
-      const ids = resolveBridgeOrderIds(res.data);
-      if (ids.length > 0) {
-        return ids;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const res = await fetchQuery(`/store/carts/${cartId}/completed-order`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(timeoutMs)
+      });
+
+      if (res.ok) {
+        // Story 3.7 (AC2): `order_count` z mostka jest JEDYNĄ licznością kontraktu
+        // osiągalną dla powierzchni potwierdzenia. Do tej story była tu wyrzucana.
+        const purchase = resolveBridgePurchase(res.data);
+        if (purchase.orderIds.length > 0) {
+          return { ...purchase, readFailed: false };
+        }
+        // Odpowiedź poprawna, ale pusta — to NIE jest porażka odczytu.
+        readFailed = false;
+      } else if (res.status === 404) {
+        // 404 z mostka znaczy „nie ma takiego domkniętego zakupu" — to jest
+        // stan dziedziny, a nie awaria. Ponawiamy (join `order_set`↔cart
+        // potrafi się opóźnić), ale nie oznaczamy jako porażki odczytu.
+        readFailed = false;
+      } else if (res.status === 401 || res.status === 403) {
+        // Odmowa jest terminalna i nie jest awarią domeny zakupu. Nie ponawiamy
+        // jej i nie zapewniamy osoby bez dostępu, że cudza płatność jest bezpieczna.
+        return { orderIds: [], expectedOrderCount: null, readFailed: false };
+      } else {
+        console.warn(
+          `[confirmation] bridge read failed cart=${cartId} attempt=${attempt + 1} status=${res.status}`
+        );
+        readFailed = true;
       }
+    } catch (error) {
+      console.warn(`[confirmation] bridge read threw cart=${cartId} attempt=${attempt + 1}`, error);
+      readFailed = true;
     }
 
     if (attempt < attempts - 1) {
@@ -1038,7 +1070,14 @@ async function resolveCompletedOrderIdsForCart(
     }
   }
 
-  return [];
+  return { orderIds: [], expectedOrderCount: null, readFailed };
+}
+
+async function resolveCompletedOrderIdsForCart(
+  cartId: string,
+  { attempts = 4 }: { attempts?: number } = {}
+): Promise<string[]> {
+  return (await resolveCompletedPurchaseForCart(cartId, { attempts })).orderIds;
 }
 
 /**
@@ -1110,6 +1149,22 @@ export async function getCompletedOrderIdsForCart(
   { attempts = 1 }: { attempts?: number } = {}
 ): Promise<string[]> {
   return resolveCompletedOrderIdsForCart(cartId, { attempts });
+}
+
+/**
+ * v1.15.0 Story 3.7 (AC1/AC2) — ODCZYT CAŁEGO ZAKUPU dla powierzchni
+ * potwierdzenia: kolekcja zamówień PLUS liczność z kontraktu mostka.
+ *
+ * `getCompletedOrderIdsForCart` (wyżej) zostaje bez zmian dla ścieżki powrotu
+ * z 3DS, która liczności nie potrzebuje. Powierzchnia potwierdzenia potrzebuje
+ * obu, bo bez liczności „pokazuję 1 z 2" jest nieodróżnialne od „zakup miał
+ * jedno zamówienie" — a to jest dokładnie ten defekt, który nazywa AC2.
+ */
+export async function getCompletedPurchaseForCart(
+  cartId: string,
+  { attempts = 2, timeoutMs = 15_000 }: { attempts?: number; timeoutMs?: number } = {}
+): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
+  return resolveCompletedPurchaseForCart(cartId, { attempts, timeoutMs });
 }
 
 export async function completeOrderAfterStripePayment(cartId?: string) {

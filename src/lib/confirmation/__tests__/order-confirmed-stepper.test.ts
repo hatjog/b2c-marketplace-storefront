@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildConfirmationStepperState,
+  buildConfirmationStepperStateFrom,
+  CONFIRMATION_MAX_POLL_DURATION_MS,
   deriveVoucherPipelineStatus,
   getGeneratingElapsedSeconds,
   isSecondTierGenerating,
@@ -71,6 +73,78 @@ describe('order-confirmed-stepper', () => {
       'email_sent'
     );
     expect(deriveVoucherPipelineStatus('paid', [{ status: 'ACTIVE' }])).toBe('recipient_opened');
+  });
+
+  // ── v1.15.0 Story 3.7 (AC3) — porażka MA reprezentację ──────────────────
+
+  it('mapuje realne stany ledgera dostarczeń, których enum wcześniej nie znał', () => {
+    // Źródło: `DELIVERY_DISPATCH_STATES` w
+    // `GP/backend/.../voucher-delivery/delivery-state.ts`.
+    expect(normalizeEntitlementPipelineStatus('dead_lettered')).toBe('delivery_failed');
+    expect(normalizeEntitlementPipelineStatus('failed')).toBe('delivery_retrying');
+    expect(normalizeEntitlementPipelineStatus('retrying')).toBe('delivery_retrying');
+    // `degraded` w kontrakcie znaczy: mail POSZEDŁ. Porażką NIE jest.
+    expect(normalizeEntitlementPipelineStatus('degraded')).toBe('email_sent');
+  });
+
+  it('mapuje terminalne stany płatności, które wcześniej spadały na unknown', () => {
+    for (const raw of ['failed_retryable', 'failed_nonretryable', 'expired', 'support_required']) {
+      expect(normalizeVoucherPipelineStatus(raw)).toBe('payment_failed');
+    }
+  });
+
+  it('dead_lettered wygrywa z sygnałem sukcesu innego uprawnienia tego zamówienia', () => {
+    expect(
+      deriveVoucherPipelineStatus('paid', [{ status: 'issued' }, { status: 'dead_lettered' }])
+    ).toBe('delivery_failed');
+  });
+
+  it('stany terminalne porażki KOŃCZĄ odpytywanie', () => {
+    expect(shouldStopConfirmationPolling('delivery_failed')).toBe(true);
+    expect(shouldStopConfirmationPolling('payment_failed')).toBe(true);
+    expect(shouldStopConfirmationPolling('timed_out')).toBe(true);
+    // Ponawiana dostawa jeszcze się nie skończyła — kontrakt ledgera dopuszcza retry.
+    expect(shouldStopConfirmationPolling('delivery_retrying')).toBe(false);
+    expect(shouldStopConfirmationPolling('unknown')).toBe(false);
+  });
+
+  it('unknown NIE renderuje już kroku „generujemy" (AD-19)', () => {
+    // Przed tą story `getActiveIndex('unknown')` zwracało 1 z komentarzem
+    // „fail-soft" — czyli wartość spoza dziedziny wyglądała jak praca w toku.
+    expect(buildConfirmationStepperStateFrom('unknown').activeStepId).toBeNull();
+    expect(buildConfirmationStepperStateFrom('delivery_failed').activeStepId).toBeNull();
+    expect(buildConfirmationStepperStateFrom('payment_failed').activeStepId).toBeNull();
+    expect(buildConfirmationStepperStateFrom('timed_out').activeStepId).toBeNull();
+  });
+
+  it('ponawiana dostawa zatrzymuje się na kroku WYSYŁKI, nie na generowaniu', () => {
+    expect(buildConfirmationStepperStateFrom('delivery_retrying').activeStepId).toBe('email_sent');
+  });
+
+  it('limit zegarowy jest ten sam, co u pollera obok — jedna dyscyplina, nie dwie', async () => {
+    const { MAX_POLL_DURATION_MS } = await import('@/lib/payment/payment-status-poller');
+    expect(CONFIRMATION_MAX_POLL_DURATION_MS).toBe(MAX_POLL_DURATION_MS);
+  });
+
+  // ── review-fix LOW-1 ──────────────────────────────────────────────────────
+  //
+  // `getActiveIndex('unknown')` już nie renderowało spinnera, ale
+  // `getCompletedThroughIndex('unknown')` nadal zwracało 0 — czyli krok
+  // „Opłacone" dostawał stan `done` i haczyk ✓. `unknown` powstaje m.in. gdy
+  // OBA odczyty padły, więc powierzchnia stwierdzała fakt zapłaty nie mając
+  // ani jednego udanego odczytu. Resztka fail-soft w drugiej funkcji modułu.
+  it('unknown nie oznacza ŻADNEGO kroku jako zrobiony (AD-19)', () => {
+    const steps = buildConfirmationStepperStateFrom('unknown').steps;
+    expect(steps.every(step => step.state === 'future')).toBe(true);
+  });
+
+  it('timed_out pokazuje „Opłacone" tylko po realnym odczycie paid', () => {
+    const withoutProof = buildConfirmationStepperStateFrom('timed_out', false).steps;
+    expect(withoutProof.every(step => step.state === 'future')).toBe(true);
+
+    const withProof = buildConfirmationStepperStateFrom('timed_out', true).steps;
+    expect(withProof[0].state).toBe('done');
+    expect(withProof.slice(1).every(step => step.state === 'future')).toBe(true);
   });
 
   it('tracks elapsed seconds and second-tier threshold', () => {

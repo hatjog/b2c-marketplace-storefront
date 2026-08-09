@@ -45,14 +45,22 @@ import { usePaymentStatusPoll } from '@/hooks/usePaymentStatusPoll';
  * sprzedawców i tak mieścił się w jednym stringu tylko dlatego, że drugie
  * zamówienie ginęło wcześniej w kontrakcie.
  *
- * Teraz strona powrotu ROZSTRZYGA rodzaj identyfikatora i przekazuje tu
- * rozwiązane identyfikatory ZAMÓWIEŃ — całą kolekcję. Renderowanie wszystkich
- * pozycji jest zakresem Story 3.7; tutaj kolekcja jest przyjmowana i jawnie
- * zawężana do zamówienia wiodącego (AD-16: drill-down z powierzchni, która
- * dostaje całość — nie obcięcie kontraktu).
+ * ── v1.15.0 Story 3.7 (AC1) — kolekcja jest RENDEROWANA ────────────────────
+ * Story 3.6 doprowadziła kolekcję do granicy tego komponentu i zostawiła tu
+ * jawnie nazwany dług: `const [orderId] = orderIds`, a dalej cały komponent
+ * znał już tylko jedno zamówienie. Ten dług jest spłacony — powierzchnia
+ * renderuje po jednym bloku statusu NA ZAMÓWIENIE, każdy z własnym
+ * identyfikatorem, własnym odpytywaniem i własnym CTA.
+ *
+ * `purchaseId` to identyfikator CAŁEGO ZAKUPU (segment trasy powrotu, czyli
+ * koszyk). Jest nośnikiem kolekcji w nawigacji: CTA i auto-redirect prowadzą
+ * na `/order/{purchaseId}/confirmed`, gdzie serwer rozwija zakup z powrotem
+ * w kolekcję. Bez tego naprawa samego renderu nie zmieniałaby nic — drugie
+ * zamówienie nie miałoby jak dojechać na potwierdzenie (AC1 mówi to wprost).
  */
 export interface PaymentStatusV180Props {
   orderIds: string[];
+  purchaseId: string;
 }
 
 // ─── LP2 pulse animation (UX SSOT LP2: opacity 0.6→1.0→0.6 loop 1.4s) ────────
@@ -156,55 +164,65 @@ function getContainerClasses(status: PaymentStatusV180): string {
  * hookami (`react-hooks/rules-of-hooks`). Cała logika hooków siedzi w
  * `PaymentStatusV180Surface` i jest wołana bezwarunkowo.
  */
-export function PaymentStatusV180({ orderIds }: PaymentStatusV180Props) {
-  const [orderId] = orderIds;
-
-  // review-fix (INFO): brak zamówień to BŁĄD, nie pusty string. Wcześniejsze
-  // `orderIds[0] ?? ''` cicho podawało `''` do `usePaymentStatusPoll`. Dziś
-  // jest to nieosiągalne (strona renderuje ten komponent tylko przy
-  // `state === 'confirmed'`, który gwarantuje niepustą kolekcję), ale milcząca
-  // wartość domyślna w miejscu, w którym AD-19 każe mieć błąd, przeżywa
-  // refaktor — a Story 3.7 ten komponent przepisuje.
-  if (!orderId) {
+export function PaymentStatusV180({ orderIds, purchaseId }: PaymentStatusV180Props) {
+  // review-fix (INFO, Story 3.6): brak zamówień to BŁĄD, nie pusty string.
+  // Wcześniejsze `orderIds[0] ?? ''` cicho podawało `''` do
+  // `usePaymentStatusPoll`. Milcząca wartość domyślna w miejscu, w którym
+  // AD-19 każe mieć błąd, przeżywa refaktor — więc bramka dziedziny zostaje
+  // także po przepisaniu komponentu na kolekcję.
+  if (orderIds.length === 0) {
     throw new Error(
       'PaymentStatusV180: `orderIds` jest puste — powierzchnia potwierdzenia nie ma czego pokazać (AD-19).'
     );
   }
 
+  const isMultiOrder = orderIds.length > 1;
+
   return (
-    <PaymentStatusV180Surface
-      orderId={orderId}
-      orderIds={orderIds}
-    />
+    <div
+      className="space-y-6"
+      data-testid="payment-status-v180-purchase"
+      data-order-count={String(orderIds.length)}
+    >
+      {orderIds.map((orderId, index) => (
+        <PaymentStatusV180Surface
+          key={orderId}
+          orderId={orderId}
+          purchaseId={purchaseId}
+          // Pozycja jest pokazywana WYŁĄCZNIE przy zakupie wielozamówieniowym.
+          // Ścieżka N = 1 nie zyskuje nagłówka „zamówienie 1 z 1" — to ona jest
+          // dziś jedyną realnie przechodzoną (Story 3.7, AC1).
+          position={isMultiOrder ? index + 1 : null}
+          total={orderIds.length}
+          // Automatyczne przekierowanie dostaje WYŁĄCZNIE zakup jednozamówieniowy.
+          // Przy N > 1 wyprowadzenie kupującej z ekranu, na którym drugie
+          // zamówienie może być jeszcze w innym stanie, ukryłoby przed nią
+          // dokładnie tę informację, którą ta story dowozi. Przejście zostaje —
+          // ale jako świadome kliknięcie w CTA, nie jako zaskoczenie.
+          autoRedirect={!isMultiOrder}
+        />
+      ))}
+    </div>
   );
 }
 
 function PaymentStatusV180Surface({
   orderId,
-  orderIds: _orderIds
+  purchaseId,
+  position,
+  total,
+  autoRedirect
 }: {
   orderId: string;
-  orderIds: string[];
+  purchaseId: string;
+  position: number | null;
+  total: number;
+  autoRedirect: boolean;
 }) {
-  // ── DŁUG PRZEKAZANY DO STORY 3.7 — to NIE jest zgodność z AD-16 ───────────
-  //
-  // review-fix (MEDIUM): poprzedni komentarz brzmiał „AD-16: drill-down
-  // z powierzchni, która DOSTAJE całość". To była podmiana warunku. AD-16
-  // dopuszcza redukcję N→1 wyłącznie jako drill-down z powierzchni, która
-  // całość POKAZUJE. Ten komponent całość dostaje (`orderIds: string[]`), ale
-  // nigdzie jej nie renderuje: status i CTA są budowane wyłącznie dla jednego
-  // zamówienia. Po zakupie u dwóch sprzedawców kupująca nadal widzi jedno —
-  // czyli dokładnie to, co nazywa user story Story 3.6.
-  //
-  // Warstwa danych jest naprawiona (trzy ogniwa niosą kolekcję); granica
-  // POWIERZCHNI nie. Renderowanie wszystkich zamówień należy do Story 3.7
-  // (`blocked_by: [3.6]`). Nazywamy to długiem, bo uzasadnianie wyjątku od
-  // AD-16 zdaniem przeinaczającym jego warunek jest zaczynem kolejnej
-  // „konwencji skalarności" — tej, którą ta story miała usunąć.
-  //
-  // `_orderIds` jest tu CELOWO nieużywane: kolekcja przechodzi przez granicę
-  // komponentu, żeby Story 3.7 nie musiała jej z powrotem przeciągać — ale
-  // nazwa z podkreśleniem mówi wprost, że dziś nic jej nie renderuje.
+  // AD-16: to jest DRILL-DOWN z powierzchni, która całość POKAZUJE —
+  // `PaymentStatusV180` renderuje jeden taki blok NA ZAMÓWIENIE i każdy niesie
+  // własny identyfikator. Redukcja N→1 kończy się tutaj i dalej nie sięga:
+  // CTA oraz auto-redirect prowadzą na `purchaseId`, czyli z powrotem na całość.
 
   const t = useTranslations();
   const locale = useLocale();
@@ -288,15 +306,22 @@ function PaymentStatusV180Surface({
     onError: handlePollError,
   });
 
+  // Nośnik kolekcji w nawigacji (Story 3.7, AC1): trasa potwierdzenia dostaje
+  // identyfikator CAŁEGO ZAKUPU, nie tego jednego zamówienia. Wcześniej było
+  // tu `/order/${orderId}/confirmed` i to ogniwo redukowało N→1 niezależnie od
+  // tego, co potrafiła powierzchnia po drugiej stronie.
+  const confirmedHref = `/${locale}/order/${purchaseId}/confirmed`;
+
   // Auto-redirect to confirmed after 2s on paid
   useEffect(() => {
+    if (!autoRedirect) return;
     if (status !== 'paid') return;
     if (reducedMotion) return;
 
     redirectTimerRef.current = setTimeout(() => {
       // Cancel if CTA has focus (user is about to click — no surprise navigation)
       if (document.activeElement === ctaRef.current) return;
-      router.push(`/${locale}/order/${orderId}/confirmed`);
+      router.push(confirmedHref);
     }, 2_000);
 
     return () => {
@@ -305,7 +330,7 @@ function PaymentStatusV180Surface({
         redirectTimerRef.current = null;
       }
     };
-  }, [status, reducedMotion, orderId, locale, router]);
+  }, [autoRedirect, status, reducedMotion, confirmedHref, router]);
 
   if (loading) {
     return (
@@ -435,7 +460,7 @@ function PaymentStatusV180Surface({
         return (
           <a
             ref={ctaRef as React.RefObject<HTMLAnchorElement | null>}
-            href={`/${locale}/order/${orderId}/confirmed`}
+            href={confirmedHref}
             data-testid="payment-status-v180-cta"
             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -583,6 +608,7 @@ function PaymentStatusV180Surface({
       <div
         data-payment-status={status}
         data-testid="payment-status-v180"
+        data-order-id={orderId}
         className={[
           'mx-auto max-w-[560px] space-y-5 rounded-sm border p-6',
           getContainerClasses(status),
@@ -598,9 +624,31 @@ function PaymentStatusV180Surface({
             {renderIcon()}
           </div>
           <div className="min-w-0 flex-1">
+            {/* Story 3.7 (AC1): przy zakupie wielozamówieniowym każdy blok
+                niesie WŁASNY, widoczny dla człowieka identyfikator i pozycję.
+                Bez tego dwa bloki statusu byłyby nieodróżnialne. */}
+            {position !== null && (
+              <p
+                className="bb-eyebrow"
+                data-testid="payment-status-v180-position"
+              >
+                {t('payment_status.order_position', {
+                  index: position,
+                  total
+                })}
+              </p>
+            )}
             <h1 className="heading-sm text-primary" data-testid="payment-status-v180-heading">
               {headingText}
             </h1>
+            {position !== null && (
+              <p
+                className="mt-1 text-xs text-secondary"
+                data-testid="payment-status-v180-order-id"
+              >
+                {t('payment_status.mailto_order_label')}: {orderId}
+              </p>
+            )}
             {/* AC2: timestamp microcopy — when last checked (M1 fix) */}
             {responseData.last_checked_at && (
               <p className="mt-1 text-xs text-secondary" data-testid="payment-status-v180-timestamp">
