@@ -188,7 +188,7 @@ export default async function RootLayout({
           </>
         )}
         {/*
-          Story 2.5 (FR-14c, ADR-178): the preconnect/dns-prefetch hints for
+          Story 2.5 (FR-14c, ADR-179): the preconnect/dns-prefetch hints for
           medusa-public-images.s3…, mercur-connect.s3…, s3.eu-central-1… and
           api.mercurjs.com were removed together with their `remotePatterns`
           entries. They were Mercur upstream demo leftovers: no data in this

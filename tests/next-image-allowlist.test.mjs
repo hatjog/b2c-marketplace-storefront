@@ -1,6 +1,6 @@
 /**
  * Bramka anty-nawrotowa dla `images.remotePatterns` — Story 2.5 (v1.15.0,
- * FR-14c, AI-3.3, ADR-178 / ADR-159 §6).
+ * FR-14c, AI-3.3, ADR-179 / ADR-159 §6).
  *
  * ══ Co jest tu bronione ══
  * Do v1.15.0 ostatnim wpisem `remotePatterns` był `{protocol:'https',
@@ -113,7 +113,7 @@ test('remotePatterns nie zawiera wzorca rozwiązywalnego do „dowolny host"', (
     [],
     'wpis remotePatterns przepuszcza dowolny host — /_next/image pobiera zdalny ' +
       'zasób serwerowo i serwuje go z naszego originu (SSRF-podobna powierzchnia ' +
-      '+ darmowy hosting treści pod naszą domeną). ADR-178 zamknął ten dług; ' +
+      '+ darmowy hosting treści pod naszą domeną). ADR-179 zamknął ten dług; ' +
       'jeśli potrzebujesz nowego originu, dodaj JAWNY host i uzasadnij go ' +
       'komentarzem o konsumencie'
   );
@@ -175,7 +175,7 @@ test('wpis rozszerzający dostęp na CAŁEGO dostawcę ("**.domena") wymaga uzas
     // Window is bounded by the PREVIOUS array entry (`},`) or the array
     // opener (`[`), not a fixed character count — a fixed window would false-
     // pass any entry placed near the large top-of-array doc comment (which
-    // mentions ADR-159/ADR-178 liberally) regardless of whether THIS entry
+    // mentions ADR-159/ADR-179 liberally) regardless of whether THIS entry
     // has its own justification.
     const prevEntryEnd = Math.max(source.lastIndexOf('},', idx), source.lastIndexOf('[', idx));
     const window = source.slice(prevEntryEnd, idx);
