@@ -13,6 +13,7 @@ import {
   getCartId,
   removeAuthToken,
   removeCartId,
+  removeCompletedCartId,
   setAuthToken
 } from './cookies';
 
@@ -137,6 +138,13 @@ export async function signout() {
   revalidateTag(customerCacheTag);
 
   await removeCartId();
+  // v1.15.0 DW-15-132: dowód koszyka NIE MOŻE przeżyć wylogowania. Jest
+  // wystarczający do odczytu kodu vouchera, więc pozostawiony po zmianie
+  // użytkownika oddaje kody poprzedniej kupującej następnej osobie przy tym
+  // samym urządzeniu. Wołane wprost, mimo że `removeAuthToken` robi to samo —
+  // to jest ta jedna ścieżka, w której wygaszenie dowodu jest CELEM, nie
+  // skutkiem ubocznym.
+  await removeCompletedCartId();
 
   const cartCacheTag = await getCacheTag('carts');
   revalidateTag(cartCacheTag);

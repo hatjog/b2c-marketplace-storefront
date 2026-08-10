@@ -45,7 +45,19 @@ export const getCacheOptions = async (tag: string): Promise<{ tags: string[] } |
   return { tags: [`${cacheTag}`] };
 };
 
+/**
+ * ZMIANA TOŻSAMOŚCI KASUJE DOWÓD KOSZYKA (v1.15.0 DW-15-132, decyzja PO).
+ *
+ * `_gp_completed_cart` jest dowodem typu bearer i wystarcza do odczytu KODU
+ * VOUCHERA (`/store/entitlements`). Do tej zmiany nie było kasowane nigdzie —
+ * ani przy wylogowaniu, ani przy logowaniu — więc na współdzielonym urządzeniu
+ * osoba B logowała się i czytała kody osoby A, bo cookie A żyło jeszcze przez
+ * 2 godziny. Kasowanie siedzi TUTAJ, w obu funkcjach zmieniających tożsamość,
+ * żeby żadna nowa ścieżka logowania (magic link, odzyskiwanie vouchera) nie
+ * mogła o nim zapomnieć.
+ */
 export const setAuthToken = async (token: string) => {
+  await removeCompletedCartId();
   const cookies = await nextCookies();
   cookies.set('_medusa_jwt', token, {
     maxAge: 60 * 60 * 24 * 7,
@@ -57,6 +69,7 @@ export const setAuthToken = async (token: string) => {
 };
 
 export const removeAuthToken = async () => {
+  await removeCompletedCartId();
   const cookies = await nextCookies();
   cookies.set('_medusa_jwt', '', {
     maxAge: -1,
@@ -140,4 +153,19 @@ export const setCompletedCartId = async (cartId: string) => {
 export const getCompletedCartId = async (): Promise<string | undefined> => {
   const cookies = await nextCookies();
   return cookies.get(COMPLETED_CART_COOKIE)?.value || undefined;
+};
+
+/**
+ * Kasuje dowód koszyka — symetrycznie do `removeCartId`.
+ *
+ * Wołane przy KAŻDEJ zmianie tożsamości (`setAuthToken` / `removeAuthToken`)
+ * oraz wprost w `signout()`. TTL 2h nie jest tu zabezpieczeniem: przez te dwie
+ * godziny dowód działa niezależnie od tego, kto siedzi przed przeglądarką.
+ */
+export const removeCompletedCartId = async () => {
+  const cookies = await nextCookies();
+  cookies.set(COMPLETED_CART_COOKIE, '', {
+    maxAge: -1,
+    path: '/'
+  });
 };
