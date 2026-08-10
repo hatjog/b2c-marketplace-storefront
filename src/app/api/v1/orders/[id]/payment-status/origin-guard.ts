@@ -77,16 +77,24 @@ export function isAllowedOrigin(request: NextRequest): boolean {
  * Komunikat dla operatora. `origin_mismatch` prawie zawsze znaczy, ze stack
  * biegnie pod innym adresem bazowym niz ten, z ktorego korzysta przegladarka —
  * typowo po restarcie bez `GP_STOREFRONT_BASE_HOST`.
+ *
+ * `scope` nazywa BRAMKE, ktora odrzucila zadanie. Od v1.15.0 DW-15-132 ten sam
+ * straznik stoi rowniez przed `/api/v1/entitlements` — bez tego parametru log
+ * z tamtej trasy przedstawialby sie jako „payment-status" i kierowal operatora
+ * pod zly plik. Domyslna wartosc zachowuje dotychczasowy komunikat co do znaku.
  */
-export function describeOriginRejection(verdict: OriginVerdict): string {
+export function describeOriginRejection(
+  verdict: OriginVerdict,
+  scope: string = 'payment-status',
+): string {
   if (verdict.allowed) return '';
   if (verdict.reason === 'origin_mismatch') {
     return (
-      `[payment-status] odmowa origin: zadanie z ${verdict.candidate}, ` +
+      `[${scope}] odmowa origin: zadanie z ${verdict.candidate}, ` +
       `a NEXT_PUBLIC_STOREFRONT_URL/NEXT_PUBLIC_BASE_URL wskazuje ${verdict.expected}. ` +
       'To NIE jest odmowa dostepu do zamowienia — to rozjazd adresu bazowego stacka. ' +
       'Jesli korzystasz z LAN, wystartuj stack z GP_STOREFRONT_BASE_HOST=<adres LAN>.'
     );
   }
-  return `[payment-status] odmowa origin: ${verdict.reason} (oczekiwano ${verdict.expected ?? 'brak konfiguracji'})`;
+  return `[${scope}] odmowa origin: ${verdict.reason} (oczekiwano ${verdict.expected ?? 'brak konfiguracji'})`;
 }
