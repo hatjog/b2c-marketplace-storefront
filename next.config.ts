@@ -50,23 +50,6 @@ const localBackendImageOrigins = (() => {
   return [...byOrigin.values()];
 })();
 
-/**
- * Story 3.1 — origin `apps/web` dla przekierowania `/:locale/gp-dashboard/**`.
- * Host bierzemy z tego samego nosnika co wyzej; port `apps/web` (3000) jest staly
- * i nie zalezy od adresu bazowego. Bez zmiennych wynik to `http://localhost:3000`.
- */
-const gpDashboardOrigin = (() => {
-  const source =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
-    process.env.MEDUSA_BACKEND_URL;
-  if (!source) return 'http://localhost:3000';
-  try {
-    return `${new URL(source).protocol}//${new URL(source).hostname}:3000`;
-  } catch {
-    return 'http://localhost:3000';
-  }
-})();
 
 const nextConfig: NextConfig = {
   distDir,
@@ -177,6 +160,29 @@ const nextConfig: NextConfig = {
     return [];
   },
   async redirects() {
+    // Story 3.1 — origin `apps/web` dla przekierowania `/:locale/gp-dashboard/**`.
+    // Host bierzemy z tego samego nosnika co allowlista obrazow; port `apps/web` (3000)
+    // jest staly i nie zalezy od adresu bazowego. Bez zmiennych wynik to
+    // `http://localhost:3000`, czyli zachowanie sprzed parametryzacji.
+    //
+    // DERYWACJA MUSI BYC TUTAJ, NIE W STALEJ MODULU. Zmierzone 2026-08-10: Next kompiluje
+    // `next.config.ts`, a stala z zakresu modulu uzywana WYLACZNIE wewnatrz asynchronicznej
+    // metody nie przezywa tej kompilacji — serwer wstawal i padal z
+    // `ReferenceError: gpDashboardOrigin is not defined (next.config.compiled.js:404)`.
+    // `images.remotePatterns` nie ma tego problemu, bo jest ewaluowane przy budowie
+    // obiektu konfiguracji, a nie przy wywolaniu metody.
+    const gpDashboardOrigin = (() => {
+      const source =
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+        process.env.MEDUSA_BACKEND_URL;
+      if (!source) return 'http://localhost:3000';
+      try {
+        return `${new URL(source).protocol}//${new URL(source).hostname}:3000`;
+      } catch {
+        return 'http://localhost:3000';
+      }
+    })();
     return [
       {
         // Story 3.1: adres DOCELOWY przegladarki, wiec idzie za tym samym nosnikiem
