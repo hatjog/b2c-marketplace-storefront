@@ -35,13 +35,24 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getCompletedCartId } from '@/lib/data/cookies';
 import { resolveMedusaBackendUrl } from '@/lib/env';
 
-import { isAllowedOrigin } from './origin-guard';
+import { checkOrigin, describeOriginRejection } from './origin-guard';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  if (!isAllowedOrigin(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // Werdykt bezpieczenstwa bez zmian — odrzucamy. Zmienia sie to, ze odmowa NAZYWA
+  // powod. `403 Forbidden` bez powodu jest nieodroznialne od realnej odmowy dostepu
+  // do zamowienia: 2026-08-10 kupujacy po udanej platnosci karta zobaczyl „Brak
+  // dostepu do tego zamowienia", podczas gdy przyczyna byla po stronie stacka
+  // (strona z LAN, `NEXT_PUBLIC_BASE_URL` na localhost po restarcie bez
+  // `GP_STOREFRONT_BASE_HOST`). Log po stronie serwera nazywa oba originy.
+  const originVerdict = checkOrigin(request);
+  if (!originVerdict.allowed) {
+    console.warn(describeOriginRejection(originVerdict));
+    return NextResponse.json(
+      { error: 'origin_not_allowed', reason: originVerdict.reason },
+      { status: 403 },
+    );
   }
 
   const { id } = await context.params;
