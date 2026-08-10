@@ -104,6 +104,24 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
           { status: 404 },
         );
       }
+      // 429 → 429. ZMIERZONE 2026-08-10 na realnym zakupie z telefonu: poller
+      // odpytywał ten route co 5 s przez limit 10 minut, backend zaczął zwracać
+      // `429 too_many_requests`, a ta gałąź zamieniała to na `502
+      // backend_unavailable`. Kupujący dostał ekran „nie udało się odczytać
+      // zakupu" — komunikat o awarii, podczas gdy backend żył i świadomie
+      // odmawiał obsługi. Poller czytał `502` jako „przejściowe, odpytuj dalej
+      // w tym samym tempie", więc sam podtrzymywał limiter. Przekazujemy dalej
+      // `Retry-After`, jeśli backend go podał.
+      if (res.status === 429) {
+        const retryAfter = res.headers.get('retry-after');
+        return NextResponse.json(
+          { error: 'rate_limited', message: 'Too many requests', backend_status: 429 },
+          {
+            status: 429,
+            headers: retryAfter ? { 'retry-after': retryAfter } : undefined,
+          },
+        );
+      }
       return NextResponse.json({ error: 'backend_unavailable', message: 'Backend unavailable' }, { status: 502 });
     }
 

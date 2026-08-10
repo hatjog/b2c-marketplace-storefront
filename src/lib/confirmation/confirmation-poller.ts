@@ -103,7 +103,38 @@ export interface ConfirmationPoller {
 type ReadResult<T> =
   | { kind: 'ok'; data: T }
   | { kind: 'stop'; reason: ConfirmationPollStop }
+  | { kind: 'throttled'; retryAfterMs: number | null }
   | { kind: 'degraded' };
+
+/**
+ * Górna granica odczekania po `429`. Twardy limit zegarowy pętli i tak obowiązuje,
+ * ale bez sufitu pojedynczy `Retry-After: 3600` zamieniłby pętlę w bezruch aż do
+ * timeoutu, bez żadnego odczytu po drodze.
+ */
+const MAX_BACKOFF_MS = 60_000;
+
+/** Parsuje `Retry-After` w postaci sekund albo daty HTTP; `null` gdy nie da się odczytać. */
+export function parseRetryAfterMs(header: string | null, nowMs: number): number | null {
+  if (!header) return null;
+  const trimmed = header.trim();
+  if (/^\d+$/.test(trimmed)) {
+    return Math.min(Number(trimmed) * 1000, MAX_BACKOFF_MS);
+  }
+  const parsed = Date.parse(trimmed);
+  if (Number.isNaN(parsed)) return null;
+  return Math.min(Math.max(parsed - nowMs, 0), MAX_BACKOFF_MS);
+}
+
+/**
+ * Odczekanie po n-tej z rzędu odpowiedzi `429`, gdy backend nie podał `Retry-After`:
+ * wykładniczo od `intervalMs`, z sufitem. Reset następuje przy pierwszym udanym odczycie.
+ */
+export function throttleBackoffMs(intervalMs: number, consecutive: number): number {
+  // PIERWSZE zadlawienie tez musi wydluzyc odstep — inaczej `429` nie zmienia
+  // niczego i limiter zostaje podtrzymany dokladnie tak, jak 2026-08-10.
+  const factor = 2 ** Math.max(consecutive, 1);
+  return Math.min(intervalMs * factor, MAX_BACKOFF_MS);
+}
 
 async function readJson<T>(
   fetchImpl: typeof fetch,
@@ -127,6 +158,16 @@ async function readJson<T>(
       if (res.status === 401) return { kind: 'stop', reason: 'access_denied_guest' };
       if (res.status === 403) return { kind: 'stop', reason: 'access_denied' };
       if (res.status === 404) return { kind: 'stop', reason: 'order_not_found' };
+      // `429` to NIE to samo co awaria: backend zyje i mowi „za czesto".
+      // Odpytywanie go dalej w tym samym tempie podtrzymuje limiter — zmierzone
+      // 2026-08-10, gdy stala czestotliwosc 5 s przez 10 minut zamienila realny
+      // zakup w ekran „nie udalo sie odczytac zakupu".
+      if (res.status === 429) {
+        return {
+          kind: 'throttled',
+          retryAfterMs: parseRetryAfterMs(res.headers.get('retry-after'), Date.now())
+        };
+      }
       return { kind: 'degraded' };
     }
 
@@ -167,6 +208,7 @@ export function createConfirmationPoller<
   let startedAt = 0;
   let requestCount = 0;
   let paymentConfirmed = false;
+  let consecutiveThrottled = 0;
 
   const countRequest = () => {
     requestCount += 1;
@@ -242,8 +284,20 @@ export function createConfirmationPoller<
       entitlementRead.kind === 'ok' && Array.isArray(entitlementRead.data)
         ? entitlementRead.data
         : [];
+    const throttled =
+      paymentRead.kind === 'throttled' || entitlementRead.kind === 'throttled';
     const readHealth: ConfirmationReadHealth =
-      paymentRead.kind === 'degraded' || entitlementRead.kind === 'degraded' ? 'degraded' : 'ok';
+      throttled ||
+      paymentRead.kind === 'degraded' ||
+      entitlementRead.kind === 'degraded'
+        ? 'degraded'
+        : 'ok';
+    // Licznik rosnie TYLKO na 429 i zeruje sie przy pierwszym odczycie bez limitu,
+    // wiec pojedyncze zadlawienie nie spowalnia calej reszty przebiegu.
+    consecutiveThrottled = throttled ? consecutiveThrottled + 1 : 0;
+    const retryAfterMs = [paymentRead, entitlementRead]
+      .map((read) => (read.kind === 'throttled' ? read.retryAfterMs : null))
+      .reduce<number | null>((acc, value) => (value === null ? acc : Math.max(acc ?? 0, value)), null);
 
     const status = deriveVoucherPipelineStatus(paymentStatus?.status, entitlements);
     // Review-fix MEDIUM-2: planista woła `shouldStopConfirmationPolling`, a nie
@@ -269,9 +323,18 @@ export function createConfirmationPoller<
     });
 
     if (!terminal && active) {
+      // Przy `429` czekamy dluzej: `Retry-After` z backendu, a gdy go nie ma —
+      // wykladniczo od `intervalMs`, z sufitem. Twardy limit zegarowy pętli
+      // zostaje bez zmian, wiec i ta sciezka ma nazwany koniec (`timed_out`).
+      const nextDelayMs = throttled
+        ? Math.max(
+            retryAfterMs ?? 0,
+            throttleBackoffMs(intervalMs, consecutiveThrottled)
+          )
+        : intervalMs;
       timer = setTimeout(() => {
         void tick();
-      }, intervalMs);
+      }, nextDelayMs);
     }
   }
 
@@ -282,6 +345,7 @@ export function createConfirmationPoller<
       startedAt = now();
       requestCount = 0;
       paymentConfirmed = false;
+      consecutiveThrottled = 0;
       void tick();
     },
     stop() {

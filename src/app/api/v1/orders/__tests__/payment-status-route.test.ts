@@ -171,3 +171,65 @@ describe('/api/v1/orders/[id]/payment-status guest proof forwarding', () => {
     expect(fetchSpy.mock.calls[0][0]).not.toContain('cart_id');
   });
 });
+
+/**
+ * 2026-08-10, realny zakup z telefonu: poller odpytywał ten route co 5 s przez
+ * limit 10 minut, backend zaczął zwracać `429 too_many_requests`, a route
+ * tłumaczył to na `502 backend_unavailable`. Kupujący dostał ekran „nie udało
+ * się odczytać zakupu" — komunikat o AWARII, choć backend żył i świadomie
+ * odmawiał obsługi. Poller czytał `502` jako „przejściowe, pytaj dalej w tym
+ * samym tempie", więc sam podtrzymywał limiter.
+ */
+describe('/api/v1/orders/[id]/payment-status — 429 nie udaje awarii backendu', () => {
+  function request() {
+    return { headers: new Headers() } as unknown as NextRequest;
+  }
+  function context(id = 'order_1') {
+    return { params: Promise.resolve({ id }) };
+  }
+  function throttledResponse(headers: Record<string, string> = {}) {
+    return {
+      ok: false,
+      status: 429,
+      json: async () => ({}),
+      headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+    } as unknown as Response;
+  }
+
+  let fetchSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    cookieJar.clear();
+    fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it('przekazuje 429 dalej jako 429, nie jako 502', async () => {
+    fetchSpy.mockResolvedValue(throttledResponse({ 'retry-after': '30' }));
+    const { GET } = await import('../[id]/payment-status/route');
+
+    const res = await GET(request(), context());
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get('retry-after')).toBe('30');
+    const body = await res.json();
+    expect(body.error).toBe('rate_limited');
+    // Kontrola dodatnia: to NIE może być już awaria backendu.
+    expect(body.error).not.toBe('backend_unavailable');
+  });
+
+  it('nie wymyśla Retry-After, gdy backend go nie podał', async () => {
+    fetchSpy.mockResolvedValue(throttledResponse());
+    const { GET } = await import('../[id]/payment-status/route');
+
+    const res = await GET(request(), context());
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get('retry-after')).toBeNull();
+  });
+});

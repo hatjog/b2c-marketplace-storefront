@@ -33,6 +33,21 @@ type RawEntitlement = Record<string, unknown>;
 /** Kody odpowiedzi backendu przekazywane dalej BEZ tłumaczenia na 502. */
 const PASSTHROUGH_STATUSES = new Set([401, 403]);
 
+/**
+ * `429` NIE jest awarią backendu i nie wolno go tłumaczyć na `502`.
+ *
+ * ZMIERZONE 2026-08-10 na realnym zakupie z telefonu: poller odpytywał ten route
+ * i `payment-status` co 5 s przez limit 10 minut, backend zaczął odpowiadać
+ * `429 too_many_requests`, a oba route'y zamieniły to na
+ * `502 backend_unavailable`. Kupujący zobaczył „nie udało się odczytać zakupu",
+ * czyli komunikat o awarii — podczas gdy backend żył i świadomie odmawiał obsługi.
+ * Poller też nie miał jak zareagować, bo `502` znaczy dla niego „przejściowe,
+ * odpytuj dalej w tym samym tempie", co podtrzymywało limiter.
+ *
+ * Odpowiedź niesie `Retry-After`, jeśli backend go podał — poller z niego korzysta.
+ */
+const RATE_LIMIT_STATUS = 429;
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
   const orderId = searchParams.get('order_id');
@@ -60,6 +75,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           { error: 'entitlements_access_denied', backend_status: res.status },
           { status: res.status }
+        );
+      }
+
+      if (res.status === RATE_LIMIT_STATUS) {
+        const retryAfter = res.headers.get('retry-after');
+        return NextResponse.json(
+          { error: 'entitlements_rate_limited', backend_status: res.status },
+          {
+            status: RATE_LIMIT_STATUS,
+            headers: retryAfter ? { 'retry-after': retryAfter } : undefined,
+          }
         );
       }
 

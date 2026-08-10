@@ -16,6 +16,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createConfirmationPoller,
+  parseRetryAfterMs,
+  throttleBackoffMs,
   type ConfirmationPollStop,
   type ConfirmationSnapshot
 } from '../confirmation-poller';
@@ -28,15 +30,18 @@ type PaymentPayload = { status?: string };
 type EntitlementPayload = { status?: string | null };
 
 type Scripted = {
-  payment?: { status?: number; body?: PaymentPayload };
-  entitlements?: { status?: number; body?: EntitlementPayload[] };
+  payment?: { status?: number; body?: PaymentPayload; headers?: Record<string, string> };
+  entitlements?: { status?: number; body?: EntitlementPayload[]; headers?: Record<string, string> };
 };
 
-function jsonResponse(status: number, body: unknown): Response {
+function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}): Response {
   return {
     ok: status >= 200 && status < 300,
     status,
-    json: async () => body
+    json: async () => body,
+    headers: {
+      get: (name: string) => headers[name.toLowerCase()] ?? null
+    }
   } as unknown as Response;
 }
 
@@ -54,11 +59,11 @@ function createHarness(script: (call: number) => Scripted) {
     if (href.includes('/payment-status')) {
       paymentCalls += 1;
       const step = script(paymentCalls).payment ?? { status: 200, body: { status: 'paid' } };
-      return jsonResponse(step.status ?? 200, step.body ?? {});
+      return jsonResponse(step.status ?? 200, step.body ?? {}, step.headers ?? {});
     }
     entitlementCalls += 1;
     const step = script(entitlementCalls).entitlements ?? { status: 200, body: [] };
-    return jsonResponse(step.status ?? 200, step.body ?? []);
+    return jsonResponse(step.status ?? 200, step.body ?? [], step.headers ?? {});
   }) as unknown as typeof fetch;
 
   return {
@@ -325,5 +330,125 @@ describe('createConfirmationPoller — odpytywanie ma koniec', () => {
 
     expect(snapshots[0].readHealth).toBe('degraded');
     expect(snapshots[0].terminal).toBe(false);
+  });
+});
+
+/**
+ * 2026-08-10 — realny zakup z telefonu. Poller odpytywał `payment-status`
+ * i `entitlements` co 5 s przez limit 10 minut, backend zaczął odpowiadać `429`,
+ * a route'y BFF tłumaczyły to na `502 backend_unavailable`. Kupujący zobaczył
+ * „nie udało się odczytać zakupu" — komunikat o awarii, choć backend żył
+ * i świadomie odmawiał. Stała częstotliwość podtrzymywała limiter.
+ */
+describe('createConfirmationPoller — 429 spowalnia pętlę, nie dokłada do ognia', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  const buildPoller = (
+    harness: ReturnType<typeof createHarness>,
+    snapshots: ConfirmationSnapshot<PaymentPayload, EntitlementPayload>[]
+  ) =>
+    createConfirmationPoller<PaymentPayload, EntitlementPayload>({
+      orderId: 'order_1',
+      fetchImpl: harness.fetchImpl,
+      now: harness.now,
+      callbacks: {
+        onSnapshot: snapshot => snapshots.push(snapshot),
+        onStop: reason => {
+          throw new Error(`429 nie moze konczyc petli: ${reason}`);
+        }
+      }
+    });
+
+  it('nie odpytuje po zwykłym interwale, gdy backend zwrócił 429', async () => {
+    const harness = createHarness(() => ({
+      payment: { status: 429, body: {} },
+      entitlements: { status: 429, body: [] }
+    }));
+    const snapshots: ConfirmationSnapshot<PaymentPayload, EntitlementPayload>[] = [];
+    buildPoller(harness, snapshots).start();
+    await drain();
+
+    expect(harness.paymentCalls).toBe(1);
+    expect(snapshots[0].readHealth).toBe('degraded');
+
+    // Kontrola dodatnia: po zwykłym interwale NIE ma jeszcze kolejnego żądania.
+    harness.advance(CONFIRMATION_POLL_INTERVAL_MS);
+    await vi.advanceTimersByTimeAsync(CONFIRMATION_POLL_INTERVAL_MS);
+    await drain();
+    expect(harness.paymentCalls).toBe(1);
+
+    // …a po pełnym odczekaniu — jest. Pętla zwolniła, nie zamilkła.
+    harness.advance(CONFIRMATION_POLL_INTERVAL_MS);
+    await vi.advanceTimersByTimeAsync(CONFIRMATION_POLL_INTERVAL_MS);
+    await drain();
+    expect(harness.paymentCalls).toBe(2);
+  });
+
+  it('honoruje Retry-After z backendu', async () => {
+    const harness = createHarness(() => ({
+      payment: { status: 429, body: {}, headers: { 'retry-after': '30' } },
+      entitlements: { status: 429, body: [], headers: { 'retry-after': '30' } }
+    }));
+    const snapshots: ConfirmationSnapshot<PaymentPayload, EntitlementPayload>[] = [];
+    buildPoller(harness, snapshots).start();
+    await drain();
+    expect(harness.paymentCalls).toBe(1);
+
+    // 29 s to za wcześnie…
+    await vi.advanceTimersByTimeAsync(29_000);
+    await drain();
+    expect(harness.paymentCalls).toBe(1);
+
+    // …30 s to dokładnie tyle, ile poprosił backend.
+    await vi.advanceTimersByTimeAsync(1_000);
+    await drain();
+    expect(harness.paymentCalls).toBe(2);
+  });
+
+  it('wraca do normalnego tempa po pierwszym odczycie bez limitu', async () => {
+    // Pierwszy odczyt zadławiony, drugi już nie — trzeci ma iść po 5 s, nie po 10.
+    const harness = createHarness(call =>
+      call === 1
+        ? { payment: { status: 429, body: {} }, entitlements: { status: 429, body: [] } }
+        : {
+            payment: { status: 200, body: { status: 'pending_psp_confirmation' } },
+            entitlements: { status: 200, body: [] }
+          }
+    );
+    const snapshots: ConfirmationSnapshot<PaymentPayload, EntitlementPayload>[] = [];
+    buildPoller(harness, snapshots).start();
+    await drain();
+
+    await vi.advanceTimersByTimeAsync(2 * CONFIRMATION_POLL_INTERVAL_MS);
+    await drain();
+    expect(harness.paymentCalls).toBe(2);
+    expect(snapshots[1].readHealth).toBe('ok');
+
+    await vi.advanceTimersByTimeAsync(CONFIRMATION_POLL_INTERVAL_MS);
+    await drain();
+    // Gdyby licznik zadławień się nie zerował, tu byłoby wciąż 2.
+    expect(harness.paymentCalls).toBe(3);
+  });
+});
+
+describe('parseRetryAfterMs / throttleBackoffMs', () => {
+  it('czyta Retry-After w sekundach i w postaci daty HTTP, z sufitem', () => {
+    expect(parseRetryAfterMs('30', 0)).toBe(30_000);
+    expect(parseRetryAfterMs(null, 0)).toBeNull();
+    expect(parseRetryAfterMs('nonsens', 0)).toBeNull();
+    // Sufit: bez niego jeden nagłówek zamieniłby pętlę w bezruch aż do timeoutu.
+    expect(parseRetryAfterMs('3600', 0)).toBe(60_000);
+    expect(parseRetryAfterMs(new Date(10_000).toUTCString(), 0)).toBe(10_000);
+    // Data w przeszłości nie może dać ujemnego odczekania.
+    expect(parseRetryAfterMs(new Date(0).toUTCString(), 10_000)).toBe(0);
+  });
+
+  it('rośnie wykładniczo i zatrzymuje się na suficie', () => {
+    expect(throttleBackoffMs(5_000, 1)).toBe(10_000);
+    expect(throttleBackoffMs(5_000, 2)).toBe(20_000);
+    expect(throttleBackoffMs(5_000, 3)).toBe(40_000);
+    expect(throttleBackoffMs(5_000, 10)).toBe(60_000);
   });
 });
