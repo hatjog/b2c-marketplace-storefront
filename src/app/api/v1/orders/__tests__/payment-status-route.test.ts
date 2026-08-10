@@ -233,3 +233,61 @@ describe('/api/v1/orders/[id]/payment-status — 429 nie udaje awarii backendu',
     expect(res.headers.get('retry-after')).toBeNull();
   });
 });
+
+/**
+ * 2026-08-10, realny zakup z telefonu: kupujący zapłacił kartą (Stripe, captured),
+ * wrócił z 3DS i zobaczył „Brak dostępu do tego zamówienia". Nie miał problemu
+ * z dostępem — żądanie NIE DOSZŁO do backendu. Odrzucił je strażnik origin, bo
+ * strona szła z `http://192.168.100.89:3002`, a `NEXT_PUBLIC_BASE_URL` w procesie
+ * wskazywał `http://localhost:3002` (stack po restarcie bez `GP_STOREFRONT_BASE_HOST`).
+ *
+ * Werdykt bezpieczeństwa zostaje. Zmienia się to, że odmowa NAZYWA powód.
+ */
+describe('/api/v1/orders/[id]/payment-status — odmowa origin nazywa powód', () => {
+  function context(id = 'order_1') {
+    return { params: Promise.resolve({ id }) };
+  }
+
+  const originalBase = process.env.NEXT_PUBLIC_BASE_URL;
+
+  beforeEach(() => {
+    cookieJar.clear();
+    process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3002';
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_BASE_URL = originalBase;
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it('rozjazd adresu bazowego daje `origin_not_allowed`, nie `Forbidden` bez powodu', async () => {
+    const { GET } = await import('../[id]/payment-status/route');
+    const req = {
+      headers: new Headers({ origin: 'http://192.168.100.89:3002' }),
+    } as unknown as NextRequest;
+
+    const res = await GET(req, context());
+
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.error).toBe('origin_not_allowed');
+    expect(body.reason).toBe('origin_mismatch');
+    // Kontrola dodatnia: NIE wolno tego pomylić z odmową dostępu do zamówienia.
+    expect(body.error).not.toBe('access_denied');
+  });
+
+  it('nie woła backendu, gdy origin nie przechodzi — inaczej byłby to wyciek', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const { GET } = await import('../[id]/payment-status/route');
+    const req = {
+      headers: new Headers({ origin: 'http://192.168.100.89:3002' }),
+    } as unknown as NextRequest;
+
+    await GET(req, context());
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
