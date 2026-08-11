@@ -33,8 +33,10 @@ import { cookies as nextCookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { maskEmail } from '@/lib/confirmation/order-confirmed-stepper';
+import { getCompletedCartId } from '@/lib/data/cookies';
 import { resolveMedusaBackendUrl } from '@/lib/env';
 
+import { CART_PROOF_HEADER } from './cart-proof-header';
 import {
   isGuestCheckout,
   mapMedusaOrderStatusToLifecycle,
@@ -102,12 +104,55 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   // permissive setup, leak data to any caller who guesses the id.
   const cookies = await nextCookies();
   const token = cookies.get('_medusa_jwt')?.value;
+  // Dowód gościa — ta trasa jako JEDYNA z trójki go nie wysyłała.
+  //
+  // Checkout bez konta nie zostawia sesji, więc bez tego nagłówka upstream
+  // odmawiał KAŻDEMU gościowi. Zmierzone 2026-08-11 na żywym stacku: w jednej
+  // serii żądań, z tym samym cookie, `payment-status` i `entitlements`
+  // zwracały 200, a ta trasa 401. Karta zamówienia zamienia taką odmowę na
+  // `read_failed`, a nagłówek strony na „Nie udało nam się teraz odczytać
+  // całego zakupu" — mimo że płatność przeszła, a vouchery istniały.
+  //
+  // Wartość leci VERBATIM: cookie trzyma do trzech ostatnich koszyków po
+  // przecinku (`setCompletedCartId`), a `parseCartProof` po stronie backendu
+  // rozdziela tę listę samo. Obcinanie jej tutaj do pierwszego wpisu odbierałoby
+  // dostęp do wcześniejszego zamówienia przy każdym kolejnym zakupie.
+  const completedCartProof = await getCompletedCartId();
 
   const headers: Record<string, string> = {
     'x-publishable-api-key': publishableKey
   };
   if (token) {
     headers.authorization = `Bearer ${token}`;
+  }
+  // Dowód nigdy nie pochodzi z query stringu przeglądarki — wyłącznie z naszego
+  // `httpOnly` cookie. Inaczej dowolna strona podstawiłaby własny `cart_id`
+  // i zamieniła ten proxy w wyrocznię „czy ten koszyk zrobił to zamówienie".
+  if (completedCartProof) {
+    headers[CART_PROOF_HEADER] = completedCartProof;
+  }
+
+  // Diagnostyka „żadnych poświadczeń" — 2026-08-11.
+  //
+  // Bez tej linii odmowa dla gościa jest po stronie serwera NIEODRÓŻNIALNA od
+  // odmowy dla kogoś, kto dowód miał i stracił. Podczas analizy zakupu z tego
+  // dnia dowód działał do 06:04:18, a każde późniejsze żądanie przychodziło
+  // BEZ niego — i nie dało się rozstrzygnąć, czy cookie zostało unieważnione,
+  // czy po prostu przyszła druga karta/urządzenie, które go nigdy nie miało.
+  // Żaden z dwóch logów nie zapisuje user-agenta, więc pytanie było
+  // nierozstrzygalne po fakcie. Ta linia sprawia, że następne wystąpienie
+  // nazwie się samo.
+  if (!token && !completedCartProof) {
+    console.warn(
+      JSON.stringify({
+        event: 'order_read_without_credentials',
+        order_id: id,
+        // Bez wartości cookie i bez id klienta — to ma odróżniać KLASY żądań,
+        // a nie identyfikować kupującą.
+        user_agent: request.headers.get('user-agent') ?? '(brak)',
+        referer: request.headers.get('referer') ?? '(brak)',
+      }),
+    );
   }
 
   try {
