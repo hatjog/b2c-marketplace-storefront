@@ -1,3 +1,4 @@
+// @chrome-manifest: W6-08 (renderuje <MiniCartDrawer> — chrome mini-cart-drawer)
 /**
  * Bramka runtime dla inwariantu tożsamości pozycji koszyka.
  *
