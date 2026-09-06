@@ -37,6 +37,11 @@ function presentationFor(state: PaymentReturnNoticeProps['result']['state']): {
         container: 'border-primary bg-tertiary text-primary',
         role: 'status'
       };
+    case 'recovery_required':
+      return {
+        container: 'border-negative bg-negative/10 text-primary',
+        role: 'alert'
+      };
     case 'identifier_out_of_domain':
       return {
         container: 'border-negative bg-negative/10 text-primary',

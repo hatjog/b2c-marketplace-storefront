@@ -1960,6 +1960,11 @@
       "body": "The payment is still being verified by your bank. Keep this page open and refresh it in a moment. If nothing changes, go back to your cart and try again.",
       "cta": "Back to cart"
     },
+    "return_recovery_required": {
+      "label": "We cannot safely confirm this purchase yet",
+      "body": "We could not read the complete set of orders, so we did not retry the payment or cart completion. Go back to your cart and try again in a moment.",
+      "cta": "Back to cart"
+    },
     "return_identifier_out_of_domain": {
       "label": "We do not recognise this link",
       "body": "The address you arrived from does not point to your cart or order. Open the status from the link in your purchase confirmation e-mail, or go back to your cart.",

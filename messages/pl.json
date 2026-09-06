@@ -1960,6 +1960,11 @@
       "body": "Płatność jest jeszcze weryfikowana po stronie banku. Nie zamykaj tej strony — odśwież ją za chwilę. Jeśli nic się nie zmieni, wróć do koszyka i spróbuj ponownie.",
       "cta": "Wróć do koszyka"
     },
+    "return_recovery_required": {
+      "label": "Nie możemy jeszcze bezpiecznie potwierdzić zakupu",
+      "body": "Nie udało się odczytać kompletnego zestawu zamówień, dlatego nie wykonaliśmy ponownie płatności ani domknięcia koszyka. Wróć do koszyka i spróbuj ponownie za chwilę.",
+      "cta": "Wróć do koszyka"
+    },
     "return_identifier_out_of_domain": {
       "label": "Nie rozpoznajemy tego linku",
       "body": "Adres, z którego tu trafiłaś, nie wskazuje na Twój koszyk ani zamówienie. Otwórz status z linku w e-mailu potwierdzającym zakup albo wróć do koszyka.",

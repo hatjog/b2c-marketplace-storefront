@@ -45,16 +45,17 @@
 import { redirect } from 'next/navigation';
 import type { NextRequest } from 'next/server';
 
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { classifyPaymentReturnIdentifier } from '@/lib/checkout/payment-return-identifier';
-import { getCompletedOrderIdsForCart } from '@/lib/data/cart';
+import { getCompletedPurchaseForCart } from '@/lib/data/cart';
 import { getCartId, getCompletedCartId } from '@/lib/data/cookies';
 import {
   isStripeReturnConfirmation,
   performPaymentReturnCompletion,
-  readStripeReturnParams
+  readStripeReturnParams,
+  type PaymentReturnOutcome
 } from '@/lib/data/payment-return';
 import { PAYMENT_RETURN_DONE_PARAM } from '@/lib/data/payment-return-constants';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/routing';
 
 /** Domknięcie jest mutacją — nigdy nie wolno go zapamiętać w cache'u. */
 export const dynamic = 'force-dynamic';
@@ -77,7 +78,8 @@ function safeLocale(raw: string | null): string {
 function statusPageUrl(
   locale: string,
   identifier: string,
-  params: URLSearchParams
+  params: URLSearchParams,
+  outcome: PaymentReturnOutcome = 'done'
 ): string {
   const query = new URLSearchParams();
   for (const key of ['redirect_status', 'payment_intent'] as const) {
@@ -86,7 +88,7 @@ function statusPageUrl(
       query.set(key, value);
     }
   }
-  query.set(PAYMENT_RETURN_DONE_PARAM, 'done');
+  query.set(PAYMENT_RETURN_DONE_PARAM, outcome);
   return `/${locale}/order/${identifier}/payment-status?${query.toString()}`;
 }
 
@@ -145,16 +147,28 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   // ── Idempotencja: ODCZYT przed mutacją ───────────────────────────────────
-  let existing: string[] = [];
+  let bridge: Awaited<ReturnType<typeof getCompletedPurchaseForCart>>;
   try {
-    existing = await getCompletedOrderIdsForCart(identifier.value, { attempts: 2 });
+    bridge = await getCompletedPurchaseForCart(identifier.value, { attempts: 2 });
   } catch (error) {
     console.warn(`[payment-return] bridge read failed cart=${identifier.value}`, error);
+    redirect(statusPageUrl(locale, identifier.value, search, 'read_failed'));
   }
 
-  if (existing.length === 0) {
-    await performPaymentReturnCompletion(identifier.value);
+  if (bridge.state === 'complete') {
+    redirect(statusPageUrl(locale, identifier.value, search));
   }
 
-  redirect(statusPageUrl(locale, identifier.value, search));
+  if (bridge.state !== 'empty') {
+    const outcome: Extract<PaymentReturnOutcome, 'read_failed' | 'access_denied' | 'incomplete'> =
+      bridge.state === 'read_failed'
+        ? 'read_failed'
+        : bridge.state === 'access_denied'
+          ? 'access_denied'
+          : 'incomplete';
+    redirect(statusPageUrl(locale, identifier.value, search, outcome));
+  }
+
+  const completion = await performPaymentReturnCompletion(identifier.value);
+  redirect(statusPageUrl(locale, identifier.value, search, completion.outcome));
 }

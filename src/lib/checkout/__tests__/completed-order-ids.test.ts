@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 import {
   collectOrderIds,
   resolveBridgeOrderIds,
+  resolveBridgePurchase,
   resolveCompletedOrderIds
 } from '../completed-order-ids';
 
@@ -81,7 +82,9 @@ describe('ogniwo 1 — kardynalność z odpowiedzi workflow domknięcia koszyka'
 
   it('śmieci w kolekcji są odrzucane, a reszta zachowana', () => {
     const res = {
-      data: { order_set: { orders: [{ id: ORDER_A }, null, { id: 42 }, { id: '' }, { id: ORDER_B }] } }
+      data: {
+        order_set: { orders: [{ id: ORDER_A }, null, { id: 42 }, { id: '' }, { id: ORDER_B }] }
+      }
     };
 
     expect(resolveCompletedOrderIds(res)).toEqual([ORDER_A, ORDER_B]);
@@ -113,8 +116,19 @@ describe('ogniwo 2→3 — odczyt kolekcji z endpointu mostkowego', () => {
     expect(resolveBridgeOrderIds({ order_id: ORDER_A, order_group_id: null })).toEqual([ORDER_A]);
   });
 
-  it('pusta kolekcja + skalar → skalar (kompatybilność wstecz nie gubi wyniku)', () => {
-    expect(resolveBridgeOrderIds({ orders: [], order_id: ORDER_A })).toEqual([ORDER_A]);
+  it('skalar legacy jest fallbackiem wyłącznie, gdy nie ma pola `orders`', () => {
+    expect(resolveBridgeOrderIds({ order_id: ORDER_A })).toEqual([ORDER_A]);
+    expect(resolveBridgeOrderIds({ orders: [], order_id: ORDER_A, order_count: 2 })).toEqual([]);
+  });
+
+  it('N=2 z jedną pozycją jest nazwanym niepełnym odczytem, nie sukcesem N=1', () => {
+    expect(
+      resolveBridgePurchase({
+        orders: [{ order_id: ORDER_A, order_group_id: null }],
+        order_count: 2,
+        order_id: ORDER_A
+      })
+    ).toEqual({ orderIds: [ORDER_A], expectedOrderCount: 2, state: 'incomplete' });
   });
 
   it('nic użytecznego → pusta kolekcja', () => {

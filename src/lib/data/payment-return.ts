@@ -54,7 +54,6 @@
  * więc nośnik kontekstu rynku z AD-21/ADR-177 nie ma tu zastosowania — cała
  * ścieżka biegnie w żądaniu HTTP, które kontekst rynku już niesie.
  */
-
 import {
   classifyPaymentReturnIdentifier,
   type PaymentReturnIdentifier
@@ -65,11 +64,14 @@ import {
   type StripeReturnParams
 } from '@/lib/checkout/payment-return-state';
 
-import { completeOrderAfterStripePayment, getCompletedOrderIdsForCart } from './cart';
+import {
+  completeOrderAfterStripePayment,
+  getCompletedPurchaseForCart,
+  type CompletedPurchaseRead
+} from './cart';
 import {
   PAYMENT_RETURN_COMPLETION_PATH,
-  PAYMENT_RETURN_DONE_PARAM,
-  PAYMENT_RETURN_DONE_VALUE,
+  PAYMENT_RETURN_DONE_PARAM
 } from './payment-return-constants';
 
 // Stale mieszkaja w `./payment-return-constants` — plik z `'use server'` moze
@@ -107,7 +109,29 @@ export async function readStripeReturnParams(
  * wymaga teraz POZYTYWNEGO sygnału od Stripe'a, nie braku sygnału negatywnego.
  */
 export async function isStripeReturnConfirmation(params: StripeReturnParams): Promise<boolean> {
+  if (params.redirect_status === 'failed') {
+    return false;
+  }
   return params.redirect_status === 'succeeded' || Boolean(params.payment_intent);
+}
+
+export type PaymentReturnOutcome =
+  | 'done'
+  | 'completion_failed'
+  | 'no_order_id'
+  | 'read_failed'
+  | 'access_denied'
+  | 'incomplete';
+
+function priorOutcome(value: string | undefined): PaymentReturnOutcome | null {
+  return value === 'done' ||
+    value === 'completion_failed' ||
+    value === 'no_order_id' ||
+    value === 'read_failed' ||
+    value === 'access_denied' ||
+    value === 'incomplete'
+    ? value
+    : null;
 }
 
 export type PaymentReturnResolution = {
@@ -161,6 +185,7 @@ export async function resolvePaymentReturn(
       identifier,
       params,
       ordersBeforeCompletion: [],
+      bridgeReadState: 'empty',
       completionAttempted: false,
       ordersAfterCompletion: [],
       completionFailed: false
@@ -189,23 +214,30 @@ export async function resolvePaymentReturn(
   // 2 podejścia, nie 4: przy pierwszym wejściu (koszyk faktycznie niedomknięty)
   // każde podejście to czysty koszt — 350 ms opóźnienia przed domknięciem.
   // Dwa podejścia pokrywają lag joina, nie blokując kupującej na 1,4 s.
-  const alreadyDone =
-    firstParam(searchParams?.[PAYMENT_RETURN_DONE_PARAM]) === PAYMENT_RETURN_DONE_VALUE;
-
-  let ordersBeforeCompletion: string[] = [];
+  const outcome = priorOutcome(firstParam(searchParams?.[PAYMENT_RETURN_DONE_PARAM]));
+  let bridge: CompletedPurchaseRead = {
+    orderIds: [],
+    expectedOrderCount: null,
+    state: 'read_failed',
+    readFailed: true
+  };
   try {
-    ordersBeforeCompletion = await getCompletedOrderIdsForCart(identifier.value, { attempts: 2 });
+    bridge = await getCompletedPurchaseForCart(identifier.value, { attempts: 2 });
   } catch (error) {
-    // Odmowa musi być widoczna (NFR-2) — nie połykamy jej po cichu.
     console.warn(`[payment-return] bridge read failed cart=${identifier.value}`, error);
   }
 
-  const alreadyCompleted = ordersBeforeCompletion.length > 0;
+  const alreadyCompleted = bridge.state === 'complete';
   const confirmedByStripe = await isStripeReturnConfirmation(params);
   const abandoned = params.redirect_status === 'failed';
 
   // ── 2. DECYZJA O DOMKNIĘCIU (wykonuje ją Route Handler, nie render) ──────
-  const needsCompletion = !alreadyCompleted && !abandoned && confirmedByStripe && !alreadyDone;
+  const needsCompletion =
+    !alreadyCompleted &&
+    bridge.state === 'empty' &&
+    !abandoned &&
+    confirmedByStripe &&
+    outcome === null;
 
   if (needsCompletion) {
     return {
@@ -215,7 +247,8 @@ export async function resolvePaymentReturn(
       result: decidePaymentReturnState({
         identifier,
         params,
-        ordersBeforeCompletion,
+        ordersBeforeCompletion: bridge.orderIds,
+        bridgeReadState: bridge.state,
         completionAttempted: false,
         ordersAfterCompletion: [],
         completionFailed: false
@@ -230,13 +263,14 @@ export async function resolvePaymentReturn(
     result: decidePaymentReturnState({
       identifier,
       params,
-      ordersBeforeCompletion,
+      ordersBeforeCompletion: bridge.orderIds,
+      bridgeReadState: bridge.state,
       // Powrót ZE znacznikiem `gp_return=done` znaczy, że domknięcie było
       // próbowane i nie dało zamówienia — to jest fakt, nie brak faktu.
       // Bez tego stan spadałby na `awaiting_psp` i gubił rozróżnienie NFR-2.
-      completionAttempted: alreadyDone,
+      completionAttempted: outcome !== null,
       ordersAfterCompletion: [],
-      completionFailed: false
+      completionFailed: outcome === 'completion_failed'
     })
   };
 }
@@ -250,12 +284,12 @@ export async function resolvePaymentReturn(
  */
 export async function performPaymentReturnCompletion(cartId: string): Promise<{
   orderIds: string[];
-  completionFailed: boolean;
+  outcome: Extract<PaymentReturnOutcome, 'done' | 'completion_failed' | 'no_order_id'>;
 }> {
   const completion = await completeOrderAfterStripePayment(cartId);
 
   if (completion.ok) {
-    return { orderIds: completion.orderIds ?? [], completionFailed: false };
+    return { orderIds: completion.orderIds ?? [], outcome: 'done' };
   }
 
   console.warn(
@@ -263,6 +297,6 @@ export async function performPaymentReturnCompletion(cartId: string): Promise<{
   );
   return {
     orderIds: [],
-    completionFailed: completion.error?.code === 'completion_failed'
+    outcome: completion.error?.code === 'completion_failed' ? 'completion_failed' : 'no_order_id'
   };
 }

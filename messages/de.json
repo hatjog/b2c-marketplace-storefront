@@ -1960,6 +1960,11 @@
       "body": "Die Zahlung wird von Ihrer Bank noch geprüft. Lassen Sie diese Seite geöffnet und aktualisieren Sie sie in Kürze. Ändert sich nichts, kehren Sie zum Warenkorb zurück und versuchen Sie es erneut.",
       "cta": "Zurück zum Warenkorb"
     },
+    "return_recovery_required": {
+      "label": "Wir können diesen Kauf noch nicht sicher bestätigen",
+      "body": "Wir konnten nicht den vollständigen Satz der Bestellungen lesen und haben deshalb weder die Zahlung noch den Warenkorbabschluss wiederholt. Kehren Sie zum Warenkorb zurück und versuchen Sie es gleich noch einmal.",
+      "cta": "Zurück zum Warenkorb"
+    },
     "return_identifier_out_of_domain": {
       "label": "Wir erkennen diesen Link nicht",
       "body": "Die Adresse, über die Sie hierher gelangt sind, verweist weder auf Ihren Warenkorb noch auf Ihre Bestellung. Öffnen Sie den Status über den Link in Ihrer Kaufbestätigungs-E-Mail oder kehren Sie zum Warenkorb zurück.",

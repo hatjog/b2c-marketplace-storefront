@@ -146,13 +146,39 @@ describe('kontrola dodatnia — domknięcie WYKONUJE się w Route Handlerze', ()
     // Dowód dostępu gościa POWSTAŁ — bez niego odpytywanie statusu odbija 401.
     expect(cookieStore.get('_gp_completed_cart')).toContain(CART);
 
-    expect(target).toBe('/pl/order/' + CART + '/payment-status?redirect_status=succeeded&gp_return=done');
+    expect(target).toBe(
+      '/pl/order/' + CART + '/payment-status?redirect_status=succeeded&gp_return=done'
+    );
   });
 
   it('sam `payment_intent` (bez `redirect_status`) też jest potwierdzeniem powrotu', async () => {
     await callHandler({ cart_id: CART, locale: 'pl', payment_intent: 'pi_3STORY36' });
 
     expect(postCalls()).toHaveLength(1);
+  });
+
+  it('N=2 po domknięciu jest reentry bez drugiego `POST /complete`', async () => {
+    await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    const reentryTarget = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'succeeded'
+    });
+
+    expect(postCalls()).toHaveLength(1);
+    expect(reentryTarget).toContain('gp_return=done');
+    const bridgeResponses = await Promise.all(
+      fetchQuery.mock.results
+        .map(({ value }) => value)
+        .filter((value): value is Promise<unknown> => value instanceof Promise)
+    );
+    expect(bridgeResponses).toContainEqual({
+      ok: true,
+      data: {
+        orders: [ORDER_A, ORDER_B].map(id => ({ order_id: id, order_group_id: null })),
+        order_count: 2
+      }
+    });
   });
 
   it('idempotencja: koszyk JUŻ domknięty → zero `POST /complete`', async () => {
@@ -217,6 +243,56 @@ describe('kontrola negatywna — powierzchnia zapisu NIE jest otwarta', () => {
     await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'failed' });
 
     expect(postCalls()).toHaveLength(0);
+  });
+
+  it('`redirect_status=failed` z `payment_intent` → zero domykania', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+
+    await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'failed',
+      payment_intent: 'pi_failed_3ds'
+    });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(cookieStore.get('_gp_completed_cart')).toBeUndefined();
+  });
+
+  it('błąd odczytu mostka → zero domykania i nazwany wynik `read_failed`', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+    fetchQuery.mockRejectedValue(new Error('bridge down'));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=read_failed');
+  });
+
+  it('401 z mostka → zero domykania i nazwany wynik `access_denied`', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+    fetchQuery.mockResolvedValue({ ok: false, status: 401 });
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=access_denied');
+  });
+
+  it('N=2 z niepełną kolekcją → zero domykania i nazwany wynik `incomplete`', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+    fetchQuery.mockResolvedValue({
+      ok: true,
+      data: {
+        orders: [{ order_id: ORDER_A, order_group_id: null }],
+        order_count: 2
+      }
+    });
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=incomplete');
   });
 
   it('identyfikator ZAMÓWIENIA zamiast koszyka → zero domykania', async () => {

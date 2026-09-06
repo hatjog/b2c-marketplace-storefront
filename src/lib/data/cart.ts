@@ -1017,10 +1017,24 @@ async function completeCartOrder(cartId?: string) {
  * UDANEJ płatności dostawała komunikat „skontaktuj się z obsługą". To
  * uzasadnienie nie znika wraz z kardynalnością (Story 3.6).
  */
+export type CompletedPurchaseReadState =
+  | 'complete'
+  | 'empty'
+  | 'incomplete'
+  | 'read_failed'
+  | 'access_denied';
+
+export type CompletedPurchaseRead = {
+  orderIds: string[];
+  expectedOrderCount: number | null;
+  state: CompletedPurchaseReadState;
+  readFailed: boolean;
+};
+
 async function resolveCompletedPurchaseForCart(
   cartId: string,
   { attempts = 4, timeoutMs = 15_000 }: { attempts?: number; timeoutMs?: number } = {}
-): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
+): Promise<CompletedPurchaseRead> {
   // Story 3.7 review-fix (HIGH-3, AD-19): „odczyt się nie udał" i „ten zakup nie
   // ma zamówień" MUSZĄ być odróżnialne u konsumenta. Do tej poprawki obie
   // sytuacje kończyły się identyczną pustą kolekcją, a powierzchnia mówiła
@@ -1040,7 +1054,7 @@ async function resolveCompletedPurchaseForCart(
         // Story 3.7 (AC2): `order_count` z mostka jest JEDYNĄ licznością kontraktu
         // osiągalną dla powierzchni potwierdzenia. Do tej story była tu wyrzucana.
         const purchase = resolveBridgePurchase(res.data);
-        if (purchase.orderIds.length > 0) {
+        if (purchase.state === 'complete' || purchase.state === 'incomplete') {
           return { ...purchase, readFailed: false };
         }
         // Odpowiedź poprawna, ale pusta — to NIE jest porażka odczytu.
@@ -1053,7 +1067,12 @@ async function resolveCompletedPurchaseForCart(
       } else if (res.status === 401 || res.status === 403) {
         // Odmowa jest terminalna i nie jest awarią domeny zakupu. Nie ponawiamy
         // jej i nie zapewniamy osoby bez dostępu, że cudza płatność jest bezpieczna.
-        return { orderIds: [], expectedOrderCount: null, readFailed: false };
+        return {
+          orderIds: [],
+          expectedOrderCount: null,
+          state: 'access_denied',
+          readFailed: false
+        };
       } else {
         console.warn(
           `[confirmation] bridge read failed cart=${cartId} attempt=${attempt + 1} status=${res.status}`
@@ -1070,7 +1089,12 @@ async function resolveCompletedPurchaseForCart(
     }
   }
 
-  return { orderIds: [], expectedOrderCount: null, readFailed };
+  return {
+    orderIds: [],
+    expectedOrderCount: null,
+    state: readFailed ? 'read_failed' : 'empty',
+    readFailed
+  };
 }
 
 async function resolveCompletedOrderIdsForCart(
@@ -1163,7 +1187,7 @@ export async function getCompletedOrderIdsForCart(
 export async function getCompletedPurchaseForCart(
   cartId: string,
   { attempts = 2, timeoutMs = 15_000 }: { attempts?: number; timeoutMs?: number } = {}
-): Promise<{ orderIds: string[]; expectedOrderCount: number | null; readFailed: boolean }> {
+): Promise<CompletedPurchaseRead> {
   return resolveCompletedPurchaseForCart(cartId, { attempts, timeoutMs });
 }
 

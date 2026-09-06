@@ -21,6 +21,7 @@ function facts(overrides: Partial<PaymentReturnFacts> = {}): PaymentReturnFacts 
     identifier: classifyPaymentReturnIdentifier(CART),
     params: {},
     ordersBeforeCompletion: [],
+    bridgeReadState: 'empty',
     completionAttempted: false,
     ordersAfterCompletion: [],
     completionFailed: false,
@@ -151,6 +152,25 @@ describe('AC4 — porzucenie i odświeżenie są ROZRÓŻNIALNE (NFR-2)', () => 
       facts({ completionAttempted: true, completionFailed: true })
     );
     expect(result).toEqual({ state: 'pending_confirmation', reason: 'completion_failed' });
+  });
+
+  it('błąd mostka, odmowa dostępu i niepełny N są rozłączne od pustego zakupu', () => {
+    expect(decidePaymentReturnState(facts({ bridgeReadState: 'read_failed' }))).toEqual({
+      state: 'recovery_required',
+      reason: 'bridge_read_failed'
+    });
+    expect(decidePaymentReturnState(facts({ bridgeReadState: 'access_denied' }))).toEqual({
+      state: 'recovery_required',
+      reason: 'bridge_access_denied'
+    });
+    expect(
+      decidePaymentReturnState(
+        facts({ bridgeReadState: 'incomplete', ordersBeforeCompletion: [ORDER_A] })
+      )
+    ).toEqual({
+      state: 'recovery_required',
+      reason: 'incomplete_order_set'
+    });
   });
 
   it('żaden stan nie jest optymistycznym „opłacone" bez zamówień', () => {

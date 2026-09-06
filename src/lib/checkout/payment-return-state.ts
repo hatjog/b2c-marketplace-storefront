@@ -52,9 +52,17 @@ export type PaymentReturnState =
   /** Koszyk domknięty, zamówienia rozwiązane. `reentry` = to jest odświeżenie/powrót. */
   | { state: 'confirmed'; orderIds: string[]; reentry: boolean }
   /** Uwierzytelnienie porzucone albo odrzucone — stan NAZWANY, nie „czekamy". */
-  | { state: 'authentication_abandoned'; reason: 'redirect_status_failed' | 'completion_produced_no_order' }
+  | {
+      state: 'authentication_abandoned';
+      reason: 'redirect_status_failed' | 'completion_produced_no_order';
+    }
   /** Płatność w toku po stronie PSP (np. async push) — jedyny stan, w którym się odpytuje. */
   | { state: 'pending_confirmation'; reason: 'awaiting_psp' | 'completion_failed' }
+  /** Odczyt nie dowiódł kompletnego zakupu; mutacja byłaby niebezpieczna. */
+  | {
+      state: 'recovery_required';
+      reason: 'bridge_read_failed' | 'bridge_access_denied' | 'incomplete_order_set';
+    }
   /** Identyfikator spoza dziedziny — błąd z nazwanym kodem, nigdy wartość domyślna. */
   | { state: 'identifier_out_of_domain' };
 
@@ -70,6 +78,8 @@ export type PaymentReturnFacts = {
   params: StripeReturnParams;
   /** Zamówienia znalezione dla koszyka PRZED próbą domknięcia. */
   ordersBeforeCompletion: string[];
+  /** Rozstrzygnięcie odczytu mostka przed mutacją. */
+  bridgeReadState: 'complete' | 'empty' | 'incomplete' | 'read_failed' | 'access_denied';
   /** Czy warstwa serwerowa wykonała domknięcie w tym żądaniu. */
   completionAttempted: boolean;
   /** Zamówienia po domknięciu (puste, gdy domknięcia nie było albo nic nie dało). */
@@ -79,7 +89,8 @@ export type PaymentReturnFacts = {
 };
 
 export function decidePaymentReturnState(facts: PaymentReturnFacts): PaymentReturnState {
-  const { identifier, params, ordersBeforeCompletion, completionAttempted } = facts;
+  const { identifier, params, ordersBeforeCompletion, completionAttempted, bridgeReadState } =
+    facts;
 
   if (identifier.kind === null) {
     return { state: 'identifier_out_of_domain' };
@@ -89,6 +100,18 @@ export function decidePaymentReturnState(facts: PaymentReturnFacts): PaymentRetu
   // To ZAWSZE ponowne wejście: zamówienie już istnieje, nie ma czego domykać.
   if (identifier.kind === 'order') {
     return { state: 'confirmed', orderIds: [identifier.value], reentry: true };
+  }
+
+  if (bridgeReadState === 'read_failed') {
+    return { state: 'recovery_required', reason: 'bridge_read_failed' };
+  }
+
+  if (bridgeReadState === 'access_denied') {
+    return { state: 'recovery_required', reason: 'bridge_access_denied' };
+  }
+
+  if (bridgeReadState === 'incomplete') {
+    return { state: 'recovery_required', reason: 'incomplete_order_set' };
   }
 
   // Koszyk już domknięty ⇒ odświeżenie / cofnięcie strony. Czysty ODCZYT.

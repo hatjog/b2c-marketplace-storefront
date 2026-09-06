@@ -18,6 +18,14 @@ export type BridgeOrderEntry = {
   order_group_id?: unknown;
 };
 
+export type BridgePurchaseState = 'complete' | 'empty' | 'incomplete';
+
+export type BridgePurchase = {
+  orderIds: string[];
+  expectedOrderCount: number | null;
+  state: BridgePurchaseState;
+};
+
 /** Wyciąga identyfikatory z tablicy obiektów `{ id }`, odrzucając śmieci. */
 export function collectOrderIds(orders: unknown): string[] {
   if (!Array.isArray(orders)) {
@@ -81,10 +89,7 @@ export function resolveBridgeOrderIds(data: unknown): string[] {
  * backend sprzed v1.15.0, który odpowiadał samym skalarem `order_id`). To jest
  * osobny stan, a NIE zgodność — powierzchnia ma go nazwać, nie przemilczeć.
  */
-export function resolveBridgePurchase(data: unknown): {
-  orderIds: string[];
-  expectedOrderCount: number | null;
-} {
+export function resolveBridgePurchase(data: unknown): BridgePurchase {
   const shape = data as
     | { orders?: unknown; order_id?: unknown; order_count?: unknown }
     | null
@@ -92,19 +97,35 @@ export function resolveBridgePurchase(data: unknown): {
 
   const rawCount = shape?.order_count;
   const expectedOrderCount =
-    typeof rawCount === 'number' && Number.isInteger(rawCount) && rawCount > 0 ? rawCount : null;
+    typeof rawCount === 'number' && Number.isInteger(rawCount) && rawCount >= 0 ? rawCount : null;
 
   if (Array.isArray(shape?.orders)) {
     const collection = (shape.orders as BridgeOrderEntry[])
       .map(entry => entry?.order_id)
       .filter((id): id is string => typeof id === 'string' && id.length > 0);
-    if (collection.length > 0) {
-      return { orderIds: Array.from(new Set(collection)), expectedOrderCount };
+    const orderIds = Array.from(new Set(collection));
+    if (
+      orderIds.length === 0 ||
+      expectedOrderCount === null ||
+      orderIds.length !== expectedOrderCount
+    ) {
+      return { orderIds, expectedOrderCount, state: 'incomplete' };
     }
+    return { orderIds, expectedOrderCount, state: 'complete' };
   }
 
   const legacyScalar = shape?.order_id;
   const orderIds =
     typeof legacyScalar === 'string' && legacyScalar.length > 0 ? [legacyScalar] : [];
-  return { orderIds, expectedOrderCount };
+  if (orderIds.length === 0) {
+    return {
+      orderIds,
+      expectedOrderCount,
+      state: expectedOrderCount === null ? 'empty' : 'incomplete'
+    };
+  }
+  if (expectedOrderCount !== null && expectedOrderCount !== 1) {
+    return { orderIds, expectedOrderCount, state: 'incomplete' };
+  }
+  return { orderIds, expectedOrderCount, state: 'complete' };
 }
