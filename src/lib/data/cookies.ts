@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
 import { cookies as nextCookies } from 'next/headers';
 
 import { resolveStorefrontLocale } from '@/lib/sdk/locale-interceptor';
@@ -89,7 +91,10 @@ export const setCartId = async (cartId: string) => {
   cookies.set('_medusa_cart_id', cartId, {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
-    sameSite: 'strict',
+    // Pierwsze żądanie po pełnym powrocie 3DS przychodzi z `stripe.com`.
+    // `strict` ukrywałoby wtedy jedyny dowód koszyka przed Route Handlerem;
+    // `lax` nadal nie wysyła go w żądaniach osadzonych ani cross-site POST.
+    sameSite: 'lax',
     path: '/',
     secure: process.env.NODE_ENV === 'production'
   });
@@ -171,16 +176,138 @@ export const provesCartOwnership = async (cartId: string): Promise<boolean> => {
 
 const PAYMENT_RETURN_OUTCOME_COOKIE = '_gp_payment_return_outcome';
 const PAYMENT_RETURN_OUTCOME_TTL_SECONDS = 60 * 5;
+const PAYMENT_RETURN_OUTCOME_MAX_ENTRIES = 3;
 
 type PaymentReturnOutcomeRecord = {
   identifier: string;
   paymentIntent: string | null;
   outcome: string;
+  expiresAt: number;
 };
 
-export const setPaymentReturnOutcome = async (record: PaymentReturnOutcomeRecord): Promise<void> => {
+type PaymentReturnOutcomeInput = Omit<PaymentReturnOutcomeRecord, 'expiresAt'>;
+
+type PaymentReturnOutcomeEnvelope = {
+  version: 1;
+  records: PaymentReturnOutcomeRecord[];
+  signature: string;
+};
+
+/**
+ * Outcome nie jest wskazówką UX, lecz bramką ponownego `/complete`; jego
+ * integralność musi więc pochodzić z sekretu serwera. Używamy istniejącego
+ * sekretu HMAC Storefrontu i osobnej etykiety payloadu, aby nie mieszać
+ * przestrzeni podpisów claimów voucherów z powrotem płatności.
+ */
+function paymentReturnOutcomeSecret(): string | null {
+  return process.env.GP_VOUCHER_CLAIM_HMAC_SECRET ?? process.env.JWT_SECRET ?? null;
+}
+
+function canonicalOutcomeRecords(records: PaymentReturnOutcomeRecord[]): string {
+  return JSON.stringify(
+    records.map(record => ({
+      identifier: record.identifier,
+      paymentIntent: record.paymentIntent,
+      outcome: record.outcome,
+      expiresAt: record.expiresAt
+    }))
+  );
+}
+
+function signOutcomeRecords(records: PaymentReturnOutcomeRecord[]): string | null {
+  const secret = paymentReturnOutcomeSecret();
+  if (!secret) {
+    return null;
+  }
+  return createHmac('sha256', secret)
+    .update(`payment-return-outcome.v1:${canonicalOutcomeRecords(records)}`, 'utf8')
+    .digest('hex');
+}
+
+function hasValidSignature(records: PaymentReturnOutcomeRecord[], signature: unknown): boolean {
+  if (typeof signature !== 'string' || !/^[a-f0-9]{64}$/i.test(signature)) {
+    return false;
+  }
+  const expected = signOutcomeRecords(records);
+  if (!expected) {
+    return false;
+  }
+  const suppliedBuffer = Buffer.from(signature, 'hex');
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  return (
+    suppliedBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(suppliedBuffer, expectedBuffer)
+  );
+}
+
+function parseOutcomeRecords(
+  raw: string | undefined,
+  now = Date.now()
+): PaymentReturnOutcomeRecord[] | null {
+  if (!raw) {
+    return [];
+  }
+  try {
+    const envelope = JSON.parse(raw) as Partial<PaymentReturnOutcomeEnvelope>;
+    if (
+      envelope.version !== 1 ||
+      !Array.isArray(envelope.records) ||
+      envelope.records.length > PAYMENT_RETURN_OUTCOME_MAX_ENTRIES
+    ) {
+      return null;
+    }
+    const records: PaymentReturnOutcomeRecord[] = [];
+    for (const candidate of envelope.records) {
+      if (
+        !candidate ||
+        typeof candidate.identifier !== 'string' ||
+        (candidate.paymentIntent !== null && typeof candidate.paymentIntent !== 'string') ||
+        typeof candidate.outcome !== 'string' ||
+        !Number.isFinite(candidate.expiresAt)
+      ) {
+        return null;
+      }
+      records.push({
+        identifier: candidate.identifier,
+        paymentIntent: candidate.paymentIntent,
+        outcome: candidate.outcome,
+        expiresAt: candidate.expiresAt
+      });
+    }
+    if (!hasValidSignature(records, envelope.signature)) {
+      return null;
+    }
+    return records.filter(record => record.expiresAt > now);
+  } catch {
+    return null;
+  }
+}
+
+export const setPaymentReturnOutcome = async (record: PaymentReturnOutcomeInput): Promise<void> => {
   const cookies = await nextCookies();
-  cookies.set(PAYMENT_RETURN_OUTCOME_COOKIE, JSON.stringify(record), {
+  const now = Date.now();
+  const prior = parseOutcomeRecords(cookies.get(PAYMENT_RETURN_OUTCOME_COOKIE)?.value, now) ?? [];
+  const records = [
+    {
+      identifier: record.identifier,
+      paymentIntent: record.paymentIntent,
+      outcome: record.outcome,
+      expiresAt: now + PAYMENT_RETURN_OUTCOME_TTL_SECONDS * 1000
+    },
+    ...prior.filter(
+      candidate =>
+        candidate.identifier !== record.identifier ||
+        candidate.paymentIntent !== record.paymentIntent
+    )
+  ].slice(0, PAYMENT_RETURN_OUTCOME_MAX_ENTRIES);
+  const signature = signOutcomeRecords(records);
+  if (!signature) {
+    // Brak sekretu nie może zamienić niepodpisanego cookie w dowód. Handler
+    // wróci wtedy do bezpiecznego odczytu mostka zamiast ufać przeglądarce.
+    return;
+  }
+  const envelope: PaymentReturnOutcomeEnvelope = { version: 1, records, signature };
+  cookies.set(PAYMENT_RETURN_OUTCOME_COOKIE, JSON.stringify(envelope), {
     maxAge: PAYMENT_RETURN_OUTCOME_TTL_SECONDS,
     httpOnly: true,
     sameSite: 'lax',
@@ -194,24 +321,12 @@ export const getPaymentReturnOutcome = async (
   paymentIntent: string | undefined
 ): Promise<string | null> => {
   const cookies = await nextCookies();
-  const raw = cookies.get(PAYMENT_RETURN_OUTCOME_COOKIE)?.value;
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const record = JSON.parse(raw) as Partial<PaymentReturnOutcomeRecord>;
-    if (
-      record.identifier !== identifier ||
-      record.paymentIntent !== (paymentIntent ?? null) ||
-      typeof record.outcome !== 'string'
-    ) {
-      return null;
-    }
-    return record.outcome;
-  } catch {
-    return null;
-  }
+  const records = parseOutcomeRecords(cookies.get(PAYMENT_RETURN_OUTCOME_COOKIE)?.value);
+  return (
+    records?.find(
+      record => record.identifier === identifier && record.paymentIntent === (paymentIntent ?? null)
+    )?.outcome ?? null
+  );
 };
 
 export const removePaymentReturnOutcome = async (): Promise<void> => {

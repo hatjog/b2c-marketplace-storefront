@@ -32,9 +32,14 @@ vi.mock('next/cache', () => ({
 
 /** Realny, prosty magazyn cookies — Route Handlerowi wolno go zapisywać. */
 const cookieStore = new Map<string, string>();
-const cookieSet = vi.fn((name: string, value: string) => {
+const cookieSet = vi.fn((name: string, value: string, _options?: unknown) => {
   cookieStore.set(name, value);
 });
+
+// Podpis outcome korzysta z istniejącej konfiguracji HMAC Storefrontu. Test
+// ustawia jawny sekret przed importem Route Handlera, by niesygnowany mutant
+// nie mógł przypadkiem przejść dzięki brakowi konfiguracji.
+process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = 'payment-return-route-test-secret-32-bytes';
 
 vi.mock('next/headers', () => ({
   cookies: async () => ({
@@ -409,8 +414,16 @@ describe('idempotencja Route Handlera', () => {
         return { ok: false, status: 404 };
       });
 
-      const first = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
-      const second = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+      const first = await callHandler({
+        cart_id: CART,
+        locale: 'pl',
+        redirect_status: 'succeeded'
+      });
+      const second = await callHandler({
+        cart_id: CART,
+        locale: 'pl',
+        redirect_status: 'succeeded'
+      });
 
       expect(postCalls()).toHaveLength(1);
       expect(first).toContain(`gp_return=${outcome}`);
@@ -427,5 +440,61 @@ describe('idempotencja Route Handlera', () => {
     expect(postCalls()).toHaveLength(1);
     expect(first).toContain('gp_return=done');
     expect(second).toContain('gp_return=done');
+  });
+
+  it('niesygnowane cookie `done` nie blokuje pierwszego domknięcia', async () => {
+    cookieStore.set(
+      '_gp_payment_return_outcome',
+      JSON.stringify({ identifier: CART, paymentIntent: 'pi_3STORY36', outcome: 'done' })
+    );
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(1);
+    expect(target).toContain('gp_return=done');
+  });
+
+  it('zachowuje outcome dwóch koszyków, zamiast nadpisać pierwszy globalnym rekordem', async () => {
+    const secondCart = 'cart_01STORY36SECOND';
+    const secondIntent = 'pi_3STORY36SECOND';
+    retrieveCart.mockResolvedValue({
+      cart: {
+        payment_collection: {
+          payment_sessions: [
+            { provider_id: 'pp_stripe_stripe', data: { client_secret: 'pi_3STORY36_secret_x' } },
+            {
+              provider_id: 'pp_stripe_stripe',
+              data: { client_secret: 'pi_3STORY36SECOND_secret_x' }
+            }
+          ]
+        }
+      }
+    });
+    fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (init?.method === 'POST' && path.includes('/complete')) {
+        throw new Error('completion down');
+      }
+      return { ok: false, status: 404 };
+    });
+
+    const first = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    cookieStore.set('_medusa_cart_id', secondCart);
+    const second = await callHandler({
+      cart_id: secondCart,
+      locale: 'pl',
+      redirect_status: 'succeeded',
+      payment_intent: secondIntent
+    });
+    cookieStore.set('_medusa_cart_id', CART);
+    const firstReentry = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'succeeded'
+    });
+
+    expect(postCalls()).toHaveLength(2);
+    expect(first).toContain('gp_return=completion_failed');
+    expect(second).toContain('gp_return=completion_failed');
+    expect(firstReentry).toContain('gp_return=completion_failed');
   });
 });
