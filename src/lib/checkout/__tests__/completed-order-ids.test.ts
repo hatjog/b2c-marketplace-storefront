@@ -131,6 +131,32 @@ describe('ogniwo 2→3 — odczyt kolekcji z endpointu mostkowego', () => {
     ).toEqual({ orderIds: [ORDER_A], expectedOrderCount: 2, state: 'incomplete' });
   });
 
+  it('nie przyjmuje śmieciowego wiersza jako kompletnego zbioru', () => {
+    expect(
+      resolveBridgePurchase({
+        orders: [{ order_id: ORDER_A, order_group_id: null }, null],
+        order_count: 1
+      })
+    ).toEqual({ orderIds: [], expectedOrderCount: 1, state: 'incomplete' });
+  });
+
+  it('nie przyjmuje duplikatu jako dwóch elementów kontraktu', () => {
+    expect(
+      resolveBridgePurchase({
+        orders: [{ order_id: ORDER_A }, { order_id: ORDER_A }],
+        order_count: 2
+      })
+    ).toEqual({ orderIds: [ORDER_A], expectedOrderCount: 2, state: 'incomplete' });
+  });
+
+  it('odróżnia niekształtną odpowiedź 200 od prawidłowej pustki 404', () => {
+    expect(resolveBridgePurchase({})).toEqual({
+      orderIds: [],
+      expectedOrderCount: null,
+      state: 'malformed'
+    });
+  });
+
   it('nic użytecznego → pusta kolekcja', () => {
     expect(resolveBridgeOrderIds({})).toEqual([]);
     expect(resolveBridgeOrderIds(null)).toEqual([]);

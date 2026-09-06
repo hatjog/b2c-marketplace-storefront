@@ -93,11 +93,33 @@ vi.mock('next-intl/server', () => ({
   getTranslations: async () => (key: string) => key
 }));
 
+vi.mock('@/lib/sdk/locale-interceptor', () => ({
+  resolveStorefrontLocale: async () => 'pl'
+}));
+
 // Strona importuje barrel `@/components/atoms`, który ciągnie `next/image`
 // i `next/link` — te moduły nie rozwiązują się poza bundlerem Next.js.
 // To są atrapy ŚRODOWISKA, nie mierzonego mechanizmu.
 vi.mock('next/image', () => ({ default: () => null }));
 vi.mock('next/link', () => ({ default: () => null }));
+
+// Te komponenty nie są przedmiotem tej suity. Atrapy zatrzymują import
+// szerokiego barrel-a UI (który w worktree bez lokalnego `node_modules` nie
+// rozwiąże wszystkich zależności), pozostawiając rzeczywistą stronę oraz
+// rzeczywiste `resolvePaymentReturn`/`cart.ts` w wykonywanym łańcuchu.
+vi.mock('@/components/atoms', () => ({
+  StorefrontI18nLongContentProbe: () => null,
+  StorefrontRouteStateSignal: () => null
+}));
+vi.mock('@/components/sections/PaymentReturnNotice/PaymentReturnAutoRefresh', () => ({
+  PaymentReturnAutoRefresh: () => null
+}));
+vi.mock('@/components/sections/PaymentReturnNotice/PaymentReturnNotice', () => ({
+  PaymentReturnNotice: () => null
+}));
+vi.mock('@/components/sections/PaymentStatusV180/PaymentStatusV180', () => ({
+  PaymentStatusV180: () => null
+}));
 
 // ── Jedyna zamockowana granica SIECIOWA (backend Medusy nie żyje w teście) ──
 
@@ -143,12 +165,18 @@ function bridgeReturns(orderIds: string[]) {
 beforeEach(() => {
   vi.clearAllMocks();
   cookieStore.clear();
+  // Strona statusu jest odczytem chronionym tym samym dowodem koszyka co
+  // Route Handler. Bez tego cookie prawidłowo odmawia już przed odczytem
+  // mostka, więc scenariusze renderu nie docierałyby do badanej granicy.
+  cookieStore.set('_medusa_cart_id', CART);
   bridgeReturns([]);
 });
 
 describe('AC2 — render strony powrotu NIE mutuje (wykonanie, nie obecność)', () => {
   it('powrót wymagający domknięcia → PRZEKIEROWANIE na Route Handler, zero mutacji w renderze', async () => {
-    const err = await PaymentStatusPage(pageProps({ redirect_status: 'succeeded' })).then(
+    const err = await PaymentStatusPage(
+      pageProps({ redirect_status: 'succeeded', payment_intent: 'pi_3STORY36' })
+    ).then(
       () => null,
       (e: unknown) => e
     );
@@ -178,12 +206,16 @@ describe('AC2 — render strony powrotu NIE mutuje (wykonanie, nie obecność)',
     expect(cookieSet).not.toHaveBeenCalled();
   });
 
-  it('powrót ZE znacznikiem `gp_return=done` jest odczytem — nie odsyła ponownie (brak pętli)', async () => {
-    const element = await PaymentStatusPage(
-      pageProps({ redirect_status: 'succeeded', gp_return: 'done' })
+  it('klientowy `gp_return=done` nie blokuje pierwszego domknięcia', async () => {
+    const err = await PaymentStatusPage(
+      pageProps({ redirect_status: 'succeeded', payment_intent: 'pi_3STORY36', gp_return: 'done' })
+    ).then(
+      () => null,
+      (e: unknown) => e
     );
 
-    expect(element).toBeTruthy();
+    expect(err).toBeInstanceOf(RedirectSignal);
+    expect((err as RedirectSignal).target).toContain('/api/v1/checkout/payment-return');
     expect(cookieSet).not.toHaveBeenCalled();
   });
 

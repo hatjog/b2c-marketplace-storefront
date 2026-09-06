@@ -46,6 +46,7 @@ export type StripeReturnParams = {
    * po to, żeby dołożyć kolejny martwy mechanizm.
    */
   payment_intent_client_secret?: string;
+  ambiguous: boolean;
 };
 
 export type PaymentReturnState =
@@ -61,7 +62,21 @@ export type PaymentReturnState =
   /** Odczyt nie dowiódł kompletnego zakupu; mutacja byłaby niebezpieczna. */
   | {
       state: 'recovery_required';
-      reason: 'bridge_read_failed' | 'bridge_access_denied' | 'incomplete_order_set';
+      reason:
+        | 'bridge_read_failed'
+        | 'bridge_access_denied'
+        | 'incomplete_order_set'
+        | 'bridge_malformed';
+    }
+  | {
+      state: 'return_refused';
+      reason:
+        | 'identifier_out_of_domain'
+        | 'not_a_cart'
+        | 'no_stripe_confirmation'
+        | 'cart_ownership_unproven'
+        | 'payment_intent_mismatch'
+        | 'ambiguous_return_parameters';
     }
   /** Identyfikator spoza dziedziny — błąd z nazwanym kodem, nigdy wartość domyślna. */
   | { state: 'identifier_out_of_domain' };
@@ -79,7 +94,13 @@ export type PaymentReturnFacts = {
   /** Zamówienia znalezione dla koszyka PRZED próbą domknięcia. */
   ordersBeforeCompletion: string[];
   /** Rozstrzygnięcie odczytu mostka przed mutacją. */
-  bridgeReadState: 'complete' | 'empty' | 'incomplete' | 'read_failed' | 'access_denied';
+  bridgeReadState:
+    | 'complete'
+    | 'empty'
+    | 'incomplete'
+    | 'malformed'
+    | 'read_failed'
+    | 'access_denied';
   /** Czy warstwa serwerowa wykonała domknięcie w tym żądaniu. */
   completionAttempted: boolean;
   /** Zamówienia po domknięciu (puste, gdy domknięcia nie było albo nic nie dało). */
@@ -112,6 +133,10 @@ export function decidePaymentReturnState(facts: PaymentReturnFacts): PaymentRetu
 
   if (bridgeReadState === 'incomplete') {
     return { state: 'recovery_required', reason: 'incomplete_order_set' };
+  }
+
+  if (bridgeReadState === 'malformed') {
+    return { state: 'recovery_required', reason: 'bridge_malformed' };
   }
 
   // Koszyk już domknięty ⇒ odświeżenie / cofnięcie strony. Czysty ODCZYT.

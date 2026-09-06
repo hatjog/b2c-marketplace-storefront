@@ -58,6 +58,7 @@ export const getCacheOptions = async (tag: string): Promise<{ tags: string[] } |
  */
 export const setAuthToken = async (token: string) => {
   await removeCompletedCartId();
+  await removePaymentReturnOutcome();
   const cookies = await nextCookies();
   cookies.set('_medusa_jwt', token, {
     maxAge: 60 * 60 * 24 * 7,
@@ -70,6 +71,7 @@ export const setAuthToken = async (token: string) => {
 
 export const removeAuthToken = async () => {
   await removeCompletedCartId();
+  await removePaymentReturnOutcome();
   const cookies = await nextCookies();
   cookies.set('_medusa_jwt', '', {
     maxAge: -1,
@@ -153,6 +155,68 @@ export const setCompletedCartId = async (cartId: string) => {
 export const getCompletedCartId = async (): Promise<string | undefined> => {
   const cookies = await nextCookies();
   return cookies.get(COMPLETED_CART_COOKIE)?.value || undefined;
+};
+
+export const provesCartOwnership = async (cartId: string): Promise<boolean> => {
+  const activeCartId = await getCartId();
+  if (activeCartId === cartId) {
+    return true;
+  }
+
+  return ((await getCompletedCartId()) ?? '')
+    .split(',')
+    .map(entry => entry.trim())
+    .includes(cartId);
+};
+
+const PAYMENT_RETURN_OUTCOME_COOKIE = '_gp_payment_return_outcome';
+const PAYMENT_RETURN_OUTCOME_TTL_SECONDS = 60 * 5;
+
+type PaymentReturnOutcomeRecord = {
+  identifier: string;
+  paymentIntent: string | null;
+  outcome: string;
+};
+
+export const setPaymentReturnOutcome = async (record: PaymentReturnOutcomeRecord): Promise<void> => {
+  const cookies = await nextCookies();
+  cookies.set(PAYMENT_RETURN_OUTCOME_COOKIE, JSON.stringify(record), {
+    maxAge: PAYMENT_RETURN_OUTCOME_TTL_SECONDS,
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    secure: process.env.NODE_ENV === 'production'
+  });
+};
+
+export const getPaymentReturnOutcome = async (
+  identifier: string,
+  paymentIntent: string | undefined
+): Promise<string | null> => {
+  const cookies = await nextCookies();
+  const raw = cookies.get(PAYMENT_RETURN_OUTCOME_COOKIE)?.value;
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const record = JSON.parse(raw) as Partial<PaymentReturnOutcomeRecord>;
+    if (
+      record.identifier !== identifier ||
+      record.paymentIntent !== (paymentIntent ?? null) ||
+      typeof record.outcome !== 'string'
+    ) {
+      return null;
+    }
+    return record.outcome;
+  } catch {
+    return null;
+  }
+};
+
+export const removePaymentReturnOutcome = async (): Promise<void> => {
+  const cookies = await nextCookies();
+  cookies.set(PAYMENT_RETURN_OUTCOME_COOKIE, '', { maxAge: -1, path: '/' });
 };
 
 /**

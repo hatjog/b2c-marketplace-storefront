@@ -1376,6 +1376,12 @@
     "hero_title_degraded": "We could not read the whole purchase right now",
     "purchase_read_failed_title": "We could not read this purchase right now",
     "purchase_read_failed_body": "This is a failure on our side, not a problem with your link. Your payment is safe — refresh in a moment or open your order history.",
+    "purchase_access_denied_title": "You do not have access to this purchase",
+    "purchase_access_denied_body": "We could not confirm your access to this purchase, so we are not displaying its orders.",
+    "purchase_incomplete_order_set_title": "We cannot safely display the whole purchase yet",
+    "purchase_incomplete_order_set_body": "The read does not contain the complete set of orders, so we are not presenting a partial result as a success.",
+    "purchase_malformed_title": "We cannot safely read this purchase",
+    "purchase_malformed_body": "The purchase response has an invalid shape, so we are not presenting it as a confirmation.",
     "order_position": "Order {index} of {total}",
     "drilldown_notice": "We are showing one order from your purchase. The full list is in your order history.",
     "purchase_not_found_title": "We could not find this purchase",
@@ -1968,6 +1974,11 @@
     "return_identifier_out_of_domain": {
       "label": "We do not recognise this link",
       "body": "The address you arrived from does not point to your cart or order. Open the status from the link in your purchase confirmation e-mail, or go back to your cart.",
+      "cta": "Back to cart"
+    },
+    "return_return_refused": {
+      "label": "We cannot safely confirm this return",
+      "body": "We could not verify that this return belongs to your cart and payment, so we did not complete the order.",
       "cta": "Back to cart"
     },
     "page_title": "Payment status",

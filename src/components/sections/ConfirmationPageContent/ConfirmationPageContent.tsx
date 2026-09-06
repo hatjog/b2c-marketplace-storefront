@@ -51,7 +51,12 @@ type Props = {
  * karty dwie zupełnie różne wiadomości (AC3, AD-19).
  */
 const EMPTY_PURCHASE_COPY: Record<
-  'out_of_domain' | 'purchase_not_found' | 'read_failed',
+  | 'out_of_domain'
+  | 'purchase_not_found'
+  | 'read_failed'
+  | 'access_denied'
+  | 'incomplete_order_set'
+  | 'malformed_purchase',
   { testId: string; titleKey: string; bodyKey: string }
 > = {
   out_of_domain: {
@@ -68,6 +73,21 @@ const EMPTY_PURCHASE_COPY: Record<
     testId: 'confirmation-read-failed',
     titleKey: 'purchase_read_failed_title',
     bodyKey: 'purchase_read_failed_body'
+  },
+  access_denied: {
+    testId: 'confirmation-access-denied',
+    titleKey: 'purchase_access_denied_title',
+    bodyKey: 'purchase_access_denied_body'
+  },
+  incomplete_order_set: {
+    testId: 'confirmation-incomplete-order-set',
+    titleKey: 'purchase_incomplete_order_set_title',
+    bodyKey: 'purchase_incomplete_order_set_body'
+  },
+  malformed_purchase: {
+    testId: 'confirmation-malformed-purchase',
+    titleKey: 'purchase_malformed_title',
+    bodyKey: 'purchase_malformed_body'
   }
 };
 
@@ -99,7 +119,10 @@ export function ConfirmationPageContent({ purchase }: Props) {
   if (
     purchase.kind === 'out_of_domain' ||
     purchase.kind === 'purchase_not_found' ||
-    purchase.kind === 'read_failed'
+    purchase.kind === 'read_failed' ||
+    purchase.kind === 'access_denied' ||
+    purchase.kind === 'incomplete_order_set' ||
+    purchase.kind === 'malformed_purchase'
   ) {
     const copy = EMPTY_PURCHASE_COPY[purchase.kind];
     return (

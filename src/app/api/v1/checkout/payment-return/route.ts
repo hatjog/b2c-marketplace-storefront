@@ -48,8 +48,13 @@ import type { NextRequest } from 'next/server';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/routing';
 import { classifyPaymentReturnIdentifier } from '@/lib/checkout/payment-return-identifier';
 import { getCompletedPurchaseForCart } from '@/lib/data/cart';
-import { getCartId, getCompletedCartId } from '@/lib/data/cookies';
 import {
+  getPaymentReturnOutcome,
+  provesCartOwnership,
+  setPaymentReturnOutcome
+} from '@/lib/data/cookies';
+import {
+  isPaymentIntentBoundToCart,
   isStripeReturnConfirmation,
   performPaymentReturnCompletion,
   readStripeReturnParams,
@@ -64,7 +69,9 @@ type RefusalCode =
   | 'identifier_out_of_domain'
   | 'not_a_cart'
   | 'no_stripe_confirmation'
-  | 'cart_ownership_unproven';
+  | 'cart_ownership_unproven'
+  | 'payment_intent_mismatch'
+  | 'ambiguous_return_parameters';
 
 /**
  * Locale z query stringu jest wartością z PRZEGLĄDARKI — walidujemy ją wobec
@@ -83,34 +90,13 @@ function statusPageUrl(
 ): string {
   const query = new URLSearchParams();
   for (const key of ['redirect_status', 'payment_intent'] as const) {
-    const value = params.get(key);
-    if (value) {
-      query.set(key, value);
+    const values = params.getAll(key);
+    if (values.length === 1 && values[0]) {
+      query.set(key, values[0]);
     }
   }
   query.set(PAYMENT_RETURN_DONE_PARAM, outcome);
-  return `/${locale}/order/${identifier}/payment-status?${query.toString()}`;
-}
-
-/**
- * Czy przeglądarka udowodniła, że ten koszyk jest jej?
- *
- * Dwa akceptowane dowody, oba `httpOnly`, żaden nie pochodzi z query stringu:
- *  • `_medusa_cart_id` — koszyk jest wciąż aktywny w tej przeglądarce,
- *  • `_gp_completed_cart` — koszyk był już domykany w tej przeglądarce
- *    (odświeżenie po częściowo udanym powrocie).
- */
-async function provesCartOwnership(cartId: string): Promise<boolean> {
-  const activeCartId = await getCartId();
-  if (activeCartId === cartId) {
-    return true;
-  }
-
-  const completed = (await getCompletedCartId()) ?? '';
-  return completed
-    .split(',')
-    .map(entry => entry.trim())
-    .includes(cartId);
+  return `/${locale}/order/${encodeURIComponent(identifier)}/payment-status?${query.toString()}`;
 }
 
 export async function GET(req: NextRequest): Promise<Response> {
@@ -118,32 +104,57 @@ export async function GET(req: NextRequest): Promise<Response> {
   const locale = safeLocale(search.get('locale'));
   const rawCartId = search.get('cart_id') ?? '';
 
-  const refuse = (code: RefusalCode): never => {
+  const redirectWithOutcome = async (identifier: string, outcome: PaymentReturnOutcome): Promise<never> => {
+    if (outcome !== 'done') {
+      await setPaymentReturnOutcome({
+        identifier,
+        paymentIntent: search.get('payment_intent'),
+        outcome
+      });
+    }
+    redirect(statusPageUrl(locale, identifier, search, outcome));
+  };
+
+  const refuse = async (code: RefusalCode): Promise<never> => {
     // Odmowa jest WIDOCZNA (NFR-2) i nazwana. Nie kasujemy i nie mutujemy
     // niczego — wracamy na stronę statusu, która rozstrzygnie stan odczytem.
     console.warn(`[payment-return] completion refused code=${code} cart=${rawCartId || 'none'}`);
-    redirect(statusPageUrl(locale, rawCartId || 'unknown', search));
+    return redirectWithOutcome(rawCartId || 'unknown', code);
   };
 
   const identifier = classifyPaymentReturnIdentifier(rawCartId);
   if (identifier.kind === null) {
-    refuse('identifier_out_of_domain');
+    return refuse('identifier_out_of_domain');
   }
   if (identifier.kind !== 'cart') {
-    refuse('not_a_cart');
+    return refuse('not_a_cart');
   }
 
   const params = await readStripeReturnParams({
-    payment_intent: search.get('payment_intent') ?? undefined,
-    redirect_status: search.get('redirect_status') ?? undefined
-  } as Record<string, string>);
+    payment_intent: search.getAll('payment_intent'),
+    redirect_status: search.getAll('redirect_status'),
+    payment_intent_client_secret: search.getAll('payment_intent_client_secret')
+  });
+
+  if (params.ambiguous) {
+    return refuse('ambiguous_return_parameters');
+  }
 
   if (!(await isStripeReturnConfirmation(params))) {
-    refuse('no_stripe_confirmation');
+    return refuse('no_stripe_confirmation');
   }
 
   if (!(await provesCartOwnership(identifier.value))) {
-    refuse('cart_ownership_unproven');
+    return refuse('cart_ownership_unproven');
+  }
+
+  if (!params.payment_intent || !(await isPaymentIntentBoundToCart(identifier.value, params.payment_intent))) {
+    return refuse('payment_intent_mismatch');
+  }
+
+  const priorOutcome = await getPaymentReturnOutcome(identifier.value, params.payment_intent);
+  if (priorOutcome) {
+    return redirectWithOutcome(identifier.value, priorOutcome as PaymentReturnOutcome);
   }
 
   // ── Idempotencja: ODCZYT przed mutacją ───────────────────────────────────
@@ -152,23 +163,25 @@ export async function GET(req: NextRequest): Promise<Response> {
     bridge = await getCompletedPurchaseForCart(identifier.value, { attempts: 2 });
   } catch (error) {
     console.warn(`[payment-return] bridge read failed cart=${identifier.value}`, error);
-    redirect(statusPageUrl(locale, identifier.value, search, 'read_failed'));
+    return redirectWithOutcome(identifier.value, 'read_failed');
   }
 
   if (bridge.state === 'complete') {
-    redirect(statusPageUrl(locale, identifier.value, search));
+    return redirectWithOutcome(identifier.value, 'done');
   }
 
   if (bridge.state !== 'empty') {
-    const outcome: Extract<PaymentReturnOutcome, 'read_failed' | 'access_denied' | 'incomplete'> =
+    const outcome: Extract<PaymentReturnOutcome, 'read_failed' | 'access_denied' | 'incomplete' | 'malformed'> =
       bridge.state === 'read_failed'
         ? 'read_failed'
         : bridge.state === 'access_denied'
           ? 'access_denied'
-          : 'incomplete';
-    redirect(statusPageUrl(locale, identifier.value, search, outcome));
+          : bridge.state === 'malformed'
+            ? 'malformed'
+            : 'incomplete';
+    return redirectWithOutcome(identifier.value, outcome);
   }
 
   const completion = await performPaymentReturnCompletion(identifier.value);
-  redirect(statusPageUrl(locale, identifier.value, search, completion.outcome));
+  return redirectWithOutcome(identifier.value, completion.outcome);
 }

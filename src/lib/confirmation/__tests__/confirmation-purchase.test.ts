@@ -22,13 +22,14 @@ describe('resolveBridgePurchase — liczność kontraktu dociera do powierzchni'
         order_count: 2,
         order_id: 'order_b'
       })
-    ).toEqual({ orderIds: ['order_a', 'order_b'], expectedOrderCount: 2 });
+    ).toEqual({ orderIds: ['order_a', 'order_b'], expectedOrderCount: 2, state: 'complete' });
   });
 
   it('backend sprzed v1.15.0 (sam skalar) daje kolekcję 1-elementową i BRAK liczności', () => {
     expect(resolveBridgePurchase({ order_id: 'order_legacy' })).toEqual({
       orderIds: ['order_legacy'],
-      expectedOrderCount: null
+      expectedOrderCount: null,
+      state: 'complete'
     });
   });
 
@@ -108,6 +109,19 @@ describe('decideConfirmationPurchase — segment trasy niesie ZAKUP', () => {
         bridge: null
       }).kind
     ).toBe('read_failed');
+  });
+
+  it.each([
+    ['access_denied', 'access_denied'],
+    ['incomplete', 'incomplete_order_set'],
+    ['malformed', 'malformed_purchase']
+  ] as const)('stan mostka %s nie jest prezentowany jako pełna kolekcja', (state, kind) => {
+    expect(
+      decideConfirmationPurchase({
+        identifier: classifyPaymentReturnIdentifier('cart_123'),
+        bridge: { orderIds: ['order_a'], expectedOrderCount: 2, state }
+      }).kind
+    ).toBe(kind);
   });
 
   it('wartość spoza dziedziny jest BŁĘDEM, nie domyślną (AD-19)', () => {

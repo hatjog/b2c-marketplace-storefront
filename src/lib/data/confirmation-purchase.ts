@@ -16,6 +16,7 @@ import {
 import { classifyPaymentReturnIdentifier } from '@/lib/checkout/payment-return-identifier';
 
 import { getCompletedPurchaseForCart } from './cart';
+import { provesCartOwnership } from './cookies';
 
 export async function resolveConfirmationPurchase(
   rawIdentifier: unknown
@@ -24,6 +25,10 @@ export async function resolveConfirmationPurchase(
 
   if (identifier.kind !== 'cart') {
     return decideConfirmationPurchase({ identifier, bridge: null });
+  }
+
+  if (!(await provesCartOwnership(identifier.value))) {
+    return { kind: 'access_denied', value: identifier.value };
   }
 
   let bridge = null as Awaited<ReturnType<typeof getCompletedPurchaseForCart>> | null;

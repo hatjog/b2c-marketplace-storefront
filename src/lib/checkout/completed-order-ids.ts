@@ -18,7 +18,7 @@ export type BridgeOrderEntry = {
   order_group_id?: unknown;
 };
 
-export type BridgePurchaseState = 'complete' | 'empty' | 'incomplete';
+export type BridgePurchaseState = 'complete' | 'empty' | 'incomplete' | 'malformed';
 
 export type BridgePurchase = {
   orderIds: string[];
@@ -95,15 +95,29 @@ export function resolveBridgePurchase(data: unknown): BridgePurchase {
     | null
     | undefined;
 
-  const rawCount = shape?.order_count;
-  const expectedOrderCount =
-    typeof rawCount === 'number' && Number.isInteger(rawCount) && rawCount >= 0 ? rawCount : null;
+  if (!shape || typeof shape !== 'object') {
+    return { orderIds: [], expectedOrderCount: null, state: 'malformed' };
+  }
 
-  if (Array.isArray(shape?.orders)) {
-    const collection = (shape.orders as BridgeOrderEntry[])
-      .map(entry => entry?.order_id)
-      .filter((id): id is string => typeof id === 'string' && id.length > 0);
-    const orderIds = Array.from(new Set(collection));
+  const rawCount = shape.order_count;
+  const expectedOrderCount =
+    typeof rawCount === 'number' && Number.isInteger(rawCount) && rawCount > 0 ? rawCount : null;
+
+  if (Object.hasOwn(shape, 'orders')) {
+    if (!Array.isArray(shape.orders)) {
+      return { orderIds: [], expectedOrderCount, state: 'malformed' };
+    }
+
+    const entries = shape.orders as BridgeOrderEntry[];
+    const collection = entries.map(entry => entry?.order_id);
+    const validEntries = collection.every(
+      (id): id is string => typeof id === 'string' && id.length > 0
+    );
+    const orderIds = validEntries ? Array.from(new Set(collection)) : [];
+
+    if (!validEntries || orderIds.length !== entries.length) {
+      return { orderIds, expectedOrderCount, state: 'incomplete' };
+    }
     if (
       orderIds.length === 0 ||
       expectedOrderCount === null ||
@@ -114,15 +128,11 @@ export function resolveBridgePurchase(data: unknown): BridgePurchase {
     return { orderIds, expectedOrderCount, state: 'complete' };
   }
 
-  const legacyScalar = shape?.order_id;
+  const legacyScalar = shape.order_id;
   const orderIds =
     typeof legacyScalar === 'string' && legacyScalar.length > 0 ? [legacyScalar] : [];
   if (orderIds.length === 0) {
-    return {
-      orderIds,
-      expectedOrderCount,
-      state: expectedOrderCount === null ? 'empty' : 'incomplete'
-    };
+    return { orderIds, expectedOrderCount, state: 'malformed' };
   }
   if (expectedOrderCount !== null && expectedOrderCount !== 1) {
     return { orderIds, expectedOrderCount, state: 'incomplete' };

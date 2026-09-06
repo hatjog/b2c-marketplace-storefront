@@ -147,6 +147,12 @@ beforeEach(() => {
   mockFetchQuery.mockReset();
   mockFetchQuery.mockImplementation(async (path: string) => {
     callOrder.push(`fetch:${path}`);
+    if (path.includes('/completed-order')) {
+      return {
+        ok: true,
+        data: { orders: [{ order_id: 'order_1' }], order_count: 1 }
+      };
+    }
     return { ok: true, data: { order: { id: 'order_1' } } };
   });
 });
@@ -245,7 +251,12 @@ describe('Story 3.7 — serwerowy odczyt mostka ma koniec i nie myli odmowy z aw
 
     expect(seenSignals).toHaveLength(1);
     expect(seenSignals[0]).toBeInstanceOf(AbortSignal);
-    expect(result).toEqual({ orderIds: [], expectedOrderCount: null, readFailed: true });
+    expect(result).toEqual({
+      orderIds: [],
+      expectedOrderCount: null,
+      state: 'read_failed',
+      readFailed: true
+    });
     warn.mockRestore();
   });
 
@@ -257,9 +268,37 @@ describe('Story 3.7 — serwerowy odczyt mostka ma koniec i nie myli odmowy z aw
       const result = await getCompletedPurchaseForCart(CART_ID, { attempts: 4 });
 
       expect(mockFetchQuery).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({ orderIds: [], expectedOrderCount: null, readFailed: false });
+      expect(result).toEqual({
+        orderIds: [],
+        expectedOrderCount: null,
+        state: 'access_denied',
+        readFailed: false
+      });
     }
   );
+
+  it('ponawia przejściowy niepełny N=2 i przyjmuje dopiero pełny zbiór', async () => {
+    mockFetchQuery
+      .mockResolvedValueOnce({
+        ok: true,
+        data: { orders: [{ order_id: 'order_a' }], order_count: 2 }
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          orders: [{ order_id: 'order_a' }, { order_id: 'order_b' }],
+          order_count: 2
+        }
+      });
+
+    await expect(getCompletedPurchaseForCart(CART_ID, { attempts: 2 })).resolves.toEqual({
+      orderIds: ['order_a', 'order_b'],
+      expectedOrderCount: 2,
+      state: 'complete',
+      readFailed: false
+    });
+    expect(mockFetchQuery).toHaveBeenCalledTimes(2);
+  });
 
   it('HTTP 502 zostawia w logu cart, próbę i status', async () => {
     mockFetchQuery.mockResolvedValue({ ok: false, status: 502, data: null });

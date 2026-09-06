@@ -1021,6 +1021,7 @@ export type CompletedPurchaseReadState =
   | 'complete'
   | 'empty'
   | 'incomplete'
+  | 'malformed'
   | 'read_failed'
   | 'access_denied';
 
@@ -1042,6 +1043,7 @@ async function resolveCompletedPurchaseForCart(
   // backend leżał. `fetchQuery` nie rzuca dla HTTP 4xx/5xx (zwraca `ok: false`),
   // więc sam `try/catch` u wołającego łapał wyłącznie awarie transportowe.
   let readFailed = false;
+  let incomplete: CompletedPurchaseRead | null = null;
 
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
@@ -1054,7 +1056,12 @@ async function resolveCompletedPurchaseForCart(
         // Story 3.7 (AC2): `order_count` z mostka jest JEDYNĄ licznością kontraktu
         // osiągalną dla powierzchni potwierdzenia. Do tej story była tu wyrzucana.
         const purchase = resolveBridgePurchase(res.data);
-        if (purchase.state === 'complete' || purchase.state === 'incomplete') {
+        if (purchase.state === 'complete') {
+          return { ...purchase, readFailed: false };
+        }
+        if (purchase.state === 'incomplete') {
+          incomplete = { ...purchase, readFailed: false };
+        } else if (purchase.state === 'malformed') {
           return { ...purchase, readFailed: false };
         }
         // Odpowiedź poprawna, ale pusta — to NIE jest porażka odczytu.
@@ -1089,12 +1096,34 @@ async function resolveCompletedPurchaseForCart(
     }
   }
 
+  if (incomplete) {
+    return incomplete;
+  }
+
   return {
     orderIds: [],
     expectedOrderCount: null,
     state: readFailed ? 'read_failed' : 'empty',
     readFailed
   };
+}
+
+export async function cartHasStripePaymentIntent(cartId: string, paymentIntent: string): Promise<boolean> {
+  if (!/^pi_[A-Za-z0-9_]+$/.test(paymentIntent)) {
+    return false;
+  }
+
+  const cart = await retrieveCart(cartId);
+  const sessions = cart?.payment_collection?.payment_sessions ?? [];
+  return sessions.some(session => {
+    const data = session.data as { client_secret?: unknown } | null | undefined;
+    return (
+      typeof session.provider_id === 'string' &&
+      session.provider_id.includes('stripe') &&
+      typeof data?.client_secret === 'string' &&
+      data.client_secret.startsWith(`${paymentIntent}_secret_`)
+    );
+  });
 }
 
 async function resolveCompletedOrderIdsForCart(
@@ -1193,8 +1222,12 @@ export async function getCompletedPurchaseForCart(
 
 export async function completeOrderAfterStripePayment(cartId?: string) {
   try {
-    const res = await completeCartOrder(cartId);
-    const orderIds = await resolveCompletedOrderIdsFromCompletion(res, cartId);
+    const completedCartId = cartId || (await getCartId());
+    await completeCartOrder(completedCartId);
+    const purchase = completedCartId
+      ? await getCompletedPurchaseForCart(completedCartId, { attempts: 2 })
+      : null;
+    const orderIds = purchase?.state === 'complete' ? purchase.orderIds : [];
     // AD-16: skalar jest DRILL-DOWNEM z `orderIds`, które lecą dalej w wyniku —
     // powierzchnia (Story 3.7) dostaje całość, nie pierwszy element.
     const orderId = orderIds[0] ?? null;
@@ -1206,7 +1239,11 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
       // the UI layer (the client component maps it via next-intl).
       return {
         ok: false,
-        error: { code: 'no_order_id' as const }
+        error: {
+          code: purchase?.state === 'incomplete' || purchase?.state === 'malformed'
+            ? ('incomplete_order_set' as const)
+            : ('no_order_id' as const)
+        }
       };
     }
 
@@ -1216,7 +1253,6 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
     // konta nie ma sesji, więc bez niego ekran płatności odbije ją 401-ką.
     // Rozwiązane id, nie surowy argument: funkcja jest eksportowana i sama
     // potrafi wziąć koszyk z cookie, więc `if (cartId)` cicho gubiłoby dowód.
-    const completedCartId = cartId || (await getCartId());
     if (completedCartId) {
       await setCompletedCartId(completedCartId);
     }

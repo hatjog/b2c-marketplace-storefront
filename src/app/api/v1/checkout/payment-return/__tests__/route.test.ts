@@ -16,6 +16,11 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/i18n/routing', () => ({
+  DEFAULT_LOCALE: 'pl',
+  SUPPORTED_LOCALES: ['pl', 'en', 'ua', 'de']
+}));
+
 const revalidateTag = vi.fn();
 const revalidatePath = vi.fn();
 
@@ -54,9 +59,13 @@ vi.mock('next/navigation', () => ({
 }));
 
 const fetchQuery = vi.fn();
+const retrieveCart = vi.fn();
 vi.mock('@/lib/config', () => ({
   fetchQuery: (...args: unknown[]) => fetchQuery(...args),
-  sdk: { store: { cart: { update: vi.fn() } } }
+  sdk: {
+    client: { fetch: (...args: unknown[]) => retrieveCart(...args) },
+    store: { cart: { update: vi.fn() } }
+  }
 }));
 
 const { GET } = await import('../route');
@@ -66,16 +75,21 @@ const OTHER_CART = 'cart_01STORY36SOMEONEELSE';
 const ORDER_A = 'order_01STORY36SELLERA';
 const ORDER_B = 'order_01STORY36SELLERB';
 
-function request(params: Record<string, string>): any {
+function request(params: Record<string, string | string[]>): any {
   const url = new URL('https://shop.test/api/v1/checkout/payment-return');
   for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
+    for (const value of Array.isArray(v) ? v : [v]) {
+      url.searchParams.append(k, value);
+    }
+  }
+  if (params.redirect_status === 'succeeded' && !params.payment_intent) {
+    url.searchParams.set('payment_intent', 'pi_3STORY36');
   }
   return { nextUrl: url };
 }
 
 /** Wykonuje handler i zwraca adres, na który przekierował. */
-async function callHandler(params: Record<string, string>): Promise<string> {
+async function callHandler(params: Record<string, string | string[]>): Promise<string> {
   try {
     await GET(request(params));
   } catch (e) {
@@ -122,6 +136,15 @@ beforeEach(() => {
   vi.clearAllMocks();
   cookieStore.clear();
   fetchQuery.mockResolvedValue({ ok: false, status: 404 });
+  retrieveCart.mockResolvedValue({
+    cart: {
+      payment_collection: {
+        payment_sessions: [
+          { provider_id: 'pp_stripe_stripe', data: { client_secret: 'pi_3STORY36_secret_x' } }
+        ]
+      }
+    }
+  });
 });
 
 describe('kontrola dodatnia — domknięcie WYKONUJE się w Route Handlerze', () => {
@@ -147,14 +170,16 @@ describe('kontrola dodatnia — domknięcie WYKONUJE się w Route Handlerze', ()
     expect(cookieStore.get('_gp_completed_cart')).toContain(CART);
 
     expect(target).toBe(
-      '/pl/order/' + CART + '/payment-status?redirect_status=succeeded&gp_return=done'
+      '/pl/order/' +
+        CART +
+        '/payment-status?redirect_status=succeeded&payment_intent=pi_3STORY36&gp_return=done'
     );
   });
 
-  it('sam `payment_intent` (bez `redirect_status`) też jest potwierdzeniem powrotu', async () => {
+  it('sam `payment_intent` bez sukcesu Stripe’a nie jest potwierdzeniem powrotu', async () => {
     await callHandler({ cart_id: CART, locale: 'pl', payment_intent: 'pi_3STORY36' });
 
-    expect(postCalls()).toHaveLength(1);
+    expect(postCalls()).toHaveLength(0);
   });
 
   it('N=2 po domknięciu jest reentry bez drugiego `POST /complete`', async () => {
@@ -317,5 +342,90 @@ describe('kontrola negatywna — powierzchnia zapisu NIE jest otwarta', () => {
     await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
 
     expect(postCalls()).toHaveLength(1);
+  });
+
+  it('obcy PaymentIntent nie może uruchomić domknięcia własnego koszyka', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+
+    const target = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'succeeded',
+      payment_intent: 'pi_other_payment'
+    });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=payment_intent_mismatch');
+  });
+
+  it('sprzeczne powtórzone parametry są odrzucane niezależnie od kolejności', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+
+    const first = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: ['succeeded', 'failed'],
+      payment_intent: 'pi_3STORY36'
+    });
+    const second = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: ['failed', 'succeeded'],
+      payment_intent: 'pi_3STORY36'
+    });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(first).toContain('gp_return=ambiguous_return_parameters');
+    expect(second).toContain('gp_return=ambiguous_return_parameters');
+  });
+
+  it('odmowa koduje nieprawidłowy cart_id jako segment ścieżki', async () => {
+    const target = await callHandler({
+      cart_id: 'cart_bad/path?#fragment',
+      locale: 'pl'
+    });
+
+    expect(target).toContain('/order/cart_bad%2Fpath%3F%23fragment/payment-status');
+    expect(postCalls()).toHaveLength(0);
+  });
+});
+
+describe('idempotencja Route Handlera', () => {
+  beforeEach(() => {
+    cookieStore.set('_medusa_cart_id', CART);
+    completionSucceeds();
+  });
+
+  it.each(['completion_failed', 'no_order_id'] as const)(
+    'powtórzenie po %s zwraca ten sam nazwany wynik bez drugiego POST',
+    async outcome => {
+      fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+        if (init?.method === 'POST' && path.includes('/complete')) {
+          if (outcome === 'completion_failed') {
+            throw new Error('completion down');
+          }
+          return { ok: true, data: { type: 'cart' } };
+        }
+        return { ok: false, status: 404 };
+      });
+
+      const first = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+      const second = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+      expect(postCalls()).toHaveLength(1);
+      expect(first).toContain(`gp_return=${outcome}`);
+      expect(second).toContain(`gp_return=${outcome}`);
+    }
+  );
+
+  it('dwa równoległe powroty współdzielą jedną mutację domknięcia', async () => {
+    const [first, second] = await Promise.all([
+      callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' }),
+      callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' })
+    ]);
+
+    expect(postCalls()).toHaveLength(1);
+    expect(first).toContain('gp_return=done');
+    expect(second).toContain('gp_return=done');
   });
 });

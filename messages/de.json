@@ -1376,6 +1376,12 @@
     "hero_title_degraded": "Wir konnten den gesamten Kauf gerade nicht lesen",
     "purchase_read_failed_title": "Wir konnten diesen Kauf gerade nicht lesen",
     "purchase_read_failed_body": "Das ist eine Störung auf unserer Seite, kein Problem mit Ihrem Link. Ihre Zahlung ist sicher — laden Sie die Seite gleich neu oder öffnen Sie Ihre Bestellhistorie.",
+    "purchase_access_denied_title": "Sie haben keinen Zugriff auf diesen Kauf",
+    "purchase_access_denied_body": "Wir konnten Ihren Zugriff auf diesen Kauf nicht bestätigen und zeigen deshalb keine Bestellungen an.",
+    "purchase_incomplete_order_set_title": "Wir können den gesamten Kauf noch nicht sicher anzeigen",
+    "purchase_incomplete_order_set_body": "Der Abruf enthält nicht den vollständigen Satz der Bestellungen, daher zeigen wir ein Teilergebnis nicht als Erfolg an.",
+    "purchase_malformed_title": "Wir können diesen Kauf nicht sicher lesen",
+    "purchase_malformed_body": "Die Antwort zum Kauf hat ein ungültiges Format, daher zeigen wir sie nicht als Bestätigung an.",
     "order_position": "Bestellung {index} von {total}",
     "drilldown_notice": "Wir zeigen eine Bestellung aus Ihrem Kauf. Die vollständige Liste finden Sie in Ihrer Bestellhistorie.",
     "purchase_not_found_title": "Wir konnten diesen Kauf nicht finden",
@@ -1968,6 +1974,11 @@
     "return_identifier_out_of_domain": {
       "label": "Wir erkennen diesen Link nicht",
       "body": "Die Adresse, über die Sie hierher gelangt sind, verweist weder auf Ihren Warenkorb noch auf Ihre Bestellung. Öffnen Sie den Status über den Link in Ihrer Kaufbestätigungs-E-Mail oder kehren Sie zum Warenkorb zurück.",
+      "cta": "Zurück zum Warenkorb"
+    },
+    "return_return_refused": {
+      "label": "Wir können diese Rückkehr nicht sicher bestätigen",
+      "body": "Wir konnten nicht prüfen, ob diese Rückkehr zu Ihrem Warenkorb und Ihrer Zahlung gehört, und haben die Bestellung deshalb nicht abgeschlossen.",
       "cta": "Zurück zum Warenkorb"
     },
     "page_title": "Zahlungsstatus",

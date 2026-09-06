@@ -47,6 +47,11 @@ function presentationFor(state: PaymentReturnNoticeProps['result']['state']): {
         container: 'border-negative bg-negative/10 text-primary',
         role: 'alert'
       };
+    case 'return_refused':
+      return {
+        container: 'border-negative bg-negative/10 text-primary',
+        role: 'alert'
+      };
   }
 }
 

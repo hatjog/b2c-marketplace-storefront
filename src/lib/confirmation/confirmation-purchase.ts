@@ -67,6 +67,9 @@ export type ConfirmationPurchase =
    * serwerowej, gdzie żaden `page.route()` jej nie odsłoni.
    */
   | { kind: 'read_failed'; value: string }
+  | { kind: 'access_denied'; value: string }
+  | { kind: 'incomplete_order_set'; value: string }
+  | { kind: 'malformed_purchase'; value: string }
   /** Wartość spoza dziedziny — BŁĄD, nie wartość domyślna (AD-19). */
   | { kind: 'out_of_domain'; value: string };
 
@@ -79,6 +82,7 @@ export interface BridgePurchaseRead {
    * BEZ tej flagi jest stanem dziedziny, nie awarią.
    */
   readFailed?: boolean;
+  state?: 'complete' | 'empty' | 'incomplete' | 'malformed' | 'read_failed' | 'access_denied';
 }
 
 /**
@@ -111,8 +115,20 @@ export function decideConfirmationPurchase(input: {
     return { kind: 'out_of_domain', value: identifier.value };
   }
 
-  if (!bridge || bridge.readFailed === true) {
+  if (!bridge || bridge.readFailed === true || bridge.state === 'read_failed') {
     return { kind: 'read_failed', value: identifier.value };
+  }
+
+  if (bridge.state === 'access_denied') {
+    return { kind: 'access_denied', value: identifier.value };
+  }
+
+  if (bridge.state === 'incomplete') {
+    return { kind: 'incomplete_order_set', value: identifier.value };
+  }
+
+  if (bridge.state === 'malformed') {
+    return { kind: 'malformed_purchase', value: identifier.value };
   }
 
   if (bridge.orderIds.length === 0) {

@@ -1376,6 +1376,12 @@
     "hero_title_degraded": "Nie udało nam się teraz odczytać całego zakupu",
     "purchase_read_failed_title": "Nie udało nam się teraz odczytać zakupu",
     "purchase_read_failed_body": "To awaria po naszej stronie, a nie problem z Twoim linkiem. Twoja płatność jest bezpieczna — odśwież stronę za chwilę albo otwórz historię zamówień.",
+    "purchase_access_denied_title": "Nie masz dostępu do tego zakupu",
+    "purchase_access_denied_body": "Nie potwierdziliśmy prawa dostępu do tego zakupu, dlatego nie pokazujemy jego zamówień.",
+    "purchase_incomplete_order_set_title": "Nie możemy jeszcze bezpiecznie pokazać całego zakupu",
+    "purchase_incomplete_order_set_body": "Odczyt nie zawiera kompletnego zestawu zamówień, dlatego nie pokazujemy częściowego wyniku jako sukcesu.",
+    "purchase_malformed_title": "Nie możemy bezpiecznie odczytać zakupu",
+    "purchase_malformed_body": "Odpowiedź o zakupie ma nieprawidłowy format, dlatego nie pokazujemy jej jako potwierdzenia.",
     "order_position": "Zamówienie {index} z {total}",
     "drilldown_notice": "Pokazujemy jedno zamówienie z Twojego zakupu. Pełną listę znajdziesz w historii zamówień.",
     "purchase_not_found_title": "Nie znaleźliśmy tego zakupu",
@@ -1968,6 +1974,11 @@
     "return_identifier_out_of_domain": {
       "label": "Nie rozpoznajemy tego linku",
       "body": "Adres, z którego tu trafiłaś, nie wskazuje na Twój koszyk ani zamówienie. Otwórz status z linku w e-mailu potwierdzającym zakup albo wróć do koszyka.",
+      "cta": "Wróć do koszyka"
+    },
+    "return_return_refused": {
+      "label": "Nie możemy bezpiecznie potwierdzić tego powrotu",
+      "body": "Nie potwierdziliśmy powiązania powrotu z Twoim koszykiem i płatnością, dlatego nie wykonaliśmy domknięcia zamówienia.",
       "cta": "Wróć do koszyka"
     },
     "page_title": "Status płatności",

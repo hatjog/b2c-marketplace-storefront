@@ -27,10 +27,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const completeOrderAfterStripePayment = vi.fn();
 const getCompletedPurchaseForCart = vi.fn();
+const cartHasStripePaymentIntent = vi.fn();
+const provesCartOwnership = vi.fn();
+const getPaymentReturnOutcome = vi.fn();
 
 vi.mock('../cart', () => ({
   completeOrderAfterStripePayment: (...args: unknown[]) => completeOrderAfterStripePayment(...args),
-  getCompletedPurchaseForCart: (...args: unknown[]) => getCompletedPurchaseForCart(...args)
+  getCompletedPurchaseForCart: (...args: unknown[]) => getCompletedPurchaseForCart(...args),
+  cartHasStripePaymentIntent: (...args: unknown[]) => cartHasStripePaymentIntent(...args)
+}));
+
+vi.mock('../cookies', () => ({
+  provesCartOwnership: (...args: unknown[]) => provesCartOwnership(...args),
+  getPaymentReturnOutcome: (...args: unknown[]) => getPaymentReturnOutcome(...args)
 }));
 
 const {
@@ -50,11 +59,17 @@ const ORDER_B = 'order_01STORY36SELLERB';
 const LOCALE = 'pl';
 
 /** Powrót ze Stripe'a z potwierdzeniem — najczęstsze realne wejście. */
-const SUCCEEDED = { redirect_status: 'succeeded' };
+const SUCCEEDED = { redirect_status: 'succeeded', payment_intent: 'pi_3STORY36' };
 
 beforeEach(() => {
   completeOrderAfterStripePayment.mockReset();
   getCompletedPurchaseForCart.mockReset();
+  cartHasStripePaymentIntent.mockReset();
+  provesCartOwnership.mockReset();
+  getPaymentReturnOutcome.mockReset();
+  cartHasStripePaymentIntent.mockResolvedValue(true);
+  provesCartOwnership.mockResolvedValue(true);
+  getPaymentReturnOutcome.mockResolvedValue(null);
   getCompletedPurchaseForCart.mockResolvedValue({
     orderIds: [],
     expectedOrderCount: null,
@@ -139,19 +154,15 @@ describe('AC2 — powrót z 3DS domyka koszyk SERWEROWO (decyzja)', () => {
     expect(result).toMatchObject({ state: 'pending_confirmation', reason: 'awaiting_psp' });
   });
 
-  it('pętla powrotu jest domknięta: `gp_return=done` czyni z powrotu ODCZYT', async () => {
+  it('klientowski `gp_return=done` nie blokuje pierwszego domknięcia', async () => {
     const { completionRedirect, result } = await resolvePaymentReturn(
       CART,
       { ...SUCCEEDED, gp_return: 'done' },
       LOCALE
     );
 
-    expect(completionRedirect).toBeNull();
-    // Domknięcie BYŁO próbowane i nie dało zamówienia — to fakt, nie brak faktu.
-    expect(result).toMatchObject({
-      state: 'authentication_abandoned',
-      reason: 'completion_produced_no_order'
-    });
+    expect(completionRedirect).toContain(PAYMENT_RETURN_COMPLETION_PATH);
+    expect(result).toMatchObject({ state: 'pending_confirmation' });
   });
 
   it('błąd odczytu mostka zatrzymuje domknięcie w nazwanym stanie recovery', async () => {
@@ -162,6 +173,47 @@ describe('AC2 — powrót z 3DS domyka koszyk SERWEROWO (decyzja)', () => {
     expect(completionRedirect).toBeNull();
     expect(result).toEqual({ state: 'recovery_required', reason: 'bridge_read_failed' });
   });
+
+  it('brak dowodu własności nie odczytuje ani nie ujawnia zakupu', async () => {
+    provesCartOwnership.mockResolvedValue(false);
+
+    const { completionRedirect, result } = await resolvePaymentReturn(CART, SUCCEEDED, LOCALE);
+
+    expect(completionRedirect).toBeNull();
+    expect(result).toEqual({ state: 'return_refused', reason: 'cart_ownership_unproven' });
+    expect(getCompletedPurchaseForCart).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['read_failed', 'bridge_read_failed'],
+    ['access_denied', 'bridge_access_denied'],
+    ['incomplete', 'incomplete_order_set']
+  ] as const)('serwerowy marker %s zachowuje recovery przy pustym moście', async (outcome, reason) => {
+    getPaymentReturnOutcome.mockResolvedValue(outcome);
+
+    const { completionRedirect, result } = await resolvePaymentReturn(CART, SUCCEEDED, LOCALE);
+
+    expect(completionRedirect).toBeNull();
+    expect(result).toEqual({ state: 'recovery_required', reason });
+  });
+
+  it.each(['read_failed', 'access_denied', 'incomplete'] as const)(
+    'serwerowy marker %s nie przesłania później kompletnego zestawu',
+    async outcome => {
+      getPaymentReturnOutcome.mockResolvedValue(outcome);
+      getCompletedPurchaseForCart.mockResolvedValue({
+        orderIds: [ORDER_A, ORDER_B],
+        expectedOrderCount: 2,
+        state: 'complete',
+        readFailed: false
+      });
+
+      const { completionRedirect, result } = await resolvePaymentReturn(CART, SUCCEEDED, LOCALE);
+
+      expect(completionRedirect).toBeNull();
+      expect(result).toMatchObject({ state: 'confirmed', orderIds: [ORDER_A, ORDER_B] });
+    }
+  );
 });
 
 describe('AC2 — `performPaymentReturnCompletion` (część mutująca)', () => {
@@ -242,16 +294,17 @@ describe('AC3 — rodzaj identyfikatora i parametry powrotu Stripe’a', () => {
   });
 
   it('potwierdzenie powrotu wymaga POZYTYWNEGO sygnału Stripe’a', async () => {
-    expect(await isStripeReturnConfirmation({ redirect_status: 'succeeded' })).toBe(true);
-    expect(await isStripeReturnConfirmation({ payment_intent: 'pi_x' })).toBe(true);
-    expect(await isStripeReturnConfirmation({})).toBe(false);
-    expect(await isStripeReturnConfirmation({ redirect_status: 'failed' })).toBe(false);
+    expect(await isStripeReturnConfirmation({ redirect_status: 'succeeded', payment_intent: 'pi_x', ambiguous: false })).toBe(true);
+    expect(await isStripeReturnConfirmation({ redirect_status: 'succeeded', ambiguous: false })).toBe(false);
+    expect(await isStripeReturnConfirmation({ payment_intent: 'pi_x', ambiguous: false })).toBe(false);
+    expect(await isStripeReturnConfirmation({ ambiguous: false })).toBe(false);
+    expect(await isStripeReturnConfirmation({ redirect_status: 'failed', ambiguous: false })).toBe(false);
     expect(
-      await isStripeReturnConfirmation({ redirect_status: 'failed', payment_intent: 'pi_failed' })
+      await isStripeReturnConfirmation({ redirect_status: 'failed', payment_intent: 'pi_failed', ambiguous: false })
     ).toBe(false);
   });
 
-  it('parametry powrotu Stripe’a są ODCZYTYWANE, także w formie powtórzonej', async () => {
+  it('powtórzony parametr Stripe’a jest nazwany jako niejednoznaczny', async () => {
     const params = await readStripeReturnParams({
       payment_intent: ['pi_first', 'pi_second'],
       redirect_status: 'failed',
@@ -259,9 +312,10 @@ describe('AC3 — rodzaj identyfikatora i parametry powrotu Stripe’a', () => {
     });
 
     expect(params).toEqual({
-      payment_intent: 'pi_first',
+      payment_intent: undefined,
       redirect_status: 'failed',
-      payment_intent_client_secret: 'pi_first_secret_x'
+      payment_intent_client_secret: 'pi_first_secret_x',
+      ambiguous: true
     });
   });
 
@@ -269,7 +323,8 @@ describe('AC3 — rodzaj identyfikatora i parametry powrotu Stripe’a', () => {
     expect(await readStripeReturnParams(undefined)).toEqual({
       payment_intent: undefined,
       redirect_status: undefined,
-      payment_intent_client_secret: undefined
+      payment_intent_client_secret: undefined,
+      ambiguous: false
     });
   });
 });
