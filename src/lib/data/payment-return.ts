@@ -70,7 +70,11 @@ import {
   getCompletedPurchaseForCart,
   type CompletedPurchaseRead
 } from './cart';
-import { getPaymentReturnOutcome, provesCartOwnership } from './cookies';
+import {
+  getPaymentReturnOutcome,
+  getPaymentReturnOutcomeStorageState,
+  provesCartOwnership
+} from './cookies';
 import { PAYMENT_RETURN_COMPLETION_PATH } from './payment-return-constants';
 
 // Stale mieszkaja w `./payment-return-constants` — plik z `'use server'` moze
@@ -78,7 +82,10 @@ import { PAYMENT_RETURN_COMPLETION_PATH } from './payment-return-constants';
 // kompilacje calego grafu modulow (500 na `/pl`, `/pl/categories`, `/pl/cart`).
 // Re-eksport tez by nie przeszedl: to nadal eksport nie-funkcji.
 
-function singleParam(raw: string | string[] | undefined): { value: string | undefined; ambiguous: boolean } {
+function singleParam(raw: string | string[] | undefined): {
+  value: string | undefined;
+  ambiguous: boolean;
+} {
   if (!Array.isArray(raw)) {
     return { value: raw, ambiguous: false };
   }
@@ -112,7 +119,9 @@ export async function readStripeReturnParams(
  * wymaga teraz POZYTYWNEGO sygnału od Stripe'a, nie braku sygnału negatywnego.
  */
 export async function isStripeReturnConfirmation(params: StripeReturnParams): Promise<boolean> {
-  return !params.ambiguous && params.redirect_status === 'succeeded' && Boolean(params.payment_intent);
+  return (
+    !params.ambiguous && params.redirect_status === 'succeeded' && Boolean(params.payment_intent)
+  );
 }
 
 export type PaymentReturnOutcome =
@@ -128,9 +137,11 @@ export type PaymentReturnOutcome =
   | 'no_stripe_confirmation'
   | 'cart_ownership_unproven'
   | 'payment_intent_mismatch'
-  | 'ambiguous_return_parameters';
+  | 'ambiguous_return_parameters'
+  | 'outcome_marker_unavailable'
+  | 'outcome_marker_capacity_exhausted';
 
-function priorOutcome(value: string | undefined): PaymentReturnOutcome | null {
+function priorOutcome(value: string | null | undefined): PaymentReturnOutcome | null {
   return value === 'done' ||
     value === 'completion_failed' ||
     value === 'no_order_id' ||
@@ -204,7 +215,9 @@ export async function resolvePaymentReturn(
 ): Promise<PaymentReturnResolution> {
   const identifier = classifyPaymentReturnIdentifier(rawIdentifier);
   const params = await readStripeReturnParams(searchParams);
-  const outcome = priorOutcome(await getPaymentReturnOutcome(identifier.value, params.payment_intent));
+  const outcome = priorOutcome(
+    await getPaymentReturnOutcome(identifier.value, params.payment_intent)
+  );
   const refused = params.ambiguous
     ? { state: 'return_refused' as const, reason: 'ambiguous_return_parameters' as const }
     : refusalState(outcome);
@@ -274,6 +287,32 @@ export async function resolvePaymentReturn(
   const alreadyCompleted = bridge.state === 'complete';
   const confirmedByStripe = await isStripeReturnConfirmation(params);
   const abandoned = params.redirect_status === 'failed';
+  const outcomeStorageState =
+    !alreadyCompleted &&
+    bridge.state === 'empty' &&
+    !abandoned &&
+    confirmedByStripe &&
+    outcome === null
+      ? await getPaymentReturnOutcomeStorageState(identifier.value, params.payment_intent)
+      : 'ready';
+
+  if (!alreadyCompleted && outcomeStorageState === 'secret_unavailable') {
+    return {
+      identifier,
+      params,
+      completionRedirect: null,
+      result: { state: 'recovery_required', reason: 'outcome_marker_unavailable' }
+    };
+  }
+
+  if (!alreadyCompleted && outcomeStorageState === 'capacity_exhausted') {
+    return {
+      identifier,
+      params,
+      completionRedirect: null,
+      result: { state: 'recovery_required', reason: 'outcome_marker_capacity_exhausted' }
+    };
+  }
 
   // ── 2. DECYZJA O DOMKNIĘCIU (wykonuje ją Route Handler, nie render) ──────
   const needsCompletion =
@@ -359,7 +398,10 @@ export async function resolvePaymentReturn(
  */
 type PaymentReturnCompletion = {
   orderIds: string[];
-  outcome: Extract<PaymentReturnOutcome, 'done' | 'completion_failed' | 'no_order_id' | 'incomplete'>;
+  outcome: Extract<
+    PaymentReturnOutcome,
+    'done' | 'completion_failed' | 'no_order_id' | 'incomplete'
+  >;
 };
 
 const completionLocks = new Map<string, Promise<PaymentReturnCompletion>>();
@@ -367,7 +409,7 @@ const completionLocks = new Map<string, Promise<PaymentReturnCompletion>>();
 async function completePaymentReturn(cartId: string): Promise<PaymentReturnCompletion> {
   const completion = await completeOrderAfterStripePayment(cartId);
 
-  if (completion.ok && completion.orderIds.length > 0) {
+  if (completion.ok && (completion.orderIds?.length ?? 0) > 0) {
     return { orderIds: completion.orderIds ?? [], outcome: 'done' };
   }
 
@@ -385,7 +427,9 @@ async function completePaymentReturn(cartId: string): Promise<PaymentReturnCompl
   };
 }
 
-export async function performPaymentReturnCompletion(cartId: string): Promise<PaymentReturnCompletion> {
+export async function performPaymentReturnCompletion(
+  cartId: string
+): Promise<PaymentReturnCompletion> {
   const existing = completionLocks.get(cartId);
   if (existing) {
     return existing;
@@ -396,6 +440,9 @@ export async function performPaymentReturnCompletion(cartId: string): Promise<Pa
   return current;
 }
 
-export async function isPaymentIntentBoundToCart(cartId: string, paymentIntent: string): Promise<boolean> {
+export async function isPaymentIntentBoundToCart(
+  cartId: string,
+  paymentIntent: string
+): Promise<boolean> {
   return cartHasStripePaymentIntent(cartId, paymentIntent);
 }

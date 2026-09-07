@@ -74,6 +74,7 @@ vi.mock('@/lib/config', () => ({
 }));
 
 const { GET } = await import('../route');
+const { setPaymentReturnOutcome } = await import('@/lib/data/cookies');
 
 const CART = 'cart_01STORY36HANDLER';
 const OTHER_CART = 'cart_01STORY36SOMEONEELSE';
@@ -140,6 +141,8 @@ function postCalls() {
 beforeEach(() => {
   vi.clearAllMocks();
   cookieStore.clear();
+  process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = 'payment-return-route-test-secret-32-bytes';
+  delete process.env.JWT_SECRET;
   fetchQuery.mockResolvedValue({ ok: false, status: 404 });
   retrieveCart.mockResolvedValue({
     cart: {
@@ -419,6 +422,9 @@ describe('idempotencja Route Handlera', () => {
         locale: 'pl',
         redirect_status: 'succeeded'
       });
+      const outcomeWritesAfterFirst = cookieSet.mock.calls.filter(
+        ([name]) => name === '_gp_payment_return_outcome'
+      ).length;
       const second = await callHandler({
         cart_id: CART,
         locale: 'pl',
@@ -428,8 +434,143 @@ describe('idempotencja Route Handlera', () => {
       expect(postCalls()).toHaveLength(1);
       expect(first).toContain(`gp_return=${outcome}`);
       expect(second).toContain(`gp_return=${outcome}`);
+      expect(
+        cookieSet.mock.calls.filter(([name]) => name === '_gp_payment_return_outcome').length
+      ).toBe(outcomeWritesAfterFirst);
     }
   );
+
+  it.each(['read_failed', 'access_denied', 'incomplete', 'malformed'] as const)(
+    'marker przejściowy %s nie zatrzymuje kolejnego odczytu kompletnego mostka',
+    async outcome => {
+      await setPaymentReturnOutcome({
+        identifier: CART,
+        paymentIntent: 'pi_3STORY36',
+        outcome
+      });
+      fetchQuery.mockImplementation(async (path: string) =>
+        path.includes('/completed-order')
+          ? {
+              ok: true,
+              data: {
+                orders: [ORDER_A, ORDER_B].map(id => ({ order_id: id, order_group_id: null })),
+                order_count: 2
+              }
+            }
+          : { ok: false, status: 404 }
+      );
+
+      const target = await callHandler({
+        cart_id: CART,
+        locale: 'pl',
+        redirect_status: 'succeeded'
+      });
+
+      expect(target).toContain('gp_return=done');
+      expect(postCalls()).toHaveLength(0);
+    }
+  );
+
+  it.each(['read_failed', 'access_denied', 'incomplete', 'malformed'] as const)(
+    'nowy wynik przejściowy %s nie zapisuje markera, więc reentry ponawia odczyt',
+    async outcome => {
+      fetchQuery.mockImplementation(async (path: string) => {
+        if (!path.includes('/completed-order')) {
+          return { ok: false, status: 404 };
+        }
+        if (outcome === 'read_failed') {
+          throw new Error('bridge down');
+        }
+        if (outcome === 'access_denied') {
+          return { ok: false, status: 401 };
+        }
+        if (outcome === 'incomplete') {
+          return {
+            ok: true,
+            data: { orders: [{ order_id: ORDER_A, order_group_id: null }], order_count: 2 }
+          };
+        }
+        return { ok: true, data: {} };
+      });
+
+      const first = await callHandler({
+        cart_id: CART,
+        locale: 'pl',
+        redirect_status: 'succeeded'
+      });
+      expect(first).toContain(`gp_return=${outcome}`);
+      expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+
+      fetchQuery.mockImplementation(async (path: string) =>
+        path.includes('/completed-order')
+          ? {
+              ok: true,
+              data: {
+                orders: [ORDER_A, ORDER_B].map(id => ({ order_id: id, order_group_id: null })),
+                order_count: 2
+              }
+            }
+          : { ok: false, status: 404 }
+      );
+      const second = await callHandler({
+        cart_id: CART,
+        locale: 'pl',
+        redirect_status: 'succeeded'
+      });
+
+      expect(second).toContain('gp_return=done');
+      expect(postCalls()).toHaveLength(0);
+    }
+  );
+
+  it('brak niepustego sekretu outcome zatrzymuje mutację w nazwanym recovery', async () => {
+    process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = '';
+    delete process.env.JWT_SECRET;
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(target).toContain('gp_return=outcome_marker_unavailable');
+    expect(postCalls()).toHaveLength(0);
+    expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+  });
+
+  it('czwarty tuple zatrzymuje mutację, a replay najstarszego markeru nadal nie POSTuje', async () => {
+    const intents = ['pi_3STORY36A', 'pi_3STORY36B', 'pi_3STORY36C', 'pi_3STORY36D'];
+    retrieveCart.mockResolvedValue({
+      cart: {
+        payment_collection: {
+          payment_sessions: intents.map(paymentIntent => ({
+            provider_id: 'pp_stripe_stripe',
+            data: { client_secret: `${paymentIntent}_secret_x` }
+          }))
+        }
+      }
+    });
+    for (const paymentIntent of intents.slice(0, 3)) {
+      await setPaymentReturnOutcome({
+        identifier: CART,
+        paymentIntent,
+        outcome: 'completion_failed'
+      });
+    }
+
+    const capacityTarget = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'succeeded',
+      payment_intent: intents[3]
+    });
+    const replayTarget = await callHandler({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'succeeded',
+      payment_intent: intents[0]
+    });
+
+    expect(capacityTarget).toContain('gp_return=outcome_marker_capacity_exhausted');
+    expect(replayTarget).toContain('gp_return=completion_failed');
+    expect(postCalls()).toHaveLength(0);
+  });
 
   it('dwa równoległe powroty współdzielą jedną mutację domknięcia', async () => {
     const [first, second] = await Promise.all([

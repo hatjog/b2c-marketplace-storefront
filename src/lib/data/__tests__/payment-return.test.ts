@@ -30,6 +30,7 @@ const getCompletedPurchaseForCart = vi.fn();
 const cartHasStripePaymentIntent = vi.fn();
 const provesCartOwnership = vi.fn();
 const getPaymentReturnOutcome = vi.fn();
+const getPaymentReturnOutcomeStorageState = vi.fn();
 
 vi.mock('../cart', () => ({
   completeOrderAfterStripePayment: (...args: unknown[]) => completeOrderAfterStripePayment(...args),
@@ -39,7 +40,9 @@ vi.mock('../cart', () => ({
 
 vi.mock('../cookies', () => ({
   provesCartOwnership: (...args: unknown[]) => provesCartOwnership(...args),
-  getPaymentReturnOutcome: (...args: unknown[]) => getPaymentReturnOutcome(...args)
+  getPaymentReturnOutcome: (...args: unknown[]) => getPaymentReturnOutcome(...args),
+  getPaymentReturnOutcomeStorageState: (...args: unknown[]) =>
+    getPaymentReturnOutcomeStorageState(...args)
 }));
 
 const {
@@ -67,9 +70,11 @@ beforeEach(() => {
   cartHasStripePaymentIntent.mockReset();
   provesCartOwnership.mockReset();
   getPaymentReturnOutcome.mockReset();
+  getPaymentReturnOutcomeStorageState.mockReset();
   cartHasStripePaymentIntent.mockResolvedValue(true);
   provesCartOwnership.mockResolvedValue(true);
   getPaymentReturnOutcome.mockResolvedValue(null);
+  getPaymentReturnOutcomeStorageState.mockResolvedValue('ready');
   getCompletedPurchaseForCart.mockResolvedValue({
     orderIds: [],
     expectedOrderCount: null,
@@ -174,6 +179,22 @@ describe('AC2 — powrót z 3DS domyka koszyk SERWEROWO (decyzja)', () => {
     expect(result).toEqual({ state: 'recovery_required', reason: 'bridge_read_failed' });
   });
 
+  it.each([
+    ['secret_unavailable', 'outcome_marker_unavailable'],
+    ['capacity_exhausted', 'outcome_marker_capacity_exhausted']
+  ] as const)(
+    'brak bezpiecznego markera %s zatrzymuje redirect do mutacji',
+    async (storageState, reason) => {
+      getPaymentReturnOutcomeStorageState.mockResolvedValue(storageState);
+
+      const { completionRedirect, result } = await resolvePaymentReturn(CART, SUCCEEDED, LOCALE);
+
+      expect(completionRedirect).toBeNull();
+      expect(result).toEqual({ state: 'recovery_required', reason });
+      expect(completeOrderAfterStripePayment).not.toHaveBeenCalled();
+    }
+  );
+
   it('brak dowodu własności nie odczytuje ani nie ujawnia zakupu', async () => {
     provesCartOwnership.mockResolvedValue(false);
 
@@ -188,14 +209,17 @@ describe('AC2 — powrót z 3DS domyka koszyk SERWEROWO (decyzja)', () => {
     ['read_failed', 'bridge_read_failed'],
     ['access_denied', 'bridge_access_denied'],
     ['incomplete', 'incomplete_order_set']
-  ] as const)('serwerowy marker %s zachowuje recovery przy pustym moście', async (outcome, reason) => {
-    getPaymentReturnOutcome.mockResolvedValue(outcome);
+  ] as const)(
+    'serwerowy marker %s zachowuje recovery przy pustym moście',
+    async (outcome, reason) => {
+      getPaymentReturnOutcome.mockResolvedValue(outcome);
 
-    const { completionRedirect, result } = await resolvePaymentReturn(CART, SUCCEEDED, LOCALE);
+      const { completionRedirect, result } = await resolvePaymentReturn(CART, SUCCEEDED, LOCALE);
 
-    expect(completionRedirect).toBeNull();
-    expect(result).toEqual({ state: 'recovery_required', reason });
-  });
+      expect(completionRedirect).toBeNull();
+      expect(result).toEqual({ state: 'recovery_required', reason });
+    }
+  );
 
   it.each(['read_failed', 'access_denied', 'incomplete'] as const)(
     'serwerowy marker %s nie przesłania później kompletnego zestawu',
@@ -294,13 +318,29 @@ describe('AC3 — rodzaj identyfikatora i parametry powrotu Stripe’a', () => {
   });
 
   it('potwierdzenie powrotu wymaga POZYTYWNEGO sygnału Stripe’a', async () => {
-    expect(await isStripeReturnConfirmation({ redirect_status: 'succeeded', payment_intent: 'pi_x', ambiguous: false })).toBe(true);
-    expect(await isStripeReturnConfirmation({ redirect_status: 'succeeded', ambiguous: false })).toBe(false);
-    expect(await isStripeReturnConfirmation({ payment_intent: 'pi_x', ambiguous: false })).toBe(false);
-    expect(await isStripeReturnConfirmation({ ambiguous: false })).toBe(false);
-    expect(await isStripeReturnConfirmation({ redirect_status: 'failed', ambiguous: false })).toBe(false);
     expect(
-      await isStripeReturnConfirmation({ redirect_status: 'failed', payment_intent: 'pi_failed', ambiguous: false })
+      await isStripeReturnConfirmation({
+        redirect_status: 'succeeded',
+        payment_intent: 'pi_x',
+        ambiguous: false
+      })
+    ).toBe(true);
+    expect(
+      await isStripeReturnConfirmation({ redirect_status: 'succeeded', ambiguous: false })
+    ).toBe(false);
+    expect(await isStripeReturnConfirmation({ payment_intent: 'pi_x', ambiguous: false })).toBe(
+      false
+    );
+    expect(await isStripeReturnConfirmation({ ambiguous: false })).toBe(false);
+    expect(await isStripeReturnConfirmation({ redirect_status: 'failed', ambiguous: false })).toBe(
+      false
+    );
+    expect(
+      await isStripeReturnConfirmation({
+        redirect_status: 'failed',
+        payment_intent: 'pi_failed',
+        ambiguous: false
+      })
     ).toBe(false);
   });
 

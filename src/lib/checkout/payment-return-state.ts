@@ -66,7 +66,9 @@ export type PaymentReturnState =
         | 'bridge_read_failed'
         | 'bridge_access_denied'
         | 'incomplete_order_set'
-        | 'bridge_malformed';
+        | 'bridge_malformed'
+        | 'outcome_marker_unavailable'
+        | 'outcome_marker_capacity_exhausted';
     }
   | {
       state: 'return_refused';

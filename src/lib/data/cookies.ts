@@ -178,6 +178,11 @@ const PAYMENT_RETURN_OUTCOME_COOKIE = '_gp_payment_return_outcome';
 const PAYMENT_RETURN_OUTCOME_TTL_SECONDS = 60 * 5;
 const PAYMENT_RETURN_OUTCOME_MAX_ENTRIES = 3;
 
+export type PaymentReturnOutcomeStorageState =
+  | 'ready'
+  | 'secret_unavailable'
+  | 'capacity_exhausted';
+
 type PaymentReturnOutcomeRecord = {
   identifier: string;
   paymentIntent: string | null;
@@ -200,7 +205,13 @@ type PaymentReturnOutcomeEnvelope = {
  * przestrzeni podpisów claimów voucherów z powrotem płatności.
  */
 function paymentReturnOutcomeSecret(): string | null {
-  return process.env.GP_VOUCHER_CLAIM_HMAC_SECRET ?? process.env.JWT_SECRET ?? null;
+  const dedicatedSecret = process.env.GP_VOUCHER_CLAIM_HMAC_SECRET?.trim();
+  if (dedicatedSecret) {
+    return dedicatedSecret;
+  }
+
+  const jwtSecret = process.env.JWT_SECRET?.trim();
+  return jwtSecret || null;
 }
 
 function canonicalOutcomeRecords(records: PaymentReturnOutcomeRecord[]): string {
@@ -283,28 +294,69 @@ function parseOutcomeRecords(
   }
 }
 
-export const setPaymentReturnOutcome = async (record: PaymentReturnOutcomeInput): Promise<void> => {
+export const getPaymentReturnOutcomeStorageState = async (
+  identifier: string,
+  paymentIntent: string | undefined
+): Promise<PaymentReturnOutcomeStorageState> => {
+  if (!paymentReturnOutcomeSecret()) {
+    return 'secret_unavailable';
+  }
+
+  const cookies = await nextCookies();
+  const records = parseOutcomeRecords(cookies.get(PAYMENT_RETURN_OUTCOME_COOKIE)?.value);
+  // Nieważna lub podmieniona koperta nie jest dowodem i nie może blokować
+  // pierwszego odczytu/mutacji. `getPaymentReturnOutcome` potraktuje ją tak samo.
+  if (records === null) {
+    return 'ready';
+  }
+
+  const hasCurrentRecord = records.some(
+    candidate =>
+      candidate.identifier === identifier && candidate.paymentIntent === (paymentIntent ?? null)
+  );
+  return hasCurrentRecord || records.length < PAYMENT_RETURN_OUTCOME_MAX_ENTRIES
+    ? 'ready'
+    : 'capacity_exhausted';
+};
+
+export const setPaymentReturnOutcome = async (
+  record: PaymentReturnOutcomeInput
+): Promise<PaymentReturnOutcomeStorageState> => {
   const cookies = await nextCookies();
   const now = Date.now();
   const prior = parseOutcomeRecords(cookies.get(PAYMENT_RETURN_OUTCOME_COOKIE)?.value, now) ?? [];
+  const existing = prior.find(
+    candidate =>
+      candidate.identifier === record.identifier && candidate.paymentIntent === record.paymentIntent
+  );
+  const remaining = prior.filter(
+    candidate =>
+      candidate.identifier !== record.identifier || candidate.paymentIntent !== record.paymentIntent
+  );
+
+  if (remaining.length >= PAYMENT_RETURN_OUTCOME_MAX_ENTRIES) {
+    // Nie wypychamy najstarszego znacznika: jego utrata pozwoliłaby replayowi
+    // wrócić do `/complete`. Wywołujący ma zatrzymać mutację named recovery.
+    return 'capacity_exhausted';
+  }
+
   const records = [
     {
       identifier: record.identifier,
       paymentIntent: record.paymentIntent,
       outcome: record.outcome,
-      expiresAt: now + PAYMENT_RETURN_OUTCOME_TTL_SECONDS * 1000
+      expiresAt:
+        existing?.outcome === record.outcome
+          ? existing.expiresAt
+          : now + PAYMENT_RETURN_OUTCOME_TTL_SECONDS * 1000
     },
-    ...prior.filter(
-      candidate =>
-        candidate.identifier !== record.identifier ||
-        candidate.paymentIntent !== record.paymentIntent
-    )
-  ].slice(0, PAYMENT_RETURN_OUTCOME_MAX_ENTRIES);
+    ...remaining
+  ];
   const signature = signOutcomeRecords(records);
   if (!signature) {
     // Brak sekretu nie może zamienić niepodpisanego cookie w dowód. Handler
-    // wróci wtedy do bezpiecznego odczytu mostka zamiast ufać przeglądarce.
-    return;
+    // zatrzymuje przed mutacją na nazwanym recovery, nie ufa przeglądarce.
+    return 'secret_unavailable';
   }
   const envelope: PaymentReturnOutcomeEnvelope = { version: 1, records, signature };
   cookies.set(PAYMENT_RETURN_OUTCOME_COOKIE, JSON.stringify(envelope), {
@@ -314,10 +366,11 @@ export const setPaymentReturnOutcome = async (record: PaymentReturnOutcomeInput)
     path: '/',
     secure: process.env.NODE_ENV === 'production'
   });
+  return 'ready';
 };
 
 export const getPaymentReturnOutcome = async (
-  identifier: string,
+  identifier: string | null,
   paymentIntent: string | undefined
 ): Promise<string | null> => {
   const cookies = await nextCookies();

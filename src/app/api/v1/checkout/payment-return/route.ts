@@ -50,6 +50,7 @@ import { classifyPaymentReturnIdentifier } from '@/lib/checkout/payment-return-i
 import { getCompletedPurchaseForCart } from '@/lib/data/cart';
 import {
   getPaymentReturnOutcome,
+  getPaymentReturnOutcomeStorageState,
   provesCartOwnership,
   setPaymentReturnOutcome
 } from '@/lib/data/cookies';
@@ -99,18 +100,45 @@ function statusPageUrl(
   return `/${locale}/order/${encodeURIComponent(identifier)}/payment-status?${query.toString()}`;
 }
 
+function persistsPaymentReturnOutcome(outcome: PaymentReturnOutcome): boolean {
+  return (
+    outcome === 'completion_failed' ||
+    outcome === 'no_order_id' ||
+    outcome === 'identifier_out_of_domain' ||
+    outcome === 'not_a_cart' ||
+    outcome === 'no_stripe_confirmation' ||
+    outcome === 'cart_ownership_unproven' ||
+    outcome === 'payment_intent_mismatch' ||
+    outcome === 'ambiguous_return_parameters'
+  );
+}
+
+function isTerminalCompletionOutcome(
+  outcome: string | null
+): outcome is Extract<PaymentReturnOutcome, 'completion_failed' | 'no_order_id'> {
+  return outcome === 'completion_failed' || outcome === 'no_order_id';
+}
+
 export async function GET(req: NextRequest): Promise<Response> {
   const search = req.nextUrl.searchParams;
   const locale = safeLocale(search.get('locale'));
   const rawCartId = search.get('cart_id') ?? '';
 
-  const redirectWithOutcome = async (identifier: string, outcome: PaymentReturnOutcome): Promise<never> => {
-    if (outcome !== 'done') {
-      await setPaymentReturnOutcome({
+  const redirectWithOutcome = async (
+    identifier: string,
+    outcome: PaymentReturnOutcome
+  ): Promise<never> => {
+    if (persistsPaymentReturnOutcome(outcome)) {
+      const storageState = await setPaymentReturnOutcome({
         identifier,
         paymentIntent: search.get('payment_intent'),
         outcome
       });
+      if (storageState !== 'ready') {
+        console.error(
+          `[payment-return] outcome marker unavailable state=${storageState} cart=${identifier}`
+        );
+      }
     }
     redirect(statusPageUrl(locale, identifier, search, outcome));
   };
@@ -148,13 +176,18 @@ export async function GET(req: NextRequest): Promise<Response> {
     return refuse('cart_ownership_unproven');
   }
 
-  if (!params.payment_intent || !(await isPaymentIntentBoundToCart(identifier.value, params.payment_intent))) {
+  if (
+    !params.payment_intent ||
+    !(await isPaymentIntentBoundToCart(identifier.value, params.payment_intent))
+  ) {
     return refuse('payment_intent_mismatch');
   }
 
   const priorOutcome = await getPaymentReturnOutcome(identifier.value, params.payment_intent);
-  if (priorOutcome) {
-    return redirectWithOutcome(identifier.value, priorOutcome as PaymentReturnOutcome);
+  if (isTerminalCompletionOutcome(priorOutcome)) {
+    // Zapisany wynik mutacji zatrzymuje replay, ale jego ponowne przekierowanie
+    // nie może przesuwać TTL i trzymać blokady dłużej niż pierwszy wynik.
+    redirect(statusPageUrl(locale, identifier.value, search, priorOutcome));
   }
 
   // ── Idempotencja: ODCZYT przed mutacją ───────────────────────────────────
@@ -171,7 +204,10 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   if (bridge.state !== 'empty') {
-    const outcome: Extract<PaymentReturnOutcome, 'read_failed' | 'access_denied' | 'incomplete' | 'malformed'> =
+    const outcome: Extract<
+      PaymentReturnOutcome,
+      'read_failed' | 'access_denied' | 'incomplete' | 'malformed'
+    > =
       bridge.state === 'read_failed'
         ? 'read_failed'
         : bridge.state === 'access_denied'
@@ -180,6 +216,21 @@ export async function GET(req: NextRequest): Promise<Response> {
             ? 'malformed'
             : 'incomplete';
     return redirectWithOutcome(identifier.value, outcome);
+  }
+
+  const outcomeStorageState = await getPaymentReturnOutcomeStorageState(
+    identifier.value,
+    params.payment_intent
+  );
+  if (outcomeStorageState === 'secret_unavailable') {
+    console.error(
+      `[payment-return] outcome marker unavailable state=secret_unavailable cart=${identifier.value}`
+    );
+    return redirectWithOutcome(identifier.value, 'outcome_marker_unavailable');
+  }
+  if (outcomeStorageState === 'capacity_exhausted') {
+    console.warn(`[payment-return] outcome marker capacity exhausted cart=${identifier.value}`);
+    return redirectWithOutcome(identifier.value, 'outcome_marker_capacity_exhausted');
   }
 
   const completion = await performPaymentReturnCompletion(identifier.value);

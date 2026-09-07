@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it, vi } from 'vitest';
 
 import de from '../../../../../messages/de.json';
 import en from '../../../../../messages/en.json';
@@ -9,13 +9,15 @@ import ua from '../../../../../messages/ua.json';
 const messages = { de, en, pl, ua };
 
 vi.mock('next-intl/server', () => ({
-  getTranslations: async ({ locale }: { locale: keyof typeof messages }) => (key: string) => {
-    const [group, field] = key.split('.');
-    const value = messages[locale].payment_status[
-      group as keyof (typeof messages)[typeof locale]['payment_status']
-    ] as { label?: string; body?: string; cta?: string };
-    return value?.[field as keyof typeof value] ?? '';
-  }
+  getTranslations:
+    async ({ locale }: { locale: keyof typeof messages }) =>
+    (key: string) => {
+      const [group, field] = key.split('.');
+      const value = messages[locale].payment_status[
+        group as keyof (typeof messages)[typeof locale]['payment_status']
+      ] as { label?: string; body?: string; cta?: string };
+      return value?.[field as keyof typeof value] ?? '';
+    }
 }));
 
 const { PaymentReturnNotice } = await import('../PaymentReturnNotice');
@@ -24,7 +26,9 @@ describe('PaymentReturnNotice — recovery jest widoczne we wszystkich locale', 
   it.each([
     ['bridge_read_failed', 'read_failed'],
     ['bridge_access_denied', 'access_denied'],
-    ['incomplete_order_set', 'incomplete']
+    ['incomplete_order_set', 'incomplete'],
+    ['outcome_marker_unavailable', 'marker_unavailable'],
+    ['outcome_marker_capacity_exhausted', 'marker_capacity_exhausted']
   ] as const)('renderuje %s jako alert z jednym CTA w pl/en/de/ua', async (reason, _caseName) => {
     for (const locale of ['pl', 'en', 'de', 'ua'] as const) {
       const element = await PaymentReturnNotice({

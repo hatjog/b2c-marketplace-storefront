@@ -16,11 +16,18 @@ vi.mock('@/lib/sdk/locale-interceptor', () => ({
 
 process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = 'payment-return-cookie-test-secret-32-bytes';
 
-const { getPaymentReturnOutcome, setCartId, setPaymentReturnOutcome } = await import('../cookies');
+const {
+  getPaymentReturnOutcome,
+  getPaymentReturnOutcomeStorageState,
+  setCartId,
+  setPaymentReturnOutcome
+} = await import('../cookies');
 
 beforeEach(() => {
   values.clear();
   set.mockClear();
+  process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = 'payment-return-cookie-test-secret-32-bytes';
+  delete process.env.JWT_SECRET;
 });
 
 describe('cookies powrotu płatności', () => {
@@ -50,5 +57,68 @@ describe('cookies powrotu płatności', () => {
     await expect(
       getPaymentReturnOutcome('cart_01PAYMENTRETURN', 'pi_01PAYMENTRETURN')
     ).resolves.toBeNull();
+  });
+
+  it('używa niepustego JWT_SECRET, gdy dedykowany sekret jest pusty', async () => {
+    process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = '';
+    process.env.JWT_SECRET = 'payment-return-jwt-fallback-test-secret';
+
+    await expect(
+      setPaymentReturnOutcome({
+        identifier: 'cart_01PAYMENTRETURN',
+        paymentIntent: 'pi_01PAYMENTRETURN',
+        outcome: 'completion_failed'
+      })
+    ).resolves.toBe('ready');
+    await expect(
+      getPaymentReturnOutcome('cart_01PAYMENTRETURN', 'pi_01PAYMENTRETURN')
+    ).resolves.toBe('completion_failed');
+  });
+
+  it('odmawia zapisu outcome bez obu sekretów zamiast tworzyć niepodpisaną bramkę', async () => {
+    process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = '';
+    delete process.env.JWT_SECRET;
+
+    await expect(
+      getPaymentReturnOutcomeStorageState('cart_01PAYMENTRETURN', 'pi_01PAYMENTRETURN')
+    ).resolves.toBe('secret_unavailable');
+    await expect(
+      setPaymentReturnOutcome({
+        identifier: 'cart_01PAYMENTRETURN',
+        paymentIntent: 'pi_01PAYMENTRETURN',
+        outcome: 'completion_failed'
+      })
+    ).resolves.toBe('secret_unavailable');
+    expect(values.get('_gp_payment_return_outcome')).toBeUndefined();
+  });
+
+  it('nie wypycha najstarszego outcome przy czwartym tuple', async () => {
+    const tuples = [
+      ['cart_01PAYMENTRETURNA', 'pi_01PAYMENTRETURNA'],
+      ['cart_01PAYMENTRETURNB', 'pi_01PAYMENTRETURNB'],
+      ['cart_01PAYMENTRETURNC', 'pi_01PAYMENTRETURNC']
+    ] as const;
+
+    for (const [identifier, paymentIntent] of tuples) {
+      await expect(
+        setPaymentReturnOutcome({ identifier, paymentIntent, outcome: 'completion_failed' })
+      ).resolves.toBe('ready');
+    }
+
+    await expect(
+      getPaymentReturnOutcomeStorageState('cart_01PAYMENTRETURND', 'pi_01PAYMENTRETURND')
+    ).resolves.toBe('capacity_exhausted');
+    await expect(
+      setPaymentReturnOutcome({
+        identifier: 'cart_01PAYMENTRETURND',
+        paymentIntent: 'pi_01PAYMENTRETURND',
+        outcome: 'completion_failed'
+      })
+    ).resolves.toBe('capacity_exhausted');
+    await expect(getPaymentReturnOutcome(...tuples[0])).resolves.toBe('completion_failed');
+    expect(
+      (JSON.parse(values.get('_gp_payment_return_outcome') as string) as { records: unknown[] })
+        .records
+    ).toHaveLength(3);
   });
 });

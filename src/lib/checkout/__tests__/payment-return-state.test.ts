@@ -19,7 +19,7 @@ const ORDER_B = 'order_01STORY36SELLERB';
 function facts(overrides: Partial<PaymentReturnFacts> = {}): PaymentReturnFacts {
   return {
     identifier: classifyPaymentReturnIdentifier(CART),
-    params: {},
+    params: { ambiguous: false },
     ordersBeforeCompletion: [],
     bridgeReadState: 'empty',
     completionAttempted: false,
@@ -70,7 +70,7 @@ describe('AC2 — serwerowe domknięcie i idempotencja', () => {
   it('pierwsze wejście po 3DS: domknięcie serwerowe → potwierdzenie z DWOMA zamówieniami', () => {
     const result = decidePaymentReturnState(
       facts({
-        params: { redirect_status: 'succeeded', payment_intent: 'pi_123' },
+        params: { redirect_status: 'succeeded', payment_intent: 'pi_123', ambiguous: false },
         completionAttempted: true,
         ordersAfterCompletion: [ORDER_A, ORDER_B]
       })
@@ -108,11 +108,11 @@ describe('AC2 — serwerowe domknięcie i idempotencja', () => {
 
 describe('AC4 — porzucenie i odświeżenie są ROZRÓŻNIALNE (NFR-2)', () => {
   const abandoned = decidePaymentReturnState(
-    facts({ params: { redirect_status: 'failed', payment_intent: 'pi_123' } })
+    facts({ params: { redirect_status: 'failed', payment_intent: 'pi_123', ambiguous: false } })
   );
   const refreshedAfterSuccess = decidePaymentReturnState(
     facts({
-      params: { redirect_status: 'succeeded', payment_intent: 'pi_123' },
+      params: { redirect_status: 'succeeded', payment_intent: 'pi_123', ambiguous: false },
       ordersBeforeCompletion: [ORDER_A, ORDER_B]
     })
   );
@@ -176,7 +176,7 @@ describe('AC4 — porzucenie i odświeżenie są ROZRÓŻNIALNE (NFR-2)', () => 
   it('żaden stan nie jest optymistycznym „opłacone" bez zamówień', () => {
     const states = [
       decidePaymentReturnState(facts()),
-      decidePaymentReturnState(facts({ params: { redirect_status: 'failed' } })),
+      decidePaymentReturnState(facts({ params: { redirect_status: 'failed', ambiguous: false } })),
       decidePaymentReturnState(facts({ completionAttempted: true }))
     ];
 
