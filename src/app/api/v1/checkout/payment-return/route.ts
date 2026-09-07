@@ -143,20 +143,40 @@ export async function GET(req: NextRequest): Promise<Response> {
     redirect(statusPageUrl(locale, identifier, search, outcome));
   };
 
-  const refuse = async (code: RefusalCode): Promise<never> => {
-    // Odmowa jest WIDOCZNA (NFR-2) i nazwana. Nie kasujemy i nie mutujemy
-    // niczego — wracamy na stronę statusu, która rozstrzygnie stan odczytem.
-    console.warn(`[payment-return] completion refused code=${code} cart=${rawCartId || 'none'}`);
-    return redirectWithOutcome(rawCartId || 'unknown', code);
+  const redirectWithoutStoredOutcome = (
+    identifier: string,
+    outcome: PaymentReturnOutcome
+  ): never => {
+    // Wartość z URL-u nie może rezerwować miejsca w podpisanej kopercie
+    // outcome. Przed dowodem własności byłaby kontrolowana przez atakującego
+    // i trzy odmowy mogłyby zablokować rzeczywisty powrót właścicielki.
+    redirect(statusPageUrl(locale, identifier, search, outcome));
   };
 
   const identifier = classifyPaymentReturnIdentifier(rawCartId);
   if (identifier.kind === null) {
-    return refuse('identifier_out_of_domain');
+    // Nie odbijamy niesklasyfikowanego wejścia w ścieżce ani w cookie.
+    return redirectWithoutStoredOutcome('unknown', 'identifier_out_of_domain');
   }
   if (identifier.kind !== 'cart') {
-    return refuse('not_a_cart');
+    return redirectWithoutStoredOutcome(identifier.value, 'not_a_cart');
   }
+
+  // Własność sprawdzamy PRZED każdym zapisem refusal outcome. Dzięki temu
+  // obcy cart_id nie może zatruć ograniczonej listy markerów przeglądarki.
+  if (!(await provesCartOwnership(identifier.value))) {
+    console.warn(
+      `[payment-return] completion refused code=cart_ownership_unproven cart=${identifier.value}`
+    );
+    return redirectWithoutStoredOutcome(identifier.value, 'cart_ownership_unproven');
+  }
+
+  const refuse = async (code: Exclude<RefusalCode, 'cart_ownership_unproven'>): Promise<never> => {
+    // Od tej linii identyfikator jest koszykiem należącym do tej przeglądarki,
+    // więc podpisany marker wiąże nazwany powód odmowy z właściwym tuplem.
+    console.warn(`[payment-return] completion refused code=${code} cart=${identifier.value}`);
+    return redirectWithOutcome(identifier.value, code);
+  };
 
   const params = await readStripeReturnParams({
     payment_intent: search.getAll('payment_intent'),
@@ -170,10 +190,6 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   if (!(await isStripeReturnConfirmation(params))) {
     return refuse('no_stripe_confirmation');
-  }
-
-  if (!(await provesCartOwnership(identifier.value))) {
-    return refuse('cart_ownership_unproven');
   }
 
   if (

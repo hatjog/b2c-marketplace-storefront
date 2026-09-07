@@ -254,6 +254,27 @@ describe('kontrola negatywna — powierzchnia zapisu NIE jest otwarta', () => {
 
     expect(postCalls()).toHaveLength(0);
     expect(cookieStore.get('_gp_completed_cart')).toBeUndefined();
+    expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+  });
+
+  it('odmowy dla obcego koszyka nie zatruwają markerów i nie blokują własnego powrotu', async () => {
+    cookieStore.set('_medusa_cart_id', CART);
+
+    for (const paymentIntent of ['pi_attacker_a', 'pi_attacker_b', 'pi_attacker_c']) {
+      const target = await callHandler({
+        cart_id: OTHER_CART,
+        locale: 'pl',
+        redirect_status: 'succeeded',
+        payment_intent: paymentIntent
+      });
+      expect(target).toContain('gp_return=cart_ownership_unproven');
+    }
+
+    expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(postCalls()).toHaveLength(1);
+    expect(target).toContain('gp_return=done');
   });
 
   it('BRAK jakiegokolwiek cookie (bot / prefetch / skaner linków) → zero domykania', async () => {
@@ -387,7 +408,7 @@ describe('kontrola negatywna — powierzchnia zapisu NIE jest otwarta', () => {
     expect(second).toContain('gp_return=ambiguous_return_parameters');
   });
 
-  it('odmowa koduje nieprawidłowy cart_id jako segment ścieżki', async () => {
+  it('odmowa koduje nietypowy cart_id w ścieżce, lecz nie zapisuje go do markera', async () => {
     const target = await callHandler({
       cart_id: 'cart_bad/path?#fragment',
       locale: 'pl'
@@ -395,6 +416,7 @@ describe('kontrola negatywna — powierzchnia zapisu NIE jest otwarta', () => {
 
     expect(target).toContain('/order/cart_bad%2Fpath%3F%23fragment/payment-status');
     expect(postCalls()).toHaveLength(0);
+    expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
   });
 });
 

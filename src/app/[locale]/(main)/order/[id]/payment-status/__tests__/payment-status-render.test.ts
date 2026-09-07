@@ -33,7 +33,7 @@
  * własnego założenia.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Granice środowiska Next.js, uzbrojone jak w realnym renderze ────────────
 
@@ -132,6 +132,7 @@ vi.mock('@/lib/config', () => ({
 const CART = 'cart_01STORY36RENDER';
 const ORDER_A = 'order_01STORY36SELLERA';
 const ORDER_B = 'order_01STORY36SELLERB';
+const originalOutcomeSecret = process.env.GP_VOUCHER_CLAIM_HMAC_SECRET;
 
 const PaymentStatusPage = (await import('../page')).default;
 const { completeOrderAfterStripePayment } = await import('@/lib/data/cart');
@@ -165,11 +166,23 @@ function bridgeReturns(orderIds: string[]) {
 beforeEach(() => {
   vi.clearAllMocks();
   cookieStore.clear();
+  // Ten plik wykonuje realne odczyty markerów outcome. Ustawiamy lokalny
+  // sekret przed każdym przypadkiem, aby dowód RSC nie zależał od kolejności
+  // innych plików Vitest ani od konfiguracji powłoki uruchamiającej test.
+  process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = 'payment-status-render-test-secret-32-bytes';
   // Strona statusu jest odczytem chronionym tym samym dowodem koszyka co
   // Route Handler. Bez tego cookie prawidłowo odmawia już przed odczytem
   // mostka, więc scenariusze renderu nie docierałyby do badanej granicy.
   cookieStore.set('_medusa_cart_id', CART);
   bridgeReturns([]);
+});
+
+afterEach(() => {
+  if (originalOutcomeSecret === undefined) {
+    delete process.env.GP_VOUCHER_CLAIM_HMAC_SECRET;
+  } else {
+    process.env.GP_VOUCHER_CLAIM_HMAC_SECRET = originalOutcomeSecret;
+  }
 });
 
 describe('AC2 — render strony powrotu NIE mutuje (wykonanie, nie obecność)', () => {
