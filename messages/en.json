@@ -1642,6 +1642,62 @@
         "privacy": "Privacy policy",
         "support": "Support"
       },
+      "states": {
+        "loading": {
+          "badge": "Loading",
+          "heading": "Checking your voucher…",
+          "body": "This will only take a moment. Please keep this page open.",
+          "cta": "Wait for the check to finish"
+        },
+        "active": {
+          "badge": "Active",
+          "heading": "Your voucher is active",
+          "body": "You can use it at the salon.",
+          "cta": "Show voucher code"
+        },
+        "pending": {
+          "badge": "Pending",
+          "heading": "Your gift is on its way",
+          "body": "The voucher is not ready to redeem yet. Please check back later.",
+          "cta": "Check again"
+        },
+        "redeemed": {
+          "badge": "Redeemed",
+          "heading": "This voucher has already been used",
+          "body": "This voucher has been redeemed.",
+          "cta": "Explore salons"
+        },
+        "expired": {
+          "badge": "Expired",
+          "heading": "The validity period has ended",
+          "body": "This voucher is no longer valid.",
+          "cta": "Contact support"
+        },
+        "voided": {
+          "badge": "Voided",
+          "heading": "This voucher has been voided",
+          "body": "This voucher was cancelled and cannot be redeemed. BonBeauty support can explain the details.",
+          "cta": "Contact support"
+        },
+        "forbidden": {
+          "badge": "No access",
+          "heading": "You do not have access to this voucher",
+          "body": "This link requires signing in to the account the voucher belongs to. It does not mean the voucher has expired.",
+          "cta": "Sign in"
+        },
+        "not_found": {
+          "badge": "Not found",
+          "heading": "We could not find a voucher at this link",
+          "body": "Check that the link from your message is complete. It does not mean the voucher has expired.",
+          "cta": "Get help"
+        },
+        "technical_error": {
+          "badge": "Technical error",
+          "heading": "We could not check the voucher right now",
+          "body": "Something went wrong on our side. Your voucher is not lost — please try again shortly.",
+          "cta": "Try again"
+        }
+      },
       "landing": {
         "heading": "Your BonBeauty voucher",
         "body": "Open the link from your email or SMS to access your voucher. If the link expired, we can resend a fresh one.",

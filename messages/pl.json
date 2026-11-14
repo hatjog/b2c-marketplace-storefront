@@ -1642,6 +1642,62 @@
         "privacy": "Polityka prywatności",
         "support": "Wsparcie"
       },
+      "states": {
+        "loading": {
+          "badge": "Wczytywanie",
+          "heading": "Sprawdzamy Twój voucher…",
+          "body": "To potrwa tylko chwilę. Nie zamykaj tej strony.",
+          "cta": "Poczekaj na wynik sprawdzenia"
+        },
+        "active": {
+          "badge": "Aktywny",
+          "heading": "Voucher jest aktywny",
+          "body": "Możesz go wykorzystać w salonie.",
+          "cta": "Pokaż kod vouchera"
+        },
+        "pending": {
+          "badge": "Oczekuje",
+          "heading": "Prezent jest w drodze",
+          "body": "Voucher nie jest jeszcze gotowy do realizacji. Zajrzyj tu ponownie za jakiś czas.",
+          "cta": "Sprawdź ponownie"
+        },
+        "redeemed": {
+          "badge": "Zrealizowany",
+          "heading": "Voucher został już wykorzystany",
+          "body": "Ten voucher został zrealizowany.",
+          "cta": "Odkryj salony"
+        },
+        "expired": {
+          "badge": "Wygasł",
+          "heading": "Termin ważności minął",
+          "body": "Ten voucher nie jest już ważny.",
+          "cta": "Skontaktuj się z supportem"
+        },
+        "voided": {
+          "badge": "Unieważniony",
+          "heading": "Voucher został unieważniony",
+          "body": "Ten voucher anulowano i nie można go zrealizować. Support BonBeauty wyjaśni szczegóły.",
+          "cta": "Skontaktuj się z supportem"
+        },
+        "forbidden": {
+          "badge": "Brak dostępu",
+          "heading": "Nie masz dostępu do tego vouchera",
+          "body": "Ten link wymaga zalogowania na konto, do którego przypisano voucher. To nie oznacza, że voucher wygasł.",
+          "cta": "Zaloguj się"
+        },
+        "not_found": {
+          "badge": "Nie znaleziono",
+          "heading": "Nie znaleźliśmy vouchera pod tym linkiem",
+          "body": "Sprawdź, czy link z wiadomości jest kompletny. To nie oznacza, że voucher wygasł.",
+          "cta": "Poproś o pomoc"
+        },
+        "technical_error": {
+          "badge": "Błąd techniczny",
+          "heading": "Nie udało się teraz sprawdzić vouchera",
+          "body": "Wystąpił problem po naszej stronie. Twój voucher nie przepadł — spróbuj ponownie za chwilę.",
+          "cta": "Spróbuj ponownie"
+        }
+      },
       "landing": {
         "heading": "Twój voucher BonBeauty",
         "body": "Otwórz link z e-maila lub SMS, aby przejść do swojego vouchera. Jeśli link wygasł, możemy wysłać nowy.",

@@ -1642,6 +1642,62 @@
         "privacy": "Datenschutz",
         "support": "Support"
       },
+      "states": {
+        "loading": {
+          "badge": "Wird geladen",
+          "heading": "Wir prüfen deinen Gutschein…",
+          "body": "Das dauert nur einen Moment. Bitte lass diese Seite geöffnet.",
+          "cta": "Warte auf das Ergebnis"
+        },
+        "active": {
+          "badge": "Aktiv",
+          "heading": "Dein Gutschein ist aktiv",
+          "body": "Du kannst ihn im Salon einlösen.",
+          "cta": "Gutscheincode anzeigen"
+        },
+        "pending": {
+          "badge": "Ausstehend",
+          "heading": "Dein Geschenk ist unterwegs",
+          "body": "Der Gutschein kann noch nicht eingelöst werden. Schau später noch einmal vorbei.",
+          "cta": "Erneut prüfen"
+        },
+        "redeemed": {
+          "badge": "Eingelöst",
+          "heading": "Dieser Gutschein wurde bereits verwendet",
+          "body": "Dieser Gutschein wurde eingelöst.",
+          "cta": "Salons entdecken"
+        },
+        "expired": {
+          "badge": "Abgelaufen",
+          "heading": "Die Gültigkeit ist abgelaufen",
+          "body": "Dieser Gutschein ist nicht mehr gültig.",
+          "cta": "Support kontaktieren"
+        },
+        "voided": {
+          "badge": "Storniert",
+          "heading": "Dieser Gutschein wurde storniert",
+          "body": "Dieser Gutschein wurde storniert und kann nicht eingelöst werden. Der BonBeauty-Support erklärt die Details.",
+          "cta": "Support kontaktieren"
+        },
+        "forbidden": {
+          "badge": "Kein Zugriff",
+          "heading": "Du hast keinen Zugriff auf diesen Gutschein",
+          "body": "Dieser Link erfordert die Anmeldung mit dem Konto, dem der Gutschein gehört. Das bedeutet nicht, dass er abgelaufen ist.",
+          "cta": "Anmelden"
+        },
+        "not_found": {
+          "badge": "Nicht gefunden",
+          "heading": "Unter diesem Link wurde kein Gutschein gefunden",
+          "body": "Prüfe, ob der Link aus deiner Nachricht vollständig ist. Das bedeutet nicht, dass der Gutschein abgelaufen ist.",
+          "cta": "Hilfe erhalten"
+        },
+        "technical_error": {
+          "badge": "Technischer Fehler",
+          "heading": "Der Gutschein konnte gerade nicht geprüft werden",
+          "body": "Bei uns ist ein Problem aufgetreten. Dein Gutschein ist nicht verloren — versuche es gleich noch einmal.",
+          "cta": "Erneut versuchen"
+        }
+      },
       "landing": {
         "heading": "Dein BonBeauty-Gutschein",
         "body": "Öffne den Link aus deiner E-Mail oder SMS, um deinen Gutschein einzulösen. Wenn der Link abgelaufen ist, können wir einen neuen schicken.",

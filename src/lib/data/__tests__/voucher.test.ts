@@ -293,6 +293,11 @@ describe('getVoucherEvents', () => {
   });
 });
 
+async function viewOf(code: string) {
+  const result = await getVoucherRecipientByCode(code);
+  return result.kind === 'ok' ? result.view : null;
+}
+
 describe('getVoucherRecipientByCode', () => {
   beforeEach(() => {
     delete mockMercurClient.store;
@@ -319,7 +324,7 @@ describe('getVoucherRecipientByCode', () => {
       },
     };
 
-    const result = await getVoucherRecipientByCode(REAL_CODE);
+    const result = await viewOf(REAL_CODE);
 
     expect(result?.state).toBe('active');
     expect(result?.sender_name).toBe('Anna');
@@ -327,6 +332,7 @@ describe('getVoucherRecipientByCode', () => {
     expect(result).not.toHaveProperty('buyer_email');
   });
 
+  // Story 6.9: unconfirmed/unknown states project to `pending`, never `expired`.
   it('fail-softs unknown recipient statuses and active payloads without public entry proof', async () => {
     for (const payload of [
       { status: 'pending_kyc', is_public_entry_confirmed: true },
@@ -344,8 +350,8 @@ describe('getVoucherRecipientByCode', () => {
         },
       };
 
-      const result = await getVoucherRecipientByCode(REAL_CODE);
-      expect(result?.state, JSON.stringify(payload)).toBe('expired');
+      const result = await viewOf(REAL_CODE);
+      expect(result?.state, JSON.stringify(payload)).toBe('pending');
       expect(result?.is_public_entry_confirmed, JSON.stringify(payload)).toBe(false);
     }
   });
@@ -372,7 +378,7 @@ describe('getVoucherRecipientByCode', () => {
       },
     };
 
-    const result = await getVoucherRecipientByCode(REAL_CODE);
+    const result = await viewOf(REAL_CODE);
     expect(result?.policy_snapshot?.refund_channel).toBeNull();
     expect(result?.policy_snapshot?.no_show_policy).toBeNull();
   });
@@ -397,7 +403,7 @@ describe('getVoucherRecipientByCode', () => {
       },
     };
 
-    const result = await getVoucherRecipientByCode(REAL_CODE);
+    const result = await viewOf(REAL_CODE);
     expect(result?.policy_snapshot?.refund_channel).toBe('vendor_wallet');
     expect(result?.policy_snapshot?.no_show_policy).toBe('vendor_decision');
   });
@@ -408,8 +414,8 @@ describe('getVoucherRecipientByCode', () => {
       ['settled', 'already_redeemed'],
       ['closed', 'already_redeemed'],
       ['expired', 'expired'],
-      ['voided', 'expired'],
-      ['refunded', 'expired'],
+      ['voided', 'voided'],
+      ['refunded', 'voided'],
     ]) {
       mockMercurClient.store = {
         vouchers: {
@@ -422,7 +428,7 @@ describe('getVoucherRecipientByCode', () => {
         },
       };
 
-      const result = await getVoucherRecipientByCode(REAL_CODE);
+      const result = await viewOf(REAL_CODE);
       expect(result?.state, `status='${input}'`).toBe(expected);
     }
   });
@@ -431,17 +437,19 @@ describe('getVoucherRecipientByCode', () => {
     mockMercurClient.store = {};
     mockSdkFetch.mockRejectedValue(new Error('offline'));
 
-    const result = await getVoucherRecipientByCode(E2E_RECIPIENT_ACTIVE_CODE);
+    const result = await viewOf(E2E_RECIPIENT_ACTIVE_CODE);
 
     expect(result?.code).toBe(E2E_RECIPIENT_ACTIVE_CODE);
     expect(result?.state).toBe('active');
     expect(result?.seller_name).toBeTruthy();
   });
 
-  it('returns null for unknown codes when both lookup paths fail', async () => {
+  it('returns a technical_error (not null) for unknown codes when both lookup paths fail', async () => {
     mockMercurClient.store = {};
     mockSdkFetch.mockRejectedValue(new Error('404'));
 
-    await expect(getVoucherRecipientByCode('UNKNOWN-RECIPIENT-CODE')).resolves.toBeNull();
+    const result = await getVoucherRecipientByCode('UNKNOWN-RECIPIENT-CODE');
+    expect(result).not.toBeNull();
+    expect(result.kind).toBe('technical_error');
   });
 });

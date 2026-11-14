@@ -3,17 +3,20 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import type { VoucherRecipientPolicyView, VoucherRecipientView as VoucherRecipientModel } from '@/lib/data/voucher';
+import type { VoucherRecipientPageProjection } from '@/lib/data/voucher-recipient-projection';
 import { toIntlLocale } from '@/lib/helpers/hreflang';
 import { buildGoogleMapsDeeplink, buildSearchFallbackDeeplink } from '@/lib/helpers/maps-deeplink';
 import { formatVoucherPrice } from '@/lib/voucher/voucher-copy';
 
 import { VoucherCodeCopyButton } from './VoucherCodeCopyButton';
+import { VoucherRecipientStateScreen } from './VoucherRecipientStateScreen';
 import { SymmetricPossessionSection } from '../voucher-possession/SymmetricPossessionSection';
 
 type VoucherRecipientViewProps = {
   locale: string;
   requestedCode: string;
-  voucher: VoucherRecipientModel | null;
+  /** Single state projection (Story 6.9 AC3) — the only source of state. */
+  projection: VoucherRecipientPageProjection;
 };
 
 function formatDate(iso: string | null | undefined, locale: string): string | null {
@@ -160,9 +163,31 @@ function FooterLinks({
 export async function VoucherRecipientView({
   locale,
   requestedCode,
-  voucher,
+  projection,
 }: VoucherRecipientViewProps) {
   const t = await getTranslations({ locale, namespace: 'voucher.recipient' });
+  const voucher = projection.view;
+  const stateAttrs = {
+    'data-testid': 'voucher-recipient-state',
+    'data-state': projection.state,
+    'data-message-key': projection.messageKey,
+    'data-next-action': projection.nextAction,
+  } as const;
+
+  if (
+    !voucher ||
+    (projection.state !== 'active' &&
+      projection.state !== 'expired' &&
+      projection.state !== 'redeemed')
+  ) {
+    return (
+      <>
+        <VoucherRecipientStateScreen projection={projection} t={(key) => t(key as never)} />
+        <FooterLinks locale={locale} t={t} />
+      </>
+    );
+  }
+
   const reqHeaders = await headers();
   const requestUserAgent = reqHeaders.get('user-agent') ?? '';
 
@@ -175,9 +200,9 @@ export async function VoucherRecipientView({
       : null;
   const mapsHref = voucher ? getGoogleMapsHref(voucher) : null;
 
-  if (!voucher || voucher.state === 'expired') {
+  if (projection.state === 'expired') {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+      <div {...stateAttrs} className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
         <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
           <span className="inline-flex rounded-full border border-[var(--bb-border-soft)] bg-white/70 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">
             {t('expired.badge')}
@@ -194,12 +219,12 @@ export async function VoucherRecipientView({
           <div className="space-y-3">
             <h2 className="heading-sm text-[var(--text-primary)]">{t('expired.contact_heading')}</h2>
             <p className="text-sm leading-6 text-[var(--text-secondary)]">{t('expired.contact_body')}</p>
-            {voucher?.seller_phone && (
+            {voucher.seller_phone && (
               <a href={`tel:${voucher.seller_phone}`} className="block text-sm font-medium text-[var(--bg-action)] underline underline-offset-4">
                 {voucher.seller_phone}
               </a>
             )}
-            <Link href={`/${locale}/pomoc`} className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]">
+            <Link href={projection.nextActionHref ?? `/${locale}/pomoc`} data-testid="voucher-recipient-next-action" className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]">
               {t('expired.support_cta')}
             </Link>
           </div>
@@ -219,9 +244,9 @@ export async function VoucherRecipientView({
     );
   }
 
-  if (voucher.state === 'already_redeemed') {
+  if (projection.state === 'redeemed') {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+      <div {...stateAttrs} className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
         <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
           <span className="inline-flex rounded-full border border-[var(--color-success-500)] bg-[var(--color-success-50)] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--color-success-700)]">
             {t('redeemed.badge')}
@@ -247,7 +272,7 @@ export async function VoucherRecipientView({
             )}
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href={`/${locale}/sellers`} className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]">
+            <Link href={projection.nextActionHref ?? `/${locale}/sellers`} data-testid="voucher-recipient-next-action" className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]">
               {t('redeemed.cta_explore')}
             </Link>
             <Link href={`/${locale}/pomoc`} className="inline-flex min-h-12 items-center rounded-full border border-[var(--bb-border-soft)] bg-white px-5 py-3 text-sm font-medium text-[var(--bg-action)]">
@@ -262,7 +287,7 @@ export async function VoucherRecipientView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <div {...stateAttrs} className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <section className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
         <span className="inline-flex rounded-full bg-[var(--bb-surface-strong)] px-4 py-2 text-xs uppercase tracking-[0.28em] text-[var(--cta-hover)]">
           {voucher.sender_disclosure_allowed && voucher.sender_name
@@ -275,6 +300,13 @@ export async function VoucherRecipientView({
         <p className="max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
           {t('active.subheading')}
         </p>
+        <a
+          href={projection.nextActionHref ?? '#voucher-code'}
+          data-testid="voucher-recipient-next-action"
+          className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]"
+        >
+          {t('states.active.cta')}
+        </a>
       </section>
 
       <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 rounded-[var(--bb-radius-card)] border border-[var(--bb-border-soft)] bg-white/90 p-6 shadow-[0_24px_60px_var(--bb-shadow-soft)]">
@@ -291,7 +323,7 @@ export async function VoucherRecipientView({
           {formatVoucherPrice(voucher.value_minor, voucher.currency_code, locale)}
         </div>
 
-        <div className="space-y-2 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4">
+        <div id="voucher-code" className="space-y-2 rounded-[var(--bb-radius-panel)] border border-[var(--bb-border-soft)] bg-[var(--bb-surface)] p-4">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--cta-hover)]">{t('active.code_label')}</p>
             <p className="mt-2 break-all font-mono text-lg text-[var(--text-primary)]">{voucher.code}</p>

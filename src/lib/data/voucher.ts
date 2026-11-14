@@ -47,7 +47,40 @@ export interface VoucherPublicView {
   expires_at?: string | null;
 }
 
-export type VoucherRecipientState = 'active' | 'expired' | 'already_redeemed';
+/**
+ * v1.16.0 Story 6.9 (AD-51): entitlement-layer states visible to the recipient.
+ * `pending` = issued but not yet confirmed for public gift entry (or an
+ * unknown backend status — fail-safe: no code, no redemption action);
+ * `voided` = cancelled/refunded/disputed (distinct from `expired`).
+ */
+export type VoucherRecipientState =
+  | 'active'
+  | 'pending'
+  | 'already_redeemed'
+  | 'expired'
+  | 'voided';
+
+/**
+ * v1.16.0 Story 6.9 (AD-50): transport class of a recipient lookup. 403/404/5xx
+ * and non-JSON bodies are never collapsed into `null` or `expired`; the HTTP
+ * status (when known) is preserved for the UX projection.
+ */
+export type VoucherRecipientFailureKind = 'forbidden' | 'not_found' | 'technical_error';
+
+export type VoucherRecipientFailureReason =
+  | 'http_status'
+  | 'non_json'
+  | 'malformed_payload'
+  | 'network'
+  | 'invalid_code';
+
+export type VoucherRecipientResult =
+  | { kind: 'ok'; view: VoucherRecipientView; status: number | null }
+  | {
+      kind: VoucherRecipientFailureKind;
+      status: number | null;
+      reason: VoucherRecipientFailureReason;
+    };
 
 export interface VoucherRecipientPolicyView {
   extension?: {
@@ -392,14 +425,27 @@ function normalizeRecipientState(
   }
 
   if (
-    normalized === 'expired' ||
+    normalized === 'expired'
+  ) {
+    return 'expired';
+  }
+
+  if (
     normalized === 'voided' ||
     normalized === 'withdrawn' ||
     normalized === 'revoked' ||
     normalized === 'refunded' ||
     normalized === 'disputed'
   ) {
-    return 'expired';
+    return 'voided';
+  }
+
+  if (
+    normalized === 'idle' ||
+    normalized === 'consent_pending' ||
+    normalized.startsWith('pending')
+  ) {
+    return 'pending';
   }
 
   return null;
@@ -454,11 +500,13 @@ function projectRecipientAllowlist(
     payload.public_entry_confirmed,
     payload.gift_entry_confirmed
   );
+  // Story 6.9: an unconfirmed or unknown state is `pending`, never `expired`.
   const state: VoucherRecipientState =
     normalizedState === 'active' && !isPublicEntryConfirmed
-      ? 'expired'
-      : (normalizedState ?? 'expired');
-  const publicEntryVisible = normalizedState === null ? false : isPublicEntryConfirmed;
+      ? 'pending'
+      : (normalizedState ?? 'pending');
+  const publicEntryVisible =
+    normalizedState === null || normalizedState === 'pending' ? false : isPublicEntryConfirmed;
   const sellerAddress = buildSellerAddress(payload);
   const sellerPhone = pickString(payload.seller_phone, payload.seller?.phone);
   const sellerHours = pickString(payload.seller_hours, payload.seller?.opening_hours);
@@ -568,10 +616,59 @@ export async function getVoucherByCode(code: string): Promise<VoucherPublicView 
   return null;
 }
 
-export async function getVoucherRecipientByCode(
-  code: string
-): Promise<VoucherRecipientView | null> {
-  if (!code || code.length < 3) return null;
+function readTransportStatus(err: unknown): number | null {
+  const candidate =
+    (err as { status?: unknown } | null)?.status ??
+    (err as { response?: { status?: unknown } } | null)?.response?.status;
+  return typeof candidate === 'number' && Number.isFinite(candidate) ? candidate : null;
+}
+
+/**
+ * Story 6.9 (AD-50): classify a failed recipient lookup without losing the
+ * transport class. 401/403 → forbidden, 400/404/410 → not_found, everything
+ * else (5xx, network, non-JSON body) → technical_error.
+ */
+export function classifyVoucherRecipientError(err: unknown): VoucherRecipientFailure {
+  const status = readTransportStatus(err);
+  if (status === 401 || status === 403) {
+    return { kind: 'forbidden', status, reason: 'http_status' };
+  }
+  if (status === 400 || status === 404 || status === 410) {
+    return { kind: 'not_found', status, reason: 'http_status' };
+  }
+  if (status !== null) {
+    return { kind: 'technical_error', status, reason: 'http_status' };
+  }
+  if (err instanceof SyntaxError) {
+    return { kind: 'technical_error', status: null, reason: 'non_json' };
+  }
+  return { kind: 'technical_error', status: null, reason: 'network' };
+}
+
+type VoucherRecipientFailure = Extract<VoucherRecipientResult, { kind: VoucherRecipientFailureKind }>;
+
+function projectRecipientResponse(res: unknown): VoucherRecipientResult {
+  if (res === null || typeof res !== 'object' || res instanceof Response) {
+    return { kind: 'technical_error', status: null, reason: 'non_json' };
+  }
+  const body = res as { voucher?: VoucherApiPayload };
+  const view = projectRecipientAllowlist(body.voucher ?? (body as VoucherApiPayload));
+  return view
+    ? { kind: 'ok', view, status: null }
+    : { kind: 'technical_error', status: null, reason: 'malformed_payload' };
+}
+
+export async function getVoucherRecipientByCode(code: string): Promise<VoucherRecipientResult> {
+  const finalize = (failure: VoucherRecipientFailure): VoucherRecipientResult =>
+    code in E2E_RECIPIENT_FIXTURES
+      ? { kind: 'ok', view: E2E_RECIPIENT_FIXTURES[code], status: null }
+      : failure;
+
+  if (!code || code.length < 3) {
+    return { kind: 'not_found', status: null, reason: 'invalid_code' };
+  }
+
+  let failure: VoucherRecipientFailure;
 
   try {
     const client = mercurClient as unknown as {
@@ -583,29 +680,27 @@ export async function getVoucherRecipientByCode(
     };
     if (client.store?.vouchers?.byCode) {
       const res = await client.store.vouchers.byCode(await withMercurLocaleOptions({ code }));
-      const view = projectRecipientAllowlist(res?.voucher);
-      if (view) return view;
+      const projected = projectRecipientResponse(res);
+      if (projected.kind === 'ok') return projected;
     }
-  } catch {
-    // Fall through to raw fetch fallback.
+  } catch (err: unknown) {
+    const classified = classifyVoucherRecipientError(err);
+    // forbidden / not_found are authoritative answers — the raw path would
+    // only repeat them. Technical errors still try the raw fallback.
+    if (classified.kind !== 'technical_error') return finalize(classified);
   }
 
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}`;
-    const res = (await sdk.client.fetch(url, { method: 'GET' })) as {
-      voucher?: VoucherApiPayload;
-    } | null;
-    const view = projectRecipientAllowlist(res?.voucher ?? (res as VoucherApiPayload));
-    if (view) return view;
-  } catch {
-    // Endpoint not provisioned or access denied — fall through to fixtures/null.
+    const res: unknown = await sdk.client.fetch(url, { method: 'GET' });
+    const projected = projectRecipientResponse(res);
+    if (projected.kind === 'ok') return projected;
+    failure = projected;
+  } catch (err: unknown) {
+    failure = classifyVoucherRecipientError(err);
   }
 
-  if (code in E2E_RECIPIENT_FIXTURES) {
-    return E2E_RECIPIENT_FIXTURES[code];
-  }
-
-  return null;
+  return finalize(failure);
 }
 
 const KNOWN_EVENT_TYPES: ReadonlySet<VoucherAuditEventType> = new Set([

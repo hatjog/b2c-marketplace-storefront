@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { StorefrontI18nLongContentProbe, StorefrontRouteStateSignal } from '@/components/atoms';
 import { VoucherRecipientView } from '@/components/voucher/VoucherRecipientView';
 import { getVoucherRecipientByCode } from '@/lib/data/voucher';
+import { projectVoucherRecipientPage } from '@/lib/data/voucher-recipient-projection';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,13 +35,17 @@ export default async function VoucherRecipientPage({
 }: VoucherRecipientPageProps) {
   const { locale, code } = await params;
   setRequestLocale(locale);
-  const voucher = await getVoucherRecipientByCode(code);
+  // Story 6.9 AC3: one projection drives `data-state` and every screen.
+  const projection = projectVoucherRecipientPage(await getVoucherRecipientByCode(code), {
+    locale,
+    code,
+  });
 
   return (
     <main
       id="main-content"
       data-testid="voucher-recipient-page"
-      data-state={voucher?.state ?? 'expired'}
+      data-state={projection.state}
       className="min-h-screen bg-[var(--bb-gradient-page-warm)]"
     >
       <StorefrontRouteStateSignal
@@ -54,7 +59,7 @@ export default async function VoucherRecipientPage({
       <VoucherRecipientView
         locale={locale}
         requestedCode={code}
-        voucher={voucher}
+        projection={projection}
       />
     </main>
   );
