@@ -145,7 +145,12 @@ export type PaymentReturnOutcome =
   // Story 8.1 fix (runda 2): `POST /complete` WYKONANY, odczyt order-setu po
   // nim niepewny. Marker blokuje ponowny POST, nie blokuje odczytu mostka.
   | 'completion_read_failed'
-  | 'completion_access_denied';
+  | 'completion_access_denied'
+  // Story 8.2 (ADR-233, DW-15-295): odmowy autorytetu backendu (nieterminalne)
+  // i trwała niedostępność koszyka (terminalna, bez ponowienia).
+  | 'payment_not_terminal'
+  | 'completion_in_progress'
+  | 'cart_unavailable';
 
 function priorOutcome(value: string | null | undefined): PaymentReturnOutcome | null {
   return value === 'done' ||
@@ -162,7 +167,10 @@ function priorOutcome(value: string | null | undefined): PaymentReturnOutcome | 
     value === 'payment_intent_mismatch' ||
     value === 'ambiguous_return_parameters' ||
     value === 'completion_read_failed' ||
-    value === 'completion_access_denied'
+    value === 'completion_access_denied' ||
+    value === 'payment_not_terminal' ||
+    value === 'completion_in_progress' ||
+    value === 'cart_unavailable'
     ? value
     : null;
 }
@@ -373,6 +381,33 @@ export async function resolvePaymentReturn(
     };
   }
 
+  // Story 8.2 (ADR-233): backend odmówił domknięcia, bo PSP nie potwierdził
+  // stanu terminalnego albo drugi worker właśnie domyka koszyk. Nazwany stan
+  // oczekiwania (strona odpytuje), BEZ `completionRedirect` — żadnej pętli.
+  if (
+    !alreadyCompleted &&
+    (outcome === 'payment_not_terminal' || outcome === 'completion_in_progress')
+  ) {
+    return {
+      identifier,
+      params,
+      completionRedirect: null,
+      result: {
+        state: 'pending_confirmation',
+        reason: outcome === 'payment_not_terminal' ? 'psp_not_terminal' : 'completion_in_progress'
+      }
+    };
+  }
+
+  if (!alreadyCompleted && outcome === 'cart_unavailable') {
+    return {
+      identifier,
+      params,
+      completionRedirect: null,
+      result: { state: 'recovery_required', reason: 'cart_unavailable' }
+    };
+  }
+
   if (!alreadyCompleted && (outcome === 'incomplete' || outcome === 'malformed')) {
     return {
       identifier,
@@ -420,10 +455,25 @@ type PaymentReturnCompletion = {
   orderIds: string[];
   outcome: Extract<
     PaymentReturnOutcome,
-    'done' | 'completion_failed' | 'no_order_id' | 'incomplete' | 'read_failed' | 'access_denied'
+    | 'done'
+    | 'completion_failed'
+    | 'no_order_id'
+    | 'incomplete'
+    | 'read_failed'
+    | 'access_denied'
+    | 'payment_not_terminal'
+    | 'completion_in_progress'
   >;
 };
 
+/**
+ * Story 8.2 (ADR-233): ta mapa NIE jest blokadą ani dowodem — scala wyłącznie
+ * równoległe wywołania w JEDNYM procesie (oszczędza zbędny POST). Blokadą
+ * między workerami i po restarcie jest backend: advisory lock PostgreSQL na
+ * czas `POST /complete` + trwały `order_cart` (middleware
+ * `cart-completion-psp-authority`). Status PSP czyta backend z sekretem
+ * Stripe; `redirect_status` z URL jest tu wyłącznie wskazówką nawigacyjną.
+ */
 const completionLocks = new Map<string, Promise<PaymentReturnCompletion>>();
 
 async function completePaymentReturn(cartId: string): Promise<PaymentReturnCompletion> {
@@ -445,6 +495,13 @@ async function completePaymentReturn(cartId: string): Promise<PaymentReturnCompl
           ? 'incomplete'
           : completion.error?.code === 'read_failed'
             ? 'read_failed'
+            : // Status PSP nieczytelny po stronie backendu = brak potwierdzenia
+              // PSP (nieterminalnie), a nie odczyt po wykonanej mutacji.
+              completion.error?.code === 'payment_not_terminal' ||
+                completion.error?.code === 'psp_unavailable'
+              ? 'payment_not_terminal'
+              : completion.error?.code === 'completion_in_progress'
+                ? 'completion_in_progress'
             : completion.error?.code === 'access_denied'
               ? 'access_denied'
               : 'no_order_id'

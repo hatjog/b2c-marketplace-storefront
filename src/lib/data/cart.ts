@@ -1139,7 +1139,7 @@ async function resolveCompletedPurchaseForCart(
  *   • `read_failed` — koszyka nie dało się odczytać po `attempts` próbach;
  *     wywołujący ma zwrócić nazwany, nieterminalny `read_failed` (retry).
  */
-export type StripePaymentIntentBinding = 'bound' | 'not_bound' | 'read_failed';
+export type StripePaymentIntentBinding = 'bound' | 'not_bound' | 'read_failed' | 'cart_unavailable';
 
 export async function getStripePaymentIntentBinding(
   cartId: string,
@@ -1168,6 +1168,13 @@ export async function getStripePaymentIntentBinding(
       }
       console.warn(`[payment-return] cart read empty cart=${cartId} attempt=${attempt + 1}`);
     } catch (error) {
+      // Story 8.2 (DW-15-295): trwałe 4xx (404/403/401) to fakt o koszyku, nie
+      // przejściowa awaria — bez ponowienia i pod osobną nazwą.
+      const status = (error as { status?: unknown } | null)?.status;
+      if (typeof status === 'number' && status >= 400 && status < 500 && status !== 408 && status !== 429) {
+        console.warn(`[payment-return] cart unavailable cart=${cartId} status=${status}`);
+        return 'cart_unavailable';
+      }
       console.warn(`[payment-return] cart read failed cart=${cartId} attempt=${attempt + 1}`, error);
     }
     if (attempt < attempts - 1 && retryDelayMs > 0) {
@@ -1294,7 +1301,20 @@ export async function getCompletedPurchaseForCart(
 export async function completeOrderAfterStripePayment(cartId?: string) {
   try {
     const completedCartId = cartId || (await getCartId());
-    await completeCartOrder(completedCartId);
+    const completionResponse = await completeCartOrder(completedCartId);
+    // Story 8.2 (ADR-233): backend z sekretem Stripe jest autorytetem statusu PSP
+    // i blokadą między workerami. Jego nazwana odmowa nie może zlać się
+    // w `no_order_id` (terminalny) — to nieterminalny fakt z nazwą.
+    const refusalType = (completionResponse as { ok?: boolean; error?: { type?: unknown } } | null)
+      ?.ok === false
+      ? (completionResponse as { error?: { type?: unknown } }).error?.type
+      : undefined;
+    if (refusalType === 'payment_not_terminal' || refusalType === 'completion_in_progress') {
+      return { ok: false, error: { code: refusalType } };
+    }
+    if (refusalType === 'psp_status_unavailable' || refusalType === 'psp_authority_unavailable') {
+      return { ok: false, error: { code: 'psp_unavailable' as const } };
+    }
     const purchase = completedCartId
       ? await getCompletedPurchaseForCart(completedCartId, { attempts: 2 })
       : null;

@@ -102,7 +102,11 @@ export async function fetchQuery(
   return {
     ok: res.ok,
     status: res.status,
-    error: res.ok ? null : { message: data?.message },
+    // Story 8.2 (ADR-233): nazwany typ odmowy backendu (np. `payment_not_terminal`,
+    // `completion_in_progress`) musi dojść do wołającego — sam komunikat to proza.
+    error: res.ok
+      ? null
+      : { message: data?.message, type: typeof data?.type === 'string' ? data.type : undefined },
     data: res.ok ? data : null
   };
 }

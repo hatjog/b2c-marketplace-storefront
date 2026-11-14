@@ -122,3 +122,45 @@ describe('cookies powrotu płatności', () => {
     ).toHaveLength(3);
   });
 });
+
+describe('Story 8.2 (DW-15-295) — monotoniczność wyniku terminalnego', () => {
+  const identifier = 'cart_01STORY82MONO';
+  const paymentIntent = 'pi_01STORY82MONO';
+
+  it.each([
+    'completion_read_failed',
+    'completion_access_denied',
+    'no_order_id',
+    'completion_failed',
+    'done',
+    'cart_unavailable'
+  ])('terminalny `%s` nie zostaje nadpisany nieterminalnym `read_failed`', async terminal => {
+    await setPaymentReturnOutcome({ identifier, paymentIntent, outcome: terminal });
+    await setPaymentReturnOutcome({
+      identifier,
+      paymentIntent,
+      outcome: 'read_failed',
+      ttlSeconds: 60
+    });
+    await setPaymentReturnOutcome({
+      identifier,
+      paymentIntent,
+      outcome: 'payment_not_terminal',
+      ttlSeconds: 60
+    });
+    await expect(getPaymentReturnOutcome(identifier, paymentIntent)).resolves.toBe(terminal);
+  });
+
+  it('nieterminalny marker ustępuje terminalnemu (kierunek dozwolony)', async () => {
+    await setPaymentReturnOutcome({
+      identifier,
+      paymentIntent,
+      outcome: 'read_failed',
+      ttlSeconds: 60
+    });
+    await setPaymentReturnOutcome({ identifier, paymentIntent, outcome: 'completion_read_failed' });
+    await expect(getPaymentReturnOutcome(identifier, paymentIntent)).resolves.toBe(
+      'completion_read_failed'
+    );
+  });
+});
