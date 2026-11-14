@@ -151,3 +151,63 @@ describe('resolveConfirmationCardinality — trzy wejścia, trzy odróżnialne w
     expect(resolveConfirmationCardinality(1, undefined).kind).toBe('unknown_expected');
   });
 });
+
+/**
+ * v1.16.0 Story 8.5 (AC1) — rozwinięcie identyfikatora zakupu w PEŁNĄ kolekcję
+ * `order_id` z mostka `GET /store/carts/:id/completed-order`, wg kontraktu 8.1
+ * (`specs/contracts/checkout/order-set-cardinality.v1.md`, przykład N=2).
+ * Skalar `order_id` mostka jest wyłącznie drill-downem — nie wyznacza zakupu.
+ */
+describe('Story 8.5 — identyfikator zakupu ⇒ pełny order-set z mostka', () => {
+  const contractBridge = {
+    orders: [
+      { order_id: 'order_f2_seller_a', order_group_id: 'ordgrp_checkout_01' },
+      { order_id: 'order_f2_seller_b', order_group_id: 'ordgrp_checkout_01' }
+    ],
+    order_count: 2,
+    order_id: 'order_f2_seller_b',
+    order_group_id: 'ordgrp_checkout_01'
+  };
+
+  function decide(body: unknown) {
+    return decideConfirmationPurchase({
+      identifier: classifyPaymentReturnIdentifier('cart_8_5_multi_seller'),
+      bridge: resolveBridgePurchase(body)
+    });
+  }
+
+  it('przykład normatywny N=2: kolekcja obu zamówień, nie skalar drill-down', () => {
+    const decision = decide(contractBridge);
+    expect(decision.kind).toBe('collection');
+    if (decision.kind !== 'collection') return;
+    expect(new Set(decision.orderIds)).toEqual(new Set(['order_f2_seller_a', 'order_f2_seller_b']));
+    expect(decision.orderIds).toHaveLength(2);
+    expect(decision.expectedOrderCount).toBe(2);
+  });
+
+  it('zmiana kolejności `orders` nie zmienia zbioru order_id', () => {
+    const reversed = { ...contractBridge, orders: [...contractBridge.orders].reverse() };
+    const a = decide(contractBridge);
+    const b = decide(reversed);
+    if (a.kind !== 'collection' || b.kind !== 'collection') throw new Error('oczekiwano kolekcji');
+    expect(new Set(b.orderIds)).toEqual(new Set(a.orderIds));
+  });
+
+  it('N=3: wszystkie trzy order_id docierają do powierzchni', () => {
+    const decision = decide({
+      orders: [{ order_id: 'o_1' }, { order_id: 'o_2' }, { order_id: 'o_3' }],
+      order_count: 3,
+      order_id: 'o_3'
+    });
+    expect(decision).toEqual({
+      kind: 'collection',
+      orderIds: ['o_1', 'o_2', 'o_3'],
+      expectedOrderCount: 3
+    });
+  });
+
+  it('`orders` krótsze niż `order_count` NIE jest sukcesem z pierwszym zamówieniem', () => {
+    const decision = decide({ orders: [{ order_id: 'o_1' }], order_count: 2, order_id: 'o_1' });
+    expect(decision.kind).toBe('incomplete_order_set');
+  });
+});
