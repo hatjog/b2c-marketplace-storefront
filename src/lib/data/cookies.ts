@@ -190,6 +190,24 @@ type PaymentReturnOutcomeRecord = {
   expiresAt: number;
 };
 
+/**
+ * Story 8.2 (DW-15-295): wyniki, które zapadły PO wykonanej mutacji
+ * (`POST /complete`) albo ją zakończyły. Monotoniczność: rekord z takim
+ * wynikiem nie ustępuje rekordowi nieterminalnemu tej samej pary.
+ */
+const TERMINAL_PAYMENT_RETURN_OUTCOMES: ReadonlySet<string> = new Set([
+  'done',
+  'completion_failed',
+  'no_order_id',
+  'completion_read_failed',
+  'completion_access_denied',
+  'cart_unavailable'
+]);
+
+function isTerminalPaymentReturnOutcome(outcome: string): boolean {
+  return TERMINAL_PAYMENT_RETURN_OUTCOMES.has(outcome);
+}
+
 type PaymentReturnOutcomeInput = Omit<PaymentReturnOutcomeRecord, 'expiresAt'> & {
   /**
    * Story 8.1 fix (runda 2): krótszy TTL dla markera NIETERMINALNEGO
@@ -341,6 +359,17 @@ export const setPaymentReturnOutcome = async (
     candidate =>
       candidate.identifier !== record.identifier || candidate.paymentIntent !== record.paymentIntent
   );
+
+  // Story 8.2 (DW-15-295): wynik TERMINALNY mutacji nie może zostać nadpisany
+  // nieterminalnym markerem odczytu. Inaczej `read_failed` z TTL 60 s zdejmował
+  // blokadę replayu i po jego wygaśnięciu możliwy był drugi `POST /complete`.
+  if (
+    existing &&
+    isTerminalPaymentReturnOutcome(existing.outcome) &&
+    !isTerminalPaymentReturnOutcome(record.outcome)
+  ) {
+    return 'ready';
+  }
 
   if (remaining.length >= PAYMENT_RETURN_OUTCOME_MAX_ENTRIES) {
     // Nie wypychamy najstarszego znacznika: jego utrata pozwoliłaby replayowi

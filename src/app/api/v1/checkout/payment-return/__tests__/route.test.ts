@@ -903,3 +903,174 @@ describe('Story 8.1 runda 2 — sekwencja route → strona → route kończy si�
     warn.mockRestore();
   });
 });
+
+describe('Story 8.2 — powrót z pełnego redirectu 3DS domyka zamówienie (ADR-233, ADR-166, DW-15-295)', () => {
+  beforeEach(() => {
+    cookieStore.set('_medusa_cart_id', CART);
+  });
+
+  function pageSearchParams(target: string): Record<string, string> {
+    const url = new URL(target, 'https://shop.test');
+    return Object.fromEntries(url.searchParams.entries());
+  }
+
+  /** Backend z sekretem Stripe odmawia: PSP nie potwierdził stanu terminalnego. */
+  function backendRefuses(type: string, status = 409) {
+    fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (init?.method === 'POST' && path.includes('/complete')) {
+        return { ok: false, status, error: { message: 'refused', type }, data: null };
+      }
+      return { ok: false, status: 404 };
+    });
+  }
+
+  it('AC1: `redirect_status=succeeded` z URL bez potwierdzenia PSP przez backend → zero zamówienia, nazwany stan oczekiwania', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    backendRefuses('payment_not_terminal');
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(1);
+    expect(target).toContain('gp_return=payment_not_terminal');
+    expect(target).not.toContain('gp_return=no_order_id');
+    expect(cookieStore.has('_gp_completed_cart')).toBe(false);
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.completionRedirect).toBeNull();
+    expect(resolution.result).toEqual({
+      state: 'pending_confirmation',
+      reason: 'psp_not_terminal'
+    });
+    warn.mockRestore();
+  });
+
+  it('AC1: stan PSP potwierdzony przez backend → widoczne zamówienia; koperta N>1 daje pełny zbiór bez sumowania kwot', async () => {
+    completionSucceeds();
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(target).toContain('gp_return=done');
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.result.state).toBe('confirmed');
+    const orderIds = (resolution.result as { orderIds: string[] }).orderIds;
+    expect(new Set(orderIds)).toEqual(new Set([ORDER_A, ORDER_B]));
+    // ADR-166: wynik niesie ZBIÓR identyfikatorów, nie kwotę z koperty.
+    expect(JSON.stringify(resolution.result)).not.toMatch(/amount|total/);
+  });
+
+  it('AC2: drugi i trzeci powrót tym samym URL → ten sam stan końcowy, jeden POST, ten sam zbiór zamówień', async () => {
+    completionSucceeds();
+    const params = { cart_id: CART, locale: 'pl', redirect_status: 'succeeded' };
+    const first = await callHandler(params);
+    const firstState = await resolvePaymentReturn(CART, pageSearchParams(first), 'pl');
+    const second = await callHandler(params);
+    const third = await callHandler(params);
+    const secondState = await resolvePaymentReturn(CART, pageSearchParams(second), 'pl');
+    const thirdState = await resolvePaymentReturn(CART, pageSearchParams(third), 'pl');
+
+    expect(postCalls()).toHaveLength(1);
+    expect([second, third]).toEqual([first, first]);
+    const ids = (s: typeof firstState) => [...(s.result as { orderIds: string[] }).orderIds].sort();
+    expect(ids(secondState)).toEqual(ids(firstState));
+    expect(ids(thirdState)).toEqual(ids(firstState));
+    expect(secondState.result.state).toBe('confirmed');
+  });
+
+  it('AC2: równoległy powrót odbity przez blokadę backendu → `completion_in_progress`, nie drugie zamówienie', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    backendRefuses('completion_in_progress');
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(target).toContain('gp_return=completion_in_progress');
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.completionRedirect).toBeNull();
+    expect(resolution.result).toEqual({
+      state: 'pending_confirmation',
+      reason: 'completion_in_progress'
+    });
+    warn.mockRestore();
+  });
+
+  it('503 autorytetu backendu (status PSP nieczytelny) → nieterminalny `payment_not_terminal`, nie `no_order_id`', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    backendRefuses('psp_status_unavailable', 503);
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(target).toContain('gp_return=payment_not_terminal');
+    expect(target).not.toContain('completion_read_failed');
+    warn.mockRestore();
+  });
+
+  it('DW-15-295 (1): terminalny marker → ręczne wejście na route z awarią odczytu koszyka → brak drugiego POST także po TTL nieterminalnego', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    let bridgeAfterPost: () => Promise<unknown> = () => Promise.reject(new Error('bridge down'));
+    fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (init?.method === 'POST' && path.includes('/complete')) {
+        return { ok: true, data: { type: 'order', order: { id: ORDER_A } } };
+      }
+      if (path.includes('/completed-order')) {
+        return postCalls().length > 0 ? bridgeAfterPost() : { ok: false, status: 404 };
+      }
+      return { ok: false, status: 404 };
+    });
+    const params = { cart_id: CART, locale: 'pl', redirect_status: 'succeeded' };
+    const first = await callHandler(params);
+    expect(first).toContain('gp_return=completion_read_failed');
+
+    bridgeAfterPost = () => Promise.resolve({ ok: false, status: 404 });
+    retrieveCart.mockClear();
+    retrieveCart.mockRejectedValue(new Error('cart read down'));
+    const replay = await callHandler(params);
+    expect(replay).toContain('gp_return=completion_read_failed');
+    expect(retrieveCart).not.toHaveBeenCalled();
+    expect(cookieStore.get('_gp_payment_return_outcome')).toContain('completion_read_failed');
+
+    const realNow = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(realNow + 61_000);
+    retrieveCart.mockReset();
+    retrieveCart.mockResolvedValue({
+      cart: {
+        payment_collection: {
+          payment_sessions: [
+            { provider_id: 'pp_stripe_stripe', data: { client_secret: 'pi_3STORY36_secret_x' } }
+          ]
+        }
+      }
+    });
+    await callHandler(params);
+    expect(postCalls()).toHaveLength(1);
+    now.mockRestore();
+    warn.mockRestore();
+  });
+
+  it.each([404, 403])(
+    'DW-15-295 (2): trwałe %i z odczytu koszyka → `cart_unavailable` bez ponowienia, zero POST',
+    async status => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      completionSucceeds();
+      retrieveCart.mockRejectedValue(Object.assign(new Error('gone'), { status }));
+
+      const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+      expect(retrieveCart).toHaveBeenCalledTimes(1);
+      expect(postCalls()).toHaveLength(0);
+      expect(target).toContain('gp_return=cart_unavailable');
+      const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+      expect(resolution.result).toEqual({ state: 'recovery_required', reason: 'cart_unavailable' });
+      expect(resolution.completionRedirect).toBeNull();
+      warn.mockRestore();
+    }
+  );
+
+  it('DW-15-295 (2) kontrola: 5xx odczytu koszyka nadal jest przejściowym `read_failed` z ponowieniem', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    completionSucceeds();
+    retrieveCart.mockRejectedValue(Object.assign(new Error('down'), { status: 502 }));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(retrieveCart).toHaveBeenCalledTimes(2);
+    expect(target).toContain('gp_return=read_failed');
+    warn.mockRestore();
+  });
+});

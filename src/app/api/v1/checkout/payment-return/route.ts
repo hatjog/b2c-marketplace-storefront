@@ -112,6 +112,7 @@ function persistsPaymentReturnOutcome(outcome: PaymentReturnOutcome): boolean {
     outcome === 'ambiguous_return_parameters' ||
     outcome === 'completion_read_failed' ||
     outcome === 'completion_access_denied' ||
+    outcome === 'cart_unavailable' ||
     isNonTerminalReadOutcome(outcome)
   );
 }
@@ -126,23 +127,43 @@ function persistsPaymentReturnOutcome(outcome: PaymentReturnOutcome): boolean {
  */
 const NON_TERMINAL_READ_OUTCOME_TTL_SECONDS = 60;
 
+/**
+ * Story 8.2 (ADR-233): odmowy autorytetu backendu (`payment_not_terminal`,
+ * `completion_in_progress`) są NIETERMINALNE — PSP może jeszcze dojść do stanu
+ * terminalnego, a drugi worker właśnie domyka koszyk. Zapisane z krótkim TTL,
+ * żeby strona nie wracała w pętli; po TTL kolejna próba idzie znów do backendu,
+ * który pozostaje jedyną blokadą (advisory lock + `order_cart`).
+ */
 function isNonTerminalReadOutcome(
   outcome: PaymentReturnOutcome
-): outcome is Extract<PaymentReturnOutcome, 'read_failed' | 'access_denied'> {
-  return outcome === 'read_failed' || outcome === 'access_denied';
+): outcome is Extract<
+  PaymentReturnOutcome,
+  'read_failed' | 'access_denied' | 'payment_not_terminal' | 'completion_in_progress'
+> {
+  return (
+    outcome === 'read_failed' ||
+    outcome === 'access_denied' ||
+    outcome === 'payment_not_terminal' ||
+    outcome === 'completion_in_progress'
+  );
 }
 
 function isTerminalCompletionOutcome(
   outcome: string | null
 ): outcome is Extract<
   PaymentReturnOutcome,
-  'completion_failed' | 'no_order_id' | 'completion_read_failed' | 'completion_access_denied'
+  | 'completion_failed'
+  | 'no_order_id'
+  | 'completion_read_failed'
+  | 'completion_access_denied'
+  | 'cart_unavailable'
 > {
   return (
     outcome === 'completion_failed' ||
     outcome === 'no_order_id' ||
     outcome === 'completion_read_failed' ||
-    outcome === 'completion_access_denied'
+    outcome === 'completion_access_denied' ||
+    outcome === 'cart_unavailable'
   );
 }
 
@@ -229,20 +250,29 @@ export async function GET(req: NextRequest): Promise<Response> {
   // to nazwany, NIETERMINALNY `read_failed`, a nie odmowa korelacji. Runda 2:
   // zapisywany z krótkim TTL — strona statusu honoruje go jako recovery i nie
   // odsyła tu z powrotem; po wygaśnięciu kolejne wejście ponawia odczyt.
+  const priorOutcome = await getPaymentReturnOutcome(identifier.value, params.payment_intent);
+  // Story 8.2 (DW-15-295): marker terminalny sprawdzamy PRZED odczytem
+  // korelacji PI. Chwilowa awaria odczytu koszyka nie może już zamienić
+  // terminalnego wyniku w nieterminalny `read_failed` i otworzyć drugiego POST.
+  if (isTerminalCompletionOutcome(priorOutcome)) {
+    // Zapisany wynik mutacji zatrzymuje replay, ale jego ponowne przekierowanie
+    // nie może przesuwać TTL i trzymać blokady dłużej niż pierwszy wynik.
+    redirect(statusPageUrl(locale, identifier.value, search, priorOutcome));
+  }
+
   const binding = await getPaymentIntentBindingForCart(identifier.value, params.payment_intent);
   if (binding === 'read_failed') {
     console.warn(`[payment-return] payment intent binding read failed cart=${identifier.value}`);
     return redirectWithOutcome(identifier.value, 'read_failed');
   }
+  if (binding === 'cart_unavailable') {
+    // Story 8.2 (DW-15-295): trwałe 4xx odczytu koszyka (404/403) to osobny,
+    // terminalny wynik bez ponowienia — nie przejściowy `read_failed`.
+    console.warn(`[payment-return] cart unavailable cart=${identifier.value}`);
+    return redirectWithOutcome(identifier.value, 'cart_unavailable');
+  }
   if (binding !== 'bound') {
     return refuse('payment_intent_mismatch');
-  }
-
-  const priorOutcome = await getPaymentReturnOutcome(identifier.value, params.payment_intent);
-  if (isTerminalCompletionOutcome(priorOutcome)) {
-    // Zapisany wynik mutacji zatrzymuje replay, ale jego ponowne przekierowanie
-    // nie może przesuwać TTL i trzymać blokady dłużej niż pierwszy wynik.
-    redirect(statusPageUrl(locale, identifier.value, search, priorOutcome));
   }
 
   // ── Idempotencja: ODCZYT przed mutacją ───────────────────────────────────

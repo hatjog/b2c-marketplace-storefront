@@ -58,7 +58,10 @@ export type PaymentReturnState =
       reason: 'redirect_status_failed' | 'completion_produced_no_order';
     }
   /** Płatność w toku po stronie PSP (np. async push) — jedyny stan, w którym się odpytuje. */
-  | { state: 'pending_confirmation'; reason: 'awaiting_psp' | 'completion_failed' }
+  | {
+      state: 'pending_confirmation';
+      reason: 'awaiting_psp' | 'completion_failed' | 'psp_not_terminal' | 'completion_in_progress';
+    }
   /** Odczyt nie dowiódł kompletnego zakupu; mutacja byłaby niebezpieczna. */
   | {
       state: 'recovery_required';
@@ -68,7 +71,8 @@ export type PaymentReturnState =
         | 'incomplete_order_set'
         | 'bridge_malformed'
         | 'outcome_marker_unavailable'
-        | 'outcome_marker_capacity_exhausted';
+        | 'outcome_marker_capacity_exhausted'
+        | 'cart_unavailable';
     }
   | {
       state: 'return_refused';
