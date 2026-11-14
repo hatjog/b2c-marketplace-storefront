@@ -1108,13 +1108,58 @@ async function resolveCompletedPurchaseForCart(
   };
 }
 
-export async function cartHasStripePaymentIntent(cartId: string, paymentIntent: string): Promise<boolean> {
+/**
+ * Story 8.1 fix (REG-C6-NEW-004): wynik korelacji PaymentIntent ↔ koszyk jest
+ * TRÓJSTANOWY. Awaria ODCZYTU koszyka (wyjątek transportu, 5xx, timeout) NIE
+ * jest dowodem braku korelacji — wcześniej `retrieveCart` połykał błąd do
+ * `null`, a route raportował `payment_intent_mismatch`, czyli terminalną
+ * odmowę, dla płatności, która mogła być poprawna. Teraz:
+ *   • `bound`      — sesja Stripe koszyka niesie ten PaymentIntent,
+ *   • `not_bound`  — koszyk ODCZYTANY i PaymentIntent do niego nie należy,
+ *   • `read_failed` — koszyka nie dało się odczytać po `attempts` próbach;
+ *     wywołujący ma zwrócić nazwany, nieterminalny `read_failed` (retry).
+ */
+export type StripePaymentIntentBinding = 'bound' | 'not_bound' | 'read_failed';
+
+export async function getStripePaymentIntentBinding(
+  cartId: string,
+  paymentIntent: string,
+  { attempts = 2, retryDelayMs = 350 }: { attempts?: number; retryDelayMs?: number } = {}
+): Promise<StripePaymentIntentBinding> {
   if (!/^pi_[A-Za-z0-9_]+$/.test(paymentIntent)) {
-    return false;
+    return 'not_bound';
   }
 
-  const cart = await retrieveCart(cartId);
-  const sessions = cart?.payment_collection?.payment_sessions ?? [];
+  let cart: HttpTypes.StoreCart | null = null;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const response = await sdk.client.fetch<HttpTypes.StoreCartResponse>(
+        `/store/carts/${cartId}`,
+        {
+          method: 'GET',
+          query: { fields: CART_RETRIEVE_FIELDS },
+          headers: { ...(await getAuthHeaders()) },
+          cache: 'no-cache'
+        }
+      );
+      cart = response?.cart ?? null;
+      if (cart) {
+        break;
+      }
+      console.warn(`[payment-return] cart read empty cart=${cartId} attempt=${attempt + 1}`);
+    } catch (error) {
+      console.warn(`[payment-return] cart read failed cart=${cartId} attempt=${attempt + 1}`, error);
+    }
+    if (attempt < attempts - 1 && retryDelayMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+    }
+  }
+
+  if (!cart) {
+    return 'read_failed';
+  }
+
+  const sessions = cart.payment_collection?.payment_sessions ?? [];
   return sessions.some(session => {
     const data = session.data as { client_secret?: unknown } | null | undefined;
     return (
@@ -1123,7 +1168,13 @@ export async function cartHasStripePaymentIntent(cartId: string, paymentIntent: 
       typeof data?.client_secret === 'string' &&
       data.client_secret.startsWith(`${paymentIntent}_secret_`)
     );
-  });
+  })
+    ? 'bound'
+    : 'not_bound';
+}
+
+export async function cartHasStripePaymentIntent(cartId: string, paymentIntent: string): Promise<boolean> {
+  return (await getStripePaymentIntentBinding(cartId, paymentIntent)) === 'bound';
 }
 
 async function resolveCompletedOrderIdsForCart(
@@ -1240,9 +1291,18 @@ export async function completeOrderAfterStripePayment(cartId?: string) {
       return {
         ok: false,
         error: {
-          code: purchase?.state === 'incomplete' || purchase?.state === 'malformed'
-            ? ('incomplete_order_set' as const)
-            : ('no_order_id' as const)
+          // Story 8.1 fix (REG-C6-NEW-003): `read_failed` i `access_denied`
+          // to NIE jest „domknięcie bez zamówienia" — odczyt order-setu nie
+          // dowiódł niczego. Każdy kod zachowuje nazwany powód recovery,
+          // zamiast zlewać się w terminalne `no_order_id`.
+          code:
+            purchase?.state === 'incomplete' || purchase?.state === 'malformed'
+              ? ('incomplete_order_set' as const)
+              : purchase?.state === 'read_failed'
+                ? ('read_failed' as const)
+                : purchase?.state === 'access_denied'
+                  ? ('access_denied' as const)
+                  : ('no_order_id' as const)
         }
       };
     }

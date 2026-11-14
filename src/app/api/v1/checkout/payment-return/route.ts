@@ -55,7 +55,7 @@ import {
   setPaymentReturnOutcome
 } from '@/lib/data/cookies';
 import {
-  isPaymentIntentBoundToCart,
+  getPaymentIntentBindingForCart,
   isStripeReturnConfirmation,
   performPaymentReturnCompletion,
   readStripeReturnParams,
@@ -192,10 +192,18 @@ export async function GET(req: NextRequest): Promise<Response> {
     return refuse('no_stripe_confirmation');
   }
 
-  if (
-    !params.payment_intent ||
-    !(await isPaymentIntentBoundToCart(identifier.value, params.payment_intent))
-  ) {
+  if (!params.payment_intent) {
+    return refuse('payment_intent_mismatch');
+  }
+  // Story 8.1 fix (REG-C6-NEW-004): awaria odczytu koszyka/sesji płatności
+  // to nazwany, NIETERMINALNY `read_failed` (niezapisywany w markerze, więc
+  // kolejne wejście ponawia odczyt), a nie odmowa korelacji.
+  const binding = await getPaymentIntentBindingForCart(identifier.value, params.payment_intent);
+  if (binding === 'read_failed') {
+    console.warn(`[payment-return] payment intent binding read failed cart=${identifier.value}`);
+    return redirectWithOutcome(identifier.value, 'read_failed');
+  }
+  if (binding !== 'bound') {
     return refuse('payment_intent_mismatch');
   }
 

@@ -661,3 +661,96 @@ describe('idempotencja Route Handlera', () => {
     expect(firstReentry).toContain('gp_return=completion_failed');
   });
 });
+
+describe('Story 8.1 fix — awarie odczytu mają własne, nieterminalne wyniki', () => {
+  beforeEach(() => {
+    cookieStore.set('_medusa_cart_id', CART);
+  });
+
+  /** Mostek pusty przed domknięciem; po udanym POST odpowiada `afterPost`. */
+  function bridgeAfterCompletion(afterPost: () => Promise<unknown>) {
+    fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (init?.method === 'POST' && path.includes('/complete')) {
+        return { ok: true, data: { type: 'order', order: { id: ORDER_A } } };
+      }
+      if (path.includes('/completed-order')) {
+        const done = postCalls().length > 0;
+        return done ? afterPost() : { ok: false, status: 404 };
+      }
+      return { ok: false, status: 404 };
+    });
+  }
+
+  it.each([
+    ['read_failed', () => Promise.reject(new Error('bridge down'))],
+    ['read_failed', () => Promise.resolve({ ok: false, status: 502 })],
+    ['access_denied', () => Promise.resolve({ ok: false, status: 401 })],
+    ['access_denied', () => Promise.resolve({ ok: false, status: 403 })]
+  ] as const)(
+    'REG-C6-NEW-003: odczyt order-setu po domknięciu → `%s`, nie `no_order_id`',
+    async (expected, afterPost) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      bridgeAfterCompletion(afterPost);
+
+      const target = await callHandler({
+        cart_id: CART,
+        locale: 'pl',
+        redirect_status: 'succeeded'
+      });
+
+      expect(postCalls()).toHaveLength(1);
+      expect(target).toContain(`gp_return=${expected}`);
+      expect(target).not.toContain('gp_return=no_order_id');
+      // Nieterminalny: nie zapisuje markera outcome, więc nie blokuje replay.
+      expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+      warn.mockRestore();
+    }
+  );
+
+  it('REG-C6-NEW-003 kontrola: domknięcie z pustym odczytem nadal daje `no_order_id`', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    bridgeAfterCompletion(() => Promise.resolve({ ok: false, status: 404 }));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(target).toContain('gp_return=no_order_id');
+    warn.mockRestore();
+  });
+
+  it('REG-C6-NEW-004: awaria odczytu koszyka → `read_failed` z retry, nie `payment_intent_mismatch`', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    completionSucceeds();
+    retrieveCart.mockRejectedValue(new Error('cart read down'));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(retrieveCart).toHaveBeenCalledTimes(2);
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=read_failed');
+    expect(target).not.toContain('payment_intent_mismatch');
+    expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+    warn.mockRestore();
+  });
+
+  it('REG-C6-NEW-004: przejściowa awaria odczytu koszyka jest ponawiana i domknięcie przechodzi', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    completionSucceeds();
+    retrieveCart.mockRejectedValueOnce(new Error('blip'));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(1);
+    expect(target).toContain('gp_return=done');
+    warn.mockRestore();
+  });
+
+  it('REG-C6-NEW-004 kontrola: ODCZYTANY koszyk bez tego PaymentIntent → `payment_intent_mismatch`', async () => {
+    completionSucceeds();
+    retrieveCart.mockResolvedValue({ cart: { payment_collection: { payment_sessions: [] } } });
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=payment_intent_mismatch');
+  });
+});

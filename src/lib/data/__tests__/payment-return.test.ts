@@ -35,7 +35,9 @@ const getPaymentReturnOutcomeStorageState = vi.fn();
 vi.mock('../cart', () => ({
   completeOrderAfterStripePayment: (...args: unknown[]) => completeOrderAfterStripePayment(...args),
   getCompletedPurchaseForCart: (...args: unknown[]) => getCompletedPurchaseForCart(...args),
-  cartHasStripePaymentIntent: (...args: unknown[]) => cartHasStripePaymentIntent(...args)
+  cartHasStripePaymentIntent: (...args: unknown[]) => cartHasStripePaymentIntent(...args),
+  getStripePaymentIntentBinding: async (...args: unknown[]) =>
+    (await cartHasStripePaymentIntent(...args)) ? 'bound' : 'not_bound'
 }));
 
 vi.mock('../cookies', () => ({

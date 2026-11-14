@@ -66,6 +66,8 @@ import {
 
 import {
   cartHasStripePaymentIntent,
+  getStripePaymentIntentBinding,
+  type StripePaymentIntentBinding,
   completeOrderAfterStripePayment,
   getCompletedPurchaseForCart,
   type CompletedPurchaseRead
@@ -400,7 +402,7 @@ type PaymentReturnCompletion = {
   orderIds: string[];
   outcome: Extract<
     PaymentReturnOutcome,
-    'done' | 'completion_failed' | 'no_order_id' | 'incomplete'
+    'done' | 'completion_failed' | 'no_order_id' | 'incomplete' | 'read_failed' | 'access_denied'
   >;
 };
 
@@ -423,7 +425,11 @@ async function completePaymentReturn(cartId: string): Promise<PaymentReturnCompl
         ? 'completion_failed'
         : completion.error?.code === 'incomplete_order_set'
           ? 'incomplete'
-          : 'no_order_id'
+          : completion.error?.code === 'read_failed'
+            ? 'read_failed'
+            : completion.error?.code === 'access_denied'
+              ? 'access_denied'
+              : 'no_order_id'
   };
 }
 
@@ -445,4 +451,16 @@ export async function isPaymentIntentBoundToCart(
   paymentIntent: string
 ): Promise<boolean> {
   return cartHasStripePaymentIntent(cartId, paymentIntent);
+}
+
+/**
+ * Story 8.1 fix (REG-C6-NEW-004): korelacja z rozróżnieniem awarii odczytu.
+ * `read_failed` NIE jest odmową korelacji — route zwraca nieterminalny
+ * `read_failed`, a nie `payment_intent_mismatch`.
+ */
+export async function getPaymentIntentBindingForCart(
+  cartId: string,
+  paymentIntent: string
+): Promise<StripePaymentIntentBinding> {
+  return getStripePaymentIntentBinding(cartId, paymentIntent);
 }
