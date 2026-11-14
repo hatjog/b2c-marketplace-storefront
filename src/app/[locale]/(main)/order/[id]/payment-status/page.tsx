@@ -80,7 +80,12 @@ export async function generateMetadata({ params }: Pick<Props, 'params'>): Promi
  * Teraz `resolvePaymentReturn` jest czystym ODCZYTEM, a gdy koszyk wymaga
  * domknięcia, strona PRZEKIEROWUJE na Route Handler
  * (`/api/v1/checkout/payment-return`), gdzie mutacja jest legalna. Handler
- * odsyła tu z powrotem ze znacznikiem `gp_return=done`, który zamyka pętlę.
+ * odsyła tu z powrotem z `gp_return=<outcome>`, ale tego parametru NIKT nie
+ * czyta — pętlę zamyka WYŁĄCZNIE podpisany marker outcome w cookie
+ * (`setPaymentReturnOutcome`), który `resolvePaymentReturn` honoruje,
+ * zwracając `completionRedirect: null`. Story 8.1 runda 2: dotyczy to także
+ * nieterminalnego `read_failed`/`access_denied` (marker z krótkim TTL) oraz
+ * `completion_read_failed`/`completion_access_denied` po wykonanym POST.
  */
 export default async function PaymentStatusPage(props: Props) {
   const params = await props.params;

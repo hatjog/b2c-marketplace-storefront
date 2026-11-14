@@ -75,6 +75,7 @@ vi.mock('@/lib/config', () => ({
 
 const { GET } = await import('../route');
 const { setPaymentReturnOutcome } = await import('@/lib/data/cookies');
+const { resolvePaymentReturn } = await import('@/lib/data/payment-return');
 
 const CART = 'cart_01STORY36HANDLER';
 const OTHER_CART = 'cart_01STORY36SOMEONEELSE';
@@ -494,7 +495,7 @@ describe('idempotencja Route Handlera', () => {
   );
 
   it.each(['read_failed', 'access_denied', 'incomplete', 'malformed'] as const)(
-    'nowy wynik przejściowy %s nie zapisuje markera, więc reentry ponawia odczyt',
+    'nowy wynik przejściowy %s jest nieterminalny: reentry ponawia odczyt',
     async outcome => {
       fetchQuery.mockImplementation(async (path: string) => {
         if (!path.includes('/completed-order')) {
@@ -521,7 +522,13 @@ describe('idempotencja Route Handlera', () => {
         redirect_status: 'succeeded'
       });
       expect(first).toContain(`gp_return=${outcome}`);
-      expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+      if (outcome === 'read_failed' || outcome === 'access_denied') {
+        // Story 8.1 runda 2: nieterminalny marker z krótkim TTL — strona go
+        // honoruje (koniec pętli), a route przy reentry i tak ponawia odczyt.
+        expect(cookieStore.get('_gp_payment_return_outcome')).toContain(`"outcome":"${outcome}"`);
+      } else {
+        expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+      }
 
       fetchQuery.mockImplementation(async (path: string) =>
         path.includes('/completed-order')
@@ -687,7 +694,7 @@ describe('Story 8.1 fix — awarie odczytu mają własne, nieterminalne wyniki',
     ['access_denied', () => Promise.resolve({ ok: false, status: 401 })],
     ['access_denied', () => Promise.resolve({ ok: false, status: 403 })]
   ] as const)(
-    'REG-C6-NEW-003: odczyt order-setu po domknięciu → `%s`, nie `no_order_id`',
+    'REG-C6-NEW-003: odczyt order-setu po domknięciu → `completion_%s`, nie `no_order_id`',
     async (expected, afterPost) => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       bridgeAfterCompletion(afterPost);
@@ -699,10 +706,11 @@ describe('Story 8.1 fix — awarie odczytu mają własne, nieterminalne wyniki',
       });
 
       expect(postCalls()).toHaveLength(1);
-      expect(target).toContain(`gp_return=${expected}`);
+      expect(target).toContain(`gp_return=completion_${expected}`);
       expect(target).not.toContain('gp_return=no_order_id');
-      // Nieterminalny: nie zapisuje markera outcome, więc nie blokuje replay.
-      expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+      // Runda 2: POST wykonany ⇒ marker `completion_*` MUSI powstać, bo
+      // blokuje drugi POST przy mostku `empty` (lag joina).
+      expect(cookieStore.get('_gp_payment_return_outcome')).toContain(`completion_${expected}`);
       warn.mockRestore();
     }
   );
@@ -728,7 +736,8 @@ describe('Story 8.1 fix — awarie odczytu mają własne, nieterminalne wyniki',
     expect(postCalls()).toHaveLength(0);
     expect(target).toContain('gp_return=read_failed');
     expect(target).not.toContain('payment_intent_mismatch');
-    expect(cookieStore.get('_gp_payment_return_outcome')).toBeUndefined();
+    // Runda 2: nieterminalny marker (krótki TTL) zatrzymuje pętlę strona↔route.
+    expect(cookieStore.get('_gp_payment_return_outcome')).toContain('"outcome":"read_failed"');
     warn.mockRestore();
   });
 
@@ -752,5 +761,145 @@ describe('Story 8.1 fix — awarie odczytu mają własne, nieterminalne wyniki',
 
     expect(postCalls()).toHaveLength(0);
     expect(target).toContain('gp_return=payment_intent_mismatch');
+  });
+});
+
+describe('Story 8.1 runda 2 — sekwencja route → strona → route kończy się bez pętli', () => {
+  beforeEach(() => {
+    cookieStore.set('_medusa_cart_id', CART);
+  });
+
+  /** Parametry strony statusu z adresu, na który przekierował handler. */
+  function pageSearchParams(target: string): Record<string, string> {
+    const url = new URL(target, 'https://shop.test');
+    return Object.fromEntries(url.searchParams.entries());
+  }
+
+  /**
+   * Symuluje przeglądarkę: strona statusu (resolver) → `completionRedirect`
+   * na route → strona … aż do stanu bez przekierowania albo limitu skoków.
+   */
+  async function followReturn(start: Record<string, string>, maxHops = 6) {
+    let target = await callHandler(start);
+    for (let hop = 0; hop < maxHops; hop += 1) {
+      const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+      if (!resolution.completionRedirect) {
+        return { resolution, hops: hop + 1 };
+      }
+      const next = new URL(resolution.completionRedirect, 'https://shop.test');
+      target = await callHandler(Object.fromEntries(next.searchParams.entries()));
+    }
+    throw new Error('ERR_TOO_MANY_REDIRECTS — pętla strona↔route');
+  }
+
+  it('HIGH: read_failed korelacji PI przy mostku `empty` → recovery_required, completionRedirect null', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    // Mostek pusty (404) — dokładnie warunek, w którym strona wystawiała
+    // `completionRedirect` i odsyłała na route.
+    fetchQuery.mockResolvedValue({ ok: false, status: 404 });
+    retrieveCart.mockRejectedValue(new Error('cart read down'));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(target).toContain('gp_return=read_failed');
+
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.completionRedirect).toBeNull();
+    expect(resolution.result).toEqual({ state: 'recovery_required', reason: 'bridge_read_failed' });
+    expect(postCalls()).toHaveLength(0);
+    warn.mockRestore();
+  });
+
+  it('HIGH: pełna sekwencja route→strona kończy się po jednym skoku, zero POST /complete', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    fetchQuery.mockResolvedValue({ ok: false, status: 404 });
+    retrieveCart.mockRejectedValue(new Error('cart read down'));
+
+    const { resolution, hops } = await followReturn({
+      cart_id: CART,
+      locale: 'pl',
+      redirect_status: 'succeeded'
+    });
+
+    expect(hops).toBe(1);
+    expect(resolution.result.state).toBe('recovery_required');
+    expect(postCalls()).toHaveLength(0);
+    warn.mockRestore();
+  });
+
+  it('HIGH: marker nieterminalny wygasa — po TTL kolejne wejście znów ponawia domknięcie', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    fetchQuery.mockResolvedValue({ ok: false, status: 404 });
+    retrieveCart.mockRejectedValue(new Error('cart read down'));
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    const realNow = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(realNow + 61_000);
+    const later = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(later.completionRedirect).not.toBeNull();
+    now.mockRestore();
+    warn.mockRestore();
+  });
+
+  it('MEDIUM: read_failed PO udanym POST → wejście przy mostku `empty` nie woła drugiego POST /complete', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    let bridgeAfterPost: () => Promise<unknown> = () => Promise.reject(new Error('bridge down'));
+    fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (init?.method === 'POST' && path.includes('/complete')) {
+        return { ok: true, data: { type: 'order', order: { id: ORDER_A } } };
+      }
+      if (path.includes('/completed-order')) {
+        return postCalls().length > 0 ? bridgeAfterPost() : { ok: false, status: 404 };
+      }
+      return { ok: false, status: 404 };
+    });
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(target).toContain('gp_return=completion_read_failed');
+    expect(postCalls()).toHaveLength(1);
+
+    // Lag joina order_set↔cart: mostek wraca jako `empty`.
+    bridgeAfterPost = () => Promise.resolve({ ok: false, status: 404 });
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.completionRedirect).toBeNull();
+    expect(resolution.result).toEqual({ state: 'recovery_required', reason: 'bridge_read_failed' });
+
+    // Także bezpośrednie ponowne wejście na route (np. historia) nie POSTuje.
+    await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(postCalls()).toHaveLength(1);
+
+    // Marker nie blokuje ODCZYTU: gdy mostek dojdzie, strona potwierdza zakup.
+    bridgeAfterPost = () =>
+      Promise.resolve({
+        ok: true,
+        data: { orders: [{ order_id: ORDER_A, order_group_id: null }], order_count: 1 }
+      });
+    const confirmed = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(confirmed.result.state).toBe('confirmed');
+    expect(postCalls()).toHaveLength(1);
+    warn.mockRestore();
+  });
+
+  it('MEDIUM: access_denied PO udanym POST blokuje drugi POST i daje bridge_access_denied', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    let afterPost: unknown = { ok: false, status: 401 };
+    fetchQuery.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (init?.method === 'POST' && path.includes('/complete')) {
+        return { ok: true, data: { type: 'order', order: { id: ORDER_A } } };
+      }
+      if (path.includes('/completed-order')) {
+        return postCalls().length > 0 ? afterPost : { ok: false, status: 404 };
+      }
+      return { ok: false, status: 404 };
+    });
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(target).toContain('gp_return=completion_access_denied');
+    afterPost = { ok: false, status: 404 };
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.completionRedirect).toBeNull();
+    expect(resolution.result).toEqual({ state: 'recovery_required', reason: 'bridge_access_denied' });
+    await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+    expect(postCalls()).toHaveLength(1);
+    warn.mockRestore();
   });
 });

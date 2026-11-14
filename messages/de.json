@@ -1222,6 +1222,7 @@
     "payment_requires_action_hint": "Bestätigen Sie die Zahlung, um Ihre Bestellung abzuschließen.",
     "payment_processing_hint": "Ihre Zahlung wird verarbeitet — bitte einen Moment Geduld.",
     "payment_no_order": "Wir konnten Ihre Bestellung nicht erstellen, da die Zahlung nicht bestätigt wurde. Falls Ihnen ein Betrag belastet wurde, kontaktieren Sie uns bitte.",
+    "payment_accepted_confirmation_unavailable": "Ihre Zahlung wurde angenommen, aber die Bestellbestätigung ist vorübergehend nicht verfügbar. Bitte zahlen Sie nicht erneut — kontaktieren Sie uns, wir prüfen den Bestellstatus.",
     "payment_not_available_market": "Die Zahlung ist für diesen Markt nicht verfügbar.",
     "payment_details": "Zahlungsdetails",
     "payment_heading": "Zahlung",

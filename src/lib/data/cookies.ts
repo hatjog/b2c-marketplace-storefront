@@ -190,7 +190,15 @@ type PaymentReturnOutcomeRecord = {
   expiresAt: number;
 };
 
-type PaymentReturnOutcomeInput = Omit<PaymentReturnOutcomeRecord, 'expiresAt'>;
+type PaymentReturnOutcomeInput = Omit<PaymentReturnOutcomeRecord, 'expiresAt'> & {
+  /**
+   * Story 8.1 fix (runda 2): krótszy TTL dla markera NIETERMINALNEGO
+   * (`read_failed`/`access_denied` przed mutacją). Marker zatrzymuje pętlę
+   * strona↔route na czas życia, a po wygaśnięciu kolejne wejście ponawia
+   * odczyt i — przy pustym mostku — domknięcie. Domyślnie pełny TTL outcome.
+   */
+  ttlSeconds?: number;
+};
 
 type PaymentReturnOutcomeEnvelope = {
   version: 1;
@@ -348,7 +356,12 @@ export const setPaymentReturnOutcome = async (
       expiresAt:
         existing?.outcome === record.outcome
           ? existing.expiresAt
-          : now + PAYMENT_RETURN_OUTCOME_TTL_SECONDS * 1000
+          : now +
+            Math.min(
+              record.ttlSeconds ?? PAYMENT_RETURN_OUTCOME_TTL_SECONDS,
+              PAYMENT_RETURN_OUTCOME_TTL_SECONDS
+            ) *
+              1000
     },
     ...remaining
   ];

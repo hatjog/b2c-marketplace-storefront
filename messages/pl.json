@@ -1222,6 +1222,7 @@
     "payment_requires_action_hint": "Potwierdź płatność, aby dokończyć zamówienie.",
     "payment_processing_hint": "Płatność jest przetwarzana — chwila cierpliwości.",
     "payment_no_order": "Nie udało się utworzyć zamówienia, ponieważ płatność nie została potwierdzona. Jeśli środki zostały pobrane, skontaktuj się z nami.",
+    "payment_accepted_confirmation_unavailable": "Płatność została przyjęta, ale potwierdzenie zamówienia jest chwilowo niedostępne. Nie płać ponownie — skontaktuj się z nami, a sprawdzimy status zamówienia.",
     "payment_not_available_market": "Płatność nie jest dostępna dla tego rynku.",
     "payment_details": "Szczegóły płatności",
     "payment_heading": "Płatność",

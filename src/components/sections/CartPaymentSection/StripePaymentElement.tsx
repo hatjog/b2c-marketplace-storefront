@@ -124,6 +124,24 @@ export type StripeSubmitResult =
   | { status: 'failed'; providerMessage?: string; code?: string }
   | { status: 'unavailable' };
 
+/**
+ * Story 8.1 fix (runda 2): kod błędu DOMKNIĘCIA po udanym `confirmPayment`
+ * znaczy, że środki mogły już zostać pobrane. `read_failed`, `access_denied`
+ * i `incomplete_order_set` to niepewny ODCZYT zamówienia, nie odrzucona
+ * płatność — komunikat „spróbuj ponownie” zachęcałby do drugiego obciążenia.
+ */
+export function stripeCompletionFailureMessageKey(
+  code: string | undefined
+): 'payment_no_order' | 'payment_accepted_confirmation_unavailable' | 'payment_failed' {
+  if (code === 'no_order_id') {
+    return 'payment_no_order';
+  }
+  if (code === 'read_failed' || code === 'access_denied' || code === 'incomplete_order_set') {
+    return 'payment_accepted_confirmation_unavailable';
+  }
+  return 'payment_failed';
+}
+
 export async function submitStripePayment(args: {
   stripe: Stripe | null;
   elements: StripeElements | null;
@@ -256,7 +274,7 @@ function PaymentElementForm({
         // Prefer Stripe's own (locale-aware) message; otherwise map our code.
         setError(
           result.providerMessage ||
-            t(result.code === 'no_order_id' ? 'payment_no_order' : 'payment_failed')
+            t(stripeCompletionFailureMessageKey(result.code))
         );
         break;
     }

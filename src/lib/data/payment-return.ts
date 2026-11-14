@@ -141,7 +141,11 @@ export type PaymentReturnOutcome =
   | 'payment_intent_mismatch'
   | 'ambiguous_return_parameters'
   | 'outcome_marker_unavailable'
-  | 'outcome_marker_capacity_exhausted';
+  | 'outcome_marker_capacity_exhausted'
+  // Story 8.1 fix (runda 2): `POST /complete` WYKONANY, odczyt order-setu po
+  // nim niepewny. Marker blokuje ponowny POST, nie blokuje odczytu mostka.
+  | 'completion_read_failed'
+  | 'completion_access_denied';
 
 function priorOutcome(value: string | null | undefined): PaymentReturnOutcome | null {
   return value === 'done' ||
@@ -156,7 +160,9 @@ function priorOutcome(value: string | null | undefined): PaymentReturnOutcome | 
     value === 'no_stripe_confirmation' ||
     value === 'cart_ownership_unproven' ||
     value === 'payment_intent_mismatch' ||
-    value === 'ambiguous_return_parameters'
+    value === 'ambiguous_return_parameters' ||
+    value === 'completion_read_failed' ||
+    value === 'completion_access_denied'
     ? value
     : null;
 }
@@ -341,7 +347,12 @@ export async function resolvePaymentReturn(
     };
   }
 
-  if (!alreadyCompleted && outcome === 'read_failed') {
+  // Story 8.1 fix (runda 2): `read_failed`/`access_denied` przychodzą tu
+  // z markera (nieterminalnego przed mutacją albo `completion_*` po niej).
+  // Mostek był wyżej ODCZYTANY ponownie — gdy jest `complete`, wygrywa
+  // potwierdzenie; w przeciwnym razie nazwany recovery BEZ `completionRedirect`
+  // (to zatrzymuje pętlę strona↔route z rundy 1).
+  if (!alreadyCompleted && (outcome === 'read_failed' || outcome === 'completion_read_failed')) {
     return {
       identifier,
       params,
@@ -350,7 +361,10 @@ export async function resolvePaymentReturn(
     };
   }
 
-  if (!alreadyCompleted && outcome === 'access_denied') {
+  if (
+    !alreadyCompleted &&
+    (outcome === 'access_denied' || outcome === 'completion_access_denied')
+  ) {
     return {
       identifier,
       params,
@@ -384,7 +398,11 @@ export async function resolvePaymentReturn(
       // próbowane i nie dało zamówienia — to jest fakt, nie brak faktu.
       // Bez tego stan spadałby na `awaiting_psp` i gubił rozróżnienie NFR-2.
       completionAttempted:
-        outcome === 'done' || outcome === 'completion_failed' || outcome === 'no_order_id',
+        outcome === 'done' ||
+        outcome === 'completion_failed' ||
+        outcome === 'no_order_id' ||
+        outcome === 'completion_read_failed' ||
+        outcome === 'completion_access_denied',
       ordersAfterCompletion: [],
       completionFailed: outcome === 'completion_failed'
     })

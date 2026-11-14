@@ -109,14 +109,41 @@ function persistsPaymentReturnOutcome(outcome: PaymentReturnOutcome): boolean {
     outcome === 'no_stripe_confirmation' ||
     outcome === 'cart_ownership_unproven' ||
     outcome === 'payment_intent_mismatch' ||
-    outcome === 'ambiguous_return_parameters'
+    outcome === 'ambiguous_return_parameters' ||
+    outcome === 'completion_read_failed' ||
+    outcome === 'completion_access_denied' ||
+    isNonTerminalReadOutcome(outcome)
   );
+}
+
+/**
+ * Story 8.1 fix (runda 2, HIGH): awaria ODCZYTU przed mutacją jest
+ * nieterminalna, ale MUSI być zapisana. Bez markera strona statusu (która
+ * bierze outcome wyłącznie z podpisanego cookie) widziała pusty mostek,
+ * wystawiała `completionRedirect` i odsyłała z powrotem tutaj — pętla
+ * `ERR_TOO_MANY_REDIRECTS`. Krótki TTL utrzymuje nieterminalność: po jego
+ * upływie kolejne wejście ponawia odczyt i domknięcie.
+ */
+const NON_TERMINAL_READ_OUTCOME_TTL_SECONDS = 60;
+
+function isNonTerminalReadOutcome(
+  outcome: PaymentReturnOutcome
+): outcome is Extract<PaymentReturnOutcome, 'read_failed' | 'access_denied'> {
+  return outcome === 'read_failed' || outcome === 'access_denied';
 }
 
 function isTerminalCompletionOutcome(
   outcome: string | null
-): outcome is Extract<PaymentReturnOutcome, 'completion_failed' | 'no_order_id'> {
-  return outcome === 'completion_failed' || outcome === 'no_order_id';
+): outcome is Extract<
+  PaymentReturnOutcome,
+  'completion_failed' | 'no_order_id' | 'completion_read_failed' | 'completion_access_denied'
+> {
+  return (
+    outcome === 'completion_failed' ||
+    outcome === 'no_order_id' ||
+    outcome === 'completion_read_failed' ||
+    outcome === 'completion_access_denied'
+  );
 }
 
 export async function GET(req: NextRequest): Promise<Response> {
@@ -132,7 +159,10 @@ export async function GET(req: NextRequest): Promise<Response> {
       const storageState = await setPaymentReturnOutcome({
         identifier,
         paymentIntent: search.get('payment_intent'),
-        outcome
+        outcome,
+        ...(isNonTerminalReadOutcome(outcome)
+          ? { ttlSeconds: NON_TERMINAL_READ_OUTCOME_TTL_SECONDS }
+          : {})
       });
       if (storageState !== 'ready') {
         console.error(
@@ -196,8 +226,9 @@ export async function GET(req: NextRequest): Promise<Response> {
     return refuse('payment_intent_mismatch');
   }
   // Story 8.1 fix (REG-C6-NEW-004): awaria odczytu koszyka/sesji płatności
-  // to nazwany, NIETERMINALNY `read_failed` (niezapisywany w markerze, więc
-  // kolejne wejście ponawia odczyt), a nie odmowa korelacji.
+  // to nazwany, NIETERMINALNY `read_failed`, a nie odmowa korelacji. Runda 2:
+  // zapisywany z krótkim TTL — strona statusu honoruje go jako recovery i nie
+  // odsyła tu z powrotem; po wygaśnięciu kolejne wejście ponawia odczyt.
   const binding = await getPaymentIntentBindingForCart(identifier.value, params.payment_intent);
   if (binding === 'read_failed') {
     console.warn(`[payment-return] payment intent binding read failed cart=${identifier.value}`);
@@ -258,5 +289,15 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   const completion = await performPaymentReturnCompletion(identifier.value);
-  return redirectWithOutcome(identifier.value, completion.outcome);
+  // Story 8.1 fix (runda 2, MEDIUM): odczyt niepewny PO wykonanym
+  // `POST /complete` to inny fakt niż ten sam odczyt przed mutacją. Marker
+  // `completion_*` jest terminalny dla mutacji (blokuje drugi POST przy
+  // mostku `empty`), ale strona nadal ponownie czyta mostek.
+  const outcome: PaymentReturnOutcome =
+    completion.outcome === 'read_failed'
+      ? 'completion_read_failed'
+      : completion.outcome === 'access_denied'
+        ? 'completion_access_denied'
+        : completion.outcome;
+  return redirectWithOutcome(identifier.value, outcome);
 }

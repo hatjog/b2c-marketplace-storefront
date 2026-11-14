@@ -24,8 +24,13 @@ vi.mock('react', async (importOriginal) => {
 
 import StripePaymentElement, {
   buildPaymentElementOptions,
+  stripeCompletionFailureMessageKey,
   submitStripePayment
 } from '../StripePaymentElement';
+import plMessages from '../../../../../messages/pl.json';
+import enMessages from '../../../../../messages/en.json';
+import deMessages from '../../../../../messages/de.json';
+import uaMessages from '../../../../../messages/ua.json';
 
 vi.mock('@/lib/stripe/appearance', () => ({
   getPaymentElementAppearanceRuntime: () => ({ theme: 'flat' })
@@ -169,6 +174,40 @@ describe('submitStripePayment — AC7', () => {
       returnUrl: '/x'
     });
     expect(res).toEqual({ status: 'unavailable' });
+  });
+});
+
+describe('Story 8.1 runda 2 — kod domknięcia po pobraniu środków nie zachęca do ponownej zapłaty', () => {
+  for (const code of ['read_failed', 'access_denied', 'incomplete_order_set'] as const) {
+    it(`${code} → nazwany komunikat recovery, nie payment_failed`, async () => {
+      const stripe = {
+        confirmPayment: vi.fn().mockResolvedValue({ paymentIntent: { status: 'succeeded' } })
+      } as any;
+      const res = await submitStripePayment({
+        stripe,
+        elements: {} as any,
+        returnUrl: '/pl/order/cart_1/payment-status',
+        completeOrder: vi.fn().mockResolvedValue({ ok: false, error: { code } })
+      });
+      expect(res).toEqual({ status: 'failed', code });
+      const key = stripeCompletionFailureMessageKey((res as { code?: string }).code);
+      expect(key).toBe('payment_accepted_confirmation_unavailable');
+      expect(key).not.toBe('payment_failed');
+    });
+  }
+
+  it('no_order_id zostaje payment_no_order, nieznany kod zostaje payment_failed', () => {
+    expect(stripeCompletionFailureMessageKey('no_order_id')).toBe('payment_no_order');
+    expect(stripeCompletionFailureMessageKey('completion_failed')).toBe('payment_failed');
+    expect(stripeCompletionFailureMessageKey(undefined)).toBe('payment_failed');
+  });
+
+  it('klucz komunikatu istnieje we wszystkich plikach messages/*.json', () => {
+    for (const messages of [plMessages, enMessages, deMessages, uaMessages]) {
+      const value = (messages as any).checkout?.payment_accepted_confirmation_unavailable;
+      expect(typeof value).toBe('string');
+      expect(value.length).toBeGreaterThan(20);
+    }
   });
 });
 

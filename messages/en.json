@@ -1222,6 +1222,7 @@
     "payment_requires_action_hint": "Confirm the payment to complete your order.",
     "payment_processing_hint": "Your payment is being processed — please wait a moment.",
     "payment_no_order": "We couldn't create your order because the payment wasn't confirmed. If you were charged, please contact us.",
+    "payment_accepted_confirmation_unavailable": "Your payment was accepted, but the order confirmation is temporarily unavailable. Please don't pay again — contact us and we will check your order status.",
     "payment_not_available_market": "Payment is not available for this market.",
     "payment_details": "Payment details",
     "payment_heading": "Payment",
