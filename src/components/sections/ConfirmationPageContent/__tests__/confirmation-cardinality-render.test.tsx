@@ -192,3 +192,40 @@ describe('powierzchnia potwierdzenia — kardynalność zakupu', () => {
     expect(html).not.toMatch(/confirmation\.[a-z_]+/);
   });
 });
+
+/**
+ * v1.16.0 Story 8.5 (AC1, FR-17, AD-16) — potwierdzenie pokazuje WSZYSTKIE N
+ * zamówień order-setu, nie pierwsze. Mutant „tylko pierwsze"
+ * (`orderIds.slice(0, 1)` w `ConfirmationPageContent`) czerwieni ten blok —
+ * przebieg mutanta jest zapisany w evidence/8-5/mutant-only-first.json.
+ */
+describe('Story 8.5 — order-set N ≥ 2 renderuje wszystkie zamówienia', () => {
+  const orderSet = ['order_f2_seller_a', 'order_f2_seller_b', 'order_f2_seller_c'];
+
+  it('N = 3: każde zamówienie order-setu jest widoczne dokładnie raz', () => {
+    const html = render(
+      <ConfirmationPageContent
+        purchase={{ kind: 'collection', orderIds: orderSet, expectedOrderCount: 3 }}
+      />
+    );
+
+    const rendered = [...html.matchAll(/data-order-id="([^"]+)"/g)].map((match) => match[1]);
+    expect(new Set(rendered)).toEqual(new Set(orderSet));
+    for (const orderId of orderSet) {
+      expect(countOccurrences(html, `data-order-id="${orderId}"`)).toBe(1);
+    }
+    expect(html).toContain('data-order-count="3"');
+    expect(html).toContain('data-cardinality="complete"');
+  });
+
+  it('zamówienie spoza pozycji pierwszej nie znika (mutant „tylko pierwsze")', () => {
+    const html = render(
+      <ConfirmationPageContent
+        purchase={{ kind: 'collection', orderIds: orderSet.slice(0, 2), expectedOrderCount: 2 }}
+      />
+    );
+
+    expect(html).toContain('data-order-id="order_f2_seller_b"');
+    expect(html).toContain('data-order-count="2"');
+  });
+});
