@@ -11,10 +11,13 @@ import { toast } from '@/lib/helpers/toast';
 
 export const UpdateCartItemButton = ({
   quantity,
-  lineItemId
+  lineItemId,
+  quantityLocked = false
 }: {
   quantity: number;
   lineItemId: string;
+  /** Story 3.3 AC2 (ADR-242 p.5): linia voucherowa ma quantity=1 — zmiana zablokowana. */
+  quantityLocked?: boolean;
 }) => {
   const t = useTranslations('cart');
   const { updateCartItem, isUpdatingItem } = useCartContext();
@@ -62,8 +65,8 @@ export const UpdateCartItemButton = ({
     }, 500);
   };
 
-  const isDecreaseDisabled = pendingQuantity === 1 || isUpdatingItem || !lineItemId;
-  const isIncreaseDisabled = isUpdatingItem || !lineItemId;
+  const isDecreaseDisabled = quantityLocked || pendingQuantity === 1 || isUpdatingItem || !lineItemId;
+  const isIncreaseDisabled = quantityLocked || isUpdatingItem || !lineItemId;
 
   return (
     <div
@@ -97,6 +100,14 @@ export const UpdateCartItemButton = ({
       >
         +
       </Button>
+      {quantityLocked && (
+        <span
+          className="text-xs text-secondary"
+          data-testid="cart-item-voucher-quantity-locked"
+        >
+          {t('voucher_quantity_locked')}
+        </span>
+      )}
     </div>
   );
 };

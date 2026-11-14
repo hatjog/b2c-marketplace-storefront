@@ -111,7 +111,7 @@ export const StickyAddToCart = ({
     );
 
     try {
-      await addToCart({
+      const outcome = await addToCart({
         variantId,
         quantity: 1,
         countryCode,
@@ -123,6 +123,13 @@ export const StickyAddToCart = ({
         purchaseMode,
         entitlement
       });
+      // Story 3.3 AC2: voucher już w koszyku ⇒ czytelny komunikat, nie ciche obcięcie.
+      if (outcome?.status === 'rejected') {
+        toast.error({
+          title: t('voucher_quantity_limit_title'),
+          description: t('voucher_quantity_limit_desc')
+        });
+      }
     } catch {
       toast.error({
         title: t('error_adding_to_cart'),

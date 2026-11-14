@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
+import type { AddToCartOutcome } from '@/lib/voucher/voucher-line-quantity';
 import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
 
 export type CartPurchaseMode = 'self' | 'gift';
@@ -27,7 +28,8 @@ interface CartContextInterface {
      *  resolve and issue entitlement_instance on payment.captured. Derived
      *  at the PDP from `product.metadata.gp.entitlement_profile`. */
     entitlement?: EntitlementLineItemMetadata;
-  }) => Promise<void>;
+    /** Story 3.3 AC2: `rejected` = voucher już w koszyku (quantity=1, ADR-242 p.5). */
+  }) => Promise<AddToCartOutcome>;
   removeCartItem: (lineId: string) => Promise<void>;
   updateCartItem: (lineId: string, quantity: number) => Promise<void>;
   refreshCart: () => Promise<Cart | null>;

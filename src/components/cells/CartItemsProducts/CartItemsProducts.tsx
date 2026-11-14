@@ -13,6 +13,7 @@ import { readSelectedSeller } from '@/lib/helpers/cart-vendor-context';
 import { filterValidCartItems } from '@/lib/helpers/filter-valid-cart-items';
 import { getMarketId } from '@/lib/helpers/market-filter';
 import { convertToLocale } from '@/lib/helpers/money';
+import { isVoucherCartLine } from '@/lib/voucher/voucher-line-quantity';
 import { getCurrentFlagValue } from '@/lib/security/flagAtomicCheck';
 
 /**
@@ -146,6 +147,7 @@ export const CartItemsProducts = ({
                     <UpdateCartItemButton
                       quantity={product.quantity}
                       lineItemId={product.id}
+                      quantityLocked={isVoucherCartLine(product.metadata, product.product?.metadata)}
                     />
                   ) : (
                     <p>

@@ -7,6 +7,7 @@ import {
   retrieveCart
 } from '@/lib/data/cart';
 import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
+import type { AddToCartOutcome } from '@/lib/voucher/voucher-line-quantity';
 import type { Cart, StoreCartLineItemOptimisticUpdate } from '@/types/cart';
 
 import { CartContext, type CartPurchaseMode } from './context';
@@ -160,12 +161,12 @@ export function CartProvider({ cart, children }: CartProviderProps) {
      *  entitlement_instance INSERT chain (ADR-099 Layer 4 / ADR-118 Path Y).
      *  Derived at the PDP call site via `buildEntitlementLineItemMetadata`. */
     entitlement?: EntitlementLineItemMetadata;
-  }) => {
+  }): Promise<AddToCartOutcome> => {
     setIsAddingItem(true);
     setIsUpdating(true);
 
     try {
-      await apiAddToCart({
+      const outcome = await apiAddToCart({
         variantId,
         quantity,
         countryCode,
@@ -176,6 +177,7 @@ export function CartProvider({ cart, children }: CartProviderProps) {
         entitlement
       });
       await refreshCart();
+      return outcome;
     } catch (error) {
       console.error('Error adding product to cart:', error);
       await refreshCart();

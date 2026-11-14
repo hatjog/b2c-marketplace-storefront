@@ -20,6 +20,11 @@ import {
 } from '@/lib/sdk/locale-interceptor';
 import type { EntitlementLineItemMetadata } from '@/lib/voucher/entitlement-metadata';
 import {
+  type AddToCartOutcome,
+  decideVoucherAddToCart,
+  isVoucherCartLine
+} from '@/lib/voucher/voucher-line-quantity';
+import {
   buildGiftRecipientIssueMetadata,
   type GiftRecipientFormData,
   type GiftRecipientIssueMetadata
@@ -543,7 +548,7 @@ export async function addToCart({
    *  from `@/lib/voucher/entitlement-metadata` at the call site. Undefined for
    *  non-voucher-bearing products → metadata stays clean. */
   entitlement?: EntitlementLineItemMetadata;
-}) {
+}): Promise<AddToCartOutcome> {
   if (!variantId) {
     throw new Error('Missing variant ID when adding to cart');
   }
@@ -559,6 +564,19 @@ export async function addToCart({
   };
 
   const currentItem = cart.items?.find(item => item.variant_id === variantId);
+
+  // Story 3.3 AC2 (ADR-242 p.5): linia voucherowa ma quantity=1. Ponowne
+  // dodanie tego samego vouchera NIE zwiększa ilości — nazwany wynik dla UI.
+  const voucherDecision = decideVoucherAddToCart({
+    isVoucher:
+      Boolean(entitlement) ||
+      isVoucherCartLine(currentItem?.metadata, currentItem?.product?.metadata),
+    currentQuantity: currentItem?.quantity ?? 0,
+    requestedQuantity: quantity
+  });
+  if (voucherDecision.status === 'rejected') {
+    return voucherDecision;
+  }
 
   // Story 5.5 — only attach metadata gdy seller context provided. Defensive:
   // empty string treated jako absence (typescript-permissive callers).
@@ -632,6 +650,8 @@ export async function addToCart({
         revalidateTag(cartCacheTag);
       });
   }
+
+  return { status: 'added' };
 }
 
 export async function updateLineItem({ lineId, quantity }: { lineId: string; quantity: number }) {
