@@ -1535,6 +1535,7 @@
         "description": "Spokojny widok odbiorcy vouchera z kodem, zasadami realizacji i kontaktem do salonu."
       },
       "active": {
+        "show_code_cta": "Pokaż kod vouchera",
         "hero_sender_disclosed": "{sender} z BonBeauty ma dla Ciebie prezent",
         "hero_sender_fallback": "Masz prezent BonBeauty",
         "heading": "Prezent na chwilę dla siebie.",
@@ -1649,29 +1650,11 @@
           "body": "To potrwa tylko chwilę. Nie zamykaj tej strony.",
           "cta": "Poczekaj na wynik sprawdzenia"
         },
-        "active": {
-          "badge": "Aktywny",
-          "heading": "Voucher jest aktywny",
-          "body": "Możesz go wykorzystać w salonie.",
-          "cta": "Pokaż kod vouchera"
-        },
         "pending": {
           "badge": "Oczekuje",
           "heading": "Prezent jest w drodze",
           "body": "Voucher nie jest jeszcze gotowy do realizacji. Zajrzyj tu ponownie za jakiś czas.",
           "cta": "Sprawdź ponownie"
-        },
-        "redeemed": {
-          "badge": "Zrealizowany",
-          "heading": "Voucher został już wykorzystany",
-          "body": "Ten voucher został zrealizowany.",
-          "cta": "Odkryj salony"
-        },
-        "expired": {
-          "badge": "Wygasł",
-          "heading": "Termin ważności minął",
-          "body": "Ten voucher nie jest już ważny.",
-          "cta": "Skontaktuj się z supportem"
         },
         "voided": {
           "badge": "Unieważniony",
@@ -1681,9 +1664,9 @@
         },
         "forbidden": {
           "badge": "Brak dostępu",
-          "heading": "Nie masz dostępu do tego vouchera",
-          "body": "Ten link wymaga zalogowania na konto, do którego przypisano voucher. To nie oznacza, że voucher wygasł.",
-          "cta": "Zaloguj się"
+          "heading": "Nie możemy teraz otworzyć tego vouchera",
+          "body": "Dostęp do tej strony został chwilowo zablokowany po naszej stronie. Nie musisz się logować. Jeśli problem się powtarza, skontaktuj się z supportem.",
+          "cta": "Skontaktuj się z supportem"
         },
         "not_found": {
           "badge": "Nie znaleziono",
@@ -1694,7 +1677,7 @@
         "technical_error": {
           "badge": "Błąd techniczny",
           "heading": "Nie udało się teraz sprawdzić vouchera",
-          "body": "Wystąpił problem po naszej stronie. Twój voucher nie przepadł — spróbuj ponownie za chwilę.",
+          "body": "Wystąpił problem po naszej stronie i nie mogliśmy sprawdzić stanu vouchera. Spróbuj ponownie za chwilę.",
           "cta": "Spróbuj ponownie"
         }
       },

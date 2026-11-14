@@ -26,6 +26,11 @@ const { projectVoucherRecipientPage, VOUCHER_RECIPIENT_PAGE_STATES } = await imp
 );
 
 const CODE = 'REPLAY-CODE-001';
+/**
+ * Fix R-1/R-2: the REAL response shape of `GET /store/vouchers/:code` —
+ * exactly the keys of backend `projectAllowlist` (route.ts) — with no
+ * public-entry confirmation flag (the endpoint does not return one).
+ */
 const PAYLOAD = {
   code: CODE,
   seller_id: 'sel_01',
@@ -34,8 +39,24 @@ const PAYLOAD = {
   product_title: 'Manicure',
   value_minor: 10000,
   currency_code: 'PLN',
-  is_public_entry_confirmed: true,
+  status: 'idle',
+  expires_at: '2026-12-31T00:00:00.000Z',
 };
+
+/** Backend `VoucherStatus` (models/types.ts) → recipient page state (D-2). */
+const BACKEND_STATUS_TO_PAGE_STATE = {
+  idle: 'active',
+  consent_pending: 'active',
+  claimed: 'redeemed',
+  withdrawn: 'voided',
+  expired: 'expired',
+  refunded: 'voided',
+} as const;
+
+const BACKEND_ROOT = path.resolve(__dirname, '../../../../../backend/src');
+const ROUTE = path.join(BACKEND_ROOT, 'api/store/vouchers/[code]/route.ts');
+const TYPES = path.join(BACKEND_ROOT, 'modules/voucher/models/types.ts');
+const backendPresent = fs.existsSync(ROUTE) && fs.existsSync(TYPES);
 
 async function replay(response: () => void) {
   response();
@@ -57,9 +78,50 @@ describe('projectVoucherRecipientPage — jedna projekcja i replay (AC3)', () =>
     mockSdkFetch.mockReset();
   });
 
+  it.skipIf(!backendPresent)('fixture = realny kształt endpointu (projectAllowlist + VoucherStatus z backendu)', () => {
+    const route = fs.readFileSync(ROUTE, 'utf8');
+    const allowlistBody = route.slice(route.indexOf('function projectAllowlist'));
+    const returnAt = allowlistBody.indexOf('return {') + 'return {'.length;
+    const returned = allowlistBody.slice(returnAt, allowlistBody.indexOf('}', returnAt));
+    const keys = [...returned.matchAll(/^\s*(\w+):/gm)].map((m) => m[1]).sort();
+    expect(keys).toEqual(Object.keys(PAYLOAD).sort());
+    expect(route).not.toMatch(/public_entry_confirmed|gift_entry_confirmed/);
+
+    const types = fs.readFileSync(TYPES, 'utf8');
+    const union = types.slice(types.indexOf('export type VoucherStatus'), types.indexOf('export type VoucherEventType'));
+    const statuses = [...union.matchAll(/"(\w+)"/g)].map((m) => m[1]).sort();
+    expect(statuses).toEqual(Object.keys(BACKEND_STATUS_TO_PAGE_STATE).sort());
+  });
+
+  it.each(Object.entries(BACKEND_STATUS_TO_PAGE_STATE))(
+    'realny status backendu %s → stan strony %s (D-2: realizowalny = aktywny)',
+    async (status, state) => {
+      mockSdkFetch.mockResolvedValueOnce({ voucher: { ...PAYLOAD, status } });
+      const projection = projectVoucherRecipientPage(await getVoucherRecipientByCode(CODE), {
+        locale: 'pl',
+        code: CODE,
+      });
+      expect(projection.state).toBe(state);
+      expect(projection.view?.is_public_entry_confirmed).toBe(state === 'active');
+    }
+  );
+
+  it('realny Response 200 z JSON-em idle → active (ścieżka accept */*)', async () => {
+    mockSdkFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ voucher: PAYLOAD }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const result = await getVoucherRecipientByCode(CODE);
+    expect(result).toMatchObject({ kind: 'ok', status: 200 });
+    expect(projectVoucherRecipientPage(result, { locale: 'pl', code: CODE }).state).toBe('active');
+  });
+
   it.each([
     ['active', { status: 'active' }, 'active'],
-    ['issued bez potwierdzenia gift entry', { status: 'issued', is_public_entry_confirmed: false }, 'pending'],
+    ['idle', { status: 'idle' }, 'active'],
+    ['nieznany status', { status: 'mystery' }, 'pending'],
     ['redeemed', { status: 'redeemed' }, 'redeemed'],
     ['expired', { status: 'expired' }, 'expired'],
     ['voided', { status: 'voided' }, 'voided'],

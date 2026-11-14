@@ -49,8 +49,11 @@ export interface VoucherPublicView {
 
 /**
  * v1.16.0 Story 6.9 (AD-51): entitlement-layer states visible to the recipient.
- * `pending` = issued but not yet confirmed for public gift entry (or an
- * unknown backend status — fail-safe: no code, no redemption action);
+ * `active` = redeemable; per signed PO decision D-2 this includes the backend
+ * redemption-input states `idle` / `consent_pending`
+ * (`VOUCHER_REDEMPTION_INPUT_STATES`, GP/backend voucher service) — the code is
+ * shown to the recipient. `pending` = an explicit `pending*` status or an
+ * unknown backend status (fail-safe: no code, no redemption action);
  * `voided` = cancelled/refunded/disputed (distinct from `expired`).
  */
 export type VoucherRecipientState =
@@ -404,7 +407,12 @@ function normalizeRecipientState(
   rawStatus: string | null | undefined
 ): VoucherRecipientState | null {
   const normalized = (rawStatus ?? '').trim().toLowerCase();
+  // Story 6.9 fix R-1/R-2 (D-2): `idle` and `consent_pending` are the backend
+  // redemption-input states of `GET /store/vouchers/:code` — redeemable, so
+  // the recipient sees the active screen (not `pending`).
   if (
+    normalized === 'idle' ||
+    normalized === 'consent_pending' ||
     normalized === 'active' ||
     normalized === 'issued' ||
     normalized === 'available' ||
@@ -440,11 +448,7 @@ function normalizeRecipientState(
     return 'voided';
   }
 
-  if (
-    normalized === 'idle' ||
-    normalized === 'consent_pending' ||
-    normalized.startsWith('pending')
-  ) {
+  if (normalized.startsWith('pending')) {
     return 'pending';
   }
 
@@ -494,19 +498,13 @@ function projectRecipientAllowlist(
     return null;
   }
 
-  const normalizedState = normalizeRecipientState(payload.status);
-  const isPublicEntryConfirmed = pickBoolean(
-    payload.is_public_entry_confirmed,
-    payload.public_entry_confirmed,
-    payload.gift_entry_confirmed
-  );
-  // Story 6.9: an unconfirmed or unknown state is `pending`, never `expired`.
-  const state: VoucherRecipientState =
-    normalizedState === 'active' && !isPublicEntryConfirmed
-      ? 'pending'
-      : (normalizedState ?? 'pending');
-  const publicEntryVisible =
-    normalizedState === null || normalizedState === 'pending' ? false : isPublicEntryConfirmed;
+  // Story 6.9: an unknown state is `pending`, never `expired`.
+  // Fix R-1/R-2 (D-2): the endpoint projection (`projectAllowlist` in
+  // GP/backend .../store/vouchers/[code]/route.ts) carries NO public-entry
+  // confirmation flag, so the active state must not depend on one — a
+  // redeemable voucher is active and its code is visible to the recipient.
+  const state: VoucherRecipientState = normalizeRecipientState(payload.status) ?? 'pending';
+  const publicEntryVisible = state === 'active';
   const sellerAddress = buildSellerAddress(payload);
   const sellerPhone = pickString(payload.seller_phone, payload.seller?.phone);
   const sellerHours = pickString(payload.seller_hours, payload.seller?.opening_hours);
@@ -625,15 +623,20 @@ function readTransportStatus(err: unknown): number | null {
 
 /**
  * Story 6.9 (AD-50): classify a failed recipient lookup without losing the
- * transport class. 401/403 → forbidden, 400/404/410 → not_found, everything
- * else (5xx, network, non-JSON body) → technical_error.
+ * transport class. 401/403 → forbidden, 404/410 → not_found, everything
+ * else (400, 5xx, network, non-JSON body) → technical_error.
+ *
+ * Fix R-3: 400 is NOT `not_found`. The backend answers 400 for a too-short
+ * code only, which the storefront rejects before any request; the only real
+ * 400 is a platform failure (publishable-key middleware `NOT_ALLOWED` mapped
+ * to 400 by the error handler). It stays a technical error with its status.
  */
 export function classifyVoucherRecipientError(err: unknown): VoucherRecipientFailure {
   const status = readTransportStatus(err);
   if (status === 401 || status === 403) {
     return { kind: 'forbidden', status, reason: 'http_status' };
   }
-  if (status === 400 || status === 404 || status === 410) {
+  if (status === 404 || status === 410) {
     return { kind: 'not_found', status, reason: 'http_status' };
   }
   if (status !== null) {
@@ -647,15 +650,40 @@ export function classifyVoucherRecipientError(err: unknown): VoucherRecipientFai
 
 type VoucherRecipientFailure = Extract<VoucherRecipientResult, { kind: VoucherRecipientFailureKind }>;
 
-function projectRecipientResponse(res: unknown): VoucherRecipientResult {
-  if (res === null || typeof res !== 'object' || res instanceof Response) {
-    return { kind: 'technical_error', status: null, reason: 'non_json' };
+function projectRecipientBody(body: unknown, status: number | null): VoucherRecipientResult {
+  if (body === null || typeof body !== 'object') {
+    return { kind: 'technical_error', status, reason: 'non_json' };
   }
-  const body = res as { voucher?: VoucherApiPayload };
-  const view = projectRecipientAllowlist(body.voucher ?? (body as VoucherApiPayload));
+  const envelope = body as { voucher?: VoucherApiPayload };
+  const view = projectRecipientAllowlist(envelope.voucher ?? (envelope as VoucherApiPayload));
   return view
-    ? { kind: 'ok', view, status: null }
-    : { kind: 'technical_error', status: null, reason: 'malformed_payload' };
+    ? { kind: 'ok', view, status }
+    : { kind: 'technical_error', status, reason: 'malformed_payload' };
+}
+
+/**
+ * Fix R-4: the raw `Response` is read status-first, then parsed. A 2xx body
+ * that is not JSON keeps its transport status instead of surfacing as a
+ * status-less `SyntaxError` from the SDK.
+ */
+async function projectRecipientResponse(res: unknown): Promise<VoucherRecipientResult> {
+  if (res instanceof Response) {
+    const status = res.status;
+    let text: string;
+    try {
+      text = await res.text();
+    } catch {
+      return { kind: 'technical_error', status, reason: 'network' };
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return { kind: 'technical_error', status, reason: 'non_json' };
+    }
+    return projectRecipientBody(parsed, status);
+  }
+  return projectRecipientBody(res, null);
 }
 
 export async function getVoucherRecipientByCode(code: string): Promise<VoucherRecipientResult> {
@@ -670,30 +698,18 @@ export async function getVoucherRecipientByCode(code: string): Promise<VoucherRe
 
   let failure: VoucherRecipientFailure;
 
-  try {
-    const client = mercurClient as unknown as {
-      store?: {
-        vouchers?: {
-          byCode?: (args: { code: string }) => Promise<{ voucher?: VoucherApiPayload }>;
-        };
-      };
-    };
-    if (client.store?.vouchers?.byCode) {
-      const res = await client.store.vouchers.byCode(await withMercurLocaleOptions({ code }));
-      const projected = projectRecipientResponse(res);
-      if (projected.kind === 'ok') return projected;
-    }
-  } catch (err: unknown) {
-    const classified = classifyVoucherRecipientError(err);
-    // forbidden / not_found are authoritative answers — the raw path would
-    // only repeat them. Technical errors still try the raw fallback.
-    if (classified.kind !== 'technical_error') return finalize(classified);
-  }
-
+  // Fix R-9: the typed-client path (`mercurClient.store.vouchers.byCode`) is
+  // removed — `@mercurjs/client` 2.1.1 throws synchronously ("Action byCode is
+  // not a valid action"), so the raw SDK fetch below is the only real path.
+  // `accept: */*` makes the SDK hand back the raw `Response` on 2xx (non-2xx
+  // still throws `FetchError` with `status`), so the status survives parsing.
   try {
     const url = `/store/vouchers/${encodeURIComponent(code)}`;
-    const res: unknown = await sdk.client.fetch(url, { method: 'GET' });
-    const projected = projectRecipientResponse(res);
+    const res: unknown = await sdk.client.fetch(url, {
+      method: 'GET',
+      headers: { accept: '*/*' },
+    });
+    const projected = await projectRecipientResponse(res);
     if (projected.kind === 'ok') return projected;
     failure = projected;
   } catch (err: unknown) {

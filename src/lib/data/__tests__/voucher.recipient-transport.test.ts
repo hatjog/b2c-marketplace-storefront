@@ -47,6 +47,9 @@ describe('getVoucherRecipientByCode — klasa transportu (AC2)', () => {
     [401, 'forbidden'],
     [403, 'forbidden'],
     [404, 'not_found'],
+    [410, 'not_found'],
+    // Fix R-3: 400 = platform failure (publishable key), not "voucher not found".
+    [400, 'technical_error'],
     [500, 'technical_error'],
     [502, 'technical_error'],
     [503, 'technical_error'],
@@ -62,31 +65,49 @@ describe('getVoucherRecipientByCode — klasa transportu (AC2)', () => {
     expect(projection.transportStatus).toBe(status);
   });
 
-  it.each([
-    [403, 'forbidden'],
-    [404, 'not_found'],
-  ] as const)('typed client %i jest odpowiedzią rozstrzygającą (%s), bez fallbacku', async (status, kind) => {
-    mockMercurClient.store = {
-      vouchers: { byCode: vi.fn().mockRejectedValue(new FetchError(status)) },
-    };
+  it('400 (awaria klucza publishable) nie jest not_found i nie kieruje do „sprawdź link” (R-3)', async () => {
+    mockSdkFetch.mockRejectedValue(new FetchError(400));
 
     const result = await getVoucherRecipientByCode(CODE);
 
-    expect(result).toMatchObject({ kind, status });
-    expect(mockSdkFetch).not.toHaveBeenCalled();
-    assertNotCollapsed(result);
+    expect(result).toMatchObject({ kind: 'technical_error', status: 400, reason: 'http_status' });
+    const projection = assertNotCollapsed(result);
+    expect(projection.state).toBe('technical_error');
+    expect(projection.transportStatus).toBe(400);
+    expect(projection.nextAction).toBe('retry');
   });
 
-  it('typed client 503 próbuje fallback i zachowuje 5xx fallbacku', async () => {
-    mockMercurClient.store = {
-      vouchers: { byCode: vi.fn().mockRejectedValue(new FetchError(503)) },
-    };
-    mockSdkFetch.mockRejectedValue(new FetchError(502));
+  it('typed client nie jest wołany — jedyna ścieżka to raw fetch (R-9)', async () => {
+    const byCode = vi.fn().mockRejectedValue(new FetchError(404));
+    mockMercurClient.store = { vouchers: { byCode } };
+    mockSdkFetch.mockRejectedValue(new FetchError(503));
 
     const result = await getVoucherRecipientByCode(CODE);
 
-    expect(result).toMatchObject({ kind: 'technical_error', status: 502 });
-    assertNotCollapsed(result);
+    expect(byCode).not.toHaveBeenCalled();
+    expect(mockSdkFetch).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({ kind: 'technical_error', status: 503 });
+  });
+
+  it('HTTP 200 z ciałem nie-JSON zachowuje status transportu (R-4)', async () => {
+    mockSdkFetch.mockResolvedValue(
+      new Response('<html>maintenance</html>', { status: 200, headers: { 'content-type': 'text/html' } })
+    );
+
+    const result = await getVoucherRecipientByCode(CODE);
+
+    expect(result).toMatchObject({ kind: 'technical_error', status: 200, reason: 'non_json' });
+    const projection = assertNotCollapsed(result);
+    expect(projection.transportStatus).toBe(200);
+  });
+
+  it('HTTP 200 z JSON-em bez kształtu vouchera zachowuje status (R-4)', async () => {
+    mockSdkFetch.mockResolvedValue(new Response(JSON.stringify({ unexpected: true }), { status: 200 }));
+
+    const result = await getVoucherRecipientByCode(CODE);
+
+    expect(result).toMatchObject({ kind: 'technical_error', status: 200, reason: 'malformed_payload' });
+    expect(projectVoucherRecipientPage(result, { locale: 'pl', code: CODE }).transportStatus).toBe(200);
   });
 
   it('nie-JSON (SyntaxError przy parsowaniu) → technical_error', async () => {

@@ -308,21 +308,18 @@ describe('getVoucherRecipientByCode', () => {
     vi.clearAllMocks();
   });
 
+  // Story 6.9 fix R-9: the only lookup path is the raw SDK fetch.
+  function respond(voucher: Record<string, unknown>) {
+    mockSdkFetch.mockResolvedValue({ voucher: { ...VALID_VOUCHER_PAYLOAD, ...voucher } });
+  }
+
   it('maps ACTIVE-like payloads to recipient active state', async () => {
-    mockMercurClient.store = {
-      vouchers: {
-        byCode: vi.fn().mockResolvedValue({
-          voucher: {
-            ...VALID_VOUCHER_PAYLOAD,
-            status: 'ACTIVE',
-            is_public_entry_confirmed: true,
-            sender_name: 'Anna',
-            sender_disclosure_allowed: true,
-            seller_address: 'ul. Testowa 1, Warszawa',
-          },
-        }),
-      },
-    };
+    respond({
+      status: 'ACTIVE',
+      sender_name: 'Anna',
+      sender_disclosure_allowed: true,
+      seller_address: 'ul. Testowa 1, Warszawa',
+    });
 
     const result = await viewOf(REAL_CODE);
 
@@ -332,23 +329,19 @@ describe('getVoucherRecipientByCode', () => {
     expect(result).not.toHaveProperty('buyer_email');
   });
 
-  // Story 6.9: unconfirmed/unknown states project to `pending`, never `expired`.
-  it('fail-softs unknown recipient statuses and active payloads without public entry proof', async () => {
-    for (const payload of [
-      { status: 'pending_kyc', is_public_entry_confirmed: true },
-      { status: 'active', is_public_entry_confirmed: false },
-      { status: 'issued' },
-    ]) {
-      mockMercurClient.store = {
-        vouchers: {
-          byCode: vi.fn().mockResolvedValue({
-            voucher: {
-              ...VALID_VOUCHER_PAYLOAD,
-              ...payload,
-            },
-          }),
-        },
-      };
+  // Story 6.9 fix R-1/R-2 (D-2): backend redemption-input states are active.
+  it.each(['idle', 'consent_pending'])('backend status %s → active, code visible', async (status) => {
+    respond({ status });
+
+    const result = await viewOf(REAL_CODE);
+    expect(result?.state).toBe('active');
+    expect(result?.is_public_entry_confirmed).toBe(true);
+  });
+
+  // Story 6.9: unknown / explicit pending states project to `pending`, never `expired`.
+  it('fail-softs unknown and pending recipient statuses to pending without code', async () => {
+    for (const payload of [{ status: 'pending_kyc' }, { status: 'mystery_state' }, { status: undefined }]) {
+      respond(payload);
 
       const result = await viewOf(REAL_CODE);
       expect(result?.state, JSON.stringify(payload)).toBe('pending');
@@ -362,21 +355,13 @@ describe('getVoucherRecipientByCode', () => {
     // `charge_full | charge_partial | no_charge | forfeit_voucher |
     // vendor_decision` (no_show.policy). Anything outside these must fall
     // through to `null` so the recipient page renders the safe fallback copy.
-    mockMercurClient.store = {
-      vouchers: {
-        byCode: vi.fn().mockResolvedValue({
-          voucher: {
-            ...VALID_VOUCHER_PAYLOAD,
-            status: 'active',
-            is_public_entry_confirmed: true,
-            policy_snapshot: {
-              refund_channel: 'bank_transfer', // legacy alias removed by Wave G3
-              no_show: { policy: 'manual_review' }, // not in 5-value SSOT
-            },
-          },
-        }),
+    respond({
+      status: 'active',
+      policy_snapshot: {
+        refund_channel: 'bank_transfer', // legacy alias removed by Wave G3
+        no_show: { policy: 'manual_review' }, // not in 5-value SSOT
       },
-    };
+    });
 
     const result = await viewOf(REAL_CODE);
     expect(result?.policy_snapshot?.refund_channel).toBeNull();
@@ -384,24 +369,13 @@ describe('getVoucherRecipientByCode', () => {
   });
 
   it('passes through canonical refund_channel + no_show enum values', async () => {
-    // v1.9.1 Wave G3 / CC-2 #5+#6 — canonical SSOT enums must round-trip
-    // unchanged through the normalizers so the recipient page renders the
-    // matching i18n strings (no `fallback` regression on valid policies).
-    mockMercurClient.store = {
-      vouchers: {
-        byCode: vi.fn().mockResolvedValue({
-          voucher: {
-            ...VALID_VOUCHER_PAYLOAD,
-            status: 'active',
-            is_public_entry_confirmed: true,
-            policy_snapshot: {
-              refund_channel: 'vendor_wallet',
-              no_show: { policy: 'vendor_decision' },
-            },
-          },
-        }),
+    respond({
+      status: 'active',
+      policy_snapshot: {
+        refund_channel: 'vendor_wallet',
+        no_show: { policy: 'vendor_decision' },
       },
-    };
+    });
 
     const result = await viewOf(REAL_CODE);
     expect(result?.policy_snapshot?.refund_channel).toBe('vendor_wallet');
@@ -411,30 +385,35 @@ describe('getVoucherRecipientByCode', () => {
   it('maps redeemed and expired backend states to recipient states', async () => {
     for (const [input, expected] of [
       ['redeemed', 'already_redeemed'],
+      ['claimed', 'already_redeemed'],
       ['settled', 'already_redeemed'],
       ['closed', 'already_redeemed'],
       ['expired', 'expired'],
       ['voided', 'voided'],
+      ['withdrawn', 'voided'],
       ['refunded', 'voided'],
     ]) {
-      mockMercurClient.store = {
-        vouchers: {
-          byCode: vi.fn().mockResolvedValue({
-            voucher: {
-              ...VALID_VOUCHER_PAYLOAD,
-              status: input,
-            },
-          }),
-        },
-      };
+      respond({ status: input });
 
       const result = await viewOf(REAL_CODE);
       expect(result?.state, `status='${input}'`).toBe(expected);
     }
   });
 
+  it('never calls the dead typed-client path (fix R-9)', async () => {
+    const byCode = vi.fn().mockResolvedValue({ voucher: { ...VALID_VOUCHER_PAYLOAD, status: 'expired' } });
+    mockMercurClient.store = { vouchers: { byCode } };
+    respond({ status: 'idle' });
+
+    const result = await viewOf(REAL_CODE);
+
+    expect(byCode).not.toHaveBeenCalled();
+    expect(mockSdkFetch).toHaveBeenCalledTimes(1);
+    expect(mockSdkFetch.mock.calls[0][1]).toMatchObject({ method: 'GET', headers: { accept: '*/*' } });
+    expect(result?.state).toBe('active');
+  });
+
   it('returns recipient fixture without backend for active visual code', async () => {
-    mockMercurClient.store = {};
     mockSdkFetch.mockRejectedValue(new Error('offline'));
 
     const result = await viewOf(E2E_RECIPIENT_ACTIVE_CODE);
@@ -444,8 +423,7 @@ describe('getVoucherRecipientByCode', () => {
     expect(result?.seller_name).toBeTruthy();
   });
 
-  it('returns a technical_error (not null) for unknown codes when both lookup paths fail', async () => {
-    mockMercurClient.store = {};
+  it('returns a technical_error (not null) for unknown codes when the lookup fails', async () => {
     mockSdkFetch.mockRejectedValue(new Error('404'));
 
     const result = await getVoucherRecipientByCode('UNKNOWN-RECIPIENT-CODE');

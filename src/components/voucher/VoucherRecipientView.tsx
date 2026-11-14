@@ -305,7 +305,7 @@ export async function VoucherRecipientView({
           data-testid="voucher-recipient-next-action"
           className="inline-flex min-h-12 items-center rounded-full bg-[var(--bg-action)] px-5 py-3 text-sm font-medium text-[var(--bb-surface)]"
         >
-          {t('states.active.cta')}
+          {t('active.show_code_cta')}
         </a>
       </section>
 

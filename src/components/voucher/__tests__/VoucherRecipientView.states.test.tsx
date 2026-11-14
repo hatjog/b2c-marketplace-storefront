@@ -28,11 +28,20 @@ vi.mock('next-intl/server', () => ({
 vi.mock('next/headers', () => ({
   headers: async () => new Headers({ 'user-agent': 'vitest' }),
 }));
+const mockSdkFetch = vi.fn();
+vi.mock('@/lib/config', () => ({
+  mercurClient: {},
+  sdk: { client: { fetch: mockSdkFetch } },
+}));
+vi.mock('@/lib/data/cookies', () => ({
+  getAuthHeaders: vi.fn().mockResolvedValue({}),
+}));
 vi.mock('../../voucher-possession/SymmetricPossessionSection', () => ({
   SymmetricPossessionSection: () => null,
 }));
 
 const { VoucherRecipientView } = await import('../VoucherRecipientView');
+const { getVoucherRecipientByCode } = await import('@/lib/data/voucher');
 const { VoucherRecipientStateScreen } = await import('../VoucherRecipientStateScreen');
 const { projectVoucherRecipientPage, VOUCHER_RECIPIENT_PAGE_STATES } = await import(
   '@/lib/data/voucher-recipient-projection'
@@ -89,11 +98,18 @@ function resultFor(state: (typeof VOUCHER_RECIPIENT_PAGE_STATES)[number]) {
   }
 }
 
-// Expired / redeemed keep their established CTA copy (pre-6.9 screens).
+// Active / expired / redeemed keep their established screens and CTA copy.
 const CTA_KEY: Partial<Record<string, string>> = {
+  active: 'active.show_code_cta',
   expired: 'expired.support_cta',
   redeemed: 'redeemed.cta_explore',
 };
+
+function renderedHeading(html: string): string {
+  const match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
+  if (!match) throw new Error('no <h1> rendered');
+  return match[1].replace(/<[^>]+>/g, '').trim();
+}
 
 async function render(state: (typeof VOUCHER_RECIPIENT_PAGE_STATES)[number], locale: Locale) {
   const projection = projectVoucherRecipientPage(resultFor(state) as never, { locale, code: CODE });
@@ -116,7 +132,9 @@ describe('VoucherRecipientView — pełny katalog stanów (AC1)', () => {
       const { html, projection } = await render(state, locale);
 
       expect(html).toContain(`data-state="${state}"`);
-      expect(html).toContain(`data-message-key="states.${state}"`);
+      expect(html).toContain(`data-message-key="${projection.messageKey}"`);
+      // Fix R-5: data-message-key names the namespace whose heading is rendered.
+      expect(renderedHeading(html)).toBe(lookup(locale, `${projection.messageKey}.heading`));
       expect(html).toContain('data-testid="voucher-recipient-next-action"');
       expect(html).toContain(lookup(locale, CTA_KEY[state] ?? `states.${state}.cta`));
       if (projection.nextActionHref) {
@@ -136,10 +154,39 @@ describe('VoucherRecipientView — pełny katalog stanów (AC1)', () => {
     }
   });
 
-  it('komunikaty stanów są rozróżnialne (unikalne nagłówki) w każdym locale', () => {
+  it('komunikaty stanów są rozróżnialne (unikalne RENDEROWANE nagłówki) w każdym locale', async () => {
     for (const locale of ['pl', 'en', 'de', 'ua'] as const) {
-      const headings = VOUCHER_RECIPIENT_PAGE_STATES.map((s) => lookup(locale, `states.${s}.heading`));
-      expect(new Set(headings).size).toBe(headings.length);
+      const headings: string[] = [];
+      for (const state of VOUCHER_RECIPIENT_PAGE_STATES) {
+        headings.push(renderedHeading((await render(state, locale)).html));
+      }
+      expect(new Set(headings).size, headings.join(' | ')).toBe(headings.length);
+    }
+  });
+
+  it('brak martwych kluczy states.active/redeemed/expired (R-5)', () => {
+    for (const locale of ['pl', 'en', 'de', 'ua'] as const) {
+      const states = messages[locale].voucher.recipient.states as Record<string, unknown>;
+      for (const dead of ['active', 'redeemed', 'expired']) {
+        expect(states, `${locale}: states.${dead}`).not.toHaveProperty(dead);
+      }
+    }
+  });
+
+  it('forbidden nie kieruje do logowania na publicznej trasie (R-6)', async () => {
+    for (const locale of ['pl', 'en', 'de', 'ua'] as const) {
+      const { html, projection } = await render('forbidden', locale);
+      expect(projection.nextAction).toBe('contact_support');
+      expect(projection.nextActionHref).toBe(`/${locale}/pomoc`);
+      expect(html).not.toContain('/login');
+    }
+  });
+
+  it('technical_error nie twierdzi nic o stanie vouchera w żadnym locale (R-7)', () => {
+    const claims = /nie przepadł|not lost|nicht verloren|не втрачено/i;
+    for (const locale of ['pl', 'en', 'de', 'ua'] as const) {
+      const copy = Object.values(messages[locale].voucher.recipient.states.technical_error).join(' ');
+      expect(copy).not.toMatch(claims);
     }
   });
 
@@ -159,7 +206,39 @@ describe('VoucherRecipientView — pełny katalog stanów (AC1)', () => {
     for (const state of ['forbidden', 'technical_error', 'not_found'] as const) {
       const { html } = await render(state, 'pl');
       expect(html).not.toContain(lookup('pl', 'expired.heading'));
-      expect(html).not.toContain(lookup('pl', 'states.expired.heading'));
     }
   });
+
+  // Fix R-1/R-2: the view on the REAL `GET /store/vouchers/:code` shape
+  // (backend `projectAllowlist` keys + `VoucherStatus`), no confirmation flag.
+  it.each(['idle', 'consent_pending'] as const)(
+    'realny voucher %s z endpointu → ekran aktywny z widocznym kodem (D-2)',
+    async (status) => {
+      mockSdkFetch.mockReset();
+      mockSdkFetch.mockResolvedValue({
+        voucher: {
+          code: CODE,
+          seller_id: 'sel_01',
+          seller_name: 'Salon Test',
+          seller_handle: 'salon-test',
+          product_title: 'Manicure',
+          value_minor: 10000,
+          currency_code: 'PLN',
+          status,
+          expires_at: '2026-12-31T00:00:00.000Z',
+        },
+      });
+      const projection = projectVoucherRecipientPage(await getVoucherRecipientByCode(CODE), {
+        locale: 'pl',
+        code: CODE,
+      });
+      const html = renderToStaticMarkup(
+        await VoucherRecipientView({ locale: 'pl', requestedCode: CODE, projection })
+      );
+      expect(html).toContain('data-state="active"');
+      expect(html).toContain(lookup('pl', 'active.show_code_cta'));
+      expect(html.replace(/href="[^"]*"/g, '')).toContain(CODE);
+      expect(html).not.toContain(lookup('pl', 'states.pending.heading'));
+    }
+  );
 });

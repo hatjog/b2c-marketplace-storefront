@@ -34,15 +34,27 @@ export type VoucherRecipientNextAction =
   | 'check_again'
   | 'explore_salons'
   | 'contact_support'
-  | 'sign_in'
   | 'check_link'
   | 'retry'
   | 'wait';
 
+/**
+ * Entitlement screens with established copy render from their own namespace
+ * (`active.*`, `redeemed.*`, `expired.*`); the rest from `states.<state>.*`.
+ */
+type EstablishedScreenState = 'active' | 'redeemed' | 'expired';
+
+export type VoucherRecipientMessageKey =
+  | EstablishedScreenState
+  | `states.${Exclude<VoucherRecipientPageState, EstablishedScreenState>}`;
+
 export interface VoucherRecipientPageProjection {
   state: VoucherRecipientPageState;
-  /** i18n key under `voucher.recipient` — unique per state. */
-  messageKey: `states.${VoucherRecipientPageState}`;
+  /**
+   * i18n namespace under `voucher.recipient` whose `heading` the screen
+   * actually renders — unique per state (fix R-5: no dead `states.*` keys).
+   */
+  messageKey: VoucherRecipientMessageKey;
   nextAction: VoucherRecipientNextAction;
   /** Target of the next action; `null` only for `loading`. */
   nextActionHref: string | null;
@@ -61,7 +73,10 @@ const NEXT_ACTION: Record<VoucherRecipientPageState, VoucherRecipientNextAction>
   redeemed: 'explore_salons',
   expired: 'contact_support',
   voided: 'contact_support',
-  forbidden: 'sign_in',
+  // Fix R-6: the route is public (`AUTHENTICATE = false`); 401/403 can only
+  // come from infrastructure / the publishable-key layer, so signing in would
+  // not change the result. Point to support instead.
+  forbidden: 'contact_support',
   not_found: 'check_link',
   technical_error: 'retry',
 };
@@ -85,11 +100,20 @@ function nextActionHref(
       return canonicalHref;
     case 'explore_salons':
       return `/${locale}/sellers`;
-    case 'sign_in':
-      return `/${locale}/login`;
     case 'contact_support':
     case 'check_link':
       return `/${locale}/pomoc`;
+  }
+}
+
+function messageKeyFor(state: VoucherRecipientPageState): VoucherRecipientMessageKey {
+  switch (state) {
+    case 'active':
+    case 'redeemed':
+    case 'expired':
+      return state;
+    default:
+      return `states.${state}`;
   }
 }
 
@@ -118,7 +142,7 @@ export function projectVoucherRecipientPage(
 
   return {
     state,
-    messageKey: `states.${state}`,
+    messageKey: messageKeyFor(state),
     nextAction,
     nextActionHref: nextActionHref(nextAction, link.locale, canonicalHref),
     canonicalHref,

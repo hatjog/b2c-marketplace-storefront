@@ -1535,6 +1535,7 @@
         "description": "Calm recipient view with voucher code, redemption rules and salon contact details."
       },
       "active": {
+        "show_code_cta": "Show voucher code",
         "hero_sender_disclosed": "{sender} from BonBeauty has a gift for you",
         "hero_sender_fallback": "You have a gift from BonBeauty",
         "heading": "A little time for yourself.",
@@ -1649,29 +1650,11 @@
           "body": "This will only take a moment. Please keep this page open.",
           "cta": "Wait for the check to finish"
         },
-        "active": {
-          "badge": "Active",
-          "heading": "Your voucher is active",
-          "body": "You can use it at the salon.",
-          "cta": "Show voucher code"
-        },
         "pending": {
           "badge": "Pending",
           "heading": "Your gift is on its way",
           "body": "The voucher is not ready to redeem yet. Please check back later.",
           "cta": "Check again"
-        },
-        "redeemed": {
-          "badge": "Redeemed",
-          "heading": "This voucher has already been used",
-          "body": "This voucher has been redeemed.",
-          "cta": "Explore salons"
-        },
-        "expired": {
-          "badge": "Expired",
-          "heading": "The validity period has ended",
-          "body": "This voucher is no longer valid.",
-          "cta": "Contact support"
         },
         "voided": {
           "badge": "Voided",
@@ -1681,9 +1664,9 @@
         },
         "forbidden": {
           "badge": "No access",
-          "heading": "You do not have access to this voucher",
-          "body": "This link requires signing in to the account the voucher belongs to. It does not mean the voucher has expired.",
-          "cta": "Sign in"
+          "heading": "We cannot open this voucher right now",
+          "body": "Access to this page is temporarily blocked on our side. You do not need to sign in. If the problem persists, please contact support.",
+          "cta": "Contact support"
         },
         "not_found": {
           "badge": "Not found",
@@ -1694,7 +1677,7 @@
         "technical_error": {
           "badge": "Technical error",
           "heading": "We could not check the voucher right now",
-          "body": "Something went wrong on our side. Your voucher is not lost — please try again shortly.",
+          "body": "Something went wrong on our side and we could not check the voucher status. Please try again shortly.",
           "cta": "Try again"
         }
       },
