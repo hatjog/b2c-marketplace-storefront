@@ -92,7 +92,7 @@ export default async function PaymentStatusPage(props: Props) {
   const searchParams = await props.searchParams;
   setRequestLocale(params.locale);
 
-  const { result, completionRedirect, charge } = await resolvePaymentReturn(
+  const { result, completionRedirect, charge, lifecycle } = await resolvePaymentReturn(
     params.id,
     searchParams,
     params.locale
@@ -107,6 +107,7 @@ export default async function PaymentStatusPage(props: Props) {
   return (
     <main
       id="main-content"
+      data-return-lifecycle={lifecycle}
       className="container py-8"
     >
       <StorefrontRouteStateSignal
@@ -133,6 +134,7 @@ export default async function PaymentStatusPage(props: Props) {
             result={result}
             cartHref={`/${params.locale}/cart`}
             charge={charge ?? null}
+            lifecycle={lifecycle}
           />
           {/* review-fix (MEDIUM): `pending_confirmation` to jedyny stan, który
               może się jeszcze sam rozstrzygnąć (async push BLIK/P24). Przed tą

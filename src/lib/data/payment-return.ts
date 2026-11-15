@@ -61,7 +61,9 @@ import {
 import {
   decidePaymentReturnState,
   type PaymentChargeFact,
+  type PaymentReturnLifecycle,
   type PaymentReturnState,
+  paymentReturnLifecycle,
   type StripeReturnParams
 } from '@/lib/checkout/payment-return-state';
 
@@ -209,7 +211,16 @@ export type PaymentReturnResolution = {
    * bez dowodu własności koszyka — fakt o cudzej płatności nie jest ujawniany).
    */
   charge?: PaymentChargeFact | null;
+  /**
+   * Story 8.3 fix R-1 (AC1, FR-15): cykl życia powrotu liczony z WYNIKU tego
+   * resolvera — strona niesie go w `data-return-lifecycle`. Przerwany nigdy
+   * nie jest `success`.
+   */
+  lifecycle: PaymentReturnLifecycle;
 };
+
+/** Rozstrzygnięcie przed policzeniem cyklu życia (wewnętrzne). */
+type ResolvedReturnState = Omit<PaymentReturnResolution, 'lifecycle'>;
 
 function buildCompletionRedirect(
   locale: string,
@@ -238,7 +249,11 @@ export async function resolvePaymentReturn(
   locale: string
 ): Promise<PaymentReturnResolution> {
   const resolution = await resolvePaymentReturnState(rawIdentifier, searchParams, locale);
-  return { ...resolution, charge: await readChargeFactFor(resolution) };
+  return {
+    ...resolution,
+    charge: await readChargeFactFor(resolution),
+    lifecycle: paymentReturnLifecycle(resolution.result, resolution.params)
+  };
 }
 
 /**
@@ -248,7 +263,7 @@ export async function resolvePaymentReturn(
  * domknięcie. Porażka odczytu ⇒ `unknown` (nigdy „nie pobrano").
  */
 async function readChargeFactFor(
-  resolution: PaymentReturnResolution
+  resolution: ResolvedReturnState
 ): Promise<PaymentChargeFact | null> {
   const { identifier, result, completionRedirect } = resolution;
   if (
@@ -280,7 +295,7 @@ async function resolvePaymentReturnState(
   rawIdentifier: unknown,
   searchParams: Record<string, string | string[]> | undefined,
   locale: string
-): Promise<PaymentReturnResolution> {
+): Promise<ResolvedReturnState> {
   const identifier = classifyPaymentReturnIdentifier(rawIdentifier);
   const params = await readStripeReturnParams(searchParams);
   const outcome = priorOutcome(
@@ -294,7 +309,7 @@ async function resolvePaymentReturnState(
     return { identifier, params, completionRedirect: null, result: refused };
   }
 
-  const nonCart = (): PaymentReturnResolution => ({
+  const nonCart = (): ResolvedReturnState => ({
     identifier,
     params,
     completionRedirect: null,

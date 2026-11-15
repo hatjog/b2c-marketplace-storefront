@@ -337,3 +337,30 @@ describe('Story 8.3 AC1 — komunikat o pobraniu wynika z odczytu PSP po stronie
     expect(fetchQuery.mock.calls.some(([p]) => String(p).includes('/payment-charge'))).toBe(false);
   });
 });
+
+// ── Story 8.3 fix R-1 (AC1): cykl życia jest w RENDERZE, liczony z resolvera ──
+
+describe('Story 8.3 AC1 — render niesie cykl życia powrotu (data-return-lifecycle)', () => {
+  it('porzucony challenge ⇒ main i notice niosą `interrupted`', async () => {
+    chargeReturns({ ok: true, data: { charge: 'not_charged' } });
+    const element = (await PaymentStatusPage(pageProps({ redirect_status: 'failed', payment_intent: 'pi_3STORY83' }))) as {
+      props: Record<string, unknown>;
+    };
+    expect(element.props['data-return-lifecycle']).toBe('interrupted');
+    expect(findNoticeProps(element)?.lifecycle).toBe('interrupted');
+  });
+
+  it('odświeżenie domkniętego koszyka ⇒ `success` (kontrola dodatnia)', async () => {
+    bridgeReturns([ORDER_A]);
+    const element = (await PaymentStatusPage(pageProps({ redirect_status: 'succeeded' }))) as {
+      props: Record<string, unknown>;
+    };
+    expect(element.props['data-return-lifecycle']).toBe('success');
+  });
+
+  it('wejście bez śladu płatności ⇒ `never_started`, nie `interrupted`', async () => {
+    chargeReturns({ ok: true, data: { charge: 'not_charged' } });
+    const element = (await PaymentStatusPage(pageProps({}))) as { props: Record<string, unknown> };
+    expect(element.props['data-return-lifecycle']).toBe('never_started');
+  });
+});

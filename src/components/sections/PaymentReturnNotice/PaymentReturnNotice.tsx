@@ -14,6 +14,7 @@ import { getTranslations } from 'next-intl/server';
 
 import {
   type PaymentChargeFact,
+  type PaymentReturnLifecycle,
   type PaymentReturnState,
   paymentChargeMessageKey
 } from '@/lib/checkout/payment-return-state';
@@ -28,6 +29,8 @@ export interface PaymentReturnNoticeProps {
    * backendu. `null`/brak = nie dotyczy (bez dowodu własności koszyka).
    */
   charge?: PaymentChargeFact | null;
+  /** Story 8.3 fix R-1 (AC1): cykl życia z wyniku `resolvePaymentReturn`. */
+  lifecycle?: PaymentReturnLifecycle;
 }
 
 /** Stan → wariant wizualny + rola ARIA. Jeden punkt mapowania, bez `default`. */
@@ -68,7 +71,8 @@ export async function PaymentReturnNotice({
   locale,
   result,
   cartHref,
-  charge
+  charge,
+  lifecycle
 }: PaymentReturnNoticeProps) {
   const t = await getTranslations({ locale, namespace: 'payment_status' });
   const { container, role } = presentationFor(result.state);
@@ -82,6 +86,7 @@ export async function PaymentReturnNotice({
       data-return-state={result.state}
       data-return-reason={'reason' in result ? result.reason : undefined}
       data-charge={charge ?? undefined}
+      data-return-lifecycle={lifecycle}
       className={`rounded-sm border p-6 ${container}`}
     >
       <h1 className="heading-md mb-2">{t(`${keyBase}.label`)}</h1>
