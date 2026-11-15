@@ -2025,6 +2025,11 @@
       "body": "Nie potwierdziliśmy powiązania powrotu z Twoim koszykiem i płatnością, dlatego nie wykonaliśmy domknięcia zamówienia.",
       "cta": "Wróć do koszyka"
     },
+    "return_charge": {
+      "charged": "Pieniądze zostały pobrane (albo zablokowane) przez bank. Nie płać ponownie — zamówienie dokończymy na podstawie tej płatności.",
+      "not_charged": "Pieniądze nie zostały pobrane. Możesz bezpiecznie spróbować ponownie.",
+      "unknown": "Nie wiemy jeszcze, czy pieniądze zostały pobrane. Nie płać ponownie — odśwież tę stronę za chwilę."
+    },
     "page_title": "Status płatności",
     "page_description": "Sprawdź status swojej płatności.",
     "loading": "Sprawdzanie statusu płatności...",

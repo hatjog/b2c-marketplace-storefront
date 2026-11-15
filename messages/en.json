@@ -2025,6 +2025,11 @@
       "body": "We could not verify that this return belongs to your cart and payment, so we did not complete the order.",
       "cta": "Back to cart"
     },
+    "return_charge": {
+      "charged": "Your money was taken (or held) by the bank. Do not pay again — we will complete the order from this payment.",
+      "not_charged": "Your money was not taken. You can safely try again.",
+      "unknown": "We do not know yet whether your money was taken. Do not pay again — refresh this page in a moment."
+    },
     "page_title": "Payment status",
     "page_description": "Check the status of your payment.",
     "loading": "Checking payment status...",

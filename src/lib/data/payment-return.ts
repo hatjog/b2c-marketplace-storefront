@@ -60,6 +60,7 @@ import {
 } from '@/lib/checkout/payment-return-identifier';
 import {
   decidePaymentReturnState,
+  type PaymentChargeFact,
   type PaymentReturnState,
   type StripeReturnParams
 } from '@/lib/checkout/payment-return-state';
@@ -70,6 +71,7 @@ import {
   type StripePaymentIntentBinding,
   completeOrderAfterStripePayment,
   getCompletedPurchaseForCart,
+  getPaymentChargeForCart,
   type CompletedPurchaseRead
 } from './cart';
 import {
@@ -201,6 +203,12 @@ export type PaymentReturnResolution = {
    * należy do renderu.
    */
   completionRedirect: string | null;
+  /**
+   * Story 8.3 (AC1, ADR-233): czy pieniądze pobrano — z odczytu PSP po stronie
+   * backendu. `null` = nie dotyczy (sukces, redirect na domknięcie, odmowa
+   * bez dowodu własności koszyka — fakt o cudzej płatności nie jest ujawniany).
+   */
+  charge?: PaymentChargeFact | null;
 };
 
 function buildCompletionRedirect(
@@ -225,6 +233,50 @@ function buildCompletionRedirect(
  * nigdy `null`, nigdy cichego „potraktuj jak zamówienie" (AD-19, NFR-2).
  */
 export async function resolvePaymentReturn(
+  rawIdentifier: unknown,
+  searchParams: Record<string, string | string[]> | undefined,
+  locale: string
+): Promise<PaymentReturnResolution> {
+  const resolution = await resolvePaymentReturnState(rawIdentifier, searchParams, locale);
+  return { ...resolution, charge: await readChargeFactFor(resolution) };
+}
+
+/**
+ * Story 8.3 (AC1): fakt o pobraniu czytamy WYŁĄCZNIE dla koszyka z dowodem
+ * własności (inaczej `return_refused/cart_ownership_unproven` albo spoza
+ * dziedziny) i wyłącznie dla stanu niebędącego sukcesem, bez redirectu na
+ * domknięcie. Porażka odczytu ⇒ `unknown` (nigdy „nie pobrano").
+ */
+async function readChargeFactFor(
+  resolution: PaymentReturnResolution
+): Promise<PaymentChargeFact | null> {
+  const { identifier, result, completionRedirect } = resolution;
+  if (
+    identifier.kind !== 'cart' ||
+    completionRedirect !== null ||
+    result.state === 'confirmed' ||
+    result.state === 'identifier_out_of_domain' ||
+    (result.state === 'return_refused' &&
+      (result.reason === 'cart_ownership_unproven' ||
+        result.reason === 'identifier_out_of_domain' ||
+        result.reason === 'not_a_cart'))
+  ) {
+    return null;
+  }
+  try {
+    // Fakt o płatności tylko dla właścicielki koszyka (cookie), niezależnie od
+    // tego, którą gałęzią stan został rozstrzygnięty.
+    if (!(await provesCartOwnership(identifier.value))) {
+      return null;
+    }
+    return await getPaymentChargeForCart(identifier.value);
+  } catch (error) {
+    console.warn(`[payment-return] charge read threw cart=${identifier.value}`, error);
+    return 'unknown';
+  }
+}
+
+async function resolvePaymentReturnState(
   rawIdentifier: unknown,
   searchParams: Record<string, string | string[]> | undefined,
   locale: string

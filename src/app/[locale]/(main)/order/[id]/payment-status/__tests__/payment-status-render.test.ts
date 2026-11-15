@@ -266,3 +266,74 @@ describe('kontrola negatywna — DLACZEGO domknięcie nie może zostać w render
     expect(cookieSet).not.toHaveBeenCalled();
   });
 });
+
+// ── Story 8.3 (AC1, ADR-233): komunikat „czy pobrano" z backendu, nie z URL ──
+
+function findNoticeProps(node: unknown): Record<string, unknown> | null {
+  if (!node || typeof node !== 'object') return null;
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findNoticeProps(child);
+      if (found) return found;
+    }
+    return null;
+  }
+  const el = node as { props?: Record<string, unknown> };
+  if (el.props && 'result' in el.props && 'cartHref' in el.props) return el.props;
+  return findNoticeProps(el.props?.children);
+}
+
+/** Mostek pusty (404) + odpowiedź `GET /store/carts/:id/payment-charge`. */
+function chargeReturns(answer: { ok: true; data: unknown } | { ok: false; status: number } | Error) {
+  fetchQuery.mockImplementation(async (path: string) => {
+    if (path.includes('/completed-order')) return { ok: false, status: 404 };
+    if (path.includes('/payment-charge')) {
+      if (answer instanceof Error) throw answer;
+      return answer;
+    }
+    throw new Error(`nieoczekiwane żądanie w renderze: ${path}`);
+  });
+}
+
+describe('Story 8.3 AC1 — komunikat o pobraniu wynika z odczytu PSP po stronie backendu', () => {
+  it.each([
+    ['charged', 'pobrano'],
+    ['not_charged', 'nie pobrano']
+  ] as const)(
+    'backend mówi %s przy redirect_status=failed ⇒ komunikat „%s" (URL nie decyduje)',
+    async (charge, _message) => {
+      chargeReturns({ ok: true, data: { charge, reason: 'x' } });
+      const element = await PaymentStatusPage(pageProps({ redirect_status: 'failed' }));
+      const props = findNoticeProps(element);
+      expect(props?.charge).toBe(charge);
+      expect(fetchQuery.mock.calls.some(([p]) => String(p).includes(`/store/carts/${CART}/payment-charge`))).toBe(true);
+    }
+  );
+
+  it('ten sam redirect_status, różne odpowiedzi backendu ⇒ różne komunikaty (źródłem jest backend)', async () => {
+    chargeReturns({ ok: true, data: { charge: 'charged' } });
+    const a = findNoticeProps(await PaymentStatusPage(pageProps({ redirect_status: 'failed' })));
+    chargeReturns({ ok: true, data: { charge: 'not_charged' } });
+    const b = findNoticeProps(await PaymentStatusPage(pageProps({ redirect_status: 'failed' })));
+    expect(a?.charge).toBe('charged');
+    expect(b?.charge).toBe('not_charged');
+  });
+
+  it.each([
+    ['HTTP 503', { ok: false as const, status: 503 }],
+    ['transport', new Error('ECONNRESET')],
+    ['kształt spoza słownika', { ok: true as const, data: { charge: 'maybe' } }]
+  ])('awaria odczytu (%s) ⇒ „nie wiadomo jeszcze", nigdy „nie pobrano"', async (_label, answer) => {
+    chargeReturns(answer as never);
+    const props = findNoticeProps(await PaymentStatusPage(pageProps({ redirect_status: 'failed' })));
+    expect(props?.charge).toBe('unknown');
+  });
+
+  it('bez dowodu własności koszyka fakt o płatności NIE jest czytany ani ujawniany', async () => {
+    cookieStore.clear();
+    chargeReturns({ ok: true, data: { charge: 'charged' } });
+    const props = findNoticeProps(await PaymentStatusPage(pageProps({ redirect_status: 'failed' })));
+    expect(props?.charge ?? null).toBeNull();
+    expect(fetchQuery.mock.calls.some(([p]) => String(p).includes('/payment-charge'))).toBe(false);
+  });
+});

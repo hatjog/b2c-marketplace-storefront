@@ -2025,6 +2025,11 @@
       "body": "Wir konnten nicht prüfen, ob diese Rückkehr zu Ihrem Warenkorb und Ihrer Zahlung gehört, und haben die Bestellung deshalb nicht abgeschlossen.",
       "cta": "Zurück zum Warenkorb"
     },
+    "return_charge": {
+      "charged": "Das Geld wurde von der Bank abgebucht (oder reserviert). Bitte nicht erneut bezahlen — wir schließen die Bestellung mit dieser Zahlung ab.",
+      "not_charged": "Das Geld wurde nicht abgebucht. Du kannst es gefahrlos erneut versuchen.",
+      "unknown": "Wir wissen noch nicht, ob das Geld abgebucht wurde. Bitte nicht erneut bezahlen — aktualisiere diese Seite gleich."
+    },
     "page_title": "Zahlungsstatus",
     "page_description": "Überprüfen Sie den Status Ihrer Zahlung.",
     "loading": "Zahlungsstatus wird überprüft...",

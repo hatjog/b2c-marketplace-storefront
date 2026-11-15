@@ -92,7 +92,7 @@ export default async function PaymentStatusPage(props: Props) {
   const searchParams = await props.searchParams;
   setRequestLocale(params.locale);
 
-  const { result, completionRedirect } = await resolvePaymentReturn(
+  const { result, completionRedirect, charge } = await resolvePaymentReturn(
     params.id,
     searchParams,
     params.locale
@@ -132,6 +132,7 @@ export default async function PaymentStatusPage(props: Props) {
             locale={params.locale}
             result={result}
             cartHref={`/${params.locale}/cart`}
+            charge={charge ?? null}
           />
           {/* review-fix (MEDIUM): `pending_confirmation` to jedyny stan, który
               może się jeszcze sam rozstrzygnąć (async push BLIK/P24). Przed tą

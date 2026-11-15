@@ -60,7 +60,12 @@ export type PaymentReturnState =
   /** Płatność w toku po stronie PSP (np. async push) — jedyny stan, w którym się odpytuje. */
   | {
       state: 'pending_confirmation';
-      reason: 'awaiting_psp' | 'completion_failed' | 'psp_not_terminal' | 'completion_in_progress';
+      reason:
+        | 'awaiting_psp'
+        | 'return_interrupted'
+        | 'completion_failed'
+        | 'psp_not_terminal'
+        | 'completion_in_progress';
     }
   /** Odczyt nie dowiódł kompletnego zakupu; mutacja byłaby niebezpieczna. */
   | {
@@ -157,6 +162,13 @@ export function decidePaymentReturnState(facts: PaymentReturnFacts): PaymentRetu
   }
 
   if (!completionAttempted) {
+    // Story 8.3 (AC1): powrót NIESIE intencję płatności, ale domknięcie nie
+    // zostało podjęte (np. `redirect_status` inny niż `succeeded`, urwany
+    // powrót). To jest przerwanie, a nie „nigdy nierozpoczęte" — do 8.3 oba
+    // zlewały się w jeden `awaiting_psp`.
+    if (params.payment_intent) {
+      return { state: 'pending_confirmation', reason: 'return_interrupted' };
+    }
     return { state: 'pending_confirmation', reason: 'awaiting_psp' };
   }
 
@@ -178,4 +190,51 @@ export function decidePaymentReturnState(facts: PaymentReturnFacts): PaymentRetu
 /** Klucz i18n stanu — jeden punkt mapowania stan → namespace `payment_status`. */
 export function paymentReturnStateKey(state: PaymentReturnState['state']): string {
   return `return_${state}`;
+}
+
+/**
+ * Story 8.3 (AC1, FR-15) — trzy rozłączne cykle życia powrotu.
+ *
+ *  - `success`        — zakup potwierdzony (`confirmed`);
+ *  - `never_started`  — brak JAKIEGOKOLWIEK śladu płatności w powrocie
+ *                       (bez `payment_intent`, bez `redirect_status`) i brak
+ *                       podjętego domknięcia: `pending_confirmation/awaiting_psp`
+ *                       albo identyfikator spoza dziedziny bez parametrów;
+ *  - `interrupted`    — każdy inny stan: powrót się zaczął i urwał.
+ *
+ * Przerwany NIGDY nie jest `success`: sukces wymaga stanu `confirmed`.
+ */
+export type PaymentReturnLifecycle = 'success' | 'interrupted' | 'never_started';
+
+export function paymentReturnLifecycle(
+  result: PaymentReturnState,
+  params: Pick<StripeReturnParams, 'payment_intent' | 'redirect_status'>
+): PaymentReturnLifecycle {
+  if (result.state === 'confirmed') return 'success';
+  const noPaymentTrace = !params.payment_intent && !params.redirect_status;
+  if (
+    noPaymentTrace &&
+    result.state === 'pending_confirmation' &&
+    result.reason === 'awaiting_psp'
+  ) {
+    return 'never_started';
+  }
+  return 'interrupted';
+}
+
+/**
+ * Story 8.3 (AC1, ADR-233) — fakt „czy pobrano" z odczytu PSP po stronie
+ * BACKENDU (`GET /store/carts/:id/payment-charge`), nigdy z `redirect_status`.
+ * Błąd odczytu ⇒ `unknown`, nigdy domyślnie `not_charged`.
+ */
+export type PaymentChargeFact = 'charged' | 'not_charged' | 'unknown';
+
+export function parsePaymentChargeFact(raw: unknown): PaymentChargeFact {
+  const charge = (raw as { charge?: unknown } | null | undefined)?.charge;
+  return charge === 'charged' || charge === 'not_charged' ? charge : 'unknown';
+}
+
+/** Klucz i18n komunikatu o pobraniu — namespace `payment_status`. */
+export function paymentChargeMessageKey(charge: PaymentChargeFact): string {
+  return `return_charge.${charge}`;
 }

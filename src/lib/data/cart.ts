@@ -1532,3 +1532,29 @@ export async function listCartOptions() {
     cache: 'force-cache'
   });
 }
+
+/**
+ * v1.16.0 Story 8.3 (AC1, ADR-233): fakt „czy pobrano" z backendu
+ * (`GET /store/carts/:id/payment-charge`, odczyt Stripe z sekretem rynku).
+ * Każda porażka (HTTP ≠ 200, transport, kształt) ⇒ `unknown` z logiem —
+ * nigdy domyślnie `not_charged`.
+ */
+export async function getPaymentChargeForCart(
+  cartId: string
+): Promise<'charged' | 'not_charged' | 'unknown'> {
+  try {
+    const res = await fetchQuery(`/store/carts/${cartId}/payment-charge`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(10_000)
+    });
+    if (!res?.ok) {
+      console.warn(`[payment-return] charge read failed cart=${cartId} status=${res?.status}`);
+      return 'unknown';
+    }
+    const charge = (res.data as { charge?: unknown } | null)?.charge;
+    return charge === 'charged' || charge === 'not_charged' ? charge : 'unknown';
+  } catch (error) {
+    console.warn(`[payment-return] charge read failed cart=${cartId}`, error);
+    return 'unknown';
+  }
+}
