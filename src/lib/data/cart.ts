@@ -1048,6 +1048,9 @@ export type CompletedPurchaseReadState =
 export type CompletedPurchaseRead = {
   orderIds: string[];
   expectedOrderCount: number | null;
+  /** v1.16.0 Story 8.6: zbiór oczekiwany i otwarte zamówienia z mostka. */
+  expectedOrderIds?: string[] | null;
+  openOrderIds?: string[];
   state: CompletedPurchaseReadState;
   readFailed: boolean;
 };
@@ -1139,7 +1142,14 @@ async function resolveCompletedPurchaseForCart(
  *   • `read_failed` — koszyka nie dało się odczytać po `attempts` próbach;
  *     wywołujący ma zwrócić nazwany, nieterminalny `read_failed` (retry).
  */
-export type StripePaymentIntentBinding = 'bound' | 'not_bound' | 'read_failed' | 'cart_unavailable';
+export type StripePaymentIntentBinding =
+  | 'bound'
+  | 'not_bound'
+  | 'read_failed'
+  | 'cart_unavailable'
+  // v1.16.0 Story 8.6 (DW-15-329 p.1): 401 to brak uwierzytelnienia KLIENTA
+  // (np. wygasła sesja), nie fakt o koszyku — nieterminalny, osobna klasa.
+  | 'access_denied';
 
 export async function getStripePaymentIntentBinding(
   cartId: string,
@@ -1171,6 +1181,10 @@ export async function getStripePaymentIntentBinding(
       // Story 8.2 (DW-15-295): trwałe 4xx (404/403/401) to fakt o koszyku, nie
       // przejściowa awaria — bez ponowienia i pod osobną nazwą.
       const status = (error as { status?: unknown } | null)?.status;
+      if (status === 401) {
+        console.warn(`[payment-return] cart read unauthorized cart=${cartId} status=401`);
+        return 'access_denied';
+      }
       if (typeof status === 'number' && status >= 400 && status < 500 && status !== 408 && status !== 429) {
         console.warn(`[payment-return] cart unavailable cart=${cartId} status=${status}`);
         return 'cart_unavailable';

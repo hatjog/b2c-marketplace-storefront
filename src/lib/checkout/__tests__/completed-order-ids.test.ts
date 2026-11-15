@@ -18,6 +18,7 @@ import {
   collectOrderIds,
   resolveBridgeOrderIds,
   resolveBridgePurchase,
+  sameIdSet,
   resolveCompletedOrderIds
 } from '../completed-order-ids';
 
@@ -161,5 +162,69 @@ describe('ogniwo 2→3 — odczyt kolekcji z endpointu mostkowego', () => {
     expect(resolveBridgeOrderIds({})).toEqual([]);
     expect(resolveBridgeOrderIds(null)).toEqual([]);
     expect(resolveBridgeOrderIds({ orders: [{ order_id: 7 }] })).toEqual([]);
+  });
+});
+
+/**
+ * v1.16.0 Story 8.6 (FR-17, AD-16, AC1, AC2) — stan terminalny dla WSZYSTKICH
+ * zamówień order-setu; porównanie ZBIORÓW identyfikatorów, nie liczników.
+ * Mutant „porównanie licznikiem” (orderIds.length === expected.length) czerwieni
+ * przypadek „zgodna liczba, różny zbiór”.
+ */
+describe('Story 8.6 — resolveBridgePurchase po zbiorze identyfikatorów', () => {
+  const terminal = (order_id: string) => ({ order_id, order_group_id: 'og_1', terminal: true });
+
+  it('wszystkie terminalne i zbiór oczekiwany == otrzymany ⇒ complete, bez otwartych', () => {
+    const purchase = resolveBridgePurchase({
+      orders: [terminal('o_a'), terminal('o_b')],
+      order_count: 2,
+      expected_order_ids: ['o_b', 'o_a']
+    });
+    expect(purchase.state).toBe('complete');
+    expect(purchase.openOrderIds).toEqual([]);
+    expect(new Set(purchase.orderIds)).toEqual(new Set(['o_a', 'o_b']));
+  });
+
+  it('zgodna LICZBA, różny ZBIÓR ⇒ incomplete, brakujące zamówienie nazwane', () => {
+    const purchase = resolveBridgePurchase({
+      orders: [terminal('o_a'), terminal('o_b')],
+      order_count: 2,
+      expected_order_ids: ['o_a', 'o_c']
+    });
+    expect(purchase.state).toBe('incomplete');
+    expect(purchase.openOrderIds).toEqual(['o_c']);
+  });
+
+  it('jedno zamówienie nieterminalne ⇒ incomplete i wskazane otwarte zamówienie (AC1)', () => {
+    const purchase = resolveBridgePurchase({
+      orders: [terminal('o_a'), { order_id: 'o_b', order_group_id: 'og_1', terminal: false }],
+      order_count: 2,
+      expected_order_ids: ['o_a', 'o_b']
+    });
+    expect(purchase.state).toBe('incomplete');
+    expect(purchase.openOrderIds).toEqual(['o_b']);
+  });
+
+  it('brak pola `terminal` przy zbiorze oczekiwanym = brak dowodu ⇒ otwarte, nie ciche complete', () => {
+    const purchase = resolveBridgePurchase({
+      orders: [{ order_id: 'o_a' }],
+      order_count: 1,
+      expected_order_ids: ['o_a']
+    });
+    expect(purchase.state).toBe('incomplete');
+    expect(purchase.openOrderIds).toEqual(['o_a']);
+  });
+
+  it('`expected_order_ids` w złym kształcie ⇒ malformed', () => {
+    expect(
+      resolveBridgePurchase({ orders: [terminal('o_a')], order_count: 1, expected_order_ids: 'o_a' })
+        .state
+    ).toBe('malformed');
+  });
+
+  it('sameIdSet: równość zbiorów, nie liczności', () => {
+    expect(sameIdSet(['a', 'b'], ['b', 'a'])).toBe(true);
+    expect(sameIdSet(['a', 'b'], ['a', 'c'])).toBe(false);
+    expect(sameIdSet(['a'], ['a', 'b'])).toBe(false);
   });
 });

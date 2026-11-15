@@ -1384,6 +1384,7 @@
     "purchase_access_denied_body": "Nie potwierdziliśmy prawa dostępu do tego zakupu, dlatego nie pokazujemy jego zamówień.",
     "purchase_incomplete_order_set_title": "Nie możemy jeszcze bezpiecznie pokazać całego zakupu",
     "purchase_incomplete_order_set_body": "Odczyt nie zawiera kompletnego zestawu zamówień, dlatego nie pokazujemy częściowego wyniku jako sukcesu.",
+    "purchase_incomplete_open_orders_label": "Zamówienia, które nie są jeszcze domknięte:",
     "purchase_malformed_title": "Nie możemy bezpiecznie odczytać zakupu",
     "purchase_malformed_body": "Odpowiedź o zakupie ma nieprawidłowy format, dlatego nie pokazujemy jej jako potwierdzenia.",
     "order_position": "Zamówienie {index} z {total}",

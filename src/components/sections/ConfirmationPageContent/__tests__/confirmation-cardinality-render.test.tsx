@@ -229,3 +229,40 @@ describe('Story 8.5 — order-set N ≥ 2 renderuje wszystkie zamówienia', () =
     expect(html).toContain('data-order-count="2"');
   });
 });
+
+/**
+ * v1.16.0 Story 8.6 (AC1, AC2) — render nazywa CAŁY zbiór otwartych zamówień
+ * i potwierdza cały zbiór zamówień. Mutant `openOrderIds.slice(0, 1)` w
+ * komponencie czerwieni pierwszy przypadek; mutant `orderIds.slice(0, 1)` drugi.
+ */
+describe('Story 8.6 — stan terminalny dla wszystkich zamówień order-setu', () => {
+  it('zakup niedomknięty: render wskazuje KAŻDE otwarte zamówienie, nie pokazuje sukcesu', () => {
+    const html = render(
+      <ConfirmationPageContent
+        purchase={{
+          kind: 'incomplete_order_set',
+          value: 'cart_8_6',
+          openOrderIds: ['order_open_b', 'order_open_c']
+        }}
+      />
+    );
+    expect(html).toContain('data-testid="confirmation-incomplete-order-set"');
+    expect(html).toContain('data-testid="confirmation-open-orders"');
+    expect(html).toContain('data-open-order-count="2"');
+    expect(countOccurrences(html, 'data-open-order-id="order_open_b"')).toBe(1);
+    expect(countOccurrences(html, 'data-open-order-id="order_open_c"')).toBe(1);
+    expect(html).not.toContain('data-testid="order-confirmed-success-mark"');
+    expect(html).toContain(messages.confirmation.purchase_incomplete_open_orders_label);
+  });
+
+  it('zakup domknięty: potwierdzenie renderuje CAŁY zbiór zamówień (redukcja N→1 czerwieni)', () => {
+    const html = render(
+      <ConfirmationPageContent
+        purchase={{ kind: 'collection', orderIds: ['order_set_a', 'order_set_b'], expectedOrderCount: 2 }}
+      />
+    );
+    const rendered = [...html.matchAll(/data-order-id="([^"]+)"/g)].map((match) => match[1]);
+    expect(new Set(rendered)).toEqual(new Set(['order_set_a', 'order_set_b']));
+    expect(html).toContain('data-order-count="2"');
+  });
+});

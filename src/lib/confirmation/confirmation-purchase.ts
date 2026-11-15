@@ -68,7 +68,12 @@ export type ConfirmationPurchase =
    */
   | { kind: 'read_failed'; value: string }
   | { kind: 'access_denied'; value: string }
-  | { kind: 'incomplete_order_set'; value: string }
+  /**
+   * v1.16.0 Story 8.6 (AC1): zakup NIE jest domknięty — `openOrderIds` nazywa
+   * zamówienia, które nie osiągnęły stanu terminalnego albo brakują w zbiorze
+   * (pusta lista = backend sprzed 8.6, który nie umiał ich wskazać).
+   */
+  | { kind: 'incomplete_order_set'; value: string; openOrderIds: string[] }
   | { kind: 'malformed_purchase'; value: string }
   /** Wartość spoza dziedziny — BŁĄD, nie wartość domyślna (AD-19). */
   | { kind: 'out_of_domain'; value: string };
@@ -82,6 +87,8 @@ export interface BridgePurchaseRead {
    * BEZ tej flagi jest stanem dziedziny, nie awarią.
    */
   readFailed?: boolean;
+  /** v1.16.0 Story 8.6: zamówienia otwarte wg porównania zbiorów w mostku. */
+  openOrderIds?: string[];
   state?: 'complete' | 'empty' | 'incomplete' | 'malformed' | 'read_failed' | 'access_denied';
 }
 
@@ -124,7 +131,11 @@ export function decideConfirmationPurchase(input: {
   }
 
   if (bridge.state === 'incomplete') {
-    return { kind: 'incomplete_order_set', value: identifier.value };
+    return {
+      kind: 'incomplete_order_set',
+      value: identifier.value,
+      openOrderIds: [...(bridge.openOrderIds ?? [])]
+    };
   }
 
   if (bridge.state === 'malformed') {

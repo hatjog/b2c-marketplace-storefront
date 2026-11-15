@@ -211,3 +211,62 @@ describe('Story 8.5 — identyfikator zakupu ⇒ pełny order-set z mostka', () 
     expect(decision.kind).toBe('incomplete_order_set');
   });
 });
+
+describe('Story 8.6 — potwierdzenie odnosi się do ZBIORU zamówień order-setu', () => {
+  const identifier = classifyPaymentReturnIdentifier('cart_8_6_order_set');
+
+  it('jedno zamówienie nieterminalne ⇒ zakup NIE domknięty, `incomplete_order_set` wskazuje otwarte (AC1)', () => {
+    const decision = decideConfirmationPurchase({
+      identifier,
+      bridge: resolveBridgePurchase({
+        orders: [
+          { order_id: 'o_a', terminal: true },
+          { order_id: 'o_b', terminal: false }
+        ],
+        order_count: 2,
+        expected_order_ids: ['o_a', 'o_b']
+      })
+    });
+    expect(decision).toEqual({
+      kind: 'incomplete_order_set',
+      value: 'cart_8_6_order_set',
+      openOrderIds: ['o_b']
+    });
+  });
+
+  it('wszystkie terminalne ⇒ kolekcja CAŁEGO zbioru, nie jednego zamówienia (AC2)', () => {
+    const decision = decideConfirmationPurchase({
+      identifier,
+      bridge: resolveBridgePurchase({
+        orders: [
+          { order_id: 'o_a', terminal: true },
+          { order_id: 'o_b', terminal: true }
+        ],
+        order_count: 2,
+        expected_order_ids: ['o_a', 'o_b']
+      })
+    });
+    expect(decision.kind).toBe('collection');
+    if (decision.kind !== 'collection') throw new Error('oczekiwano kolekcji');
+    expect(new Set(decision.orderIds)).toEqual(new Set(['o_a', 'o_b']));
+  });
+
+  it('zgodna liczba, różny zbiór ⇒ nie `collection` (AC2)', () => {
+    const decision = decideConfirmationPurchase({
+      identifier,
+      bridge: resolveBridgePurchase({
+        orders: [
+          { order_id: 'o_a', terminal: true },
+          { order_id: 'o_b', terminal: true }
+        ],
+        order_count: 2,
+        expected_order_ids: ['o_a', 'o_c']
+      })
+    });
+    expect(decision).toEqual({
+      kind: 'incomplete_order_set',
+      value: 'cart_8_6_order_set',
+      openOrderIds: ['o_c']
+    });
+  });
+});

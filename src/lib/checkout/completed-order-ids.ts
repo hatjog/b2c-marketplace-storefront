@@ -16,6 +16,8 @@
 export type BridgeOrderEntry = {
   order_id?: unknown;
   order_group_id?: unknown;
+  /** v1.16.0 Story 8.6: stan terminalny TEGO zamówienia wg backendu. */
+  terminal?: unknown;
 };
 
 export type BridgePurchaseState = 'complete' | 'empty' | 'incomplete' | 'malformed';
@@ -23,8 +25,32 @@ export type BridgePurchaseState = 'complete' | 'empty' | 'incomplete' | 'malform
 export type BridgePurchase = {
   orderIds: string[];
   expectedOrderCount: number | null;
+  /**
+   * v1.16.0 Story 8.6 (AC2): ZBIÓR oczekiwany order-setu z mostka
+   * (`expected_order_ids`). `null` = backend sprzed 8.6 go nie podał.
+   */
+  expectedOrderIds?: string[] | null;
+  /** v1.16.0 Story 8.6 (AC1): zamówienia, które NIE osiągnęły stanu terminalnego albo brakują. */
+  openOrderIds?: string[];
   state: BridgePurchaseState;
 };
+
+function readIdList(value: unknown): string[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  if (!value.every((id): id is string => typeof id === 'string' && id.length > 0)) {
+    return null;
+  }
+  return Array.from(new Set(value));
+}
+
+/** Równość ZBIORÓW identyfikatorów — nie liczników (AC2). */
+export function sameIdSet(a: readonly string[], b: readonly string[]): boolean {
+  const left = new Set(a);
+  const right = new Set(b);
+  return left.size === right.size && [...left].every(id => right.has(id));
+}
 
 /** Wyciąga identyfikatory z tablicy obiektów `{ id }`, odrzucając śmieci. */
 export function collectOrderIds(orders: unknown): string[] {
@@ -118,6 +144,34 @@ export function resolveBridgePurchase(data: unknown): BridgePurchase {
     if (!validEntries || orderIds.length !== entries.length) {
       return { orderIds, expectedOrderCount, state: 'incomplete' };
     }
+
+    // v1.16.0 Story 8.6 (AC1, AC2): gdy mostek niesie ZBIÓR oczekiwany, to on
+    // rozstrzyga — `complete` wyłącznie przy równości zbiorów identyfikatorów
+    // i stanie terminalnym KAŻDEGO zamówienia. Zgodna liczba przy różnym
+    // zbiorze to `incomplete`, a otwarte zamówienia są nazwane.
+    if (Object.hasOwn(shape, 'expected_order_ids')) {
+      const expectedOrderIds = readIdList(
+        (shape as { expected_order_ids?: unknown }).expected_order_ids
+      );
+      if (expectedOrderIds === null) {
+        return { orderIds, expectedOrderCount, expectedOrderIds: null, state: 'malformed' };
+      }
+      const received = new Set(orderIds);
+      const notTerminal = entries
+        .filter(entry => entry?.terminal !== true)
+        .map(entry => entry.order_id as string);
+      const openOrderIds = Array.from(
+        new Set([...expectedOrderIds.filter(id => !received.has(id)), ...notTerminal])
+      );
+      const state: BridgePurchaseState =
+        orderIds.length > 0 && sameIdSet(orderIds, expectedOrderIds) && openOrderIds.length === 0
+          ? 'complete'
+          : 'incomplete';
+      return { orderIds, expectedOrderCount, expectedOrderIds, openOrderIds, state };
+    }
+
+    // Backend sprzed 8.6 (osobny submoduł, wdrożenie w innej kolejności):
+    // jedyną licznością kontraktu jest `order_count` — reguła zastana.
     if (
       orderIds.length === 0 ||
       expectedOrderCount === null ||

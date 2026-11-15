@@ -1384,6 +1384,7 @@
     "purchase_access_denied_body": "Ми не підтвердили ваш доступ до цієї покупки, тому не показуємо її замовлення.",
     "purchase_incomplete_order_set_title": "Ми ще не можемо безпечно показати всю покупку",
     "purchase_incomplete_order_set_body": "Відповідь не містить повного набору замовлень, тому ми не подаємо частковий результат як успіх.",
+    "purchase_incomplete_open_orders_label": "Замовлення, які ще не завершені:",
     "purchase_malformed_title": "Ми не можемо безпечно прочитати цю покупку",
     "purchase_malformed_body": "Відповідь про покупку має неправильний формат, тому ми не подаємо її як підтвердження.",
     "order_position": "Замовлення {index} з {total}",

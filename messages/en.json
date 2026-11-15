@@ -1384,6 +1384,7 @@
     "purchase_access_denied_body": "We could not confirm your access to this purchase, so we are not displaying its orders.",
     "purchase_incomplete_order_set_title": "We cannot safely display the whole purchase yet",
     "purchase_incomplete_order_set_body": "The read does not contain the complete set of orders, so we are not presenting a partial result as a success.",
+    "purchase_incomplete_open_orders_label": "Orders that are not completed yet:",
     "purchase_malformed_title": "We cannot safely read this purchase",
     "purchase_malformed_body": "The purchase response has an invalid shape, so we are not presenting it as a confirmation.",
     "order_position": "Order {index} of {total}",

@@ -265,6 +265,13 @@ export async function GET(req: NextRequest): Promise<Response> {
     console.warn(`[payment-return] payment intent binding read failed cart=${identifier.value}`);
     return redirectWithOutcome(identifier.value, 'read_failed');
   }
+  if (binding === 'access_denied') {
+    // v1.16.0 Story 8.6 (DW-15-329 p.1): 401 odczytu koszyka to błąd
+    // autoryzacji klienta — NIETERMINALNY `access_denied` (krótki TTL), a nie
+    // terminalny `cart_unavailable`, który blokowałby powrót na stałe.
+    console.warn(`[payment-return] cart read unauthorized cart=${identifier.value}`);
+    return redirectWithOutcome(identifier.value, 'access_denied');
+  }
   if (binding === 'cart_unavailable') {
     // Story 8.2 (DW-15-295): trwałe 4xx odczytu koszyka (404/403) to osobny,
     // terminalny wynik bez ponowienia — nie przejściowy `read_failed`.

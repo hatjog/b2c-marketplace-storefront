@@ -1062,6 +1062,23 @@ describe('Story 8.2 — powrót z pełnego redirectu 3DS domyka zamówienie (ADR
     }
   );
 
+  it('Story 8.6 (DW-15-329 p.1): 401 z odczytu koszyka → nieterminalny `access_denied`, nie `cart_unavailable`', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    completionSucceeds();
+    retrieveCart.mockRejectedValue(Object.assign(new Error('unauthorized'), { status: 401 }));
+
+    const target = await callHandler({ cart_id: CART, locale: 'pl', redirect_status: 'succeeded' });
+
+    expect(retrieveCart).toHaveBeenCalledTimes(1);
+    expect(postCalls()).toHaveLength(0);
+    expect(target).toContain('gp_return=access_denied');
+    expect(target).not.toContain('gp_return=cart_unavailable');
+    const resolution = await resolvePaymentReturn(CART, pageSearchParams(target), 'pl');
+    expect(resolution.result).not.toEqual({ state: 'recovery_required', reason: 'cart_unavailable' });
+    expect(resolution.completionRedirect).toBeNull();
+    warn.mockRestore();
+  });
+
   it('DW-15-295 (2) kontrola: 5xx odczytu koszyka nadal jest przejściowym `read_failed` z ponowieniem', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     completionSucceeds();

@@ -134,6 +134,26 @@ export function ConfirmationPageContent({ purchase }: Props) {
       >
         <h1 className="heading-xl text-primary">{t(copy.titleKey)}</h1>
         <p className="mt-3 text-secondary">{t(copy.bodyKey)}</p>
+        {/* v1.16.0 Story 8.6 (AC1): które zamówienie zostaje otwarte — CAŁY zbiór. */}
+        {purchase.kind === 'incomplete_order_set' && purchase.openOrderIds.length > 0 && (
+          <div
+            className="mt-3"
+            data-testid="confirmation-open-orders"
+            data-open-order-count={String(purchase.openOrderIds.length)}
+          >
+            <p className="text-sm text-primary">{t('purchase_incomplete_open_orders_label')}</p>
+            <ul className="mt-1 list-disc pl-5 text-sm text-secondary">
+              {purchase.openOrderIds.map(orderId => (
+                <li
+                  key={orderId}
+                  data-open-order-id={orderId}
+                >
+                  {orderId}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <LocalizedClientLink
           href="/user/orders"
           className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-action px-6 py-3 text-base font-medium text-action-on-primary hover:bg-action-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cta)]"

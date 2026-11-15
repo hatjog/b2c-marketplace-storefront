@@ -1384,6 +1384,7 @@
     "purchase_access_denied_body": "Wir konnten Ihren Zugriff auf diesen Kauf nicht bestätigen und zeigen deshalb keine Bestellungen an.",
     "purchase_incomplete_order_set_title": "Wir können den gesamten Kauf noch nicht sicher anzeigen",
     "purchase_incomplete_order_set_body": "Der Abruf enthält nicht den vollständigen Satz der Bestellungen, daher zeigen wir ein Teilergebnis nicht als Erfolg an.",
+    "purchase_incomplete_open_orders_label": "Bestellungen, die noch nicht abgeschlossen sind:",
     "purchase_malformed_title": "Wir können diesen Kauf nicht sicher lesen",
     "purchase_malformed_body": "Die Antwort zum Kauf hat ein ungültiges Format, daher zeigen wir sie nicht als Bestätigung an.",
     "order_position": "Bestellung {index} von {total}",
