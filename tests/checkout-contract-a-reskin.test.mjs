@@ -47,15 +47,20 @@ test('checkout page exposes contract-A header, four numbered steps and order-sum
   assert.equal(plMessages.checkout.order_summary_trust_return, '30 dni zwrot');
 });
 
-test('payment step exposes pm-grid, consent-block and gold loading spinner markers without adding providers', () => {
+// DW-15-326: the standalone payment-method chips (pm-grid / pmchip / is-active)
+// were removed on purpose in 86600d5f5 (2026-06-14): they duplicated the
+// embedded Stripe PaymentElement, which is now the single method picker. The
+// contract is inverted accordingly: no second picker, PaymentElement mounted,
+// and method enablement still driven by Stripe payment_method_types.
+test('payment step uses PaymentElement as the single method picker and keeps consent-block and gold loading spinner markers without adding providers', () => {
   const payment = read('src/components/sections/CartPaymentSection/CartPaymentSection.tsx');
   const stripe = read('src/components/sections/CartPaymentSection/StripePaymentElement.tsx');
   const paymentWrapper = read('src/components/organisms/PaymentContainer/PaymentWrapper.tsx');
   const plMessages = JSON.parse(read('messages/pl.json'));
 
-  assert.match(payment, /pm-grid/);
-  assert.match(payment, /pmchip/);
-  assert.match(payment, /is-active/);
+  assert.doesNotMatch(payment, /pm-grid/);
+  assert.doesNotMatch(payment, /pmchip/);
+  assert.match(payment, /<StripePaymentElement\b/);
   assert.match(payment, /consent-block/);
   assert.match(payment, /consent-row/);
   assert.match(payment, /req-mark/);
@@ -80,10 +85,12 @@ test('payment step exposes pm-grid, consent-block and gold loading spinner marke
   // source (pre-tick would violate GDPR Art. 7 active opt-in).
   assert.doesNotMatch(payment, /consent-row is-checked/);
 
-  // LOW-2 fix: assert that chip enablement uses getEnabledPaymentMethodTypes,
-  // not matchPaymentProviderId (provider-ID approach that always disabled BLIK/P24).
-  assert.match(payment, /getEnabledPaymentMethodTypes/);
-  assert.match(payment, /isChipEnabled/);
+  // LOW-2 fix (carried over): method enablement uses getEnabledPaymentMethodTypes
+  // (Stripe payment_method_types), not matchPaymentProviderId (provider-ID
+  // approach that always disabled BLIK/P24). It now lives in the PaymentElement.
+  assert.match(stripe, /getEnabledPaymentMethodTypes\(\)/);
+  assert.doesNotMatch(payment, /matchPaymentProviderId/);
+  assert.doesNotMatch(stripe, /matchPaymentProviderId/);
 
   assert.match(payment, /checkout-spinner-gold/);
   assert.match(stripe, /checkout-spinner-gold/);

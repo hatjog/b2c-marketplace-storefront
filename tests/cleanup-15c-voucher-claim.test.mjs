@@ -33,7 +33,10 @@ describe('AC4: voucher-sw.js — no Math.random fallback', () => {
   test('Math.random() call does not appear in voucher-sw.js', () => {
     // Allow mentions in comments but not as an actual function call expression.
     // Regex matches `Math.random()` as a call (not `Math.random` in a comment after '//')
-    const lines = swSource.split('\n');
+    // DW-15-326: the file is stored with CRLF; splitting on '\n' left a trailing
+    // '\r', so `$` never matched and comments were not stripped — a comment
+    // mentioning `Math.random (` was then counted as a call.
+    const lines = swSource.split(/\r?\n/);
     const callLines = lines.filter((line) => {
       const withoutComment = line.replace(/\/\/.*$/, '');
       return /Math\.random\s*\(/.test(withoutComment);

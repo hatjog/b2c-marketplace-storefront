@@ -19,9 +19,14 @@ test("Header: używa wspólnego komponentu LogoLockup", () => {
   assert.match(source, /data-testid="header-logo-link"/);
 });
 
-// AC1: skonfigurowany asset logo jest przekazywany do lockupu
-test("Header: logoSrc pochodzi z marketLogoUrl", () => {
-  assert.match(source, /logoSrc=\{marketLogoUrl\}/);
+// DW-15-326: AC1 superseded by 36578710d (2026-06-11, PO review P6): the
+// header renders the BRAND lockup (variant="light"), not the market-configured
+// logo asset. The old `logoSrc={marketLogoUrl}` wiring was removed on purpose;
+// the contract now guards against it coming back.
+test("Header: renderuje brandowy LogoLockup, nie logo z konfiguracji marketu", () => {
+  assert.match(source, /<LogoLockup[\s\S]*?variant="light"/);
+  assert.doesNotMatch(source, /logoSrc=/);
+  assert.doesNotMatch(source, /marketLogoUrl/);
 });
 
 // AC2/AC3: nazwa systemowa marketu nie jest wordmarkiem brandowym

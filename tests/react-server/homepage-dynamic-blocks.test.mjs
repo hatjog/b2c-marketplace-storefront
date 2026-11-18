@@ -1,5 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+/**
+ * DW-15-326: moved from tests/ to the react-server lane — dynamic-blocks.ts
+ * imports `server-only` transitively, which throws outside the `react-server`
+ * export condition (same convention as f517b0c51).
+ *
+ * Since 3e65c7cde (QD-I18N-04) `fetchHomepageBlogPosts` takes an explicit route
+ * `locale` and catalogue `labels`; the calls below pass them the way
+ * BlogSectionBlock does, with labels read from the real messages/pl.json.
+ */
+const plBlog = JSON.parse(
+  readFileSync(new URL('../../messages/pl.json', import.meta.url), 'utf8')
+).blog;
+const BLOG_LABELS = {
+  untitledPost: plBlog.untitled_post,
+  excerptFallback: plBlog.excerpt_fallback,
+  authorName: plBlog.author_default_name,
+  authorRole: plBlog.author_default_role,
+  authorBio: plBlog.author_default_bio
+};
 
 const originalFetch = global.fetch;
 const originalPayloadApiUrl = process.env.PAYLOAD_API_URL;
@@ -39,7 +60,7 @@ function toUrl(input) {
 }
 
 async function importDynamicBlocksModule(tag) {
-  const moduleUrl = new URL('../src/lib/homepage/dynamic-blocks.ts', import.meta.url);
+  const moduleUrl = new URL('../../src/lib/homepage/dynamic-blocks.ts', import.meta.url);
   return import(`${moduleUrl.href}?${tag}`);
 }
 
@@ -81,7 +102,7 @@ test('fetchHomepageBlogPosts scopes page lookup to the current market tenant', a
 
   try {
     const { fetchHomepageBlogPosts } = await importDynamicBlocksModule(`tenant-scope=${Date.now()}`);
-    const posts = await fetchHomepageBlogPosts({ limit: 3 });
+    const posts = await fetchHomepageBlogPosts({ locale: 'pl', limit: 3, labels: BLOG_LABELS });
 
     assert.equal(calls.length, 2);
   assert.equal(calls[0].pathname, '/api/market-configs');
@@ -117,7 +138,7 @@ test('fetchHomepageBlogPosts returns no posts when tenant resolution fails for a
 
   try {
     const { fetchHomepageBlogPosts } = await importDynamicBlocksModule(`tenant-miss=${Date.now()}`);
-    const posts = await fetchHomepageBlogPosts({ limit: 3 });
+    const posts = await fetchHomepageBlogPosts({ locale: 'pl', limit: 3, labels: BLOG_LABELS });
 
     assert.deepStrictEqual(posts, []);
     assert.equal(calls.length, 1);
