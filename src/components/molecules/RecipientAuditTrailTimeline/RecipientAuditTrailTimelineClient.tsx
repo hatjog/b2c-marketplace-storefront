@@ -183,7 +183,10 @@ export function RecipientAuditTrailTimelineView({
 }: RecipientAuditTrailTimelineViewProps) {
   const t = useTranslations("voucher.recipient_audit_trail")
   const listId = `${idPrefix}-events-list`
-  const template = liveRegionTemplate ?? t("live_region_template")
+  // The catalogue entry is a template with `{visible}`/`{total}` placeholders
+  // substituted below, so it is read raw: formatting it via `t()` without
+  // values makes next-intl return the key path instead (DW-15-326).
+  const template = liveRegionTemplate ?? (t.raw("live_region_template") as string)
   const liveRegionText = template
     .replace("{visible}", String(visibleEvents.length))
     .replace("{total}", String(total))

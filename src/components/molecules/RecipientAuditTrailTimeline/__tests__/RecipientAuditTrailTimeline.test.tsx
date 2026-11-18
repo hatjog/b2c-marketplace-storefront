@@ -22,15 +22,29 @@
 import React from "react"
 import { describe, expect, it, vi } from "vitest"
 
+import { renderToStaticMarkupWithIntl, withinIntlRender, withIntlShallow } from "@/test/intl"
+
 import {
-  RecipientAuditTrailErrorState,
-  RecipientAuditTrailTimelineView,
+  RecipientAuditTrailErrorState as RecipientAuditTrailErrorStateComponent,
+  RecipientAuditTrailTimelineView as RecipientAuditTrailTimelineViewComponent,
   computePaginationSlice,
   reduceShowOlder,
 } from "../RecipientAuditTrailTimelineClient"
 import { AuditTrailEmptyState } from "../../AuditTrailEmptyState/AuditTrailEmptyState"
 import { TimelineItem } from "../../AuditTrailEmptyState/TimelineItem"
+import { RecipientAuditTrailTimeline } from "../RecipientAuditTrailTimeline"
 import type { RecipientAuditTrailEvent } from "../types"
+
+// DW-15-326: AuditTrailEmptyState became an async RSC reading
+// `getTranslations` (sweep d16b69c4a). Back it with the real pl catalogue.
+vi.mock("next-intl/server", async () => ({
+  getTranslations: (await import("@/test/intl")).getTestTranslations,
+}))
+
+// DW-15-326: the client views read translations via useTranslations; run each
+// direct call inside an intl-aware render and keep inspecting the returned tree.
+const RecipientAuditTrailErrorState = withIntlShallow(RecipientAuditTrailErrorStateComponent)
+const RecipientAuditTrailTimelineView = withIntlShallow(RecipientAuditTrailTimelineViewComponent)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -82,7 +96,7 @@ function callSyncFC<P>(
   fn: (props: P) => any,
   props: P,
 ): React.ReactNode {
-  return fn(props) as React.ReactNode
+  return withinIntlRender(() => fn(props)) as React.ReactNode
 }
 
 /** Find first element by data-testid */
@@ -390,12 +404,13 @@ describe("TimelineItem — backward-compat (no actor)", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("AuditTrailEmptyState — empty render (AC7a)", () => {
-  it("renders empty state with role=\"status\"", () => {
-    const tree = callSyncFC(AuditTrailEmptyState, {
+  it("renders empty state with role=\"status\"", async () => {
+    // AuditTrailEmptyState is an async RSC: await the returned tree.
+    const tree = (await AuditTrailEmptyState({
       emptyHeading: "Brak wpisów w historii voucheru",
       emptyBody: "Tutaj zobaczysz każdą zmianę dotyczącą tego voucheru.",
       "data-testid": "recipient-audit-trail-empty",
-    })
+    })) as React.ReactNode
     const roles = collectProps<string>(tree, "role")
     expect(roles).toContain("status")
     const text = collectText(tree).join(" ")
@@ -403,11 +418,11 @@ describe("AuditTrailEmptyState — empty render (AC7a)", () => {
     expect(text).toContain("Tutaj zobaczysz każdą zmianę")
   })
 
-  it("renders override body and heading copy", () => {
-    const tree = callSyncFC(AuditTrailEmptyState, {
+  it("renders override body and heading copy", async () => {
+    const tree = (await AuditTrailEmptyState({
       emptyHeading: "Custom Heading",
       emptyBody: "Custom Body",
-    })
+    })) as React.ReactNode
     const text = collectText(tree).join(" ")
     expect(text).toContain("Custom Heading")
     expect(text).toContain("Custom Body")
@@ -539,5 +554,40 @@ describe("RecipientAuditTrailTimelineView — i18n templates", () => {
     })
     const list = findByTestId(tree, "recipient-audit-trail-list")
     expect((list!.props as Record<string, unknown>).id).toBe("rat-foo-events-list")
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DW-15-326: ICU templates reach the user with counts, never as a key path.
+// `live_region_template` and `pagination.show_older` carry `{visible}/{total}`
+// and `{remaining}` placeholders that the components substitute themselves.
+// Formatting them through `t()` without values makes next-intl fall back to the
+// key path ("voucher.recipient_audit_trail.live_region_template"), which then
+// reaches the aria-live region and the load-more button label.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("RecipientAuditTrailTimeline — catalogue templates (DW-15-326)", () => {
+  it("View without an explicit template announces counts from the pl catalogue", () => {
+    const tree = RecipientAuditTrailTimelineView({
+      visibleEvents: makeEvents(5),
+      total: 10,
+      remaining: 5,
+      showOlderLabel: "x",
+    })
+    const live = findByTestId(tree, "rat-live-region")
+    expect(collectText(live).join("")).toBe("Wyświetlono 5 z 10 wpisów")
+  })
+
+  it("RSC wrapper renders the live region and load-more label with counts", async () => {
+    const tree = (await RecipientAuditTrailTimeline({
+      events: makeEvents(25),
+      locale: "pl",
+      pageSize: 20,
+      "data-testid": "rat-dw",
+    })) as React.ReactElement
+    const html = renderToStaticMarkupWithIntl(tree)
+    expect(html).toContain("Wyświetlono 20 z 25 wpisów")
+    expect(html).toContain("Pokaż starsze wpisy (5 pozostało)")
+    expect(html).not.toContain("voucher.recipient_audit_trail.")
   })
 })

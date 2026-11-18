@@ -71,7 +71,10 @@ export async function RecipientAuditTrailTimeline({
   const footerNote = t("footer_note")
   const loadingLabel = t("loading.label")
   const listAriaLabel = t("list_aria_label")
-  const liveRegionTemplate = t("live_region_template")
+  // Templates substituted by the client island (`{visible}`/`{total}`,
+  // `{remaining}`) are read raw: formatting them via `t()` without values
+  // makes next-intl return the key path instead (DW-15-326).
+  const liveRegionTemplate = t.raw("live_region_template") as string
   // Stable id prefix per-instance — derived from data-testid when caller
   // provides one (deterministic in SSR), else random fallback for unique IDs
   // when multiple timelines render on the same page.
@@ -160,7 +163,7 @@ export async function RecipientAuditTrailTimeline({
   // Defensive sort: ASC chronological (oldest first) per AC1 spec
   const ordered = [...events].sort((a, b) => a.timestamp.localeCompare(b.timestamp))
 
-  const showOlderLabel = t("pagination.show_older")
+  const showOlderLabel = t.raw("pagination.show_older") as string
 
   return (
     <section
