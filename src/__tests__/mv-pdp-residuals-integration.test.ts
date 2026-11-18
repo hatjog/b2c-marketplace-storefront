@@ -260,5 +260,7 @@ describe('TF-73: getOrSetCart mutex prevents duplicate cart creation (AC4)', () 
     // We just verify the function is exported (not callable in unit test without mocks)
     const cartModule = await import('@/lib/data/cart');
     expect(typeof cartModule.getOrSetCart).toBe('function');
-  });
+    // DW-15-326: cold import of the cart module graph took 5.0 s under the full
+    // parallel suite; the budget covers module loading, not the assertion.
+  }, 30_000);
 });

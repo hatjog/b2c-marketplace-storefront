@@ -17,7 +17,15 @@ const ORIGINAL_ENV = {
   NEXT_PUBLIC_PAYLOAD_MARKET_ID: process.env.NEXT_PUBLIC_PAYLOAD_MARKET_ID
 };
 
+// Cold dynamic imports of `@/middleware` / `@/lib/data/cart`-sized module graphs
+// exceed vitest's 5 s default when the whole suite runs in parallel (measured
+// 5.0-5.9 s, DW-15-326). The budget covers module loading, not the assertions.
+const COLD_IMPORT_TIMEOUT_MS = 30_000;
+
 afterEach(() => {
+  vi.doUnmock('@/lib/data/categories');
+  vi.doUnmock('@/lib/data/seller');
+  vi.doUnmock('@/lib/blog');
   vi.resetModules();
   vi.unstubAllEnvs();
 
@@ -59,7 +67,7 @@ describe('single fixture narrowed to [pl, en] moves every surface at once', () =
 
     const kept = await middleware(new NextRequest(new URL('http://localhost:3000/en')));
     expect(kept.status).toBe(200);
-  });
+  }, COLD_IMPORT_TIMEOUT_MS);
 
   it('hreflang alternates stop emitting uk-UA / de-DE entries', async () => {
     await stubNarrowedMarket();
@@ -67,18 +75,42 @@ describe('single fixture narrowed to [pl, en] moves every surface at once', () =
 
     const alt = await buildLocaleAlternates('pl', loc => `/${loc}/categories`, 'https://x.example');
     expect(Object.keys(alt.languages).sort()).toEqual(['en-US', 'pl-PL', 'x-default'].sort());
-  });
+  }, COLD_IMPORT_TIMEOUT_MS);
 
   it('sitemap emits URLs only for the market locales', async () => {
     await stubNarrowedMarket();
+    // DW-15-326: since AD-19 (a117d1164) the sitemap is fail-closed — a source
+    // that cannot be read makes `buildSitemap()` throw. Without a backend the
+    // three live reads hung or failed, so this test could never reach its
+    // locale assertions. The data sources are stubbed (same shape as
+    // sitemap-failure-contract.test.ts); the locale set still comes from the
+    // narrowed market.yaml fixture, which is what this test proves.
+    vi.stubEnv(
+      'GP_SITEMAP_LAST_GOOD_DIR',
+      await fs.mkdtemp(path.join(os.tmpdir(), 'gp-single-source-lastgood-'))
+    );
+    vi.doMock('@/lib/data/categories', () => ({
+      listCategories: async () => ({ product_categories: [{ handle: 'masaze' }] })
+    }));
+    vi.doMock('@/lib/data/seller', () => ({
+      getSellersOrThrow: async () => [{ handle: 'city-beauty' }]
+    }));
+    vi.doMock('@/lib/blog', () => ({
+      fetchHomepageBlogPageDocs: async () => [{ slug: 'jak-dbac-o-skore' }]
+    }));
     const { buildSitemap } = await import('@/lib/seo/sitemap');
 
     const { entries } = await buildSitemap();
     expect(entries.length).toBeGreaterThan(0);
+    // Every dynamic family is present, so the locale check below covers them too.
+    for (const family of ['/categories/masaze', '/sellers/city-beauty', '/blog/jak-dbac-o-skore']) {
+      expect(entries.some(entry => entry.url.endsWith(`/pl${family}`))).toBe(true);
+      expect(entries.some(entry => entry.url.endsWith(`/en${family}`))).toBe(true);
+    }
     for (const entry of entries) {
       expect(entry.url).not.toMatch(/\/(ua|de)(\/|$)/);
       const languages = entry.alternates?.languages ?? {};
       expect(Object.keys(languages).sort()).toEqual(['en', 'pl', 'x-default'].sort());
     }
-  });
+  }, COLD_IMPORT_TIMEOUT_MS);
 });
