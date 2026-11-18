@@ -8,9 +8,15 @@
  */
 
 import React from "react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { AuditTrailEmptyState } from "../AuditTrailEmptyState/AuditTrailEmptyState"
+
+// DW-15-326: AuditTrailEmptyState became an async RSC reading
+// `getTranslations` (sweep d16b69c4a). Back it with the real pl catalogue.
+vi.mock("next-intl/server", async () => ({
+  getTranslations: (await import("@/test/intl")).getTestTranslations,
+}))
 
 type ReactEl = React.ReactElement<Record<string, unknown>>
 
@@ -46,8 +52,8 @@ function findByDataState(
 }
 
 describe("AuditTrailEmptyState", () => {
-  it("renders the empty variant with default copy when no firstRow given", () => {
-    const tree = AuditTrailEmptyState({}) as unknown as ReactEl
+  it("renders the empty variant with default copy when no firstRow given", async () => {
+    const tree = (await AuditTrailEmptyState({})) as unknown as ReactEl
     expect(tree).not.toBeNull()
     const empty = findByDataState(tree, "empty")
     expect(empty).not.toBeNull()
@@ -56,25 +62,25 @@ describe("AuditTrailEmptyState", () => {
     expect(text).toMatch(/audit trail/i)
   })
 
-  it("honours emptyHeading + emptyBody overrides", () => {
-    const tree = AuditTrailEmptyState({
+  it("honours emptyHeading + emptyBody overrides", async () => {
+    const tree = (await AuditTrailEmptyState({
       emptyHeading: "Custom heading",
       emptyBody: "Custom body copy",
-    }) as unknown as ReactEl
+    })) as unknown as ReactEl
     const text = collectText(tree).join(" ")
     expect(text).toContain("Custom heading")
     expect(text).toContain("Custom body copy")
   })
 
-  it("renders the populated variant with TimelineItem when firstRow provided", () => {
-    const tree = AuditTrailEmptyState({
+  it("renders the populated variant with TimelineItem when firstRow provided", async () => {
+    const tree = (await AuditTrailEmptyState({
       firstRow: {
         timestamp: "2026-04-30T10:00:00Z",
         title: "Voucher utworzony",
         detail: "operator: jan@example.com",
         tone: "success",
       },
-    }) as unknown as ReactEl
+    })) as unknown as ReactEl
     const populated = findByDataState(tree, "populated")
     expect(populated).not.toBeNull()
     // The TimelineItem child is an element node — vitest runs in `node` env
@@ -93,10 +99,10 @@ describe("AuditTrailEmptyState", () => {
     expect(tiProps.isLast).toBe(true)
   })
 
-  it("populated variant has aria-label for the timeline list", () => {
-    const tree = AuditTrailEmptyState({
+  it("populated variant has aria-label for the timeline list", async () => {
+    const tree = (await AuditTrailEmptyState({
       firstRow: { timestamp: "2026-01-01T00:00:00Z", title: "x" },
-    }) as unknown as ReactEl
+    })) as unknown as ReactEl
     expect((tree.props as Record<string, unknown>)["aria-label"]).toBe(
       "Historia audytu",
     )

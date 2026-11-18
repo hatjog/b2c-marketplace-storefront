@@ -7,7 +7,11 @@ vi.mock('next/link', () => ({ default: 'mock-link' }))
 vi.mock('@/icons', () => ({ ArrowRightIcon: 'mock-arrow-icon' }))
 
 import { getColorFromHandle, getInitialsFromName, produktPlural } from '@/lib/helpers/vendor-badge'
-import { VendorBadge } from '.'
+import { withIntlShallow } from '@/test/intl'
+import { VendorBadge as VendorBadgeComponent } from '.'
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const VendorBadge = withIntlShallow(VendorBadgeComponent)
 
 type ReactEl = React.ReactElement<Record<string, unknown>>
 

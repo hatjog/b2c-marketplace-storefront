@@ -26,7 +26,12 @@ vi.mock('react', async (importOriginal) => {
 });
 
 import type { HttpTypes } from '@medusajs/types';
-import { SellerServiceList } from './SellerServiceList';
+import { withIntlShallow } from '@/test/intl';
+
+import { SellerServiceList as SellerServiceListComponent } from './SellerServiceList';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerServiceList = withIntlShallow(SellerServiceListComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 

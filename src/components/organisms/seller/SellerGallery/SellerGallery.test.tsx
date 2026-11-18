@@ -3,7 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/image', () => ({ default: 'mock-image' }));
 
-import { SellerGallery } from './SellerGallery';
+import { withIntlShallow } from '@/test/intl';
+
+import { SellerGallery as SellerGalleryComponent } from './SellerGallery';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerGallery = withIntlShallow(SellerGalleryComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 

@@ -7,7 +7,12 @@ vi.mock('@/icons', () => ({
   EarthIcon: 'mock-earth-icon',
 }));
 
-import { SellerSocialLinks } from './SellerSocialLinks';
+import { withIntlShallow } from '@/test/intl';
+
+import { SellerSocialLinks as SellerSocialLinksComponent } from './SellerSocialLinks';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerSocialLinks = withIntlShallow(SellerSocialLinksComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 

@@ -1,5 +1,6 @@
-import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+
+import { renderToStaticMarkupWithIntl } from '@/test/intl';
 
 import {
   getWalletButtonCopy,
@@ -67,7 +68,8 @@ describe('WalletButton — recipient view', () => {
   });
 
   it('renders three equal-weight CTAs in wallet -> PDF -> email DOM order and uses h2 heading', () => {
-    const html = renderToStaticMarkup(
+    // DW-15-326: SymmetricPossessionSection reads translations (d16b69c4a).
+    const html = renderToStaticMarkupWithIntl(
       <SymmetricPossessionSection
         voucherCode="ABC12345"
         locale="pl"

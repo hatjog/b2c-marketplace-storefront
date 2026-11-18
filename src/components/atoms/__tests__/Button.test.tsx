@@ -19,7 +19,12 @@
 import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Button } from '../Button/Button';
+import { withIntlShallow } from '@/test/intl';
+
+import { Button as ButtonComponent } from '../Button/Button';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const Button = withIntlShallow(ButtonComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 

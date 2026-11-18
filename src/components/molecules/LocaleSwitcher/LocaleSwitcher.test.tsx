@@ -30,6 +30,8 @@ vi.mock('next/navigation', () => ({
   })
 }));
 
+import { IntlTestProvider } from '@/test/intl';
+
 import { LocaleSwitcher } from './LocaleSwitcher';
 
 declare global {
@@ -64,7 +66,12 @@ describe('LocaleSwitcher (W6-10 chrome manifest)', () => {
 
   async function renderWith(currentLocale: string) {
     await act(async () => {
-      root.render(<LocaleSwitcher currentLocale={currentLocale} />);
+      // DW-15-326: LocaleSwitcher reads its labels via useTranslations (d16b69c4a).
+      root.render(
+        <IntlTestProvider>
+          <LocaleSwitcher currentLocale={currentLocale} />
+        </IntlTestProvider>
+      );
     });
   }
 

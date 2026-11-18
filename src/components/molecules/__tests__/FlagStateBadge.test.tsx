@@ -15,7 +15,12 @@
 import React from "react"
 import { describe, expect, it } from "vitest"
 
-import { FlagStateBadge, type FlagState } from "../FlagStateBadge"
+import { withIntlShallow } from "@/test/intl"
+
+import { FlagStateBadge as FlagStateBadgeComponent, type FlagState } from "../FlagStateBadge"
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const FlagStateBadge = withIntlShallow(FlagStateBadgeComponent)
 
 type SyncReactEl = React.ReactElement<Record<string, unknown>>
 

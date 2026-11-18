@@ -1,7 +1,12 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { SellerContact } from './SellerContact';
+import { withIntlShallow } from '@/test/intl';
+
+import { SellerContact as SellerContactComponent } from './SellerContact';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerContact = withIntlShallow(SellerContactComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 
@@ -32,7 +37,9 @@ function findLinks(root: ReactEl): ReactEl[] {
 
 function findText(root: React.ReactElement | null, text: string): boolean {
   if (!root) return false;
-  const str = JSON.stringify(root);
+  // React internals (`_owner`, `_store`, `_debug*`) are skipped: elements created
+  // during a render carry a circular `_owner` fiber (DW-15-326 intl harness).
+  const str = JSON.stringify(root, (key, value) => (key.startsWith('_') ? undefined : value));
   return str.includes(text);
 }
 

@@ -1,7 +1,12 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { SellerLocations } from './SellerLocations';
+import { withIntlShallow } from '@/test/intl';
+
+import { SellerLocations as SellerLocationsComponent } from './SellerLocations';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerLocations = withIntlShallow(SellerLocationsComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 

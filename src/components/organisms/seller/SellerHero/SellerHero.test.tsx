@@ -2,7 +2,12 @@ import React from 'react';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { SellerHero } from './SellerHero';
+import { withIntlShallow } from '@/test/intl';
+
+import { SellerHero as SellerHeroComponent } from './SellerHero';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerHero = withIntlShallow(SellerHeroComponent);
 
 vi.mock('next/image', () => ({ default: 'mock-image' }));
 

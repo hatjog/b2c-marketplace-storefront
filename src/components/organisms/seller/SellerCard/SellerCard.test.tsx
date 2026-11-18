@@ -4,7 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('next/image', () => ({ default: 'mock-image' }));
 vi.mock('next/link', () => ({ default: 'a' }));
 
-import { getInitials, hashColor, SellerCard } from './SellerCard';
+import { withIntlShallow } from '@/test/intl';
+
+import { getInitials, hashColor, SellerCard as SellerCardComponent } from './SellerCard';
+
+// DW-15-326: the component reads translations; run it inside an intl-aware render.
+const SellerCard = withIntlShallow(SellerCardComponent);
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 

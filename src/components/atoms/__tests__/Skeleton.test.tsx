@@ -23,16 +23,20 @@
 import { describe, expect, it } from 'vitest';
 import * as React from 'react';
 
+import { withinIntlRender } from '@/test/intl';
+
 import { Skeleton, SkeletonCard, SkeletonText } from '../Skeleton/Skeleton';
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
 
+// DW-15-326: the components read translations (sweep d16b69c4a), so the direct
+// call runs inside an intl-aware render; the returned tree is still inspected.
 const renderSkeleton = (props: Parameters<typeof Skeleton>[0] = {}) =>
-  (Skeleton as unknown as (p: typeof props) => ReactEl)(props);
+  withinIntlRender(() => (Skeleton as unknown as (p: typeof props) => ReactEl)(props));
 const renderSkeletonText = (props: Parameters<typeof SkeletonText>[0] = {}) =>
-  (SkeletonText as unknown as (p: typeof props) => ReactEl)(props);
+  withinIntlRender(() => (SkeletonText as unknown as (p: typeof props) => ReactEl)(props));
 const renderSkeletonCard = (props: Parameters<typeof SkeletonCard>[0] = {}) =>
-  (SkeletonCard as unknown as (p: typeof props) => ReactEl)(props);
+  withinIntlRender(() => (SkeletonCard as unknown as (p: typeof props) => ReactEl)(props));
 
 describe('Skeleton', () => {
   describe('WCAG accessibility', () => {

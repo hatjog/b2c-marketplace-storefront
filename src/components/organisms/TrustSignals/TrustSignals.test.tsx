@@ -7,14 +7,20 @@ vi.mock('next/link', () => ({
   default: 'a',
 }));
 
-import { TrustSignals } from './TrustSignals';
+import { withinIntlRender, withIntlShallow } from '@/test/intl';
+
+import { TrustSignals as TrustSignalsComponent } from './TrustSignals';
 
 type ReactEl = React.ReactElement<Record<string, unknown>>;
+
+// DW-15-326: TrustSignals and its children read translations; every direct
+// component call runs inside an intl-aware render.
+const TrustSignals = withIntlShallow(TrustSignalsComponent);
 
 function resolveElement(el: ReactEl): React.ReactNode {
   if (typeof el.type === 'function') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (el.type as (props: any) => React.ReactNode)(el.props);
+    return withinIntlRender(() => (el.type as (props: any) => React.ReactNode)(el.props));
   }
 
   return el;
