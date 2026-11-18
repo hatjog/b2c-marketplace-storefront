@@ -13,8 +13,10 @@
  *  3. smoke faktycznie czyta `content_bar` z metadanych, a nie tylko deklaruje
  *     stałą — inaczej „przepięty" byłby deklaracją, nie faktem.
  */
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -22,10 +24,8 @@ import { PHASE_1_GATE_SLUG } from '@/lib/content-gate';
 
 import { MIN_DESCRIPTION_WORDS } from '../normalize-listed-products';
 
-const SMOKE_SOURCE = fs.readFileSync(
-  path.resolve(__dirname, '../../../../scripts/smoke-pdp-locales.mjs'),
-  'utf8'
-);
+const SMOKE_PATH = path.resolve(__dirname, '../../../../scripts/smoke-pdp-locales.mjs');
+const SMOKE_SOURCE = fs.readFileSync(SMOKE_PATH, 'utf8');
 
 describe('Story 1.3 (1-3-F6) / 1.4 (AD-4) — parity smoke vs checkQualityGate', () => {
   it('slug FAZY 1 w smoke == PHASE_1_GATE_SLUG', () => {
@@ -38,10 +38,28 @@ describe('Story 1.3 (1-3-F6) / 1.4 (AD-4) — parity smoke vs checkQualityGate',
   });
 
   it('próg legacy EE-1 w smoke == MIN_DESCRIPTION_WORDS', () => {
-    const match = /const MIN_DESCRIPTION_WORDS = (\d+);/.exec(SMOKE_SOURCE);
+    // AD-4 (ecc5efe13): smoke nie ma już literału progu — wiąże swoją stałą z
+    // kanonicznym `CONTENT_BAR_THRESHOLDS.product` backendu. Parity przepięte na
+    // ten mechanizm (DW-15-326): (1) smoke nadal bierze próg z czytnika
+    // kanonicznego, (2) wartość kanoniczna == próg storefrontu.
+    expect(SMOKE_SOURCE).toMatch(
+      /const MIN_DESCRIPTION_WORDS = readCanonicalProductBarThreshold\(\);/
+    );
 
-    expect(match).not.toBeNull();
-    expect(Number(match![1])).toBe(MIN_DESCRIPTION_WORDS);
+    // The smoke's own reader runs in a child Node process: vitest's transform
+    // cannot load the CLI script (CRLF shebang), and re-implementing the regex
+    // here would test a copy instead of the reader HG-6 actually uses.
+    const smokeUrl = pathToFileURL(SMOKE_PATH).href;
+    const canonical = execFileSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `const m = await import(${JSON.stringify(smokeUrl)}); process.stdout.write(String(m.readCanonicalProductBarThreshold()));`
+      ],
+      { encoding: 'utf8', env: process.env }
+    );
+    expect(Number(canonical)).toBe(MIN_DESCRIPTION_WORDS);
   });
 
   it('smoke klasyfikuje 404 po `content_bar`, nie po samym wordcount', () => {

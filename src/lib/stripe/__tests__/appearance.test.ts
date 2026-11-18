@@ -135,38 +135,42 @@ describe('getPaymentElementAppearanceRuntime — AC8 snapshot per market theme',
     //   --cta         → colorPrimary  (bonbeauty.css semantic token)
     //   --radius-md   → borderRadius  (radii.css: 12px)
     //   --font-display → fontFamily   (bonbeauty.css: 'Funnel Display')
-    //   --space-2     → spacingUnit   (spacing.css: 0.5rem)
+    //   --space-2     → spacingUnit   (bonbeauty.css: 8px — the generated theme
+    //                   layer, db7a0dc65, overrides spacing.css 0.5rem; DW-15-326)
     expect(appearance.variables?.colorPrimary).toBe('rgb(144, 112, 50)');
     expect(appearance.variables?.borderRadius).toBe('12px');
     expect(appearance.variables?.fontFamily).toContain('Funnel Display');
-    expect(appearance.variables?.spacingUnit).toBe('0.5rem');
+    // '8px' (theme layer), not '0.5rem': that is also the fallback value, so the
+    // old literal could not tell a resolved token from a silent fallback.
+    expect(appearance.variables?.spacingUnit).toBe('8px');
     // AC5 anti-pattern: żadne zmienne nie są pustym stringiem.
     for (const v of Object.values(appearance.variables ?? {})) {
       expect(String(v).trim()).not.toBe('');
     }
-    // Pełny snapshot jako kontrakt regresji.
+    // Pełny snapshot jako kontrakt regresji. Wartości spacingu i stosu fontu
+    // pochodzą z wygenerowanej warstwy motywu bonbeauty.css (db7a0dc65).
     expect(appearance).toMatchInlineSnapshot(`
       {
         "rules": {
           ".Input": {
             "border": "1px solid rgb(144, 112, 50)",
             "borderRadius": "12px",
-            "padding": "0.5rem",
+            "padding": "8px",
           },
           ".Input:focus": {
             "boxShadow": "0 0 0 1px rgb(144, 112, 50)",
             "outline": "none",
           },
           ".Label": {
-            "fontFamily": "'Funnel Display', ui-sans-serif, system-ui, sans-serif",
+            "fontFamily": "'Funnel Display', system-ui, -apple-system, 'Segoe UI', sans-serif",
           },
         },
         "theme": "flat",
         "variables": {
           "borderRadius": "12px",
           "colorPrimary": "rgb(144, 112, 50)",
-          "fontFamily": "'Funnel Display', ui-sans-serif, system-ui, sans-serif",
-          "spacingUnit": "0.5rem",
+          "fontFamily": "'Funnel Display', system-ui, -apple-system, 'Segoe UI', sans-serif",
+          "spacingUnit": "8px",
         },
       }
     `);
